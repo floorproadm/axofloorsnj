@@ -1,12 +1,10 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Menu, Phone, Mail } from "lucide-react";
 import axoLogo from "@/assets/axo-logo.png";
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
 
   const navigation = [
     { name: "Home", href: "/" },
@@ -74,36 +72,10 @@ const Header = () => {
               </Button>
             </div>
 
-            {/* Mobile Menu */}
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="sm">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-80">
-                <div className="flex flex-col gap-4 mt-8">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className="text-lg font-medium text-white hover:text-gold transition-smooth"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                  <div className="flex flex-col gap-3 mt-6">
-                    <Button variant="outline" asChild>
-                      <Link to="/contact" onClick={() => setIsOpen(false)}>Get Quote</Link>
-                    </Button>
-                    <Button asChild className="gold-gradient">
-                      <a href="tel:(732) 351-8653">Call Now</a>
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+            {/* Mobile Menu Trigger */}
+            <SidebarTrigger className="lg:hidden text-white hover:text-gold">
+              <Menu className="h-6 w-6" />
+            </SidebarTrigger>
           </div>
         </div>
       </header>
