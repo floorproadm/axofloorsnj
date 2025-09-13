@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, Phone, Mail, Facebook, Instagram, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -43,24 +43,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="lg:hidden w-80 bg-black border-r border-white/10">
-      {/* Header with phone and social */}
-      <div className="bg-gold text-black py-3 px-4">
-        <div className="flex items-center justify-between text-sm">
-          <a href="tel:(732) 351-8653" className="flex items-center gap-1 font-semibold">
-            <Phone className="h-4 w-4" />
-            (732) 351-8653
-          </a>
-          <div className="flex gap-2">
-            <a href="#" className="bg-black text-white p-1.5 rounded">
-              <Facebook className="h-4 w-4" />
-            </a>
-            <a href="#" className="bg-black text-white p-1.5 rounded">
-              <Instagram className="h-4 w-4" />
-            </a>
-          </div>
-        </div>
-      </div>
-
       <SidebarHeader className="bg-black border-b border-white/10 p-4">
         <div className="flex items-center justify-between">
           <Link to="/" onClick={closeSidebar} className="flex items-center">
