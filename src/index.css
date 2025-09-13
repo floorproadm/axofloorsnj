@@ -7,6 +7,15 @@
 /* AXO Floors Design System - Premium flooring brand identity */
 
 @layer base {
+  /* Debug styles for troubleshooting */
+  html {
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+  
+  body {
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    min-width: 320px; /* Ensure minimum width */
+  }
   :root {
     /* AXO Floors Brand Colors */
     --navy-primary: 205 76% 12%; /* #0C1C2E - Main navy */

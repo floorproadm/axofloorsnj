@@ -50,7 +50,7 @@ const Header = () => {
       </div>
 
       {/* Main Header */}
-      <header className="bg-black border-b border-white/10 shadow-elegant sticky top-0 z-50">
+      <header className="bg-black border-b border-white/10 shadow-elegant sticky top-0 z-[100] w-full">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}

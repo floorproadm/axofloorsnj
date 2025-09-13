@@ -19,7 +19,15 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  // Debug log para verificar se há problemas de renderização
+  console.log("App rendering - viewport dimensions:", {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    userAgent: navigator.userAgent.substring(0, 50)
+  });
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -27,7 +35,7 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <SidebarProvider>
-          <div className="min-h-screen w-full">
+          <div className="min-h-screen w-full flex flex-col">
             <AppSidebar />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -46,6 +54,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
