@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/shared/AppSidebar";
+import ScrollToTop from "@/components/shared/ScrollToTop";
 import Index from "./pages/Index";
 import HardwoodFlooring from "./pages/HardwoodFlooring";
 import SandingRefinish from "./pages/SandingRefinish";
@@ -24,6 +25,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <SidebarProvider>
           <div className="min-h-screen w-full">
             <AppSidebar />
