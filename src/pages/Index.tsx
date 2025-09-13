@@ -1,10 +1,14 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import Hero from "@/components/shared/Hero";
+import Portfolio from "@/components/shared/Portfolio";
+import ServiceArea from "@/components/shared/ServiceArea";
+import AboutSection from "@/components/shared/AboutSection";
+import ContactSection from "@/components/shared/ContactSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield } from "lucide-react";
+import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
 import woodyMascot from "@/assets/woody-mascot.png";
 
@@ -14,50 +18,77 @@ const Index = () => {
       title: "Hardwood Flooring",
       description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
       href: "/hardwood-flooring",
-      features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"]
+      features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
+      icon: "🌳"
     },
     {
       title: "Sanding & Refinishing", 
       description: "Restore your floors to their original beauty with professional refinishing services.",
       href: "/sanding-and-refinish",
-      features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"]
+      features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
+      icon: "✨"
     },
     {
       title: "Vinyl Plank Flooring",
       description: "Waterproof and durable luxury vinyl with the look of real hardwood.",
       href: "/vinyl-plank-flooring", 
-      features: ["100% Waterproof", "Easy Maintenance", "Realistic Wood Look"]
+      features: ["100% Waterproof", "Easy Maintenance", "Realistic Wood Look"],
+      icon: "💧"
     },
     {
       title: "Staircase Renovation",
       description: "Transform your staircase with custom hardwood steps and elegant railings.",
       href: "/staircase",
-      features: ["Custom Design", "Safety First", "Premium Materials"]
+      features: ["Custom Design", "Safety First", "Premium Materials"],
+      icon: "🪜"
     }
   ];
 
   const benefits = [
-    { icon: Award, title: "35+ Google Reviews", description: "Consistent 5-star quality" },
-    { icon: Users, title: "Expert Craftsmen", description: "Professional installation team" },
-    { icon: Clock, title: "Quick Turnaround", description: "Efficient project completion" },
-    { icon: Shield, title: "Guaranteed Quality", description: "100% satisfaction guarantee" }
+    { 
+      icon: Award, 
+      title: "35+ Google Reviews", 
+      description: "Consistent 5-star quality from satisfied customers",
+      stat: "⭐⭐⭐⭐⭐"
+    },
+    { 
+      icon: Users, 
+      title: "Expert Craftsmen", 
+      description: "Professional installation team with years of experience",
+      stat: "10+ Years"
+    },
+    { 
+      icon: Clock, 
+      title: "Quick Turnaround", 
+      description: "Efficient project completion without compromising quality",
+      stat: "On Time"
+    },
+    { 
+      icon: Shield, 
+      title: "Quality Guarantee", 
+      description: "100% satisfaction guarantee on all our work",
+      stat: "100%"
+    }
   ];
 
   const testimonials = [
     {
-      name: "Sarah Johnson",
-      text: "AXO Floors transformed our entire home. The attention to detail and professionalism was outstanding!",
-      rating: 5
+      name: "Michelle Allen",
+      text: "Outstanding experience overall! The workmanship was superb, we highly recommend AXO Floors to everyone!",
+      rating: 5,
+      location: "Ocean County, NJ"
     },
     {
-      name: "Mike Rodriguez", 
-      text: "Best flooring company in NJ. Quality work, fair prices, and they finished ahead of schedule.",
-      rating: 5
+      name: "Richard Davis", 
+      text: "We hired AXO Floors and they did amazing work! It was done fast, we had all the work completed. We would highly recommend to anyone! Thank you once again!",
+      rating: 5,
+      location: "Monmouth County, NJ"
     },
     {
-      name: "Lisa Chen",
-      text: "The refinishing work on our hardwood floors exceeded expectations. Looks brand new!",
-      rating: 5
+      name: "David Nakano",
+      text: "Professional and quality work! They transformed our home and we couldn't be happier with the results.",
+      rating: 5,
+      location: "Middlesex County, NJ"
     }
   ];
 
@@ -65,6 +96,7 @@ const Index = () => {
     <div className="min-h-screen">
       <Header />
       
+      {/* Enhanced Hero Section */}
       <Hero
         title="Your Flooring deserves the attention that only us can provide!"
         subtitle="Premium Flooring Solutions in New Jersey"
@@ -73,10 +105,19 @@ const Index = () => {
         showReviews={true}
       />
 
-      {/* Services Section */}
-      <section className="py-20 bg-grey-light">
+      {/* Services Section - Enhanced */}
+      <section className="py-20 bg-background relative overflow-hidden">
+        {/* Woody mascot floating */}
+        <div className="absolute top-10 right-10 opacity-20 animate-bounce">
+          <img src={woodyMascot} alt="Woody" className="w-24 h-24" />
+        </div>
+        
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-gold/10 rounded-full px-6 py-2 mb-6">
+              <Sparkles className="w-5 h-5 text-gold" />
+              <span className="text-gold font-medium">Premium Services</span>
+            </div>
             <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
               We have all the solutions you need to <span className="text-gradient-gold">renew your space!</span>
             </h2>
@@ -87,23 +128,24 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service, index) => (
-              <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2">
-                <CardContent className="p-6">
+              <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2 border-0 shadow-elegant">
+                <CardContent className="p-8 text-center">
+                  <div className="text-4xl mb-4">{service.icon}</div>
                   <h3 className="text-xl font-heading font-semibold text-navy mb-3 group-hover:text-gold transition-smooth">
                     {service.title}
                   </h3>
-                  <p className="text-grey mb-4 leading-relaxed">
+                  <p className="text-grey mb-6 leading-relaxed">
                     {service.description}
                   </p>
-                  <ul className="space-y-2 mb-6">
+                  <div className="space-y-2 mb-6">
                     {service.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-grey">
+                      <div key={i} className="flex items-center justify-center gap-2 text-sm text-grey">
                         <CheckCircle className="w-4 h-4 text-gold" />
                         {feature}
-                      </li>
+                      </div>
                     ))}
-                  </ul>
-                  <Button asChild variant="outline" className="w-full group-hover:bg-gold group-hover:text-navy group-hover:border-gold">
+                  </div>
+                  <Button asChild variant="outline" className="w-full group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-smooth">
                     <Link to={service.href} className="flex items-center justify-center gap-2">
                       Learn More
                       <ArrowRight className="w-4 h-4" />
@@ -116,63 +158,33 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 bg-background">
+      {/* Benefits Section - Enhanced */}
+      <section className="py-20 bg-grey-light">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
-              Why Choose AXO Floors?
+              Why Choose <span className="text-gradient-gold">AXO Floors?</span>
             </h2>
+            <p className="text-lg text-grey max-w-2xl mx-auto">
+              Experience the difference that professional expertise and commitment to quality makes
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
-              <div key={index} className="text-center group">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/10 rounded-full mb-4 group-hover:bg-gold group-hover:scale-110 transition-bounce">
-                  <benefit.icon className="w-8 h-8 text-gold group-hover:text-white" />
-                </div>
-                <h3 className="text-xl font-heading font-semibold text-navy mb-2">
-                  {benefit.title}
-                </h3>
-                <p className="text-grey">
-                  {benefit.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 navy-gradient text-white relative overflow-hidden">
-        <div className="absolute top-10 right-10 opacity-20">
-          <img src={woodyMascot} alt="Woody" className="w-32 h-32" />
-        </div>
-        
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">
-              What Our Customers Say
-            </h2>
-            <p className="text-lg text-white/80">
-              Don't just take our word for it - hear from satisfied homeowners
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-gold text-gold" />
-                    ))}
+              <Card key={index} className="group text-center hover:shadow-gold transition-smooth border-0 shadow-elegant">
+                <CardContent className="p-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/10 rounded-full mb-4 group-hover:bg-gold group-hover:scale-110 transition-bounce">
+                    <benefit.icon className="w-8 h-8 text-gold group-hover:text-white" />
                   </div>
-                  <p className="text-white/90 mb-4 leading-relaxed">
-                    "{testimonial.text}"
-                  </p>
-                  <p className="text-gold font-semibold">
-                    - {testimonial.name}
+                  <div className="text-2xl font-bold font-heading text-gold mb-2">
+                    {benefit.stat}
+                  </div>
+                  <h3 className="text-xl font-heading font-semibold text-navy mb-3">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-grey leading-relaxed">
+                    {benefit.description}
                   </p>
                 </CardContent>
               </Card>
@@ -181,24 +193,94 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-background">
+      {/* Portfolio Section */}
+      <Portfolio />
+
+      {/* Testimonials Section - Enhanced */}
+      <section className="py-20 navy-gradient text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="grid grid-cols-8 h-full">
+            {[...Array(64)].map((_, i) => (
+              <div key={i} className="border border-white/5" />
+            ))}
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-1 mb-4">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-6 h-6 fill-gold text-gold" />
+              ))}
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">
+              See What Our <span className="text-gold">Customers</span> Are Saying
+            </h2>
+            <p className="text-lg text-white/80 max-w-2xl mx-auto">
+              Don't just take our word for it - hear from satisfied homeowners across New Jersey
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-smooth">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-gold text-gold" />
+                    ))}
+                  </div>
+                  <p className="text-white/90 mb-6 leading-relaxed text-lg">
+                    "{testimonial.text}"
+                  </p>
+                  <div>
+                    <p className="text-gold font-semibold text-lg">
+                      {testimonial.name}
+                    </p>
+                    <p className="text-white/60 text-sm">
+                      {testimonial.location}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Service Area Section */}
+      <ServiceArea />
+
+      {/* About Section */}
+      <AboutSection />
+
+      {/* Contact Form Section */}
+      <ContactSection />
+
+      {/* Final CTA Section */}
+      <section className="py-20 gold-gradient text-navy relative overflow-hidden">
+        <div className="absolute bottom-4 right-4">
+          <img src={woodyMascot} alt="Woody" className="w-20 h-20 opacity-80" />
+        </div>
+        
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">
             Ready to Transform Your Floors?
           </h2>
-          <p className="text-lg text-grey mb-8 max-w-2xl mx-auto">
-            If you're looking for durability, quality, and comfort for your everyday life, trust AXO Floors to deliver that!
+          <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+            If you're looking for durability, quality, and comfort for your everyday life, trust AXO Floors to deliver excellence!
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto">
+            <Button asChild variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white text-lg px-8 py-6 h-auto hover:scale-105 transition-bounce">
               <Link to="/contact" className="flex items-center gap-2">
                 Get Free Quote
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
-            <Button variant="outline" asChild className="text-lg px-8 py-6 h-auto">
-              <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
+            <Button asChild className="bg-navy text-white hover:bg-navy/90 text-lg px-8 py-6 h-auto hover:scale-105 transition-bounce">
+              <a href="tel:(732) 351-8653" className="flex items-center gap-2">
+                Call (732) 351-8653
+              </a>
             </Button>
           </div>
         </div>
