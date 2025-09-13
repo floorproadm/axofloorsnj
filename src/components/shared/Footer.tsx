@@ -1,113 +1,109 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Phone, Mail, Facebook, Instagram } from "lucide-react";
 import woodyMascot from "@/assets/woody-mascot.png";
 
 const Footer = () => {
-  const services = [
-    { name: "Hardwood Flooring", href: "/hardwood-flooring" },
-    { name: "Sanding & Refinish", href: "/sanding-and-refinish" },
-    { name: "Vinyl Plank Flooring", href: "/vinyl-plank-flooring" },
-    { name: "Staircase Renovation", href: "/staircase" },
-    { name: "Base Boards", href: "/base-boards" },
+  const navigationLinks = [
+    { name: "Services", href: "#" },
+    { name: "Contact", href: "/contact" },
+    { name: "About", href: "/about" },
+    { name: "Gallery", href: "/gallery" },
   ];
 
   return (
-    <footer className="navy-gradient text-white">
-      <div className="container mx-auto px-4 py-8 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {/* Company Info */}
-          <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start gap-3">
-              <div className="text-xl sm:text-2xl font-heading font-bold text-gold">
-                •AXO•
-                <span className="block text-xs sm:text-sm font-medium tracking-wider text-white">FLOORS</span>
-              </div>
-              <img src={woodyMascot} alt="Woody Mascot" className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <p className="text-white/80 text-sm leading-relaxed max-w-xs mx-auto sm:max-w-none sm:mx-0">
-              Premium flooring solutions in New Jersey. Your floors deserve the attention that only we can provide!
-            </p>
-            <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 text-gold">
-              {[...Array(5)].map((_, i) => (
-                <span key={i} className="text-sm">⭐</span>
-              ))}
-              <span className="text-white/80 text-xs sm:text-sm ml-1 sm:ml-2">35+ Reviews</span>
-            </div>
-          </div>
-
-          {/* Services */}
-          <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
-            <h3 className="text-base sm:text-lg font-heading font-semibold text-gold">Services</h3>
-            <ul className="space-y-1 sm:space-y-2">
-              {services.map((service) => (
-                <li key={service.name}>
-                  <Link 
-                    to={service.href}
-                    className="text-white/80 hover:text-gold transition-smooth text-sm block"
-                  >
-                    {service.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
-            <h3 className="text-base sm:text-lg font-heading font-semibold text-gold">Contact</h3>
-            <div className="space-y-2 sm:space-y-3">
-              <a 
-                href="tel:(732) 351-8653"
-                className="flex items-center justify-center sm:justify-start gap-2 text-white/80 hover:text-gold transition-smooth text-sm"
-              >
-                <Phone className="w-4 h-4" />
-                (732) 351-8653
-              </a>
-              <a 
-                href="mailto:contact@axofloorsnj.com"
-                className="flex items-center justify-center sm:justify-start gap-2 text-white/80 hover:text-gold transition-smooth text-sm break-all"
-              >
-                <Mail className="w-4 h-4 flex-shrink-0" />
-                contact@axofloorsnj.com
-              </a>
-              <div className="flex items-start justify-center sm:justify-start gap-2 text-white/80 text-sm">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Serving all of New Jersey</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Hours & Links */}
-          <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
-            <h3 className="text-base sm:text-lg font-heading font-semibold text-gold">Hours</h3>
-            <div className="space-y-1 sm:space-y-2">
-              <div className="flex items-center justify-center sm:justify-start gap-2 text-white/80 text-sm">
-                <Clock className="w-4 h-4" />
-                <span>Mon - Fri: 8AM - 6PM</span>
-              </div>
-              <div className="text-white/80 text-sm">
-                Sat: 9AM - 4PM
-              </div>
-              <div className="text-white/80 text-sm">
-                Sun: By Appointment
-              </div>
-            </div>
-            <div className="pt-2 sm:pt-4">
-              <Link 
-                to="/gallery"
-                className="text-gold hover:text-white transition-smooth font-medium text-sm inline-block"
-              >
-                View Our Gallery →
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="border-t border-white/20 mt-6 sm:mt-8 pt-4 sm:pt-6 text-center">
-          <p className="text-white/60 text-xs sm:text-sm px-2">
-            © 2024 AXO Floors. All rights reserved. Premium flooring services in New Jersey.
+    <footer className="bg-black text-white">
+      {/* Inspirational Section */}
+      <div className="bg-black py-8 sm:py-12">
+        <div className="container mx-auto px-4 text-center">
+          <div className="h-1 w-16 bg-gold mx-auto mb-6"></div>
+          <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
+            Your satisfaction is our priority. Custom solutions and seamless service make your dream home a reality.
           </p>
+        </div>
+      </div>
+
+      {/* Main Footer Content */}
+      <div className="bg-black border-t border-white/10">
+        <div className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+            {/* Company Logo & Tagline */}
+            <div className="text-center lg:text-left">
+              <div className="text-3xl sm:text-4xl font-heading font-bold text-white mb-2">
+                <span className="text-gold">•</span>AXO<span className="text-gold">•</span>
+                <div className="text-sm font-medium tracking-[0.2em] text-white">FLOORS</div>
+              </div>
+              <p className="text-white/80 text-sm mt-4">
+                We bring your vision to life
+              </p>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="text-center lg:text-left">
+              <h3 className="text-lg font-heading font-semibold text-white mb-4">Useful Links</h3>
+              <ul className="space-y-2">
+                {navigationLinks.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      to={link.href}
+                      className="text-white/80 hover:text-gold transition-smooth text-sm block"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div className="text-center lg:text-left">
+              <h3 className="text-lg font-heading font-semibold text-white mb-4">Useful Links</h3>
+              <div className="space-y-3">
+                <a 
+                  href="tel:(732) 351-8653"
+                  className="flex items-center justify-center lg:justify-start gap-2 text-gold hover:text-white transition-smooth text-sm"
+                >
+                  <Phone className="w-4 h-4" />
+                  (732) 351-8653
+                </a>
+                <a 
+                  href="mailto:contact@axofloorsnj.com"
+                  className="flex items-center justify-center lg:justify-start gap-2 text-gold hover:text-white transition-smooth text-sm"
+                >
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  contact@axofloorsnj.com
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Media Icons */}
+          <div className="flex justify-center gap-4 mt-8 pt-6 border-t border-white/10">
+            <a 
+              href="#" 
+              className="w-10 h-10 bg-gold text-black flex items-center justify-center rounded-sm hover:bg-gold/80 transition-smooth"
+            >
+              <Facebook className="w-5 h-5" />
+            </a>
+            <a 
+              href="#" 
+              className="w-10 h-10 bg-gold text-black flex items-center justify-center rounded-sm hover:bg-gold/80 transition-smooth"
+            >
+              <Instagram className="w-5 h-5" />
+            </a>
+            <a 
+              href="tel:(732) 351-8653" 
+              className="w-10 h-10 bg-gold text-black flex items-center justify-center rounded-sm hover:bg-gold/80 transition-smooth"
+            >
+              <Phone className="w-5 h-5" />
+            </a>
+          </div>
+
+          {/* Copyright */}
+          <div className="text-center mt-6 pt-4 border-t border-white/10">
+            <p className="text-white/60 text-sm">
+              2024 | All Rights Reserved - Axo Floor
+            </p>
+          </div>
         </div>
       </div>
     </footer>
