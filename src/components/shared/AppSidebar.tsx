@@ -36,23 +36,30 @@ export function AppSidebar() {
   const location = useLocation();
   const [servicesOpen, setServicesOpen] = useState(false);
 
+  // Debug log para verificar renderização dupla
+  console.log("AppSidebar rendering");
+
   const isActive = (path: string) => location.pathname === path;
   const hasActiveService = services.some(service => isActive(service.href));
 
   const closeSidebar = () => setOpenMobile(false);
 
   return (
-    <Sidebar className="lg:hidden w-80 bg-black border-r border-white/10">
-      <SidebarHeader className="bg-black border-b border-white/10 p-4">
+    <Sidebar className="lg:hidden w-80 bg-black border-r border-white/10" key="mobile-sidebar">
+      <SidebarHeader className="bg-black border-b border-white/10 p-4" key="sidebar-header">
         <div className="flex items-center justify-between">
-          <Link to="/" onClick={closeSidebar} className="flex items-center">
-            <img src={axoLogo} alt="AXO Floors" className="h-10 w-auto" />
+          <Link to="/" onClick={closeSidebar} className="flex items-center" key="logo-link">
+            <div className="text-3xl font-heading font-bold text-white">
+              <span className="text-gold">•</span>AXO<span className="text-gold">•</span>
+              <div className="text-xs font-medium tracking-[0.2em] text-white -mt-1">FLOORS</div>
+            </div>
           </Link>
           <Button
             variant="ghost"
             size="sm"
             onClick={closeSidebar}
             className="text-white hover:bg-white/10 p-2"
+            key="close-button"
           >
             <X className="h-5 w-5" />
           </Button>
