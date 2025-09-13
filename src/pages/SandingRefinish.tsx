@@ -19,23 +19,18 @@ const SandingRefinish = () => {
 
   const processSteps = [
     {
-      title: "Assessment & Preparation",
-      description: "We evaluate your floors and prepare the space for refinishing",
-      icon: RefreshCw
-    },
-    {
-      title: "Professional Sanding",
-      description: "Dust-free sanding removes old finish and surface imperfections", 
+      title: "Step 1: Sanding",
+      description: "We sand your floors to remove old finishes, stains, scratches, chips and any other imperfections.",
       icon: Zap
     },
     {
-      title: "Staining & Sealing",
-      description: "Apply your chosen stain color and protective finish coats",
+      title: "Step 2: Staining",
+      description: "We can preserve the wood's natural color, or you may choose any number of stains to enhance the color and charm.",
       icon: Sparkles
     },
     {
-      title: "Final Inspection",
-      description: "Quality check and curing time for perfect results",
+      title: "Step 3: Finishing",
+      description: "We protect & beautify your floors with three coats of Bona or Loba finish with a matte, satin, or gloss sheen.",
       icon: CheckCircle
     }
   ];
@@ -63,98 +58,78 @@ const SandingRefinish = () => {
       <Header />
       
       <Hero
-        title="Professional Floor Sanding & Refinishing"
-        subtitle="Restore Your Floors to Their Original Glory"
-        description="Bring new life to your existing hardwood floors with our expert sanding and refinishing services. We use dust-free systems and premium finishes to deliver exceptional results."
+        title="Tired of your worn-out floors?"
+        subtitle="Don't worry, we have the solution!"
+        description="It's common to face issues with worn-out floors over time, but that won't be a problem anymore with our specialized team by your side."
         image={sandingHero}
       />
 
       {/* Benefits Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-grey-dark">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
-                Transform Your <span className="text-gradient-gold">Existing Floors</span>
-              </h2>
-              <p className="text-lg text-grey mb-8 leading-relaxed">
-                Don't replace - refinish! Our professional sanding and refinishing service can make your old floors look brand new at a fraction of the cost of replacement.
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-gold flex-shrink-0" />
-                    <span className="text-grey">{benefit}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-gold/10 p-6 rounded-lg mb-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <Clock className="w-6 h-6 text-gold" />
-                  <h3 className="font-heading font-semibold text-navy">Quick Turnaround</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+              <CardContent className="p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
+                  <Zap className="w-8 h-8 text-gold" />
                 </div>
-                <p className="text-grey">Most projects completed in 2-3 days with minimal disruption to your daily routine.</p>
-              </div>
-
-              <Button asChild className="gold-gradient hover:scale-105 transition-bounce">
-                <Link to="/contact" className="flex items-center gap-2">
-                  Get Free Assessment
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <div className="bg-grey-light p-6 rounded-lg text-center">
-                  <h3 className="text-2xl font-bold text-navy mb-2">70%</h3>
-                  <p className="text-grey text-sm">Cost savings vs. replacement</p>
+                <h3 className="text-xl font-heading font-semibold text-white mb-2">Durability</h3>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+              <CardContent className="p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
+                  <RefreshCw className="w-8 h-8 text-gold" />
                 </div>
-                <div className="bg-grey-light p-6 rounded-lg text-center">
-                  <h3 className="text-2xl font-bold text-navy mb-2">100%</h3>
-                  <p className="text-grey text-sm">Dust-free process</p>
+                <h3 className="text-xl font-heading font-semibold text-white mb-2">Increase Home Value</h3>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+              <CardContent className="p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
+                  <Clock className="w-8 h-8 text-gold" />
                 </div>
-              </div>
-              <div className="space-y-6 pt-12">
-                <div className="bg-grey-light p-6 rounded-lg text-center">
-                  <h3 className="text-2xl font-bold text-navy mb-2">2-3</h3>
-                  <p className="text-grey text-sm">Days typical completion</p>
+                <h3 className="text-xl font-heading font-semibold text-white mb-2">Savings</h3>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+              <CardContent className="p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
+                  <CheckCircle className="w-8 h-8 text-gold" />
                 </div>
-                <div className="bg-grey-light p-6 rounded-lg text-center">
-                  <h3 className="text-2xl font-bold text-navy mb-2">15+</h3>
-                  <p className="text-grey text-sm">Years added floor life</p>
-                </div>
-              </div>
-            </div>
+                <h3 className="text-xl font-heading font-semibold text-white mb-2">Certified Safety</h3>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Process Section */}
-      <section className="py-20 bg-grey-light">
+      <section className="py-20 bg-grey-dark">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold font-heading text-white mb-6">
               Our Refinishing Process
             </h2>
-            <p className="text-lg text-grey max-w-3xl mx-auto">
+            <p className="text-lg text-white/80 max-w-3xl mx-auto">
               We use state-of-the-art equipment and proven techniques to deliver flawless results every time.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {processSteps.map((step, index) => (
-              <Card key={index} className="text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
-                <CardContent className="p-6">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/10 rounded-full mb-4 group-hover:bg-gold group-hover:scale-110 transition-bounce">
-                    <step.icon className="w-8 h-8 text-gold group-hover:text-white" />
+              <Card key={index} className="bg-card-dark border-white/10 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
+                <CardContent className="p-8">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gold rounded-full mb-6 group-hover:scale-110 transition-bounce">
+                    <step.icon className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-xl font-heading font-semibold text-navy mb-3 group-hover:text-gold transition-smooth">
+                  <h3 className="text-2xl font-heading font-bold text-gold mb-4">
                     {step.title}
                   </h3>
-                  <p className="text-grey leading-relaxed">
+                  <p className="text-white/80 leading-relaxed text-lg">
                     {step.description}
                   </p>
                 </CardContent>
