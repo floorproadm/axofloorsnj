@@ -26,19 +26,21 @@ const Header = () => {
   return (
     <>
       {/* Top Contact Bar */}
-      <div className="bg-gold text-navy py-2 px-4">
-        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center text-sm font-medium">
-          <div className="flex items-center gap-4 mb-2 sm:mb-0">
-            <a href="mailto:contact@axofloorsnj.com" className="flex items-center gap-1 hover:opacity-80 transition-smooth">
+      <div className="bg-gold text-navy py-3 px-4">
+        <div className="container mx-auto flex flex-col sm:flex-row justify-center sm:justify-between items-center text-sm font-semibold">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 mb-2 sm:mb-0">
+            <a href="mailto:contact@axofloorsnj.com" className="flex items-center gap-2 hover:opacity-80 transition-smooth">
               <Mail className="h-4 w-4" />
               contact@axofloorsnj.com
             </a>
-            <a href="tel:(732) 351-8653" className="flex items-center gap-1 hover:opacity-80 transition-smooth">
+            <a href="tel:(732) 351-8653" className="flex items-center gap-2 hover:opacity-80 transition-smooth">
               <Phone className="h-4 w-4" />
               (732) 351-8653
             </a>
           </div>
-          <div className="text-navy font-semibold">35+ Google Reviews ⭐⭐⭐⭐⭐</div>
+          <div className="text-navy font-bold flex items-center gap-1">
+            35+ Google Reviews ⭐⭐⭐⭐⭐
+          </div>
         </div>
       </div>
 
