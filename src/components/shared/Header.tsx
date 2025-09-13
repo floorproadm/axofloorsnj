@@ -28,7 +28,7 @@ const Header = () => {
       {/* Top Contact Bar */}
       <div className="bg-gold text-black py-3 px-4">
         <div className="container mx-auto flex justify-between items-center">
-          <a href="tel:(732) 351-8653" className="flex items-center gap-2 hover:opacity-80 transition-smooth font-semibold">
+          <a href="sms:(732) 351-8653?body=Hi! I found your website and I'm interested in getting a quote for flooring services. Please contact me back. (Message from yellow header bar)" className="flex items-center gap-2 hover:opacity-80 transition-smooth font-semibold">
             <Phone className="h-4 w-4" />
             (732) 351-8653
           </a>
