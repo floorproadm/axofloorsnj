@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Menu, Phone, Mail, ChevronDown } from "lucide-react";
+import { Menu, Phone, Mail, ChevronDown, Facebook, Instagram } from "lucide-react";
 import axoLogo from "@/assets/axo-logo.png";
 import { useState } from "react";
 
@@ -26,20 +26,25 @@ const Header = () => {
   return (
     <>
       {/* Top Contact Bar */}
-      <div className="bg-gold text-navy py-3 px-4">
-        <div className="container mx-auto flex flex-col sm:flex-row justify-center sm:justify-between items-center text-sm font-semibold">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 mb-2 sm:mb-0">
-            <a href="mailto:contact@axofloorsnj.com" className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-smooth">
-              <Mail className="h-4 w-4" />
-              contact@axofloorsnj.com
+      <div className="bg-gold text-black py-3 px-4">
+        <div className="container mx-auto flex justify-between items-center">
+          <a href="tel:(732) 351-8653" className="flex items-center gap-2 hover:opacity-80 transition-smooth font-semibold">
+            <Phone className="h-4 w-4" />
+            (732) 351-8653
+          </a>
+          <div className="flex items-center gap-2">
+            <a 
+              href="#" 
+              className="w-8 h-8 bg-black text-gold flex items-center justify-center rounded hover:bg-black/80 transition-smooth"
+            >
+              <Facebook className="w-4 h-4" />
             </a>
-            <a href="tel:(732) 351-8653" className="flex items-center gap-2 hover:opacity-80 transition-smooth">
-              <Phone className="h-4 w-4" />
-              (732) 351-8653
+            <a 
+              href="#" 
+              className="w-8 h-8 bg-black text-gold flex items-center justify-center rounded hover:bg-black/80 transition-smooth"
+            >
+              <Instagram className="w-4 h-4" />
             </a>
-          </div>
-          <div className="hidden sm:flex text-navy font-bold items-center gap-1">
-            35+ Google Reviews ⭐⭐⭐⭐⭐
           </div>
         </div>
       </div>
