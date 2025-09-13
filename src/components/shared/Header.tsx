@@ -1,20 +1,26 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Menu, Phone, Mail } from "lucide-react";
+import { Menu, Phone, Mail, ChevronDown } from "lucide-react";
 import axoLogo from "@/assets/axo-logo.png";
+import { useState } from "react";
 
 const Header = () => {
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
 
   const navigation = [
-    { name: "Home", href: "/" },
+    { name: "Services", href: "#", hasDropdown: true },
+    { name: "Contact", href: "/contact" },
+    { name: "About", href: "/about" },
+    { name: "Gallery", href: "/gallery" },
+  ];
+
+  const services = [
     { name: "Hardwood Flooring", href: "/hardwood-flooring" },
     { name: "Sanding & Refinish", href: "/sanding-and-refinish" },
-    { name: "Vinyl Plank", href: "/vinyl-plank-flooring" },
+    { name: "Vinyl Plank Flooring", href: "/vinyl-plank-flooring" },
     { name: "Staircase", href: "/staircase" },
     { name: "Base Boards", href: "/base-boards" },
-    { name: "Gallery", href: "/gallery" },
-    { name: "Contact", href: "/contact" },
   ];
 
   return (
@@ -50,27 +56,49 @@ const Header = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="text-white hover:text-gold font-medium transition-smooth"
-                >
-                  {item.name}
-                </Link>
+            <nav className="hidden lg:flex items-center">
+              {navigation.map((item, index) => (
+                <div key={item.name} className="flex items-center">
+                  {item.hasDropdown ? (
+                    <div 
+                      className="relative"
+                      onMouseEnter={() => setIsServicesOpen(true)}
+                      onMouseLeave={() => setIsServicesOpen(false)}
+                    >
+                      <button className="flex items-center gap-1 text-white hover:text-gold font-medium transition-smooth">
+                        {item.name}
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                      {isServicesOpen && (
+                        <div className="absolute top-full left-0 mt-2 w-48 bg-black border border-white/10 rounded-lg shadow-elegant z-50">
+                          <div className="py-2">
+                            {services.map((service) => (
+                              <Link
+                                key={service.name}
+                                to={service.href}
+                                className="block px-4 py-2 text-white hover:text-gold hover:bg-white/5 transition-smooth text-sm"
+                              >
+                                {service.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className="text-white hover:text-gold font-medium transition-smooth"
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                  {index < navigation.length - 1 && (
+                    <span className="text-gold mx-4">|</span>
+                  )}
+                </div>
               ))}
             </nav>
-
-            {/* Desktop CTA */}
-            <div className="hidden lg:flex items-center gap-4">
-              <Button variant="outline" asChild className="border-white text-white hover:bg-white hover:text-black">
-                <Link to="/contact">Get Quote</Link>
-              </Button>
-              <Button asChild className="gold-gradient">
-                <a href="tel:(732) 351-8653">Call Now</a>
-              </Button>
-            </div>
 
             {/* Mobile Menu Trigger */}
             <SidebarTrigger className="lg:hidden text-white hover:text-gold">
