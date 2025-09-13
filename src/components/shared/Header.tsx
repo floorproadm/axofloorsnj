@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Phone, Mail } from "lucide-react";
+import axoLogo from "@/assets/axo-logo.png";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,10 +44,11 @@ const Header = () => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center">
-              <div className="text-2xl font-heading font-bold text-navy">
-                •AXO•
-                <span className="block text-sm font-medium tracking-wider">FLOORS</span>
-              </div>
+              <img 
+                src={axoLogo} 
+                alt="AXO Floors" 
+                className="h-12 w-auto"
+              />
             </Link>
 
             {/* Desktop Navigation */}
