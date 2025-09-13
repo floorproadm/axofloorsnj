@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, Facebook, Instagram } from "lucide-react";
-import woodyMascot from "@/assets/woody-mascot.png";
 
 const Footer = () => {
   const navigationLinks = [

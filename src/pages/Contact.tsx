@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Phone, Mail, MapPin, Clock, Star, ArrowRight, Send } from "lucide-react";
-import woodyMascot from "@/assets/woody-mascot.png";
 
 const Contact = () => {
   const services = [
@@ -51,9 +50,6 @@ const Contact = () => {
       
       {/* Hero Section */}
       <section className="py-20 navy-gradient text-white relative overflow-hidden">
-        <div className="absolute top-10 right-10 opacity-20">
-          <img src={woodyMascot} alt="Woody" className="w-32 h-32" />
-        </div>
         
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">

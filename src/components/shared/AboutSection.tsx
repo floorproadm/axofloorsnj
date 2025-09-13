@@ -2,7 +2,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Award, Users, Clock } from "lucide-react";
-import woodyMascot from "@/assets/woody-mascot.png";
 
 const AboutSection = () => {
   const stats = [
@@ -81,10 +80,6 @@ const AboutSection = () => {
                     </p>
                   </div>
 
-                  {/* Woody mascot */}
-                  <div className="absolute bottom-4 right-4">
-                    <img src={woodyMascot} alt="Woody Mascot" className="w-16 h-16 opacity-80" />
-                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -10,7 +10,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
-import woodyMascot from "@/assets/woody-mascot.png";
 
 const Index = () => {
   const services = [
@@ -107,10 +106,6 @@ const Index = () => {
 
       {/* Services Section - Mobile-First Enhanced */}
       <section className="py-12 sm:py-16 lg:py-20 bg-background relative overflow-hidden">
-        {/* Woody mascot floating */}
-        <div className="absolute top-6 right-4 sm:top-10 sm:right-10 opacity-20 animate-bounce">
-          <img src={woodyMascot} alt="Woody" className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24" />
-        </div>
         
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
@@ -259,9 +254,6 @@ const Index = () => {
 
       {/* Final CTA Section - Mobile-First */}
       <section className="py-12 sm:py-16 lg:py-20 gold-gradient text-navy relative overflow-hidden">
-        <div className="absolute bottom-4 right-4">
-          <img src={woodyMascot} alt="Woody" className="w-16 h-16 sm:w-20 sm:h-20 opacity-80" />
-        </div>
         
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4 sm:mb-6 px-2">
