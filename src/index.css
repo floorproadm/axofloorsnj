@@ -121,6 +121,16 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
   }
+  
+  /* Scrollbar Hide Utility for Mobile */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer components {
@@ -158,5 +168,56 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  
+  /* Mobile-First Utilities */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .btn-mobile {
+    @apply min-h-[48px] px-4 sm:px-6 py-3 text-sm sm:text-base;
+  }
+  
+  /* Text Utilities for Mobile-First */
+  .text-mobile-xs {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-mobile-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-mobile-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-mobile-lg {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-mobile-xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .text-mobile-2xl {
+    @apply text-2xl sm:text-3xl md:text-4xl;
+  }
+  
+  .text-mobile-3xl {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
+  }
+  
+  /* Mobile-First Spacing */
+  .spacing-mobile-sm {
+    @apply py-8 sm:py-12 lg:py-16;
+  }
+  
+  .spacing-mobile-md {
+    @apply py-12 sm:py-16 lg:py-20;
+  }
+  
+  .spacing-mobile-lg {
+    @apply py-16 sm:py-20 lg:py-24;
   }
 }

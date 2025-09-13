@@ -55,64 +55,66 @@ const HardwoodFlooring = () => {
 
       {/* Benefits Section */}
       <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
-                Why Choose Our <span className="text-gradient-gold">Hardwood Flooring?</span>
-              </h2>
-              <p className="text-lg text-grey mb-8 leading-relaxed">
-                Our premium hardwood flooring combines traditional craftsmanship with modern installation techniques to deliver floors that will last a lifetime.
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-gold flex-shrink-0" />
-                    <span className="text-grey">{benefit}</span>
-                  </div>
-                ))}
-              </div>
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+          <div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2 sm:px-0">
+              Why Choose Our <span className="text-gradient-gold">Hardwood Flooring?</span>
+            </h2>
+            <p className="text-base sm:text-lg text-grey mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0">
+              Our premium hardwood flooring combines traditional craftsmanship with modern installation techniques to deliver floors that will last a lifetime.
+            </p>
+            
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
+              {benefits.map((benefit, index) => (
+                <div key={index} className="flex items-start gap-3">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gold flex-shrink-0 mt-0.5" />
+                  <span className="text-grey text-sm sm:text-base leading-relaxed">{benefit}</span>
+                </div>
+              ))}
+            </div>
 
-              <Button asChild className="gold-gradient hover:scale-105 transition-bounce">
-                <Link to="/contact" className="flex items-center gap-2">
+            <div className="px-2 sm:px-0">
+              <Button asChild className="gold-gradient hover:scale-105 transition-bounce w-full sm:w-auto min-h-[48px]">
+                <Link to="/contact" className="flex items-center justify-center gap-2">
                   Get Free Quote
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
               </Button>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              <div className="flex items-center gap-4 p-6 bg-grey-light rounded-lg">
-                <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-gold" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-semibold text-navy">Premium Quality Materials</h3>
-                  <p className="text-grey text-sm">Only the finest hardwood species from trusted suppliers</p>
-                </div>
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 mt-8 lg:mt-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-grey-light rounded-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gold/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-gold" />
               </div>
-              <div className="flex items-center gap-4 p-6 bg-grey-light rounded-lg">
-                <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-gold" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-semibold text-navy">Lifetime Warranty</h3>
-                  <p className="text-grey text-sm">Comprehensive warranty on installation and materials</p>
-                </div>
+              <div>
+                <h3 className="font-heading font-semibold text-navy text-base sm:text-lg">Premium Quality Materials</h3>
+                <p className="text-grey text-sm leading-relaxed">Only the finest hardwood species from trusted suppliers</p>
               </div>
-              <div className="flex items-center gap-4 p-6 bg-grey-light rounded-lg">
-                <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-gold" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-semibold text-navy">Expert Installation</h3>
-                  <p className="text-grey text-sm">Professional team with years of experience</p>
-                </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-grey-light rounded-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gold/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-gold" />
+              </div>
+              <div>
+                <h3 className="font-heading font-semibold text-navy text-base sm:text-lg">Lifetime Warranty</h3>
+                <p className="text-grey text-sm leading-relaxed">Comprehensive warranty on installation and materials</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-grey-light rounded-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gold/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-gold" />
+              </div>
+              <div>
+                <h3 className="font-heading font-semibold text-navy text-base sm:text-lg">Expert Installation</h3>
+                <p className="text-grey text-sm leading-relaxed">Professional team with years of experience</p>
               </div>
             </div>
           </div>
         </div>
+      </div>
       </section>
 
       {/* Wood Types Section */}

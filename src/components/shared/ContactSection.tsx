@@ -49,29 +49,29 @@ const ContactSection = () => {
   };
 
   return (
-    <section className="py-20 bg-grey-light">
+    <section className="py-12 sm:py-16 lg:py-20 bg-grey-light">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2">
             Get Your <span className="text-gradient-gold">Free Quote!</span>
           </h2>
-          <p className="text-lg text-grey max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-grey max-w-2xl mx-auto px-2">
             Get a quote on us and we can explain everything about our services.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Contact Info */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Contact Info - Stack on mobile */}
+          <div className="space-y-4 sm:space-y-6 lg:col-span-1">
             <Card className="hover:shadow-elegant transition-smooth">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gold/10 rounded-full">
-                    <Phone className="w-6 h-6 text-gold" />
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gold/10 rounded-full">
+                    <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-gold" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-semibold text-navy mb-1">Phone</h3>
-                    <a href="tel:(732) 351-8653" className="text-grey hover:text-gold transition-smooth">
+                    <h3 className="font-heading font-semibold text-navy mb-1 text-sm sm:text-base">Phone</h3>
+                    <a href="tel:(732) 351-8653" className="text-grey hover:text-gold transition-smooth text-sm sm:text-base">
                       (732) 351-8653
                     </a>
                   </div>
@@ -80,60 +80,44 @@ const ContactSection = () => {
             </Card>
 
             <Card className="hover:shadow-elegant transition-smooth">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gold/10 rounded-full">
-                    <Mail className="w-6 h-6 text-gold" />
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gold/10 rounded-full flex-shrink-0">
+                    <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-gold" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-semibold text-navy mb-1">Email</h3>
-                    <a href="mailto:contact@axofloorsnj.com" className="text-grey hover:text-gold transition-smooth">
+                    <h3 className="font-heading font-semibold text-navy mb-1 text-sm sm:text-base">Email</h3>
+                    <a href="mailto:contact@axofloorsnj.com" className="text-grey hover:text-gold transition-smooth text-xs sm:text-sm break-all">
                       contact@axofloorsnj.com
                     </a>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="hover:shadow-elegant transition-smooth">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gold/10 rounded-full">
-                    <MapPin className="w-6 h-6 text-gold" />
-                  </div>
-                  <div>
-                    <h3 className="font-heading font-semibold text-navy mb-1">Location</h3>
-                    <p className="text-grey">
-                      Ocean, NJ 07755
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
-          {/* Contact Form */}
+          {/* Contact Form - Full width on mobile */}
           <div className="lg:col-span-2">
             <Card className="shadow-elegant">
-              <CardHeader>
-                <CardTitle className="text-2xl font-heading text-navy">Request Your Free Quote</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl lg:text-2xl font-heading text-navy">Request Your Free Quote</CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="p-4 sm:p-6">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
-                      <Label htmlFor="name">Name *</Label>
+                      <Label htmlFor="name" className="text-sm">Name *</Label>
                       <Input
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="mt-1"
+                        className="mt-1 min-h-[44px]"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email" className="text-sm">Email *</Label>
                       <Input
                         id="email"
                         name="email"
@@ -141,55 +125,25 @@ const ContactSection = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="mt-1"
+                        className="mt-1 min-h-[44px]"
                       />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="service">Service Interest</Label>
-                      <Select onValueChange={handleServiceChange} value={formData.service}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select a service" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="hardwood">Hardwood Flooring</SelectItem>
-                          <SelectItem value="refinishing">Sanding & Refinishing</SelectItem>
-                          <SelectItem value="vinyl">Vinyl Plank Flooring</SelectItem>
-                          <SelectItem value="staircase">Staircase Renovation</SelectItem>
-                          <SelectItem value="baseboards">Base Boards</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="message">Project Details</Label>
+                    <Label htmlFor="message" className="text-sm">Project Details</Label>
                     <Textarea
                       id="message"
                       name="message"
                       value={formData.message}
                       onChange={handleInputChange}
                       placeholder="Tell us about your project..."
-                      className="mt-1 min-h-[120px]"
+                      className="mt-1 min-h-[100px] sm:min-h-[120px]"
                     />
                   </div>
 
-                  <Button type="submit" className="w-full gold-gradient hover:scale-105 transition-bounce text-lg py-6">
-                    <Send className="w-5 h-5 mr-2" />
+                  <Button type="submit" className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-6 min-h-[48px]">
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Send Quote Request
                   </Button>
                 </form>

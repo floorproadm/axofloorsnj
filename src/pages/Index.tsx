@@ -105,50 +105,50 @@ const Index = () => {
         showReviews={true}
       />
 
-      {/* Services Section - Enhanced */}
-      <section className="py-20 bg-background relative overflow-hidden">
+      {/* Services Section - Mobile-First Enhanced */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-background relative overflow-hidden">
         {/* Woody mascot floating */}
-        <div className="absolute top-10 right-10 opacity-20 animate-bounce">
-          <img src={woodyMascot} alt="Woody" className="w-24 h-24" />
+        <div className="absolute top-6 right-4 sm:top-10 sm:right-10 opacity-20 animate-bounce">
+          <img src={woodyMascot} alt="Woody" className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24" />
         </div>
         
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-gold/10 rounded-full px-6 py-2 mb-6">
-              <Sparkles className="w-5 h-5 text-gold" />
-              <span className="text-gold font-medium">Premium Services</span>
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <div className="inline-flex items-center gap-2 bg-gold/10 rounded-full px-4 sm:px-6 py-2 mb-4 sm:mb-6">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
+              <span className="text-gold font-medium text-sm sm:text-base">Premium Services</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2">
               We have all the solutions you need to <span className="text-gradient-gold">renew your space!</span>
             </h2>
-            <p className="text-lg text-grey max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg text-grey max-w-3xl mx-auto leading-relaxed px-2">
               We offer a wide range of services, from installation to finishing touches, guaranteeing that you achieve the modern, sophisticated, and elegant aesthetics you desire for your home.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {services.map((service, index) => (
               <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2 border-0 shadow-elegant">
-                <CardContent className="p-8 text-center">
-                  <div className="text-4xl mb-4">{service.icon}</div>
-                  <h3 className="text-xl font-heading font-semibold text-navy mb-3 group-hover:text-gold transition-smooth">
+                <CardContent className="p-6 sm:p-8 text-center">
+                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">{service.icon}</div>
+                  <h3 className="text-lg sm:text-xl font-heading font-semibold text-navy mb-2 sm:mb-3 group-hover:text-gold transition-smooth">
                     {service.title}
                   </h3>
-                  <p className="text-grey mb-6 leading-relaxed">
+                  <p className="text-grey mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
                     {service.description}
                   </p>
-                  <div className="space-y-2 mb-6">
+                  <div className="space-y-1 sm:space-y-2 mb-4 sm:mb-6">
                     {service.features.map((feature, i) => (
-                      <div key={i} className="flex items-center justify-center gap-2 text-sm text-grey">
-                        <CheckCircle className="w-4 h-4 text-gold" />
+                      <div key={i} className="flex items-center justify-center gap-2 text-xs sm:text-sm text-grey">
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-gold" />
                         {feature}
                       </div>
                     ))}
                   </div>
-                  <Button asChild variant="outline" className="w-full group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-smooth">
+                  <Button asChild variant="outline" className="w-full group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-smooth min-h-[44px] text-sm sm:text-base">
                     <Link to={service.href} className="flex items-center justify-center gap-2">
                       Learn More
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Link>
                   </Button>
                 </CardContent>
@@ -158,32 +158,32 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Benefits Section - Enhanced */}
-      <section className="py-20 bg-grey-light">
+      {/* Benefits Section - Mobile-First Enhanced */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-grey-light">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2">
               Why Choose <span className="text-gradient-gold">AXO Floors?</span>
             </h2>
-            <p className="text-lg text-grey max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-grey max-w-2xl mx-auto px-2">
               Experience the difference that professional expertise and commitment to quality makes
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {benefits.map((benefit, index) => (
               <Card key={index} className="group text-center hover:shadow-gold transition-smooth border-0 shadow-elegant">
-                <CardContent className="p-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/10 rounded-full mb-4 group-hover:bg-gold group-hover:scale-110 transition-bounce">
-                    <benefit.icon className="w-8 h-8 text-gold group-hover:text-white" />
+                <CardContent className="p-6 sm:p-8">
+                  <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gold/10 rounded-full mb-3 sm:mb-4 group-hover:bg-gold group-hover:scale-110 transition-bounce">
+                    <benefit.icon className="w-6 h-6 sm:w-8 sm:h-8 text-gold group-hover:text-white" />
                   </div>
-                  <div className="text-2xl font-bold font-heading text-gold mb-2">
+                  <div className="text-lg sm:text-2xl font-bold font-heading text-gold mb-1 sm:mb-2">
                     {benefit.stat}
                   </div>
-                  <h3 className="text-xl font-heading font-semibold text-navy mb-3">
+                  <h3 className="text-base sm:text-xl font-heading font-semibold text-navy mb-2 sm:mb-3">
                     {benefit.title}
                   </h3>
-                  <p className="text-grey leading-relaxed">
+                  <p className="text-grey leading-relaxed text-sm sm:text-base">
                     {benefit.description}
                   </p>
                 </CardContent>
@@ -196,8 +196,8 @@ const Index = () => {
       {/* Portfolio Section */}
       <Portfolio />
 
-      {/* Testimonials Section - Enhanced */}
-      <section className="py-20 navy-gradient text-white relative overflow-hidden">
+      {/* Testimonials Section - Mobile-First Enhanced */}
+      <section className="py-12 sm:py-16 lg:py-20 navy-gradient text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="grid grid-cols-8 h-full">
             {[...Array(64)].map((_, i) => (
@@ -207,37 +207,37 @@ const Index = () => {
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-1 mb-4">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <div className="inline-flex items-center gap-1 mb-3 sm:mb-4">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 fill-gold text-gold" />
+                <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 fill-gold text-gold" />
               ))}
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4 sm:mb-6 px-2">
               See What Our <span className="text-gold">Customers</span> Are Saying
             </h2>
-            <p className="text-lg text-white/80 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-white/80 max-w-2xl mx-auto px-2">
               Don't just take our word for it - hear from satisfied homeowners across New Jersey
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-smooth">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-1 mb-4">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="flex items-center gap-1 mb-3 sm:mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-gold text-gold" />
+                      <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-gold text-gold" />
                     ))}
                   </div>
-                  <p className="text-white/90 mb-6 leading-relaxed text-lg">
+                  <p className="text-white/90 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base lg:text-lg">
                     "{testimonial.text}"
                   </p>
                   <div>
-                    <p className="text-gold font-semibold text-lg">
+                    <p className="text-gold font-semibold text-base sm:text-lg">
                       {testimonial.name}
                     </p>
-                    <p className="text-white/60 text-sm">
+                    <p className="text-white/60 text-xs sm:text-sm">
                       {testimonial.location}
                     </p>
                   </div>
@@ -257,28 +257,28 @@ const Index = () => {
       {/* Contact Form Section */}
       <ContactSection />
 
-      {/* Final CTA Section */}
-      <section className="py-20 gold-gradient text-navy relative overflow-hidden">
+      {/* Final CTA Section - Mobile-First */}
+      <section className="py-12 sm:py-16 lg:py-20 gold-gradient text-navy relative overflow-hidden">
         <div className="absolute bottom-4 right-4">
-          <img src={woodyMascot} alt="Woody" className="w-20 h-20 opacity-80" />
+          <img src={woodyMascot} alt="Woody" className="w-16 h-16 sm:w-20 sm:h-20 opacity-80" />
         </div>
         
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-4 sm:mb-6 px-2">
             Ready to Transform Your Floors?
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2">
             If you're looking for durability, quality, and comfort for your everyday life, trust AXO Floors to deliver excellence!
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white text-lg px-8 py-6 h-auto hover:scale-105 transition-bounce">
-              <Link to="/contact" className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+            <Button asChild variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] hover:scale-105 transition-bounce">
+              <Link to="/contact" className="flex items-center justify-center gap-2">
                 Get Free Quote
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
-            <Button asChild className="bg-navy text-white hover:bg-navy/90 text-lg px-8 py-6 h-auto hover:scale-105 transition-bounce">
-              <a href="tel:(732) 351-8653" className="flex items-center gap-2">
+            <Button asChild className="bg-navy text-white hover:bg-navy/90 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] hover:scale-105 transition-bounce">
+              <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
                 Call (732) 351-8653
               </a>
             </Button>
