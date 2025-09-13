@@ -29,7 +29,7 @@ const Header = () => {
       <div className="bg-gold text-navy py-3 px-4">
         <div className="container mx-auto flex flex-col sm:flex-row justify-center sm:justify-between items-center text-sm font-semibold">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 mb-2 sm:mb-0">
-            <a href="mailto:contact@axofloorsnj.com" className="flex items-center gap-2 hover:opacity-80 transition-smooth">
+            <a href="mailto:contact@axofloorsnj.com" className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-smooth">
               <Mail className="h-4 w-4" />
               contact@axofloorsnj.com
             </a>
@@ -38,7 +38,7 @@ const Header = () => {
               (732) 351-8653
             </a>
           </div>
-          <div className="text-navy font-bold flex items-center gap-1">
+          <div className="hidden sm:flex text-navy font-bold items-center gap-1">
             35+ Google Reviews ⭐⭐⭐⭐⭐
           </div>
         </div>
