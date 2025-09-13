@@ -1,42 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* AXO Floors Design System - Premium flooring brand identity */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* AXO Floors Brand Colors */
+    --navy-primary: 205 76% 12%; /* #0C1C2E - Main navy */
+    --navy-dark: 205 76% 8%; /* Darker navy for depth */
+    --gold-accent: 48 100% 58%; /* #FFC62A - Gold CTA/highlights */
+    --gold-warm: 42 95% 55%; /* Warmer gold variant */
+    --grey-secondary: 0 0% 29%; /* #4A4A4A - Secondary text */
+    --grey-light: 0 0% 96%; /* Light grey for backgrounds */
+    --white-pure: 0 0% 100%; /* Pure white */
+    
+    /* Design System Mapping */
+    --background: var(--white-pure);
+    --foreground: var(--navy-primary);
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: var(--white-pure);
+    --card-foreground: var(--navy-primary);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: var(--white-pure);
+    --popover-foreground: var(--navy-primary);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: var(--navy-primary);
+    --primary-foreground: var(--white-pure);
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--grey-light);
+    --secondary-foreground: var(--navy-primary);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: var(--grey-light);
+    --muted-foreground: var(--grey-secondary);
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: var(--gold-accent);
+    --accent-foreground: var(--navy-primary);
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: var(--white-pure);
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: var(--gold-accent);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* AXO Floors Gradients */
+    --gradient-navy: linear-gradient(135deg, hsl(var(--navy-primary)), hsl(var(--navy-dark)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--gold-accent)), hsl(var(--gold-warm)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--navy-dark) / 0.9), hsl(var(--navy-primary) / 0.8));
+    
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -5px hsl(var(--navy-primary) / 0.1);
+    --shadow-gold: 0 8px 25px -5px hsl(var(--gold-accent) / 0.3);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,41 +79,33 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: var(--navy-primary);
+    --foreground: var(--white-pure);
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: var(--navy-primary);
+    --card-foreground: var(--white-pure);
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: var(--navy-primary);
+    --popover-foreground: var(--white-pure);
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: var(--gold-accent);
+    --primary-foreground: var(--navy-primary);
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: var(--navy-dark);
+    --secondary-foreground: var(--white-pure);
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: var(--navy-dark);
+    --muted-foreground: var(--grey-light);
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: var(--gold-accent);
+    --accent-foreground: var(--navy-primary);
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: var(--white-pure);
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: var(--navy-dark);
+    --input: var(--navy-dark);
+    --ring: var(--gold-accent);
   }
 }
 
@@ -100,6 +115,48 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  /* AXO Floors Custom Components */
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+  
+  .gold-gradient {
+    background: var(--gradient-gold);
+  }
+  
+  .navy-gradient {
+    background: var(--gradient-navy);
+  }
+  
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+  
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+  
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+  
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
