@@ -39,7 +39,7 @@ const Header = () => {
       </div>
 
       {/* Main Header */}
-      <header className="bg-background border-b shadow-elegant sticky top-0 z-50">
+      <header className="bg-black border-b border-white/10 shadow-elegant sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -57,7 +57,7 @@ const Header = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="text-navy hover:text-gold font-medium transition-smooth"
+                  className="text-white hover:text-gold font-medium transition-smooth"
                 >
                   {item.name}
                 </Link>
@@ -66,7 +66,7 @@ const Header = () => {
 
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-4">
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="border-white text-white hover:bg-white hover:text-black">
                 <Link to="/contact">Get Quote</Link>
               </Button>
               <Button asChild className="gold-gradient">
@@ -87,7 +87,7 @@ const Header = () => {
                     <Link
                       key={item.name}
                       to={item.href}
-                      className="text-lg font-medium text-navy hover:text-gold transition-smooth"
+                      className="text-lg font-medium text-white hover:text-gold transition-smooth"
                       onClick={() => setIsOpen(false)}
                     >
                       {item.name}
