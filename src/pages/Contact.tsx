@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Phone, Mail, MapPin, Clock, Star, ArrowRight, Send } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Star, ArrowRight, Send, MessageSquare } from "lucide-react";
 
 const Contact = () => {
   const services = [
@@ -68,7 +68,7 @@ const Contact = () => {
             Ready to transform your floors? Contact AXO Floors for a free consultation and detailed quote. We're here to bring your flooring vision to life.
           </p>
           
-          <div className="flex items-center justify-center gap-6 text-white/60">
+          <div className="flex items-center justify-center gap-6 text-white/60 mb-8">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5" />
               <span>Free Estimates</span>
@@ -77,6 +77,21 @@ const Contact = () => {
               <Star className="w-5 h-5" />
               <span>Licensed & Insured</span>
             </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto font-bold text-black" style={{ minWidth: '200px' }}>
+              <a href="tel:(732) 351-8653" className="flex items-center gap-2 text-black">
+                <Phone className="w-5 h-5 text-black" />
+                Call Now for Free Quote
+              </a>
+            </Button>
+            <Button asChild variant="outline" className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-navy text-lg px-8 py-6 h-auto font-bold" style={{ minWidth: '200px' }}>
+              <a href="sms:(732) 351-8653?body=Hi! I'm interested in a free flooring quote from your website." className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Text Us Today
+              </a>
+            </Button>
           </div>
         </div>
       </section>
