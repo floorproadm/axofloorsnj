@@ -72,7 +72,7 @@ const FunnelPage = () => {
     },
     {
       question: "How long does it take?",
-      answer: "Most NJ projects finish in 3–5 days."
+      answer: "Most NJ projects finish in 2–5 days."
     },
     {
       question: "Will it last?",
