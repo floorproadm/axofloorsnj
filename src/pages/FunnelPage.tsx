@@ -111,14 +111,14 @@ const FunnelPage = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 sm:px-0">
-              <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg sm:text-xl px-8 sm:px-10 py-6 sm:py-7 h-auto min-h-[56px] text-black font-bold shadow-2xl">
-                <Link to="/contact" className="flex items-center justify-center gap-3 text-black">
+              <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
+                <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                   Get Free Estimate in 24h
-                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                 </Link>
               </Button>
-              <Button variant="outline" asChild className="border-2 border-white text-black bg-white hover:bg-white hover:text-black text-lg sm:text-xl px-8 sm:px-10 py-6 sm:py-7 h-auto min-h-[56px] font-bold shadow-xl">
-                <Link to="/gallery" className="flex items-center justify-center gap-3 text-black">
+              <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white hover:text-black text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
+                <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
                   See Transformations
                 </Link>
               </Button>
