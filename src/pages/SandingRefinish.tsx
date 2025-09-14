@@ -65,42 +65,54 @@ const SandingRefinish = () => {
       />
 
       {/* Benefits Section */}
-      <section className="py-20 bg-grey-dark">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+              Why Choose Our Service?
+            </h2>
+            <p className="text-lg text-grey max-w-3xl mx-auto">
+              Our floor refinishing service delivers exceptional results with proven benefits.
+            </p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+            <Card className="bg-white border-navy/10 text-center hover:shadow-gold transition-smooth hover:-translate-y-2">
               <CardContent className="p-8">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
                   <Zap className="w-8 h-8 text-gold" />
                 </div>
-                <h3 className="text-xl font-heading font-semibold text-white mb-2">Durability</h3>
+                <h3 className="text-xl font-heading font-semibold text-navy mb-4">Durability</h3>
+                <p className="text-grey text-sm">Long-lasting protection that stands the test of time</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+            <Card className="bg-white border-navy/10 text-center hover:shadow-gold transition-smooth hover:-translate-y-2">
               <CardContent className="p-8">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
                   <RefreshCw className="w-8 h-8 text-gold" />
                 </div>
-                <h3 className="text-xl font-heading font-semibold text-white mb-2">Increase Home Value</h3>
+                <h3 className="text-xl font-heading font-semibold text-navy mb-4">Increase Home Value</h3>
+                <p className="text-grey text-sm">Boost your property value with beautiful floors</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+            <Card className="bg-white border-navy/10 text-center hover:shadow-gold transition-smooth hover:-translate-y-2">
               <CardContent className="p-8">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
                   <Clock className="w-8 h-8 text-gold" />
                 </div>
-                <h3 className="text-xl font-heading font-semibold text-white mb-2">Savings</h3>
+                <h3 className="text-xl font-heading font-semibold text-navy mb-4">Savings</h3>
+                <p className="text-grey text-sm">Cost-effective alternative to floor replacement</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-card-dark border-white/10 text-center hover:bg-card-dark/80 transition-smooth">
+            <Card className="bg-white border-navy/10 text-center hover:shadow-gold transition-smooth hover:-translate-y-2">
               <CardContent className="p-8">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
                   <CheckCircle className="w-8 h-8 text-gold" />
                 </div>
-                <h3 className="text-xl font-heading font-semibold text-white mb-2">Certified Safety</h3>
+                <h3 className="text-xl font-heading font-semibold text-navy mb-4">Certified Safety</h3>
+                <p className="text-grey text-sm">Professional standards and safety protocols</p>
               </CardContent>
             </Card>
           </div>
@@ -108,28 +120,28 @@ const SandingRefinish = () => {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 bg-grey-dark">
+      <section className="py-20 navy-gradient">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold font-heading text-white mb-6">
               Our Refinishing Process
             </h2>
-            <p className="text-lg text-white/80 max-w-3xl mx-auto">
+            <p className="text-lg text-white/90 max-w-3xl mx-auto">
               We use state-of-the-art equipment and proven techniques to deliver flawless results every time.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {processSteps.map((step, index) => (
-              <Card key={index} className="bg-card-dark border-white/10 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
+              <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
                 <CardContent className="p-8">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-gold rounded-full mb-6 group-hover:scale-110 transition-bounce">
                     <step.icon className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-heading font-bold text-gold mb-4">
+                  <h3 className="text-2xl font-heading font-bold text-navy mb-4">
                     {step.title}
                   </h3>
-                  <p className="text-white/80 leading-relaxed text-lg">
+                  <p className="text-grey leading-relaxed text-lg">
                     {step.description}
                   </p>
                 </CardContent>
@@ -153,17 +165,17 @@ const SandingRefinish = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {finishOptions.map((finish, index) => (
-              <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-heading font-semibold text-navy mb-3 group-hover:text-gold transition-smooth">
+              <Card key={index} className="bg-white border-navy/10 group hover:shadow-gold transition-smooth hover:-translate-y-2">
+                <CardContent className="p-8">
+                  <h3 className="text-2xl font-heading font-bold text-navy mb-4 group-hover:text-gold transition-smooth">
                     {finish.name}
                   </h3>
-                  <p className="text-grey mb-4 leading-relaxed">
+                  <p className="text-grey mb-6 leading-relaxed text-lg">
                     {finish.description}
                   </p>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="w-4 h-4 text-gold" />
-                    <span className="text-gold font-medium">Best for: {finish.best}</span>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-gold" />
+                    <span className="text-gold font-semibold">Best for: {finish.best}</span>
                   </div>
                 </CardContent>
               </Card>
