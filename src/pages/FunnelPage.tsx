@@ -226,8 +226,8 @@ const FunnelPage = () => {
 
           <div className="text-center px-4">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] text-black">
-              <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
-                See More Transformations
+              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
+                Book Your Estimate Today
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               </Link>
             </Button>
@@ -267,8 +267,8 @@ const FunnelPage = () => {
 
           <div className="text-center px-4 flex justify-center">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 h-auto min-h-[48px] text-black">
-              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
-                Book Your Free Estimate Today
+              <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
+                See More Transformations
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               </Link>
             </Button>
