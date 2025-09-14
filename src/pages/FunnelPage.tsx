@@ -107,7 +107,7 @@ const FunnelPage = () => {
             </h1>
             
             <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/95 mb-8 sm:mb-10 leading-relaxed px-2 font-medium" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
-              Refinish your hardwood floors in 48 hours, save up to 40% vs replacement, and enjoy a 10-year guarantee—trusted by New Jersey homeowners.
+              Refinish your hardwood floors in 48 hours, save up to 40% vs replacement, and enjoy a 10-year guarantee.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 sm:px-0">
@@ -123,6 +123,10 @@ const FunnelPage = () => {
                 </Link>
               </Button>
             </div>
+            
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/95 mt-6 leading-relaxed px-2 font-medium" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
+              —trusted by New Jersey homeowners.
+            </p>
           </div>
         </div>
       </section>
