@@ -344,8 +344,8 @@ const FunnelPage = () => {
           <div className="px-4">
             <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-black hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold max-w-md mx-auto">
               <Link to="/contact" className="flex items-center justify-center gap-2 text-center">
-                <span className="whitespace-nowrap">Reserve My Spot Before</span>
-                <span className="whitespace-nowrap">Calendar Closes</span>
+                <span className="block sm:hidden">Reserve My Spot</span>
+                <span className="hidden sm:block">Reserve My Spot Before Calendar Closes</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               </Link>
             </Button>
