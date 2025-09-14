@@ -41,7 +41,7 @@ export function AppSidebar() {
   const closeSidebar = () => setOpenMobile(false);
 
   return (
-    <Sidebar className="lg:hidden w-80 bg-black border-r border-white/10">
+    <Sidebar className="w-80 bg-black border-r border-white/10">
       <SidebarHeader className="bg-black border-b border-white/10 p-4">
         <div className="flex items-center justify-between">
           <Link to="/" onClick={closeSidebar} className="flex items-center">

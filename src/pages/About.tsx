@@ -1,5 +1,6 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
+import { AppSidebar } from "@/components/shared/AppSidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Award, Users, Clock } from "lucide-react";
 
@@ -29,6 +30,7 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppSidebar />
       <Header />
       
       <main>
