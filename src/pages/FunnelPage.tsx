@@ -71,7 +71,7 @@ const FunnelPage = () => {
   const faqs = [
     {
       question: "How much cheaper is refinishing vs replacing?",
-      answer: "Refinishing saves up to 40% compared to full replacement. Where replacement costs $8-15/sq ft, refinishing costs just $3-8/sq ft."
+      answer: "Refinishing saves up to 40% compared to full replacement. Where replacement costs $6-15/sq ft, refinishing costs just $2-5/sq ft."
     },
     {
       question: "How long does it take?",
