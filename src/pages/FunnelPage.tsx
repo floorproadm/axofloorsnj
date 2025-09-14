@@ -102,23 +102,23 @@ const FunnelPage = () => {
 
         <div className="relative z-10 container mx-auto px-4 py-12 sm:py-20">
           <div className="max-w-4xl mx-auto text-center text-white">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-heading mb-4 sm:mb-6 leading-tight px-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-heading mb-6 sm:mb-8 leading-tight px-2" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8), 0 0 15px rgba(255,215,0,0.4)' }}>
               Tired of your worn-out floors? Don't waste thousands replacing them.
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed px-2">
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/95 mb-8 sm:mb-10 leading-relaxed px-2 font-medium" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
               Refinish your hardwood floors in 48 hours, save up to 40% vs replacement, and enjoy a 10-year guarantee—trusted by New Jersey homeowners.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
-              <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] text-black">
-                <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 sm:px-0">
+              <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg sm:text-xl px-8 sm:px-10 py-6 sm:py-7 h-auto min-h-[56px] text-black font-bold shadow-2xl">
+                <Link to="/contact" className="flex items-center justify-center gap-3 text-black">
                   Get Free Estimate in 24h
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
                 </Link>
               </Button>
-              <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white hover:text-black text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px]">
-                <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
+              <Button variant="outline" asChild className="border-2 border-white text-black bg-white hover:bg-white hover:text-black text-lg sm:text-xl px-8 sm:px-10 py-6 sm:py-7 h-auto min-h-[56px] font-bold shadow-xl">
+                <Link to="/gallery" className="flex items-center justify-center gap-3 text-black">
                   See Transformations
                 </Link>
               </Button>
