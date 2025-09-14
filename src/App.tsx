@@ -17,7 +17,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import FunnelPage from "./pages/FunnelPage";
 import NotFound from "./pages/NotFound";
-import FallPromoPage from "./campaigns/fall-promo";
+
 
 const queryClient = new QueryClient();
 
@@ -40,7 +40,7 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/funnel" element={<FunnelPage />} />
-          <Route path="/campaigns/fall-promo" element={<FallPromoPage />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
