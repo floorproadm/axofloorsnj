@@ -85,7 +85,7 @@ const FunnelPage = () => {
       <Header />
       
       {/* 1. Hero Section */}
-      <section className="relative min-h-[70vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src={sandingHero} 
@@ -95,25 +95,25 @@ const FunnelPage = () => {
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 py-20">
+        <div className="relative z-10 container mx-auto px-4 py-12 sm:py-20">
           <div className="max-w-4xl mx-auto text-center text-white">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-6 leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-heading mb-4 sm:mb-6 leading-tight px-2">
               Tired of your worn-out floors? Don't waste thousands replacing them.
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed px-2">
               Refinish your hardwood floors in 3–5 days, save up to 40% vs replacement, and enjoy a 10-year guarantee—trusted by New Jersey homeowners.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto text-black">
-                <Link to="/contact" className="flex items-center gap-2 text-black">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+              <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+                <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                   Get Free Estimate in 24h
-                  <ArrowRight className="w-5 h-5 text-black" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                 </Link>
               </Button>
-              <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white hover:text-black text-lg px-8 py-6 h-auto">
-                <Link to="/gallery" className="flex items-center gap-2 text-black">
+              <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white hover:text-black text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px]">
+                <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
                   See Transformations
                 </Link>
               </Button>
@@ -144,23 +144,23 @@ const FunnelPage = () => {
       {/* 3. Process Section */}
       <section className="py-20 navy-gradient">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-white mb-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4 sm:mb-6 px-4">
               Our 3-Step Process = Showroom Floors Without Replacing
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
             {processSteps.map((step, index) => (
               <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
-                <CardContent className="p-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gold rounded-full mb-6 group-hover:scale-110 transition-bounce">
-                    <step.icon className="w-10 h-10 text-white" />
+                <CardContent className="p-6 sm:p-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gold rounded-full mb-4 sm:mb-6 group-hover:scale-110 transition-bounce">
+                    <step.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-heading font-bold text-navy mb-4">
+                  <h3 className="text-xl sm:text-2xl font-heading font-bold text-navy mb-3 sm:mb-4">
                     {step.step}
                   </h3>
-                  <p className="text-grey leading-relaxed text-lg">
+                  <p className="text-grey leading-relaxed text-base sm:text-lg">
                     {step.description}
                   </p>
                 </CardContent>
@@ -168,11 +168,11 @@ const FunnelPage = () => {
             ))}
           </div>
 
-          <div className="text-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-10 py-6 h-auto text-black">
-              <Link to="/contact" className="flex items-center gap-2 text-black">
+          <div className="text-center px-4">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                 Get My Free Estimate
-                <ArrowRight className="w-5 h-5 text-black" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               </Link>
             </Button>
           </div>
@@ -182,22 +182,22 @@ const FunnelPage = () => {
       {/* 4. Social Proof Section */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-4">
               What New Jersey Homeowners Are Saying
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="bg-white border-navy/10 hover:shadow-gold transition-smooth">
-                <CardContent className="p-8">
+                <CardContent className="p-6 sm:p-8">
                   <div className="flex items-center gap-1 mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-gold text-gold" />
+                      <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-gold text-gold" />
                     ))}
                   </div>
-                  <p className="text-grey mb-6 text-lg leading-relaxed">
+                  <p className="text-grey mb-4 sm:mb-6 text-base sm:text-lg leading-relaxed">
                     "{testimonial.text}"
                   </p>
                   <p className="text-navy font-semibold">
@@ -208,11 +208,11 @@ const FunnelPage = () => {
             ))}
           </div>
 
-          <div className="text-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto text-black">
-              <Link to="/gallery" className="flex items-center gap-2 text-black">
+          <div className="text-center px-4">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+              <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
                 See More Transformations
-                <ArrowRight className="w-5 h-5 text-black" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               </Link>
             </Button>
           </div>
@@ -222,18 +222,18 @@ const FunnelPage = () => {
       {/* 5. Before & After Section */}
       <section className="py-20 navy-gradient">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-white mb-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4 sm:mb-6 px-4">
               From Scratched & Dull → To Stunning Hardwood
             </h2>
-            <p className="text-2xl text-gold font-semibold">Same floors. Different result.</p>
+            <p className="text-lg sm:text-xl md:text-2xl text-gold font-semibold">Same floors. Different result.</p>
           </div>
 
-          <div className="text-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-10 py-6 h-auto text-black">
-              <Link to="/contact" className="flex items-center gap-2 text-black">
+          <div className="text-center px-4">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                 Book Your Free Estimate Today
-                <ArrowRight className="w-5 h-5 text-black" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               </Link>
             </Button>
           </div>
@@ -243,21 +243,21 @@ const FunnelPage = () => {
       {/* 6. FAQ Section */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-4">
               Still wondering if refinishing is right for you?
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
             {faqs.map((faq, index) => (
               <Card key={index} className="bg-white border-navy/10">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-heading font-semibold text-navy mb-3">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-heading font-semibold text-navy mb-3">
                     {faq.question}
                   </h3>
-                  <p className="text-grey flex items-start gap-2">
-                    <span className="text-gold text-xl">👉</span>
+                  <p className="text-grey flex items-start gap-2 text-sm sm:text-base">
+                    <span className="text-gold text-lg sm:text-xl">👉</span>
                     {faq.answer}
                   </p>
                 </CardContent>
@@ -270,21 +270,21 @@ const FunnelPage = () => {
       {/* 7. Urgency Section */}
       <section className="py-20 bg-red-50 border-t-4 border-red-500">
         <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
-            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy">
               September Schedule 90% Full
             </h2>
           </div>
           
-          <p className="text-lg text-grey mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg text-grey mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
             Hardwood refinishing projects in New Jersey book fast. We only take a limited number of homes per month to guarantee top quality. Don't wait until next season.
           </p>
 
-          <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-black hover:scale-105 transition-bounce text-lg px-12 py-6 h-auto font-bold">
-            <Link to="/contact" className="flex items-center gap-2">
+          <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-black hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-12 py-4 sm:py-6 h-auto min-h-[48px] font-bold">
+            <Link to="/contact" className="flex items-center justify-center gap-2">
               Reserve My Spot Now
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
           </Button>
         </div>
@@ -293,20 +293,20 @@ const FunnelPage = () => {
       {/* 8. Footer Guarantee */}
       <section className="py-16 navy-gradient text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-heading mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading mb-4 sm:mb-6">
             Your floors. Our guarantee.
           </h2>
-          <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Family-owned, New Jersey trusted. Every floor comes with a 10-year guarantee. If you're not happy, we're not done.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a href="tel:(732) 351-8653" className="flex items-center gap-2 text-white hover:text-gold transition-smooth">
-              <Phone className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
+            <a href="tel:(732) 351-8653" className="flex items-center gap-2 text-white hover:text-gold transition-smooth text-base sm:text-lg">
+              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>(732) 351-8653</span>
             </a>
-            <a href="mailto:info@axofloors.com" className="flex items-center gap-2 text-white hover:text-gold transition-smooth">
-              <Mail className="w-5 h-5" />
+            <a href="mailto:info@axofloors.com" className="flex items-center gap-2 text-white hover:text-gold transition-smooth text-base sm:text-lg">
+              <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>info@axofloors.com</span>
             </a>
           </div>
