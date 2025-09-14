@@ -185,23 +185,27 @@ const SandingRefinish = () => {
       </section>
 
       {/* Before/After CTA */}
-      <section className="py-20 navy-gradient text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">
+      <section className="py-20 navy-gradient text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/80 to-navy/60"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6 animate-fade-in">
             See the Transformation
           </h2>
-          <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-white/90 mb-10 max-w-2xl mx-auto animate-fade-in">
             Ready to restore your floors to their former glory? Contact us today for a free assessment and quote.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto">
-              <Link to="/contact" className="flex items-center gap-2">
-                Get Free Assessment
-                <ArrowRight className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <Button asChild className="gold-gradient hover:scale-105 hover:shadow-gold transition-all duration-300 text-lg px-10 py-7 h-auto font-semibold group animate-scale-in">
+              <Link to="/contact" className="flex items-center gap-3">
+                <span>Get Free Assessment</span>
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
             </Button>
-            <Button variant="outline" asChild className="border-white text-white hover:bg-white hover:text-navy text-lg px-8 py-6 h-auto">
-              <Link to="/gallery">View Our Work</Link>
+            <Button variant="outline" asChild className="border-2 border-white/80 bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-navy hover:scale-105 transition-all duration-300 text-lg px-10 py-7 h-auto font-semibold animate-scale-in">
+              <Link to="/gallery" className="flex items-center gap-3">
+                <span>View Our Work</span>
+                <RefreshCw className="w-5 h-5" />
+              </Link>
             </Button>
           </div>
         </div>
