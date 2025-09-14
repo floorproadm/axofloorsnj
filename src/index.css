@@ -125,6 +125,8 @@
 
   body {
     @apply bg-background text-foreground font-body;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    min-width: 320px; /* Ensure minimum width */
   }
 
   h1, h2, h3, h4, h5, h6 {
