@@ -65,14 +65,14 @@ const Hero = ({
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px]">
-              <Link to="/contact" className="flex items-center justify-center gap-2">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                 {ctaPrimary}
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               </Link>
             </Button>
-            <Button variant="outline" asChild className="border-white text-white hover:bg-white hover:text-navy text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px]">
-              <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
+            <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white hover:text-black text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px]">
+              <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2 text-black">
                 {ctaSecondary}
               </a>
             </Button>
