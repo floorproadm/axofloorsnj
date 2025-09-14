@@ -16,7 +16,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="h-1 w-16 bg-gold mx-auto mb-6"></div>
           <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
-            Your satisfaction is our priority. Custom solutions and seamless service make your dream home a reality.
+            Family-owned, NJ trusted. Every floor comes with a 10-year guarantee. If you're not happy, we're not done.
           </p>
         </div>
       </div>
