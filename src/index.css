@@ -9,11 +9,10 @@
 @layer base {
   /* Debug styles for troubleshooting */
   html {
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    scroll-behavior: smooth;
   }
   
   body {
-    overflow-x: hidden; /* Prevent horizontal scroll */
     min-width: 320px; /* Ensure minimum width */
   }
   :root {
@@ -125,7 +124,6 @@
 
   body {
     @apply bg-background text-foreground font-body;
-    overflow-x: hidden; /* Prevent horizontal scroll */
     min-width: 320px; /* Ensure minimum width */
   }
 

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Menu, Phone, Mail, ChevronDown, Facebook, Instagram } from "lucide-react";
 import axoLogo from "@/assets/axo-logo.png";
 import { useState } from "react";
@@ -25,7 +25,7 @@ const Header = () => {
   ];
 
   return (
-    <>
+    <SidebarProvider>
       <AppSidebar />
       {/* Top Contact Bar */}
       <div className="bg-gold text-black py-3 px-4">
@@ -116,7 +116,7 @@ const Header = () => {
           </div>
         </div>
       </header>
-    </>
+    </SidebarProvider>
   );
 };
 
