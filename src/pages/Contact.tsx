@@ -61,12 +61,12 @@ const Contact = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto font-bold text-navy w-full sm:w-auto">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold w-full sm:w-auto">
               <a href="#quote-form" className="flex items-center justify-center gap-2">
                 Get My Free Estimate Now
               </a>
             </Button>
-            <Button asChild variant="outline" className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-navy text-lg px-8 py-6 h-auto font-bold w-full sm:w-auto">
+            <Button asChild variant="outline" className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-navy text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold w-full sm:w-auto">
               <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
                 <Phone className="w-5 h-5" />
                 Call (732) 351-8653
@@ -187,7 +187,7 @@ const Contact = () => {
                     </Select>
                   </div>
                   
-                  <Button className="w-full gold-gradient hover:scale-105 transition-bounce text-lg py-6 h-auto font-bold">
+                  <Button className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
                     Get My Free Estimate in 24h
                   </Button>
                   

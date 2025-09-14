@@ -263,13 +263,13 @@ const Index = () => {
             If you're looking for durability, quality, and comfort for your everyday life, trust AXO Floors to deliver excellence!
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
-            <Button asChild variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] hover:scale-105 transition-bounce">
+            <Button asChild variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] hover:scale-105 transition-bounce font-semibold">
               <Link to="/contact" className="flex items-center justify-center gap-2">
                 Get Free Quote
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
-            <Button asChild className="bg-navy text-white hover:bg-navy/90 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] hover:scale-105 transition-bounce">
+            <Button asChild className="bg-navy text-white hover:bg-navy/90 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] hover:scale-105 transition-bounce font-semibold">
               <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
                 Call (732) 351-8653
               </a>

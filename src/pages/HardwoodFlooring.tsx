@@ -194,13 +194,13 @@ const HardwoodFlooring = () => {
             Contact us today for a free consultation and quote. Let's transform your home with premium hardwood flooring.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
               <Link to="/contact" className="flex items-center gap-2">
                 Get Free Quote
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
-            <Button variant="outline" asChild className="border-white text-white hover:bg-white hover:text-navy text-lg px-8 py-6 h-auto">
+            <Button variant="outline" asChild className="border-white text-white hover:bg-white hover:text-navy text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
               <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
             </Button>
           </div>

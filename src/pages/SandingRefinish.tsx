@@ -195,13 +195,13 @@ const SandingRefinish = () => {
             Ready to restore your floors to their former glory? Contact us today for a free assessment and quote.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button asChild className="gold-gradient hover:scale-105 hover:shadow-gold transition-all duration-300 text-lg px-10 py-7 h-auto font-semibold group animate-scale-in">
+            <Button asChild className="gold-gradient hover:scale-105 hover:shadow-gold transition-all duration-300 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold group animate-scale-in">
               <Link to="/contact" className="flex items-center gap-3">
                 <span>Get Free Assessment</span>
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
             </Button>
-            <Button variant="outline" asChild className="border-2 border-white/80 bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-navy hover:scale-105 transition-all duration-300 text-lg px-10 py-7 h-auto font-semibold animate-scale-in">
+            <Button variant="outline" asChild className="border-2 border-white/80 bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-navy hover:scale-105 transition-all duration-300 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold animate-scale-in">
               <Link to="/gallery" className="flex items-center gap-3">
                 <span>View Our Work</span>
                 <RefreshCw className="w-5 h-5" />

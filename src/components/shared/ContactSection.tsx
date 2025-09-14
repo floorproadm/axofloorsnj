@@ -142,7 +142,7 @@ const ContactSection = () => {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-6 min-h-[48px]">
+                  <Button type="submit" className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 min-h-[48px] font-semibold">
                     <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Send Quote Request
                   </Button>
