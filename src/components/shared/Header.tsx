@@ -4,6 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Menu, Phone, Mail, ChevronDown, Facebook, Instagram } from "lucide-react";
 import axoLogo from "@/assets/axo-logo.png";
 import { useState } from "react";
+import { AppSidebar } from "@/components/shared/AppSidebar";
 
 const Header = () => {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
@@ -25,6 +26,7 @@ const Header = () => {
 
   return (
     <>
+      <AppSidebar />
       {/* Top Contact Bar */}
       <div className="bg-gold text-black py-3 px-4">
         <div className="container mx-auto flex justify-between items-center">

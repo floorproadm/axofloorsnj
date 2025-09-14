@@ -1,6 +1,5 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
-import { AppSidebar } from "@/components/shared/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -47,7 +46,6 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen">
-      <AppSidebar />
       <Header />
       
       {/* Hero Section */}

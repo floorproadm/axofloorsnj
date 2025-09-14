@@ -28,18 +28,20 @@ const App = () => {
       <BrowserRouter>
         <ScrollToTop />
         <SidebarProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/hardwood-flooring" element={<HardwoodFlooring />} />
-            <Route path="/sanding-and-refinish" element={<SandingRefinish />} />
-            <Route path="/vinyl-plank-flooring" element={<VinylPlankFlooring />} />
-            <Route path="/staircase" element={<Staircase />} />
-            <Route path="/base-boards" element={<BaseBoards />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <div className="min-h-screen w-full">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/hardwood-flooring" element={<HardwoodFlooring />} />
+              <Route path="/sanding-and-refinish" element={<SandingRefinish />} />
+              <Route path="/vinyl-plank-flooring" element={<VinylPlankFlooring />} />
+              <Route path="/staircase" element={<Staircase />} />
+              <Route path="/base-boards" element={<BaseBoards />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </SidebarProvider>
       </BrowserRouter>
     </TooltipProvider>

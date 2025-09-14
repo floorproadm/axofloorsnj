@@ -1,6 +1,5 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
-import { AppSidebar } from "@/components/shared/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -87,7 +86,6 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen">
-      <AppSidebar />
       <Header />
       
       {/* Hero Section */}

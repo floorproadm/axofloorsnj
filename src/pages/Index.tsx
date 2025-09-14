@@ -1,6 +1,5 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
-import { AppSidebar } from "@/components/shared/AppSidebar";
 import Hero from "@/components/shared/Hero";
 import Portfolio from "@/components/shared/Portfolio";
 import ServiceArea from "@/components/shared/ServiceArea";
@@ -94,7 +93,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <AppSidebar />
       <Header />
       
       {/* Enhanced Hero Section */}
