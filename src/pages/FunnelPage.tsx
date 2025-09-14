@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, Star, Shield, TrendingUp, DollarSign, Clock, Zap, Sparkles, AlertTriangle, Phone, Mail } from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
+import step1Image from "@/assets/step1-sanding.png";
 
 const FunnelPage = () => {
   const benefits = [
@@ -34,7 +35,7 @@ const FunnelPage = () => {
     {
       step: "Step 1: Sanding",
       description: "We remove scratches, stains, and imperfections.",
-      image: null // Will be replaced with GIF
+      image: step1Image
     },
     {
       step: "Step 2: Staining",
