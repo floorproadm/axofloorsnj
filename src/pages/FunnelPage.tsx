@@ -8,6 +8,7 @@ import sandingHero from "@/assets/sanding-hero-new.jpg";
 import step1Image from "@/assets/step1-sanding.webp";
 import step2Image from "@/assets/step2-staining.webp";
 import step3Image from "@/assets/step3-finishing.webp";
+import beforeAfterImage from "@/assets/before-after-comparison.png";
 
 const FunnelPage = () => {
   const benefits = [
@@ -236,6 +237,15 @@ const FunnelPage = () => {
               From Scratched & Dull → To Stunning Hardwood
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl text-gold font-semibold">Same floors. Different result.</p>
+          </div>
+
+          {/* Before/After Image */}
+          <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
+            <img 
+              src={beforeAfterImage} 
+              alt="Before and After Floor Refinishing Transformation" 
+              className="w-full h-auto rounded-lg shadow-2xl"
+            />
           </div>
 
           <div className="text-center px-4">
