@@ -248,7 +248,7 @@ const FunnelPage = () => {
             />
           </div>
 
-          <div className="text-center px-4">
+          <div className="text-center px-4 flex justify-center">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 h-auto min-h-[48px] text-black">
               <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                 Book Your Free Estimate Today
