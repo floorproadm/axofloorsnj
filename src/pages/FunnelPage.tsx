@@ -239,7 +239,7 @@ const FunnelPage = () => {
       <section className="py-20 navy-gradient">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4 sm:mb-6 px-4">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold font-heading text-white mb-4 sm:mb-6 px-4" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(255,215,0,0.3)' }}>
               From Disaster to Dream Floors in Just 48 Hours
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl text-gold font-semibold">Same floors. Different result.</p>
