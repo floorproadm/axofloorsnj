@@ -28,7 +28,7 @@ const Hero = ({
         <img 
           src={image} 
           alt="AXO Floors Premium Service" 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover slow-gif"
         />
         <div className="absolute inset-0 hero-gradient"></div>
       </div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, RefreshCw, Zap, Clock, Sparkles } from "lucide-react";
-import sandingHero from "@/assets/sanding-hero-new.jpg";
+import sandingHero from "@/assets/sanding-hero.gif";
 
 const SandingRefinish = () => {
   const benefits = [

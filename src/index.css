@@ -230,3 +230,13 @@
     @apply py-16 sm:py-20 lg:py-24;
   }
 }
+
+/* Slow GIF Animation */
+.slow-gif {
+  animation: slow-motion 20s linear infinite;
+}
+
+@keyframes slow-motion {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
