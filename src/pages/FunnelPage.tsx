@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, Star, Shield, TrendingUp, DollarSign, Clock, Zap, Sparkles, AlertTriangle, Phone, Mail } from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
 import step1Image from "@/assets/step1-sanding.webp";
+import step2Image from "@/assets/step2-staining.webp";
 
 const FunnelPage = () => {
   const benefits = [
@@ -40,7 +41,7 @@ const FunnelPage = () => {
     {
       step: "Step 2: Staining",
       description: "Choose the perfect shade—or keep the natural wood color.",
-      image: null // Will be replaced with GIF
+      image: step2Image
     },
     {
       step: "Step 3: Finishing",
