@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, Star, Shield, TrendingUp, DollarSign, Clock, Zap, Sparkles, AlertTriangle, Phone, Mail } from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
-import step1Image from "@/assets/step1-sanding.png";
+import step1Image from "@/assets/step1-sanding.webp";
 
 const FunnelPage = () => {
   const benefits = [
