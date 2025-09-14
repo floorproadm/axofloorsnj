@@ -102,7 +102,7 @@ const FunnelPage = () => {
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed px-2">
-              Refinish your hardwood floors in 3–5 days, save up to 40% vs replacement, and enjoy a 10-year guarantee—trusted by New Jersey homeowners.
+              Refinish your hardwood floors in 48 hours, save up to 40% vs replacement, and enjoy a 10-year guarantee—trusted by New Jersey homeowners.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
