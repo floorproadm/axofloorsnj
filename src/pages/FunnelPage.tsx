@@ -185,7 +185,7 @@ const FunnelPage = () => {
           </div>
 
           <div className="text-center px-4">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
               <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                 Get My Free Estimate
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
@@ -225,7 +225,7 @@ const FunnelPage = () => {
           </div>
 
           <div className="text-center px-4">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
               <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
                 Book Your Estimate Today
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
@@ -266,7 +266,7 @@ const FunnelPage = () => {
           </div>
 
           <div className="text-center px-4 flex justify-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-6 h-auto min-h-[48px] text-black">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
               <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
                 See More Transformations
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
@@ -317,7 +317,7 @@ const FunnelPage = () => {
             Hardwood refinishing projects in New Jersey book fast. We only take a limited number of homes per month to guarantee top quality. Don't wait until next season.
           </p>
 
-          <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-black hover:scale-105 transition-bounce text-base sm:text-lg px-8 sm:px-12 py-4 sm:py-6 h-auto min-h-[48px] font-bold">
+          <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-black hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
             <Link to="/contact" className="flex items-center justify-center gap-2">
               Reserve My Spot Now
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
