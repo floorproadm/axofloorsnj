@@ -233,7 +233,7 @@
 
 /* Slow GIF Animation */
 .slow-gif {
-  animation: slow-motion 20s linear infinite;
+  animation: slow-motion 40s linear infinite;
 }
 
 @keyframes slow-motion {
