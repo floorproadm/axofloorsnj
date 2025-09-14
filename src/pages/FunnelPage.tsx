@@ -34,17 +34,17 @@ const FunnelPage = () => {
     {
       step: "Step 1: Sanding",
       description: "We remove scratches, stains, and imperfections.",
-      icon: Zap
+      image: null // Will be replaced with GIF
     },
     {
       step: "Step 2: Staining",
       description: "Choose the perfect shade—or keep the natural wood color.",
-      icon: Sparkles
+      image: null // Will be replaced with GIF
     },
     {
       step: "Step 3: Finishing",
       description: "Protected with 3 coats of premium finish for long-lasting shine.",
-      icon: Shield
+      image: null // Will be replaced with GIF
     }
   ];
 
@@ -154,8 +154,14 @@ const FunnelPage = () => {
             {processSteps.map((step, index) => (
               <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
                 <CardContent className="p-6 sm:p-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gold rounded-full mb-4 sm:mb-6 group-hover:scale-110 transition-bounce">
-                    <step.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                  <div className="inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 bg-gold/10 rounded-full mb-4 sm:mb-6 group-hover:scale-110 transition-bounce overflow-hidden">
+                    {step.image ? (
+                      <img src={step.image} alt={step.step} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gold rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold">{index + 1}</span>
+                      </div>
+                    )}
                   </div>
                   <h3 className="text-xl sm:text-2xl font-heading font-bold text-navy mb-3 sm:mb-4">
                     {step.step}
