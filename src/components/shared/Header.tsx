@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, Phone, ChevronDown, Facebook, Instagram, X } from "lucide-react";
 import axoLogo from "@/assets/axo-logo.png";
+import { AppSidebar } from "./AppSidebar";
 import { useState } from "react";
 
 const Header = () => {
@@ -121,85 +122,8 @@ const Header = () => {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="fixed right-0 top-0 h-full w-80 bg-black border-l border-white/10" onClick={(e) => e.stopPropagation()}>
-            {/* Mobile Menu Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center">
-                <div className="text-2xl font-heading font-bold text-white">
-                  <span className="text-gold">•</span>AXO<span className="text-gold">•</span>
-                  <div className="text-xs font-medium tracking-[0.2em] text-white -mt-1">FLOORS</div>
-                </div>
-              </Link>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-white hover:text-gold p-2"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Mobile Menu Content */}
-            <div className="p-4 space-y-4">
-              {/* Services */}
-              <div>
-                <button 
-                  onClick={() => setIsServicesOpen(!isServicesOpen)}
-                  className="flex items-center justify-between w-full text-white hover:text-gold text-lg py-2"
-                >
-                  <span>Services</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isServicesOpen && (
-                  <div className="ml-4 space-y-2 mt-2">
-                    {services.map((service) => (
-                      <Link
-                        key={service.name}
-                        to={service.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="block text-white/80 hover:text-gold py-2"
-                      >
-                        {service.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Main Navigation */}
-              {navigation.filter(item => !item.hasDropdown).map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-white hover:text-gold text-lg py-2"
-                >
-                  {item.name}
-                </Link>
-              ))}
-
-              {/* CTA Buttons */}
-              <div className="pt-4 space-y-3">
-                <Button asChild className="gold-gradient w-full font-semibold">
-                  <a href="tel:(732) 351-8653" onClick={() => setIsMobileMenuOpen(false)}>
-                    GET A QUOTE
-                  </a>
-                </Button>
-                <Button asChild variant="outline" className="w-full border-gold text-gold hover:bg-gold hover:text-black">
-                  <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-                    CONTACT US
-                  </Link>
-                </Button>
-              </div>
-
-              {/* Reviews */}
-              <div className="text-center pt-4 text-white/80">
-                <div className="flex items-center justify-center gap-1 text-sm">
-                  <span>Google</span>
-                  <div className="flex text-gold">★★★★★</div>
-                  <span>35+ Reviews</span>
-                </div>
-              </div>
-            </div>
+          <div className="fixed right-0 top-0 h-full" onClick={(e) => e.stopPropagation()}>
+            <AppSidebar onClose={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
       )}

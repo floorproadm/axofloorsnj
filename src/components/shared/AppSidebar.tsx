@@ -1,20 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, X } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
+interface AppSidebarProps {
+  onClose: () => void;
+}
 
 const services = [
   { name: "Hardwood Flooring Installation", href: "/hardwood-flooring" },
@@ -30,19 +22,18 @@ const mainNavigation = [
   { name: "Gallery", href: "/gallery" },
 ];
 
-export function AppSidebar() {
-  const { setOpenMobile } = useSidebar();
+export function AppSidebar({ onClose }: AppSidebarProps) {
   const location = useLocation();
   const [servicesOpen, setServicesOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
   const hasActiveService = services.some(service => isActive(service.href));
 
-  const closeSidebar = () => setOpenMobile(false);
+  const closeSidebar = () => onClose();
 
   return (
-    <Sidebar className="w-80 bg-black border-r border-white/10">
-      <SidebarHeader className="bg-black border-b border-white/10 p-4">
+    <div className="w-80 bg-black border-r border-white/10 h-full flex flex-col">
+      <div className="bg-black border-b border-white/10 p-4">
         <div className="flex items-center justify-between">
           <Link to="/" onClick={closeSidebar} className="flex items-center">
             <div className="text-2xl font-heading font-bold text-white">
@@ -59,57 +50,57 @@ export function AppSidebar() {
             <X className="h-5 w-5" />
           </Button>
         </div>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent className="bg-black">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {/* Services with submenu */}
-              <SidebarMenuItem>
-                <Collapsible open={servicesOpen || hasActiveService} onOpenChange={setServicesOpen}>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="w-full justify-between text-white hover:text-gold hover:bg-white/5 text-lg py-6 px-4">
-                      <span>Services</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${servicesOpen || hasActiveService ? 'rotate-180' : ''}`} />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="ml-4 space-y-1">
-                    {services.map((service) => (
-                      <SidebarMenuItem key={service.name}>
-                        <SidebarMenuButton asChild className={`text-white/80 hover:text-gold hover:bg-white/5 py-3 px-4 ${isActive(service.href) ? 'text-gold bg-white/5' : ''}`}>
-                          <Link to={service.href} onClick={closeSidebar}>
-                            {service.name}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarMenuItem>
-
-              {/* Main navigation */}
-              {mainNavigation.map((item) => (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild className={`text-white hover:text-gold hover:bg-white/5 text-lg py-6 px-4 ${isActive(item.href) ? 'text-gold bg-white/5' : ''}`}>
-                    <Link to={item.href} onClick={closeSidebar}>
-                      {item.name}
+      <div className="bg-black flex-1 overflow-y-auto">
+        <div className="p-4">
+          <div className="space-y-1">
+            {/* Services with submenu */}
+            <div>
+              <Collapsible open={servicesOpen || hasActiveService} onOpenChange={setServicesOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between text-white hover:text-gold hover:bg-white/5 text-lg py-3 px-4 rounded transition-smooth">
+                    <span>Services</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${servicesOpen || hasActiveService ? 'rotate-180' : ''}`} />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="ml-4 space-y-1">
+                  {services.map((service) => (
+                    <Link
+                      key={service.name}
+                      to={service.href}
+                      onClick={closeSidebar}
+                      className={`block text-white/80 hover:text-gold hover:bg-white/5 py-2 px-4 rounded transition-smooth ${isActive(service.href) ? 'text-gold bg-white/5' : ''}`}
+                    >
+                      {service.name}
                     </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
 
-      <SidebarFooter className="bg-black border-t border-white/10 p-4">
-        <Button asChild className="gold-gradient w-full font-semibold">
+            {/* Main navigation */}
+            {mainNavigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                onClick={closeSidebar}
+                className={`block text-white hover:text-gold hover:bg-white/5 text-lg py-3 px-4 rounded transition-smooth ${isActive(item.href) ? 'text-gold bg-white/5' : ''}`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-black border-t border-white/10 p-4">
+        <Button asChild className="gold-gradient w-full font-semibold mb-2">
           <a href="tel:(732) 351-8653" onClick={closeSidebar}>
             GET A QUOTE
           </a>
         </Button>
-        <Button asChild variant="outline" className="w-full mt-2 border-gold text-gold hover:bg-gold hover:text-black">
+        <Button asChild variant="outline" className="w-full border-gold text-gold hover:bg-gold hover:text-black">
           <Link to="/contact" onClick={closeSidebar}>
             CONTACT US
           </Link>
@@ -124,7 +115,7 @@ export function AppSidebar() {
             <span>35+ Reviews</span>
           </div>
         </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </div>
   );
 }
