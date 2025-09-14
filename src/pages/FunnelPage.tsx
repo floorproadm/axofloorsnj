@@ -155,12 +155,12 @@ const FunnelPage = () => {
             {processSteps.map((step, index) => (
               <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
                 <CardContent className="p-6 sm:p-8">
-                  <div className="inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 bg-gold/10 rounded-full mb-4 sm:mb-6 group-hover:scale-110 transition-bounce overflow-hidden">
+                  <div className="w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-4 sm:mb-6 group-hover:scale-105 transition-bounce overflow-hidden">
                     {step.image ? (
-                      <img src={step.image} alt={step.step} className="w-full h-full object-cover" />
+                      <img src={step.image} alt={step.step} className="w-full h-full object-cover rounded-lg" />
                     ) : (
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gold rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold">{index + 1}</span>
+                      <div className="w-full h-full bg-gold/20 rounded-lg flex items-center justify-center">
+                        <span className="text-gold font-bold text-2xl">{index + 1}</span>
                       </div>
                     )}
                   </div>
