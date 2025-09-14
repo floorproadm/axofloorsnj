@@ -15,6 +15,7 @@ import BaseBoards from "./pages/BaseBoards";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
+import FunnelPage from "./pages/FunnelPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
+          <Route path="/funnel" element={<FunnelPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
