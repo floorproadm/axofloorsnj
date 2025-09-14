@@ -125,7 +125,7 @@ const FunnelPage = () => {
             </div>
             
             <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/95 mt-6 leading-relaxed px-2 font-medium" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
-              —trusted by New Jersey homeowners.
+              Trusted by New Jersey homeowners.
             </p>
           </div>
         </div>
