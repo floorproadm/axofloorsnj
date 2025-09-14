@@ -7,6 +7,7 @@ import { CheckCircle, ArrowRight, Star, Shield, TrendingUp, DollarSign, Clock, Z
 import sandingHero from "@/assets/sanding-hero-new.jpg";
 import step1Image from "@/assets/step1-sanding.webp";
 import step2Image from "@/assets/step2-staining.webp";
+import step3Image from "@/assets/step3-finishing.webp";
 
 const FunnelPage = () => {
   const benefits = [
@@ -46,7 +47,7 @@ const FunnelPage = () => {
     {
       step: "Step 3: Finishing",
       description: "Protected with 3 coats of premium finish for long-lasting shine.",
-      image: null // Will be replaced with GIF
+      image: step3Image
     }
   ];
 
