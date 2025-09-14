@@ -3,292 +3,239 @@ import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Phone, Mail, MessageSquare, Star, Check, AlertTriangle, ExternalLink } from "lucide-react";
-
+import { Phone, Mail, MapPin, Clock, Star, ArrowRight, Send } from "lucide-react";
 const Contact = () => {
-  const services = [
-    "Hardwood Floor Refinishing",
-    "Hardwood Floor Installation", 
-    "Vinyl Plank Flooring",
-    "Staircase Renovation",
-    "Floor Repair",
-    "Other"
-  ];
-
-  const njCities = [
-    "Newark", "Jersey City", "Paterson", "Elizabeth", "Edison", "Woodbridge", "Lakewood", "Toms River",
-    "Hamilton", "Trenton", "Clifton", "Camden", "Brick", "Cherry Hill", "Passaic", "Union City",
-    "Bayonne", "East Orange", "Vineland", "New Brunswick", "Wayne", "Irvington", "Paramus", "Hoboken"
-  ];
-
-  const benefits = [
-    "Free in-home consultation & same-day quotes",
-    "Licensed, insured, bonded professionals", 
-    "Average project: 3–5 days",
-    "Save up to 40% vs. replacement",
-    "10-year guarantee"
-  ];
-
-  const faqs = [
-    {
-      question: "How soon can you come?",
-      answer: "Within 24h for estimates."
-    },
-    {
-      question: "How long does refinishing take?",
-      answer: "3–5 days on average."
-    },
-    {
-      question: "Is there dust?",
-      answer: "We use dust-free sanding systems."
-    }
-  ];
-
-  return (
-    <div className="min-h-screen">
+  const services = ["Hardwood Flooring Installation", "Floor Sanding & Refinishing", "Vinyl Plank Flooring", "Staircase Renovation", "Baseboards & Trim", "Floor Repair", "Free Consultation", "Other"];
+  const contactInfo = [{
+    icon: Phone,
+    title: "Call Us",
+    info: "(732) 351-8653",
+    description: "Available Mon-Fri 8AM-6PM",
+    action: "tel:(732) 351-8653"
+  }, {
+    icon: Mail,
+    title: "Email Us",
+    info: "contact@axofloorsnj.com",
+    description: "We respond within 2 hours",
+    action: "mailto:contact@axofloorsnj.com"
+  }, {
+    icon: MapPin,
+    title: "Service Area",
+    info: "All of New Jersey",
+    description: "Free estimates available",
+    action: null
+  }];
+  return <div className="min-h-screen">
       <Header />
       
       {/* Hero Section */}
-      <section className="py-16 sm:py-20 navy-gradient text-white relative overflow-hidden">
+      <section className="py-20 navy-gradient text-white relative overflow-hidden">
+        
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-4 sm:mb-6">
-            Get Your Free Hardwood Floor Estimate in 24h – Guaranteed Response.
-          </h1>
-          <p className="text-lg sm:text-xl text-white/90 max-w-4xl mx-auto mb-8 sm:mb-12">
-            Tired of waiting weeks for contractors? We'll get back to you in less than 24 hours so you can start your project fast.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-lg px-8 py-6 h-auto font-bold text-navy w-full sm:w-auto">
-              <a href="#quote-form" className="flex items-center justify-center gap-2">
-                Get My Free Estimate Now
-              </a>
-            </Button>
-            <Button asChild variant="outline" className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-navy text-lg px-8 py-6 h-auto font-bold w-full sm:w-auto">
-              <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
-                <Phone className="w-5 h-5" />
-                Call (732) 351-8653
-              </a>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof */}
-      <section className="py-8 bg-white border-b">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-6">
             <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-gold text-gold" />
-              ))}
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-gold text-gold" />)}
             </div>
-            <span className="text-navy font-medium text-lg">35+ Google Reviews</span>
+            <span className="text-gold font-medium">35+ Google Reviews</span>
           </div>
-          <blockquote className="text-grey max-w-4xl mx-auto text-base sm:text-lg italic">
-            "Eduardo gave me a quote the same day, finished my project in 4 days, and saved me $3,200 vs. replacement. Amazing team!"
-          </blockquote>
-          <cite className="text-gold font-medium mt-2 block">— Laura M., NJ</cite>
+          
+          <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
+            Get Your Free Quote Today
+          </h1>
+          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
+            Ready to transform your floors? Contact AXO Floors for a free consultation and detailed quote. We're here to bring your flooring vision to life.
+          </p>
+          
+          <div className="flex items-center justify-center gap-6 text-white/60">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              <span>Free Estimates</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5" />
+              <span>Licensed & Insured</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Scarcity & Urgency */}
-      <section className="py-8 bg-gold/10 border-l-4 border-gold">
+      {/* Contact Methods */}
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3 text-center sm:text-left">
-              <AlertTriangle className="w-8 h-8 text-gold flex-shrink-0" />
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
+          </h2>
+            <p className="text-lg text-grey max-w-3xl mx-auto">
+              Choose the best way to reach us. We're committed to responding quickly and providing the information you need.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {contactInfo.map((contact, index) => <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2 text-center">
+                <CardContent className="p-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/10 rounded-full mb-6 group-hover:bg-gold group-hover:scale-110 transition-bounce">
+                    <contact.icon className="w-8 h-8 text-gold group-hover:text-white" />
+                  </div>
+                  <h3 className="text-xl font-heading font-semibold text-navy mb-2 group-hover:text-gold transition-smooth">
+                    {contact.title}
+                  </h3>
+                  <p className="text-2xl font-bold text-navy mb-2">{contact.info}</p>
+                  <p className="text-grey mb-6">{contact.description}</p>
+                  {contact.action && <Button asChild variant="outline" className="hover:bg-gold hover:text-navy hover:border-gold">
+                      <a href={contact.action}>
+                        {contact.title === "Call Us" ? "Call Now" : "Send Email"}
+                      </a>
+                    </Button>}
+                </CardContent>
+              </Card>)}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Form */}
+      <section className="py-20 bg-grey-light">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            {/* Form */}
+            <Card className="shadow-elegant">
+              <CardHeader>
+                <CardTitle className="text-3xl font-heading font-bold text-navy text-center">
+                  Request Free Quote
+                </CardTitle>
+                <p className="text-grey text-center">Fill out the form below and we'll get back to you within 2 hours</p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
+                    <Input id="firstName" placeholder="John" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Input id="lastName" placeholder="Smith" required />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address *</Label>
+                  <Input id="email" type="email" placeholder="john@example.com" required />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input id="phone" type="tel" placeholder="(732) 555-0123" required />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="address">Property Address</Label>
+                  <Input id="address" placeholder="123 Main St, City, NJ 07001" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="service">Service Needed</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {services.map(service => <SelectItem key={service} value={service.toLowerCase().replace(/\s+/g, '-')}>
+                          {service}
+                        </SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="timeline">Project Timeline</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="When do you want to start?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asap">As soon as possible</SelectItem>
+                      <SelectItem value="1-month">Within 1 month</SelectItem>
+                      <SelectItem value="2-3-months">2-3 months</SelectItem>
+                      <SelectItem value="3-6-months">3-6 months</SelectItem>
+                      <SelectItem value="planning">Just planning/researching</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="message">Project Details</Label>
+                  <Textarea id="message" placeholder="Tell us about your project - room size, current flooring, specific requirements, etc." rows={4} />
+                </div>
+                
+                <Button className="w-full gold-gradient hover:scale-105 transition-bounce text-lg py-6 h-auto">
+                  <Send className="w-5 h-5 mr-2" />
+                  Send My Request
+                </Button>
+                
+                <p className="text-xs text-grey text-center">
+                  By submitting this form, you agree to be contacted by AXO Floors regarding your project. 
+                  We respect your privacy and will never share your information.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Info Side */}
+            <div className="space-y-8">
               <div>
-                <p className="text-navy font-bold text-lg">September Schedule is 85% full.</p>
-                <p className="text-grey">Only 5 project slots left this month.</p>
+                <h3 className="text-3xl font-heading font-bold text-navy mb-6">
+                  Why Choose AXO Floors?
+                </h3>
+                <div className="space-y-4">
+                  {["Free in-home consultation and detailed quotes", "Licensed, insured, and bonded professionals", "Premium materials from trusted suppliers", "Competitive pricing with no hidden fees", "100% satisfaction guarantee on all work", "Serving all of New Jersey since 2009"].map((benefit, index) => <div key={index} className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-gold/10 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                        <ArrowRight className="w-3 h-3 text-gold" />
+                      </div>
+                      <span className="text-grey">{benefit}</span>
+                    </div>)}
+                </div>
               </div>
-            </div>
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce font-bold">
-              <a href="#quote-form">Reserve My Spot Now</a>
-            </Button>
-          </div>
-        </div>
-      </section>
 
-      {/* Main Content */}
-      <section id="quote-form" className="py-16 sm:py-20 bg-grey-light">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-            {/* Contact Form - Simplified */}
-            <div className="lg:col-span-2">
-              <Card className="shadow-elegant">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl sm:text-3xl font-heading font-bold text-navy">
-                    Get My Free Estimate in 24h
-                  </CardTitle>
-                  <p className="text-grey">Essential fields only - takes 60 seconds</p>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input id="name" placeholder="Full Name" required className="h-12" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input id="phone" type="tel" placeholder="(732) 555-0123" required className="h-12" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" required className="h-12" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
-                    <Select>
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Select your NJ city" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-input max-h-60 overflow-y-auto">
-                        {njCities.map((city) => (
-                          <SelectItem key={city} value={city.toLowerCase()}>
-                            {city}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="service">Service Needed</Label>
-                    <Select>
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="What service do you need?" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-input">
-                        {services.map((service) => (
-                          <SelectItem key={service} value={service.toLowerCase().replace(/\s+/g, '-')}>
-                            {service}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="timeline">Project Timeline</Label>
-                    <Select>
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="When do you want to start?" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-input">
-                        <SelectItem value="asap">ASAP</SelectItem>
-                        <SelectItem value="this-month">This month</SelectItem>
-                        <SelectItem value="next-3-months">Next 3 months</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Button className="w-full gold-gradient hover:scale-105 transition-bounce text-lg py-6 h-auto font-bold">
-                    Get My Free Estimate in 24h
+              <Card className="bg-navy text-white">
+                <CardContent className="p-6">
+                  <h4 className="text-xl font-heading font-semibold mb-4 text-gold">
+                    Prefer to Talk? Call Now!
+                  </h4>
+                  <p className="text-white/80 mb-4">
+                    Speak directly with our flooring experts for immediate answers to your questions.
+                  </p>
+                  <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full">
+                    <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      (732) 351-8653
+                    </a>
                   </Button>
-                  
-                  <p className="text-xs text-grey text-center">
-                    100% free estimate • No obligation • We respect your privacy
+                  <p className="text-xs text-white/60 mt-3 text-center">
+                    Available Mon-Fri 8AM-6PM, Sat 9AM-4PM
                   </p>
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Benefits Sidebar */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-heading font-bold text-navy">
-                    Why Choose Axo Floors?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-gold mt-0.5 flex-shrink-0" />
-                      <span className="text-grey text-sm">{benefit}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Alternative Contact Methods */}
-              <Card className="bg-navy text-white">
-                <CardContent className="p-6 space-y-4">
-                  <h4 className="text-lg font-heading font-semibold text-gold">
-                    Alternative Contact Methods
-                  </h4>
-                  
-                  <div className="space-y-3">
-                    <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
-                      <a href="tel:(732) 351-8653" className="flex items-center gap-3">
-                        <Phone className="w-4 h-4" />
-                        <div className="text-left">
-                          <div className="font-medium">(732) 351-8653</div>
-                          <div className="text-xs opacity-80">Click to call</div>
-                        </div>
-                      </a>
-                    </Button>
-                    
-                    <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
-                      <a href="mailto:contact@axofloorsnj.com" className="flex items-center gap-3">
-                        <Mail className="w-4 h-4" />
-                        <div className="text-left">
-                          <div className="font-medium text-xs">contact@axofloorsnj.com</div>
-                          <div className="text-xs opacity-80">Click to email</div>
-                        </div>
-                      </a>
-                    </Button>
-                    
-                    <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
-                      <a href="https://wa.me/17323518653" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
-                        <MessageSquare className="w-4 h-4" />
-                        <div className="text-left">
-                          <div className="font-medium">WhatsApp</div>
-                          <div className="text-xs opacity-80">Instant response</div>
-                        </div>
-                        <ExternalLink className="w-3 h-3 ml-auto" />
-                      </a>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mini FAQ */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-navy mb-4">
-              Have questions before booking?
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {faqs.map((faq, index) => (
-              <Card key={index} className="text-center hover:shadow-elegant transition-smooth">
+              <Card className="bg-gold/10 border-gold/20">
                 <CardContent className="p-6">
-                  <h3 className="font-heading font-semibold text-navy mb-3 text-sm">
-                    {faq.question}
-                  </h3>
-                  <p className="text-grey text-sm">{faq.answer}</p>
+                  <h4 className="text-xl font-heading font-semibold mb-4 text-navy">
+                    Emergency Repairs Available
+                  </h4>
+                  <p className="text-grey mb-4">
+                    Water damage? Urgent repair needed? We offer emergency flooring services for urgent situations.
+                  </p>
+                  <Button variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white">
+                    Emergency Contact
+                  </Button>
                 </CardContent>
               </Card>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Contact;
