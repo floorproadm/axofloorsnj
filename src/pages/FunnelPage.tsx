@@ -9,6 +9,7 @@ import step1Image from "@/assets/step1-sanding.gif";
 import step2Image from "@/assets/step2-staining.gif";
 import step3Image from "@/assets/step3-finishing.gif";
 import beforeAfterImage from "@/assets/before-after-comparison.png";
+import beforeAfterImage2 from "@/assets/before-after-2.png";
 
 const FunnelPage = () => {
   const benefits = [
@@ -244,13 +245,24 @@ const FunnelPage = () => {
             <p className="text-lg sm:text-xl md:text-2xl text-gold font-semibold">Same floors. Different result.</p>
           </div>
 
-          {/* Before/After Image */}
-          <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
-            <img 
-              src={beforeAfterImage} 
-              alt="Before and After Floor Refinishing Transformation" 
-              className="w-full h-auto rounded-lg shadow-2xl"
-            />
+          {/* Before/After Gallery */}
+          <div className="max-w-6xl mx-auto mb-8 sm:mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+              <div className="space-y-4">
+                <img 
+                  src={beforeAfterImage} 
+                  alt="Before and After Floor Refinishing Transformation 1" 
+                  className="w-full h-auto rounded-lg shadow-2xl"
+                />
+              </div>
+              <div className="space-y-4">
+                <img 
+                  src={beforeAfterImage2} 
+                  alt="Before and After Floor Refinishing Transformation 2" 
+                  className="w-full h-auto rounded-lg shadow-2xl"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="text-center px-4 flex justify-center">
