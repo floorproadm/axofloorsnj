@@ -58,7 +58,7 @@ const Header = () => {
               <img 
                 src={axoLogo} 
                 alt="AXO Floors" 
-                className="h-12 w-auto"
+                className="h-10 w-auto"
               />
             </Link>
 
