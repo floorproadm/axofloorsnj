@@ -353,28 +353,6 @@ const FunnelPage = () => {
         </div>
       </section>
 
-      {/* 8. Footer Guarantee */}
-      <section className="py-16 navy-gradient text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading mb-4 sm:mb-6">
-            Your floors. Our guarantee.
-          </h2>
-          <p className="text-base sm:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-            Family-owned, NJ trusted. Every floor comes with a 10-year guarantee. If you're not happy, we're not done.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
-            <a href="tel:(732) 351-8653" className="flex items-center gap-2 text-white hover:text-gold transition-smooth text-base sm:text-lg">
-              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>(732) 351-8653</span>
-            </a>
-            <a href="mailto:info@axofloors.com" className="flex items-center gap-2 text-white hover:text-gold transition-smooth text-base sm:text-lg">
-              <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>info@axofloors.com</span>
-            </a>
-          </div>
-        </div>
-      </section>
 
       <Footer />
     </div>
