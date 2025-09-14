@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, Star, Shield, TrendingUp, DollarSign, Clock, Zap, Sparkles, AlertTriangle, Phone, Mail } from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
-import step1Image from "@/assets/step1-sanding.webp";
-import step2Image from "@/assets/step2-staining.webp";
-import step3Image from "@/assets/step3-finishing.webp";
+import step1Image from "@/assets/step1-sanding.gif";
+import step2Image from "@/assets/step2-staining.gif";
+import step3Image from "@/assets/step3-finishing.gif";
 import beforeAfterImage from "@/assets/before-after-comparison.png";
 
 const FunnelPage = () => {
@@ -160,7 +160,12 @@ const FunnelPage = () => {
                 <CardContent className="p-6 sm:p-8">
                   <div className="w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-4 sm:mb-6 group-hover:scale-105 transition-bounce overflow-hidden">
                     {step.image ? (
-                      <img src={step.image} alt={step.step} className="w-full h-full object-cover rounded-lg" />
+                      <img 
+                        src={step.image} 
+                        alt={step.step} 
+                        className="w-full h-full object-cover rounded-lg"
+                        loading="eager"
+                      />
                     ) : (
                       <div className="w-full h-full bg-gold/20 rounded-lg flex items-center justify-center">
                         <span className="text-gold font-bold text-2xl">{index + 1}</span>
