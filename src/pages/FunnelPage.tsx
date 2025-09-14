@@ -56,32 +56,34 @@ const FunnelPage = () => {
   const testimonials = [
     {
       text: "We thought we'd have to spend $10,000 replacing the floors. Axo Floors refinished them for half the price and finished in just 4 days.",
-      author: "Maria S., Long Branch NJ",
-      rating: 5
+      author: "Maria S., Bradley Beach NJ",
+      rating: 5,
+      avatar: "👩‍💼"
     },
     {
       text: "The team was professional, fast, and the results blew us away. Our house looks brand new.",
       author: "David R., Princeton NJ", 
-      rating: 5
+      rating: 5,
+      avatar: "👨‍🔧"
     }
   ];
 
   const faqs = [
     {
-      question: "Is refinishing cheaper than replacing?",
-      answer: "Yes. Refinishing saves up to 40% compared to full replacement."
+      question: "How much cheaper is refinishing vs replacing?",
+      answer: "Refinishing saves up to 40% compared to full replacement. Where replacement costs $8-15/sq ft, refinishing costs just $3-8/sq ft."
     },
     {
       question: "How long does it take?",
-      answer: "Most NJ projects finish in 2–5 days."
+      answer: "Most NJ projects finish in 2–5 days. You can walk on your floors the same day we finish."
     },
     {
       question: "Will it last?",
-      answer: "Yes. All floors are covered by a 10-year guarantee."
+      answer: "Yes. All floors are covered by a 10-year guarantee. With proper care, refinished floors last 10-15 years."
     },
     {
       question: "What about dust & mess?",
-      answer: "We use dust-free sanding systems and leave your home spotless."
+      answer: "We use dust-free sanding systems and leave your home spotless. 99% dust-free guarantee."
     }
   ];
 
@@ -113,7 +115,7 @@ const FunnelPage = () => {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 sm:px-0">
               <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
                 <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
-                  Get Free Estimate in 24h
+                  Get My Free Estimate in 24h
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                 </Link>
               </Button>
@@ -233,9 +235,14 @@ const FunnelPage = () => {
                   <p className="text-grey mb-4 sm:mb-6 text-base sm:text-lg leading-relaxed">
                     "{testimonial.text}"
                   </p>
-                  <p className="text-navy font-semibold">
-                    – {testimonial.author}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center text-lg">
+                      {testimonial.avatar}
+                    </div>
+                    <p className="text-navy font-semibold">
+                      – {testimonial.author}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -336,7 +343,7 @@ const FunnelPage = () => {
 
           <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-black hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
             <Link to="/contact" className="flex items-center justify-center gap-2">
-              Reserve My Spot Now
+              Reserve My Spot Before Calendar Closes
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
           </Button>
@@ -350,7 +357,7 @@ const FunnelPage = () => {
             Your floors. Our guarantee.
           </h2>
           <p className="text-base sm:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-            Family-owned, New Jersey trusted. Every floor comes with a 10-year guarantee. If you're not happy, we're not done.
+            Family-owned, NJ trusted. Every floor comes with a 10-year guarantee. If you're not happy, we're not done.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
