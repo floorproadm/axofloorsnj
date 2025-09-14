@@ -132,13 +132,13 @@ const FunnelPage = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
-              <Card key={index} className="bg-white border-navy/10 text-center hover:shadow-gold transition-smooth hover:-translate-y-2">
+              <Card key={index} className="bg-white border-2 border-gold/20 text-center hover:shadow-2xl hover:shadow-gold/30 transition-all duration-300 hover:-translate-y-3 hover:border-gold/50 group">
                 <CardContent className="p-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gold/20 rounded-full mb-6">
-                    <benefit.icon className="w-8 h-8 text-gold" />
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-gold to-gold/80 rounded-full mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
+                    <benefit.icon className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-xl font-heading font-semibold text-navy mb-4">{benefit.title}</h3>
-                  <p className="text-grey text-sm">{benefit.description}</p>
+                  <h3 className="text-xl font-heading font-bold text-navy mb-4 group-hover:text-gold transition-colors duration-300">{benefit.title}</h3>
+                  <p className="text-grey text-sm leading-relaxed">{benefit.description}</p>
                 </CardContent>
               </Card>
             ))}
