@@ -15,22 +15,22 @@ const BuilderPartnerships = () => {
   const benefits = [
     {
       icon: Clock,
-      title: "Reliable Execution",
+      title: "On-Time Execution",
       description: "Crews that show up, finish on time, and keep your schedule intact."
     },
     {
       icon: Users,
-      title: "Scalable Capacity", 
+      title: "Scalable Workforce", 
       description: "Multiple projects handled in parallel, no compromise in quality."
     },
     {
       icon: Shield,
-      title: "Zero Headaches",
+      title: "Stress-Free Coordination",
       description: "Clear communication, organized processes, professional teams."
     },
     {
       icon: Target,
-      title: "Client-Ready Finish",
+      title: "Buyer-Ready Finish",
       description: "Floors that impress your buyers and increase perceived value."
     }
   ];
@@ -60,7 +60,7 @@ const BuilderPartnerships = () => {
 
   const testimonials = [
     {
-      text: "AXO Floors handled 7,200 sq.ft. hardwood install in 6 days. Zero delays. Zero callbacks. We've done 5 more projects with them since.",
+      text: "AXO Floors installed 7,200 sq.ft. of hardwood in just 6 days — with zero delays and zero callbacks. That builder has since partnered with us on 5 more projects.",
       author: "Mike T., General Contractor",
       rating: 5,
       avatar: "👷‍♂️"
@@ -90,6 +90,10 @@ const BuilderPartnerships = () => {
     {
       question: "Do you work with recurring partners?",
       answer: "Absolutely. 80% of our work is ongoing builder partnerships."
+    },
+    {
+      question: "Do you handle site coordination with other trades?",
+      answer: "Yes. We adapt to builder schedules and coordinate seamlessly with other crews."
     }
   ];
 
@@ -111,11 +115,11 @@ const BuilderPartnerships = () => {
         <div className="relative z-10 container mx-auto px-4 py-12 sm:py-20">
           <div className="max-w-4xl mx-auto text-center text-white">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-heading mb-6 sm:mb-8 leading-tight px-2" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8), 0 0 15px rgba(255,215,0,0.4)' }}>
-              Partner with AXO Floors – Flooring Experts for Builders Who Can't Miss Deadlines
+              Flooring Partner for Builders Who Can't Afford Delays
             </h1>
             
             <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/95 mb-8 sm:mb-10 leading-relaxed px-2 font-medium" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
-              We help general contractors and developers deliver projects on time — with premium flooring that adds value to every build.
+              We help contractors and developers hit deadlines and hand over projects with premium flooring that boosts client satisfaction and resale value.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 sm:px-0">
@@ -169,7 +173,7 @@ const BuilderPartnerships = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4 sm:mb-6 px-4">
-              Our 4-Step Partnership Process
+              How We Keep Your Projects on Track
             </h2>
           </div>
 
@@ -282,7 +286,7 @@ const BuilderPartnerships = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold font-heading text-white mb-4 sm:mb-6 px-4" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(255,215,0,0.3)' }}>
-              From Blueprint to Showcase Floors
+              From Slab to Showcase Floors
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl text-gold font-semibold">On time. On budget. Every time.</p>
           </div>
@@ -351,7 +355,7 @@ const BuilderPartnerships = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
             <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy">
-              Q4 Partnership Slots Now Open
+              Now Accepting New Builder Partnerships for Q4
             </h2>
           </div>
           
