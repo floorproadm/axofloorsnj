@@ -5,9 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, Star, Shield, Clock, Zap, Users, Target, AlertTriangle, Phone, Mail } from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
-import step1Image from "/step1-sanding.gif";
-import step2Image from "/step2-staining.gif";
-import step3Image from "/step3-finishing.gif";
+import { FileText, Calculator, Wrench, HeadphonesIcon } from "lucide-react";
 import beforeAfterImage from "@/assets/before-after-comparison.png";
 import beforeAfterImage2 from "@/assets/before-after-2.png";
 
@@ -39,22 +37,22 @@ const BuilderPartnerships = () => {
     {
       step: "Step 1: Briefing & Scope",
       description: "Fast understanding of project needs.",
-      image: step1Image
+      icon: FileText
     },
     {
       step: "Step 2: Quote in 24h",
       description: "Clear numbers, no hidden costs.",
-      image: step2Image
+      icon: Calculator
     },
     {
       step: "Step 3: Execution on Schedule",
       description: "Organized crews, clean job sites.",
-      image: step3Image
+      icon: Wrench
     },
     {
       step: "Step 4: Post-Project Support",
       description: "Touch-ups and maintenance guidance.",
-      image: null
+      icon: HeadphonesIcon
     }
   ];
 
@@ -181,21 +179,8 @@ const BuilderPartnerships = () => {
             {processSteps.map((step, index) => (
               <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
                 <CardContent className="p-6 sm:p-8">
-                  <div className="w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-4 sm:mb-6 group-hover:scale-105 transition-bounce overflow-hidden border border-gold/20">
-                    {step.image ? (
-                      <div className="w-full h-full relative">
-                        <img 
-                          src={step.image} 
-                          alt={step.step} 
-                          className="w-full h-full object-cover rounded-lg"
-                          loading="eager"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-full bg-gold/20 rounded-lg flex items-center justify-center">
-                        <span className="text-gold font-bold text-2xl">{index + 1}</span>
-                      </div>
-                    )}
+                  <div className="w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-4 sm:mb-6 group-hover:scale-105 transition-bounce overflow-hidden border border-gold/20 flex items-center justify-center">
+                    <step.icon className="w-16 h-16 text-gold" />
                   </div>
                   <h3 className="text-xl sm:text-2xl font-heading font-bold text-navy mb-3 sm:mb-4">
                     {step.step}
