@@ -65,13 +65,6 @@ const BuilderPartnerships = () => {
     }
   ];
 
-  const caseStudy = {
-    project: "Multi-unit development",
-    scope: "Hardwood install + finishing",
-    timeline: "3 weeks → delivered in 18 days",
-    result: "Client delighted, builder re-hired AXO for future builds"
-  };
-
   const faqs = [
     {
       question: "Can AXO handle multiple projects at once?",
@@ -214,7 +207,7 @@ const BuilderPartnerships = () => {
           </div>
 
           {/* Testimonial */}
-          <div className="max-w-4xl mx-auto mb-12">
+          <div className="max-w-4xl mx-auto">
             <Card className="bg-white border-navy/10 hover:shadow-gold transition-smooth">
               <CardContent className="p-8 text-center">
                 <div className="flex items-center justify-center gap-1 mb-6">
@@ -232,33 +225,6 @@ const BuilderPartnerships = () => {
                   <p className="text-navy font-semibold text-lg">
                     – {testimonials[0].author}
                   </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Mini Case Study */}
-          <div className="max-w-3xl mx-auto">
-            <Card className="bg-white border-2 border-gold/20">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-heading font-bold text-navy mb-6 text-center">
-                  Mini Case Study
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold text-navy mb-2">Project:</h4>
-                    <p className="text-grey mb-4">{caseStudy.project}</p>
-                    
-                    <h4 className="font-semibold text-navy mb-2">Scope:</h4>
-                    <p className="text-grey">{caseStudy.scope}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-navy mb-2">Timeline:</h4>
-                    <p className="text-grey mb-4">{caseStudy.timeline}</p>
-                    
-                    <h4 className="font-semibold text-navy mb-2">Result:</h4>
-                    <p className="text-grey">{caseStudy.result}</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
