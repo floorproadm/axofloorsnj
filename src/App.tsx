@@ -16,6 +16,7 @@ import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import FunnelPage from "./pages/FunnelPage";
+import BuilderPartnerships from "./pages/BuilderPartnerships";
 import NotFound from "./pages/NotFound";
 
 
@@ -40,6 +41,7 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/funnel" element={<FunnelPage />} />
+          <Route path="/builder-offer" element={<BuilderPartnerships />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
