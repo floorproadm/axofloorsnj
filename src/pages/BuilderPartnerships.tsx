@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, Star, Shield, Clock, Zap, Users, Target, AlertTriangle, Phone, Mail } from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
-import { FileText, Calculator, Wrench, HeadphonesIcon } from "lucide-react";
+import { FileText, Calculator, Wrench, Handshake } from "lucide-react";
 import beforeAfterImage from "@/assets/before-after-comparison.png";
 import beforeAfterImage2 from "@/assets/before-after-2.png";
 
@@ -52,7 +52,7 @@ const BuilderPartnerships = () => {
     {
       step: "Step 4: Post-Project Support",
       description: "Touch-ups and maintenance guidance.",
-      icon: HeadphonesIcon
+      icon: Handshake
     }
   ];
 
