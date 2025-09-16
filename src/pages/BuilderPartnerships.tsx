@@ -209,7 +209,7 @@ const BuilderPartnerships = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-4">
-              Case Study / Proof
+              Partnership in Action
             </h2>
           </div>
 
