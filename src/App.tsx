@@ -16,6 +16,7 @@ import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import FunnelPage from "./pages/FunnelPage";
+import StainGallery from "./pages/StainGallery";
 import BuilderPartnerships from "./pages/BuilderPartnerships";
 import NotFound from "./pages/NotFound";
 
@@ -38,6 +39,7 @@ const App = () => {
           <Route path="/staircase" element={<Staircase />} />
           <Route path="/base-boards" element={<BaseBoards />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/stain-gallery" element={<StainGallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/funnel" element={<FunnelPage />} />
