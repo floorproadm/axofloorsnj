@@ -14,6 +14,22 @@ import classicGrayImg from '@/assets/stains/classic-gray.jpg';
 import coffeeBrownImg from '@/assets/stains/coffee-brown.jpg';
 import colonialMapleImg from '@/assets/stains/colonial-maple.jpg';
 import countryWhiteImg from '@/assets/stains/country-white.jpg';
+import darkWalnutImg from '@/assets/stains/dark-walnut.jpg';
+import ebonyImg from '@/assets/stains/ebony.jpg';
+import englishChestnutImg from '@/assets/stains/english-chestnut.jpg';
+import espressoImg from '@/assets/stains/espresso.jpg';
+import goldenOakImg from '@/assets/stains/golden-oak.jpg';
+import honeyImg from '@/assets/stains/honey.jpg';
+import jacobeanImg from '@/assets/stains/jacobean.jpg';
+import mahoganyImg from '@/assets/stains/mahogany.jpg';
+import naturalImg from '@/assets/stains/natural.jpg';
+import nutmegImg from '@/assets/stains/nutmeg.jpg';
+import provincialImg from '@/assets/stains/provincial.jpg';
+import redOakImg from '@/assets/stains/red-oak.jpg';
+import royalMahoganyImg from '@/assets/stains/royal-mahogany.jpg';
+import sedonaRedImg from '@/assets/stains/sedona-red.jpg';
+import specialWalnutImg from '@/assets/stains/special-walnut.jpg';
+import weatheredOakImg from '@/assets/stains/weathered-oak.jpg';
 
 const StainGallery = () => {
   const [expandedWoodType, setExpandedWoodType] = useState<string>('white-oak');
@@ -27,22 +43,22 @@ const StainGallery = () => {
     { name: 'Coffee Brown', image: coffeeBrownImg },
     { name: 'Colonial Maple', image: colonialMapleImg },
     { name: 'Country White', image: countryWhiteImg },
-    { name: 'Dark Walnut', image: '/placeholder.svg' },
-    { name: 'Ebony', image: '/placeholder.svg' },
-    { name: 'English Chestnut', image: '/placeholder.svg' },
-    { name: 'Espresso', image: '/placeholder.svg' },
-    { name: 'Golden Oak', image: '/placeholder.svg' },
-    { name: 'Honey', image: '/placeholder.svg' },
-    { name: 'Jacobean', image: '/placeholder.svg' },
-    { name: 'Mahogany', image: '/placeholder.svg' },
-    { name: 'Natural', image: '/placeholder.svg' },
-    { name: 'Nutmeg', image: '/placeholder.svg' },
-    { name: 'Provincial', image: '/placeholder.svg' },
-    { name: 'Red Oak', image: '/placeholder.svg' },
-    { name: 'Royal Mahogany', image: '/placeholder.svg' },
-    { name: 'Sedona Red', image: '/placeholder.svg' },
-    { name: 'Special Walnut', image: '/placeholder.svg' },
-    { name: 'Weathered Oak', image: '/placeholder.svg' }
+    { name: 'Dark Walnut', image: darkWalnutImg },
+    { name: 'Ebony', image: ebonyImg },
+    { name: 'English Chestnut', image: englishChestnutImg },
+    { name: 'Espresso', image: espressoImg },
+    { name: 'Golden Oak', image: goldenOakImg },
+    { name: 'Honey', image: honeyImg },
+    { name: 'Jacobean', image: jacobeanImg },
+    { name: 'Mahogany', image: mahoganyImg },
+    { name: 'Natural', image: naturalImg },
+    { name: 'Nutmeg', image: nutmegImg },
+    { name: 'Provincial', image: provincialImg },
+    { name: 'Red Oak', image: redOakImg },
+    { name: 'Royal Mahogany', image: royalMahoganyImg },
+    { name: 'Sedona Red', image: sedonaRedImg },
+    { name: 'Special Walnut', image: specialWalnutImg },
+    { name: 'Weathered Oak', image: weatheredOakImg }
   ];
 
   const redOakStains = [
@@ -54,22 +70,22 @@ const StainGallery = () => {
     { name: 'Coffee Brown', image: coffeeBrownImg },
     { name: 'Colonial Maple', image: colonialMapleImg },
     { name: 'Country White', image: countryWhiteImg },
-    { name: 'Dark Walnut', image: '/placeholder.svg' },
-    { name: 'Ebony', image: '/placeholder.svg' },
-    { name: 'English Chestnut', image: '/placeholder.svg' },
-    { name: 'Espresso', image: '/placeholder.svg' },
-    { name: 'Golden Oak', image: '/placeholder.svg' },
-    { name: 'Honey', image: '/placeholder.svg' },
-    { name: 'Jacobean', image: '/placeholder.svg' },
-    { name: 'Mahogany', image: '/placeholder.svg' },
-    { name: 'Natural', image: '/placeholder.svg' },
-    { name: 'Nutmeg', image: '/placeholder.svg' },
-    { name: 'Provincial', image: '/placeholder.svg' },
-    { name: 'Red Oak', image: '/placeholder.svg' },
-    { name: 'Royal Mahogany', image: '/placeholder.svg' },
-    { name: 'Sedona Red', image: '/placeholder.svg' },
-    { name: 'Special Walnut', image: '/placeholder.svg' },
-    { name: 'Weathered Oak', image: '/placeholder.svg' }
+    { name: 'Dark Walnut', image: darkWalnutImg },
+    { name: 'Ebony', image: ebonyImg },
+    { name: 'English Chestnut', image: englishChestnutImg },
+    { name: 'Espresso', image: espressoImg },
+    { name: 'Golden Oak', image: goldenOakImg },
+    { name: 'Honey', image: honeyImg },
+    { name: 'Jacobean', image: jacobeanImg },
+    { name: 'Mahogany', image: mahoganyImg },
+    { name: 'Natural', image: naturalImg },
+    { name: 'Nutmeg', image: nutmegImg },
+    { name: 'Provincial', image: provincialImg },
+    { name: 'Red Oak', image: redOakImg },
+    { name: 'Royal Mahogany', image: royalMahoganyImg },
+    { name: 'Sedona Red', image: sedonaRedImg },
+    { name: 'Special Walnut', image: specialWalnutImg },
+    { name: 'Weathered Oak', image: weatheredOakImg }
   ];
 
   const toggleWoodType = (woodType: string) => {
