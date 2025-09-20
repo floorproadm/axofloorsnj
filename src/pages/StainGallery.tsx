@@ -107,7 +107,7 @@ const StainGallery = () => {
               <div className="bg-white border-l-4 border-gold p-6 rounded-lg shadow-soft">
                 <p className="text-grey italic">
                   <strong>Important Note:</strong> Colors shown are representative samples. Natural wood grain and tone variations 
-                  mean your final stain color will vary slightly from board to board, creating unique character in each installation.
+                  mean your final stain color will vary slightly from board to board, creating unique character in each project.
                 </p>
               </div>
             </div>
