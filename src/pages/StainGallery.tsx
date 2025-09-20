@@ -5,18 +5,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
+// Import stain images
+import agedBarrelImg from '@/assets/stains/aged-barrel.jpg';
+import antiqueBrownImg from '@/assets/stains/antique-brown.jpg';
+import cherryImg from '@/assets/stains/cherry.jpg';
+import chestnutImg from '@/assets/stains/chestnut.jpg';
+import classicGrayImg from '@/assets/stains/classic-gray.jpg';
+import coffeeBrownImg from '@/assets/stains/coffee-brown.jpg';
+import colonialMapleImg from '@/assets/stains/colonial-maple.jpg';
+import countryWhiteImg from '@/assets/stains/country-white.jpg';
+
 const StainGallery = () => {
   const [expandedWoodType, setExpandedWoodType] = useState<string>('white-oak');
 
   const whiteOakStains = [
-    { name: 'Aged Barrel', image: '/placeholder.svg' },
-    { name: 'Antique Brown', image: '/placeholder.svg' },
-    { name: 'Cherry', image: '/placeholder.svg' },
-    { name: 'Chestnut', image: '/placeholder.svg' },
-    { name: 'Classic Gray', image: '/placeholder.svg' },
-    { name: 'Coffee Brown', image: '/placeholder.svg' },
-    { name: 'Colonial Maple', image: '/placeholder.svg' },
-    { name: 'Country White', image: '/placeholder.svg' },
+    { name: 'Aged Barrel', image: agedBarrelImg },
+    { name: 'Antique Brown', image: antiqueBrownImg },
+    { name: 'Cherry', image: cherryImg },
+    { name: 'Chestnut', image: chestnutImg },
+    { name: 'Classic Gray', image: classicGrayImg },
+    { name: 'Coffee Brown', image: coffeeBrownImg },
+    { name: 'Colonial Maple', image: colonialMapleImg },
+    { name: 'Country White', image: countryWhiteImg },
     { name: 'Dark Walnut', image: '/placeholder.svg' },
     { name: 'Ebony', image: '/placeholder.svg' },
     { name: 'English Chestnut', image: '/placeholder.svg' },
@@ -36,14 +46,14 @@ const StainGallery = () => {
   ];
 
   const redOakStains = [
-    { name: 'Aged Barrel', image: '/placeholder.svg' },
-    { name: 'Antique Brown', image: '/placeholder.svg' },
-    { name: 'Cherry', image: '/placeholder.svg' },
-    { name: 'Chestnut', image: '/placeholder.svg' },
-    { name: 'Classic Gray', image: '/placeholder.svg' },
-    { name: 'Coffee Brown', image: '/placeholder.svg' },
-    { name: 'Colonial Maple', image: '/placeholder.svg' },
-    { name: 'Country White', image: '/placeholder.svg' },
+    { name: 'Aged Barrel', image: agedBarrelImg },
+    { name: 'Antique Brown', image: antiqueBrownImg },
+    { name: 'Cherry', image: cherryImg },
+    { name: 'Chestnut', image: chestnutImg },
+    { name: 'Classic Gray', image: classicGrayImg },
+    { name: 'Coffee Brown', image: coffeeBrownImg },
+    { name: 'Colonial Maple', image: colonialMapleImg },
+    { name: 'Country White', image: countryWhiteImg },
     { name: 'Dark Walnut', image: '/placeholder.svg' },
     { name: 'Ebony', image: '/placeholder.svg' },
     { name: 'English Chestnut', image: '/placeholder.svg' },
