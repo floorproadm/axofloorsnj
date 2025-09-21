@@ -105,12 +105,17 @@ const Index = () => {
       />
 
       {/* Services Section - Mobile-First Enhanced */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-background relative overflow-hidden">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-background via-grey-light/30 to-background relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-gold rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-40 h-40 bg-navy rounded-full blur-3xl"></div>
+        </div>
         
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-            <div className="inline-flex items-center gap-2 bg-gold/10 rounded-full px-4 sm:px-6 py-2 mb-4 sm:mb-6">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-gold/10 to-gold/20 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 mb-4 sm:mb-6 border border-gold/20 shadow-lg">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-gold animate-pulse" />
               <span className="text-gold font-medium text-sm sm:text-base">Premium Services</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2">
@@ -121,7 +126,10 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div className="relative">
+            {/* Enhanced grid container with glass morphism effect */}
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 border border-white/50 shadow-2xl">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {services.map((service, index) => (
               <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2 border-0 shadow-elegant">
                 <CardContent className="p-6 sm:p-8 text-center">
@@ -147,9 +155,11 @@ const Index = () => {
                     </Link>
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
-          </div>
+               </Card>
+             ))}
+             </div>
+           </div>
+         </div>
         </div>
       </section>
 
