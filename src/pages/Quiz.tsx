@@ -17,8 +17,7 @@ import {
   checkRateLimit, 
   getClientIdentifier,
   formatPhoneNumber,
-  useFieldValidation,
-  isValidZipCode
+  useFieldValidation
 } from "@/utils/validation";
 import { 
   sanitizeForLogging,
@@ -58,51 +57,8 @@ const Quiz = () => {
     name: "",
     email: "",
     phone: "",
-    city: "",
-    zipCode: "" // Novo campo ZIP code
+    city: ""
   });
-
-  // Auto-preencher cidade baseado no ZIP code de NJ
-  const handleZipCodeChange = (zipCode: string) => {
-    console.log('🏙️ [Quiz] ZIP code alterado:', zipCode);
-    
-    // Lista de cidades principais de NJ por região de ZIP code
-    const njCitiesByZip: Record<string, string> = {
-      '070': 'Newark',
-      '071': 'Lyndhurst', 
-      '072': 'Elizabeth',
-      '073': 'East Orange',
-      '074': 'Teaneck',
-      '075': 'Passaic',
-      '076': 'Hackensack',
-      '077': 'Ridgewood',
-      '080': 'South Orange',
-      '081': 'Union',
-      '082': 'Roselle',
-      '083': 'Jersey City',
-      '084': 'Bayonne',
-      '086': 'Weehawken',
-      '087': 'West New York',
-      '088': 'Brick',
-      '089': 'Lakewood',
-      '090': 'Freehold',
-      '091': 'Monmouth Beach',
-      '085': 'Princeton'
-    };
-
-    handleFieldChange('zipCode', zipCode);
-    
-    // Auto-preencher cidade se ZIP code for reconhecido
-    if (zipCode.length >= 3) {
-      const zipPrefix = zipCode.substring(0, 3);
-      const suggestedCity = njCitiesByZip[zipPrefix];
-      
-      if (suggestedCity && !formData.city) {
-        console.log('🏙️ [Quiz] Auto-preenchendo cidade:', suggestedCity);
-        setFormData(prev => ({ ...prev, city: suggestedCity }));
-      }
-    }
-  };
 
     // Real-time field validation with debugging
     const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
@@ -209,8 +165,7 @@ const Quiz = () => {
       name: ['required', 'name'],
       email: ['required', 'email'],
       phone: ['required', 'phone'],
-      zipCode: ['required', 'zipCode'] // ZIP code é obrigatório e deve ser válido
-      // city é opcional
+      city: ['required'] // cidade é obrigatória
     };
 
     const validation = validateForm(formData, validationRules);
@@ -273,8 +228,8 @@ const Quiz = () => {
         name: sanitizeInput(formData.name),
         email: sanitizeInput(formData.email),
         phone: sanitizeInput(formData.phone),
-        city: sanitizeInput(formData.city) || null,
-        zip_code: sanitizeInput(formData.zipCode) || null, // Adicionando ZIP code
+        city: sanitizeInput(formData.city),
+        zip_code: null, // Removendo ZIP code
         room_size: sanitizeInput(formData.squareFootage) || '0',
         services: [sanitizeInput(formData.serviceType) || 'unknown'], // Convert to array for compatibility
         budget: formData.budget === "10k-plus" ? 15000 : 
@@ -956,44 +911,18 @@ const Quiz = () => {
                         )}
                       </div>
                       <div>
-                        <Label htmlFor="zipCode">ZIP Code *</Label>
-                        <Input
-                          id="zipCode"
-                          value={formData.zipCode}
-                          onChange={(e) => {
-                            const zipValue = e.target.value.replace(/\D/g, ''); // Apenas números
-                            if (zipValue.length <= 5) {
-                              handleZipCodeChange(zipValue);
-                              // Validar ZIP code em tempo real
-                              if (zipValue.length === 5 && isValidZipCode(zipValue)) {
-                                setFormErrors(prev => ({ ...prev, zipCode: '' }));
-                              } else if (zipValue.length > 0 && !isValidZipCode(zipValue)) {
-                                setFormErrors(prev => ({ ...prev, zipCode: 'ZIP code must be 5 digits' }));
-                              }
-                            }
-                          }}
-                          placeholder="07001"
-                          maxLength={5}
-                          className={`mt-1 ${formErrors.zipCode ? 'border-red-500' : ''}`}
-                        />
-                        {formErrors.zipCode && (
-                          <p className="text-red-500 text-sm mt-1">{formErrors.zipCode}</p>
-                        )}
-                        <p className="text-xs text-grey mt-1">Servimos toda região de New Jersey</p>
-                      </div>
-                      <div>
-                        <Label htmlFor="city">City (optional)</Label>
+                        <Label htmlFor="city">City *</Label>
                         <Input
                           id="city"
                           value={formData.city}
-                          onChange={(e) => handleFieldChange('city', e.target.value)}
-                          placeholder="Será preenchido automaticamente"
+                          onChange={(e) => handleFieldChange('city', e.target.value, ['required'])}
+                          placeholder="Enter your city"
                           className={`mt-1 ${formErrors.city ? 'border-red-500' : ''}`}
                         />
                         {formErrors.city && (
                           <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
                         )}
-                        <p className="text-xs text-grey mt-1">Preenchimento automático baseado no ZIP code</p>
+                        <p className="text-xs text-grey mt-1">We serve all of New Jersey</p>
                       </div>
                     </div>
 
@@ -1056,13 +985,13 @@ const Quiz = () => {
                               name: !!formData.name,
                               email: !!formData.email,
                               phone: !!formData.phone,
-                              zipCode: !!formData.zipCode
+                              city: !!formData.city
                             });
                             console.log('🔘 [Quiz] Errors with values:', Object.entries(formErrors).filter(([key, value]) => value !== ''));
-                            console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode);
+                            console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city);
                             handleSubmit();
                           }}
-                          disabled={isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode}
+                          disabled={isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city}
                           className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                         <span className="flex items-center justify-center gap-2">
