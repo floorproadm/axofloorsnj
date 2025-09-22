@@ -32,18 +32,18 @@ const Quiz = () => {
   });
 
   const roomSizes = [
-    { value: "small", label: "Pequeno (< 18 m²)", rooms: "Quarto, Escritório" },
-    { value: "medium", label: "Médio (18-46 m²)", rooms: "Sala, Cozinha" },
-    { value: "large", label: "Grande (46-93 m²)", rooms: "Planta Aberta" },
-    { value: "xlarge", label: "Muito Grande (93+ m²)", rooms: "Múltiplos Ambientes" }
+    { value: "small", label: "Small (< 200 sq ft)", rooms: "Bedroom, Office" },
+    { value: "medium", label: "Medium (200-500 sq ft)", rooms: "Living Room, Kitchen" },
+    { value: "large", label: "Large (500-1000 sq ft)", rooms: "Open Floor Plan" },
+    { value: "xlarge", label: "Very Large (1000+ sq ft)", rooms: "Multiple Rooms" }
   ];
 
   const serviceOptions = [
-    { id: "hardwood", label: "Instalação de Piso de Madeira", route: "/hardwood-flooring" },
-    { id: "sanding", label: "Lixamento e Envernizamento", route: "/sanding-and-refinish" },
-    { id: "vinyl", label: "Piso Vinílico", route: "/vinyl-plank-flooring" },
-    { id: "staircase", label: "Restauração de Escadas", route: "/staircase" },
-    { id: "baseboards", label: "Rodapés", route: "/base-boards" }
+    { id: "hardwood", label: "Hardwood Floor Installation", route: "/hardwood-flooring" },
+    { id: "sanding", label: "Sanding & Refinishing", route: "/sanding-and-refinish" },
+    { id: "vinyl", label: "Vinyl Plank Flooring", route: "/vinyl-plank-flooring" },
+    { id: "staircase", label: "Staircase Restoration", route: "/staircase" },
+    { id: "baseboards", label: "Base Boards", route: "/base-boards" }
   ];
 
   const handleServiceChange = (serviceId: string, checked: boolean) => {
@@ -74,7 +74,7 @@ const Quiz = () => {
     
     if (!formData.name || !formData.email || !formData.phone) {
       toast({
-        title: "Por favor preencha todos os campos obrigatórios",
+        title: "Please fill in all required fields",
         variant: "destructive"
       });
       return;
@@ -133,8 +133,8 @@ const Quiz = () => {
       }
 
       toast({
-        title: "Obrigado!",
-        description: "Entraremos em contato em até 24 horas com suas recomendações personalizadas."
+        title: "Thank you!",
+        description: "We'll contact you within 24 hours with your personalized recommendations."
       });
 
       // Redirect to recommended service page
@@ -144,8 +144,8 @@ const Quiz = () => {
     } catch (error) {
       console.error('Quiz submission error:', error);
       toast({
-        title: "Algo deu errado",
-        description: "Tente novamente ou ligue diretamente para (732) 351-8653",
+        title: "Something went wrong",
+        description: "Please try again or call us directly at (732) 351-8653",
         variant: "destructive"
       });
     } finally {
@@ -158,14 +158,14 @@ const Quiz = () => {
     
     if (currentStep === 1 && !formData.roomSize) {
       toast({
-        title: "Por favor selecione o tamanho do ambiente",
+        title: "Please select a room size",
         variant: "destructive"
       });
       return;
     }
     if (currentStep === 2 && formData.services.length === 0) {
       toast({
-        title: "Por favor selecione pelo menos um serviço",
+        title: "Please select at least one service",
         variant: "destructive"
       });
       return;
@@ -192,10 +192,10 @@ const Quiz = () => {
             {/* Header */}
             <div className="text-center mb-8 sm:mb-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4">
-                Seu Piso Valoriza ou Desvaloriza Sua Casa?
+                Does Your Floor Add or Subtract Value From Your Home?
               </h1>
               <p className="text-lg sm:text-xl text-grey mb-6">
-                Descubra em 30 segundos como transformar seu piso em um diferencial de alto impacto para sua casa.
+                Discover in 30 seconds how to transform your floors into a high-impact differentiator for your home.
               </p>
               <div className="flex justify-center items-center gap-2 text-sm text-grey">
                 <span className={`w-8 h-1 rounded ${currentStep >= 1 ? 'bg-gold' : 'bg-grey/30'}`}></span>
@@ -208,7 +208,7 @@ const Quiz = () => {
             <Card className="bg-white border-2 border-gold/20 shadow-elegant">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl font-heading text-navy">
-                  Passo {currentStep} de 4
+                  Step {currentStep} of 4
                 </CardTitle>
               </CardHeader>
 
@@ -219,9 +219,9 @@ const Quiz = () => {
                     <div className="text-center mb-6">
                       <Home className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        Qual o tamanho do seu ambiente principal?
+                        What's the size of your main room?
                       </h3>
-                      <p className="text-grey">Isso nos ajuda a recomendar a melhor abordagem</p>
+                      <p className="text-grey">This helps us recommend the best approach</p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -251,9 +251,9 @@ const Quiz = () => {
                     <div className="text-center mb-6">
                       <Wrench className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        Qual serviço mais te interessa?
+                        Which service interests you most?
                       </h3>
-                      <p className="text-grey">Selecione todos que se aplicam</p>
+                      <p className="text-grey">Select all that apply</p>
                     </div>
 
                     <div className="space-y-4">
@@ -282,9 +282,9 @@ const Quiz = () => {
                     <div className="text-center mb-6">
                       <DollarSign className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        Qual sua faixa de investimento?
+                        What's your investment range?
                       </h3>
-                      <p className="text-grey">Isso nos ajuda a fornecer recomendações precisas</p>
+                      <p className="text-grey">This helps us provide accurate recommendations</p>
                     </div>
 
                     <div className="space-y-6">
@@ -314,29 +314,29 @@ const Quiz = () => {
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        Receba Suas Recomendações Personalizadas
+                        Get Your Personalized Recommendations
                       </h3>
-                      <p className="text-grey">Enviaremos ideias e amostras que combinam com seu espaço</p>
+                      <p className="text-grey">We'll send ideas and samples that match your space</p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="name">Nome *</Label>
+                        <Label htmlFor="name">Name *</Label>
                         <Input
                           id="name"
                           value={formData.name}
                           onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Seu nome"
+                          placeholder="Your name"
                           className="mt-1"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone">Telefone *</Label>
+                        <Label htmlFor="phone">Phone *</Label>
                         <Input
                           id="phone"
                           value={formData.phone}
                           onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                          placeholder="(11) 99999-9999"
+                          placeholder="(732) 555-0123"
                           className="mt-1"
                         />
                       </div>
@@ -347,17 +347,17 @@ const Quiz = () => {
                           type="email"
                           value={formData.email}
                           onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                          placeholder="seu@email.com"
+                          placeholder="your@email.com"
                           className="mt-1"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="city">Cidade</Label>
+                        <Label htmlFor="city">City</Label>
                         <Input
                           id="city"
                           value={formData.city}
                           onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                          placeholder="Sua cidade em NJ"
+                          placeholder="Your city in NJ"
                           className="mt-1"
                         />
                       </div>
@@ -365,8 +365,8 @@ const Quiz = () => {
 
                     <div className="bg-gold/10 p-4 rounded-lg border border-gold/20">
                       <p className="text-sm text-navy text-center">
-                        <strong>Sem pressão, sem ligações de vendas.</strong> Enviaremos recomendações personalizadas 
-                        e você pode entrar em contato quando estiver pronto.
+                        <strong>No pressure, no sales calls.</strong> We'll send personalized recommendations 
+                        and you can reach out when you're ready.
                       </p>
                     </div>
                   </div>
@@ -380,7 +380,7 @@ const Quiz = () => {
                       onClick={prevStep}
                       className="border-grey/30 text-grey hover:border-gold hover:text-gold"
                     >
-                      Voltar
+                      Back
                     </Button>
                   )}
                   
@@ -390,7 +390,7 @@ const Quiz = () => {
                         onClick={nextStep}
                         className="gold-gradient text-black font-semibold"
                       >
-                        Próximo Passo
+                        Next Step
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
@@ -399,7 +399,7 @@ const Quiz = () => {
                         disabled={isLoading}
                         className="gold-gradient text-black font-semibold"
                       >
-                        {isLoading ? "Enviando..." : "Receber Minhas Recomendações"}
+                        {isLoading ? "Submitting..." : "Get My Recommendations"}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     )}
