@@ -37,13 +37,17 @@ const Header = () => {
           </a>
           <div className="flex items-center gap-2">
             <a 
-              href="#" 
+              href="https://www.facebook.com/profile.php?id=61562322947267&sk=about" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-8 h-8 bg-black text-gold flex items-center justify-center rounded hover:bg-black/80 transition-smooth"
             >
               <Facebook className="w-4 h-4" />
             </a>
             <a 
-              href="#" 
+              href="https://instagram.com/axofloors" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-8 h-8 bg-black text-gold flex items-center justify-center rounded hover:bg-black/80 transition-smooth"
             >
               <Instagram className="w-4 h-4" />
