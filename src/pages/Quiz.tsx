@@ -672,8 +672,13 @@ const Quiz = () => {
                 {/* Final Step: Contact Info */}
                 {currentStep === getTotalSteps() && (
                   <div className="space-y-6">
+                    {/* Visual separator */}
+                    <div className="py-8">
+                      <div className="w-24 h-px bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-8"></div>
+                    </div>
+                    
                     <div className="text-center mb-6">
-                      <h3 className="text-2xl font-heading font-bold text-navy mb-2 mt-8 sm:mt-6">
+                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         Get Your Personalized Recommendations
                       </h3>
                       <p className="text-grey">We'll send ideas and samples that match your project</p>
