@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import axoLogo from "@/assets/axo-logo.png";
 
 interface AppSidebarProps {
   onClose: () => void;
@@ -33,12 +34,11 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
       {/* Header Compacto */}
       <div className="flex items-center justify-between p-3 border-b border-white/10">
         <Link to="/" onClick={onClose} className="flex items-center">
-          <div className="text-white">
-            <div className="text-xl font-heading font-bold">
-              <span className="text-gold">•</span>AXO<span className="text-gold">•</span>
-            </div>
-            <div className="text-xs font-medium tracking-wider -mt-1">FLOORS</div>
-          </div>
+          <img 
+            src={axoLogo} 
+            alt="AXO Floors" 
+            className="h-8 w-auto"
+          />
         </Link>
         <button
           onClick={onClose}
