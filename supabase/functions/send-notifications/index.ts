@@ -4,6 +4,7 @@ import { Resend } from "npm:resend@2.0.0";
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
 const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -101,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send SMS notification (if phone number provided)
-    if (adminPhone && twilioAccountSid && twilioAuthToken) {
+    if (adminPhone && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
       try {
         const smsMessage = `🚨 NOVO LEAD AXO FLOORS 🚨\n\nNome: ${leadData.name}\nTelefone: ${leadData.phone}\nEmail: ${leadData.email}\nOrigem: ${leadData.source === 'quiz' ? 'Quiz do Site' : leadData.source}\n\nEntre em contato AGORA para aumentar as chances de conversão!`;
 
@@ -114,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: new URLSearchParams({
-            From: '+1234567890', // Substitua pelo seu número Twilio
+            From: twilioPhoneNumber,
             To: adminPhone,
             Body: smsMessage,
           }),
@@ -132,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
         results.sms.error = error.message;
       }
     } else {
-      console.log("[Notifications] SMS skipped - missing phone or Twilio credentials");
+      console.log("[Notifications] SMS skipped - missing phone, Twilio credentials, or Twilio phone number");
     }
 
     return new Response(JSON.stringify({ success: true, results }), {
