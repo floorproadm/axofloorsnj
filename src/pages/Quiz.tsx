@@ -37,8 +37,12 @@ const Quiz = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Debug logging
-  console.log('[Quiz] Component mounted, currentStep:', currentStep);
+  // Debug logging - COMPONENT MOUNT
+  console.log('🚀 [Quiz] COMPONENTE CARREGADO - Quiz component mounted');
+  console.log('🚀 [Quiz] Estado inicial:', { currentStep, isLoading });
+  console.log('🚀 [Quiz] Supabase client disponível:', !!supabase);
+  console.log('🚀 [Quiz] Toast disponível:', !!toast);
+  console.log('🚀 [Quiz] Navigate disponível:', !!navigate);
   
   const [formData, setFormData] = useState({
     serviceType: "", // "new-installation" or "floor-refinish"
@@ -347,7 +351,7 @@ const Quiz = () => {
   };
 
   const nextStep = () => {
-    console.log('[Quiz] nextStep called, currentStep:', currentStep, 'formData:', formData);
+    console.log('➡️ [Quiz] PRÓXIMO PASSO - nextStep called, currentStep:', currentStep, 'formData:', formData);
     
     // Validation logic based on current step and service type
     if (currentStep === 1 && !formData.serviceType) {
@@ -942,7 +946,14 @@ const Quiz = () => {
                       </Button>
                     ) : (
                       <Button 
-                        onClick={handleSubmit}
+                        onClick={() => {
+                          console.log('🔘 [Quiz] BOTÃO SUBMIT CLICADO!');
+                          console.log('🔘 [Quiz] Form data atual:', formData);
+                          console.log('🔘 [Quiz] Loading state:', isLoading);
+                          console.log('🔘 [Quiz] Form errors:', formErrors);
+                          console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone);
+                          handleSubmit();
+                        }}
                         disabled={isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone}
                         className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -964,5 +975,18 @@ const Quiz = () => {
     </div>
   );
 };
+
+// Adicionar event listeners para capturar erros globais
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (e) => {
+    console.error('🚨 [Quiz] ERRO GLOBAL capturado:', e.error);
+  });
+  
+  window.addEventListener('unhandledrejection', (e) => {
+    console.error('🚨 [Quiz] PROMISE REJEITADA capturada:', e.reason);
+  });
+  
+  console.log('🎯 [Quiz] Event listeners adicionados para capturar erros');
+}
 
 export default Quiz;
