@@ -107,8 +107,11 @@ const Quiz = () => {
 
   const handleSubmit = async () => {
     console.log('[Quiz] handleSubmit called with formData:', formData);
+    console.log('[Quiz] Current step:', currentStep, 'Total steps:', getTotalSteps());
+    console.log('[Quiz] Validation check - name:', !!formData.name, 'email:', !!formData.email, 'phone:', !!formData.phone);
     
     if (!formData.name || !formData.email || !formData.phone) {
+      console.log('[Quiz] Validation failed - missing required fields');
       toast({
         title: "Please fill in all required fields",
         variant: "destructive"
@@ -116,6 +119,7 @@ const Quiz = () => {
       return;
     }
 
+    console.log('[Quiz] All validations passed, proceeding with submission');
     setIsLoading(true);
 
     try {
@@ -125,15 +129,15 @@ const Quiz = () => {
         email: formData.email,
         phone: formData.phone,
         city: formData.city || null,
-        room_size: formData.squareFootage,
-        services: [formData.serviceType], // Convert to array for compatibility
+        room_size: formData.squareFootage || '0',
+        services: [formData.serviceType || 'unknown'], // Convert to array for compatibility
         budget: formData.budget === "10k-plus" ? 15000 : 
                formData.budget === "5k-10k" ? 7500 :
                formData.budget === "2k-5k" ? 3500 : 2000,
         source: 'quiz'
       };
 
-      console.log('[Quiz] Submitting data:', quizData);
+      console.log('[Quiz] Submitting data to Supabase:', quizData);
 
       // Save to Supabase database
       const { data: savedQuiz, error: saveError } = await supabase
@@ -143,6 +147,7 @@ const Quiz = () => {
         .single();
 
       if (saveError) {
+        console.error('[Quiz] Supabase save error:', saveError);
         throw new Error(`Failed to save quiz response: ${saveError.message}`);
       }
 
