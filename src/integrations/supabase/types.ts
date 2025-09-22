@@ -112,6 +112,81 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          address: string | null
+          assigned_to: string | null
+          budget: number | null
+          city: string | null
+          converted_to_project_id: string | null
+          created_at: string
+          email: string | null
+          follow_up_date: string | null
+          id: string
+          last_contacted_at: string | null
+          lead_source: string
+          location: string | null
+          message: string | null
+          name: string
+          notes: string | null
+          phone: string
+          priority: string
+          room_size: string | null
+          services: Json | null
+          status: string
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          assigned_to?: string | null
+          budget?: number | null
+          city?: string | null
+          converted_to_project_id?: string | null
+          created_at?: string
+          email?: string | null
+          follow_up_date?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          lead_source?: string
+          location?: string | null
+          message?: string | null
+          name: string
+          notes?: string | null
+          phone: string
+          priority?: string
+          room_size?: string | null
+          services?: Json | null
+          status?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          assigned_to?: string | null
+          budget?: number | null
+          city?: string | null
+          converted_to_project_id?: string | null
+          created_at?: string
+          email?: string | null
+          follow_up_date?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          lead_source?: string
+          location?: string | null
+          message?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string
+          priority?: string
+          room_size?: string | null
+          services?: Json | null
+          status?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -258,6 +333,10 @@ export type Database = {
       }
       log_admin_access: {
         Args: { operation: string; table_name: string; user_id?: string }
+        Returns: undefined
+      }
+      migrate_quiz_responses_to_leads: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       test_quiz_submission: {
