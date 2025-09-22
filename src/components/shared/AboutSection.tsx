@@ -77,12 +77,14 @@ const AboutSection = () => {
               ))}
             </div>
 
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce">
-              <Link to="/contact" className="flex items-center gap-2">
-                Learn More About Us
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </Button>
+            <div className="flex justify-center md:justify-start">
+              <Button asChild className="gold-gradient hover:scale-105 transition-bounce w-full md:w-auto">
+                <Link to="/contact" className="flex items-center justify-center gap-2">
+                  Learn More About Us
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
