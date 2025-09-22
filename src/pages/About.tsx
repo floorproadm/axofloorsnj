@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Award, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import teamPhoto from "@/assets/team-photo.jpg";
 
 const About = () => {
   const values = [
@@ -53,28 +54,29 @@ const About = () => {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              {/* Team Photos */}
-              <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 justify-center items-center mb-16">
-                <div className="text-center">
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-3 rounded-full bg-gradient-to-br from-gold/20 to-navy/20 border-4 border-gold/30 overflow-hidden">
-                    <div className="w-full h-full bg-muted flex items-center justify-center text-4xl font-bold text-gold">
-                      A
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold text-navy">Ademir</h3>
-                  <p className="text-sm text-gold">Owner & Founder</p>
+              {/* Team Photo */}
+              <div className="flex flex-col items-center mb-16">
+                <div className="w-72 h-72 sm:w-80 sm:h-80 mx-auto mb-6 rounded-2xl overflow-hidden shadow-elegant border-4 border-gold/20">
+                  <img 
+                    src={teamPhoto} 
+                    alt="Ademir and Eduardo - AXO Floors Team" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 
-                <div className="hidden sm:block text-gold text-2xl">+</div>
-                
-                <div className="text-center">
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-3 rounded-full bg-gradient-to-br from-gold/20 to-navy/20 border-4 border-gold/30 overflow-hidden">
-                    <div className="w-full h-full bg-muted flex items-center justify-center text-4xl font-bold text-gold">
-                      E
+                <div className="text-center space-y-2">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 justify-center">
+                    <div>
+                      <h3 className="text-lg font-bold text-navy">Ademir</h3>
+                      <p className="text-sm text-gold">Owner & Founder</p>
+                    </div>
+                    <div className="hidden sm:block text-gold">•</div>
+                    <div>
+                      <h3 className="text-lg font-bold text-navy">Eduardo</h3>
+                      <p className="text-sm text-gold">General Manager</p>
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-navy">Eduardo</h3>
-                  <p className="text-sm text-gold">General Manager</p>
+                  <p className="text-sm text-muted-foreground mt-4">Father & Son Team</p>
                 </div>
               </div>
               
