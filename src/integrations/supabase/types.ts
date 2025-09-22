@@ -134,6 +134,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      log_admin_access: {
+        Args: { operation: string; table_name: string; user_id?: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
