@@ -28,7 +28,7 @@ const mainNavigation = [
 
 export function AppSidebar({ onClose }: AppSidebarProps) {
   const location = useLocation();
-  const [servicesOpen, setServicesOpen] = useState(true); // Aberto por padrão
+  const [servicesOpen, setServicesOpen] = useState(false); // Fechado por padrão
 
   const isActive = (path: string) => location.pathname === path;
 
