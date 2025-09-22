@@ -502,14 +502,14 @@ const Admin = () => {
           {/* Calendar Tab */}
           <TabsContent value="appointments">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-6">
+                <CardTitle className="flex items-center justify-center sm:justify-start gap-2 text-center sm:text-left">
                   <Calendar className="w-5 h-5" />
-                  Upcoming Appointments
+                  <span className="text-base sm:text-lg">Upcoming Appointments</span>
                 </CardTitle>
-                <Button className="gold-gradient text-black">
+                <Button className="gold-gradient text-black w-full sm:w-auto min-h-[48px] px-4 py-2">
                   <Plus className="w-4 h-4 mr-2" />
-                  Schedule Appointment
+                  <span className="text-sm sm:text-base">Schedule Appointment</span>
                 </Button>
               </CardHeader>
               <CardContent>
