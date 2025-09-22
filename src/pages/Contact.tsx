@@ -354,18 +354,14 @@ const Contact = () => {
                     
                     <div className="space-y-2">
                       <Label htmlFor="city">City *</Label>
-                      <Select value={formData.city} onValueChange={(value) => handleFieldChange('city', value, ['required', 'city'])}>
-                        <SelectTrigger className={`h-12 ${formErrors.city ? 'border-red-500' : ''}`}>
-                          <SelectValue placeholder="Select your NJ city" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border border-input max-h-60 overflow-y-auto">
-                          {njCities.map((city) => (
-                            <SelectItem key={city} value={city.toLowerCase()}>
-                              {city}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Input 
+                        id="city" 
+                        placeholder="Enter your city" 
+                        required 
+                        className={`h-12 ${formErrors.city ? 'border-red-500' : ''}`}
+                        value={formData.city}
+                        onChange={(e) => handleFieldChange('city', e.target.value, ['required', 'city'])}
+                      />
                       {formErrors.city && (
                         <p className="text-red-500 text-sm">{formErrors.city}</p>
                       )}
