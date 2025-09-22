@@ -57,7 +57,7 @@ const StainGallery = () => {
     const message = `Hi! I saw your stain gallery and want to book the free in-home test. I'm ${formData.name}, ZIPCode: ${formData.zipCode} 3 favorites colors: ${formData.favoriteColors.filter(color => color.trim()).join(', ')}`;
     
     // Create SMS link
-    const phoneNumber = '1234567890'; // Replace with actual company phone number
+    const phoneNumber = '7323518653';
     const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
     
     // Open SMS app
