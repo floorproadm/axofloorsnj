@@ -14,96 +14,69 @@ import { Link } from "react-router-dom";
 import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
 const Index = () => {
-  const services = [
-    {
-      title: "Hardwood Flooring",
-      description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
-      href: "/hardwood-flooring",
-      features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
-      icon: "🌳"
-    },
-    {
-      title: "Sanding & Refinishing", 
-      description: "Restore your floors to their original beauty with professional refinishing services.",
-      href: "/sanding-and-refinish",
-      features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
-      icon: "✨"
-    },
-    {
-      title: "Vinyl Plank Flooring",
-      description: "Waterproof and durable luxury vinyl with the look of real hardwood.",
-      href: "/vinyl-plank-flooring", 
-      features: ["100% Waterproof", "Easy Maintenance", "Realistic Wood Look"],
-      icon: "💧"
-    },
-    {
-      title: "Staircase Renovation",
-      description: "Transform your staircase with custom hardwood steps and elegant railings.",
-      href: "/staircase",
-      features: ["Custom Design", "Safety First", "Premium Materials"],
-      icon: "🪜"
-    }
-  ];
-
-  const benefits = [
-    {
-      icon: Users,
-      title: "Expert Craftsmen", 
-      description: "Professional installation team with years of experience",
-      stat: "10+ Years"
-    },
-    {
-      icon: Clock,
-      title: "Quick Turnaround",
-      description: "Efficient project completion without compromising quality", 
-      stat: "On Time"
-    },
-    {
-      icon: Shield,
-      title: "Quality Guarantee",
-      description: "100% satisfaction guarantee on all our work",
-      stat: "100%"
-    }
-  ];
-
-  const testimonials = [
-    {
-      name: "Michelle Allen",
-      text: "Outstanding experience overall! The workmanship was superb, we highly recommend AXO Floors to everyone!",
-      rating: 5,
-      location: "Ocean County, NJ"
-    },
-    {
-      name: "Richard Davis", 
-      text: "We hired AXO Floors and they did amazing work! It was done fast, we had all the work completed. We would highly recommend to anyone! Thank you once again!",
-      rating: 5,
-      location: "Monmouth County, NJ"
-    },
-    {
-      name: "David Nakano",
-      text: "Professional and quality work! They transformed our home and we couldn't be happier with the results.",
-      rating: 5,
-      location: "Middlesex County, NJ"
-    }
-  ];
-
-  return (
-    <div className="min-h-screen">
-      <SEOHead 
-        title="AXO Floors NJ - #1 Hardwood Flooring Experts in New Jersey" 
-        description="Transform your home with AXO Floors NJ. Expert hardwood installation, refinishing & restoration. 4.9★ rating, licensed & insured. Free estimates - Call (732) 351-8653" 
-        keywords="hardwood flooring NJ, floor refinishing New Jersey, flooring installation Newark, wood floor restoration Jersey City, AXO Floors, professional flooring contractors" 
-      />
+  const services = [{
+    title: "Hardwood Flooring",
+    description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
+    href: "/hardwood-flooring",
+    features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
+    icon: "🌳"
+  }, {
+    title: "Sanding & Refinishing",
+    description: "Restore your floors to their original beauty with professional refinishing services.",
+    href: "/sanding-and-refinish",
+    features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
+    icon: "✨"
+  }, {
+    title: "Vinyl Plank Flooring",
+    description: "Waterproof and durable luxury vinyl with the look of real hardwood.",
+    href: "/vinyl-plank-flooring",
+    features: ["100% Waterproof", "Easy Maintenance", "Realistic Wood Look"],
+    icon: "💧"
+  }, {
+    title: "Staircase Renovation",
+    description: "Transform your staircase with custom hardwood steps and elegant railings.",
+    href: "/staircase",
+    features: ["Custom Design", "Safety First", "Premium Materials"],
+    icon: "🪜"
+  }];
+  const benefits = [{
+    icon: Users,
+    title: "Expert Craftsmen",
+    description: "Professional installation team with years of experience",
+    stat: "10+ Years"
+  }, {
+    icon: Clock,
+    title: "Quick Turnaround",
+    description: "Efficient project completion without compromising quality",
+    stat: "On Time"
+  }, {
+    icon: Shield,
+    title: "Quality Guarantee",
+    description: "100% satisfaction guarantee on all our work",
+    stat: "100%"
+  }];
+  const testimonials = [{
+    name: "Michelle Allen",
+    text: "Outstanding experience overall! The workmanship was superb, we highly recommend AXO Floors to everyone!",
+    rating: 5,
+    location: "Ocean County, NJ"
+  }, {
+    name: "Richard Davis",
+    text: "We hired AXO Floors and they did amazing work! It was done fast, we had all the work completed. We would highly recommend to anyone! Thank you once again!",
+    rating: 5,
+    location: "Monmouth County, NJ"
+  }, {
+    name: "David Nakano",
+    text: "Professional and quality work! They transformed our home and we couldn't be happier with the results.",
+    rating: 5,
+    location: "Middlesex County, NJ"
+  }];
+  return <div className="min-h-screen">
+      <SEOHead title="AXO Floors NJ - #1 Hardwood Flooring Experts in New Jersey" description="Transform your home with AXO Floors NJ. Expert hardwood installation, refinishing & restoration. 4.9★ rating, licensed & insured. Free estimates - Call (732) 351-8653" keywords="hardwood flooring NJ, floor refinishing New Jersey, flooring installation Newark, wood floor restoration Jersey City, AXO Floors, professional flooring contractors" />
       <Header />
       
       {/* Hero Section */}
-      <Hero 
-        title="Your Flooring deserves the attention that only us can provide!" 
-        subtitle="Premium Flooring Solutions in New Jersey" 
-        description="Over time, flooring often fades and becomes damaged. However, with expert care and the right team by your side, this won't be a problem anymore." 
-        image={homeHero} 
-        showReviews={true} 
-      />
+      <Hero title="Your Flooring deserves the attention that only us can provide!" subtitle="Premium Flooring Solutions in New Jersey" description="Over time, flooring often fades and becomes damaged. However, with expert care and the right team by your side, this won't be a problem anymore." image={homeHero} showReviews={true} />
 
       {/* Services Section */}
       <section className="spacing-mobile-md bg-secondary/30">
@@ -122,8 +95,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {services.map((service, index) => (
-              <Card key={index} className="group hover:shadow-elegant transition-all duration-300 border-0 shadow-sm hover:-translate-y-2 bg-card">
+            {services.map((service, index) => <Card key={index} className="group hover:shadow-elegant transition-all duration-300 border-0 shadow-sm hover:-translate-y-2 bg-card">
                 <CardContent className="p-8 text-center">
                   <div className="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
                     {service.icon}
@@ -138,12 +110,10 @@ const Index = () => {
                   </p>
                   
                   <div className="space-y-2 mb-8">
-                    {service.features.map((feature, i) => (
-                      <div key={i} className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    {service.features.map((feature, i) => <div key={i} className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                         <CheckCircle className="w-4 h-4 text-accent flex-shrink-0" />
                         <span className="font-medium">{feature}</span>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
                   
                   <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300 font-semibold">
@@ -153,8 +123,7 @@ const Index = () => {
                     </Link>
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -169,8 +138,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-card">
+            {benefits.map((benefit, index) => <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-card">
                 <CardContent className="p-10">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-accent/10 rounded-2xl mb-6 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
                     <benefit.icon className="w-10 h-10 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
@@ -188,8 +156,7 @@ const Index = () => {
                     {benefit.description}
                   </p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -201,30 +168,14 @@ const Index = () => {
       <ReviewsSection />
 
       {/* Google Business Integration */}
-      <section className="spacing-mobile-sm bg-secondary">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-mobile-2xl font-bold font-heading mb-4">
-              Find Us on Google Business
-            </h2>
-            <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto">
-              See our location, reviews, and business hours. Get directions and leave your review!
-            </p>
-          </div>
-          <div className="max-w-2xl mx-auto">
-            <GoogleBusinessIntegration />
-          </div>
-        </div>
-      </section>
+      
 
       {/* Testimonials Section */}
       <section className="spacing-mobile-md navy-gradient text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <div className="inline-flex items-center gap-1 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 fill-accent text-accent" />
-              ))}
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-6 h-6 fill-accent text-accent" />)}
             </div>
             <h2 className="text-mobile-3xl font-bold font-heading mb-6">
               See What Our <span className="text-accent">Customers</span> Are Saying
@@ -235,13 +186,10 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-smooth">
+            {testimonials.map((testimonial, index) => <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-smooth">
                 <CardContent className="p-8">
                   <div className="flex items-center gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                    ))}
+                    {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-accent text-accent" />)}
                   </div>
                   <p className="text-white/90 mb-6 leading-relaxed text-lg">
                     "{testimonial.text}"
@@ -255,8 +203,7 @@ const Index = () => {
                     </p>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -296,7 +243,6 @@ const Index = () => {
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
 export default Index;
