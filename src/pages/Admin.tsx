@@ -1,28 +1,61 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { Upload, Plus, Trash2, Edit, Eye, EyeOff, LogOut, User, Users, FileText } from "lucide-react";
-import Header from "@/components/shared/Header";
-import Footer from "@/components/shared/Footer";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Calendar, 
+  Users, 
+  DollarSign, 
+  TrendingUp, 
+  Clock, 
+  MapPin,
+  Phone,
+  Mail,
+  Eye,
+  Edit,
+  Plus,
+  LogOut,
+  Home,
+  BarChart3,
+  FileText,
+  Settings
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-interface GalleryProject {
+interface Project {
   id: string;
-  title: string;
-  description: string;
-  category: string;
-  location: string;
-  image_url: string;
-  display_order: number;
-  is_featured: boolean;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  project_type: string;
+  project_status: string;
+  square_footage: number;
+  estimated_cost: number;
+  actual_cost?: number;
+  start_date?: string;
+  completion_date?: string;
+  address?: string;
+  city?: string;
+  zip_code?: string;
+  notes?: string;
+  created_at: string;
+}
+
+interface Appointment {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  appointment_type: string;
+  appointment_date: string;
+  appointment_time: string;
+  status: string;
+  location?: string;
+  notes?: string;
+  project_id?: string;
 }
 
 interface QuizResponse {
@@ -30,84 +63,145 @@ interface QuizResponse {
   name: string;
   email: string;
   phone: string;
-  city: string | null;
+  services: string[];
   room_size: string;
-  services: any; // Json type from Supabase
   budget: number;
-  source: string;
+  city?: string;
+  zip_code?: string;
   created_at: string;
+  source: string;
 }
 
 const Admin = () => {
-  const [projects, setProjects] = useState<GalleryProject[]>([]);
-  const [quizResponses, setQuizResponses] = useState<QuizResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
-  const [editingProject, setEditingProject] = useState<string | null>(null);
-  const { toast } = useToast();
   const { user, signOut } = useAuth();
-
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "",
-    location: "",
-    is_featured: false,
-    display_order: 0
+  const { toast } = useToast();
+  
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [quizResponses, setQuizResponses] = useState<QuizResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    pendingProjects: 0,
+    completedProjects: 0,
+    totalRevenue: 0,
+    upcomingAppointments: 0,
+    newLeads: 0
   });
 
-  const categories = [
-    "Hardwood Flooring",
-    "Sanding & Refinish", 
-    "Vinyl Plank",
-    "Staircase",
-    "Baseboards & Trim"
-  ];
-
   useEffect(() => {
-    fetchProjects();
-    fetchQuizResponses();
+    loadDashboardData();
   }, []);
 
-  const fetchProjects = async () => {
+  const loadDashboardData = async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('gallery_projects')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setProjects(data || []);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load gallery projects",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchQuizResponses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('quiz_responses')
+      // Load projects
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setQuizResponses(data || []);
+      if (projectsError) throw projectsError;
+      setProjects(projectsData || []);
+
+      // Load appointments
+      const { data: appointmentsData, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('*')
+        .order('appointment_date', { ascending: true });
+
+      if (appointmentsError) throw appointmentsError;
+      setAppointments(appointmentsData || []);
+
+      // Load quiz responses (leads)
+      const { data: quizData, error: quizError } = await supabase
+        .from('quiz_responses')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (quizError) throw quizError;
+      setQuizResponses(quizData || []);
+
+      // Calculate stats
+      if (projectsData) {
+        const pendingCount = projectsData.filter(p => p.project_status === 'pending').length;
+        const completedCount = projectsData.filter(p => p.project_status === 'completed').length;
+        const totalRevenue = projectsData
+          .filter(p => p.actual_cost)
+          .reduce((sum, p) => sum + (p.actual_cost || 0), 0);
+
+        setStats({
+          totalProjects: projectsData.length,
+          pendingProjects: pendingCount,
+          completedProjects: completedCount,
+          totalRevenue: totalRevenue,
+          upcomingAppointments: appointmentsData?.filter(a => 
+            new Date(a.appointment_date) >= new Date() && a.status === 'scheduled'
+          ).length || 0,
+          newLeads: quizData?.filter(q => 
+            new Date(q.created_at) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          ).length || 0
+        });
+      }
+
     } catch (error) {
-      console.error('Error fetching quiz responses:', error);
+      console.error('Error loading dashboard data:', error);
       toast({
-        title: "Error",
-        description: "Failed to load quiz responses",
-        variant: "destructive",
+        title: "Error loading data",
+        description: "Please refresh the page and try again.",
+        variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out."
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-grey">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleFileUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -285,123 +379,391 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <Header />
-      
-      {/* User Info and Logout */}
-      <div className="bg-muted/30 border-b">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="bg-white border-b border-grey/20 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 bg-gold text-black rounded-full">
-                <User className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="font-semibold">Área Administrativa</p>
-                <p className="text-sm text-muted-foreground">
-                  Logado como: {user?.email}
-                </p>
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-navy">AXO Floors Admin</h1>
+              <Badge variant="secondary" className="bg-gold/10 text-gold">
+                Welcome, {user?.email}
+              </Badge>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={signOut}
-              className="gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Button>
+            <div className="flex items-center gap-3">
+              <Link to="/">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Home className="w-4 h-4" />
+                  Back to Site
+                </Button>
+              </Link>
+              <Button 
+                onClick={handleLogout} 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-      
+
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold font-heading text-navy mb-2">
-            Área Administrativa
-          </h1>
-          <p className="text-grey">
-            Gerencie projetos da galeria e leads do quiz
-          </p>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4 mx-auto">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="text-2xl font-bold text-navy mb-1">{stats.totalProjects}</div>
+              <div className="text-sm text-grey">Total Projects</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full mb-4 mx-auto">
+                <Clock className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div className="text-2xl font-bold text-navy mb-1">{stats.pendingProjects}</div>
+              <div className="text-sm text-grey">Pending</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4 mx-auto">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="text-2xl font-bold text-navy mb-1">{stats.completedProjects}</div>
+              <div className="text-sm text-grey">Completed</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-gold/20 rounded-full mb-4 mx-auto">
+                <DollarSign className="w-6 h-6 text-gold" />
+              </div>
+              <div className="text-2xl font-bold text-navy mb-1">{formatCurrency(stats.totalRevenue)}</div>
+              <div className="text-sm text-grey">Total Revenue</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4 mx-auto">
+                <Calendar className="w-6 h-6 text-purple-600" />
+              </div>
+              <div className="text-2xl font-bold text-navy mb-1">{stats.upcomingAppointments}</div>
+              <div className="text-sm text-grey">Upcoming</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4 mx-auto">
+                <Users className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="text-2xl font-bold text-navy mb-1">{stats.newLeads}</div>
+              <div className="text-sm text-grey">New Leads</div>
+            </CardContent>
+          </Card>
         </div>
 
-        <Tabs defaultValue="leads" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="leads" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Quiz Leads ({quizResponses.length})
-            </TabsTrigger>
-            <TabsTrigger value="gallery" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Gallery Projects
-            </TabsTrigger>
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="leads" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="leads">New Leads</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="appointments">Calendar</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="leads" className="space-y-6">
+          {/* New Leads Tab */}
+          <TabsContent value="leads">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  Quiz Leads
-                  <Button onClick={fetchQuizResponses} variant="outline" size="sm">
-                    Refresh
-                  </Button>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  New Leads from Quiz
                 </CardTitle>
+                <Button variant="outline" size="sm" onClick={loadDashboardData}>
+                  Refresh
+                </Button>
               </CardHeader>
               <CardContent>
-                {quizResponses.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 mx-auto text-grey/50 mb-4" />
-                    <p className="text-grey">Nenhum lead encontrado ainda</p>
-                    <p className="text-sm text-grey/70">Os leads aparecerão aqui quando alguém completar o quiz</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {quizResponses.map((response) => (
-                      <Card key={response.id} className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-4">
+                  {quizResponses.length === 0 ? (
+                    <p className="text-grey text-center py-8">No leads yet. Promote your quiz to get more leads!</p>
+                  ) : (
+                    quizResponses.map((lead) => (
+                      <div key={lead.id} className="border rounded-lg p-4 hover:bg-grey-light/50 transition-colors">
+                        <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="font-semibold text-navy">{response.name}</h3>
-                            <p className="text-sm text-grey">{response.email}</p>
-                            <p className="text-sm text-grey">{response.phone}</p>
-                            {response.city && (
-                              <p className="text-sm text-grey">{response.city}</p>
-                            )}
-                          </div>
-                          <div>
-                            <div className="space-y-1">
-                              <p className="text-sm">
-                                <strong>Serviço:</strong> {Array.isArray(response.services) ? response.services.join(', ') : response.services}
-                              </p>
-                              <p className="text-sm">
-                                <strong>Área:</strong> {response.room_size} sq ft
-                              </p>
-                              <p className="text-sm">
-                                <strong>Orçamento:</strong> ${response.budget?.toLocaleString()}
-                              </p>
+                            <h4 className="font-semibold text-navy">{lead.name}</h4>
+                            <div className="flex items-center gap-4 text-sm text-grey mt-1">
+                              <span className="flex items-center gap-1">
+                                <Mail className="w-3 h-3" />
+                                {lead.email}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Phone className="w-3 h-3" />
+                                {lead.phone}
+                              </span>
+                              {lead.city && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  {lead.city}, NJ
+                                </span>
+                              )}
                             </div>
                           </div>
                           <div className="text-right">
-                            <Badge variant="outline" className="mb-2">
-                              {response.source}
+                            <div className="text-sm text-grey">{formatDate(lead.created_at)}</div>
+                            <Badge variant="secondary" className="mt-1">
+                              {lead.source}
                             </Badge>
-                            <p className="text-xs text-grey">
-                              {new Date(response.created_at).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
                           </div>
                         </div>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                          <div>
+                            <span className="text-sm font-medium text-navy">Services:</span>
+                            <p className="text-sm text-grey">{lead.services.join(', ')}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-navy">Area:</span>
+                            <p className="text-sm text-grey">{lead.room_size} sq ft</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-navy">Budget:</span>
+                            <p className="text-sm text-grey">{formatCurrency(lead.budget)}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button size="sm" className="gold-gradient text-black">
+                            <Phone className="w-3 h-3 mr-1" />
+                            Call Now
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Mail className="w-3 h-3 mr-1" />
+                            Email
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Plus className="w-3 h-3 mr-1" />
+                            Create Project
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Projects Tab */}
+          <TabsContent value="projects">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Active Projects
+                </CardTitle>
+                <Button className="gold-gradient text-black">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Project
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {projects.length === 0 ? (
+                    <p className="text-grey text-center py-8">No projects yet. Create your first project!</p>
+                  ) : (
+                    projects.map((project) => (
+                      <div key={project.id} className="border rounded-lg p-4 hover:bg-grey-light/50 transition-colors">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h4 className="font-semibold text-navy">{project.customer_name}</h4>
+                            <p className="text-sm text-grey">{project.project_type}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className={getStatusColor(project.project_status)}>
+                              {project.project_status}
+                            </Badge>
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-3 h-3 mr-1" />
+                              View
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Edit className="w-3 h-3 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium text-navy">Contact:</span>
+                            <p className="text-grey">{project.customer_phone}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-navy">Area:</span>
+                            <p className="text-grey">{project.square_footage} sq ft</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-navy">Estimate:</span>
+                            <p className="text-grey">{formatCurrency(project.estimated_cost)}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-navy">Created:</span>
+                            <p className="text-grey">{formatDate(project.created_at)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Calendar Tab */}
+          <TabsContent value="appointments">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Upcoming Appointments
+                </CardTitle>
+                <Button className="gold-gradient text-black">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Schedule Appointment
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {appointments.length === 0 ? (
+                    <p className="text-grey text-center py-8">No appointments scheduled. Create your first appointment!</p>
+                  ) : (
+                    appointments.slice(0, 10).map((appointment) => (
+                      <div key={appointment.id} className="border rounded-lg p-4 hover:bg-grey-light/50 transition-colors">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="font-semibold text-navy">{appointment.customer_name}</h4>
+                            <p className="text-sm text-grey">{appointment.appointment_type}</p>
+                          </div>
+                          <Badge className={getStatusColor(appointment.status)}>
+                            {appointment.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium text-navy">Date & Time:</span>
+                            <p className="text-grey">
+                              {formatDate(appointment.appointment_date)} at {appointment.appointment_time}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-navy">Contact:</span>
+                            <p className="text-grey">{appointment.customer_phone}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-navy">Location:</span>
+                            <p className="text-grey">{appointment.location || 'TBD'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Project Status Distribution
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-grey">Pending Projects</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 h-2 bg-grey-light rounded-full">
+                          <div 
+                            className="h-2 bg-yellow-500 rounded-full" 
+                            style={{ 
+                              width: `${stats.totalProjects > 0 ? (stats.pendingProjects / stats.totalProjects) * 100 : 0}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium">{stats.pendingProjects}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-grey">Completed Projects</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 h-2 bg-grey-light rounded-full">
+                          <div 
+                            className="h-2 bg-green-500 rounded-full" 
+                            style={{ 
+                              width: `${stats.totalProjects > 0 ? (stats.completedProjects / stats.totalProjects) * 100 : 0}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium">{stats.completedProjects}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    Revenue Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-sm text-grey">Total Revenue</span>
+                      <p className="text-2xl font-bold text-navy">{formatCurrency(stats.totalRevenue)}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-grey">Average Project Value</span>
+                      <p className="text-lg font-semibold text-navy">
+                        {stats.completedProjects > 0 
+                          ? formatCurrency(stats.totalRevenue / stats.completedProjects)
+                          : '$0'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
 
           <TabsContent value="gallery" className="space-y-8">
             {/* Add/Edit Form */}
@@ -596,8 +958,6 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
       </div>
-      
-      <Footer />
     </div>
   );
 };

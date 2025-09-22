@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          appointment_type: string
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          duration_hours: number | null
+          id: string
+          location: string | null
+          notes: string | null
+          project_id: string | null
+          reminder_sent: boolean | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          appointment_type: string
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          duration_hours?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          project_id?: string | null
+          reminder_sent?: boolean | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          appointment_type?: string
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          duration_hours?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          project_id?: string | null
+          reminder_sent?: boolean | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gallery_projects: {
         Row: {
           category: string
@@ -80,6 +139,66 @@ export type Database = {
           id?: string
           role?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          actual_cost: number | null
+          address: string | null
+          city: string | null
+          completion_date: string | null
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          estimated_cost: number | null
+          id: string
+          notes: string | null
+          project_status: string
+          project_type: string
+          square_footage: number | null
+          start_date: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          actual_cost?: number | null
+          address?: string | null
+          city?: string | null
+          completion_date?: string | null
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          project_status?: string
+          project_type: string
+          square_footage?: number | null
+          start_date?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          actual_cost?: number | null
+          address?: string | null
+          city?: string | null
+          completion_date?: string | null
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          project_status?: string
+          project_type?: string
+          square_footage?: number | null
+          start_date?: string | null
+          updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
