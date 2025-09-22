@@ -33,79 +33,166 @@ import weatheredOakImg from '@/assets/stains/weathered-oak.jpg';
 
 // Import process image
 import stainProcessImg from '@/assets/stain-process-work.jpg';
-
 const StainGallery = () => {
   const [expandedWoodType, setExpandedWoodType] = useState<string>('white-oak');
-
-  const whiteOakStains = [
-    { name: 'Aged Barrel', image: agedBarrelImg },
-    { name: 'Antique Brown', image: antiqueBrownImg },
-    { name: 'Cherry', image: cherryImg },
-    { name: 'Chestnut', image: chestnutImg },
-    { name: 'Classic Gray', image: classicGrayImg },
-    { name: 'Coffee Brown', image: coffeeBrownImg },
-    { name: 'Colonial Maple', image: colonialMapleImg },
-    { name: 'Country White', image: countryWhiteImg },
-    { name: 'Dark Walnut', image: darkWalnutImg },
-    { name: 'Ebony', image: ebonyImg },
-    { name: 'English Chestnut', image: englishChestnutImg },
-    { name: 'Espresso', image: espressoImg },
-    { name: 'Golden Oak', image: goldenOakImg },
-    { name: 'Honey', image: honeyImg },
-    { name: 'Jacobean', image: jacobeanImg },
-    { name: 'Mahogany', image: mahoganyImg },
-    { name: 'Natural', image: naturalImg },
-    { name: 'Nutmeg', image: nutmegImg },
-    { name: 'Provincial', image: provincialImg },
-    { name: 'Red Oak', image: redOakImg },
-    { name: 'Royal Mahogany', image: royalMahoganyImg },
-    { name: 'Sedona Red', image: sedonaRedImg },
-    { name: 'Special Walnut', image: specialWalnutImg },
-    { name: 'Weathered Oak', image: weatheredOakImg }
-  ];
-
-  const redOakStains = [
-    { name: 'Aged Barrel', image: agedBarrelImg },
-    { name: 'Antique Brown', image: antiqueBrownImg },
-    { name: 'Cherry', image: cherryImg },
-    { name: 'Chestnut', image: chestnutImg },
-    { name: 'Classic Gray', image: classicGrayImg },
-    { name: 'Coffee Brown', image: coffeeBrownImg },
-    { name: 'Colonial Maple', image: colonialMapleImg },
-    { name: 'Country White', image: countryWhiteImg },
-    { name: 'Dark Walnut', image: darkWalnutImg },
-    { name: 'Ebony', image: ebonyImg },
-    { name: 'English Chestnut', image: englishChestnutImg },
-    { name: 'Espresso', image: espressoImg },
-    { name: 'Golden Oak', image: goldenOakImg },
-    { name: 'Honey', image: honeyImg },
-    { name: 'Jacobean', image: jacobeanImg },
-    { name: 'Mahogany', image: mahoganyImg },
-    { name: 'Natural', image: naturalImg },
-    { name: 'Nutmeg', image: nutmegImg },
-    { name: 'Provincial', image: provincialImg },
-    { name: 'Red Oak', image: redOakImg },
-    { name: 'Royal Mahogany', image: royalMahoganyImg },
-    { name: 'Sedona Red', image: sedonaRedImg },
-    { name: 'Special Walnut', image: specialWalnutImg },
-    { name: 'Weathered Oak', image: weatheredOakImg }
-  ];
-
+  const whiteOakStains = [{
+    name: 'Aged Barrel',
+    image: agedBarrelImg
+  }, {
+    name: 'Antique Brown',
+    image: antiqueBrownImg
+  }, {
+    name: 'Cherry',
+    image: cherryImg
+  }, {
+    name: 'Chestnut',
+    image: chestnutImg
+  }, {
+    name: 'Classic Gray',
+    image: classicGrayImg
+  }, {
+    name: 'Coffee Brown',
+    image: coffeeBrownImg
+  }, {
+    name: 'Colonial Maple',
+    image: colonialMapleImg
+  }, {
+    name: 'Country White',
+    image: countryWhiteImg
+  }, {
+    name: 'Dark Walnut',
+    image: darkWalnutImg
+  }, {
+    name: 'Ebony',
+    image: ebonyImg
+  }, {
+    name: 'English Chestnut',
+    image: englishChestnutImg
+  }, {
+    name: 'Espresso',
+    image: espressoImg
+  }, {
+    name: 'Golden Oak',
+    image: goldenOakImg
+  }, {
+    name: 'Honey',
+    image: honeyImg
+  }, {
+    name: 'Jacobean',
+    image: jacobeanImg
+  }, {
+    name: 'Mahogany',
+    image: mahoganyImg
+  }, {
+    name: 'Natural',
+    image: naturalImg
+  }, {
+    name: 'Nutmeg',
+    image: nutmegImg
+  }, {
+    name: 'Provincial',
+    image: provincialImg
+  }, {
+    name: 'Red Oak',
+    image: redOakImg
+  }, {
+    name: 'Royal Mahogany',
+    image: royalMahoganyImg
+  }, {
+    name: 'Sedona Red',
+    image: sedonaRedImg
+  }, {
+    name: 'Special Walnut',
+    image: specialWalnutImg
+  }, {
+    name: 'Weathered Oak',
+    image: weatheredOakImg
+  }];
+  const redOakStains = [{
+    name: 'Aged Barrel',
+    image: agedBarrelImg
+  }, {
+    name: 'Antique Brown',
+    image: antiqueBrownImg
+  }, {
+    name: 'Cherry',
+    image: cherryImg
+  }, {
+    name: 'Chestnut',
+    image: chestnutImg
+  }, {
+    name: 'Classic Gray',
+    image: classicGrayImg
+  }, {
+    name: 'Coffee Brown',
+    image: coffeeBrownImg
+  }, {
+    name: 'Colonial Maple',
+    image: colonialMapleImg
+  }, {
+    name: 'Country White',
+    image: countryWhiteImg
+  }, {
+    name: 'Dark Walnut',
+    image: darkWalnutImg
+  }, {
+    name: 'Ebony',
+    image: ebonyImg
+  }, {
+    name: 'English Chestnut',
+    image: englishChestnutImg
+  }, {
+    name: 'Espresso',
+    image: espressoImg
+  }, {
+    name: 'Golden Oak',
+    image: goldenOakImg
+  }, {
+    name: 'Honey',
+    image: honeyImg
+  }, {
+    name: 'Jacobean',
+    image: jacobeanImg
+  }, {
+    name: 'Mahogany',
+    image: mahoganyImg
+  }, {
+    name: 'Natural',
+    image: naturalImg
+  }, {
+    name: 'Nutmeg',
+    image: nutmegImg
+  }, {
+    name: 'Provincial',
+    image: provincialImg
+  }, {
+    name: 'Red Oak',
+    image: redOakImg
+  }, {
+    name: 'Royal Mahogany',
+    image: royalMahoganyImg
+  }, {
+    name: 'Sedona Red',
+    image: sedonaRedImg
+  }, {
+    name: 'Special Walnut',
+    image: specialWalnutImg
+  }, {
+    name: 'Weathered Oak',
+    image: weatheredOakImg
+  }];
   const toggleWoodType = (woodType: string) => {
     setExpandedWoodType(expandedWoodType === woodType ? '' : woodType);
   };
-
-  const StainGrid = ({ stains }: { stains: typeof whiteOakStains }) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
-      {stains.map((stain, index) => (
-        <Card key={index} className="group cursor-pointer hover:shadow-elegant transition-smooth">
+  const StainGrid = ({
+    stains
+  }: {
+    stains: typeof whiteOakStains;
+  }) => <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
+      {stains.map((stain, index) => <Card key={index} className="group cursor-pointer hover:shadow-elegant transition-smooth">
           <CardContent className="p-0">
             <div className="aspect-square bg-gradient-subtle rounded-lg overflow-hidden">
-              <img
-                src={stain.image}
-                alt={stain.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
-              />
+              <img src={stain.image} alt={stain.name} className="w-full h-full object-cover group-hover:scale-105 transition-smooth" />
             </div>
             <div className="p-3">
               <h3 className="text-sm font-medium text-navy text-center">
@@ -113,13 +200,9 @@ const StainGallery = () => {
               </h3>
             </div>
           </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-
-  return (
-    <>
+        </Card>)}
+    </div>;
+  return <>
       <Header />
       <main className="pt-20">
         {/* Hero Section */}
@@ -150,54 +233,36 @@ const StainGallery = () => {
               
               {/* White Oak Section */}
               <div className="mb-12">
-                <button
-                  onClick={() => toggleWoodType('white-oak')}
-                  className="w-full flex items-center justify-between p-6 bg-white rounded-lg shadow-soft hover:shadow-elegant transition-smooth border-2 border-transparent hover:border-gold/20"
-                >
+                <button onClick={() => toggleWoodType('white-oak')} className="w-full flex items-center justify-between p-6 bg-white rounded-lg shadow-soft hover:shadow-elegant transition-smooth border-2 border-transparent hover:border-gold/20">
                   <h2 className="text-3xl font-heading font-bold text-navy">
                     WHITE OAK
                   </h2>
-                  {expandedWoodType === 'white-oak' ? (
-                    <ChevronUp className="w-6 h-6 text-gold" />
-                  ) : (
-                    <ChevronDown className="w-6 h-6 text-gold" />
-                  )}
+                  {expandedWoodType === 'white-oak' ? <ChevronUp className="w-6 h-6 text-gold" /> : <ChevronDown className="w-6 h-6 text-gold" />}
                 </button>
                 
-                {expandedWoodType === 'white-oak' && (
-                  <div className="mt-6 p-6 bg-white rounded-lg shadow-soft">
+                {expandedWoodType === 'white-oak' && <div className="mt-6 p-6 bg-white rounded-lg shadow-soft">
                     <p className="text-grey mb-6 text-center">
                       Colors are shown on White Oak. Natural wood tones vary, so expect your final stain color to vary slightly from board to board.
                     </p>
                     <StainGrid stains={whiteOakStains} />
-                  </div>
-                )}
+                  </div>}
               </div>
 
               {/* Red Oak Section */}
               <div className="mb-12">
-                <button
-                  onClick={() => toggleWoodType('red-oak')}
-                  className="w-full flex items-center justify-between p-6 bg-white rounded-lg shadow-soft hover:shadow-elegant transition-smooth border-2 border-transparent hover:border-gold/20"
-                >
+                <button onClick={() => toggleWoodType('red-oak')} className="w-full flex items-center justify-between p-6 bg-white rounded-lg shadow-soft hover:shadow-elegant transition-smooth border-2 border-transparent hover:border-gold/20">
                   <h2 className="text-3xl font-heading font-bold text-navy">
                     RED OAK
                   </h2>
-                  {expandedWoodType === 'red-oak' ? (
-                    <ChevronUp className="w-6 h-6 text-gold" />
-                  ) : (
-                    <ChevronDown className="w-6 h-6 text-gold" />
-                  )}
+                  {expandedWoodType === 'red-oak' ? <ChevronUp className="w-6 h-6 text-gold" /> : <ChevronDown className="w-6 h-6 text-gold" />}
                 </button>
                 
-                {expandedWoodType === 'red-oak' && (
-                  <div className="mt-6 p-6 bg-white rounded-lg shadow-soft">
+                {expandedWoodType === 'red-oak' && <div className="mt-6 p-6 bg-white rounded-lg shadow-soft">
                     <p className="text-grey mb-6 text-center">
                       Colors are shown on Red Oak. Red Oak typically accepts stain more readily and may appear darker than White Oak with the same stain color.
                     </p>
                     <StainGrid stains={redOakStains} />
-                  </div>
-                )}
+                  </div>}
               </div>
 
               {/* Staining Process Section */}
@@ -205,11 +270,7 @@ const StainGallery = () => {
                 <Card className="overflow-hidden">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                     <div className="aspect-[4/3] lg:aspect-auto">
-                      <img 
-                        src={stainProcessImg} 
-                        alt="AXO Floors professional applying and testing different stain colors on hardwood flooring"
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={stainProcessImg} alt="AXO Floors professional applying and testing different stain colors on hardwood flooring" className="w-full h-full object-cover" />
                     </div>
                     <div className="p-8 lg:p-12 flex flex-col justify-center bg-gradient-subtle">
                       <h3 className="text-3xl font-heading font-bold text-navy mb-6">
@@ -224,10 +285,7 @@ const StainGallery = () => {
                           <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
                           <p className="text-grey">Sample multiple colors on your actual flooring</p>
                         </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
-                          <p className="text-grey">Professional application with premium equipment</p>
-                        </div>
+                        
                         <div className="flex items-start gap-3">
                           <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
                           <p className="text-grey">Expert guidance to achieve your perfect finish</p>
@@ -241,24 +299,7 @@ const StainGallery = () => {
               {/* Professional Note */}
               <div className="text-center">
                 <Card className="bg-gradient-primary text-white">
-                  <CardContent className="p-8">
-                    <h3 className="text-2xl font-heading font-bold mb-4">
-                      Professional Staining Services
-                    </h3>
-                    <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-                      Our expert team brings years of experience in wood staining and finishing. 
-                      We'll help you select the perfect color to complement your space and achieve consistent, 
-                      professional results across your entire project.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-                        Schedule Consultation
-                      </Button>
-                      <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                        View Our Work
-                      </Button>
-                    </div>
-                  </CardContent>
+                  
                 </Card>
               </div>
             </div>
@@ -266,8 +307,6 @@ const StainGallery = () => {
         </section>
       </main>
       <Footer />
-    </>
-  );
+    </>;
 };
-
 export default StainGallery;
