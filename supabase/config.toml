@@ -1,5 +1,8 @@
 project_id = "qyyreinrwjygrmuprlwu"
 
+[functions.facebook-conversions]
+verify_jwt = false
+
 [functions.send-follow-up]
 verify_jwt = false
 

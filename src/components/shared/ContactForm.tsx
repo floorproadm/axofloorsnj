@@ -45,6 +45,63 @@ const ContactForm = () => {
     }));
   };
 
+  // Helper function to get Facebook pixel data
+  const getFacebookPixelData = () => {
+    try {
+      // Get Facebook Click ID from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const fbc = urlParams.get('fbclid') ? `fb.1.${Date.now()}.${urlParams.get('fbclid')}` : undefined;
+      
+      // Get Facebook Browser ID from cookie
+      const cookies = document.cookie.split(';');
+      const fbpCookie = cookies.find(cookie => cookie.trim().startsWith('_fbp='));
+      const fbp = fbpCookie ? fbpCookie.split('=')[1] : undefined;
+      
+      return { fbc, fbp };
+    } catch (error) {
+      console.error('Error getting Facebook pixel data:', error);
+      return { fbc: undefined, fbp: undefined };
+    }
+  };
+
+  // Helper function to send Facebook conversion
+  const sendFacebookConversion = async (leadData: any) => {
+    try {
+      const { fbc, fbp } = getFacebookPixelData();
+      
+      const eventData = {
+        event_name: 'Lead',
+        email: leadData.email,
+        phone: leadData.phone,
+        first_name: leadData.name.split(' ')[0],
+        last_name: leadData.name.split(' ').slice(1).join(' '),
+        source_url: window.location.href,
+        value: leadData.budget ? parseInt(leadData.budget) : 0,
+        service: leadData.services.join(', '),
+        fbc,
+        fbp,
+        custom_data: {
+          lead_source: 'contact_form',
+          services: leadData.services,
+          city: leadData.city,
+          zip_code: leadData.zip_code
+        }
+      };
+
+      const { error } = await supabase.functions.invoke('facebook-conversions', {
+        body: { eventData }
+      });
+
+      if (error) {
+        console.error('Facebook conversion error:', error);
+      } else {
+        console.log('Facebook conversion sent successfully');
+      }
+    } catch (error) {
+      console.error('Error sending Facebook conversion:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -69,6 +126,9 @@ const ContactForm = () => {
         }]);
 
       if (error) throw error;
+
+      // Send Facebook conversion event
+      await sendFacebookConversion(formData);
 
       toast({
         title: "Message sent successfully!",
