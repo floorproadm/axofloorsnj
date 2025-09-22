@@ -220,111 +220,119 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Mobile-First Header */}
       <div className="bg-white border-b border-grey/20 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
+        <div className="px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-navy">AXO Floors Admin</h1>
-              <Badge variant="secondary" className="bg-gold/10 text-gold">
-                Welcome, {user?.email}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-navy truncate">
+                AXO Admin
+              </h1>
+              <Badge variant="secondary" className="bg-gold/10 text-gold text-xs px-2 py-1 hidden sm:inline-flex">
+                {user?.email?.split('@')[0]}
               </Badge>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3">
               <Link to="/">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Home className="w-4 h-4" />
-                  Back to Site
+                <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3">
+                  <Home className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline ml-1 sm:ml-2">Back</span>
                 </Button>
               </Link>
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
                 size="sm"
-                className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                className="h-8 px-2 sm:px-3 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
               >
-                <LogOut className="w-4 h-4" />
-                Sign Out
+                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline ml-1 sm:ml-2">Out</span>
               </Button>
             </div>
+          </div>
+          {/* Mobile User Info */}
+          <div className="sm:hidden mt-2">
+            <p className="text-xs text-grey truncate">{user?.email}</p>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 sm:py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <Card>
-            <CardContent className="p-4 sm:p-6 text-center">
-              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full mb-3 sm:mb-4 mx-auto">
-                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+      <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-6">
+        {/* Stats Overview - Mobile Optimized */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+          <Card className="col-span-1">
+            <CardContent className="p-2 sm:p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-blue-100 rounded-full mb-1 sm:mb-2 mx-auto">
+                <FileText className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-blue-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.totalProjects}</div>
-              <div className="text-xs sm:text-sm text-grey">Total Projects</div>
+              <div className="text-sm sm:text-lg md:text-xl font-bold text-navy mb-1">{stats.totalProjects}</div>
+              <div className="text-xs text-grey">Projects</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6 text-center">
-              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-full mb-3 sm:mb-4 mx-auto">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
+          <Card className="col-span-1">
+            <CardContent className="p-2 sm:p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-yellow-100 rounded-full mb-1 sm:mb-2 mx-auto">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-yellow-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.pendingProjects}</div>
-              <div className="text-xs sm:text-sm text-grey">Pending</div>
+              <div className="text-sm sm:text-lg md:text-xl font-bold text-navy mb-1">{stats.pendingProjects}</div>
+              <div className="text-xs text-grey">Pending</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6 text-center">
-              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full mb-3 sm:mb-4 mx-auto">
-                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+          <Card className="col-span-1">
+            <CardContent className="p-2 sm:p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-green-100 rounded-full mb-1 sm:mb-2 mx-auto">
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.completedProjects}</div>
-              <div className="text-xs sm:text-sm text-grey">Completed</div>
+              <div className="text-sm sm:text-lg md:text-xl font-bold text-navy mb-1">{stats.completedProjects}</div>
+              <div className="text-xs text-grey">Done</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6 text-center">
-              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gold/20 rounded-full mb-3 sm:mb-4 mx-auto">
-                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-gold" />
+          <Card className="col-span-1">
+            <CardContent className="p-2 sm:p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-gold/20 rounded-full mb-1 sm:mb-2 mx-auto">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gold" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{formatCurrency(stats.totalRevenue)}</div>
-              <div className="text-xs sm:text-sm text-grey">Total Revenue</div>
+              <div className="text-xs sm:text-sm md:text-xl font-bold text-navy mb-1">{formatCurrency(stats.totalRevenue)}</div>
+              <div className="text-xs text-grey">Revenue</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6 text-center">
-              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full mb-3 sm:mb-4 mx-auto">
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+          <Card className="col-span-1">
+            <CardContent className="p-2 sm:p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-purple-100 rounded-full mb-1 sm:mb-2 mx-auto">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.upcomingAppointments}</div>
-              <div className="text-xs sm:text-sm text-grey">Upcoming</div>
+              <div className="text-sm sm:text-lg md:text-xl font-bold text-navy mb-1">{stats.upcomingAppointments}</div>
+              <div className="text-xs text-grey">Meetings</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6 text-center">
-              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full mb-3 sm:mb-4 mx-auto">
-                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+          <Card className="col-span-1">
+            <CardContent className="p-2 sm:p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-green-100 rounded-full mb-1 sm:mb-2 mx-auto">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.newLeads}</div>
-              <div className="text-xs sm:text-sm text-grey">New Leads</div>
+              <div className="text-sm sm:text-lg md:text-xl font-bold text-navy mb-1">{stats.newLeads}</div>
+              <div className="text-xs text-grey">New Leads</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="leads" className="space-y-6">
-          <div className="overflow-x-auto pb-2">
-            <TabsList className="grid w-full grid-cols-5 min-w-[500px]">
-              <TabsTrigger value="leads" className="text-xs sm:text-sm">Leads</TabsTrigger>
-              <TabsTrigger value="projects" className="text-xs sm:text-sm">Projects</TabsTrigger>
-              <TabsTrigger value="appointments" className="text-xs sm:text-sm">Calendar</TabsTrigger>
-              <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
-              <TabsTrigger value="management" className="text-xs sm:text-sm">Full Leads</TabsTrigger>
-            </TabsList>
+        {/* Main Content Tabs - Mobile Optimized */}
+        <Tabs defaultValue="leads" className="space-y-4 sm:space-y-6">
+          <div className="overflow-x-auto pb-2 -mx-3 sm:mx-0">
+            <div className="px-3 sm:px-0">
+              <TabsList className="grid w-full grid-cols-5 min-w-[400px] sm:min-w-[500px] h-auto">
+                <TabsTrigger value="leads" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Leads</TabsTrigger>
+                <TabsTrigger value="projects" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Projects</TabsTrigger>
+                <TabsTrigger value="appointments" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Calendar</TabsTrigger>
+                <TabsTrigger value="analytics" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Analytics</TabsTrigger>
+                <TabsTrigger value="management" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Manager</TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           {/* Leads Tab */}

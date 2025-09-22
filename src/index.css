@@ -240,3 +240,35 @@
   0% { filter: hue-rotate(0deg); }
   100% { filter: hue-rotate(360deg); }
 }
+
+/* Mobile-first utilities */
+@media (max-width: 640px) {
+  .mobile-no-scroll {
+    overflow-x: hidden;
+  }
+  
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .mobile-text-readable {
+    font-size: 16px !important;
+  }
+}
+
+/* Improve mobile select dropdowns */
+@media (max-width: 640px) {
+  [data-radix-select-content] {
+    max-height: 50vh !important;
+  }
+}
+
+/* Better mobile dialog handling */
+@media (max-width: 640px) {
+  [data-radix-dialog-content] {
+    margin: 8px !important;
+    max-height: calc(100vh - 32px) !important;
+    width: calc(100vw - 16px) !important;
+  }
+}
