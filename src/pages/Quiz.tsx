@@ -443,19 +443,74 @@ const Quiz = () => {
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What's the approximate area to be {formData.serviceType === "new-installation" ? "covered" : "refinished"}?
                       </h3>
-                      <p className="text-grey">Enter the square footage for accurate pricing</p>
+                      <p className="text-grey">Choose from common sizes or enter a custom amount</p>
                     </div>
 
+                    {/* Quick Size Options */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                      {[
+                        { label: "Small Room", value: "200", subtitle: "~200 sq ft" },
+                        { label: "Medium Room", value: "400", subtitle: "~400 sq ft" },
+                        { label: "Large Room", value: "600", subtitle: "~600 sq ft" },
+                        { label: "Whole Floor", value: "1200", subtitle: "1200+ sq ft" }
+                      ].map((size) => (
+                        <Card 
+                          key={size.value}
+                          className={`cursor-pointer transition-all hover:shadow-md border-2 p-3 text-center ${
+                            formData.squareFootage === size.value 
+                              ? 'border-gold bg-gold/10' 
+                              : 'border-grey/20 hover:border-gold/50'
+                          }`}
+                          onClick={() => setFormData(prev => ({ ...prev, squareFootage: size.value }))}
+                        >
+                          <div className="text-sm font-medium text-navy">{size.label}</div>
+                          <div className="text-xs text-grey mt-1">{size.subtitle}</div>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {/* Custom Input */}
                     <div className="max-w-md mx-auto">
-                      <Label htmlFor="squareFootage" className="text-navy font-medium">Square Footage</Label>
-                      <Input
-                        id="squareFootage"
-                        type="number"
-                        value={formData.squareFootage}
-                        onChange={(e) => setFormData(prev => ({ ...prev, squareFootage: e.target.value }))}
-                        placeholder="Enter square footage"
-                        className="mt-2 text-center text-lg"
-                      />
+                      <Label htmlFor="squareFootage" className="text-navy font-medium">
+                        Or enter custom square footage
+                      </Label>
+                      <div className="relative mt-2">
+                        <Input
+                          id="squareFootage"
+                          type="number"
+                          value={formData.squareFootage}
+                          onChange={(e) => setFormData(prev => ({ ...prev, squareFootage: e.target.value }))}
+                          placeholder="Enter custom sq ft"
+                          className="text-center text-lg pr-16"
+                        />
+                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-grey text-sm">
+                          sq ft
+                        </span>
+                      </div>
+                      
+                      {/* Helper text */}
+                      {formData.squareFootage && (
+                        <div className="mt-2 text-center">
+                          <p className="text-sm text-grey">
+                            That's approximately {Math.ceil(parseInt(formData.squareFootage) / 100)} rooms
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Area Calculator Helper */}
+                    <div className="text-center">
+                      <details className="inline-block text-left">
+                        <summary className="cursor-pointer text-sm text-gold hover:text-gold/80 font-medium">
+                          💡 Need help calculating your area?
+                        </summary>
+                        <div className="mt-2 p-3 bg-grey/5 rounded-lg text-sm text-grey max-w-sm">
+                          <p className="mb-2"><strong>Quick calculation:</strong></p>
+                          <p>Length × Width = Square Footage</p>
+                          <p className="mt-2 text-xs">Example: 20ft × 15ft = 300 sq ft</p>
+                          <p className="text-xs">For multiple rooms, add them together</p>
+                        </div>
+                      </details>
                     </div>
                   </div>
                 )}
