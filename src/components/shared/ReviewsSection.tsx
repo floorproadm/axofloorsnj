@@ -59,43 +59,6 @@ const ReviewsSection = () => {
       length: 5
     }, (_, i) => <Star key={i} className={`w-4 h-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />);
   };
-  return <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        
-
-        {/* Reviews Grid */}
-        
-
-      </div>
-
-      {/* Structured Data for Reviews */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{
-      __html: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        "name": "AXO Floors NJ",
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "reviewCount": "47"
-        },
-        "review": reviews.map(review => ({
-          "@type": "Review",
-          "author": {
-            "@type": "Person",
-            "name": review.name
-          },
-          "reviewRating": {
-            "@type": "Rating",
-            "ratingValue": review.rating,
-            "bestRating": "5"
-          },
-          "reviewBody": review.text,
-          "datePublished": review.date
-        }))
-      })
-    }} />
-    </section>;
+  return;
 };
 export default ReviewsSection;
