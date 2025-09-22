@@ -165,8 +165,8 @@ const SandingRefinish = () => {
 
           <div className="flex justify-center">
             <Button asChild className="gold-gradient hover:scale-105 hover:shadow-gold transition-all duration-300 text-lg px-8 py-6 h-auto text-black font-semibold group">
-              <a href="#" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
-                <span>Ver Opções de Acabamento</span>
+              <a href="https://drive.google.com/file/d/1V6o8P1lGJGHO_KC0FMUKi1ki1mqWT0iW/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
+                <span>View Finish Options</span>
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
               </a>
             </Button>
