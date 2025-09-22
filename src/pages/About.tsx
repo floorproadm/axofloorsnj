@@ -70,9 +70,9 @@ const About = () => {
               </div>
               
               {/* Team Members */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 mb-16">
                 {/* Ademir */}
-                <Card className="p-6 md:p-8">
+                <Card className="p-6 md:p-8 border-2 border-gold/20 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl bg-gradient-to-br from-background to-muted/20">
                   <CardContent className="p-0">
                     <div className="flex items-center gap-4 mb-6">
                       <div>
@@ -94,7 +94,7 @@ const About = () => {
                 </Card>
 
                 {/* Eduardo */}
-                <Card className="p-6 md:p-8">
+                <Card className="p-6 md:p-8 border-2 border-gold/20 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl bg-gradient-to-br from-background to-muted/20">
                   <CardContent className="p-0">
                     <div className="flex items-center gap-4 mb-6">
                       <div>
