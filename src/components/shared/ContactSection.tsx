@@ -165,8 +165,8 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h3 className="font-heading font-semibold text-navy mb-1 text-sm sm:text-base">Email</h3>
-                    <a href="mailto:contact@axofloorsnj.com" className="text-grey hover:text-gold transition-smooth text-xs sm:text-sm break-all">
-                      contact@axofloorsnj.com
+                    <a href="mailto:axofloorsnj@gmail.com" className="text-grey hover:text-gold transition-smooth text-xs sm:text-sm break-all">
+                      axofloorsnj@gmail.com
                     </a>
                   </div>
                 </div>

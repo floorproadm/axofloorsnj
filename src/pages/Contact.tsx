@@ -445,10 +445,10 @@ const Contact = () => {
                     </Button>
                     
                     <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
-                      <a href="mailto:contact@axofloorsnj.com" className="flex items-center gap-3">
+                      <a href="mailto:axofloorsnj@gmail.com" className="flex items-center gap-3">
                         <Mail className="w-4 h-4" />
                         <div className="text-left">
-                          <div className="font-medium text-xs">contact@axofloorsnj.com</div>
+                          <div className="font-medium text-xs">axofloorsnj@gmail.com</div>
                           <div className="text-xs opacity-80">Click to email</div>
                         </div>
                       </a>

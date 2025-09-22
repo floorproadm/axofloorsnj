@@ -223,11 +223,11 @@ const ThankYou = () => {
                         (732) 351-8653
                       </a>
                       <a 
-                        href="mailto:info@axofloors.com"
+                        href="mailto:axofloorsnj@gmail.com"
                         className="flex items-center gap-2 text-gold hover:text-gold/80 transition-colors"
                       >
                         <Mail className="w-4 h-4" />
-                        info@axofloors.com
+                        axofloorsnj@gmail.com
                       </a>
                     </div>
                   </CardContent>

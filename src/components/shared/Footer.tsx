@@ -60,9 +60,9 @@ const Footer = () => {
                   <Phone className="w-4 h-4" />
                   (732) 351-8653
                 </a>
-                <a href="mailto:contact@axofloorsnj.com" className="flex items-center justify-center lg:justify-start gap-2 text-gold hover:text-white transition-smooth text-sm">
+                <a href="mailto:axofloorsnj@gmail.com" className="flex items-center justify-center lg:justify-start gap-2 text-gold hover:text-white transition-smooth text-sm">
                   <Mail className="w-4 h-4 flex-shrink-0" />
-                  contact@axofloorsnj.com
+                  axofloorsnj@gmail.com
                 </a>
               </div>
             </div>
