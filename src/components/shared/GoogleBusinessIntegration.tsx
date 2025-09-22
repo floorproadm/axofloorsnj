@@ -96,7 +96,7 @@ const GoogleBusinessIntegration = () => {
     rating: 4.9,
     reviewCount: 47,
     phone: "(732) 351-8653",
-    address: "Serving all of New Jersey",
+    address: "Serving all Tri-state",
     hours: "Mon-Sat: 8:00 AM - 6:00 PM",
     googleMapsUrl: "https://maps.google.com/?q=AXO+Floors+NJ",
     reviewUrl: "https://search.google.com/local/writereview?placeid=ChIJExample"
