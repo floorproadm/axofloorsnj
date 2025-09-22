@@ -41,7 +41,7 @@ const Index = () => {
   }];
   const benefits = [{
     icon: Award,
-    title: "35+ Google Reviews",
+    title: "3 Google Reviews",
     description: "Consistent 5-star quality from satisfied customers",
     stat: "⭐⭐⭐⭐⭐"
   }, {
