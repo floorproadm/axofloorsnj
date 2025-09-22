@@ -270,7 +270,7 @@ const StainGallery = () => {
       <Header />
       <main className="pt-20">
         {/* Hero Section */}
-        <section className="bg-gradient-subtle py-16">
+        <section className="bg-gradient-subtle py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl font-heading font-bold text-navy mb-6">
