@@ -31,7 +31,7 @@ const Header = () => {
       {/* Top Contact Bar */}
       <div className="bg-gold text-black py-3 px-4">
         <div className="container mx-auto flex justify-between items-center">
-          <a href="sms:(732) 351-8653?body=Hi! Interested in flooring quote from your website (yellow bar)" className="flex items-center gap-2 hover:opacity-80 transition-smooth font-semibold">
+          <a href="sms:(732) 351-8653?body=Hi! Interested in flooring quote from your website" className="flex items-center gap-2 hover:opacity-80 transition-smooth font-semibold">
             <Phone className="h-4 w-4" />
             (732) 351-8653
           </a>
