@@ -485,7 +485,6 @@ const Quiz = () => {
                 {currentStep === 1 && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <Wrench className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What type of service do you need?
                       </h3>
@@ -517,7 +516,6 @@ const Quiz = () => {
                 {currentStep === 2 && formData.serviceType === "new-installation" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <Home className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What type of flooring are you interested in?
                       </h3>
@@ -548,7 +546,6 @@ const Quiz = () => {
                 {currentStep === 2 && formData.serviceType === "floor-refinish" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <Home className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What's the current condition of your floors?
                       </h3>
@@ -580,7 +577,6 @@ const Quiz = () => {
                 {currentStep === 3 && formData.serviceType === "new-installation" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <Home className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         Where will this flooring be installed?
                       </h3>
@@ -610,7 +606,6 @@ const Quiz = () => {
                 {currentStep === 3 && formData.serviceType === "floor-refinish" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <Home className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What type of wood flooring do you currently have?
                       </h3>
@@ -642,7 +637,6 @@ const Quiz = () => {
                   (currentStep === 4 && formData.serviceType === "floor-refinish")) && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <Home className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What's the approximate area to be {formData.serviceType === "new-installation" ? "covered" : "refinished"}?
                       </h3>
@@ -713,7 +707,6 @@ const Quiz = () => {
                 {currentStep === 5 && formData.serviceType === "floor-refinish" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <DollarSign className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         Are you planning to change the color of your floors?
                       </h3>
@@ -744,7 +737,6 @@ const Quiz = () => {
                 {currentStep === 5 && formData.serviceType === "new-installation" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <DollarSign className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         When would you like to start the project?
                       </h3>
@@ -775,7 +767,6 @@ const Quiz = () => {
                 {currentStep === 6 && formData.serviceType === "floor-refinish" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <DollarSign className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         When would you like to start the project?
                       </h3>
@@ -805,7 +796,6 @@ const Quiz = () => {
                 {currentStep === 6 && formData.serviceType === "new-installation" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <DollarSign className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What's your budget range for this project?
                       </h3>
@@ -836,7 +826,6 @@ const Quiz = () => {
                 {currentStep === 7 && formData.serviceType === "floor-refinish" && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <DollarSign className="w-12 h-12 text-gold mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What's your budget range for this project?
                       </h3>
