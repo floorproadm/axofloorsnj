@@ -1,14 +1,28 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Sitemap
+Sitemap: https://axofloorsnj.com/sitemap.xml
+
+# Specific pages optimized for local SEO
+Allow: /hardwood-flooring
+Allow: /sanding-and-refinish
+Allow: /vinyl-plank-flooring
+Allow: /staircase
+Allow: /contact  
+Allow: /gallery
+Allow: /about
+
+# Block admin areas
+Disallow: /admin
+Disallow: /auth
+
+# Allow images and assets for better indexing
+Allow: /assets/
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.gif$
+Allow: /*.webp$
+
+# Crawl delay for better server performance
+Crawl-delay: 1

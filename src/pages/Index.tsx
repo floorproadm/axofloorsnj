@@ -5,6 +5,9 @@ import Portfolio from "@/components/shared/Portfolio";
 import ServiceArea from "@/components/shared/ServiceArea";
 import AboutSection from "@/components/shared/AboutSection";
 import ContactSection from "@/components/shared/ContactSection";
+import ReviewsSection from "@/components/shared/ReviewsSection";
+import GoogleBusinessIntegration from "@/components/shared/GoogleBusinessIntegration";
+import SEOHead from "@/components/shared/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -93,6 +96,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOHead 
+        title="AXO Floors NJ - #1 Hardwood Flooring Experts in New Jersey"
+        description="Transform your home with AXO Floors NJ. Expert hardwood installation, refinishing & restoration. 4.9★ rating, licensed & insured. Free estimates - Call (732) 351-8653"
+        keywords="hardwood flooring NJ, floor refinishing New Jersey, flooring installation Newark, wood floor restoration Jersey City, AXO Floors, professional flooring contractors"
+      />
       <Header />
       
       {/* Enhanced Hero Section */}
@@ -200,6 +208,26 @@ const Index = () => {
 
       {/* Portfolio Section */}
       <Portfolio />
+
+      {/* Reviews Section - New SEO-Optimized Component */}
+      <ReviewsSection />
+
+      {/* Google Business Integration */}
+      <section className="py-12 bg-grey-light">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold font-heading text-navy mb-4">
+              Find Us on Google Business
+            </h2>
+            <p className="text-lg text-grey max-w-2xl mx-auto">
+              See our location, reviews, and business hours. Get directions and leave your review!
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <GoogleBusinessIntegration />
+          </div>
+        </div>
+      </section>
 
       {/* Testimonials Section - Mobile-First Enhanced */}
       <section className="py-12 sm:py-16 lg:py-20 navy-gradient text-white relative overflow-hidden">
