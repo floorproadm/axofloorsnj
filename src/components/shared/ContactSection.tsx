@@ -121,14 +121,7 @@ const ContactSection = () => {
   return <section className="spacing-mobile-md bg-gradient-subtle border-t border-border/50 shadow-lg">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Enhanced header with gradient background */}
-        <div className="text-center mb-8 sm:mb-12 p-6 sm:p-8 bg-gradient-primary rounded-2xl shadow-elegant">
-          <h2 className="text-mobile-lg sm:text-desktop-lg font-heading text-white mb-4">
-            Get Your <span className="text-gold">Free Quote</span> Today
-          </h2>
-          <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto">
-            Ready to transform your space? Contact our flooring experts for a personalized consultation and competitive pricing.
-          </p>
-        </div>
+        
 
         <div className="max-w-4xl mx-auto">
           {/* Contact Form - Enhanced styling */}
