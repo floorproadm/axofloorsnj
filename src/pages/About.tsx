@@ -56,11 +56,11 @@ const About = () => {
             <div className="max-w-6xl mx-auto">
               {/* Team Photo */}
               <div className="flex flex-col items-center mb-16">
-                <div className="w-72 h-72 sm:w-80 sm:h-80 mx-auto mb-6 rounded-2xl overflow-hidden shadow-elegant border-4 border-gold/20">
+                <div className="w-80 h-96 sm:w-96 sm:h-[28rem] mx-auto mb-6 rounded-2xl overflow-hidden shadow-elegant border-4 border-gold/20">
                   <img 
                     src={teamPhoto} 
                     alt="Ademir and Eduardo - AXO Floors Team" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                   />
                 </div>
                 
