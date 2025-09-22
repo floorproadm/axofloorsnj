@@ -11,9 +11,11 @@ const Header = () => {
 
   const navigation = [
     { name: "Services", href: "#", hasDropdown: true },
-    { name: "Contact", href: "/contact" },
-    { name: "About", href: "/about" },
     { name: "Gallery", href: "/gallery" },
+    { name: "Stain Colors", href: "/stain-gallery" },
+    { name: "Quiz", href: "/quiz" },
+    { name: "Builders", href: "/builders" },
+    { name: "Contact", href: "/contact" },
   ];
 
   const services = [
@@ -106,6 +108,13 @@ const Header = () => {
                   )}
                 </div>
               ))}
+              
+              {/* Fixed CTA Button */}
+              <Button asChild className="ml-6 gold-gradient text-black font-semibold hover:scale-105 transition-bounce">
+                <Link to="/contact" className="flex items-center gap-2">
+                  Get Free Estimate
+                </Link>
+              </Button>
             </nav>
 
             {/* Mobile Menu Trigger */}
