@@ -145,9 +145,13 @@ const Quiz = () => {
   };
 
   const handleSubmit = async () => {
-    console.log('[Quiz] handleSubmit called with formData:', formData);
-    console.log('[Quiz] Current step:', currentStep, 'Total steps:', getTotalSteps());
-    console.log('[Quiz] Validation check - name:', !!formData.name, 'email:', !!formData.email, 'phone:', !!formData.phone);
+    console.log('🎯 [Quiz] SUBMIT INICIADO - handleSubmit called with formData:', formData);
+    console.log('🎯 [Quiz] Current step:', currentStep, 'Total steps:', getTotalSteps());
+    console.log('🎯 [Quiz] Validation check - name:', !!formData.name, 'email:', !!formData.email, 'phone:', !!formData.phone);
+    console.log('🎯 [Quiz] User authentication status:', { 
+      hasSupabase: !!supabase,
+      timestamp: new Date().toISOString()
+    });
     
     // Comprehensive form validation
     const validationRules = {
@@ -208,7 +212,7 @@ const Quiz = () => {
       return;
     }
 
-    console.log('[Quiz] All validations passed, proceeding with submission');
+    console.log('✅ [Quiz] All validations passed, proceeding with submission');
     setIsLoading(true);
 
     try {
@@ -226,21 +230,31 @@ const Quiz = () => {
         source: 'quiz'
       };
 
-      console.log('[Quiz] Submitting data to Supabase:', quizData);
+      console.log('📤 [Quiz] Dados preparados para Supabase:', quizData);
+      console.log('📤 [Quiz] Tentando inserir no banco de dados...');
+      console.log('📤 [Quiz] Supabase client:', { isConnected: !!supabase });
 
       // Save to Supabase database
+      console.log('💾 [Quiz] Tentando salvar no banco...');
       const { data: savedQuiz, error: saveError } = await supabase
         .from('quiz_responses')
         .insert([quizData])
         .select()
         .single();
 
+      console.log('💾 [Quiz] Resposta do Supabase - Data:', savedQuiz, 'Error:', saveError);
+
       if (saveError) {
-        console.error('[Quiz] Supabase save error:', saveError);
+        console.error('❌ [Quiz] ERRO NO SUPABASE:', {
+          code: saveError.code,
+          message: saveError.message,
+          details: saveError.details,
+          hint: saveError.hint
+        });
         throw new Error(`Failed to save quiz response: ${saveError.message}`);
       }
 
-      console.log('[Quiz] Saved successfully:', savedQuiz);
+      console.log('✅ [Quiz] Salvo com sucesso no banco:', savedQuiz);
 
       // Send follow-up email
       try {
@@ -266,24 +280,32 @@ const Quiz = () => {
 
       // Send admin notification
       try {
-        console.log('[Quiz] Sending admin notification');
+        console.log('📱 [Quiz] Enviando notificação para +17323518653...');
         const notificationData = {
           leadData: quizData,
           adminEmail: 'axofloorsnj@gmail.com', // Email do admin
-          adminPhone: '+17323518653' // Seu número de telefone
+          adminPhone: '+17323518653' // SEU NÚMERO DE TELEFONE
         };
 
-        const { error: notificationError } = await supabase.functions.invoke('send-notifications', {
+        console.log('📱 [Quiz] Dados da notificação:', { 
+          adminPhone: notificationData.adminPhone,
+          leadName: notificationData.leadData.name,
+          leadSource: notificationData.leadData.source
+        });
+
+        const { data: notificationResult, error: notificationError } = await supabase.functions.invoke('send-notifications', {
           body: notificationData
         });
 
+        console.log('📱 [Quiz] Resposta da notificação:', { result: notificationResult, error: notificationError });
+
         if (notificationError) {
-          console.error('[Quiz] Notification error:', notificationError);
+          console.error('❌ [Quiz] ERRO na notificação:', notificationError);
         } else {
-          console.log('[Quiz] Admin notification sent successfully');
+          console.log('✅ [Quiz] NOTIFICAÇÃO ENVIADA COM SUCESSO para +17323518653!');
         }
       } catch (notificationError) {
-        console.error('[Quiz] Notification sending failed:', notificationError);
+        console.error('❌ [Quiz] FALHA no envio da notificação:', notificationError);
         // Don't fail the whole process for notification errors
       }
 
@@ -307,14 +329,20 @@ const Quiz = () => {
       });
 
     } catch (error) {
-      console.error('Quiz submission error:', error);
+      console.error('💥 [Quiz] ERRO CRÍTICO no envio:', {
+        error: error,
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
       toast({
-        title: "Something went wrong",
-        description: "Please try again or call us directly at (732) 351-8653",
+        title: "Algo deu errado no envio",
+        description: "Por favor tente novamente ou ligue diretamente para (732) 351-8653",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
+      console.log('🏁 [Quiz] Processo finalizado (loading=false)');
     }
   };
 
