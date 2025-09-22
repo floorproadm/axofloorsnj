@@ -94,32 +94,41 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {services.map((service, index) => <Card key={index} className="group hover:shadow-elegant transition-all duration-300 border-0 shadow-sm hover:-translate-y-2 bg-card">
-                <CardContent className="p-8 text-center">
-                  <div className="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                    {service.icon}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {services.map((service, index) => <Card key={index} className="group relative overflow-hidden border-0 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm hover:shadow-2xl hover:shadow-accent/20 transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <CardContent className="relative p-6 text-center h-full flex flex-col">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform scale-150" />
+                    <div className="relative text-4xl mb-2 transform group-hover:scale-125 group-hover:rotate-3 transition-all duration-500">
+                      {service.icon}
+                    </div>
                   </div>
                   
-                  <h3 className="text-xl font-heading font-bold mb-4 group-hover:text-accent transition-colors duration-300">
+                  <h3 className="text-lg font-heading font-bold mb-3 group-hover:text-accent transition-all duration-300 leading-tight">
                     {service.title}
                   </h3>
                   
-                  <p className="text-muted-foreground mb-6 leading-relaxed text-sm">
+                  <p className="text-muted-foreground mb-6 leading-relaxed text-sm flex-grow">
                     {service.description}
                   </p>
                   
-                  <div className="space-y-2 mb-8">
-                    {service.features.map((feature, i) => <div key={i} className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="w-4 h-4 text-accent flex-shrink-0" />
-                        <span className="font-medium">{feature}</span>
+                  <div className="space-y-3 mb-6">
+                    {service.features.map((feature, i) => <div key={i} className="flex items-center gap-3 text-sm group/feature">
+                        <div className="relative">
+                          <CheckCircle className="w-4 h-4 text-accent relative z-10 group-hover/feature:scale-110 transition-transform duration-300" />
+                          <div className="absolute inset-0 bg-accent/20 rounded-full blur-sm opacity-0 group-hover/feature:opacity-100 transition-opacity duration-300" />
+                        </div>
+                        <span className="font-medium text-foreground group-hover/feature:text-accent transition-colors duration-300">{feature}</span>
                       </div>)}
                   </div>
                   
-                  <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300 font-semibold">
-                    <Link to={service.href} className="flex items-center justify-center gap-2">
-                      Learn More
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-all duration-300 font-semibold relative overflow-hidden">
+                    <Link to={service.href} className="flex items-center justify-center gap-2 relative z-10">
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">Saiba Mais</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                     </Link>
                   </Button>
                 </CardContent>
