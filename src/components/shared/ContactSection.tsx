@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Phone, Mail, MapPin, Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
 const ContactSection = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -19,24 +20,20 @@ const ContactSection = () => {
     service: "",
     message: ""
   });
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
-
   const handleServiceChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
       service: value
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.name || !formData.email) {
       toast({
         title: "Please fill in all required fields",
@@ -44,9 +41,7 @@ const ContactSection = () => {
       });
       return;
     }
-
     setIsLoading(true);
-
     try {
       // Save contact form data to database
       const contactData = {
@@ -62,13 +57,10 @@ const ContactSection = () => {
         budget: 0,
         message: 'Contact form submission from website'
       };
-
-      const { data: savedContact, error: saveError } = await supabase
-        .from('leads')
-        .insert([contactData])
-        .select()
-        .single();
-
+      const {
+        data: savedContact,
+        error: saveError
+      } = await supabase.from('leads').insert([contactData]).select().single();
       if (saveError) {
         throw new Error(`Failed to save contact: ${saveError.message}`);
       }
@@ -102,7 +94,6 @@ const ContactSection = () => {
       } catch (notificationError) {
         console.error('Admin notification error:', notificationError);
       }
-
       toast({
         title: "Quote Request Sent!",
         description: "We'll contact you within 24 hours to discuss your project."
@@ -116,7 +107,6 @@ const ContactSection = () => {
         service: "",
         message: ""
       });
-
     } catch (error: any) {
       console.error('Contact form error:', error);
       toast({
@@ -128,18 +118,9 @@ const ContactSection = () => {
       setIsLoading(false);
     }
   };
-
-  return (
-    <section className="spacing-mobile-md bg-secondary/30">
+  return <section className="spacing-mobile-md bg-secondary/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-mobile-2xl font-bold font-heading mb-4 sm:mb-6">
-            Get Your <span className="text-gradient-gold">Free Quote!</span>
-          </h2>
-          <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Get a quote on us and we can explain everything about our services.
-          </p>
-        </div>
+        
 
         <div className="max-w-4xl mx-auto">
           {/* Contact Form - Full width */}
@@ -154,43 +135,18 @@ const ContactSection = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-sm font-medium">Name *</Label>
-                    <Input 
-                      id="name" 
-                      name="name" 
-                      value={formData.name} 
-                      onChange={handleInputChange} 
-                      required 
-                      className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
-                      placeholder="Your full name"
-                    />
+                    <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300" placeholder="Your full name" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
-                    <Input 
-                      id="email" 
-                      name="email" 
-                      type="email" 
-                      value={formData.email} 
-                      onChange={handleInputChange} 
-                      required 
-                      className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
-                      placeholder="your@email.com"
-                    />
+                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300" placeholder="your@email.com" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-sm font-medium">Phone</Label>
-                    <Input 
-                      id="phone" 
-                      name="phone" 
-                      type="tel" 
-                      value={formData.phone} 
-                      onChange={handleInputChange} 
-                      className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
-                      placeholder="(732) 555-0123"
-                    />
+                    <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300" placeholder="(732) 555-0123" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="service" className="text-sm font-medium">Service Interested In</Label>
@@ -211,21 +167,10 @@ const ContactSection = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="message" className="text-sm font-medium">Project Details</Label>
-                  <Textarea 
-                    id="message" 
-                    name="message" 
-                    value={formData.message} 
-                    onChange={handleInputChange} 
-                    placeholder="Tell us about your project: room size, current flooring, timeline, etc..."
-                    className="min-h-[120px] sm:min-h-[140px] text-base border-2 focus:border-accent transition-colors duration-300 resize-none"
-                  />
+                  <Textarea id="message" name="message" value={formData.message} onChange={handleInputChange} placeholder="Tell us about your project: room size, current flooring, timeline, etc..." className="min-h-[120px] sm:min-h-[140px] text-base border-2 focus:border-accent transition-colors duration-300 resize-none" />
                 </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={isLoading} 
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 hover:scale-[1.02] transition-all duration-300 text-base font-semibold min-h-[52px] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                <Button type="submit" disabled={isLoading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 hover:scale-[1.02] transition-all duration-300 text-base font-semibold min-h-[52px] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
                   <Send className="w-5 h-5 mr-2" />
                   {isLoading ? "Sending..." : "Send Quote Request"}
                 </Button>
@@ -238,8 +183,6 @@ const ContactSection = () => {
           </Card>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default ContactSection;
