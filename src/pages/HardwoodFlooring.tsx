@@ -6,8 +6,54 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, Star, ArrowRight, Zap, Shield, Award } from "lucide-react";
 import hardwoodHero from "@/assets/hardwood-hero.jpg";
+import { useState, useEffect, useRef } from "react";
 
 const HardwoodFlooring = () => {
+  const [activeWoodIndex, setActiveWoodIndex] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const woodRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setActiveWoodIndex(null);
+      return;
+    }
+
+    const observers = woodRefs.current.map((ref, index) => {
+      if (!ref) return null;
+      
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            setActiveWoodIndex(index);
+          }
+        },
+        {
+          threshold: 0.5,
+          rootMargin: '-20% 0px -20% 0px'
+        }
+      );
+      
+      observer.observe(ref);
+      return observer;
+    });
+
+    return () => {
+      observers.forEach(observer => observer?.disconnect());
+    };
+  }, [isMobile]);
+
   const benefits = [
     "Premium Hardwood Species Selection",
     "Professional Installation Guaranteed", 
@@ -131,9 +177,13 @@ const HardwoodFlooring = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {woodTypes.map((wood, index) => (
-              <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2">
+              <Card 
+                key={index} 
+                ref={(el) => woodRefs.current[index] = el}
+                className={`group transition-smooth ${isMobile && activeWoodIndex === index ? 'shadow-gold -translate-y-2' : 'hover:shadow-gold hover:-translate-y-2'}`}
+              >
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-heading font-semibold text-navy mb-3 group-hover:text-gold transition-smooth">
+                  <h3 className={`text-xl font-heading font-semibold mb-3 transition-smooth ${isMobile && activeWoodIndex === index ? 'text-gold' : 'text-navy group-hover:text-gold'}`}>
                     {wood.name}
                   </h3>
                   <p className="text-grey mb-4 leading-relaxed">

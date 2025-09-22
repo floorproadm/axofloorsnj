@@ -6,8 +6,77 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, Droplets, Shield, Zap, Heart } from "lucide-react";
 import vinylHero from "@/assets/vinyl-hero.jpg";
+import { useState, useEffect, useRef } from "react";
 
 const VinylPlankFlooring = () => {
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(null);
+  const [activeRoomIndex, setActiveRoomIndex] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const roomRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setActiveFeatureIndex(null);
+      setActiveRoomIndex(null);
+      return;
+    }
+
+    const featureObservers = featureRefs.current.map((ref, index) => {
+      if (!ref) return null;
+      
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            setActiveFeatureIndex(index);
+          }
+        },
+        {
+          threshold: 0.5,
+          rootMargin: '-20% 0px -20% 0px'
+        }
+      );
+      
+      observer.observe(ref);
+      return observer;
+    });
+
+    const roomObservers = roomRefs.current.map((ref, index) => {
+      if (!ref) return null;
+      
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            setActiveRoomIndex(index);
+          }
+        },
+        {
+          threshold: 0.5,
+          rootMargin: '-20% 0px -20% 0px'
+        }
+      );
+      
+      observer.observe(ref);
+      return observer;
+    });
+
+    return () => {
+      featureObservers.forEach(observer => observer?.disconnect());
+      roomObservers.forEach(observer => observer?.disconnect());
+    };
+  }, [isMobile]);
+
   const benefits = [
     "100% Waterproof Protection",
     "Realistic Wood Appearance", 
@@ -119,12 +188,16 @@ const VinylPlankFlooring = () => {
 
             <div className="grid grid-cols-2 gap-6">
               {features.map((feature, index) => (
-                <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2">
+                <Card 
+                  key={index} 
+                  ref={(el) => featureRefs.current[index] = el}
+                  className={`group transition-smooth ${isMobile && activeFeatureIndex === index ? 'shadow-gold -translate-y-2' : 'hover:shadow-gold hover:-translate-y-2'}`}
+                >
                   <CardContent className="p-6 text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-gold/10 rounded-full mb-4 group-hover:bg-gold group-hover:scale-110 transition-bounce">
-                      <feature.icon className="w-6 h-6 text-gold group-hover:text-white" />
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 transition-bounce ${isMobile && activeFeatureIndex === index ? 'bg-gold scale-110' : 'bg-gold/10 group-hover:bg-gold group-hover:scale-110'}`}>
+                      <feature.icon className={`w-6 h-6 ${isMobile && activeFeatureIndex === index ? 'text-white' : 'text-gold group-hover:text-white'}`} />
                     </div>
-                    <h3 className="font-heading font-semibold text-navy mb-2 group-hover:text-gold transition-smooth">
+                    <h3 className={`font-heading font-semibold mb-2 transition-smooth ${isMobile && activeFeatureIndex === index ? 'text-gold' : 'text-navy group-hover:text-gold'}`}>
                       {feature.title}
                     </h3>
                     <p className="text-grey text-sm leading-relaxed">
@@ -152,10 +225,14 @@ const VinylPlankFlooring = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {roomApplications.map((app, index) => (
-              <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2">
+              <Card 
+                key={index} 
+                ref={(el) => roomRefs.current[index] = el}
+                className={`group transition-smooth ${isMobile && activeRoomIndex === index ? 'shadow-gold -translate-y-2' : 'hover:shadow-gold hover:-translate-y-2'}`}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-heading font-semibold text-navy group-hover:text-gold transition-smooth">
+                    <h3 className={`text-xl font-heading font-semibold transition-smooth ${isMobile && activeRoomIndex === index ? 'text-gold' : 'text-navy group-hover:text-gold'}`}>
                       {app.room}
                     </h3>
                     <span className="text-xs bg-gold text-navy px-2 py-1 rounded-full font-medium">

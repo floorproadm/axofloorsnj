@@ -9,8 +9,54 @@ import sandingHero from "@/assets/sanding-hero-new.jpg";
 import step1Image from "/step1-sanding.gif";
 import step2Image from "/step2-staining.gif";
 import step3Image from "/step3-finishing.gif";
+import { useState, useEffect, useRef } from "react";
 
 const SandingRefinish = () => {
+  const [activeStepIndex, setActiveStepIndex] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setActiveStepIndex(null);
+      return;
+    }
+
+    const observers = stepRefs.current.map((ref, index) => {
+      if (!ref) return null;
+      
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            setActiveStepIndex(index);
+          }
+        },
+        {
+          threshold: 0.5,
+          rootMargin: '-20% 0px -20% 0px'
+        }
+      );
+      
+      observer.observe(ref);
+      return observer;
+    });
+
+    return () => {
+      observers.forEach(observer => observer?.disconnect());
+    };
+  }, [isMobile]);
+
   const benefits = [
     "Restores Original Beauty",
     "Eliminates Scratches & Dents", 
@@ -139,9 +185,13 @@ const SandingRefinish = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {processSteps.map((step, index) => (
-              <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
+              <Card 
+                key={index} 
+                ref={(el) => stepRefs.current[index] = el}
+                className={`bg-white/95 backdrop-blur-sm border-gold/20 text-center group transition-smooth ${isMobile && activeStepIndex === index ? 'shadow-gold -translate-y-2' : 'hover:shadow-gold hover:-translate-y-2'}`}
+              >
                 <CardContent className="p-8">
-                  <div className="w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-6 group-hover:scale-105 transition-bounce overflow-hidden border border-gold/20">
+                  <div className={`w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-6 transition-bounce overflow-hidden border border-gold/20 ${isMobile && activeStepIndex === index ? 'scale-105' : 'group-hover:scale-105'}`}>
                     {step.image ? (
                       <div className="w-full h-full relative">
                         <img 
