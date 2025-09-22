@@ -74,26 +74,6 @@ const Portfolio = () => {
           
         </div>
 
-        {/* Portfolio Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
-          {filteredItems.map(item => <Card key={item.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <div className="relative overflow-hidden">
-                <img src={item.image} alt={item.title} className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300" />
-                <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <Eye className="w-8 h-8 text-white" />
-                </div>
-                <div className="absolute top-3 right-3">
-                  <span className="bg-gold text-navy px-2 py-1 text-xs font-semibold rounded">
-                    {item.category}
-                  </span>
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-navy mb-2">{item.title}</h3>
-                <p className="text-grey text-sm leading-relaxed">{item.description}</p>
-              </CardContent>
-            </Card>)}
-        </div>
 
         {/* View More Button */}
         <div className="text-center px-4 sm:px-0">

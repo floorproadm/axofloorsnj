@@ -59,6 +59,59 @@ const ReviewsSection = () => {
       length: 5
     }, (_, i) => <Star key={i} className={`w-4 h-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />);
   };
-  return;
+  return (
+    <section className="py-12 sm:py-16 lg:py-20 bg-background">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2">
+            What Our <span className="text-gradient-gold">Customers Say</span>
+          </h2>
+          <p className="text-base sm:text-lg text-grey max-w-3xl mx-auto leading-relaxed px-2">
+            Don't just take our word for it. Here's what homeowners across New Jersey are saying about their experience with AXO Floors.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
+          {reviews.map((review) => (
+            <Card key={review.id} className="hover:shadow-lg transition-shadow duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-1">
+                    {renderStars(review.rating)}
+                  </div>
+                  <Quote className="w-5 h-5 text-gold" />
+                </div>
+                
+                <p className="text-grey mb-4 leading-relaxed">{review.text}</p>
+                
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-navy">{review.name}</p>
+                      <p className="text-sm text-grey">{review.location}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gold">{review.service}</p>
+                      <p className="text-xs text-grey">{review.date}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <Button 
+            onClick={handleGoogleReview}
+            className="gold-gradient hover:scale-105 transition-bounce min-h-[48px] px-6 sm:px-8"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Write a Review on Google
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
 };
 export default ReviewsSection;
