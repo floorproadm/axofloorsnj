@@ -41,6 +41,7 @@ import stainProcessImg from '@/assets/stain-process-work.jpg';
 const StainGallery = () => {
   const [expandedWoodType, setExpandedWoodType] = useState<string>('white-oak');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{name: string, image: string} | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     zipCode: '',
@@ -79,6 +80,10 @@ const StainGallery = () => {
     });
     
     setIsDialogOpen(false);
+  };
+
+  const handleImageClick = (stain: {name: string, image: string}) => {
+    setSelectedImage(stain);
   };
   const whiteOakStains = [{
     name: 'Aged Barrel',
@@ -234,7 +239,7 @@ const StainGallery = () => {
   }: {
     stains: typeof whiteOakStains;
   }) => <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
-      {stains.map((stain, index) => <Card key={index} className="group cursor-pointer hover:shadow-elegant transition-smooth">
+      {stains.map((stain, index) => <Card key={index} className="group cursor-pointer hover:shadow-elegant transition-smooth" onClick={() => handleImageClick(stain)}>
           <CardContent className="p-0">
             <div className="aspect-square bg-gradient-subtle rounded-lg overflow-hidden">
               <img src={stain.image} alt={stain.name} className="w-full h-full object-cover group-hover:scale-105 transition-smooth" />
@@ -414,6 +419,24 @@ const StainGallery = () => {
         </section>
       </main>
       <Footer />
+
+      {/* Image Viewer Dialog */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedImage?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedImage && (
+            <div className="aspect-square bg-gradient-subtle rounded-lg overflow-hidden">
+              <img 
+                src={selectedImage.image} 
+                alt={selectedImage.name} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>;
 };
 export default StainGallery;
