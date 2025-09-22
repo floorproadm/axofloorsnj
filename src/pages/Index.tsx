@@ -146,22 +146,22 @@ const Index = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 max-w-5xl mx-auto">
             {benefits.map((benefit, index) => <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-card">
-                <CardContent className="p-10">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-accent/10 rounded-2xl mb-6 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
-                    <benefit.icon className="w-10 h-10 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
+                <CardContent className="p-6 md:p-10">
+                  <div className="inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 bg-accent/10 rounded-2xl mb-4 md:mb-6 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
+                    <benefit.icon className="w-7 h-7 md:w-10 md:h-10 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
                   </div>
                   
-                  <div className="text-3xl font-bold font-heading text-accent mb-3 group-hover:scale-105 transition-transform duration-300">
+                  <div className="text-2xl md:text-3xl font-bold font-heading text-accent mb-2 md:mb-3 group-hover:scale-105 transition-transform duration-300">
                     {benefit.stat}
                   </div>
                   
-                  <h3 className="text-2xl font-heading font-semibold mb-4 group-hover:text-accent transition-colors duration-300">
+                  <h3 className="text-lg md:text-2xl font-heading font-semibold mb-3 md:mb-4 group-hover:text-accent transition-colors duration-300">
                     {benefit.title}
                   </h3>
                   
-                  <p className="text-muted-foreground leading-relaxed text-lg">
+                  <p className="text-muted-foreground leading-relaxed text-sm md:text-lg">
                     {benefit.description}
                   </p>
                 </CardContent>
