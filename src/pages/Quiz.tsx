@@ -36,13 +36,6 @@ const Quiz = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
-  // Debug logging - COMPONENT MOUNT
-  console.log('🚀 [Quiz] COMPONENTE CARREGADO - Quiz component mounted');
-  console.log('🚀 [Quiz] Estado inicial:', { currentStep, isLoading });
-  console.log('🚀 [Quiz] Supabase client disponível:', !!supabase);
-  console.log('🚀 [Quiz] Toast disponível:', !!toast);
-  console.log('🚀 [Quiz] Navigate disponível:', !!navigate);
   
   const [formData, setFormData] = useState({
     serviceType: "", // "new-installation" or "floor-refinish"
@@ -60,28 +53,24 @@ const Quiz = () => {
     city: ""
   });
 
-    // Real-time field validation with debugging
-    const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
-      console.log(`🔍 [Quiz] Field change - ${field}:`, value, 'rules:', rules);
-      const sanitizedValue = sanitizeInput(value);
-      
-      setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
-      
-      // Clear previous error
-      if (formErrors[field]) {
-        console.log(`✅ [Quiz] Clearing error for ${field}`);
-        setFormErrors(prev => ({ ...prev, [field]: '' }));
+  const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
+    const sanitizedValue = sanitizeInput(value);
+    
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+    
+    // Clear previous error
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    
+    // Validate field if it has rules
+    if (rules.length > 0) {
+      const error = validateField(sanitizedValue, rules);
+      if (error) {
+        setFormErrors(prev => ({ ...prev, [field]: error }));
       }
-      
-      // Validate field if it has rules
-      if (rules.length > 0) {
-        const error = validateField(sanitizedValue, rules);
-        console.log(`🔍 [Quiz] Validation result for ${field}:`, error || 'NO ERROR');
-        if (error) {
-          setFormErrors(prev => ({ ...prev, [field]: error }));
-        }
-      }
-    };
+    }
+  };
 
   const serviceTypes = [
     { value: "new-installation", label: "New Installation", description: "Installing new flooring" },
@@ -152,13 +141,6 @@ const Quiz = () => {
   };
 
   const handleSubmit = async () => {
-    console.log('🎯 [Quiz] SUBMIT INICIADO - handleSubmit called with formData:', formData);
-    console.log('🎯 [Quiz] Current step:', currentStep, 'Total steps:', getTotalSteps());
-    console.log('🎯 [Quiz] Validation check - name:', !!formData.name, 'email:', !!formData.email, 'phone:', !!formData.phone);
-    console.log('🎯 [Quiz] User authentication status:', { 
-      hasSupabase: !!supabase,
-      timestamp: new Date().toISOString()
-    });
     
     // Comprehensive form validation
     const validationRules = {
@@ -171,7 +153,6 @@ const Quiz = () => {
     const validation = validateForm(formData, validationRules);
     
     if (!validation.isValid) {
-      console.log('[Quiz] Validation failed:', validation.errors);
       setFormErrors(validation.errors);
       toast({
         title: "Please fix the errors below",
@@ -219,7 +200,6 @@ const Quiz = () => {
       return;
     }
 
-    console.log('✅ [Quiz] All validations passed, proceeding with submission');
     setIsLoading(true);
 
     try {
@@ -239,34 +219,20 @@ const Quiz = () => {
                formData.budget === "2k-5k" ? 3500 : 2000
       };
 
-      console.log('📤 [Quiz] Dados preparados para Supabase leads:', quizData);
-      console.log('📤 [Quiz] Tentando inserir na tabela leads...');
-
-      // Save to Supabase leads table instead of quiz_responses
-      console.log('💾 [Quiz] Tentando salvar na tabela leads...');
+      // Save to Supabase leads table
       const { data: savedLead, error: saveError } = await supabase
         .from('leads')
         .insert([quizData])
         .select()
         .single();
 
-      console.log('💾 [Quiz] Resposta do Supabase - Data:', savedLead, 'Error:', saveError);
-
       if (saveError) {
-        console.error('❌ [Quiz] ERRO NO SUPABASE:', {
-          code: saveError.code,
-          message: saveError.message,
-          details: saveError.details,
-          hint: saveError.hint
-        });
         throw new Error(`Failed to save quiz response: ${saveError.message}`);
       }
 
-      console.log('✅ [Quiz] Salvo com sucesso no banco:', savedLead);
-
       // Send follow-up email
       try {
-        const { error: emailError } = await supabase.functions.invoke('send-follow-up', {
+        await supabase.functions.invoke('send-follow-up', {
           body: {
             name: formData.name,
             email: formData.email,
@@ -274,46 +240,20 @@ const Quiz = () => {
             leadType: 'quiz'
           }
         });
-
-        if (emailError) {
-          console.error('[Quiz] Email error:', emailError);
-          // Don't fail the whole process for email errors
-        } else {
-          console.log('[Quiz] Follow-up email sent successfully');
-        }
       } catch (emailError) {
-        console.error('[Quiz] Email sending failed:', emailError);
         // Don't fail the whole process for email errors
       }
 
       // Send admin notification
       try {
-        console.log('📱 [Quiz] Enviando notificação para +17323518653...');
-        const notificationData = {
-          leadData: quizData,
-          adminEmail: 'axofloorsnj@gmail.com', // Email do admin
-          adminPhone: '+17323518653' // SEU NÚMERO DE TELEFONE
-        };
-
-        console.log('📱 [Quiz] Dados da notificação:', { 
-          adminPhone: notificationData.adminPhone,
-          leadName: notificationData.leadData.name,
-          leadSource: notificationData.leadData.lead_source
+        await supabase.functions.invoke('send-notifications', {
+          body: {
+            leadData: quizData,
+            adminEmail: 'axofloorsnj@gmail.com',
+            adminPhone: '+17323518653'
+          }
         });
-
-        const { data: notificationResult, error: notificationError } = await supabase.functions.invoke('send-notifications', {
-          body: notificationData
-        });
-
-        console.log('📱 [Quiz] Resposta da notificação:', { result: notificationResult, error: notificationError });
-
-        if (notificationError) {
-          console.error('❌ [Quiz] ERRO na notificação:', notificationError);
-        } else {
-          console.log('✅ [Quiz] NOTIFICAÇÃO ENVIADA COM SUCESSO para +17323518653!');
-        }
       } catch (notificationError) {
-        console.error('❌ [Quiz] FALHA no envio da notificação:', notificationError);
         // Don't fail the whole process for notification errors
       }
 
@@ -337,25 +277,18 @@ const Quiz = () => {
       });
 
     } catch (error) {
-      console.error('💥 [Quiz] ERRO CRÍTICO no envio:', {
-        error: error,
-        message: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString()
-      });
+      console.error('Quiz submission error:', error);
       toast({
-        title: "Algo deu errado no envio",
-        description: "Por favor tente novamente ou ligue diretamente para (732) 351-8653",
+        title: "Something went wrong",
+        description: "Please try again or call us directly at (732) 351-8653",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
-      console.log('🏁 [Quiz] Processo finalizado (loading=false)');
     }
   };
 
   const nextStep = () => {
-    console.log('➡️ [Quiz] PRÓXIMO PASSO - nextStep called, currentStep:', currentStep, 'formData:', formData);
     
     // Validation logic based on current step and service type
     if (currentStep === 1 && !formData.serviceType) {
@@ -440,13 +373,11 @@ const Quiz = () => {
     }
     
     const newStep = Math.min(currentStep + 1, getTotalSteps());
-    console.log('[Quiz] Moving to step:', newStep);
     setCurrentStep(newStep);
   };
 
   const prevStep = () => {
     const newStep = Math.max(currentStep - 1, 1);
-    console.log('[Quiz] Going back to step:', newStep);
     setCurrentStep(newStep);
   };
 
@@ -974,45 +905,18 @@ const Quiz = () => {
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
-                        <Button 
-                          onClick={() => {
-                            console.log('🔘 [Quiz] BOTÃO SUBMIT CLICADO!');
-                            console.log('🔘 [Quiz] Form data atual:', formData);
-                            console.log('🔘 [Quiz] Loading state:', isLoading);
-                            console.log('🔘 [Quiz] Form errors:', formErrors);
-                            console.log('🔘 [Quiz] Form errors count:', Object.keys(formErrors).length);
-                            console.log('🔘 [Quiz] Required fields check:', {
-                              name: !!formData.name,
-                              email: !!formData.email,
-                              phone: !!formData.phone,
-                              city: !!formData.city
-                            });
-                            console.log('🔘 [Quiz] Valores dos campos:', {
-                              name: formData.name,
-                              email: formData.email,
-                              phone: formData.phone,
-                              city: formData.city
-                            });
-                            console.log('🔘 [Quiz] Errors with values:', Object.entries(formErrors).filter(([key, value]) => value !== ''));
-                            const isDisabled = isLoading || Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city;
-                            console.log('🔘 [Quiz] Botão desabilitado?', isDisabled);
-                            console.log('🔘 [Quiz] Motivo desabilitado:', {
-                              isLoading,
-                              hasErrors: Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0,
-                              missingName: !formData.name,
-                              missingEmail: !formData.email,
-                              missingPhone: !formData.phone,
-                              missingCity: !formData.city
-                            });
-                            if (!isDisabled) {
-                              handleSubmit();
-                            } else {
-                              console.log('❌ [Quiz] Submit bloqueado - todos os campos são obrigatórios');
-                            }
-                          }}
-                          disabled={isLoading || Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city}
-                          className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                      <Button 
+                        onClick={handleSubmit}
+                        disabled={
+                          isLoading || 
+                          Object.values(formErrors).some(error => error !== '') || 
+                          !formData.name || 
+                          !formData.email || 
+                          !formData.phone || 
+                          !formData.city
+                        }
+                        className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <span className="flex items-center justify-center gap-2">
                           {isLoading ? "Submitting..." : "Get My Recommendations"}
                           <ArrowRight className="w-4 h-4 flex-shrink-0" />
@@ -1032,17 +936,5 @@ const Quiz = () => {
   );
 };
 
-// Adicionar event listeners para capturar erros globais
-if (typeof window !== 'undefined') {
-  window.addEventListener('error', (e) => {
-    console.error('🚨 [Quiz] ERRO GLOBAL capturado:', e.error);
-  });
-  
-  window.addEventListener('unhandledrejection', (e) => {
-    console.error('🚨 [Quiz] PROMISE REJEITADA capturada:', e.reason);
-  });
-  
-  console.log('🎯 [Quiz] Event listeners adicionados para capturar erros');
-}
 
 export default Quiz;
