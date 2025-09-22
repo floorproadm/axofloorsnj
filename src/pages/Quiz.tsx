@@ -17,7 +17,8 @@ import {
   checkRateLimit, 
   getClientIdentifier,
   formatPhoneNumber,
-  useFieldValidation 
+  useFieldValidation,
+  isValidZipCode
 } from "@/utils/validation";
 import { 
   sanitizeForLogging,
@@ -200,12 +201,13 @@ const Quiz = () => {
       timestamp: new Date().toISOString()
     });
     
-    // Comprehensive form validation - REMOVENDO OBRIGATORIEDADE DE CITY
+    // Comprehensive form validation
     const validationRules = {
       name: ['required', 'name'],
       email: ['required', 'email'],
-      phone: ['required', 'phone']
-      // city removido - não é mais obrigatório
+      phone: ['required', 'phone'],
+      zipCode: ['required', 'zipCode'] // ZIP code é obrigatório e deve ser válido
+      // city é opcional
     };
 
     const validation = validateForm(formData, validationRules);
@@ -438,6 +440,45 @@ const Quiz = () => {
         });
         return;
       }
+    }
+    
+    // Validação para metragem quadrada (Step 4)
+    if (currentStep === 4 && (!formData.squareFootage || formData.squareFootage === '0')) {
+      toast({
+        title: "Please specify the area size",
+        description: "Enter the square footage or select a preset size",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validação para timeline 
+    if ((currentStep === 5 && formData.serviceType === "new-installation" && !formData.timeline) ||
+        (currentStep === 6 && formData.serviceType === "floor-refinish" && !formData.timeline)) {
+      toast({
+        title: "Please select a timeline",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validação para orçamento
+    if ((currentStep === 6 && formData.serviceType === "new-installation" && !formData.budget) ||
+        (currentStep === 7 && formData.serviceType === "floor-refinish" && !formData.budget)) {
+      toast({
+        title: "Please select a budget range",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validação para mudança de cor (apenas refinish)
+    if (currentStep === 5 && formData.serviceType === "floor-refinish" && !formData.colorChange) {
+      toast({
+        title: "Please specify color preference",
+        variant: "destructive"
+      });
+      return;
     }
     
     const newStep = Math.min(currentStep + 1, getTotalSteps());
@@ -920,6 +961,12 @@ const Quiz = () => {
                             const zipValue = e.target.value.replace(/\D/g, ''); // Apenas números
                             if (zipValue.length <= 5) {
                               handleZipCodeChange(zipValue);
+                              // Validar ZIP code em tempo real
+                              if (zipValue.length === 5 && isValidZipCode(zipValue)) {
+                                setFormErrors(prev => ({ ...prev, zipCode: '' }));
+                              } else if (zipValue.length > 0 && !isValidZipCode(zipValue)) {
+                                setFormErrors(prev => ({ ...prev, zipCode: 'ZIP code must be 5 digits' }));
+                              }
                             }
                           }}
                           placeholder="07001"
@@ -996,10 +1043,10 @@ const Quiz = () => {
                           console.log('🔘 [Quiz] Form data atual:', formData);
                           console.log('🔘 [Quiz] Loading state:', isLoading);
                           console.log('🔘 [Quiz] Form errors:', formErrors);
-                          console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone);
+                          console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode);
                           handleSubmit();
                         }}
-                        disabled={isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone}
+                        disabled={isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode}
                         className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="flex items-center justify-center gap-2">

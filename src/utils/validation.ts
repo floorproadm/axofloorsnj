@@ -67,6 +67,12 @@ export const isValidCity = (city: string): boolean => {
   return cityRegex.test(city.trim()) && city.trim().length >= 2;
 };
 
+// Validate ZIP code (5 digits for US)
+export const isValidZipCode = (zipCode: string): boolean => {
+  const zipRegex = /^\d{5}$/;
+  return zipRegex.test(zipCode.trim());
+};
+
 // Rate limiting utilities
 interface SubmissionTracker {
   count: number;
@@ -164,6 +170,11 @@ export const validateForm = (data: Record<string, any>, rules: Record<string, st
             errors[field] = 'Please enter a valid city name';
           }
           break;
+        case 'zipCode':
+          if (value && !isValidZipCode(value)) {
+            errors[field] = 'Please enter a valid ZIP code (5 digits)';
+          }
+          break;
       }
       
       // Stop at first error for this field
@@ -196,6 +207,9 @@ export const useFieldValidation = () => {
           break;
         case 'city':
           if (value && !isValidCity(value)) return 'Please enter a valid city name';
+          break;
+        case 'zipCode':
+          if (value && !isValidZipCode(value)) return 'Please enter a valid ZIP code (5 digits)';
           break;
       }
     }
