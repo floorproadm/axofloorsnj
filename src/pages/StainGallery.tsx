@@ -272,26 +272,7 @@ const StainGallery = () => {
                     <div className="aspect-[4/3] lg:aspect-auto">
                       <img src={stainProcessImg} alt="AXO Floors professional applying and testing different stain colors on hardwood flooring" className="w-full h-full object-cover" />
                     </div>
-                    <div className="p-8 lg:p-12 flex flex-col justify-center bg-gradient-subtle">
-                      <h3 className="text-3xl font-heading font-bold text-navy mb-6">
-                        Professional Staining Process
-                      </h3>
-                      <p className="text-grey mb-6 leading-relaxed">
-                        Our experienced craftsmen take the time to test multiple stain samples directly on your floors. 
-                        This ensures you see exactly how each color will look with your specific wood grain and lighting conditions.
-                      </p>
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-3">
-                          <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
-                          <p className="text-grey">Sample multiple colors on your actual flooring</p>
-                        </div>
-                        
-                        <div className="flex items-start gap-3">
-                          <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
-                          <p className="text-grey">Expert guidance to achieve your perfect finish</p>
-                        </div>
-                      </div>
-                    </div>
+                    
                   </div>
                 </Card>
               </div>
@@ -300,17 +281,7 @@ const StainGallery = () => {
               <div className="space-y-8">
                 
                 {/* Soft CTA */}
-                <Card className="bg-gradient-primary text-white text-center p-8">
-                  <h3 className="text-2xl font-heading font-bold mb-4">
-                    See Your Perfect Color
-                  </h3>
-                  <p className="text-lg mb-6 opacity-90">
-                    Every floor is unique. Let us bring samples directly to your home so you can see how each stain looks with your lighting and decor.
-                  </p>
-                  <Button variant="secondary" size="lg" className="bg-white text-navy hover:bg-white/90">
-                    Request Free Samples
-                  </Button>
-                </Card>
+                
 
                 {/* Medium CTA */}
                 <Card className="bg-navy text-white text-center p-8">
@@ -326,17 +297,7 @@ const StainGallery = () => {
                 </Card>
 
                 {/* Aggressive CTA */}
-                <Card className="bg-gradient-to-r from-gold to-gold/80 text-navy text-center p-8 border-2 border-gold">
-                  <h3 className="text-2xl font-heading font-bold mb-4">
-                    See It On Your Floor Today
-                  </h3>
-                  <p className="text-lg mb-6 font-medium">
-                    Don't waste time wondering. Get instant clarity with our free on-site stain preview service.
-                  </p>
-                  <Button size="lg" className="bg-navy text-white hover:bg-navy/90 font-semibold">
-                    Schedule Now - It's Free
-                  </Button>
-                </Card>
+                
 
               </div>
             </div>
