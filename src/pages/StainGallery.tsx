@@ -455,23 +455,23 @@ const StainGallery = () => {
                 variant="outline"
                 size="sm"
                 onClick={handlePrevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border-grey/20"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border-grey/20 w-8 h-8 p-0"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3 h-3" />
               </Button>
               
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleNextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border-grey/20"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border-grey/20 w-8 h-8 p-0"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3 h-3" />
               </Button>
 
               {/* Image Counter */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white/90 px-3 py-1 rounded-full text-sm text-navy">
-                {selectedImage.index + 1} / {selectedImage.stains.length}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs text-navy">
+                {selectedImage.index + 1}/{selectedImage.stains.length}
               </div>
             </div>
           )}
