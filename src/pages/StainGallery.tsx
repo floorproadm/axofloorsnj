@@ -294,7 +294,7 @@ const StainGallery = () => {
                       <p className="text-lg mb-6 opacity-90">
                         See exactly how each stain will look on your floors. Free in-home color testing with no obligation to purchase.
                       </p>
-                      <Button variant="default" size="lg" className="bg-gold text-navy hover:bg-gold/90 mx-auto lg:mx-0 w-fit">
+                      <Button variant="default" size="lg" className="bg-gold text-navy hover:bg-gold/90 mx-auto lg:mx-0 w-fit font-medium">
                         Book Your Color Test
                       </Button>
                     </div>
