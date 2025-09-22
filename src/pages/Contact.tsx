@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
@@ -123,15 +124,33 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Store contact form data
+      // Save to Supabase leads table
+      const { error } = await supabase
+        .from('leads')
+        .insert([{
+          name: formData.name,
+          email: formData.email || null,
+          phone: formData.phone,
+          city: formData.city || null,
+          lead_source: 'contact_page',
+          status: 'new',
+          priority: 'medium',
+          services: formData.service ? [formData.service] : [],
+          message: `Timeline: ${formData.timeline || 'Not specified'}`
+        }]);
+
+      if (error) {
+        console.error('Error saving contact lead:', error);
+        throw error;
+      }
+
+      // Also store in localStorage as backup
       const contactData = {
         ...formData,
         source: 'contact_page',
         type: 'contact_inquiry',
         created_at: new Date().toISOString()
       };
-
-      console.log('[Contact] Submitting contact form:', contactData);
       localStorage.setItem('contactLead', JSON.stringify(contactData));
 
       toast({

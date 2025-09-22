@@ -223,34 +223,34 @@ const Quiz = () => {
     setIsLoading(true);
 
     try {
-      // Store quiz results in Supabase with sanitized data
+      // Store quiz results in Supabase leads table with sanitized data
       const quizData = {
         name: sanitizeInput(formData.name),
         email: sanitizeInput(formData.email),
         phone: sanitizeInput(formData.phone),
         city: sanitizeInput(formData.city),
-        zip_code: null, // Removendo ZIP code
+        lead_source: 'quiz',
+        status: 'new',
+        priority: 'high',
         room_size: sanitizeInput(formData.squareFootage) || '0',
-        services: [sanitizeInput(formData.serviceType) || 'unknown'], // Convert to array for compatibility
+        services: [sanitizeInput(formData.serviceType) || 'unknown'],
         budget: formData.budget === "10k-plus" ? 15000 : 
                formData.budget === "5k-10k" ? 7500 :
-               formData.budget === "2k-5k" ? 3500 : 2000,
-        source: 'quiz'
+               formData.budget === "2k-5k" ? 3500 : 2000
       };
 
-      console.log('📤 [Quiz] Dados preparados para Supabase:', quizData);
-      console.log('📤 [Quiz] Tentando inserir no banco de dados...');
-      console.log('📤 [Quiz] Supabase client:', { isConnected: !!supabase });
+      console.log('📤 [Quiz] Dados preparados para Supabase leads:', quizData);
+      console.log('📤 [Quiz] Tentando inserir na tabela leads...');
 
-      // Save to Supabase database
-      console.log('💾 [Quiz] Tentando salvar no banco...');
-      const { data: savedQuiz, error: saveError } = await supabase
-        .from('quiz_responses')
+      // Save to Supabase leads table instead of quiz_responses
+      console.log('💾 [Quiz] Tentando salvar na tabela leads...');
+      const { data: savedLead, error: saveError } = await supabase
+        .from('leads')
         .insert([quizData])
         .select()
         .single();
 
-      console.log('💾 [Quiz] Resposta do Supabase - Data:', savedQuiz, 'Error:', saveError);
+      console.log('💾 [Quiz] Resposta do Supabase - Data:', savedLead, 'Error:', saveError);
 
       if (saveError) {
         console.error('❌ [Quiz] ERRO NO SUPABASE:', {
@@ -262,7 +262,7 @@ const Quiz = () => {
         throw new Error(`Failed to save quiz response: ${saveError.message}`);
       }
 
-      console.log('✅ [Quiz] Salvo com sucesso no banco:', savedQuiz);
+      console.log('✅ [Quiz] Salvo com sucesso no banco:', savedLead);
 
       // Send follow-up email
       try {
@@ -298,7 +298,7 @@ const Quiz = () => {
         console.log('📱 [Quiz] Dados da notificação:', { 
           adminPhone: notificationData.adminPhone,
           leadName: notificationData.leadData.name,
-          leadSource: notificationData.leadData.source
+          leadSource: notificationData.leadData.lead_source
         });
 
         const { data: notificationResult, error: notificationError } = await supabase.functions.invoke('send-notifications', {

@@ -1,5 +1,6 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -100,15 +101,32 @@ const Builders = () => {
     setIsSubmitting(true);
 
     try {
-      // Store builder lead data
+      // Save to Supabase leads table
+      const { error } = await supabase
+        .from('leads')
+        .insert([{
+          name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          lead_source: 'builders_page',
+          status: 'new',
+          priority: 'high',
+          services: ['partnership'],
+          message: `Company: ${formData.companyName}\nProject Volume: ${formData.projectVolume}\nCurrent Partner: ${formData.currentFlooringPartner}\n\nMessage: ${formData.message}`
+        }]);
+
+      if (error) {
+        console.error('Error saving builder lead:', error);
+        throw error;
+      }
+
+      // Also store in localStorage as backup
       const builderLead = {
         ...formData,
         source: 'builders_page',
         type: 'builder_partnership',
         created_at: new Date().toISOString()
       };
-
-      console.log('[Builders] Submitting lead:', builderLead);
       localStorage.setItem('builderLead', JSON.stringify(builderLead));
 
       toast({
