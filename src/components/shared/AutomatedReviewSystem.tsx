@@ -54,15 +54,18 @@ const AutomatedReviewSystem = () => {
     try {
       // Save review request to database for follow-up
       const { error } = await supabase
-        .from('quiz_responses')
+        .from('leads')
         .insert([{
           name: reviewData.customerName,
           email: reviewData.customerEmail,
           phone: reviewData.customerPhone,
+          lead_source: 'review_system',
+          status: 'new',
+          priority: 'medium',
           services: [reviewData.projectType],
           room_size: 'Review Request',
           budget: 0,
-          source: 'review_system'
+          message: 'Review request generated automatically'
         }]);
 
       if (error) throw error;

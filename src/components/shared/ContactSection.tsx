@@ -53,15 +53,18 @@ const ContactSection = () => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone || '',
+        lead_source: 'contact_section',
+        status: 'new',
+        priority: 'medium',
         city: null,
         room_size: 'contact_form',
         services: formData.service ? [formData.service] : ['general_inquiry'],
         budget: 0,
-        source: 'contact_form'
+        message: 'Contact form submission from website'
       };
 
       const { data: savedContact, error: saveError } = await supabase
-        .from('quiz_responses')
+        .from('leads')
         .insert([contactData])
         .select()
         .single();
