@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
 // Import stain images
@@ -46,6 +47,15 @@ const StainGallery = () => {
     favoriteColors: ['', '', '']
   });
   const { toast } = useToast();
+
+  // All available stain colors
+  const stainColors = [
+    'Aged Barrel', 'Antique Brown', 'Cherry', 'Chestnut', 'Classic Gray',
+    'Coffee Brown', 'Colonial Maple', 'Country White', 'Dark Walnut', 'Ebony',
+    'English Chestnut', 'Espresso', 'Golden Oak', 'Honey', 'Jacobean',
+    'Mahogany', 'Natural', 'Nutmeg', 'Provincial', 'Red Oak',
+    'Royal Mahogany', 'Sedona Red', 'Special Walnut', 'Weathered Oak'
+  ];
 
   const handleColorChange = (index: number, value: string) => {
     const newColors = [...formData.favoriteColors];
@@ -359,12 +369,25 @@ const StainGallery = () => {
                               <Label>3 Favorite Colors</Label>
                               <div className="space-y-2">
                                 {formData.favoriteColors.map((color, index) => (
-                                  <Input
+                                  <Select
                                     key={index}
                                     value={color}
-                                    onChange={(e) => handleColorChange(index, e.target.value)}
-                                    placeholder={`Favorite color ${index + 1}`}
-                                  />
+                                    onValueChange={(value) => handleColorChange(index, value)}
+                                  >
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue placeholder={`Select favorite color ${index + 1}`} />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white z-50">
+                                      {stainColors
+                                        .filter(stainColor => !formData.favoriteColors.includes(stainColor) || stainColor === color)
+                                        .map((stainColor) => (
+                                          <SelectItem key={stainColor} value={stainColor}>
+                                            {stainColor}
+                                          </SelectItem>
+                                        ))
+                                      }
+                                    </SelectContent>
+                                  </Select>
                                 ))}
                               </div>
                             </div>
