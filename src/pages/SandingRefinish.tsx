@@ -6,6 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, ArrowRight, RefreshCw, Zap, Clock, Sparkles } from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
+import step1Image from "/step1-sanding.gif";
+import step2Image from "/step2-staining.gif";
+import step3Image from "/step3-finishing.gif";
 
 const SandingRefinish = () => {
   const benefits = [
@@ -21,17 +24,20 @@ const SandingRefinish = () => {
     {
       title: "Step 1: Sanding",
       description: "We sand your floors to remove old finishes, stains, scratches, chips and any other imperfections.",
-      icon: Zap
+      icon: Zap,
+      image: step1Image
     },
     {
       title: "Step 2: Staining",
       description: "We can preserve the wood's natural color, or you may choose any number of stains to enhance the color and charm.",
-      icon: Sparkles
+      icon: Sparkles,
+      image: step2Image
     },
     {
       title: "Step 3: Finishing",
       description: "We protect & beautify your floors with three coats of Bona or Loba finish with a matte, satin, or gloss sheen.",
-      icon: CheckCircle
+      icon: CheckCircle,
+      image: step3Image
     }
   ];
 
@@ -135,8 +141,32 @@ const SandingRefinish = () => {
             {processSteps.map((step, index) => (
               <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
                 <CardContent className="p-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gold rounded-full mb-6 group-hover:scale-110 transition-bounce">
-                    <step.icon className="w-10 h-10 text-white" />
+                  <div className="w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-6 group-hover:scale-105 transition-bounce overflow-hidden border border-gold/20">
+                    {step.image ? (
+                      <div className="w-full h-full relative">
+                        <img 
+                          src={step.image} 
+                          alt={step.title} 
+                          className="w-full h-full object-cover rounded-lg"
+                          loading="eager"
+                          style={{ 
+                            imageRendering: 'auto'
+                          }}
+                          onError={(e) => {
+                            console.error('GIF failed to load:', step.title, step.image);
+                            const target = e.currentTarget;
+                            target.style.backgroundColor = '#f3f4f6';
+                          }}
+                          onLoad={() => {
+                            console.log('GIF loaded successfully:', step.title);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full bg-gold/20 rounded-lg flex items-center justify-center">
+                        <step.icon className="w-10 h-10 text-gold" />
+                      </div>
+                    )}
                   </div>
                   <h3 className="text-2xl font-heading font-bold text-navy mb-4">
                     {step.title}
