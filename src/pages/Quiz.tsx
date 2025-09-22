@@ -104,25 +104,28 @@ const Quiz = () => {
     }
   };
 
-  // Real-time field validation
-  const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
-    const sanitizedValue = sanitizeInput(value);
-    
-    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
-    
-    // Clear previous error
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
-    
-    // Validate field if it has rules
-    if (rules.length > 0) {
-      const error = validateField(sanitizedValue, rules);
-      if (error) {
-        setFormErrors(prev => ({ ...prev, [field]: error }));
+    // Real-time field validation with debugging
+    const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
+      console.log(`🔍 [Quiz] Field change - ${field}:`, value, 'rules:', rules);
+      const sanitizedValue = sanitizeInput(value);
+      
+      setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+      
+      // Clear previous error
+      if (formErrors[field]) {
+        console.log(`✅ [Quiz] Clearing error for ${field}`);
+        setFormErrors(prev => ({ ...prev, [field]: '' }));
       }
-    }
-  };
+      
+      // Validate field if it has rules
+      if (rules.length > 0) {
+        const error = validateField(sanitizedValue, rules);
+        console.log(`🔍 [Quiz] Validation result for ${field}:`, error || 'NO ERROR');
+        if (error) {
+          setFormErrors(prev => ({ ...prev, [field]: error }));
+        }
+      }
+    };
 
   const serviceTypes = [
     { value: "new-installation", label: "New Installation", description: "Installing new flooring" },
@@ -995,11 +998,16 @@ const Quiz = () => {
                     </div>
 
                     {/* Display form-level errors */}
-                    {Object.keys(formErrors).length > 0 && (
+                    {Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0 && (
                       <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>
                           Please fix the errors above before submitting.
+                          <div className="mt-2 text-xs">
+                            {Object.entries(formErrors).filter(([key, value]) => value !== '').map(([field, error]) => (
+                              <div key={field}>{field}: {error}</div>
+                            ))}
+                          </div>
                         </AlertDescription>
                       </Alert>
                     )}
@@ -1037,18 +1045,26 @@ const Quiz = () => {
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
-                      <Button 
-                        onClick={() => {
-                          console.log('🔘 [Quiz] BOTÃO SUBMIT CLICADO!');
-                          console.log('🔘 [Quiz] Form data atual:', formData);
-                          console.log('🔘 [Quiz] Loading state:', isLoading);
-                          console.log('🔘 [Quiz] Form errors:', formErrors);
-                          console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode);
-                          handleSubmit();
-                        }}
-                        disabled={isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode}
-                        className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
+                        <Button 
+                          onClick={() => {
+                            console.log('🔘 [Quiz] BOTÃO SUBMIT CLICADO!');
+                            console.log('🔘 [Quiz] Form data atual:', formData);
+                            console.log('🔘 [Quiz] Loading state:', isLoading);
+                            console.log('🔘 [Quiz] Form errors:', formErrors);
+                            console.log('🔘 [Quiz] Form errors count:', Object.keys(formErrors).length);
+                            console.log('🔘 [Quiz] Required fields check:', {
+                              name: !!formData.name,
+                              email: !!formData.email,
+                              phone: !!formData.phone,
+                              zipCode: !!formData.zipCode
+                            });
+                            console.log('🔘 [Quiz] Errors with values:', Object.entries(formErrors).filter(([key, value]) => value !== ''));
+                            console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode);
+                            handleSubmit();
+                          }}
+                          disabled={isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.zipCode}
+                          className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                         <span className="flex items-center justify-center gap-2">
                           {isLoading ? "Submitting..." : "Get My Recommendations"}
                           <ArrowRight className="w-4 h-4 flex-shrink-0" />
