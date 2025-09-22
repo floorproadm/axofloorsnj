@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Phone, Mail, MapPin, Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
 const ContactSection = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -19,24 +20,20 @@ const ContactSection = () => {
     service: "",
     message: ""
   });
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
-
   const handleServiceChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
       service: value
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.name || !formData.email) {
       toast({
         title: "Please fill in all required fields",
@@ -44,9 +41,7 @@ const ContactSection = () => {
       });
       return;
     }
-
     setIsLoading(true);
-
     try {
       // Save contact form data to database
       const contactData = {
@@ -62,13 +57,10 @@ const ContactSection = () => {
         budget: 0,
         message: 'Contact form submission from website'
       };
-
-      const { data: savedContact, error: saveError } = await supabase
-        .from('leads')
-        .insert([contactData])
-        .select()
-        .single();
-
+      const {
+        data: savedContact,
+        error: saveError
+      } = await supabase.from('leads').insert([contactData]).select().single();
       if (saveError) {
         throw new Error(`Failed to save contact: ${saveError.message}`);
       }
@@ -102,10 +94,9 @@ const ContactSection = () => {
       } catch (notificationError) {
         console.error('Admin notification error:', notificationError);
       }
-
       toast({
         title: "Quote Request Sent!",
-        description: "We'll contact you within 24 hours to discuss your project.",
+        description: "We'll contact you within 24 hours to discuss your project."
       });
 
       // Reset form
@@ -116,7 +107,6 @@ const ContactSection = () => {
         service: "",
         message: ""
       });
-
     } catch (error: any) {
       console.error('Contact form error:', error);
       toast({
@@ -128,9 +118,7 @@ const ContactSection = () => {
       setIsLoading(false);
     }
   };
-
-  return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-grey-light">
+  return <section className="py-12 sm:py-16 lg:py-20 bg-grey-light">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2">
@@ -181,47 +169,25 @@ const ContactSection = () => {
           <div className="lg:col-span-2">
             <Card className="shadow-elegant">
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl lg:text-2xl font-heading text-navy">Request Your Free Quote</CardTitle>
+                <CardTitle className="text-lg sm:text-xl lg:text-2xl font-heading text-navy">Ready to Transform Your Floors?</CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="name" className="text-sm">Name *</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="mt-1 min-h-[44px]"
-                      />
+                      <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required className="mt-1 min-h-[44px]" />
                     </div>
                     <div>
                       <Label htmlFor="email" className="text-sm">Email *</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="mt-1 min-h-[44px]"
-                      />
+                      <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required className="mt-1 min-h-[44px]" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="phone" className="text-sm">Phone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="mt-1 min-h-[44px]"
-                      />
+                      <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} className="mt-1 min-h-[44px]" />
                     </div>
                     <div>
                       <Label htmlFor="service" className="text-sm">Service Interested In</Label>
@@ -242,21 +208,10 @@ const ContactSection = () => {
 
                   <div>
                     <Label htmlFor="message" className="text-sm">Project Details</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      placeholder="Tell us about your project..."
-                      className="mt-1 min-h-[100px] sm:min-h-[120px]"
-                    />
+                    <Textarea id="message" name="message" value={formData.message} onChange={handleInputChange} placeholder="Tell us about your project..." className="mt-1 min-h-[100px] sm:min-h-[120px]" />
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading}
-                    className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 min-h-[48px] font-semibold disabled:opacity-50"
-                  >
+                  <Button type="submit" disabled={isLoading} className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 min-h-[48px] font-semibold disabled:opacity-50">
                     <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     {isLoading ? "Sending..." : "Send Quote Request"}
                   </Button>
@@ -266,8 +221,6 @@ const ContactSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default ContactSection;
