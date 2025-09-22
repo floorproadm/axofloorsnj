@@ -248,30 +248,6 @@ const Index = () => {
       {/* Contact Form Section */}
       <ContactSection />
 
-      {/* Final CTA Section */}
-      <section className="spacing-mobile-md gold-gradient">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-mobile-3xl font-bold font-heading text-primary mb-6">
-            Ready to Transform Your Floors?
-          </h2>
-          <p className="text-mobile-base text-primary/80 mb-8 max-w-2xl mx-auto leading-relaxed">
-            If you're looking for durability, quality, and comfort for your everyday life, trust AXO Floors to deliver excellence!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold">
-              <Link to="/contact" className="flex items-center justify-center gap-2">
-                Get Free Quote
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-              <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
-                Call (732) 351-8653
-              </a>
-            </Button>
-          </div>
-        </div>
-      </section>
 
       <Footer />
     </div>;
