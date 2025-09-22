@@ -44,7 +44,7 @@ const About = () => {
               </h1>
               <p className="text-lg md:text-xl text-white/80 leading-relaxed">
                 With over a decade of experience, AXO Floors has been transforming homes and businesses 
-                throughout New Jersey with premium flooring solutions and exceptional craftsmanship.
+                throughout the tri-state area (NJ, NY & PA) with premium flooring solutions and exceptional craftsmanship.
               </p>
             </div>
           </div>
