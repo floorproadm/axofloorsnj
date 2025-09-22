@@ -24,7 +24,7 @@ const Index = () => {
     description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
     href: "/hardwood-flooring",
     features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
-    icon: "✨"
+    icon: "🌳"
   }, {
     title: "Vinyl Plank Flooring",
     description: "Waterproof and durable luxury vinyl with the look of real hardwood.",
