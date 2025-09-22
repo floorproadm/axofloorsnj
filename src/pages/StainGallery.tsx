@@ -3,7 +3,7 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,7 +41,7 @@ import stainProcessImg from '@/assets/stain-process-work.jpg';
 const StainGallery = () => {
   const [expandedWoodType, setExpandedWoodType] = useState<string>('white-oak');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<{name: string, image: string} | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{name: string, image: string, index: number, stains: typeof whiteOakStains} | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     zipCode: '',
@@ -82,8 +82,22 @@ const StainGallery = () => {
     setIsDialogOpen(false);
   };
 
-  const handleImageClick = (stain: {name: string, image: string}) => {
-    setSelectedImage(stain);
+  const handleImageClick = (stain: {name: string, image: string}, index: number, stains: typeof whiteOakStains) => {
+    setSelectedImage({ ...stain, index, stains });
+  };
+
+  const handlePrevImage = () => {
+    if (!selectedImage) return;
+    const prevIndex = selectedImage.index > 0 ? selectedImage.index - 1 : selectedImage.stains.length - 1;
+    const prevStain = selectedImage.stains[prevIndex];
+    setSelectedImage({ ...prevStain, index: prevIndex, stains: selectedImage.stains });
+  };
+
+  const handleNextImage = () => {
+    if (!selectedImage) return;
+    const nextIndex = selectedImage.index < selectedImage.stains.length - 1 ? selectedImage.index + 1 : 0;
+    const nextStain = selectedImage.stains[nextIndex];
+    setSelectedImage({ ...nextStain, index: nextIndex, stains: selectedImage.stains });
   };
   const whiteOakStains = [{
     name: 'Aged Barrel',
@@ -239,7 +253,7 @@ const StainGallery = () => {
   }: {
     stains: typeof whiteOakStains;
   }) => <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
-      {stains.map((stain, index) => <Card key={index} className="group cursor-pointer hover:shadow-elegant transition-smooth" onClick={() => handleImageClick(stain)}>
+      {stains.map((stain, index) => <Card key={index} className="group cursor-pointer hover:shadow-elegant transition-smooth" onClick={() => handleImageClick(stain, index, stains)}>
           <CardContent className="p-0">
             <div className="aspect-square bg-gradient-subtle rounded-lg overflow-hidden">
               <img src={stain.image} alt={stain.name} className="w-full h-full object-cover group-hover:scale-105 transition-smooth" />
@@ -424,15 +438,41 @@ const StainGallery = () => {
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedImage?.name}</DialogTitle>
+            <DialogTitle className="text-center">{selectedImage?.name}</DialogTitle>
           </DialogHeader>
           {selectedImage && (
-            <div className="aspect-square bg-gradient-subtle rounded-lg overflow-hidden">
-              <img 
-                src={selectedImage.image} 
-                alt={selectedImage.name} 
-                className="w-full h-full object-cover" 
-              />
+            <div className="relative">
+              <div className="aspect-square bg-gradient-subtle rounded-lg overflow-hidden">
+                <img 
+                  src={selectedImage.image} 
+                  alt={selectedImage.name} 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+              
+              {/* Navigation Buttons */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevImage}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border-grey/20"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextImage}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border-grey/20"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+
+              {/* Image Counter */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white/90 px-3 py-1 rounded-full text-sm text-navy">
+                {selectedImage.index + 1} / {selectedImage.stains.length}
+              </div>
             </div>
           )}
         </DialogContent>
