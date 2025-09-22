@@ -175,9 +175,19 @@ const Quiz = () => {
         description: "We'll contact you within 24 hours with your personalized recommendations."
       });
 
-      // Redirect to recommended service page
-      const recommendedRoute = getRecommendedService();
-      navigate(recommendedRoute + '?source=quiz');
+      // Redirect to thank you page with quiz data
+      navigate('/thank-you', { 
+        state: { 
+          quizData: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            serviceType: formData.serviceType,
+            squareFootage: formData.squareFootage,
+            budget: formData.budget
+          }
+        }
+      });
 
     } catch (error) {
       console.error('Quiz submission error:', error);
