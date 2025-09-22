@@ -5,8 +5,54 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Content-Security-Policy": "default-src 'self'",
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin"
+};
+
+// Utility to sanitize sensitive data for logging
+const sanitizeForLogging = (data: any): any => {
+  if (typeof data !== 'object' || data === null) {
+    return data;
+  }
+
+  const sanitized = { ...data };
+  
+  // Remove sensitive fields completely
+  const sensitiveFields = ['password', 'token', 'api_key', 'secret', 'auth', 'email'];
+  
+  for (const key in sanitized) {
+    if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
+      if (key.toLowerCase() === 'email' && typeof sanitized[key] === 'string') {
+        // Mask email instead of removing completely
+        const email = sanitized[key];
+        const [localPart, domain] = email.split('@');
+        if (localPart && domain && localPart.length > 3) {
+          sanitized[key] = `${localPart.substring(0, 3)}***@${domain}`;
+        }
+      } else {
+        delete sanitized[key];
+      }
+    }
+    
+    // Recursively sanitize nested objects
+    if (typeof sanitized[key] === 'object') {
+      sanitized[key] = sanitizeForLogging(sanitized[key]);
+    }
+  }
+  
+  return sanitized;
+};
+
+// Validate request size
+const validateRequestSize = (req: Request, maxSizeBytes: number = 1024 * 1024): boolean => {
+  const contentLength = req.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > maxSizeBytes) {
+    return false;
+  }
+  return true;
 };
 
 interface FollowUpEmailRequest {
@@ -22,10 +68,24 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate request size first
+  if (!validateRequestSize(req)) {
+    console.warn('[FOLLOW-UP] Request size exceeded limit');
+    return new Response(
+      JSON.stringify({ error: 'Request too large' }),
+      { 
+        status: 413, 
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      }
+    );
+  }
+
   try {
-    const { name, email, source, leadType = 'general' }: FollowUpEmailRequest = await req.json();
+    const requestData: FollowUpEmailRequest = await req.json();
+    const { name, email, source, leadType = 'general' } = requestData;
     
-    console.log('[AutoNurture] Processing lead:', { name, email, source, leadType });
+    // Log sanitized request data (without exposing sensitive info)
+    console.log('[FOLLOW-UP] Processing lead:', sanitizeForLogging(requestData));
 
     const baseUrl = "https://axo-floors-nj.lovable.app";
     
@@ -136,9 +196,13 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailContent,
     });
 
-    console.log("[AutoNurture] Email sent successfully:", emailResponse);
+    // Log success without exposing sensitive data
+    console.log("[FOLLOW-UP] Email sent successfully to:", sanitizeForLogging({ email, leadType }));
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      timestamp: new Date().toISOString() 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -146,9 +210,20 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("[AutoNurture] Error in send-follow-up function:", error);
+    // Secure error logging - don't expose sensitive details
+    const sanitizedError = {
+      message: error.message?.substring(0, 100) || 'Unknown error',
+      type: error.name || 'Error',
+      timestamp: new Date().toISOString()
+    };
+    
+    console.error("[FOLLOW-UP] Error in send-follow-up function:", sanitizedError);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: 'Email service temporarily unavailable',
+        timestamp: new Date().toISOString()
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

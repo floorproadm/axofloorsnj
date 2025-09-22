@@ -19,6 +19,14 @@ import {
   formatPhoneNumber,
   useFieldValidation 
 } from "@/utils/validation";
+import { 
+  sanitizeForLogging,
+  logSecurityEvent,
+  monitorFormSubmission,
+  monitorRateLimit,
+  validateRequestSize,
+  getSecurityHeaders
+} from "@/utils/security-monitoring";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Quiz = () => {
@@ -166,9 +174,35 @@ const Quiz = () => {
     const rateLimitCheck = checkRateLimit(clientId);
     
     if (!rateLimitCheck.allowed) {
+      monitorRateLimit(clientId, rateLimitCheck.remainingTime!);
       toast({
         title: "Too many submissions",
         description: `Please wait ${rateLimitCheck.remainingTime} seconds before submitting again.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate request size
+    if (!validateRequestSize(formData)) {
+      logSecurityEvent('suspicious_activity', {
+        reason: 'oversized_form_data',
+        formType: 'quiz'
+      });
+      toast({
+        title: "Form data too large",
+        description: "Please reduce the amount of information and try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Monitor form submission for suspicious activity
+    const isSecure = monitorFormSubmission('quiz', formData);
+    if (!isSecure) {
+      toast({
+        title: "Suspicious activity detected",
+        description: "Your submission has been flagged for review. Please try again later.",
         variant: "destructive"
       });
       return;

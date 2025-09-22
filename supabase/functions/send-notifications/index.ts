@@ -9,6 +9,62 @@ const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Content-Security-Policy": "default-src 'self'",
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin"
+};
+
+// Utility to sanitize sensitive data for logging
+const sanitizeForLogging = (data: any): any => {
+  if (typeof data !== 'object' || data === null) {
+    return data;
+  }
+
+  const sanitized = { ...data };
+  
+  // Remove or mask sensitive fields
+  const sensitiveFields = ['password', 'token', 'api_key', 'secret', 'auth'];
+  
+  for (const key in sanitized) {
+    if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
+      delete sanitized[key];
+      continue;
+    }
+    
+    // Mask email addresses
+    if (key.toLowerCase() === 'email' && typeof sanitized[key] === 'string') {
+      const email = sanitized[key];
+      const [localPart, domain] = email.split('@');
+      if (localPart && domain && localPart.length > 3) {
+        sanitized[key] = `${localPart.substring(0, 3)}***@${domain}`;
+      }
+    }
+    
+    // Mask phone numbers
+    if (key.toLowerCase().includes('phone') && typeof sanitized[key] === 'string') {
+      const phone = sanitized[key].replace(/\D/g, '');
+      if (phone.length >= 4) {
+        sanitized[key] = `***-***-${phone.slice(-4)}`;
+      }
+    }
+    
+    // Recursively sanitize nested objects
+    if (typeof sanitized[key] === 'object') {
+      sanitized[key] = sanitizeForLogging(sanitized[key]);
+    }
+  }
+  
+  return sanitized;
+};
+
+// Validate request size
+const validateRequestSize = (req: Request, maxSizeBytes: number = 1024 * 1024): boolean => {
+  const contentLength = req.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > maxSizeBytes) {
+    return false;
+  }
+  return true;
 };
 
 interface NotificationRequest {
@@ -27,16 +83,35 @@ interface NotificationRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("[Notifications] Function called");
+  console.log("[NOTIFICATIONS] Function called");
 
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate request size first
+  if (!validateRequestSize(req)) {
+    console.warn('[NOTIFICATIONS] Request size exceeded limit');
+    return new Response(
+      JSON.stringify({ error: 'Request too large' }),
+      { 
+        status: 413, 
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      }
+    );
+  }
+
   try {
-    const { leadData, adminEmail, adminPhone }: NotificationRequest = await req.json();
-    console.log("[Notifications] Processing notification for lead:", leadData.name);
+    const requestData: NotificationRequest = await req.json();
+    const { leadData, adminEmail, adminPhone } = requestData;
+    
+    // Log sanitized request data
+    console.log("[NOTIFICATIONS] Processing notification for lead:", sanitizeForLogging({ 
+      name: leadData.name,
+      source: leadData.source,
+      adminEmail: adminEmail.substring(0, 3) + '***@' + adminEmail.split('@')[1]
+    }));
 
     const results = {
       email: { success: false, error: null },
@@ -95,10 +170,15 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       results.email.success = true;
-      console.log("[Notifications] Email sent successfully");
+      console.log("[NOTIFICATIONS] Email sent successfully to admin");
     } catch (error) {
-      console.error("[Notifications] Email error:", error);
-      results.email.error = error.message;
+      // Secure error logging
+      const sanitizedError = {
+        message: error.message?.substring(0, 100) || 'Unknown error',
+        type: error.name || 'Error'
+      };
+      console.error("[NOTIFICATIONS] Email error:", sanitizedError);
+      results.email.error = 'Email service temporarily unavailable';
     }
 
     // Send SMS notification (if phone number provided)
@@ -127,16 +207,25 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         results.sms.success = true;
-        console.log("[Notifications] SMS sent successfully");
+        console.log("[NOTIFICATIONS] SMS sent successfully");
       } catch (error) {
-        console.error("[Notifications] SMS error:", error);
-        results.sms.error = error.message;
+        // Secure error logging
+        const sanitizedError = {
+          message: error.message?.substring(0, 100) || 'Unknown error',
+          type: error.name || 'Error'
+        };
+        console.error("[NOTIFICATIONS] SMS error:", sanitizedError);
+        results.sms.error = 'SMS service temporarily unavailable';
       }
     } else {
-      console.log("[Notifications] SMS skipped - missing phone, Twilio credentials, or Twilio phone number");
+      console.log("[NOTIFICATIONS] SMS skipped - missing configuration");
     }
 
-    return new Response(JSON.stringify({ success: true, results }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      results,
+      timestamp: new Date().toISOString()
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -145,9 +234,20 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
   } catch (error: any) {
-    console.error("[Notifications] Function error:", error);
+    // Secure error logging - don't expose sensitive details
+    const sanitizedError = {
+      message: error.message?.substring(0, 100) || 'Unknown error',
+      type: error.name || 'Error',
+      timestamp: new Date().toISOString()
+    };
+    
+    console.error("[NOTIFICATIONS] Function error:", sanitizedError);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: 'Notification service temporarily unavailable',
+        timestamp: new Date().toISOString()
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
+import SecurityHeaders from "@/components/SecurityHeaders";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import HardwoodFlooring from "./pages/HardwoodFlooring";
@@ -39,6 +40,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <SecurityHeaders />
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
