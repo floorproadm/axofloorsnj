@@ -4,6 +4,10 @@ import Footer from '@/components/shared/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 // Import stain images
 import agedBarrelImg from '@/assets/stains/aged-barrel.jpg';
@@ -35,6 +39,37 @@ import weatheredOakImg from '@/assets/stains/weathered-oak.jpg';
 import stainProcessImg from '@/assets/stain-process-work.jpg';
 const StainGallery = () => {
   const [expandedWoodType, setExpandedWoodType] = useState<string>('white-oak');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    zipCode: '',
+    favoriteColors: ['', '', '']
+  });
+  const { toast } = useToast();
+
+  const handleColorChange = (index: number, value: string) => {
+    const newColors = [...formData.favoriteColors];
+    newColors[index] = value;
+    setFormData({ ...formData, favoriteColors: newColors });
+  };
+
+  const handleSendSMS = () => {
+    const message = `Hi! I saw your stain gallery and want to book the free in-home test. I'm ${formData.name}, ZIPCode: ${formData.zipCode} 3 favorites colors: ${formData.favoriteColors.filter(color => color.trim()).join(', ')}`;
+    
+    // Create SMS link
+    const phoneNumber = '1234567890'; // Replace with actual company phone number
+    const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
+    
+    // Open SMS app
+    window.open(smsUrl, '_blank');
+    
+    toast({
+      title: "SMS Ready!",
+      description: "Your SMS app should open with the pre-filled message.",
+    });
+    
+    setIsDialogOpen(false);
+  };
   const whiteOakStains = [{
     name: 'Aged Barrel',
     image: agedBarrelImg
@@ -291,9 +326,58 @@ const StainGallery = () => {
                       <p className="text-lg mb-6 opacity-90">
                         See exactly how each stain will look on your floors. Free in-home color testing with no obligation to purchase.
                       </p>
-                      <Button variant="default" size="lg" className="bg-gold text-navy hover:bg-gold/90 mx-auto lg:mx-0 w-fit font-medium">
-                        Book Your Color Test
-                      </Button>
+                      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="default" size="lg" className="bg-gold text-navy hover:bg-gold/90 mx-auto lg:mx-0 w-fit font-medium">
+                            Book Your Color Test
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Book Your Free Color Test</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="name">Your Name</Label>
+                              <Input
+                                id="name"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="Enter your name"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="zipCode">ZIP Code</Label>
+                              <Input
+                                id="zipCode"
+                                value={formData.zipCode}
+                                onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                                placeholder="Enter your ZIP code"
+                              />
+                            </div>
+                            <div>
+                              <Label>3 Favorite Colors</Label>
+                              <div className="space-y-2">
+                                {formData.favoriteColors.map((color, index) => (
+                                  <Input
+                                    key={index}
+                                    value={color}
+                                    onChange={(e) => handleColorChange(index, e.target.value)}
+                                    placeholder={`Favorite color ${index + 1}`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={handleSendSMS} 
+                              className="w-full bg-gold text-navy hover:bg-gold/90 font-medium"
+                              disabled={!formData.name || !formData.zipCode}
+                            >
+                              Send SMS to Book Test
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 </Card>
