@@ -61,7 +61,7 @@ const Portfolio = () => {
           <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden">
             <img 
               src={sandingHero} 
-              alt="Floor sanding work in progress" 
+              alt="AXO Floors professional working on hardwood floor refinishing" 
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-navy/40 flex items-center justify-center">
