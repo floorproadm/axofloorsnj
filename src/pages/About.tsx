@@ -1,7 +1,9 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CheckCircle, Award, Users, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const About = () => {
   const values = [
@@ -47,23 +49,77 @@ const About = () => {
           </div>
         </section>
 
-        {/* Story Section */}
+        {/* Team Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-2xl md:text-4xl font-bold text-center mb-12">Our Story</h2>
-              <div className="prose prose-lg max-w-none text-muted-foreground">
-                <p className="text-center mb-8">
-                  Founded with a passion for excellence, AXO Floors began as a small family business 
-                  with a simple mission: to provide New Jersey homeowners with beautiful, durable 
-                  flooring solutions that stand the test of time.
-                </p>
-                <p className="text-center">
-                  Today, we're proud to be one of the region's most trusted flooring contractors, 
-                  with hundreds of satisfied customers and a reputation built on quality, reliability, 
-                  and exceptional service.
-                </p>
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-2xl md:text-4xl font-bold text-center mb-16">Meet Our Team</h2>
+              
+              {/* Team Members */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+                {/* Ademir */}
+                <Card className="p-6 md:p-8">
+                  <CardContent className="p-0">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center">
+                        <div className="text-2xl font-bold text-gold">A</div>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">Ademir</h3>
+                        <p className="text-gold font-medium">Owner</p>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      With over 15 years of hands-on experience, Ademir brings the precision and 
+                      craftsmanship hardwood services across tri-state homes. He specializes in 
+                      sanding, staining, and hardwood installation — helping families protect their 
+                      investment with floors that are both durable and elegant.
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed mt-4">
+                      Ademir's mission is simple: deliver results that last, with honesty and care 
+                      in every detail, so customers can enjoy their floors for years to come.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Eduardo */}
+                <Card className="p-6 md:p-8">
+                  <CardContent className="p-0">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center">
+                        <div className="text-2xl font-bold text-gold">E</div>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">Eduardo</h3>
+                        <p className="text-gold font-medium">General Manager</p>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Following in his father's footsteps, Eduardo has been in the flooring industry 
+                      for 9 years. He focuses on guiding customers through every decision — from stain 
+                      colors to finish options — so they feel confident before work even begins.
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed mt-4">
+                      Known for his precision and customer-first approach, Eduardo has supported dozens 
+                      of homeowners across NJ, NY, and PA, earning a reputation for excellence and reliability. 
+                      His passion: making sure every client sees exactly how their new floor will look 
+                      before the job is done — and walking away knowing they made the right choice.
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
+
+              {/* Together Section */}
+              <Card className="bg-muted/50 p-6 md:p-8">
+                <CardContent className="p-0 text-center">
+                  <h3 className="text-2xl font-bold mb-6">Together</h3>
+                  <p className="text-lg text-muted-foreground leading-relaxed max-w-4xl mx-auto">
+                    AXO Floors is more than a family business — it's a promise of craftsmanship, 
+                    honesty, and lasting beauty. Whether restoring old floors or creating something new, 
+                    our goal is always the same: deliver a result you'll be proud to walk on every day.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -87,6 +143,26 @@ const About = () => {
                   </Card>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 md:py-24 bg-black text-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-2xl md:text-4xl font-bold mb-6">
+                Ready to see how your floors can look?
+              </h2>
+              <p className="text-lg text-white/80 mb-8">
+                Request your free in-home consultation today and let us show you 
+                the possibilities for your space.
+              </p>
+              <Button asChild size="lg" className="gold-gradient hover:scale-105 transition-bounce">
+                <Link to="/contact">
+                  Get Your Free Consultation
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
