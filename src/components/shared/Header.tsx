@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, Phone, ChevronDown, Facebook, Instagram, X } from "lucide-react";
-import axoLogo from "@/assets/axo-logo.png";
+import axoLogo from "@/assets/axo-logo-official.png";
 import { AppSidebar } from "./AppSidebar";
 import { useState } from "react";
 

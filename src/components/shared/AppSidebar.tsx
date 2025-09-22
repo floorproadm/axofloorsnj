@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import axoLogo from "@/assets/axo-logo.png";
+import axoLogo from "@/assets/axo-logo-official.png";
 
 interface AppSidebarProps {
   onClose: () => void;
