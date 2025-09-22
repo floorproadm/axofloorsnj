@@ -71,43 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    // Check for hardcoded admin credentials
-    const ADMIN_EMAIL = 'axofloorsnj@gmail.com';
-    const ADMIN_PASSWORD = 'floors2020$$';
-    
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Create mock user and session for admin
-      const mockUser = {
-        id: 'admin-user-id',
-        email: ADMIN_EMAIL,
-        aud: 'authenticated',
-        role: 'authenticated',
-        email_confirmed_at: new Date().toISOString(),
-        phone: '',
-        confirmed_at: new Date().toISOString(),
-        last_sign_in_at: new Date().toISOString(),
-        app_metadata: { provider: 'email', providers: ['email'] },
-        user_metadata: { full_name: 'Admin' },
-        identities: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } as User;
-      
-      const mockSession = {
-        access_token: 'mock-admin-token',
-        refresh_token: 'mock-refresh-token',
-        expires_in: 3600,
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        token_type: 'bearer',
-        user: mockUser
-      } as Session;
-      
-      setUser(mockUser);
-      setSession(mockSession);
-      return { error: null };
-    }
-    
-    // Regular Supabase authentication
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -117,10 +80,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    // Clear mock admin session
-    setUser(null);
-    setSession(null);
-    // Also sign out from Supabase in case there's a real session
     await supabase.auth.signOut();
   };
 

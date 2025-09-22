@@ -14,7 +14,8 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signIn, user } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -25,26 +26,36 @@ export default function Auth() {
     }
   }, [user, navigate]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const { error } = await signIn(email, password);
+    const { error } = isSignUp 
+      ? await signUp(email, password, 'Admin')
+      : await signIn(email, password);
     
     if (error) {
       setError(error.message);
       toast({
-        title: "Erro no login",
+        title: isSignUp ? "Erro no cadastro" : "Erro no login",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Redirecionando para a área administrativa...",
-      });
-      navigate('/admin');
+      if (isSignUp) {
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Agora você pode fazer login.",
+        });
+        setIsSignUp(false);
+      } else {
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Redirecionando para a área administrativa...",
+        });
+        navigate('/admin');
+      }
     }
     
     setLoading(false);
@@ -67,7 +78,7 @@ export default function Auth() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gold">AXO Floors</CardTitle>
             <CardDescription>
-              Acesse a área administrativa
+              {isSignUp ? "Criar conta administrativa" : "Acesse a área administrativa"}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -78,7 +89,7 @@ export default function Auth() {
               </Alert>
             )}
 
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -107,9 +118,20 @@ export default function Auth() {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Entrar
+                {isSignUp ? "Criar Conta" : "Entrar"}
               </Button>
             </form>
+
+            <div className="mt-4 text-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                {isSignUp ? "Já tem conta? Fazer login" : "Criar conta administrativa"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
