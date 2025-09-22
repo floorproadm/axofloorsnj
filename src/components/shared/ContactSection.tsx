@@ -8,10 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Phone, Mail, MapPin, Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
 const ContactSection = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -20,20 +19,24 @@ const ContactSection = () => {
     service: "",
     message: ""
   });
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
+
   const handleServiceChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
       service: value
     }));
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!formData.name || !formData.email) {
       toast({
         title: "Please fill in all required fields",
@@ -41,7 +44,9 @@ const ContactSection = () => {
       });
       return;
     }
+
     setIsLoading(true);
+
     try {
       // Save contact form data to database
       const contactData = {
@@ -57,10 +62,13 @@ const ContactSection = () => {
         budget: 0,
         message: 'Contact form submission from website'
       };
-      const {
-        data: savedContact,
-        error: saveError
-      } = await supabase.from('leads').insert([contactData]).select().single();
+
+      const { data: savedContact, error: saveError } = await supabase
+        .from('leads')
+        .insert([contactData])
+        .select()
+        .single();
+
       if (saveError) {
         throw new Error(`Failed to save contact: ${saveError.message}`);
       }
@@ -94,6 +102,7 @@ const ContactSection = () => {
       } catch (notificationError) {
         console.error('Admin notification error:', notificationError);
       }
+
       toast({
         title: "Quote Request Sent!",
         description: "We'll contact you within 24 hours to discuss your project."
@@ -107,6 +116,7 @@ const ContactSection = () => {
         service: "",
         message: ""
       });
+
     } catch (error: any) {
       console.error('Contact form error:', error);
       toast({
@@ -118,7 +128,9 @@ const ContactSection = () => {
       setIsLoading(false);
     }
   };
-  return <section className="spacing-mobile-md bg-secondary/30">
+
+  return (
+    <section className="spacing-mobile-md bg-secondary/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className="text-mobile-2xl font-bold font-heading mb-4 sm:mb-6">
@@ -129,154 +141,119 @@ const ContactSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Contact Info - Mobile optimized */}
-          <div className="space-y-4 lg:col-span-1 order-2 lg:order-1">
-            <Card className="group hover:shadow-elegant transition-smooth border-0 bg-card/80 backdrop-blur-sm">
-              <CardContent className="p-5 sm:p-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 bg-accent/10 rounded-xl group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
-                    <Phone className="w-6 h-6 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-heading font-semibold mb-1 text-base group-hover:text-accent transition-colors duration-300">Phone</h3>
-                    <a href="tel:(732) 351-8653" className="text-muted-foreground hover:text-accent transition-colors duration-300 text-base font-medium">
-                      (732) 351-8653
-                    </a>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="max-w-4xl mx-auto">
+          {/* Mobile CTA Card - Only show on mobile */}
+          <Card className="lg:hidden group hover:shadow-elegant transition-smooth border-0 bg-gradient-to-br from-accent/5 to-accent/10 backdrop-blur-sm mb-6">
+            <CardContent className="p-5 text-center">
+              <h3 className="font-heading font-semibold mb-2 text-accent">Need immediate help?</h3>
+              <p className="text-sm text-muted-foreground mb-4">Call us now for instant support</p>
+              <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold min-h-[48px]">
+                <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Call Now
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
 
-            <Card className="group hover:shadow-elegant transition-smooth border-0 bg-card/80 backdrop-blur-sm">
-              <CardContent className="p-5 sm:p-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 bg-accent/10 rounded-xl group-hover:bg-accent group-hover:scale-110 transition-all duration-300 flex-shrink-0">
-                    <Mail className="w-6 h-6 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-heading font-semibold mb-1 text-base group-hover:text-accent transition-colors duration-300">Email</h3>
-                    <a href="mailto:axofloorsnj@gmail.com" className="text-muted-foreground hover:text-accent transition-colors duration-300 text-sm sm:text-base break-all font-medium">
-                      axofloorsnj@gmail.com
-                    </a>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Mobile CTA Card */}
-            <Card className="lg:hidden group hover:shadow-elegant transition-smooth border-0 bg-gradient-to-br from-accent/5 to-accent/10 backdrop-blur-sm">
-              <CardContent className="p-5 text-center">
-                <h3 className="font-heading font-semibold mb-2 text-accent">Need immediate help?</h3>
-                <p className="text-sm text-muted-foreground mb-4">Call us now for instant support</p>
-                <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold min-h-[48px]">
-                  <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    Call Now
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Contact Form - Mobile first design */}
-          <div className="lg:col-span-2 order-1 lg:order-2">
-            <Card className="shadow-elegant border-0 bg-card/90 backdrop-blur-sm">
-              <CardHeader className="p-5 sm:p-6 pb-4">
-                <CardTitle className="text-mobile-xl font-heading text-center lg:text-left">Ready to Transform Your Floors?</CardTitle>
-                <p className="text-sm text-muted-foreground text-center lg:text-left">Fill out the form below and we'll get back to you within 24 hours</p>
-              </CardHeader>
-              <CardContent className="p-5 sm:p-6 pt-2">
-                <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-                  {/* Mobile: Stack all inputs, Desktop: Grid layout */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-medium">Name *</Label>
-                      <Input 
-                        id="name" 
-                        name="name" 
-                        value={formData.name} 
-                        onChange={handleInputChange} 
-                        required 
-                        className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
-                        placeholder="Your full name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
-                      <Input 
-                        id="email" 
-                        name="email" 
-                        type="email" 
-                        value={formData.email} 
-                        onChange={handleInputChange} 
-                        required 
-                        className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
-                        placeholder="your@email.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium">Phone</Label>
-                      <Input 
-                        id="phone" 
-                        name="phone" 
-                        type="tel" 
-                        value={formData.phone} 
-                        onChange={handleInputChange} 
-                        className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
-                        placeholder="(732) 555-0123"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="service" className="text-sm font-medium">Service Interested In</Label>
-                      <Select value={formData.service} onValueChange={handleServiceChange}>
-                        <SelectTrigger className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300">
-                          <SelectValue placeholder="Select a service" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-card border-accent/20">
-                          <SelectItem value="hardwood_flooring">Hardwood Flooring</SelectItem>
-                          <SelectItem value="sanding_refinishing">Sanding & Refinishing</SelectItem>
-                          <SelectItem value="vinyl_plank">Vinyl Plank Flooring</SelectItem>
-                          <SelectItem value="staircase">Staircase Services</SelectItem>
-                          <SelectItem value="baseboards">Baseboards</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
+          {/* Contact Form - Full width */}
+          <Card className="shadow-elegant border-0 bg-card/90 backdrop-blur-sm">
+            <CardHeader className="p-5 sm:p-6 pb-4">
+              <CardTitle className="text-mobile-xl font-heading text-center">Ready to Transform Your Floors?</CardTitle>
+              <p className="text-sm text-muted-foreground text-center">Fill out the form below and we'll get back to you within 24 hours</p>
+            </CardHeader>
+            <CardContent className="p-5 sm:p-6 pt-2">
+              <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+                {/* Mobile: Stack all inputs, Desktop: Grid layout */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-sm font-medium">Project Details</Label>
-                    <Textarea 
-                      id="message" 
-                      name="message" 
-                      value={formData.message} 
+                    <Label htmlFor="name" className="text-sm font-medium">Name *</Label>
+                    <Input 
+                      id="name" 
+                      name="name" 
+                      value={formData.name} 
                       onChange={handleInputChange} 
-                      placeholder="Tell us about your project: room size, current flooring, timeline, etc..."
-                      className="min-h-[120px] sm:min-h-[140px] text-base border-2 focus:border-accent transition-colors duration-300 resize-none"
+                      required 
+                      className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
+                      placeholder="Your full name"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                    <Input 
+                      id="email" 
+                      name="email" 
+                      type="email" 
+                      value={formData.email} 
+                      onChange={handleInputChange} 
+                      required 
+                      className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                </div>
 
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading} 
-                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90 hover:scale-[1.02] transition-all duration-300 text-base font-semibold min-h-[52px] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Send className="w-5 h-5 mr-2" />
-                    {isLoading ? "Sending..." : "Send Quote Request"}
-                  </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium">Phone</Label>
+                    <Input 
+                      id="phone" 
+                      name="phone" 
+                      type="tel" 
+                      value={formData.phone} 
+                      onChange={handleInputChange} 
+                      className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300"
+                      placeholder="(732) 555-0123"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="service" className="text-sm font-medium">Service Interested In</Label>
+                    <Select value={formData.service} onValueChange={handleServiceChange}>
+                      <SelectTrigger className="min-h-[48px] text-base border-2 focus:border-accent transition-colors duration-300">
+                        <SelectValue placeholder="Select a service" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-accent/20">
+                        <SelectItem value="hardwood_flooring">Hardwood Flooring</SelectItem>
+                        <SelectItem value="sanding_refinishing">Sanding & Refinishing</SelectItem>
+                        <SelectItem value="vinyl_plank">Vinyl Plank Flooring</SelectItem>
+                        <SelectItem value="staircase">Staircase Services</SelectItem>
+                        <SelectItem value="baseboards">Baseboards</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-                  <p className="text-xs text-muted-foreground text-center pt-2">
-                    By submitting this form, you agree to be contacted by AXO Floors about your project. We respect your privacy.
-                  </p>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message" className="text-sm font-medium">Project Details</Label>
+                  <Textarea 
+                    id="message" 
+                    name="message" 
+                    value={formData.message} 
+                    onChange={handleInputChange} 
+                    placeholder="Tell us about your project: room size, current flooring, timeline, etc..."
+                    className="min-h-[120px] sm:min-h-[140px] text-base border-2 focus:border-accent transition-colors duration-300 resize-none"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={isLoading} 
+                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 hover:scale-[1.02] transition-all duration-300 text-base font-semibold min-h-[52px] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-5 h-5 mr-2" />
+                  {isLoading ? "Sending..." : "Send Quote Request"}
+                </Button>
+
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  By submitting this form, you agree to be contacted by AXO Floors about your project. We respect your privacy.
+                </p>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default ContactSection;
