@@ -296,11 +296,48 @@ const StainGallery = () => {
                 </Card>
               </div>
 
-              {/* Professional Note */}
-              <div className="text-center">
-                <Card className="bg-gradient-primary text-white">
-                  
+              {/* Call to Action Variations */}
+              <div className="space-y-8">
+                
+                {/* Soft CTA */}
+                <Card className="bg-gradient-primary text-white text-center p-8">
+                  <h3 className="text-2xl font-heading font-bold mb-4">
+                    See Your Perfect Color
+                  </h3>
+                  <p className="text-lg mb-6 opacity-90">
+                    Every floor is unique. Let us bring samples directly to your home so you can see how each stain looks with your lighting and decor.
+                  </p>
+                  <Button variant="secondary" size="lg" className="bg-white text-navy hover:bg-white/90">
+                    Request Free Samples
+                  </Button>
                 </Card>
+
+                {/* Medium CTA */}
+                <Card className="bg-navy text-white text-center p-8">
+                  <h3 className="text-2xl font-heading font-bold mb-4">
+                    Stop Guessing About Color
+                  </h3>
+                  <p className="text-lg mb-6 opacity-90">
+                    See exactly how each stain will look on your floors. Free in-home color testing with no obligation to purchase.
+                  </p>
+                  <Button variant="default" size="lg" className="bg-gold text-navy hover:bg-gold/90">
+                    Book Your Color Test
+                  </Button>
+                </Card>
+
+                {/* Aggressive CTA */}
+                <Card className="bg-gradient-to-r from-gold to-gold/80 text-navy text-center p-8 border-2 border-gold">
+                  <h3 className="text-2xl font-heading font-bold mb-4">
+                    See It On Your Floor Today
+                  </h3>
+                  <p className="text-lg mb-6 font-medium">
+                    Don't waste time wondering. Get instant clarity with our free on-site stain preview service.
+                  </p>
+                  <Button size="lg" className="bg-navy text-white hover:bg-navy/90 font-semibold">
+                    Schedule Now - It's Free
+                  </Button>
+                </Card>
+
               </div>
             </div>
           </div>
