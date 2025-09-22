@@ -673,7 +673,7 @@ const Quiz = () => {
                 {currentStep === getTotalSteps() && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
-                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
+                      <h3 className="text-2xl font-heading font-bold text-navy mb-2 mt-8 sm:mt-6">
                         Get Your Personalized Recommendations
                       </h3>
                       <p className="text-grey">We'll send ideas and samples that match your project</p>
