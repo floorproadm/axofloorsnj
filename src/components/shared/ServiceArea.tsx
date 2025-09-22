@@ -24,11 +24,11 @@ const ServiceArea = () => {
               width="100%" 
               height="480"
               style={{ border: 0 }}
-              allowFullScreen={true}
+              allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="AXO Floors Service Areas Map"
-              className="w-full"
+              title="AXO Floors Service Areas - Tri-state Coverage Map"
+              className="w-full min-h-[480px]"
             />
           </div>
         </div>
