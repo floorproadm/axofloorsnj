@@ -27,6 +27,7 @@ import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import LeadsManagement from './pages/LeadsManagement';
 import NotFound from "./pages/NotFound";
 
 
@@ -60,6 +61,11 @@ const App = () => {
             <Route path="/realtors" element={<Realtors />} />
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/leads-management" element={
+              <ProtectedRoute>
+                <LeadsManagement />
+              </ProtectedRoute>
+            } />
             <Route path="/admin" element={
               <ProtectedRoute>
                 <Admin />

@@ -58,18 +58,29 @@ interface Appointment {
   project_id?: string;
 }
 
-interface QuizResponse {
+interface Lead {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   phone: string;
+  lead_source: string;
+  status: string;
+  priority: string;
   services: string[];
-  room_size: string;
-  budget: number;
+  budget?: number;
+  room_size?: string;
+  location?: string;
+  address?: string;
   city?: string;
   zip_code?: string;
+  message?: string;
+  assigned_to?: string;
+  follow_up_date?: string;
+  last_contacted_at?: string;
+  converted_to_project_id?: string;
+  notes?: string;
   created_at: string;
-  source: string;
+  updated_at: string;
 }
 
 const Admin = () => {
@@ -78,7 +89,7 @@ const Admin = () => {
   
   const [projects, setProjects] = useState<Project[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [quizResponses, setQuizResponses] = useState<QuizResponse[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalProjects: 0,
@@ -114,20 +125,19 @@ const Admin = () => {
       if (appointmentsError) throw appointmentsError;
       setAppointments(appointmentsData || []);
 
-      // Load quiz responses (leads)
-      const { data: quizData, error: quizError } = await supabase
-        .from('quiz_responses')
+      // Load leads from unified leads table
+      const { data: leadsData, error: leadsError } = await supabase
+        .from('leads')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (quizError) throw quizError;
-      setQuizResponses((quizData || []).map(response => ({
-        ...response,
-        services: Array.isArray(response.services) ? response.services as string[] : [],
-        city: response.city || '',
-        zip_code: response.zip_code || ''
-      })));
+      if (leadsError) throw leadsError;
+      const processedLeads = (leadsData || []).map(lead => ({
+        ...lead,
+        services: Array.isArray(lead.services) ? lead.services as string[] : []
+      }));
+      setLeads(processedLeads);
 
       // Calculate stats
       if (projectsData) {
@@ -145,8 +155,8 @@ const Admin = () => {
           upcomingAppointments: appointmentsData?.filter(a => 
             new Date(a.appointment_date) >= new Date() && a.status === 'scheduled'
           ).length || 0,
-          newLeads: quizData?.filter(q => 
-            new Date(q.created_at) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          newLeads: processedLeads?.filter(l => 
+            new Date(l.created_at) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
           ).length || 0
         });
       }
@@ -307,20 +317,21 @@ const Admin = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="leads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="leads">New Leads</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="appointments">Calendar</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="management">Full Leads</TabsTrigger>
           </TabsList>
 
-          {/* New Leads Tab */}
+          {/* Leads Tab */}
           <TabsContent value="leads">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  New Leads from Quiz
+                  Recent Leads (Last 7 days)
                 </CardTitle>
                 <Button variant="outline" size="sm" onClick={loadDashboardData}>
                   Refresh
@@ -328,19 +339,21 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {quizResponses.length === 0 ? (
-                    <p className="text-grey text-center py-8">No leads yet. Promote your quiz to get more leads!</p>
+                  {leads.length === 0 ? (
+                    <p className="text-grey text-center py-8">No recent leads. Check the Full Leads tab for all leads.</p>
                   ) : (
-                    quizResponses.map((lead) => (
+                    leads.slice(0, 10).map((lead) => (
                       <div key={lead.id} className="border rounded-lg p-4 hover:bg-grey-light/50 transition-colors">
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h4 className="font-semibold text-navy">{lead.name}</h4>
                             <div className="flex items-center gap-4 text-sm text-grey mt-1">
-                              <span className="flex items-center gap-1">
-                                <Mail className="w-3 h-3" />
-                                {lead.email}
-                              </span>
+                              {lead.email && (
+                                <span className="flex items-center gap-1">
+                                  <Mail className="w-3 h-3" />
+                                  {lead.email}
+                                </span>
+                              )}
                               <span className="flex items-center gap-1">
                                 <Phone className="w-3 h-3" />
                                 {lead.phone}
@@ -356,25 +369,33 @@ const Admin = () => {
                           <div className="text-right">
                             <div className="text-sm text-grey">{formatDate(lead.created_at)}</div>
                             <Badge variant="secondary" className="mt-1">
-                              {lead.source}
+                              {lead.lead_source}
                             </Badge>
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-                          <div>
-                            <span className="text-sm font-medium text-navy">Services:</span>
-                            <p className="text-sm text-grey">{lead.services.join(', ')}</p>
+                        {(lead.services.length > 0 || lead.budget || lead.room_size) && (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            {lead.services.length > 0 && (
+                              <div>
+                                <span className="text-sm font-medium text-navy">Services:</span>
+                                <p className="text-sm text-grey">{lead.services.join(', ')}</p>
+                              </div>
+                            )}
+                            {lead.room_size && (
+                              <div>
+                                <span className="text-sm font-medium text-navy">Area:</span>
+                                <p className="text-sm text-grey">{lead.room_size} sq ft</p>
+                              </div>
+                            )}
+                            {lead.budget && (
+                              <div>
+                                <span className="text-sm font-medium text-navy">Budget:</span>
+                                <p className="text-sm text-grey">{formatCurrency(lead.budget)}</p>
+                              </div>
+                            )}
                           </div>
-                          <div>
-                            <span className="text-sm font-medium text-navy">Area:</span>
-                            <p className="text-sm text-grey">{lead.room_size} sq ft</p>
-                          </div>
-                          <div>
-                            <span className="text-sm font-medium text-navy">Budget:</span>
-                            <p className="text-sm text-grey">{formatCurrency(lead.budget)}</p>
-                          </div>
-                        </div>
+                        )}
 
                         <div className="flex items-center gap-2">
                           <Button size="sm" className="gold-gradient text-black">
@@ -585,6 +606,42 @@ const Admin = () => {
                       </p>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Full Leads Management Tab */}
+          <TabsContent value="management">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-navy">Complete Leads Management</h3>
+                  <p className="text-sm text-grey">Advanced lead tracking and management</p>
+                </div>
+                <Link to="/leads-management">
+                  <Button className="gold-gradient text-black">
+                    <Users className="w-4 h-4 mr-2" />
+                    Open Full Leads Manager
+                  </Button>
+                </Link>
+              </div>
+              
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="flex items-center justify-center w-16 h-16 bg-gold/10 rounded-full mb-4 mx-auto">
+                    <Users className="w-8 h-8 text-gold" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-navy mb-2">Advanced Leads Management</h4>
+                  <p className="text-grey mb-6 max-w-md mx-auto">
+                    Access the complete leads management system with filtering, status tracking, 
+                    conversion tools, and detailed lead profiles.
+                  </p>
+                  <Link to="/leads-management">
+                    <Button size="lg" className="gold-gradient text-black">
+                      Open Leads Manager
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </div>
