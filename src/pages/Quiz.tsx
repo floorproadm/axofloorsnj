@@ -689,19 +689,10 @@ const Quiz = () => {
                         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-grey text-sm">
                           sq ft
                         </span>
-                      </div>
-                      
-                      {/* Helper text */}
-                      {formData.squareFootage && (
-                        <div className="mt-2 text-center">
-                          <p className="text-sm text-grey">
-                            That's approximately {Math.ceil(parseInt(formData.squareFootage) / 100)} rooms
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                       </div>
+                     </div>
 
-                    {/* Area Calculator Helper */}
+                     {/* Area Calculator Helper */}
                     <div className="text-center">
                       <details className="inline-block text-left">
                         <summary className="cursor-pointer text-sm text-gold hover:text-gold/80 font-medium">
