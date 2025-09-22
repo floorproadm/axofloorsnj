@@ -2,21 +2,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Award, Users, Clock } from "lucide-react";
+
 const AboutSection = () => {
-  const stats = [{
-    icon: Award,
-    number: "500+",
-    label: "Projects Completed"
-  }, {
-    icon: Users,
-    number: "35+",
-    label: "Google Reviews"
-  }, {
-    icon: Clock,
-    number: "10+",
-    label: "Years Experience"
-  }];
-  return <section className="py-20 bg-background">
+  const stats = [
+    { icon: Award, number: "500+", label: "Projects Completed" },
+    { icon: Users, number: "35+", label: "Google Reviews" },
+    { icon: Clock, number: "10+", label: "Years Experience" }
+  ];
+
+  return (
+    <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
@@ -39,13 +34,15 @@ const AboutSection = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 mb-8">
-              {stats.map((stat, index) => <div key={index} className="text-center">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-gold/10 rounded-full mb-3">
                     <stat.icon className="w-6 h-6 text-gold" />
                   </div>
                   <div className="text-2xl font-bold font-heading text-navy">{stat.number}</div>
                   <div className="text-sm text-grey">{stat.label}</div>
-                </div>)}
+                </div>
+              ))}
             </div>
 
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce">
@@ -65,7 +62,7 @@ const AboutSection = () => {
                   <div className="absolute inset-0 opacity-10">
                     <div className="grid grid-cols-8 h-full">
                       {[...Array(64)].map((_, i) => (
-                        <div key={i} className="border-r border-white/5 last:border-r-0" />
+                        <div key={i} className="border border-white/20" />
                       ))}
                     </div>
                   </div>
@@ -89,6 +86,8 @@ const AboutSection = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default AboutSection;

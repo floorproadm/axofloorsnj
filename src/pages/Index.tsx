@@ -43,7 +43,7 @@ const Index = () => {
     icon: Users,
     title: "Expert Craftsmen",
     description: "Professional installation team with years of experience",
-    stat: "15+"
+    stat: "10+ Years"
   }, {
     icon: Clock,
     title: "Quick Turnaround",
