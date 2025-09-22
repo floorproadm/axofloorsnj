@@ -101,8 +101,8 @@ const ThankYou = () => {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg">
-                        <div className="w-8 h-8 bg-gold text-black rounded-full flex items-center justify-center font-semibold text-sm">
+                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg hover:bg-gold/10 transition-smooth">
+                        <div className="w-10 h-10 gold-gradient text-black rounded-full flex items-center justify-center font-bold text-base shadow-gold ring-2 ring-gold/30 transform hover:scale-110 transition-smooth">
                           1
                         </div>
                         <div>
@@ -113,8 +113,8 @@ const ThankYou = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg">
-                        <div className="w-8 h-8 bg-gold text-black rounded-full flex items-center justify-center font-semibold text-sm">
+                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg hover:bg-gold/10 transition-smooth">
+                        <div className="w-10 h-10 gold-gradient text-black rounded-full flex items-center justify-center font-bold text-base shadow-gold ring-2 ring-gold/30 transform hover:scale-110 transition-smooth">
                           2
                         </div>
                         <div>
@@ -125,8 +125,8 @@ const ThankYou = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg">
-                        <div className="w-8 h-8 bg-gold text-black rounded-full flex items-center justify-center font-semibold text-sm">
+                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg hover:bg-gold/10 transition-smooth">
+                        <div className="w-10 h-10 gold-gradient text-black rounded-full flex items-center justify-center font-bold text-base shadow-gold ring-2 ring-gold/30 transform hover:scale-110 transition-smooth">
                           3
                         </div>
                         <div>
