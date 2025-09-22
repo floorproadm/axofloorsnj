@@ -203,6 +203,8 @@ const Quiz = () => {
     setIsLoading(true);
 
     try {
+      console.log('Starting quiz submission with data:', formData);
+      
       // Store quiz results in Supabase leads table with sanitized data
       const quizData = {
         name: sanitizeInput(formData.name),
@@ -215,9 +217,11 @@ const Quiz = () => {
         room_size: sanitizeInput(formData.squareFootage) || '0',
         services: [sanitizeInput(formData.serviceType) || 'unknown'],
         budget: formData.budget === "10k-plus" ? 15000 : 
-               formData.budget === "5k-10k" ? 7500 :
-               formData.budget === "2k-5k" ? 3500 : 2000
+                formData.budget === "5k-10k" ? 7500 :
+                formData.budget === "2k-5k" ? 3500 : 2000
       };
+
+      console.log('Prepared quiz data for submission:', quizData);
 
       // Save to Supabase leads table
       const { data: savedLead, error: saveError } = await supabase
@@ -227,8 +231,11 @@ const Quiz = () => {
         .single();
 
       if (saveError) {
+        console.error('Database save error:', saveError);
         throw new Error(`Failed to save quiz response: ${saveError.message}`);
       }
+
+      console.log('Successfully saved quiz lead:', savedLead);
 
       // Send follow-up email
       try {
@@ -278,9 +285,30 @@ const Quiz = () => {
 
     } catch (error) {
       console.error('Quiz submission error:', error);
+      
+      // More detailed error information for debugging
+      let errorMessage = "Please try again or call us directly at (732) 351-8653";
+      
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          formData: formData
+        });
+        
+        // Provide more specific error messages
+        if (error.message.includes('email')) {
+          errorMessage = "Please check your email address and try again";
+        } else if (error.message.includes('phone')) {
+          errorMessage = "Please check your phone number and try again";
+        } else if (error.message.includes('name')) {
+          errorMessage = "Please check your name and try again";
+        }
+      }
+      
       toast({
         title: "Something went wrong",
-        description: "Please try again or call us directly at (732) 351-8653",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
