@@ -217,6 +217,30 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Join Our Happy Customers Section */}
+      <section className="spacing-mobile-md bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="bg-accent/10 border border-accent/20 rounded-lg p-8 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold font-heading mb-4">
+                Join Our Happy Customers
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Ready to transform your floors? Get a free estimate and see why we're New Jersey's most trusted flooring experts.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button onClick={() => window.location.href = 'tel:(732)351-8653'} className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
+                  Call (732) 351-8653
+                </Button>
+                <Button onClick={() => window.open('https://search.google.com/local/writereview?placeid=ChIJExample', '_blank')} variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                  Leave a Review
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Service Area Section */}
       <ServiceArea />
 

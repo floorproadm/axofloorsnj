@@ -67,25 +67,6 @@ const ReviewsSection = () => {
         {/* Reviews Grid */}
         
 
-        {/* Call to Action */}
-        <div className="text-center">
-          <div className="bg-gold/10 border border-gold/20 rounded-lg p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-navy mb-4">
-              Join Our Happy Customers
-            </h3>
-            <p className="text-grey mb-6">
-              Ready to transform your floors? Get a free estimate and see why we're New Jersey's most trusted flooring experts.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button onClick={() => window.location.href = 'tel:(732)351-8653'} className="gold-gradient text-black font-semibold">
-                Call (732) 351-8653
-              </Button>
-              <Button onClick={handleGoogleReview} variant="outline" className="border-gold text-gold hover:bg-gold hover:text-black">
-                Leave a Review
-              </Button>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Structured Data for Reviews */}
