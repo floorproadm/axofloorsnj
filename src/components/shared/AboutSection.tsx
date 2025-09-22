@@ -14,8 +14,40 @@ const AboutSection = () => {
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Content */}
-          <div>
+          {/* Visual - Show first on mobile, second on desktop */}
+          <div className="relative order-1 lg:order-2">
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-0">
+                <div className="aspect-square bg-gradient-to-br from-navy to-navy/80 flex items-center justify-center relative">
+                  {/* Background pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="grid grid-cols-8 h-full">
+                      {[...Array(64)].map((_, i) => (
+                        <div key={i} className="border border-white/20" />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Logo placeholder */}
+                  <div className="relative z-10 text-center">
+                    <div className="text-6xl font-heading font-bold text-white mb-4">
+                      •AXO•
+                    </div>
+                    <div className="text-2xl font-medium text-gold tracking-wider">
+                      FLOORS
+                    </div>
+                    <p className="text-white/70 mt-4 text-sm">
+                      we bring your vision to life
+                    </p>
+                  </div>
+
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Content - Show second on mobile, first on desktop */}
+          <div className="order-2 lg:order-1">
             <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-6">
               About <span className="text-gradient-gold">AXO Floors</span>
             </h2>
@@ -51,38 +83,6 @@ const AboutSection = () => {
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
-          </div>
-
-          {/* Visual */}
-          <div className="relative">
-            <Card className="relative overflow-hidden">
-              <CardContent className="p-0">
-                <div className="aspect-square bg-gradient-to-br from-navy to-navy/80 flex items-center justify-center relative">
-                  {/* Background pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="grid grid-cols-8 h-full">
-                      {[...Array(64)].map((_, i) => (
-                        <div key={i} className="border border-white/20" />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Logo placeholder */}
-                  <div className="relative z-10 text-center">
-                    <div className="text-6xl font-heading font-bold text-white mb-4">
-                      •AXO•
-                    </div>
-                    <div className="text-2xl font-medium text-gold tracking-wider">
-                      FLOORS
-                    </div>
-                    <p className="text-white/70 mt-4 text-sm">
-                      we bring your vision to life
-                    </p>
-                  </div>
-
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
