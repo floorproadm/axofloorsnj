@@ -14,16 +14,16 @@ import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles } 
 import homeHero from "@/assets/home-hero.jpg";
 const Index = () => {
   const services = [{
-    title: "Hardwood Flooring",
-    description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
-    href: "/hardwood-flooring",
-    features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
-    icon: "🌳"
-  }, {
     title: "Sanding & Refinishing",
     description: "Restore your floors to their original beauty with professional refinishing services.",
     href: "/sanding-and-refinish",
     features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
+    icon: "✨"
+  }, {
+    title: "Hardwood Flooring",
+    description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
+    href: "/hardwood-flooring",
+    features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
     icon: "✨"
   }, {
     title: "Vinyl Plank Flooring",
