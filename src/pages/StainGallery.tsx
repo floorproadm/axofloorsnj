@@ -284,16 +284,23 @@ const StainGallery = () => {
                 
 
                 {/* Medium CTA */}
-                <Card className="bg-navy text-white text-center p-8">
-                  <h3 className="text-2xl font-heading font-bold mb-4">
-                    Stop Guessing About Color
-                  </h3>
-                  <p className="text-lg mb-6 opacity-90">
-                    See exactly how each stain will look on your floors. Free in-home color testing with no obligation to purchase.
-                  </p>
-                  <Button variant="default" size="lg" className="bg-gold text-navy hover:bg-gold/90">
-                    Book Your Color Test
-                  </Button>
+                <Card className="bg-navy text-white overflow-hidden">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                    <div className="aspect-[4/3] lg:aspect-auto">
+                      <img src={stainProcessImg} alt="AXO Floors professional applying stain colors on hardwood flooring" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="p-8 flex flex-col justify-center text-center lg:text-left">
+                      <h3 className="text-2xl font-heading font-bold mb-4">
+                        Stop Guessing About Color
+                      </h3>
+                      <p className="text-lg mb-6 opacity-90">
+                        See exactly how each stain will look on your floors. Free in-home color testing with no obligation to purchase.
+                      </p>
+                      <Button variant="default" size="lg" className="bg-gold text-navy hover:bg-gold/90 mx-auto lg:mx-0 w-fit">
+                        Book Your Color Test
+                      </Button>
+                    </div>
+                  </div>
                 </Card>
 
                 {/* Aggressive CTA */}
