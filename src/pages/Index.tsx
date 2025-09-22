@@ -101,35 +101,53 @@ const Index = () => {
           </div>
 
           <div className="relative">
-            {/* Enhanced grid container with glass morphism effect */}
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 border border-white/50 shadow-2xl">
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            {services.map((service, index) => <Card key={index} className="group hover:shadow-gold transition-smooth hover:-translate-y-2 border-0 shadow-elegant">
-                <CardContent className="p-6 sm:p-8 text-center">
-                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">{service.icon}</div>
-                  <h3 className="text-lg sm:text-xl font-heading font-semibold text-navy mb-2 sm:mb-3 group-hover:text-gold transition-smooth">
-                    {service.title}
-                  </h3>
-                  <p className="text-grey mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
-                    {service.description}
-                  </p>
-                  <div className="space-y-1 sm:space-y-2 mb-4 sm:mb-6">
-                    {service.features.map((feature, i) => <div key={i} className="flex items-center justify-center gap-2 text-xs sm:text-sm text-grey">
-                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-gold" />
-                        {feature}
-                      </div>)}
-                  </div>
-                  <Button asChild variant="outline" className="w-full group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-smooth min-h-[44px] text-sm sm:text-base">
-                    <Link to={service.href} className="flex items-center justify-center gap-2">
-                      Learn More
-                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-               </Card>)}
-             </div>
-           </div>
-         </div>
+            {/* Modern grid layout without glass morphism */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+              {services.map((service, index) => (
+                <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-gradient-to-br from-white via-white to-grey-light/30 hover:-translate-y-3 hover:scale-105 relative overflow-hidden">
+                  {/* Animated background gradient on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-gold/0 via-gold/5 to-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  <CardContent className="p-8 text-center relative z-10">
+                    {/* Icon with enhanced styling */}
+                    <div className="relative mb-6">
+                      <div className="text-5xl mb-2 transform group-hover:scale-110 transition-transform duration-300">{service.icon}</div>
+                      <div className="absolute -inset-2 bg-gold/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                    </div>
+                    
+                    <h3 className="text-xl font-heading font-bold text-navy mb-4 group-hover:text-gold transition-colors duration-300">
+                      {service.title}
+                    </h3>
+                    
+                    <p className="text-grey mb-6 leading-relaxed text-sm line-clamp-3">
+                      {service.description}
+                    </p>
+                    
+                    {/* Enhanced features list */}
+                    <div className="space-y-2 mb-8">
+                      {service.features.map((feature, i) => (
+                        <div key={i} className="flex items-center justify-center gap-2 text-sm text-grey group-hover:text-navy transition-colors duration-300">
+                          <CheckCircle className="w-4 h-4 text-gold flex-shrink-0" />
+                          <span className="font-medium">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Enhanced button */}
+                    <Button asChild variant="outline" className="w-full group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-all duration-300 min-h-[48px] font-semibold border-2 hover:shadow-lg">
+                      <Link to={service.href} className="flex items-center justify-center gap-2">
+                        Learn More
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                  
+                  {/* Subtle top border accent */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold/0 via-gold to-gold/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
