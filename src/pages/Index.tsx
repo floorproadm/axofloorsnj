@@ -143,23 +143,36 @@ const Index = () => {
             
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            {benefits.map((benefit, index) => <Card key={index} className="group text-center hover:shadow-gold transition-smooth border-0 shadow-elegant">
-                <CardContent className="p-6 sm:p-8">
-                  <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gold/10 rounded-full mb-3 sm:mb-4 group-hover:bg-gold group-hover:scale-110 transition-bounce">
-                    <benefit.icon className="w-6 h-6 sm:w-8 sm:h-8 text-gold group-hover:text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 max-w-5xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-gradient-to-br from-white to-grey-light/20">
+                <CardContent className="p-8 sm:p-10 relative overflow-hidden">
+                  {/* Background decoration */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gold/10 to-gold/20 rounded-2xl mb-6 group-hover:bg-gradient-to-br group-hover:from-gold group-hover:to-gold/80 group-hover:scale-110 transition-all duration-300 shadow-lg">
+                      <benefit.icon className="w-8 h-8 sm:w-10 sm:h-10 text-gold group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    
+                    <div className="text-2xl sm:text-3xl font-bold font-heading text-gold mb-3 group-hover:scale-105 transition-transform duration-300">
+                      {benefit.stat}
+                    </div>
+                    
+                    <h3 className="text-xl sm:text-2xl font-heading font-semibold text-navy mb-4 group-hover:text-gold transition-colors duration-300">
+                      {benefit.title}
+                    </h3>
+                    
+                    <p className="text-grey leading-relaxed text-base sm:text-lg group-hover:text-navy/80 transition-colors duration-300">
+                      {benefit.description}
+                    </p>
                   </div>
-                  <div className="text-lg sm:text-2xl font-bold font-heading text-gold mb-1 sm:mb-2">
-                    {benefit.stat}
-                  </div>
-                  <h3 className="text-base sm:text-xl font-heading font-semibold text-navy mb-2 sm:mb-3">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-grey leading-relaxed text-sm sm:text-base">
-                    {benefit.description}
-                  </p>
+                  
+                  {/* Subtle border animation */}
+                  <div className="absolute inset-0 rounded-lg border-2 border-transparent group-hover:border-gold/20 transition-all duration-300"></div>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
