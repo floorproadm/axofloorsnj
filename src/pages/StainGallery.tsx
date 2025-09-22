@@ -31,6 +31,9 @@ import sedonaRedImg from '@/assets/stains/sedona-red.jpg';
 import specialWalnutImg from '@/assets/stains/special-walnut.jpg';
 import weatheredOakImg from '@/assets/stains/weathered-oak.jpg';
 
+// Import process image
+import stainProcessImg from '@/assets/stain-process-work.jpg';
+
 const StainGallery = () => {
   const [expandedWoodType, setExpandedWoodType] = useState<string>('white-oak');
 
@@ -195,6 +198,44 @@ const StainGallery = () => {
                     <StainGrid stains={redOakStains} />
                   </div>
                 )}
+              </div>
+
+              {/* Staining Process Section */}
+              <div className="mb-12">
+                <Card className="overflow-hidden">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                    <div className="aspect-[4/3] lg:aspect-auto">
+                      <img 
+                        src={stainProcessImg} 
+                        alt="AXO Floors professional applying and testing different stain colors on hardwood flooring"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-8 lg:p-12 flex flex-col justify-center bg-gradient-subtle">
+                      <h3 className="text-3xl font-heading font-bold text-navy mb-6">
+                        Professional Staining Process
+                      </h3>
+                      <p className="text-grey mb-6 leading-relaxed">
+                        Our experienced craftsmen take the time to test multiple stain samples directly on your floors. 
+                        This ensures you see exactly how each color will look with your specific wood grain and lighting conditions.
+                      </p>
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
+                          <p className="text-grey">Sample multiple colors on your actual flooring</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
+                          <p className="text-grey">Professional application with premium equipment</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 bg-gold rounded-full mt-2 flex-shrink-0"></div>
+                          <p className="text-grey">Expert guidance to achieve your perfect finish</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               </div>
 
               {/* Professional Note */}
