@@ -32,11 +32,11 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
   const closeSidebar = () => onClose();
 
   return (
-    <div className="w-80 bg-black border-r border-white/10 h-full flex flex-col">
+    <div className="w-full max-w-sm bg-black border-r border-white/10 h-full flex flex-col">
       <div className="bg-black border-b border-white/10 p-4">
         <div className="flex items-center justify-between">
           <Link to="/" onClick={closeSidebar} className="flex items-center">
-            <div className="text-2xl font-heading font-bold text-white">
+            <div className="text-xl sm:text-2xl font-heading font-bold text-white">
               <span className="text-gold">•</span>AXO<span className="text-gold">•</span>
               <div className="text-xs font-medium tracking-[0.2em] text-white -mt-1">FLOORS</div>
             </div>
@@ -45,7 +45,7 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
             variant="ghost"
             size="sm"
             onClick={closeSidebar}
-            className="text-white hover:bg-white/10 p-2"
+            className="text-white hover:bg-white/10 p-2 touch-target"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -59,7 +59,7 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
             <div>
               <Collapsible open={servicesOpen || hasActiveService} onOpenChange={setServicesOpen}>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-between text-white hover:text-gold hover:bg-white/5 text-lg py-3 px-4 rounded transition-smooth">
+                  <button className="w-full flex items-center justify-between text-white hover:text-gold hover:bg-white/5 text-mobile-base py-4 px-4 rounded transition-smooth touch-target">
                     <span>Services</span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${servicesOpen || hasActiveService ? 'rotate-180' : ''}`} />
                   </button>
@@ -70,7 +70,7 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
                       key={service.name}
                       to={service.href}
                       onClick={closeSidebar}
-                      className={`block text-white/80 hover:text-gold hover:bg-white/5 py-2 px-4 rounded transition-smooth ${isActive(service.href) ? 'text-gold bg-white/5' : ''}`}
+                      className={`block text-white/80 hover:text-gold hover:bg-white/5 py-3 px-4 rounded transition-smooth text-mobile-sm touch-target ${isActive(service.href) ? 'text-gold bg-white/5' : ''}`}
                     >
                       {service.name}
                     </Link>
@@ -85,7 +85,7 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
                 key={item.name}
                 to={item.href}
                 onClick={closeSidebar}
-                className={`block text-white hover:text-gold hover:bg-white/5 text-lg py-3 px-4 rounded transition-smooth ${isActive(item.href) ? 'text-gold bg-white/5' : ''}`}
+                className={`block text-white hover:text-gold hover:bg-white/5 text-mobile-base py-4 px-4 rounded transition-smooth touch-target ${isActive(item.href) ? 'text-gold bg-white/5' : ''}`}
               >
                 {item.name}
               </Link>

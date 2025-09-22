@@ -121,8 +121,11 @@ const Header = () => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="fixed right-0 top-0 h-full" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="fixed inset-0 z-50 bg-black/50 lg:hidden" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div className="fixed right-0 top-0 h-full w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <AppSidebar onClose={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
