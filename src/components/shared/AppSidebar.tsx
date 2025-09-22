@@ -21,6 +21,9 @@ const mainNavigation = [
   { name: "Contact", href: "/contact" },
   { name: "About", href: "/about" },
   { name: "Gallery", href: "/gallery" },
+  { name: "Stain Colors", href: "/stain-gallery" },
+  { name: "Quiz", href: "/quiz" },
+  { name: "Builders", href: "/builders" },
 ];
 
 export function AppSidebar({ onClose }: AppSidebarProps) {
