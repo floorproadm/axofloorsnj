@@ -200,7 +200,7 @@ const HardwoodFlooring = () => {
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
-            <Button variant="outline" asChild className="border-white text-white hover:bg-white hover:text-navy text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
+            <Button variant="outline" asChild className="border-white text-black hover:bg-white hover:text-black text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
               <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
             </Button>
           </div>
