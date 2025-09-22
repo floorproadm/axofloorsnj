@@ -212,10 +212,7 @@ const StainGallery = () => {
               <h1 className="text-4xl md:text-5xl font-heading font-bold text-navy mb-6">
                 Stain Gallery
               </h1>
-              <p className="text-xl text-grey mb-8">
-                Explore our comprehensive collection of premium wood stains. 
-                Each color is professionally applied to showcase the natural beauty and variations of different wood species.
-              </p>
+              
               <div className="bg-white border-l-4 border-gold p-6 rounded-lg shadow-soft">
                 <p className="text-grey italic">
                   <strong>Important Note:</strong> Colors shown are representative samples. Natural wood grain and tone variations 
