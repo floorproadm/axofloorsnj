@@ -987,11 +987,30 @@ const Quiz = () => {
                               phone: !!formData.phone,
                               city: !!formData.city
                             });
+                            console.log('🔘 [Quiz] Valores dos campos:', {
+                              name: formData.name,
+                              email: formData.email,
+                              phone: formData.phone,
+                              city: formData.city
+                            });
                             console.log('🔘 [Quiz] Errors with values:', Object.entries(formErrors).filter(([key, value]) => value !== ''));
-                            console.log('🔘 [Quiz] Botão desabilitado?', isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city);
-                            handleSubmit();
+                            const isDisabled = isLoading || Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city;
+                            console.log('🔘 [Quiz] Botão desabilitado?', isDisabled);
+                            console.log('🔘 [Quiz] Motivo desabilitado:', {
+                              isLoading,
+                              hasErrors: Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0,
+                              missingName: !formData.name,
+                              missingEmail: !formData.email,
+                              missingPhone: !formData.phone,
+                              missingCity: !formData.city
+                            });
+                            if (!isDisabled) {
+                              handleSubmit();
+                            } else {
+                              console.log('❌ [Quiz] Submit bloqueado - todos os campos são obrigatórios');
+                            }
                           }}
-                          disabled={isLoading || Object.keys(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city}
+                          disabled={isLoading || Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0 || !formData.name || !formData.email || !formData.phone || !formData.city}
                           className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                         <span className="flex items-center justify-center gap-2">
