@@ -18,6 +18,7 @@ import About from "./pages/About";
 import FunnelPage from "./pages/FunnelPage";
 import StainGallery from "./pages/StainGallery";
 import BuilderPartnerships from "./pages/BuilderPartnerships";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 
@@ -44,6 +45,7 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/funnel" element={<FunnelPage />} />
           <Route path="/builder-offer" element={<BuilderPartnerships />} />
+          <Route path="/admin" element={<Admin />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
