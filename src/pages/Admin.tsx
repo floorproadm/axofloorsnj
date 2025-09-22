@@ -40,11 +40,10 @@ const Admin = () => {
   });
 
   const categories = [
-    "Hardwood Flooring",
-    "Sanding & Refinish", 
-    "Vinyl Plank",
+    "Refinish",
+    "Installation", 
     "Staircase",
-    "Baseboards & Trim"
+    "Hardwood"
   ];
 
   useEffect(() => {
@@ -257,7 +256,7 @@ const Admin = () => {
             Gallery Administration
           </h1>
           <p className="text-grey">
-            Manage gallery projects and upload new photos
+            Manage gallery projects by service category: Refinish, Installation, Staircase, Hardwood
           </p>
         </div>
 
