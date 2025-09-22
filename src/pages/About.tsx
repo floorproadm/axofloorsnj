@@ -65,17 +65,6 @@ const About = () => {
                 </div>
                 
                 <div className="text-center space-y-2">
-                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 justify-center">
-                    <div>
-                      <h3 className="text-lg font-bold text-navy">Ademir</h3>
-                      <p className="text-sm text-gold">Owner & Founder</p>
-                    </div>
-                    <div className="hidden sm:block text-gold">•</div>
-                    <div>
-                      <h3 className="text-lg font-bold text-navy">Eduardo</h3>
-                      <p className="text-sm text-gold">General Manager</p>
-                    </div>
-                  </div>
                   <p className="text-sm text-muted-foreground mt-4">Father & Son Team</p>
                 </div>
               </div>
