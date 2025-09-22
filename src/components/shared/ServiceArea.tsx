@@ -16,15 +16,21 @@ const ServiceArea = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-8 sm:mb-12">
-          {serviceAreas.map((area, index) => (
-            <Card key={index} className="text-center hover:shadow-gold transition-smooth border-0 shadow-elegant">
-              <CardContent className="p-3 sm:p-4">
-                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gold mx-auto mb-1 sm:mb-2" />
-                <p className="text-xs sm:text-sm font-medium text-navy">{area}</p>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Google Maps Embed */}
+        <div className="flex justify-center mb-8 sm:mb-12">
+          <div className="w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl border border-grey-light/50">
+            <iframe 
+              src="https://www.google.com/maps/d/embed?mid=1m8NRkbm859ncfGLoaKKnXiSv8Fh_ipU&ehbc=2E312F" 
+              width="100%" 
+              height="480"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="AXO Floors Service Areas Map"
+              className="w-full"
+            />
+          </div>
         </div>
 
         <div className="text-center">
