@@ -3,6 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Eye } from "lucide-react";
+// Opções de imagem disponíveis:
+// import hardwoodHero from "@/assets/hardwood-hero.jpg";
+// import homeHero from "@/assets/home-hero.jpg";
+// import staircaseHero from "@/assets/staircase-hero.jpg";
+// import vinylHero from "@/assets/vinyl-hero.jpg";
+// import beforeAfter from "@/assets/before-after-comparison.png";
+
 import sandingHero from "@/assets/sanding-hero.jpg";
 const portfolioItems = [{
   id: 1,
