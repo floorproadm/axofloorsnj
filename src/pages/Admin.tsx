@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Plus, Trash2, Edit, Eye, EyeOff } from "lucide-react";
+import { Upload, Plus, Trash2, Edit, Eye, EyeOff, LogOut, User } from "lucide-react";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 
@@ -29,6 +30,7 @@ const Admin = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [editingProject, setEditingProject] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user, signOut } = useAuth();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -250,6 +252,33 @@ const Admin = () => {
   return (
     <div className="min-h-screen">
       <Header />
+      
+      {/* User Info and Logout */}
+      <div className="bg-muted/30 border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 bg-gold text-black rounded-full">
+                <User className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-semibold">Área Administrativa</p>
+                <p className="text-sm text-muted-foreground">
+                  Logado como: {user?.email}
+                </p>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={signOut}
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
+          </div>
+        </div>
+      </div>
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
