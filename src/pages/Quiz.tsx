@@ -748,8 +748,10 @@ const Quiz = () => {
                 )}
 
                 {/* Navigation */}
-                <div className="flex justify-between mt-8 pt-6 border-t border-grey/20">
-                  {currentStep > 1 && (
+                <div className={`flex mt-8 pt-6 border-t border-grey/20 ${
+                  currentStep === getTotalSteps() ? 'justify-center' : 'justify-between'
+                }`}>
+                  {currentStep > 1 && currentStep < getTotalSteps() && (
                     <Button 
                       variant="outline" 
                       onClick={prevStep}
@@ -759,7 +761,7 @@ const Quiz = () => {
                     </Button>
                   )}
                   
-                  <div className="ml-auto">
+                  <div className={currentStep === getTotalSteps() ? '' : 'ml-auto'}>
                     {currentStep < getTotalSteps() ? (
                       <Button 
                         onClick={nextStep}
@@ -772,7 +774,7 @@ const Quiz = () => {
                       <Button 
                         onClick={handleSubmit}
                         disabled={isLoading}
-                        className="gold-gradient text-black font-semibold px-6 py-2.5 text-sm sm:text-base min-h-[44px] touch-manipulation"
+                        className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation"
                       >
                         <span className="flex items-center justify-center gap-2">
                           {isLoading ? "Submitting..." : "Get My Recommendations"}
