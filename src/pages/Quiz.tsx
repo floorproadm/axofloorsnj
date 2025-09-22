@@ -83,18 +83,49 @@ const Quiz = () => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        city: formData.city,
+        city: formData.city || null,
         room_size: formData.roomSize,
         services: formData.services,
         budget: formData.budget[0],
-        source: 'quiz',
-        created_at: new Date().toISOString()
+        source: 'quiz'
       };
 
       console.log('[Quiz] Submitting data:', quizData);
 
-      // For now, we'll just store in localStorage until we set up the database table
-      localStorage.setItem('quizLead', JSON.stringify(quizData));
+      // Save to Supabase database
+      const { data: savedQuiz, error: saveError } = await supabase
+        .from('quiz_responses')
+        .insert([quizData])
+        .select()
+        .single();
+
+      if (saveError) {
+        throw new Error(`Failed to save quiz response: ${saveError.message}`);
+      }
+
+      console.log('[Quiz] Saved successfully:', savedQuiz);
+
+      // Send follow-up email
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-follow-up', {
+          body: {
+            name: formData.name,
+            email: formData.email,
+            source: 'quiz',
+            leadType: 'quiz'
+          }
+        });
+
+        if (emailError) {
+          console.error('[Quiz] Email error:', emailError);
+          // Don't fail the whole process for email errors
+        } else {
+          console.log('[Quiz] Follow-up email sent successfully');
+        }
+      } catch (emailError) {
+        console.error('[Quiz] Email sending failed:', emailError);
+        // Don't fail the whole process for email errors
+      }
 
       toast({
         title: "Thank you!",

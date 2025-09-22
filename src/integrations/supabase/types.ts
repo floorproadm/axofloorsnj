@@ -83,6 +83,48 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_responses: {
+        Row: {
+          budget: number
+          city: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          room_size: string
+          services: Json
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          budget: number
+          city?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          room_size: string
+          services?: Json
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number
+          city?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          room_size?: string
+          services?: Json
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
