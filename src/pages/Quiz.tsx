@@ -181,7 +181,7 @@ const Quiz = () => {
         const notificationData = {
           leadData: quizData,
           adminEmail: 'axofloorsnj@gmail.com', // Email do admin
-          adminPhone: '+15551234567' // Substitua pelo seu número de telefone
+          adminPhone: '+17323518653' // Seu número de telefone
         };
 
         const { error: notificationError } = await supabase.functions.invoke('send-notifications', {

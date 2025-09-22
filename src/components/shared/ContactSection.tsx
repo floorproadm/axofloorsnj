@@ -93,7 +93,7 @@ const ContactSection = () => {
               message: formData.message
             },
             adminEmail: 'axofloorsnj@gmail.com',
-            adminPhone: '+15551234567'
+            adminPhone: '+17323518653'
           }
         });
       } catch (notificationError) {
