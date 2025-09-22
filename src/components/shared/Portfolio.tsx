@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Eye } from "lucide-react";
-import InteractiveCanvas from "./InteractiveCanvas";
+import sandingHero from "@/assets/sanding-hero.jpg";
 const portfolioItems = [{
   id: 1,
   title: "Modern Hardwood Installation",
@@ -56,9 +56,21 @@ const Portfolio = () => {
           </p>
         </div>
 
-        {/* Interactive Canvas Section */}
+        {/* Hero Image */}
         <div className="mb-12 sm:mb-16">
-          <InteractiveCanvas />
+          <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden">
+            <img 
+              src={sandingHero} 
+              alt="Floor sanding work in progress" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-navy/40 flex items-center justify-center">
+              <div className="text-center text-white">
+                <h3 className="text-2xl sm:text-3xl font-bold mb-2">Professional Results</h3>
+                <p className="text-lg">Every project, perfectly executed</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Category Filters */}
