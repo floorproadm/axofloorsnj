@@ -451,20 +451,20 @@ const Contact = () => {
                   <div className="space-y-3">
                     <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
                       <a href="tel:(732) 351-8653" className="flex items-center gap-3">
-                        <Phone className="w-4 h-4" />
+                        <Phone className="w-5 h-5" />
                         <div className="text-left">
-                          <div className="font-medium">(732) 351-8653</div>
-                          <div className="text-xs opacity-80">Click to call</div>
+                          <div className="font-semibold text-base">(732) 351-8653</div>
+                          <div className="text-sm text-gold/90">Click to call directly</div>
                         </div>
                       </a>
                     </Button>
                     
                     <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
                       <a href="mailto:axofloorsnj@gmail.com" className="flex items-center gap-3">
-                        <Mail className="w-4 h-4" />
+                        <Mail className="w-5 h-5" />
                         <div className="text-left">
-                          <div className="font-medium text-xs">axofloorsnj@gmail.com</div>
-                          <div className="text-xs opacity-80">Click to email</div>
+                          <div className="font-semibold text-sm">axofloorsnj@gmail.com</div>
+                          <div className="text-sm text-gold/90">Click to send email</div>
                         </div>
                       </a>
                     </Button>
