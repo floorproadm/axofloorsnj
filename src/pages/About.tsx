@@ -97,9 +97,6 @@ const About = () => {
                 <Card className="p-6 md:p-8">
                   <CardContent className="p-0">
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center">
-                        <div className="text-2xl font-bold text-gold">E</div>
-                      </div>
                       <div>
                         <h3 className="text-xl font-bold">Eduardo</h3>
                         <p className="text-gold font-medium">General Manager</p>
