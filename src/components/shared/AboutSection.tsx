@@ -64,7 +64,9 @@ const AboutSection = () => {
                   {/* Background pattern */}
                   <div className="absolute inset-0 opacity-10">
                     <div className="grid grid-cols-8 h-full">
-                      {[...Array(64)].map((_, i) => {})}
+                      {[...Array(64)].map((_, i) => (
+                        <div key={i} className="border-r border-white/5 last:border-r-0" />
+                      ))}
                     </div>
                   </div>
                   
