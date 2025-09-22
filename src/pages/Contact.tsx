@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
@@ -5,9 +6,129 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Phone, Mail, MessageSquare, Star, Check, AlertTriangle, ExternalLink } from "lucide-react";
+import { Phone, Mail, MessageSquare, Star, Check, AlertTriangle, ExternalLink, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  validateForm, 
+  sanitizeInput, 
+  checkRateLimit, 
+  getClientIdentifier,
+  formatPhoneNumber,
+  useFieldValidation 
+} from "@/utils/validation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Contact = () => {
+  const { toast } = useToast();
+  const { validateField } = useFieldValidation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    city: "",
+    service: "",
+    timeline: ""
+  });
+
+  // Real-time field validation
+  const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
+    const sanitizedValue = sanitizeInput(value);
+    
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+    
+    // Clear previous error
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    
+    // Validate field if it has rules
+    if (rules.length > 0) {
+      const error = validateField(sanitizedValue, rules);
+      if (error) {
+        setFormErrors(prev => ({ ...prev, [field]: error }));
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Comprehensive form validation
+    const validationRules = {
+      name: ['required', 'name'],
+      email: ['required', 'email'],
+      phone: ['required', 'phone'],
+      city: ['required', 'city']
+    };
+
+    const validation = validateForm(formData, validationRules);
+    
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      toast({
+        title: "Please fix the errors below",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Rate limiting check
+    const clientId = getClientIdentifier();
+    const rateLimitCheck = checkRateLimit(clientId);
+    
+    if (!rateLimitCheck.allowed) {
+      toast({
+        title: "Too many submissions",
+        description: `Please wait ${rateLimitCheck.remainingTime} seconds before submitting again.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Store contact form data
+      const contactData = {
+        ...formData,
+        source: 'contact_page',
+        type: 'contact_inquiry',
+        created_at: new Date().toISOString()
+      };
+
+      console.log('[Contact] Submitting contact form:', contactData);
+      localStorage.setItem('contactLead', JSON.stringify(contactData));
+
+      toast({
+        title: "Thank you for contacting us!",
+        description: "We'll get back to you within 24 hours with your free estimate."
+      });
+
+      // Reset form
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        city: "",
+        service: "",
+        timeline: ""
+      });
+      setFormErrors({});
+
+    } catch (error) {
+      console.error('Contact form submission error:', error);
+      toast({
+        title: "Something went wrong",
+        description: "Please try again or call us directly at (732) 351-8653",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const services = [
     "Hardwood Floor Refinishing",
     "Hardwood Floor Installation", 
@@ -45,6 +166,8 @@ const Contact = () => {
       answer: "We use dust-free sanding systems."
     }
   ];
+
+  const isFormValid = !Object.keys(formErrors).length && formData.name && formData.email && formData.phone && formData.city;
 
   return (
     <div className="min-h-screen">
@@ -116,7 +239,7 @@ const Contact = () => {
       <section id="quote-form" className="py-16 sm:py-20 bg-grey-light">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-            {/* Contact Form - Simplified */}
+            {/* Contact Form - Enhanced */}
             <div className="lg:col-span-2">
               <Card className="shadow-elegant">
                 <CardHeader className="text-center">
@@ -126,74 +249,128 @@ const Contact = () => {
                   <p className="text-grey">Essential fields only - takes 60 seconds</p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input id="name" placeholder="Full Name" required className="h-12" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input id="phone" type="tel" placeholder="(732) 555-0123" required className="h-12" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" required className="h-12" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
-                    <Select>
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Select your NJ city" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-input max-h-60 overflow-y-auto">
-                        {njCities.map((city) => (
-                          <SelectItem key={city} value={city.toLowerCase()}>
-                            {city}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="service">Service Needed</Label>
-                    <Select>
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="What service do you need?" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-input">
-                        {services.map((service) => (
-                          <SelectItem key={service} value={service.toLowerCase().replace(/\s+/g, '-')}>
-                            {service}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="timeline">Project Timeline</Label>
-                    <Select>
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="When do you want to start?" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-input">
-                        <SelectItem value="asap">ASAP</SelectItem>
-                        <SelectItem value="this-month">This month</SelectItem>
-                        <SelectItem value="next-3-months">Next 3 months</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Button className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
-                    Get My Free Estimate in 24h
-                  </Button>
-                  
-                  <p className="text-xs text-grey text-center">
-                    100% free estimate • No obligation • We respect your privacy
-                  </p>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name *</Label>
+                      <Input 
+                        id="name" 
+                        placeholder="Full Name" 
+                        required 
+                        className={`h-12 ${formErrors.name ? 'border-red-500' : ''}`}
+                        value={formData.name}
+                        onChange={(e) => handleFieldChange('name', e.target.value, ['required', 'name'])}
+                      />
+                      {formErrors.name && (
+                        <p className="text-red-500 text-sm">{formErrors.name}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone *</Label>
+                      <Input 
+                        id="phone" 
+                        type="tel" 
+                        placeholder="(732) 555-0123" 
+                        required 
+                        className={`h-12 ${formErrors.phone ? 'border-red-500' : ''}`}
+                        value={formData.phone}
+                        onChange={(e) => {
+                          const formatted = formatPhoneNumber(e.target.value);
+                          handleFieldChange('phone', formatted, ['required', 'phone']);
+                        }}
+                      />
+                      {formErrors.phone && (
+                        <p className="text-red-500 text-sm">{formErrors.phone}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="your@email.com" 
+                        required 
+                        className={`h-12 ${formErrors.email ? 'border-red-500' : ''}`}
+                        value={formData.email}
+                        onChange={(e) => handleFieldChange('email', e.target.value, ['required', 'email'])}
+                      />
+                      {formErrors.email && (
+                        <p className="text-red-500 text-sm">{formErrors.email}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City *</Label>
+                      <Select value={formData.city} onValueChange={(value) => handleFieldChange('city', value, ['required', 'city'])}>
+                        <SelectTrigger className={`h-12 ${formErrors.city ? 'border-red-500' : ''}`}>
+                          <SelectValue placeholder="Select your NJ city" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-input max-h-60 overflow-y-auto">
+                          {njCities.map((city) => (
+                            <SelectItem key={city} value={city.toLowerCase()}>
+                              {city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {formErrors.city && (
+                        <p className="text-red-500 text-sm">{formErrors.city}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="service">Service Needed</Label>
+                      <Select value={formData.service} onValueChange={(value) => setFormData(prev => ({ ...prev, service: value }))}>
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="What service do you need?" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-input">
+                          {services.map((service) => (
+                            <SelectItem key={service} value={service.toLowerCase().replace(/\s+/g, '-')}>
+                              {service}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="timeline">Project Timeline</Label>
+                      <Select value={formData.timeline} onValueChange={(value) => setFormData(prev => ({ ...prev, timeline: value }))}>
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="When do you want to start?" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-input">
+                          <SelectItem value="asap">ASAP</SelectItem>
+                          <SelectItem value="this-month">This month</SelectItem>
+                          <SelectItem value="next-3-months">Next 3 months</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Display form-level errors */}
+                    {Object.keys(formErrors).length > 0 && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Please fix the errors above before submitting.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    <Button 
+                      type="submit"
+                      className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 h-auto min-h-[48px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      disabled={isSubmitting || !isFormValid}
+                    >
+                      {isSubmitting ? "Submitting..." : "Get My Free Estimate in 24h"}
+                    </Button>
+                    
+                    <p className="text-xs text-grey text-center">
+                      100% free estimate • No obligation • We respect your privacy
+                    </p>
+                  </form>
                 </CardContent>
               </Card>
             </div>

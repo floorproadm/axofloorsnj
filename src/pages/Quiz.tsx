@@ -8,15 +8,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowRight, Home, DollarSign, Wrench } from "lucide-react";
+import { ArrowRight, Home, DollarSign, Wrench, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  validateForm, 
+  sanitizeInput, 
+  checkRateLimit, 
+  getClientIdentifier,
+  formatPhoneNumber,
+  useFieldValidation 
+} from "@/utils/validation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Quiz = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { validateField } = useFieldValidation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Debug logging
   console.log('[Quiz] Component mounted, currentStep:', currentStep);
@@ -36,6 +47,26 @@ const Quiz = () => {
     phone: "",
     city: ""
   });
+
+  // Real-time field validation
+  const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
+    const sanitizedValue = sanitizeInput(value);
+    
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+    
+    // Clear previous error
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    
+    // Validate field if it has rules
+    if (rules.length > 0) {
+      const error = validateField(sanitizedValue, rules);
+      if (error) {
+        setFormErrors(prev => ({ ...prev, [field]: error }));
+      }
+    }
+  };
 
   const serviceTypes = [
     { value: "new-installation", label: "New Installation", description: "Installing new flooring" },
@@ -110,10 +141,34 @@ const Quiz = () => {
     console.log('[Quiz] Current step:', currentStep, 'Total steps:', getTotalSteps());
     console.log('[Quiz] Validation check - name:', !!formData.name, 'email:', !!formData.email, 'phone:', !!formData.phone);
     
-    if (!formData.name || !formData.email || !formData.phone) {
-      console.log('[Quiz] Validation failed - missing required fields');
+    // Comprehensive form validation
+    const validationRules = {
+      name: ['required', 'name'],
+      email: ['required', 'email'],
+      phone: ['required', 'phone'],
+      city: ['required', 'city']
+    };
+
+    const validation = validateForm(formData, validationRules);
+    
+    if (!validation.isValid) {
+      console.log('[Quiz] Validation failed:', validation.errors);
+      setFormErrors(validation.errors);
       toast({
-        title: "Please fill in all required fields",
+        title: "Please fix the errors below",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Rate limiting check
+    const clientId = getClientIdentifier();
+    const rateLimitCheck = checkRateLimit(clientId);
+    
+    if (!rateLimitCheck.allowed) {
+      toast({
+        title: "Too many submissions",
+        description: `Please wait ${rateLimitCheck.remainingTime} seconds before submitting again.`,
         variant: "destructive"
       });
       return;
@@ -123,14 +178,14 @@ const Quiz = () => {
     setIsLoading(true);
 
     try {
-      // Store quiz results in Supabase
+      // Store quiz results in Supabase with sanitized data
       const quizData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        city: formData.city || null,
-        room_size: formData.squareFootage || '0',
-        services: [formData.serviceType || 'unknown'], // Convert to array for compatibility
+        name: sanitizeInput(formData.name),
+        email: sanitizeInput(formData.email),
+        phone: sanitizeInput(formData.phone),
+        city: sanitizeInput(formData.city) || null,
+        room_size: sanitizeInput(formData.squareFootage) || '0',
+        services: [sanitizeInput(formData.serviceType) || 'unknown'], // Convert to array for compatibility
         budget: formData.budget === "10k-plus" ? 15000 : 
                formData.budget === "5k-10k" ? 7500 :
                formData.budget === "2k-5k" ? 3500 : 2000,
@@ -728,20 +783,29 @@ const Quiz = () => {
                         <Input
                           id="name"
                           value={formData.name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) => handleFieldChange('name', e.target.value, ['required', 'name'])}
                           placeholder="Your name"
-                          className="mt-1"
+                          className={`mt-1 ${formErrors.name ? 'border-red-500' : ''}`}
                         />
+                        {formErrors.name && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="phone">Phone *</Label>
                         <Input
                           id="phone"
                           value={formData.phone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          onChange={(e) => {
+                            const formatted = formatPhoneNumber(e.target.value);
+                            handleFieldChange('phone', formatted, ['required', 'phone']);
+                          }}
                           placeholder="(732) 555-0123"
-                          className="mt-1"
+                          className={`mt-1 ${formErrors.phone ? 'border-red-500' : ''}`}
                         />
+                        {formErrors.phone && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="email">Email *</Label>
@@ -749,22 +813,38 @@ const Quiz = () => {
                           id="email"
                           type="email"
                           value={formData.email}
-                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                          onChange={(e) => handleFieldChange('email', e.target.value, ['required', 'email'])}
                           placeholder="your@email.com"
-                          className="mt-1"
+                          className={`mt-1 ${formErrors.email ? 'border-red-500' : ''}`}
                         />
+                        {formErrors.email && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="city">City</Label>
                         <Input
                           id="city"
                           value={formData.city}
-                          onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                          onChange={(e) => handleFieldChange('city', e.target.value, ['city'])}
                           placeholder="Your city in NJ"
-                          className="mt-1"
+                          className={`mt-1 ${formErrors.city ? 'border-red-500' : ''}`}
                         />
+                        {formErrors.city && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
+                        )}
                       </div>
                     </div>
+
+                    {/* Display form-level errors */}
+                    {Object.keys(formErrors).length > 0 && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Please fix the errors above before submitting.
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
                     <div className="bg-gold/10 p-4 rounded-lg border border-gold/20">
                       <p className="text-sm text-navy text-center">
@@ -801,8 +881,8 @@ const Quiz = () => {
                     ) : (
                       <Button 
                         onClick={handleSubmit}
-                        disabled={isLoading}
-                        className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation"
+                        disabled={isLoading || Object.keys(formErrors).length > 0 || !formData.name || !formData.email || !formData.phone}
+                        className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="flex items-center justify-center gap-2">
                           {isLoading ? "Submitting..." : "Get My Recommendations"}
