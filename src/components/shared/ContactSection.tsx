@@ -142,20 +142,6 @@ const ContactSection = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          {/* Mobile CTA Card - Only show on mobile */}
-          <Card className="lg:hidden group hover:shadow-elegant transition-smooth border-0 bg-gradient-to-br from-accent/5 to-accent/10 backdrop-blur-sm mb-6">
-            <CardContent className="p-5 text-center">
-              <h3 className="font-heading font-semibold mb-2 text-accent">Need immediate help?</h3>
-              <p className="text-sm text-muted-foreground mb-4">Call us now for instant support</p>
-              <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold min-h-[48px]">
-                <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Call Now
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Contact Form - Full width */}
           <Card className="shadow-elegant border-0 bg-card/90 backdrop-blur-sm">
             <CardHeader className="p-5 sm:p-6 pb-4">
