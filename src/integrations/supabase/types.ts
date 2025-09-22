@@ -96,6 +96,7 @@ export type Database = {
           services: Json
           source: string
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
           budget: number
@@ -109,6 +110,7 @@ export type Database = {
           services?: Json
           source?: string
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
           budget?: number
@@ -122,6 +124,7 @@ export type Database = {
           services?: Json
           source?: string
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
