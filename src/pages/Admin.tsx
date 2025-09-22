@@ -325,7 +325,7 @@ const Admin = () => {
         <Tabs defaultValue="leads" className="space-y-4 sm:space-y-6">
           <div className="overflow-x-auto pb-2 -mx-3 sm:mx-0">
             <div className="px-3 sm:px-0">
-              <TabsList className="grid w-full grid-cols-5 min-w-[400px] sm:min-w-[500px] h-auto">
+              <TabsList className="grid w-full grid-cols-5 h-auto sm:min-w-[500px]">
                 <TabsTrigger value="leads" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Leads</TabsTrigger>
                 <TabsTrigger value="projects" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Projects</TabsTrigger>
                 <TabsTrigger value="appointments" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Calendar</TabsTrigger>
