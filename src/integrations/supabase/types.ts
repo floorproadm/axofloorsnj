@@ -138,6 +138,10 @@ export type Database = {
         Args: { operation: string; table_name: string; user_id?: string }
         Returns: undefined
       }
+      test_quiz_submission: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
