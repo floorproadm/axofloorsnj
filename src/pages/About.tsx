@@ -53,7 +53,30 @@ const About = () => {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-2xl md:text-4xl font-bold text-center mb-16">Meet Our Team</h2>
+              {/* Team Photos */}
+              <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 justify-center items-center mb-16">
+                <div className="text-center">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-3 rounded-full bg-gradient-to-br from-gold/20 to-navy/20 border-4 border-gold/30 overflow-hidden">
+                    <div className="w-full h-full bg-muted flex items-center justify-center text-4xl font-bold text-gold">
+                      A
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-navy">Ademir</h3>
+                  <p className="text-sm text-gold">Owner & Founder</p>
+                </div>
+                
+                <div className="hidden sm:block text-gold text-2xl">+</div>
+                
+                <div className="text-center">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-3 rounded-full bg-gradient-to-br from-gold/20 to-navy/20 border-4 border-gold/30 overflow-hidden">
+                    <div className="w-full h-full bg-muted flex items-center justify-center text-4xl font-bold text-gold">
+                      E
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-navy">Eduardo</h3>
+                  <p className="text-sm text-gold">General Manager</p>
+                </div>
+              </div>
               
               {/* Team Members */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
