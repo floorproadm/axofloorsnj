@@ -12,7 +12,54 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
+import { useState, useEffect, useRef } from "react";
+
 const Index = () => {
+  const [activeServiceIndex, setActiveServiceIndex] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const serviceRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setActiveServiceIndex(null);
+      return;
+    }
+
+    const observers = serviceRefs.current.map((ref, index) => {
+      if (!ref) return null;
+      
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            setActiveServiceIndex(index);
+          }
+        },
+        {
+          threshold: 0.5,
+          rootMargin: '-20% 0px -20% 0px'
+        }
+      );
+      
+      observer.observe(ref);
+      return observer;
+    });
+
+    return () => {
+      observers.forEach(observer => observer?.disconnect());
+    };
+  }, [isMobile]);
+
   const services = [{
     title: "Sanding & Refinishing",
     description: "Restore your floors to their original beauty with professional refinishing services.",
@@ -38,6 +85,7 @@ const Index = () => {
     features: ["Custom Design", "Safety First", "Premium Materials"],
     icon: "🪜"
   }];
+
   const benefits = [{
     icon: Users,
     title: "Expert Craftsmen",
@@ -94,18 +142,22 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => <Card key={index} className="group relative overflow-hidden border-0 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm hover:shadow-2xl hover:shadow-accent/20 transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]">
-                <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {services.map((service, index) => <Card 
+              key={index} 
+              ref={(el) => serviceRefs.current[index] = el}
+              className={`group relative overflow-hidden border-0 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm hover:shadow-2xl hover:shadow-accent/20 transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02] ${isMobile && activeServiceIndex === index ? 'shadow-2xl shadow-accent/20 -translate-y-4 scale-[1.02]' : ''}`}
+            >
+                <div className={`absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent transition-opacity duration-500 ${isMobile && activeServiceIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
                 
                 <CardContent className="relative p-6 text-center h-full flex flex-col">
                   <div className="relative mb-6">
-                    <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform scale-150" />
-                    <div className="relative text-4xl mb-2 transform group-hover:scale-125 group-hover:rotate-3 transition-all duration-500">
+                    <div className={`absolute inset-0 bg-accent/20 rounded-full blur-xl transition-opacity duration-500 transform scale-150 ${isMobile && activeServiceIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+                    <div className={`relative text-4xl mb-2 transition-all duration-500 ${isMobile && activeServiceIndex === index ? 'scale-125 rotate-3' : 'group-hover:scale-125 group-hover:rotate-3'}`}>
                       {service.icon}
                     </div>
                   </div>
                   
-                  <h3 className="text-lg font-heading font-bold mb-3 group-hover:text-accent transition-all duration-300 leading-tight">
+                  <h3 className={`text-lg font-heading font-bold mb-3 transition-all duration-300 leading-tight ${isMobile && activeServiceIndex === index ? 'text-accent' : 'group-hover:text-accent'}`}>
                     {service.title}
                   </h3>
                   
@@ -123,11 +175,11 @@ const Index = () => {
                       </div>)}
                   </div>
                   
-                  <Button asChild variant="outline" className="w-full group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-all duration-300 font-semibold relative overflow-hidden">
+                  <Button asChild variant="outline" className={`w-full transition-all duration-300 font-semibold relative overflow-hidden ${isMobile && activeServiceIndex === index ? 'bg-accent text-accent-foreground border-accent' : 'group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent'}`}>
                     <Link to={service.href} className="flex items-center justify-center gap-2 relative z-10">
-                      <span className="group-hover:translate-x-1 transition-transform duration-300">Saiba Mais</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <span className={`transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>Saiba Mais</span>
+                      <ArrowRight className={`w-4 h-4 transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-2' : 'group-hover:translate-x-2'}`} />
+                      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ${isMobile && activeServiceIndex === index ? 'translate-x-[100%]' : 'translate-x-[-100%] group-hover:translate-x-[100%]'}`} />
                     </Link>
                   </Button>
                 </CardContent>
