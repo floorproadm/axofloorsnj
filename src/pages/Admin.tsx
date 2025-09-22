@@ -628,15 +628,15 @@ const Admin = () => {
           {/* Full Leads Management Tab */}
           <TabsContent value="management">
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-navy">Complete Leads Management</h3>
-                  <p className="text-sm text-grey">Advanced lead tracking and management</p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+                <div className="text-center sm:text-left">
+                  <h3 className="text-lg sm:text-xl font-semibold text-navy">Complete Leads Management</h3>
+                  <p className="text-sm text-grey mt-1">Advanced lead tracking and management</p>
                 </div>
-                <Link to="/leads-management">
-                  <Button className="gold-gradient text-black">
+                <Link to="/leads-management" className="w-full sm:w-auto">
+                  <Button className="gold-gradient text-black w-full sm:w-auto min-h-[48px] px-6">
                     <Users className="w-4 h-4 mr-2" />
-                    Open Full Leads Manager
+                    <span className="text-sm sm:text-base">Open Full Leads Manager</span>
                   </Button>
                 </Link>
               </div>
