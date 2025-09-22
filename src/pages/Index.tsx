@@ -2,7 +2,7 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import Hero from "@/components/shared/Hero";
 import Portfolio from "@/components/shared/Portfolio";
-import AboutSection from "@/components/shared/AboutSection";
+
 import ContactSection from "@/components/shared/ContactSection";
 import ReviewsSection from "@/components/shared/ReviewsSection";
 import GoogleBusinessIntegration from "@/components/shared/GoogleBusinessIntegration";
@@ -238,8 +238,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Section */}
-      <AboutSection />
 
       {/* Contact Form Section */}
       <ContactSection />
