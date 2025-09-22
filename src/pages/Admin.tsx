@@ -40,10 +40,11 @@ const Admin = () => {
   });
 
   const categories = [
-    "Refinish",
-    "Installation", 
+    "Hardwood Flooring",
+    "Sanding & Refinish", 
+    "Vinyl Plank",
     "Staircase",
-    "Hardwood"
+    "Baseboards & Trim"
   ];
 
   useEffect(() => {
