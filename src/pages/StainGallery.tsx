@@ -269,9 +269,7 @@ const StainGallery = () => {
               <div className="mb-12">
                 <Card className="overflow-hidden">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                    <div className="aspect-[4/3] lg:aspect-auto">
-                      <img src={stainProcessImg} alt="AXO Floors professional applying and testing different stain colors on hardwood flooring" className="w-full h-full object-cover" />
-                    </div>
+                    
                     
                   </div>
                 </Card>
