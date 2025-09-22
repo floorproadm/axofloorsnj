@@ -6,7 +6,6 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { CheckCircle, Phone, Mail, Calendar, ArrowRight, Home } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
 interface QuizData {
   name: string;
   email: string;
@@ -15,12 +14,10 @@ interface QuizData {
   squareFootage: string;
   budget: string;
 }
-
 const ThankYou = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [quizData, setQuizData] = useState<QuizData | null>(null);
-
   useEffect(() => {
     // Get quiz data from navigation state
     const data = location.state?.quizData;
@@ -31,33 +28,32 @@ const ThankYou = () => {
       navigate("/");
     }
   }, [location.state, navigate]);
-
   const getServiceName = (serviceType: string) => {
     return serviceType === "new-installation" ? "New Floor Installation" : "Floor Refinishing";
   };
-
   const getBudgetRange = (budget: string) => {
     switch (budget) {
-      case "under-2k": return "Under $2,000";
-      case "2k-5k": return "$2,000 - $5,000";
-      case "5k-10k": return "$5,000 - $10,000";
-      case "10k-plus": return "$10,000+";
-      default: return "Not specified";
+      case "under-2k":
+        return "Under $2,000";
+      case "2k-5k":
+        return "$2,000 - $5,000";
+      case "5k-10k":
+        return "$5,000 - $10,000";
+      case "10k-plus":
+        return "$10,000+";
+      default:
+        return "Not specified";
     }
   };
-
   const getRecommendedService = () => {
     if (!quizData) return "/";
-    
     if (quizData.serviceType === "new-installation") {
       return "/hardwood-flooring";
     }
     return "/sanding-and-refinish";
   };
-
   if (!quizData) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
@@ -65,12 +61,9 @@ const ThankYou = () => {
           </div>
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       
       <section className="py-12 sm:py-20">
@@ -101,10 +94,8 @@ const ThankYou = () => {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg hover:bg-gold/10 transition-smooth">
-                        <div className="w-10 h-10 gold-gradient text-black rounded-full flex items-center justify-center font-bold text-base shadow-gold ring-2 ring-gold/30 transform hover:scale-110 transition-smooth">
-                          1
-                        </div>
+                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg">
+                        <div className="w-8 h-8 bg-gold text-black rounded-full flex items-center justify-center font-semibold text-sm">1</div>
                         <div>
                           <h3 className="font-semibold text-navy">Personalized Consultation</h3>
                           <p className="text-grey text-sm">
@@ -113,8 +104,8 @@ const ThankYou = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg hover:bg-gold/10 transition-smooth">
-                        <div className="w-10 h-10 gold-gradient text-black rounded-full flex items-center justify-center font-bold text-base shadow-gold ring-2 ring-gold/30 transform hover:scale-110 transition-smooth">
+                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg">
+                        <div className="w-8 h-8 bg-gold text-black rounded-full flex items-center justify-center font-semibold text-sm">
                           2
                         </div>
                         <div>
@@ -125,8 +116,8 @@ const ThankYou = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg hover:bg-gold/10 transition-smooth">
-                        <div className="w-10 h-10 gold-gradient text-black rounded-full flex items-center justify-center font-bold text-base shadow-gold ring-2 ring-gold/30 transform hover:scale-110 transition-smooth">
+                      <div className="flex items-start gap-4 p-4 bg-gold/5 rounded-lg">
+                        <div className="w-8 h-8 bg-gold text-black rounded-full flex items-center justify-center font-semibold text-sm">
                           3
                         </div>
                         <div>
@@ -140,18 +131,11 @@ const ThankYou = () => {
 
                     <div className="pt-6 border-t border-grey/20">
                       <div className="flex flex-col sm:flex-row gap-4">
-                        <Button 
-                          onClick={() => navigate(getRecommendedService())}
-                          className="gold-gradient text-black font-semibold flex-1"
-                        >
+                        <Button onClick={() => navigate(getRecommendedService())} className="gold-gradient text-black font-semibold flex-1">
                           Learn More About Your Service
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => navigate("/")}
-                          className="flex-1"
-                        >
+                        <Button variant="outline" onClick={() => navigate("/")} className="flex-1">
                           <Home className="w-4 h-4 mr-2" />
                           Back to Home
                         </Button>
@@ -176,19 +160,15 @@ const ThankYou = () => {
                       <p className="font-medium text-navy">{getServiceName(quizData.serviceType)}</p>
                     </div>
                     
-                    {quizData.squareFootage && (
-                      <div>
+                    {quizData.squareFootage && <div>
                         <p className="text-sm text-grey">Area Size</p>
                         <p className="font-medium text-navy">{quizData.squareFootage} sq ft</p>
-                      </div>
-                    )}
+                      </div>}
 
-                    {quizData.budget && (
-                      <div>
+                    {quizData.budget && <div>
                         <p className="text-sm text-grey">Budget Range</p>
                         <p className="font-medium text-navy">{getBudgetRange(quizData.budget)}</p>
-                      </div>
-                    )}
+                      </div>}
 
                     <div>
                       <p className="text-sm text-grey">Contact Email</p>
@@ -215,19 +195,13 @@ const ThankYou = () => {
                       Have urgent questions? Give us a call directly.
                     </p>
                     <div className="space-y-3">
-                      <a 
-                        href="tel:(732) 351-8653"
-                        className="flex items-center gap-2 text-gold hover:text-gold/80 transition-colors"
-                      >
+                      <a href="tel:(732) 351-8653" className="flex items-center gap-2 text-gold hover:text-gold/80 transition-colors">
                         <Phone className="w-4 h-4" />
                         (732) 351-8653
                       </a>
-                      <a 
-                        href="mailto:axofloorsnj@gmail.com"
-                        className="flex items-center gap-2 text-gold hover:text-gold/80 transition-colors"
-                      >
+                      <a href="mailto:info@axofloors.com" className="flex items-center gap-2 text-gold hover:text-gold/80 transition-colors">
                         <Mail className="w-4 h-4" />
-                        axofloorsnj@gmail.com
+                        info@axofloors.com
                       </a>
                     </div>
                   </CardContent>
@@ -239,8 +213,6 @@ const ThankYou = () => {
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default ThankYou;
