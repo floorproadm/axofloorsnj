@@ -251,79 +251,81 @@ const Admin = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4 mx-auto">
-                <FileText className="w-6 h-6 text-blue-600" />
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full mb-3 sm:mb-4 mx-auto">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
-              <div className="text-2xl font-bold text-navy mb-1">{stats.totalProjects}</div>
-              <div className="text-sm text-grey">Total Projects</div>
+              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.totalProjects}</div>
+              <div className="text-xs sm:text-sm text-grey">Total Projects</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full mb-4 mx-auto">
-                <Clock className="w-6 h-6 text-yellow-600" />
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-full mb-3 sm:mb-4 mx-auto">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
               </div>
-              <div className="text-2xl font-bold text-navy mb-1">{stats.pendingProjects}</div>
-              <div className="text-sm text-grey">Pending</div>
+              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.pendingProjects}</div>
+              <div className="text-xs sm:text-sm text-grey">Pending</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4 mx-auto">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full mb-3 sm:mb-4 mx-auto">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
-              <div className="text-2xl font-bold text-navy mb-1">{stats.completedProjects}</div>
-              <div className="text-sm text-grey">Completed</div>
+              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.completedProjects}</div>
+              <div className="text-xs sm:text-sm text-grey">Completed</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-gold/20 rounded-full mb-4 mx-auto">
-                <DollarSign className="w-6 h-6 text-gold" />
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gold/20 rounded-full mb-3 sm:mb-4 mx-auto">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-gold" />
               </div>
-              <div className="text-2xl font-bold text-navy mb-1">{formatCurrency(stats.totalRevenue)}</div>
-              <div className="text-sm text-grey">Total Revenue</div>
+              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{formatCurrency(stats.totalRevenue)}</div>
+              <div className="text-xs sm:text-sm text-grey">Total Revenue</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4 mx-auto">
-                <Calendar className="w-6 h-6 text-purple-600" />
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full mb-3 sm:mb-4 mx-auto">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
-              <div className="text-2xl font-bold text-navy mb-1">{stats.upcomingAppointments}</div>
-              <div className="text-sm text-grey">Upcoming</div>
+              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.upcomingAppointments}</div>
+              <div className="text-xs sm:text-sm text-grey">Upcoming</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4 mx-auto">
-                <Users className="w-6 h-6 text-green-600" />
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full mb-3 sm:mb-4 mx-auto">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
-              <div className="text-2xl font-bold text-navy mb-1">{stats.newLeads}</div>
-              <div className="text-sm text-grey">New Leads</div>
+              <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{stats.newLeads}</div>
+              <div className="text-xs sm:text-sm text-grey">New Leads</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="leads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="appointments">Calendar</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="management">Full Leads</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="grid w-full grid-cols-5 min-w-[500px]">
+              <TabsTrigger value="leads" className="text-xs sm:text-sm">Leads</TabsTrigger>
+              <TabsTrigger value="projects" className="text-xs sm:text-sm">Projects</TabsTrigger>
+              <TabsTrigger value="appointments" className="text-xs sm:text-sm">Calendar</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
+              <TabsTrigger value="management" className="text-xs sm:text-sm">Full Leads</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Leads Tab */}
           <TabsContent value="leads">
@@ -344,33 +346,35 @@ const Admin = () => {
                   ) : (
                     leads.slice(0, 10).map((lead) => (
                       <div key={lead.id} className="border rounded-lg p-4 hover:bg-grey-light/50 transition-colors">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h4 className="font-semibold text-navy">{lead.name}</h4>
-                            <div className="flex items-center gap-4 text-sm text-grey mt-1">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-navy truncate">{lead.name}</h4>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-grey mt-1">
                               {lead.email && (
-                                <span className="flex items-center gap-1">
-                                  <Mail className="w-3 h-3" />
-                                  {lead.email}
+                                <span className="flex items-center gap-1 truncate">
+                                  <Mail className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{lead.email}</span>
                                 </span>
                               )}
                               <span className="flex items-center gap-1">
-                                <Phone className="w-3 h-3" />
+                                <Phone className="w-3 h-3 flex-shrink-0" />
                                 {lead.phone}
                               </span>
                               {lead.city && (
                                 <span className="flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
+                                  <MapPin className="w-3 h-3 flex-shrink-0" />
                                   {lead.city}, NJ
                                 </span>
                               )}
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-sm text-grey">{formatDate(lead.created_at)}</div>
-                            <Badge variant="secondary" className="mt-1">
-                              {lead.lead_source}
-                            </Badge>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <div className="text-right">
+                              <div className="text-sm text-grey">{formatDate(lead.created_at)}</div>
+                              <Badge variant="secondary" className="mt-1">
+                                {lead.lead_source}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                         

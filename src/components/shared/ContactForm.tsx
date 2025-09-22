@@ -112,8 +112,7 @@ const ContactForm = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Contact Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="name">Full Name *</Label>
               <Input
@@ -149,7 +148,7 @@ const ContactForm = () => {
           </div>
 
           {/* Location */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="city">City</Label>
               <Input
@@ -173,7 +172,7 @@ const ContactForm = () => {
           {/* Services */}
           <div>
             <Label className="text-base font-medium">Services Needed</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               {serviceOptions.map((service) => (
                 <div key={service} className="flex items-center space-x-2">
                   <Checkbox
@@ -181,7 +180,7 @@ const ContactForm = () => {
                     checked={formData.services.includes(service)}
                     onCheckedChange={(checked) => handleServiceChange(service, checked as boolean)}
                   />
-                  <Label htmlFor={service} className="text-sm font-normal">
+                  <Label htmlFor={service} className="text-sm font-normal cursor-pointer">
                     {service}
                   </Label>
                 </div>
@@ -190,7 +189,7 @@ const ContactForm = () => {
           </div>
 
           {/* Project Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="room_size">Approximate Square Footage</Label>
               <Input
@@ -206,7 +205,7 @@ const ContactForm = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select budget range" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white z-50">
                   <SelectItem value="2500">Under $2,500</SelectItem>
                   <SelectItem value="5000">$2,500 - $5,000</SelectItem>
                   <SelectItem value="10000">$5,000 - $10,000</SelectItem>
@@ -225,7 +224,7 @@ const ContactForm = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Select urgency" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white z-50">
                 <SelectItem value="low">Not urgent - planning ahead</SelectItem>
                 <SelectItem value="medium">Moderate - within 2-3 months</SelectItem>
                 <SelectItem value="high">Urgent - ASAP</SelectItem>
@@ -241,16 +240,17 @@ const ContactForm = () => {
               value={formData.message}
               onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
               placeholder="Tell us more about your project, any specific requirements, timeline, or questions you have..."
-              className="min-h-[100px]"
+              className="min-h-[100px] resize-none"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="flex flex-col sm:flex-row gap-4 items-center pt-4">
             <Button 
               type="submit" 
               disabled={isSubmitting} 
-              className="gold-gradient text-black w-full sm:w-auto"
+              className="gold-gradient text-black w-full sm:w-auto min-w-[200px]"
+              size="lg"
             >
               {isSubmitting ? (
                 "Sending..."
