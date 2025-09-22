@@ -409,19 +409,21 @@ const Admin = () => {
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2">
-                          <Button size="sm" className="gold-gradient text-black">
+                        <div className="flex items-center gap-2 md:flex-row flex-col md:gap-2 gap-1">
+                          <Button size="sm" className="gold-gradient text-black w-full md:w-auto">
                             <Phone className="w-3 h-3 mr-1" />
                             Call Now
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <Mail className="w-3 h-3 mr-1" />
-                            Email
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Plus className="w-3 h-3 mr-1" />
-                            Create Project
-                          </Button>
+                          <div className="flex gap-1 w-full md:w-auto">
+                            <Button variant="outline" size="sm" className="flex-1 md:flex-none">
+                              <Mail className="w-3 h-3 mr-1" />
+                              Email
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1 md:flex-none">
+                              <Plus className="w-3 h-3 mr-1" />
+                              Create Project
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))
