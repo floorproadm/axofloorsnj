@@ -16,13 +16,13 @@
     min-width: 320px; /* Ensure minimum width */
   }
   :root {
-    /* AXO Floors Brand Colors */
-    --navy-primary: 205 76% 12%; /* #0C1C2E - Main navy */
-    --navy-dark: 205 76% 8%; /* Darker navy for depth */
-    --gold-accent: 48 100% 58%; /* #FFC62A - Gold CTA/highlights */
-    --gold-warm: 42 95% 55%; /* Warmer gold variant */
-    --grey-secondary: 0 0% 29%; /* #4A4A4A - Secondary text */
-    --grey-light: 0 0% 96%; /* Light grey for backgrounds */
+    /* AXO Floors Brand Colors - Melhor contraste */
+    --navy-primary: 210 85% 15%; /* #0B1426 - Navy mais escuro para melhor contraste */
+    --navy-dark: 210 85% 10%; /* Navy ainda mais escuro */
+    --gold-accent: 45 100% 50%; /* #FFCC00 - Gold mais vibrante */
+    --gold-warm: 42 95% 45%; /* Gold mais escuro para texto */
+    --grey-secondary: 210 15% 25%; /* #3A4049 - Texto secundário mais legível */
+    --grey-light: 210 20% 98%; /* #F8F9FA - Fundo mais suave */
     --white-pure: 0 0% 100%; /* Pure white */
     
     /* Design System Mapping */
@@ -41,7 +41,7 @@
     --secondary: var(--grey-light);
     --secondary-foreground: var(--navy-primary);
 
-    --muted: var(--grey-light);
+    --muted: 210 20% 96%; /* Muted mais contrastante */
     --muted-foreground: var(--grey-secondary);
 
     --accent: var(--gold-accent);
@@ -50,8 +50,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: var(--white-pure);
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 210 20% 88%; /* Border mais visível */
+    --input: 210 20% 94%; /* Input com melhor contraste */
     --ring: var(--gold-accent);
 
     --radius: 0.75rem;
@@ -59,11 +59,11 @@
     /* AXO Floors Gradients */
     --gradient-navy: linear-gradient(135deg, hsl(var(--navy-primary)), hsl(var(--navy-dark)));
     --gradient-gold: linear-gradient(135deg, hsl(var(--gold-accent)), hsl(var(--gold-warm)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--navy-dark) / 0.9), hsl(var(--navy-primary) / 0.8));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--navy-dark) / 0.95), hsl(var(--navy-primary) / 0.9));
     
     /* Shadows */
-    --shadow-elegant: 0 10px 30px -5px hsl(var(--navy-primary) / 0.1);
-    --shadow-gold: 0 8px 25px -5px hsl(var(--gold-accent) / 0.3);
+    --shadow-elegant: 0 10px 30px -5px hsl(var(--navy-primary) / 0.15);
+    --shadow-gold: 0 8px 25px -5px hsl(var(--gold-accent) / 0.4);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
