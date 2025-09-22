@@ -772,11 +772,11 @@ const Quiz = () => {
                       <Button 
                         onClick={handleSubmit}
                         disabled={isLoading}
-                        className="gold-gradient text-black font-semibold w-full py-3 px-6 text-base sm:text-lg min-h-[48px] touch-manipulation"
+                        className="gold-gradient text-black font-semibold px-6 py-2.5 text-sm sm:text-base min-h-[44px] touch-manipulation"
                       >
                         <span className="flex items-center justify-center gap-2">
                           {isLoading ? "Submitting..." : "Get My Recommendations"}
-                          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                          <ArrowRight className="w-4 h-4 flex-shrink-0" />
                         </span>
                       </Button>
                     )}
