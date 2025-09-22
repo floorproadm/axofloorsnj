@@ -2,7 +2,6 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import Hero from "@/components/shared/Hero";
 import Portfolio from "@/components/shared/Portfolio";
-import ServiceArea from "@/components/shared/ServiceArea";
 import AboutSection from "@/components/shared/AboutSection";
 import ContactSection from "@/components/shared/ContactSection";
 import ReviewsSection from "@/components/shared/ReviewsSection";
@@ -238,9 +237,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Service Area Section */}
-      <ServiceArea />
 
       {/* About Section */}
       <AboutSection />
