@@ -57,8 +57,51 @@ const Quiz = () => {
     name: "",
     email: "",
     phone: "",
-    city: ""
+    city: "",
+    zipCode: "" // Novo campo ZIP code
   });
+
+  // Auto-preencher cidade baseado no ZIP code de NJ
+  const handleZipCodeChange = (zipCode: string) => {
+    console.log('🏙️ [Quiz] ZIP code alterado:', zipCode);
+    
+    // Lista de cidades principais de NJ por região de ZIP code
+    const njCitiesByZip: Record<string, string> = {
+      '070': 'Newark',
+      '071': 'Lyndhurst', 
+      '072': 'Elizabeth',
+      '073': 'East Orange',
+      '074': 'Teaneck',
+      '075': 'Passaic',
+      '076': 'Hackensack',
+      '077': 'Ridgewood',
+      '080': 'South Orange',
+      '081': 'Union',
+      '082': 'Roselle',
+      '083': 'Jersey City',
+      '084': 'Bayonne',
+      '086': 'Weehawken',
+      '087': 'West New York',
+      '088': 'Brick',
+      '089': 'Lakewood',
+      '090': 'Freehold',
+      '091': 'Monmouth Beach',
+      '085': 'Princeton'
+    };
+
+    handleFieldChange('zipCode', zipCode);
+    
+    // Auto-preencher cidade se ZIP code for reconhecido
+    if (zipCode.length >= 3) {
+      const zipPrefix = zipCode.substring(0, 3);
+      const suggestedCity = njCitiesByZip[zipPrefix];
+      
+      if (suggestedCity && !formData.city) {
+        console.log('🏙️ [Quiz] Auto-preenchendo cidade:', suggestedCity);
+        setFormData(prev => ({ ...prev, city: suggestedCity }));
+      }
+    }
+  };
 
   // Real-time field validation
   const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
@@ -157,12 +200,12 @@ const Quiz = () => {
       timestamp: new Date().toISOString()
     });
     
-    // Comprehensive form validation
+    // Comprehensive form validation - REMOVENDO OBRIGATORIEDADE DE CITY
     const validationRules = {
       name: ['required', 'name'],
       email: ['required', 'email'],
-      phone: ['required', 'phone'],
-      city: ['required', 'city']
+      phone: ['required', 'phone']
+      // city removido - não é mais obrigatório
     };
 
     const validation = validateForm(formData, validationRules);
@@ -226,6 +269,7 @@ const Quiz = () => {
         email: sanitizeInput(formData.email),
         phone: sanitizeInput(formData.phone),
         city: sanitizeInput(formData.city) || null,
+        zip_code: sanitizeInput(formData.zipCode) || null, // Adicionando ZIP code
         room_size: sanitizeInput(formData.squareFootage) || '0',
         services: [sanitizeInput(formData.serviceType) || 'unknown'], // Convert to array for compatibility
         budget: formData.budget === "10k-plus" ? 15000 : 
@@ -888,17 +932,38 @@ const Quiz = () => {
                         )}
                       </div>
                       <div>
-                        <Label htmlFor="city">City</Label>
+                        <Label htmlFor="zipCode">ZIP Code *</Label>
+                        <Input
+                          id="zipCode"
+                          value={formData.zipCode}
+                          onChange={(e) => {
+                            const zipValue = e.target.value.replace(/\D/g, ''); // Apenas números
+                            if (zipValue.length <= 5) {
+                              handleZipCodeChange(zipValue);
+                            }
+                          }}
+                          placeholder="07001"
+                          maxLength={5}
+                          className={`mt-1 ${formErrors.zipCode ? 'border-red-500' : ''}`}
+                        />
+                        {formErrors.zipCode && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.zipCode}</p>
+                        )}
+                        <p className="text-xs text-grey mt-1">Servimos toda região de New Jersey</p>
+                      </div>
+                      <div>
+                        <Label htmlFor="city">City (optional)</Label>
                         <Input
                           id="city"
                           value={formData.city}
-                          onChange={(e) => handleFieldChange('city', e.target.value, ['city'])}
-                          placeholder="Your city in NJ"
+                          onChange={(e) => handleFieldChange('city', e.target.value)}
+                          placeholder="Será preenchido automaticamente"
                           className={`mt-1 ${formErrors.city ? 'border-red-500' : ''}`}
                         />
                         {formErrors.city && (
                           <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
                         )}
+                        <p className="text-xs text-grey mt-1">Preenchimento automático baseado no ZIP code</p>
                       </div>
                     </div>
 
