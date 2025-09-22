@@ -118,18 +118,31 @@ const ContactSection = () => {
       setIsLoading(false);
     }
   };
-  return <section className="spacing-mobile-md bg-secondary/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        
+  return <section className="spacing-mobile-md bg-gradient-subtle border-t border-border/50 shadow-lg">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Enhanced header with gradient background */}
+        <div className="text-center mb-8 sm:mb-12 p-6 sm:p-8 bg-gradient-primary rounded-2xl shadow-elegant">
+          <h2 className="text-mobile-lg sm:text-desktop-lg font-heading text-white mb-4">
+            Get Your <span className="text-gold">Free Quote</span> Today
+          </h2>
+          <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto">
+            Ready to transform your space? Contact our flooring experts for a personalized consultation and competitive pricing.
+          </p>
+        </div>
 
         <div className="max-w-4xl mx-auto">
-          {/* Contact Form - Full width */}
-          <Card className="shadow-elegant border-0 bg-card/90 backdrop-blur-sm">
-            <CardHeader className="p-5 sm:p-6 pb-4">
-              <CardTitle className="text-mobile-xl font-heading text-center">Ready to Transform Your Floors?</CardTitle>
-              <p className="text-sm text-muted-foreground text-center">Fill out the form below and we'll get back to you within 24 hours</p>
+          {/* Contact Form - Enhanced styling */}
+          <Card className="shadow-elegant border-2 border-accent/20 bg-card backdrop-blur-sm relative overflow-hidden">
+            {/* Decorative gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 pointer-events-none"></div>
+            
+            <CardHeader className="p-6 sm:p-8 pb-4 relative z-10">
+              <CardTitle className="text-mobile-xl sm:text-desktop-xl font-heading text-center bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Ready to Transform Your Floors?
+              </CardTitle>
+              <p className="text-sm sm:text-base text-muted-foreground text-center mt-2">Fill out the form below and we'll get back to you within 24 hours</p>
             </CardHeader>
-            <CardContent className="p-5 sm:p-6 pt-2">
+            <CardContent className="p-6 sm:p-8 pt-2 relative z-10">
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 {/* Mobile: Stack all inputs, Desktop: Grid layout */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
