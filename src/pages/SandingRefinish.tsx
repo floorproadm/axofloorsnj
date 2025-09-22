@@ -163,23 +163,13 @@ const SandingRefinish = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {finishOptions.map((finish, index) => (
-              <Card key={index} className="bg-white border-navy/10 group hover:shadow-gold transition-smooth hover:-translate-y-2">
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-heading font-bold text-navy mb-4 group-hover:text-gold transition-smooth">
-                    {finish.name}
-                  </h3>
-                  <p className="text-grey mb-6 leading-relaxed text-lg">
-                    {finish.description}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-gold" />
-                    <span className="text-gold font-semibold">Best for: {finish.best}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="flex justify-center">
+            <Button asChild className="gold-gradient hover:scale-105 hover:shadow-gold transition-all duration-300 text-lg px-8 py-6 h-auto text-black font-semibold group">
+              <a href="#" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
+                <span>Ver Opções de Acabamento</span>
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
+              </a>
+            </Button>
           </div>
         </div>
       </section>
