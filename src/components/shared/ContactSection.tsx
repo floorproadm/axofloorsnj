@@ -125,9 +125,9 @@ const ContactSection = () => {
         <div className="max-w-4xl mx-auto">
           {/* Contact Form - Full width */}
           <Card className="shadow-elegant border-0 bg-card/90 backdrop-blur-sm">
-            <CardHeader className="p-6 sm:p-8 pb-6 bg-gradient-to-r from-accent/5 to-primary/5 border-b border-accent/10">
-              <CardTitle className="text-mobile-xl sm:text-2xl font-heading text-center bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">Ready to Transform Your Floors?</CardTitle>
-              <p className="text-sm sm:text-base text-muted-foreground text-center max-w-md mx-auto">Fill out the form below and we'll get back to you within 24 hours</p>
+            <CardHeader className="p-5 sm:p-6 pb-4">
+              <CardTitle className="text-mobile-xl font-heading text-center">Ready to Transform Your Floors?</CardTitle>
+              <p className="text-sm text-muted-foreground text-center">Fill out the form below and we'll get back to you within 24 hours</p>
             </CardHeader>
             <CardContent className="p-5 sm:p-6 pt-2">
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
