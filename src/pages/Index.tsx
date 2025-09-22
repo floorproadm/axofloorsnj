@@ -173,8 +173,6 @@ const Index = () => {
       {/* Portfolio Section */}
       <Portfolio />
 
-      {/* Reviews Section */}
-      <ReviewsSection />
 
       {/* Google Business Integration */}
       
