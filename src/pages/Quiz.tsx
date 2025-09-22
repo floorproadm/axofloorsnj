@@ -175,6 +175,29 @@ const Quiz = () => {
         // Don't fail the whole process for email errors
       }
 
+      // Send admin notification
+      try {
+        console.log('[Quiz] Sending admin notification');
+        const notificationData = {
+          leadData: quizData,
+          adminEmail: 'axofloorsnj@gmail.com', // Email do admin
+          adminPhone: '+15551234567' // Substitua pelo seu número de telefone
+        };
+
+        const { error: notificationError } = await supabase.functions.invoke('send-notifications', {
+          body: notificationData
+        });
+
+        if (notificationError) {
+          console.error('[Quiz] Notification error:', notificationError);
+        } else {
+          console.log('[Quiz] Admin notification sent successfully');
+        }
+      } catch (notificationError) {
+        console.error('[Quiz] Notification sending failed:', notificationError);
+        // Don't fail the whole process for notification errors
+      }
+
       toast({
         title: "Thank you!",
         description: "We'll contact you within 24 hours with your personalized recommendations."
