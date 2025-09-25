@@ -15,7 +15,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const [isResetMode, setIsResetMode] = useState(false);
+  const { signIn, signUp, user, resetPassword } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -40,6 +41,26 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (isResetMode) {
+      const { error } = await resetPassword(email);
+      if (error) {
+        setError(error.message);
+        toast({
+          title: "Erro ao enviar email",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Email enviado!",
+          description: "Verifique sua caixa de entrada para redefinir sua senha.",
+        });
+        setIsResetMode(false);
+      }
+      setLoading(false);
+      return;
+    }
 
     // Validate password strength for signup
     if (isSignUp && !isPasswordValid) {
@@ -95,7 +116,11 @@ export default function Auth() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gold">AXO Floors</CardTitle>
             <CardDescription>
-              {isSignUp ? "Criar conta administrativa" : "Acesse a área administrativa"}
+              {isResetMode 
+                ? "Recuperar senha administrativa" 
+                : isSignUp 
+                ? "Criar conta administrativa" 
+                : "Acesse a área administrativa"}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -118,17 +143,18 @@ export default function Auth() {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                {showPasswordHints && (
+              {!isResetMode && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  {showPasswordHints && (
                   <div className="space-y-2 p-3 bg-muted/50 rounded-md text-sm">
                     <p className="font-medium text-muted-foreground">Requisitos da senha:</p>
                     <div className="space-y-1">
@@ -146,26 +172,42 @@ export default function Auth() {
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
               <Button 
                 type="submit" 
                 className="w-full bg-gold hover:bg-gold/90" 
                 disabled={loading || (isSignUp && !isPasswordValid)}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSignUp ? "Criar Conta" : "Entrar"}
+                {isResetMode ? "Enviar Email" : isSignUp ? "Criar Conta" : "Entrar"}
               </Button>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-4 text-center space-y-2">
+              {!isResetMode && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {isSignUp ? "Já tem conta? Fazer login" : "Criar conta administrativa"}
+                </Button>
+              )}
+              
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => setIsSignUp(!isSignUp)}
+                onClick={() => {
+                  setIsResetMode(!isResetMode);
+                  setIsSignUp(false);
+                  setError('');
+                }}
                 className="text-sm text-muted-foreground hover:text-foreground"
               >
-                {isSignUp ? "Já tem conta? Fazer login" : "Criar conta administrativa"}
+                {isResetMode ? "Voltar ao login" : "Esqueci minha senha"}
               </Button>
             </div>
           </CardContent>
