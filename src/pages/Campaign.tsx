@@ -78,7 +78,7 @@ const Campaign = () => {
         <Header />
         
         {/* Section 1 - Hero */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center justify-center overflow-hidden">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${holidayHeroFloor})` }}
@@ -86,7 +86,7 @@ const Campaign = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/70 to-navy/40" />
           </div>
           
-          <div className="relative z-10 container mx-auto px-4 py-20 text-center text-white">
+          <div className="relative z-10 container mx-auto px-4 py-16 sm:py-20 text-center text-white">
             <Badge className="mb-6 bg-gold text-navy font-semibold px-6 py-2 text-sm">
               LIMITED OCTOBER SLOTS AVAILABLE
             </Badge>
