@@ -27,7 +27,7 @@ const Gallery = () => {
   const [visibleCount, setVisibleCount] = useState(9);
   const { toast } = useToast();
 
-  const categories = ["All", "Hardwood Flooring", "Sanding & Refinish", "Vinyl Plank", "Staircase", "Baseboards & Trim"];
+  const categories = ["All", "Hardwood Flooring", "Sanding & Refinish", "Before and After", "Vinyl Plank", "Staircase", "Baseboards & Trim"];
 
   useEffect(() => {
     fetchProjects();
