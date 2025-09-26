@@ -1,0 +1,10 @@
+-- Insert Before and After gallery projects
+INSERT INTO gallery_projects (title, description, category, location, image_url, display_order, is_featured) VALUES
+('Hardwood Floor Refinish - Project 1', 'Complete sanding and refinishing of hardwood floors. Transformed worn floors into beautiful, lustrous surfaces.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-1.png', 1, true),
+('Hardwood Floor Restoration - Project 2', 'Full floor restoration with sanding, staining, and finishing. Dramatic transformation from damaged to pristine.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-2.png', 2, true),
+('Living Room Floor Refinish - Project 3', 'Professional refinishing service bringing new life to old hardwood floors with premium stain and finish.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-3.png', 3, true),
+('Bedroom Floor Transformation - Project 4', 'Complete floor makeover with expert sanding and refinishing techniques for a flawless result.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-4.png', 4, false),
+('Basement Floor Renovation - Project 5', 'Extensive floor renovation from severely damaged to beautifully finished hardwood flooring.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-5.png', 5, false),
+('Kitchen Floor Refinish - Project 6', 'Kitchen hardwood floor restoration with professional sanding, staining, and protective finishing.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-6.png', 6, false),
+('Living Space Floor Makeover - Project 7', 'Complete floor transformation from worn and damaged to stunning, professionally finished hardwood.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-7.png', 7, false),
+('Bedroom Floor Restoration - Project 8', 'Expert hardwood floor restoration bringing damaged flooring back to its original beauty and more.', 'Before and After', 'New Jersey', '/src/assets/before-after/before-after-8.png', 8, false);
