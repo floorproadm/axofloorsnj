@@ -17,7 +17,7 @@ import {
 // Import existing assets
 import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
 import realDamagedFloor from "@/assets/real-damaged-floor-better.png";
-import dramaticBeforeAfter from "@/assets/dramatic-before-after.jpg";
+import afterCampaignNew from "@/assets/after-campaign-new.png";
 import happyCustomers from "@/assets/happy-customers.jpg";
 import professionalProcess from "@/assets/professional-process.jpg";
 
@@ -176,8 +176,8 @@ const Campaign = () => {
             
             <div className="max-w-4xl mx-auto px-4">
               <img 
-                src={dramaticBeforeAfter} 
-                alt="Dramatic before and after floor transformation showing stunning improvement from worn to beautiful"
+                src={afterCampaignNew} 
+                alt="Beautiful restored hardwood floor after AXO Floors transformation showing stunning craftsmanship"
                 className="w-full rounded-lg shadow-elegant"
               />
             </div>
