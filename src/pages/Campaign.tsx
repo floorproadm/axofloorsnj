@@ -122,10 +122,6 @@ const Campaign = () => {
           <div className="relative z-10 container mx-auto px-4 py-16 sm:py-20 text-center text-white">
             <div className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-6">
               <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <TrendingUp className="h-4 w-4 text-gold" />
-                <span className="text-sm font-semibold">9+ Years Experience</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <Award className="h-4 w-4 text-gold" />
                 <span className="text-sm font-semibold">500+ Homes Transformed</span>
               </div>
