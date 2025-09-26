@@ -99,9 +99,13 @@ const Gallery = () => {
       if (foldersError) throw foldersError;
       if (projectsError) throw projectsError;
 
-      // Count projects per folder
+      // Count projects per folder and ensure English descriptions
       const foldersWithCounts = (foldersData || []).map(folder => ({
         ...folder,
+        // Force English description for Before and After folder
+        description: folder.name === 'Before and After' 
+          ? 'Stunning transformations from our floor refinishing projects'
+          : folder.description,
         project_count: (projectsData || []).filter(project => project.parent_folder_id === folder.id).length
       }));
 
