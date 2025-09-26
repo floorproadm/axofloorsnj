@@ -196,9 +196,11 @@ const Campaign = () => {
                   </div>
                 </div>
                 
-                <Button className="bg-navy text-white hover:bg-navy/90 transform hover:scale-105 transition-all duration-300 w-full sm:w-auto">
-                  Discover the Solution
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button size="lg" className="bg-navy text-white hover:bg-navy/90 transform hover:scale-105 transition-all duration-300 w-full sm:w-auto text-lg px-8 py-4 font-semibold shadow-lg" asChild>
+                  <Link to="/contact">
+                    Get My Solution Now
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
               </div>
             </div>
