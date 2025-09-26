@@ -73,6 +73,39 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          access_timestamp: string | null
+          created_at: string | null
+          data_classification: string | null
+          id: string
+          operation_type: string
+          table_accessed: string
+          user_id: string | null
+          user_role: string | null
+        }
+        Insert: {
+          access_timestamp?: string | null
+          created_at?: string | null
+          data_classification?: string | null
+          id?: string
+          operation_type: string
+          table_accessed: string
+          user_id?: string | null
+          user_role?: string | null
+        }
+        Update: {
+          access_timestamp?: string | null
+          created_at?: string | null
+          data_classification?: string | null
+          id?: string
+          operation_type?: string
+          table_accessed?: string
+          user_id?: string | null
+          user_role?: string | null
+        }
+        Relationships: []
+      }
       gallery_projects: {
         Row: {
           category: string
@@ -335,13 +368,25 @@ export type Database = {
         Args: { operation: string; table_name: string; user_id?: string }
         Returns: undefined
       }
+      log_sensitive_data_access: {
+        Args: { data_type?: string; operation: string; table_name: string }
+        Returns: undefined
+      }
       migrate_quiz_responses_to_leads: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      sanitize_error_response: {
+        Args: { error_message: string }
+        Returns: string
+      }
       test_quiz_submission: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      validate_sensitive_data_access: {
+        Args: { operation: string; table_name: string; user_role: string }
+        Returns: boolean
       }
     }
     Enums: {

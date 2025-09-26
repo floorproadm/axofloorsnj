@@ -1,9 +1,35 @@
 import DOMPurify from 'dompurify';
 
-// Email validation with standard regex pattern
+// Email validation with stricter regex pattern for security
 export const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email.trim());
+};
+
+// Função para validar força da senha - CORREÇÃO DE SEGURANÇA CRÍTICA
+export const validatePasswordStrength = (password: string): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (password.length < 8) {
+    errors.push('A senha deve ter pelo menos 8 caracteres');
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push('A senha deve conter pelo menos uma letra maiúscula');
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push('A senha deve conter pelo menos uma letra minúscula');
+  }
+  if (!/\d/.test(password)) {
+    errors.push('A senha deve conter pelo menos um número');
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push('A senha deve conter pelo menos um caractere especial');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
 
 // Phone validation for US and E.164 formats

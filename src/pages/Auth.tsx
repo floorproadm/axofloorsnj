@@ -5,28 +5,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { validatePasswordStrength } from '@/utils/validation';
+import axoLogoOfficial from '@/assets/axo-logo-official.png';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signIn, user } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Password strength validation - removed since signup is disabled
-  // const passwordRequirements = {
-  //   minLength: password.length >= 8,
-  //   hasUppercase: /[A-Z]/.test(password),
-  //   hasSymbol: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-  // };
-
-  // const isPasswordValid = Object.values(passwordRequirements).every(Boolean);
-  // const showPasswordHints = isSignUp && password.length > 0;
+  // Validação de senha em tempo real - CORREÇÃO DE SEGURANÇA CRÍTICA
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (isSignUp && value) {
+      const validation = validatePasswordStrength(value);
+      setPasswordErrors(validation.errors);
+    } else {
+      setPasswordErrors([]);
+    }
+  };
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -40,24 +47,60 @@ export default function Auth() {
     setLoading(true);
     setError('');
 
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      setError(error.message);
+    // Validação adicional de segurança para cadastro
+    if (isSignUp) {
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.isValid) {
+        setError('A senha não atende aos requisitos de segurança');
+        toast({
+          title: "Senha inválida",
+          description: passwordValidation.errors.join(', '),
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      let result;
+      if (isSignUp) {
+        result = await signUp(email, password, fullName);
+        if (!result.error) {
+          toast({
+            title: "Cadastro realizado!",
+            description: "Verifique seu email para confirmar a conta.",
+          });
+        }
+      } else {
+        result = await signIn(email, password);
+        if (!result.error) {
+          toast({
+            title: "Login realizado com sucesso!",
+            description: "Redirecionando para a área administrativa...",
+          });
+          navigate('/admin');
+        }
+      }
+      
+      if (result.error) {
+        setError(result.error.message);
+        toast({
+          title: isSignUp ? "Erro no cadastro" : "Erro no login",
+          description: result.error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      setError("Erro interno do sistema");
       toast({
-        title: "Erro no login",
-        description: error.message,
+        title: "Erro",
+        description: "Algo deu errado. Tente novamente.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Redirecionando para a área administrativa...",
-      });
-      navigate('/admin');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -77,13 +120,16 @@ export default function Auth() {
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <img 
-                src="/src/assets/axo-logo-official.png" 
+                src={axoLogoOfficial} 
                 alt="AXO Floors Logo" 
                 className="h-16 w-auto"
               />
             </div>
-            <CardDescription>
-              Acesse a área administrativa
+            <CardTitle className="text-white">
+              {isSignUp ? 'Criar Conta' : 'Login'}
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              {isSignUp ? 'Crie uma nova conta administrativa' : 'Acesse a área administrativa'}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -95,8 +141,23 @@ export default function Auth() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-white">Nome Completo</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Seu nome completo"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required={isSignUp}
+                    className="bg-gray-800 border-gray-600 text-white"
+                  />
+                </div>
+              )}
+              
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -104,27 +165,62 @@ export default function Auth() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-gray-800 border-gray-600 text-white"
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <Label htmlFor="password" className="text-white">Senha</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    required
+                    className="bg-gray-800 border-gray-600 text-white pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                {isSignUp && passwordErrors.length > 0 && (
+                  <div className="text-sm text-red-400 space-y-1">
+                    <div className="font-medium">A senha deve conter:</div>
+                    {passwordErrors.map((error, index) => (
+                      <div key={index} className="text-xs">• {error}</div>
+                    ))}
+                  </div>
+                )}
               </div>
+              
               <Button 
                 type="submit" 
                 className="w-full bg-gold hover:bg-gold/90" 
-                disabled={loading}
+                disabled={loading || (isSignUp && passwordErrors.length > 0)}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Entrar
+                {isSignUp ? 'Criar Conta' : 'Entrar'}
               </Button>
+              
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setError('');
+                    setPasswordErrors([]);
+                  }}
+                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                >
+                  {isSignUp ? 'Já tem uma conta? Faça login' : 'Precisa criar uma conta? Cadastre-se'}
+                </button>
+              </div>
             </form>
           </CardContent>
         </Card>
