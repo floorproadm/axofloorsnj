@@ -112,33 +112,35 @@ export function ServicesChart() {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-80">
+      <CardContent className="p-4 md:p-6">
+        <div className="h-64 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="horizontal">
+            <BarChart data={data} layout="horizontal" margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis 
                 type="number"
                 className="text-xs fill-muted-foreground"
+                tick={{ fontSize: 12 }}
               />
               <YAxis 
                 type="category"
                 dataKey="name"
                 className="text-xs fill-muted-foreground"
-                width={120}
+                width={80}
+                tick={{ fontSize: 11 }}
               />
               <Tooltip 
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-                        <p className="font-medium">{label}</p>
+                      <div className="bg-card border border-border rounded-lg p-2 md:p-3 shadow-lg">
+                        <p className="font-medium text-sm">{label}</p>
                         <div className="space-y-1 mt-2">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Solicitações: <span className="font-medium text-foreground">{data.count}</span>
                           </p>
-                          <p className="text-sm text-primary font-medium">
+                          <p className="text-xs text-primary font-medium">
                             {data.percentage}% do total
                           </p>
                         </div>
@@ -161,14 +163,14 @@ export function ServicesChart() {
         <div className="space-y-2 pt-4 border-t">
           {data.map((service, index) => (
             <div key={service.name} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                 <div 
-                  className="w-3 h-3 rounded-full" 
+                  className="w-3 h-3 rounded-full flex-shrink-0" 
                   style={{ backgroundColor: service.color }}
                 />
-                <span className="text-sm font-medium">{service.name}</span>
+                <span className="text-xs md:text-sm font-medium truncate">{service.name}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                 <Badge variant="outline" className="text-xs">
                   {service.count}
                 </Badge>

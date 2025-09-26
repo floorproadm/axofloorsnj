@@ -67,7 +67,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 overflow-auto animate-fade-in">
+          <main className="flex-1 p-3 md:p-6 overflow-auto animate-fade-in">
             {children}
           </main>
         </div>

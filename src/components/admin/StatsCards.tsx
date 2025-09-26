@@ -66,19 +66,19 @@ export function StatsCard({
 
   return (
     <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 pt-4 md:px-6 md:pt-6">
+        <CardTitle className="text-sm font-medium leading-tight">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
         <div className="space-y-2">
-          <div className="text-2xl font-bold">{value}</div>
+          <div className="text-xl md:text-2xl font-bold">{value}</div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
             {change !== undefined && (
               <Badge 
                 variant="secondary" 
-                className={cn("text-xs", getTrendColor())}
+                className={cn("text-xs w-fit", getTrendColor())}
               >
                 {getTrendIcon()}
                 <span className="ml-1">
@@ -88,7 +88,7 @@ export function StatsCard({
             )}
             
             {description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
+              <p className="text-xs text-muted-foreground leading-tight">{description}</p>
             )}
           </div>
         </div>
@@ -111,18 +111,19 @@ export function StatsCardsGrid({
   className 
 }: StatsCardsGridProps) {
   const gridCols = {
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+    2: 'grid-cols-1 sm:grid-cols-2',
+    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4'
   };
 
   return (
-    <div className={cn("grid gap-4", gridCols[columns], className)}>
+    <div className={cn("grid gap-3 sm:gap-4", gridCols[columns], className)}>
       {cards.map((card, index) => (
         <StatsCard
           key={`${card.title}-${index}`}
           {...card}
           isLoading={isLoading}
+          className="min-h-[120px]"
         />
       ))}
     </div>
