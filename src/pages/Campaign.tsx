@@ -377,7 +377,7 @@ const Campaign = () => {
                               <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-gold text-gold" />
                             ))}
                           </div>
-                          <blockquote className="text-lg sm:text-xl italic mb-4 sm:mb-6">
+                          <blockquote className="text-lg sm:text-xl italic mb-4 sm:mb-6 text-white/90 font-medium">
                             "{testimonial.quote}"
                           </blockquote>
                           <p className="text-gold font-semibold text-sm sm:text-base">
