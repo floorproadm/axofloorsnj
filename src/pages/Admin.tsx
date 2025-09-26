@@ -1,173 +1,31 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  Users, 
-  TrendingUp, 
-  CheckCircle,
-  XCircle,
-  Phone,
-  LogOut,
-  Home,
-  BarChart3,
-  AlertCircle
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import LeadsManagement from './LeadsManagement';
-
-interface Lead {
-  id: string;
-  name: string;
-  email?: string;
-  phone: string;
-  lead_source: string;
-  status: string;
-  priority: string;
-  services: string[];
-  budget?: number;
-  room_size?: string;
-  location?: string;
-  address?: string;
-  city?: string;
-  zip_code?: string;
-  message?: string;
-  assigned_to?: string;
-  follow_up_date?: string;
-  last_contacted_at?: string;
-  converted_to_project_id?: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAdminAuth } from '@/hooks/admin/useAdminAuth';
 
 const Admin = () => {
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
-  
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalLeads: 0,
-    newLeads: 0,
-    contactedLeads: 0,
-    qualifiedLeads: 0,
-    acceptedProposals: 0,  // leads que aceitaram proposta (converted)
-    rejectedProposals: 0,  // leads que rejeitaram (lost)
-    conversionRate: 0
-  });
+  const navigate = useNavigate();
+  const { shouldShowLoading, canAccessAdmin } = useAdminAuth();
 
   useEffect(() => {
-    loadLeadsData();
-  }, []);
-
-  const loadLeadsData = async () => {
-    setLoading(true);
-    try {
-      // Load leads
-      const { data: leadsData, error: leadsError } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (leadsError) throw leadsError;
-      
-      const processedLeads = (leadsData || []).map(lead => ({
-        ...lead,
-        services: Array.isArray(lead.services) ? lead.services as string[] : []
-      }));
-      setLeads(processedLeads);
-
-      // Calculate stats focados em aceitação de propostas
-      const total = processedLeads.length;
-      const newCount = processedLeads.filter(l => l.status === 'new').length;
-      const contactedCount = processedLeads.filter(l => l.status === 'contacted').length;
-      const qualifiedCount = processedLeads.filter(l => l.status === 'qualified').length;
-      const acceptedCount = processedLeads.filter(l => l.status === 'converted').length; // aceitaram proposta
-      const rejectedCount = processedLeads.filter(l => l.status === 'lost').length; // rejeitaram proposta
-      const conversionRate = total > 0 ? Math.round((acceptedCount / total) * 100) : 0;
-
-      setStats({
-        totalLeads: total,
-        newLeads: newCount,
-        contactedLeads: contactedCount,
-        qualifiedLeads: qualifiedCount,
-        acceptedProposals: acceptedCount,
-        rejectedProposals: rejectedCount,
-        conversionRate
-      });
-
-    } catch (error) {
-      console.error('Error loading leads data:', error);
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Por favor, atualize a página e tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
+    // Redireciona para o novo dashboard quando acessar /admin
+    if (canAccessAdmin) {
+      navigate('/admin/dashboard', { replace: true });
     }
-  };
+  }, [canAccessAdmin, navigate]);
 
-  const handleLogout = async () => {
-    await signOut();
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso."
-    });
-  };
-
-  if (loading) {
+  if (shouldShowLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-grey">Carregando dashboard...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Redirecionando para o painel administrativo...</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-white border-b border-grey/20 sticky top-0 z-10">
-        <div className="px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-navy truncate">
-                AXO Admin - Gestão de Leads
-              </h1>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-3">
-              <Link to="/">
-                <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3">
-                  <Home className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline ml-1 sm:ml-2">Início</span>
-                </Button>
-              </Link>
-              <Button 
-                onClick={handleLogout} 
-                variant="outline" 
-                size="sm"
-                className="h-8 px-2 sm:px-3 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
-              >
-                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline ml-1 sm:ml-2">Sair</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-6">
-        {/* Leads Management Completo */}
-        <LeadsManagement />
-      </div>
-    </div>
-  );
+  // Se não pode acessar admin, useAdminAuth já redirecionou
+  return null;
 };
 
 export default Admin;

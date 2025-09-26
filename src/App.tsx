@@ -26,6 +26,8 @@ import ThankYou from "./pages/ThankYou";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import Admin from "./pages/Admin";
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminLeadsManager from './pages/admin/LeadsManager';
 import Auth from "./pages/Auth";
 import LeadsManagement from './pages/LeadsManagement';
 import Campaign from "./pages/Campaign";
@@ -71,6 +73,16 @@ const App = () => {
             <Route path="/admin" element={
               <ProtectedRoute>
                 <Admin />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/dashboard" element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/leads" element={
+              <ProtectedRoute>
+                <AdminLeadsManager />
               </ProtectedRoute>
             } />
             
