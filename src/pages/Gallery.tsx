@@ -237,7 +237,15 @@ const Gallery = () => {
       {/* Lightbox Modal */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogContent className="max-w-6xl w-full h-[90vh] p-0 bg-black/95 border-0">
-          <div className="relative w-full h-full flex items-center justify-center">
+          <div 
+            className="relative w-full h-full flex items-center justify-center"
+            onClick={(e) => {
+              // Close lightbox when clicking on background (not on image or buttons)
+              if (e.target === e.currentTarget) {
+                setIsLightboxOpen(false);
+              }
+            }}
+          >
             {/* Image Navigation */}
             {lightboxImages.length > 0 && (
               <>
@@ -256,7 +264,8 @@ const Gallery = () => {
                   <img
                     src={imageMap[lightboxImages[currentImageIndex]?.image_url] || lightboxImages[currentImageIndex]?.image_url}
                     alt={lightboxImages[currentImageIndex]?.title}
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-full max-h-full object-contain cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </div>
 
