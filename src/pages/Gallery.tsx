@@ -320,13 +320,6 @@ const Gallery = () => {
                   <ChevronRight className="w-8 h-8" />
                 </Button>
 
-                {/* Image Info */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center text-white">
-                  <h3 className="text-lg font-semibold mb-1">{lightboxImages[currentImageIndex]?.title}</h3>
-                  <p className="text-sm text-white/60">
-                    {currentImageIndex + 1} of {lightboxImages.length}
-                  </p>
-                </div>
               </>
             )}
           </div>
