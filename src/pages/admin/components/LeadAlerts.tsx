@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { 
   AlertTriangle, 
   Clock, 
   Phone, 
   Mail,
   ExternalLink,
-  Users
+  Users,
+  MapPin,
+  DollarSign,
+  MessageSquare,
+  User,
+  Calendar
 } from "lucide-react";
 import { useAdminData } from "@/hooks/admin/useAdminData";
 import { Link } from "react-router-dom";
@@ -22,6 +29,14 @@ interface AlertLead {
   hoursAgo: number;
   priority: string;
   lead_source: string;
+  address?: string;
+  city?: string;
+  zip_code?: string;
+  budget?: number;
+  services?: string[];
+  message?: string;
+  notes?: string;
+  status: string;
 }
 
 export function LeadAlerts() {
@@ -53,7 +68,15 @@ export function LeadAlerts() {
           created_at: lead.created_at,
           hoursAgo,
           priority: lead.priority,
-          lead_source: lead.lead_source
+          lead_source: lead.lead_source,
+          address: lead.address,
+          city: lead.city,
+          zip_code: lead.zip_code,
+          budget: lead.budget,
+          services: lead.services,
+          message: lead.message,
+          notes: lead.notes,
+          status: lead.status
         };
       })
       .sort((a, b) => b.hoursAgo - a.hoursAgo)
@@ -85,6 +108,181 @@ export function LeadAlerts() {
       'realtors_page': 'bg-pink-50 text-pink-600'
     };
     return colors[source as keyof typeof colors] || 'bg-gray-50 text-gray-600';
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value);
+  };
+
+  const LeadPreviewModal = ({ lead }: { lead: AlertLead }) => {
+    return (
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            {lead.name}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          {/* Contact Info */}
+          <div>
+            <h3 className="font-medium text-sm text-muted-foreground mb-3">Informações de Contato</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                <span className="font-mono text-sm">{lead.phone}</span>
+              </div>
+              {lead.email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">{lead.email}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Address Info */}
+          {(lead.address || lead.city || lead.zip_code) && (
+            <>
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground mb-3">Localização</h3>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <div className="text-sm">
+                    {lead.address && <div>{lead.address}</div>}
+                    <div>
+                      {lead.city && lead.zip_code ? `${lead.city}, ${lead.zip_code}` : 
+                       lead.city || lead.zip_code}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Lead Details */}
+          <div>
+            <h3 className="font-medium text-sm text-muted-foreground mb-3">Detalhes do Lead</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs text-muted-foreground">Origem</div>
+                <Badge className={`text-xs mt-1 ${getSourceBadgeColor(lead.lead_source)}`}>
+                  {lead.lead_source.replace('_', ' ')}
+                </Badge>
+              </div>
+              
+              <div>
+                <div className="text-xs text-muted-foreground">Prioridade</div>
+                <Badge 
+                  variant={lead.priority === 'high' ? 'destructive' : 'secondary'}
+                  className="text-xs mt-1"
+                >
+                  {lead.priority === 'high' ? 'Alta' : 
+                   lead.priority === 'medium' ? 'Média' : 'Baixa'}
+                </Badge>
+              </div>
+
+              <div>
+                <div className="text-xs text-muted-foreground">Status</div>
+                <Badge 
+                  variant={lead.status === 'new' ? 'destructive' : 'secondary'}
+                  className="text-xs mt-1"
+                >
+                  {lead.status === 'new' ? 'Novo' : 
+                   lead.status === 'contacted' ? 'Contatado' : 
+                   lead.status === 'qualified' ? 'Qualificado' :
+                   lead.status === 'converted' ? 'Convertido' : lead.status}
+                </Badge>
+              </div>
+
+              <div>
+                <div className="text-xs text-muted-foreground">Recebido</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span className="text-xs">{formatTimeAgo(lead.hoursAgo)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Budget */}
+          {lead.budget && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground mb-3">Orçamento</h3>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-green-600" />
+                  <span className="font-medium text-green-600">
+                    {formatCurrency(lead.budget)}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Services */}
+          {lead.services && lead.services.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground mb-3">Serviços Solicitados</h3>
+                <div className="flex flex-wrap gap-2">
+                  {lead.services.map((service, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {service.replace(/([A-Z])/g, ' $1').trim()}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Message */}
+          {lead.message && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground mb-3">Mensagem</h3>
+                <div className="flex items-start gap-2">
+                  <MessageSquare className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <p className="text-sm bg-muted/30 p-3 rounded-lg">{lead.message}</p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Notes */}
+          {lead.notes && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground mb-3">Notas</h3>
+                <p className="text-sm bg-muted/30 p-3 rounded-lg">{lead.notes}</p>
+              </div>
+            </>
+          )}
+
+          {/* Actions */}
+          <Separator />
+          <div className="flex gap-2 pt-2">
+            <Button asChild className="flex-1">
+              <Link to="/admin/leads">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Abrir no CRM
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    );
   };
 
   if (isLoading) {
@@ -203,17 +401,19 @@ export function LeadAlerts() {
                   </div>
                 </div>
                 
-                <Button 
-                  asChild 
-                  size="sm" 
-                  variant="outline"
-                  className="w-full sm:w-auto sm:ml-2 h-10"
-                >
-                  <Link to="/admin/leads">
-                    <ExternalLink className="w-3 h-3 mr-1" />
-                    Ver
-                  </Link>
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="w-full sm:w-auto sm:ml-2 h-10"
+                    >
+                      <User className="w-3 h-3 mr-1" />
+                      Ver
+                    </Button>
+                  </DialogTrigger>
+                  <LeadPreviewModal lead={lead} />
+                </Dialog>
               </div>
             </div>
           ))}
