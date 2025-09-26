@@ -133,11 +133,11 @@ export function LeadAlerts() {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+      <CardHeader className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            <CardTitle>Alertas de Leads</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Alertas de Leads</CardTitle>
           </div>
           <div className="flex items-center gap-2">
             {criticalCount > 0 && (
@@ -145,56 +145,58 @@ export function LeadAlerts() {
                 {criticalCount} críticos
               </Badge>
             )}
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-xs">
               {totalUnanswered} pendentes
             </Badge>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground mt-2">
           Leads não respondidos há mais de 24 horas
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6 pt-0">
         <div className="space-y-3">
           {alertLeads.map((lead) => (
             <div 
               key={lead.id}
-              className={`p-3 rounded-lg border ${getUrgencyColor(lead.hoursAgo)}`}
+              className={`p-3 rounded-xl border ${getUrgencyColor(lead.hoursAgo)}`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium text-foreground truncate">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <p className="font-medium text-foreground text-sm truncate">
                       {lead.name}
                     </p>
                     <Badge 
                       variant="outline" 
-                      className={`text-xs ${getSourceBadgeColor(lead.lead_source)}`}
+                      className={`text-xs w-fit ${getSourceBadgeColor(lead.lead_source)}`}
                     >
                       {lead.lead_source.replace('_', ' ')}
                     </Badge>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <div className="flex items-center gap-1">
-                      <Phone className="w-3 h-3" />
+                      <Phone className="w-3 h-3 flex-shrink-0" />
                       <span className="font-mono text-xs">{lead.phone}</span>
                     </div>
                     {lead.email && (
-                      <div className="flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        <span className="text-xs truncate max-w-32">{lead.email}</span>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Mail className="w-3 h-3 flex-shrink-0" />
+                        <span className="text-xs truncate">{lead.email}</span>
                       </div>
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 mt-2">
-                    <Clock className="w-3 h-3" />
-                    <span className="text-xs font-medium">
-                      {formatTimeAgo(lead.hoursAgo)}
-                    </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span className="text-xs font-medium">
+                        {formatTimeAgo(lead.hoursAgo)}
+                      </span>
+                    </div>
                     {lead.priority === 'high' && (
-                      <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                      <Badge variant="destructive" className="text-xs px-1.5 py-0.5 w-fit">
                         Alta prioridade
                       </Badge>
                     )}
@@ -205,7 +207,7 @@ export function LeadAlerts() {
                   asChild 
                   size="sm" 
                   variant="outline"
-                  className="ml-2 shrink-0"
+                  className="w-full sm:w-auto sm:ml-2 h-10"
                 >
                   <Link to="/admin/leads">
                     <ExternalLink className="w-3 h-3 mr-1" />
@@ -218,8 +220,8 @@ export function LeadAlerts() {
         </div>
         
         {totalUnanswered > 5 && (
-          <div className="pt-3 border-t mt-3">
-            <Button asChild variant="outline" className="w-full">
+          <div className="pt-4 border-t mt-4">
+            <Button asChild variant="outline" className="w-full h-10">
               <Link to="/admin/leads">
                 Ver todos os {totalUnanswered} leads pendentes
                 <ExternalLink className="w-4 h-4 ml-2" />

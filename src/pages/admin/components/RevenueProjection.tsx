@@ -96,26 +96,24 @@ export function RevenueProjection() {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+      <CardHeader className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <CardTitle>Projeção de Receita</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
+            <CardTitle className="text-base sm:text-lg">Projeção de Receita</CardTitle>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Histórico e projeção dos próximos 6 meses
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-green-600 bg-green-50">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              {formatCurrency(totalProjected)} próximos 6m
-            </Badge>
-          </div>
+          <Badge variant="secondary" className="text-green-600 bg-green-50 w-fit">
+            <TrendingUp className="w-3 h-3 mr-1" />
+            {formatCurrency(totalProjected)} próximos 6m
+          </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-80">
+      <CardContent className="p-4 sm:p-6 pt-0">
+        <div className="h-64 sm:h-80 w-full overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
+            <LineChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <defs>
                 <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -126,22 +124,28 @@ export function RevenueProjection() {
               <XAxis 
                 dataKey="month" 
                 className="text-xs fill-muted-foreground"
+                tick={{ fontSize: 11 }}
+                angle={-45}
+                textAnchor="end"
+                height={50}
               />
               <YAxis 
                 className="text-xs fill-muted-foreground"
                 tickFormatter={formatCurrency}
+                tick={{ fontSize: 11 }}
+                width={40}
               />
               <Tooltip 
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-                        <p className="font-medium">{label}</p>
+                      <div className="bg-card border border-border rounded-lg p-2 sm:p-3 shadow-lg max-w-48">
+                        <p className="font-medium text-sm">{label}</p>
                         <div className="space-y-1 mt-2">
                           {payload.map((entry, index) => (
-                            <p key={index} className="text-sm">
+                            <p key={index} className="text-xs">
                               <span 
-                                className="inline-block w-3 h-3 rounded-full mr-2" 
+                                className="inline-block w-2 h-2 rounded-full mr-2" 
                                 style={{ backgroundColor: entry.color }}
                               />
                               {entry.name === 'actual' ? 'Real' : 
@@ -162,7 +166,7 @@ export function RevenueProjection() {
                 x={data[5]?.month} 
                 stroke="hsl(var(--muted-foreground))" 
                 strokeDasharray="2 2"
-                label={{ value: "Hoje", position: "top" }}
+                label={{ value: "Hoje", position: "top", fontSize: 10 }}
               />
               <Line
                 type="monotone"
@@ -177,17 +181,17 @@ export function RevenueProjection() {
                 type="monotone"
                 dataKey="actual"
                 stroke="hsl(var(--primary))"
-                strokeWidth={3}
-                dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                strokeWidth={2}
+                dot={{ fill: "hsl(var(--primary))", r: 3 }}
                 name="actual"
               />
               <Line
                 type="monotone"
                 dataKey="projected"
                 stroke="#10b981"
-                strokeWidth={3}
+                strokeWidth={2}
                 strokeDasharray="8 4"
-                dot={{ fill: "#10b981", r: 4 }}
+                dot={{ fill: "#10b981", r: 3 }}
                 name="projected"
               />
             </LineChart>
@@ -195,31 +199,31 @@ export function RevenueProjection() {
         </div>
         
         {/* Summary Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
+          <div className="text-center p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center justify-center gap-1 mb-2">
               <DollarSign className="w-4 h-4 text-primary" />
               <p className="text-xs text-muted-foreground">Real (último mês)</p>
             </div>
-            <p className="text-lg font-bold">
+            <p className="text-lg sm:text-xl font-bold">
               {formatCurrency(data[4]?.actual || 0)}
             </p>
           </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          <div className="text-center p-3 rounded-lg bg-green-50">
+            <div className="flex items-center justify-center gap-1 mb-2">
               <TrendingUp className="w-4 h-4 text-green-600" />
               <p className="text-xs text-muted-foreground">Projeção (6m)</p>
             </div>
-            <p className="text-lg font-bold text-green-600">
+            <p className="text-lg sm:text-xl font-bold text-green-600">
               {formatCurrency(totalProjected)}
             </p>
           </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          <div className="text-center p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center justify-center gap-1 mb-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">Meta Anual</p>
             </div>
-            <p className="text-lg font-bold">
+            <p className="text-lg sm:text-xl font-bold">
               {formatCurrency(annualTarget)}
             </p>
           </div>

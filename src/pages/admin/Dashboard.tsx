@@ -29,23 +29,21 @@ export default function Dashboard() {
       title="Dashboard" 
       breadcrumbs={[{ label: "Dashboard" }]}
     >
-      <div className="space-y-4 md:space-y-6 px-2 md:px-0">
+      <div className="space-y-4 max-w-full overflow-hidden">
         {/* Métricas Principais */}
         <DashboardStats />
         
         {/* Alertas Urgentes */}
         <LeadAlerts />
         
-        {/* Charts Row 1 - Stack on mobile */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+        {/* Charts - Stack completely on mobile, side by side on xl+ */}
+        <div className="flex flex-col xl:grid xl:grid-cols-2 gap-4">
           <ConversionChart />
           <ServicesChart />
         </div>
         
-        {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 gap-4 md:gap-6">
-          <RevenueProjection />
-        </div>
+        {/* Revenue Projection - Full width */}
+        <RevenueProjection />
       </div>
     </AdminLayout>
   );
