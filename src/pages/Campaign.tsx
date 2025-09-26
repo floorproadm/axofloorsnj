@@ -17,7 +17,7 @@ import {
 // Import existing assets
 import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
 import realDamagedFloor from "@/assets/real-damaged-floor-better.png";
-import realAfterCampaign from "@/assets/real-after-campaign.png";
+import dramaticBeforeAfter from "@/assets/dramatic-before-after.jpg";
 import happyCustomers from "@/assets/happy-customers.jpg";
 import professionalProcess from "@/assets/professional-process.jpg";
 
@@ -175,42 +175,11 @@ const Campaign = () => {
             </div>
             
             <div className="max-w-4xl mx-auto px-4">
-              <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
-                {/* Before Image */}
-                <div className="relative">
-                  <div className="absolute -top-4 left-4 z-10 bg-destructive text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    BEFORE
-                  </div>
-                  <div className="aspect-square overflow-hidden rounded-2xl shadow-elegant border-4 border-destructive/20">
-                    <img 
-                      src={realDamagedFloor} 
-                      alt="Damaged hardwood floor before AXO Floors restoration showing scratches and wear"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-                
-                {/* After Image */}
-                <div className="relative">
-                  <div className="absolute -top-4 left-4 z-10 bg-gold text-navy px-4 py-2 rounded-full text-sm font-semibold">
-                    AFTER
-                  </div>
-                  <div className="aspect-square overflow-hidden rounded-2xl shadow-elegant border-4 border-gold/30">
-                    <img 
-                      src={realAfterCampaign} 
-                      alt="Beautiful restored hardwood floors after AXO Floors refinishing showing stunning transformation"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Mobile-friendly comparison text */}
-              <div className="text-center mt-8 sm:mt-12">
-                <p className="text-lg sm:text-xl font-semibold text-navy">
-                  Same Floor. Same Day. <span className="text-gold">Incredible Results.</span>
-                </p>
-              </div>
+              <img 
+                src={dramaticBeforeAfter} 
+                alt="Dramatic before and after floor transformation showing stunning improvement from worn to beautiful"
+                className="w-full rounded-lg shadow-elegant"
+              />
             </div>
           </div>
         </section>
