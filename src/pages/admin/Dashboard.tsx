@@ -1,6 +1,10 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAdminAuth } from "@/hooks/admin/useAdminAuth";
 import { DashboardStats } from "./components/DashboardStats";
+import { ConversionChart } from "./components/ConversionChart";
+import { ServicesChart } from "./components/ServicesChart";
+import { RevenueProjection } from "./components/RevenueProjection";
+import { LeadAlerts } from "./components/LeadAlerts";
 
 export default function Dashboard() {
   const { shouldShowLoading, canAccessAdmin } = useAdminAuth();
@@ -26,16 +30,21 @@ export default function Dashboard() {
       breadcrumbs={[{ label: "Dashboard" }]}
     >
       <div className="space-y-6">
+        {/* Métricas Principais */}
         <DashboardStats />
         
-        {/* Placeholder para gráficos futuros */}
-        <div className="text-center py-10 border-2 border-dashed border-muted-foreground/20 rounded-lg">
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            Gráficos e Relatórios
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Em breve: gráficos de conversão, tendências e alertas em tempo real.
-          </p>
+        {/* Alertas Urgentes */}
+        <LeadAlerts />
+        
+        {/* Charts Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ConversionChart />
+          <ServicesChart />
+        </div>
+        
+        {/* Charts Row 2 */}
+        <div className="grid grid-cols-1 gap-6">
+          <RevenueProjection />
         </div>
       </div>
     </AdminLayout>
