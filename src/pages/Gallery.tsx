@@ -204,19 +204,13 @@ const Gallery = () => {
                       alt={folder.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
                     />
-                    <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
-                      <div className="text-white text-center">
-                        <Image className="w-12 h-12 mx-auto mb-2" />
-                        <span className="font-medium text-lg">View Photos</span>
-                      </div>
-                    </div>
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-gold text-navy px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-                        <Folder className="w-4 h-4" />
-                        {folder.project_count} photos
-                      </span>
-                    </div>
-                  </div>
+                     <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
+                       <div className="text-white text-center">
+                         <Image className="w-12 h-12 mx-auto mb-2" />
+                         <span className="font-medium text-lg">View Photos</span>
+                       </div>
+                     </div>
+                   </div>
                   <CardContent className="p-6">
                     <h3 className="text-xl font-heading font-semibold text-navy mb-2 group-hover:text-gold transition-smooth">
                       {folder.name}
