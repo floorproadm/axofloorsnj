@@ -164,16 +164,16 @@ const Gallery = () => {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
-            Nossa Galeria de Projetos
+            Our Project Gallery
           </h1>
           
           <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
-            Explore nossos álbuns organizados por tipo de projeto. Clique para ver as transformações incríveis que fazemos.
+            Explore our albums organized by project type. Click to see the incredible transformations we create.
           </p>
           
           <div className="flex items-center justify-center gap-2 text-white/60">
             <Eye className="w-5 h-5" />
-            <span>Mais de 500 projetos realizados com sucesso</span>
+            <span>Over 500 successful projects completed</span>
           </div>
         </div>
       </section>
@@ -183,7 +183,7 @@ const Gallery = () => {
         <div className="container mx-auto px-4">
           {isLoading ? (
             <div className="text-center py-20">
-              <p className="text-grey text-lg">Carregando galeria...</p>
+              <p className="text-grey text-lg">Loading gallery...</p>
             </div>
           ) : (
             /* Folder View */
@@ -203,13 +203,13 @@ const Gallery = () => {
                     <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
                       <div className="text-white text-center">
                         <Image className="w-12 h-12 mx-auto mb-2" />
-                        <span className="font-medium text-lg">Ver Fotos</span>
+                        <span className="font-medium text-lg">View Photos</span>
                       </div>
                     </div>
                     <div className="absolute top-4 left-4">
                       <span className="bg-gold text-navy px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
                         <Folder className="w-4 h-4" />
-                        {folder.project_count} fotos
+                        {folder.project_count} photos
                       </span>
                     </div>
                   </div>
@@ -265,7 +265,7 @@ const Gallery = () => {
                 {/* Image Info */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center text-white">
                   <p className="text-sm text-white/60">
-                    {currentImageIndex + 1} de {lightboxImages.length}
+                    {currentImageIndex + 1} of {lightboxImages.length}
                   </p>
                 </div>
               </>
@@ -278,24 +278,24 @@ const Gallery = () => {
       <section className="py-20 bg-grey-light">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-8">
-            O Que Nossos Clientes Dizem
+            What Our Customers Say
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {[
               {
                 name: "Jennifer M.",
-                text: "A transformação dos nossos pisos foi incrível. A AXO Floors superou nossas expectativas com atenção aos detalhes.",
+                text: "The transformation of our hardwood floors was incredible. AXO Floors exceeded our expectations with their attention to detail.",
                 rating: 5
               },
               {
                 name: "Robert K.",
-                text: "Profissionais, pontuais e a qualidade é excepcional. Nossa escada é agora a peça central da nossa casa.",
+                text: "Professional, punctual, and the quality is outstanding. Our new staircase is the centerpiece of our home.",
                 rating: 5
               },
               {
                 name: "Maria L.",
-                text: "Do orçamento ao fim, o processo foi perfeito. Os pisos vinílicos ficaram incríveis e são muito práticos.",
+                text: "From quote to completion, the process was seamless. The vinyl plank floors look amazing and are so practical.",
                 rating: 5
               }
             ].map((testimonial, index) => (
@@ -320,12 +320,12 @@ const Gallery = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
               <Link to="/contact" className="flex items-center gap-2">
-                Inicie Seu Projeto
+                Start Your Project
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
             <Button variant="outline" asChild className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold hover:bg-gold hover:text-navy hover:border-gold">
-              <a href="tel:(732) 351-8653">Ligue (732) 351-8653</a>
+              <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
             </Button>
           </div>
         </div>
