@@ -15,11 +15,11 @@ import {
 } from "@/components/ui/carousel";
 
 // Import existing assets
-import beforeAfterComparison from "@/assets/before-after-comparison.png";
-import homeHero from "@/assets/home-hero.jpg";
-import hardwoodHero from "@/assets/hardwood-hero.jpg";
-import sandingHero from "@/assets/sanding-hero-new.jpg";
-import teamPhoto from "@/assets/team-photo.jpg";
+import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
+import damagedFloorCloseup from "@/assets/damaged-floor-closeup.jpg";
+import dramaticBeforeAfter from "@/assets/dramatic-before-after.jpg";
+import happyCustomers from "@/assets/happy-customers.jpg";
+import professionalProcess from "@/assets/professional-process.jpg";
 
 const Campaign = () => {
   const testimonials = [
@@ -81,9 +81,9 @@ const Campaign = () => {
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${beforeAfterComparison})` }}
+            style={{ backgroundImage: `url(${holidayHeroFloor})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-navy/80 via-navy/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/70 to-navy/40" />
           </div>
           
           <div className="relative z-10 container mx-auto px-4 py-20 text-center text-white">
@@ -92,25 +92,25 @@ const Campaign = () => {
             </Badge>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-6 leading-tight">
-              From Worn to <span className="text-gold">WOW</span><br />
-              in Just <span className="text-gold">72 Hours</span>
+              Do Desgastado ao <span className="text-gold animate-pulse">INCRÍVEL</span><br />
+              em Apenas <span className="text-gold bg-gold/10 px-3 py-1 rounded-lg">72 Horas</span>
             </h1>
             
             <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto text-grey-light">
-              Premium hardwood restoration and installation across NJ, NY & PA
+              Restauração premium de pisos de madeira em NJ, NY e PA
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gold text-navy hover:bg-gold/90 text-lg px-8 py-4" asChild>
+              <Button size="lg" className="bg-gold text-navy hover:bg-gold/90 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-300 shadow-gold" asChild>
                 <Link to="/contact">
-                  Book Your Free Floor Assessment
+                  🏠 Reserve Sua Avaliação GRATUITA
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-navy text-lg px-8 py-4" asChild>
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-navy text-lg px-8 py-4 backdrop-blur-sm" asChild>
                 <Link to="/gallery">
-                  See Before & After Gallery
+                  📸 Ver Galeria Antes & Depois
                 </Link>
               </Button>
             </div>
@@ -123,34 +123,37 @@ const Campaign = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="order-2 lg:order-1">
                 <img 
-                  src={sandingHero} 
-                  alt="Scratched and worn hardwood floor needing restoration"
+                  src={damagedFloorCloseup} 
+                  alt="Severely scratched and worn hardwood floor showing damage that embarrasses homeowners"
                   className="rounded-lg shadow-elegant w-full"
                 />
               </div>
               
               <div className="order-1 lg:order-2">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-navy mb-8">
-                  Do your floors <span className="text-destructive">embarrass you</span> when guests arrive?
+                  Seus pisos te <span className="text-destructive relative">
+                    envergonham
+                    <div className="absolute -bottom-2 left-0 w-full h-1 bg-destructive/30 rounded"></div>
+                  </span> quando recebe visitas?
                 </h2>
                 
                 <div className="space-y-6 mb-8">
                   <div className="flex items-start gap-4">
-                    <div className="w-2 h-2 bg-destructive rounded-full mt-3 flex-shrink-0" />
-                    <p className="text-lg text-muted-foreground">Scratches that catch the light</p>
+                    <div className="w-3 h-3 bg-destructive rounded-full mt-2 flex-shrink-0 animate-pulse" />
+                    <p className="text-lg text-muted-foreground">Riscos que refletem a luz de forma constrangedora</p>
                   </div>
                   <div className="flex items-start gap-4">
-                    <div className="w-2 h-2 bg-destructive rounded-full mt-3 flex-shrink-0" />
-                    <p className="text-lg text-muted-foreground">Stains that never disappear</p>
+                    <div className="w-3 h-3 bg-destructive rounded-full mt-2 flex-shrink-0 animate-pulse" />
+                    <p className="text-lg text-muted-foreground">Manchas que nunca desaparecem</p>
                   </div>
                   <div className="flex items-start gap-4">
-                    <div className="w-2 h-2 bg-destructive rounded-full mt-3 flex-shrink-0" />
-                    <p className="text-lg text-muted-foreground">Floors that age your home overnight</p>
+                    <div className="w-3 h-3 bg-destructive rounded-full mt-2 flex-shrink-0 animate-pulse" />
+                    <p className="text-lg text-muted-foreground">Pisos que envelhecem sua casa instantaneamente</p>
                   </div>
                 </div>
                 
-                <Button className="bg-navy text-white hover:bg-navy/90">
-                  Discover the Solution
+                <Button className="bg-navy text-white hover:bg-navy/90 transform hover:scale-105 transition-all duration-300">
+                  ✨ Descobrir a Solução
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -173,8 +176,8 @@ const Campaign = () => {
             
             <div className="max-w-4xl mx-auto">
               <img 
-                src={beforeAfterComparison} 
-                alt="Before and after floor transformation showing dramatic improvement"
+                src={dramaticBeforeAfter} 
+                alt="Dramatic before and after floor transformation showing stunning improvement from worn to beautiful"
                 className="w-full rounded-lg shadow-elegant"
               />
             </div>
@@ -187,8 +190,8 @@ const Campaign = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <img 
-                  src={teamPhoto} 
-                  alt="Happy homeowners in their beautifully restored living room"
+                  src={happyCustomers} 
+                  alt="Happy homeowners proudly showcasing their beautifully restored hardwood floors"
                   className="rounded-lg shadow-elegant w-full"
                 />
               </div>
@@ -221,8 +224,16 @@ const Campaign = () => {
         </section>
 
         {/* Section 5 - Signature Offer */}
-        <section className="py-20 bg-background">
-          <div className="container mx-auto px-4">
+        <section className="py-20 bg-background relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 opacity-5">
+            <img 
+              src={professionalProcess} 
+              alt="Professional floor refinishing equipment"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="relative z-10 container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-navy mb-6">
                 The AXO Signature Experience
@@ -243,13 +254,16 @@ const Campaign = () => {
               ))}
             </div>
             
-            <div className="bg-gradient-to-r from-gold to-gold/80 text-navy rounded-lg p-8 text-center">
-              <h3 className="text-2xl font-heading font-bold mb-4">
-                This Month Only: Special Holiday Package
-              </h3>
-              <p className="text-lg">
-                Free Design Consultation + Traffic-Grade Sealant Upgrade + Maintenance Kit
-              </p>
+            <div className="bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-navy rounded-lg p-8 text-center shadow-gold relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-gold/20 to-transparent opacity-50"></div>
+              <div className="relative z-10">
+                <h3 className="text-2xl font-heading font-bold mb-4">
+                  🎄 Oferta Especial de Fim de Ano
+                </h3>
+                <p className="text-lg font-semibold">
+                  Consultoria de Design GRÁTIS + Upgrade para Selante Premium + Kit de Manutenção
+                </p>
+              </div>
             </div>
           </div>
         </section>
