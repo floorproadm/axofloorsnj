@@ -3,9 +3,8 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Eye, Folder, Image, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Star, Eye, Image, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -92,6 +91,30 @@ const Gallery = () => {
     }
   }, [projects, selectedCategory, selectedFolder]);
 
+  // Handle keyboard navigation in lightbox
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isLightboxOpen) return;
+      
+      switch (event.key) {
+        case 'Escape':
+          handleCloseLightbox();
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          handlePreviousImage();
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          handleNextImage();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, lightboxImages.length]);
+
   const fetchFoldersAndProjects = async () => {
     try {
       // Fetch folders
@@ -144,6 +167,12 @@ const Gallery = () => {
       setCurrentImageIndex(0);
       setIsLightboxOpen(true);
     }
+  };
+
+  const handleCloseLightbox = () => {
+    setIsLightboxOpen(false);
+    setLightboxImages([]);
+    setCurrentImageIndex(0);
   };
 
   const handlePreviousImage = () => {
@@ -212,6 +241,7 @@ const Gallery = () => {
                     <img 
                       src={imageMap[folder.cover_image_url] || folder.cover_image_url} 
                       alt={folder.name}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
                     />
                      <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
@@ -235,17 +265,22 @@ const Gallery = () => {
       </section>
 
       {/* Lightbox Modal */}
-      <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 bg-black/95 border-0">
-          <div 
-            className="relative w-full h-full flex items-center justify-center"
-            onClick={(e) => {
-              // Close lightbox when clicking on background (not on image or buttons)
-              if (e.target === e.currentTarget) {
-                setIsLightboxOpen(false);
-              }
-            }}
-          >
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          onClick={handleCloseLightbox}
+        >
+          <div className="relative w-full h-full max-w-6xl flex items-center justify-center p-4">
+            {/* Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-20 text-white hover:bg-white/20"
+              onClick={handleCloseLightbox}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+
             {/* Image Navigation */}
             {lightboxImages.length > 0 && (
               <>
@@ -254,17 +289,20 @@ const Gallery = () => {
                   variant="ghost"
                   size="icon"
                   className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
-                  onClick={handlePreviousImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePreviousImage();
+                  }}
                 >
                   <ChevronLeft className="w-8 h-8" />
                 </Button>
 
                 {/* Current Image */}
-                <div className="w-full h-full flex items-center justify-center p-8">
+                <div className="flex items-center justify-center w-full h-full">
                   <img
                     src={imageMap[lightboxImages[currentImageIndex]?.image_url] || lightboxImages[currentImageIndex]?.image_url}
                     alt={lightboxImages[currentImageIndex]?.title}
-                    className="max-w-full max-h-full object-contain cursor-pointer"
+                    className="max-w-full max-h-full object-contain"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
@@ -274,13 +312,17 @@ const Gallery = () => {
                   variant="ghost"
                   size="icon"
                   className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
-                  onClick={handleNextImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextImage();
+                  }}
                 >
                   <ChevronRight className="w-8 h-8" />
                 </Button>
 
                 {/* Image Info */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center text-white">
+                  <h3 className="text-lg font-semibold mb-1">{lightboxImages[currentImageIndex]?.title}</h3>
                   <p className="text-sm text-white/60">
                     {currentImageIndex + 1} of {lightboxImages.length}
                   </p>
@@ -288,8 +330,8 @@ const Gallery = () => {
               </>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
       {/* Testimonial Section */}
       <section className="py-20 bg-grey-light">
