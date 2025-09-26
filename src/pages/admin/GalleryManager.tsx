@@ -20,7 +20,9 @@ import {
   Star, 
   Upload,
   Eye,
-  Settings
+  Settings,
+  Sparkles,
+  TrendingUp
 } from "lucide-react";
 
 interface GalleryProject {
@@ -83,7 +85,7 @@ export default function GalleryManager() {
     location: "",
     image_url: "",
     is_featured: false,
-    parent_folder_id: ""
+    parent_folder_id: "none"
   });
 
   useEffect(() => {
@@ -225,6 +227,7 @@ export default function GalleryManager() {
 
       const projectData = {
         ...projectForm,
+        parent_folder_id: projectForm.parent_folder_id === "none" ? null : projectForm.parent_folder_id,
         display_order: editingProject ? editingProject.display_order : projects.length
       };
 
@@ -256,7 +259,7 @@ export default function GalleryManager() {
         location: "",
         image_url: "",
         is_featured: false,
-        parent_folder_id: ""
+        parent_folder_id: "none"
       });
       fetchData();
     } catch (error) {
@@ -353,7 +356,7 @@ export default function GalleryManager() {
       location: project.location,
       image_url: project.image_url,
       is_featured: project.is_featured,
-      parent_folder_id: project.parent_folder_id || ""
+      parent_folder_id: project.parent_folder_id || "none"
     });
     setIsProjectDialogOpen(true);
   };
@@ -403,52 +406,60 @@ export default function GalleryManager() {
 
   return (
     <AdminLayout title="Gallery Manager" breadcrumbs={[{ label: "Gallery" }]}>
-      <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <FolderOpen className="w-8 h-8 text-primary" />
+      <div className="space-y-6 animate-fade-in">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="admin-stat-card admin-gradient">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{folders.length}</p>
-                  <p className="text-sm text-muted-foreground">Folders</p>
+                  <p className="dashboard-metric text-white">{folders.length}</p>
+                  <p className="text-white/80 text-sm font-medium">Gallery Folders</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full">
+                  <FolderOpen className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Image className="w-8 h-8 text-primary" />
+          <Card className="admin-stat-card gold-gradient">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{projects.length}</p>
-                  <p className="text-sm text-muted-foreground">Projects</p>
+                  <p className="dashboard-metric text-navy">{projects.length}</p>
+                  <p className="text-navy/80 text-sm font-medium">Total Projects</p>
+                </div>
+                <div className="p-3 bg-navy/20 rounded-full">
+                  <Image className="w-8 h-8 text-navy" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Star className="w-8 h-8 text-primary" />
+          <Card className="admin-stat-card bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{projects.filter(p => p.is_featured).length}</p>
-                  <p className="text-sm text-muted-foreground">Featured</p>
+                  <p className="dashboard-metric text-white">{projects.filter(p => p.is_featured).length}</p>
+                  <p className="text-white/80 text-sm font-medium">Featured Projects</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full">
+                  <Star className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Eye className="w-8 h-8 text-primary" />
+          <Card className="admin-stat-card bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{categories.length}</p>
-                  <p className="text-sm text-muted-foreground">Categories</p>
+                  <p className="dashboard-metric text-white">{categories.length}</p>
+                  <p className="text-white/80 text-sm font-medium">Categories</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full">
+                  <Eye className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -456,64 +467,102 @@ export default function GalleryManager() {
         </div>
 
         <Tabs defaultValue="folders" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="folders">Folders</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between">
+            <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/50">
+              <TabsTrigger value="folders" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <FolderOpen className="w-4 h-4 mr-2" />
+                Folders
+              </TabsTrigger>
+              <TabsTrigger value="projects" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Image className="w-4 h-4 mr-2" />
+                Projects
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </TabsTrigger>
+            </TabsList>
+            
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="animate-pulse">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Live Updates
+              </Badge>
+            </div>
+          </div>
 
-          <TabsContent value="folders" className="space-y-4">
+          <TabsContent value="folders" className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Gallery Folders</h3>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <FolderOpen className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-navy">Gallery Folders</h3>
+                  <p className="text-sm text-muted-foreground">Organize your projects into folders</p>
+                </div>
+              </div>
               <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button className="gold-gradient hover-scale">
                     <Plus className="w-4 h-4 mr-2" />
                     New Folder
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl animate-scale-in">
                   <DialogHeader>
-                    <DialogTitle>{editingFolder ? 'Edit' : 'Create'} Folder</DialogTitle>
+                    <DialogTitle className="text-navy flex items-center gap-2">
+                      <FolderOpen className="w-5 h-5" />
+                      {editingFolder ? 'Edit' : 'Create'} Folder
+                    </DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="folderName">Name</Label>
-                        <Input
-                          id="folderName"
-                          value={folderForm.name}
-                          onChange={(e) => setFolderForm(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Enter folder name"
-                        />
+                  <div className="space-y-6">
+                    <div className="form-section">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="folderName" className="text-navy font-medium">Folder Name</Label>
+                          <Input
+                            id="folderName"
+                            value={folderForm.name}
+                            onChange={(e) => setFolderForm(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="Enter folder name"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="folderCover" className="text-navy font-medium">Cover Image URL</Label>
+                          <Input
+                            id="folderCover"
+                            value={folderForm.cover_image_url}
+                            onChange={(e) => setFolderForm(prev => ({ ...prev, cover_image_url: e.target.value }))}
+                            placeholder="Enter cover image URL"
+                            className="mt-1"
+                          />
+                        </div>
                       </div>
                       <div>
-                        <Label htmlFor="folderCover">Cover Image URL</Label>
-                        <Input
-                          id="folderCover"
-                          value={folderForm.cover_image_url}
-                          onChange={(e) => setFolderForm(prev => ({ ...prev, cover_image_url: e.target.value }))}
-                          placeholder="Enter cover image URL"
+                        <Label htmlFor="folderDescription" className="text-navy font-medium">Description</Label>
+                        <Textarea
+                          id="folderDescription"
+                          value={folderForm.description}
+                          onChange={(e) => setFolderForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Enter folder description"
+                          className="mt-1"
+                          rows={3}
                         />
                       </div>
                     </div>
-                    <div>
-                      <Label htmlFor="folderDescription">Description</Label>
-                      <Textarea
-                        id="folderDescription"
-                        value={folderForm.description}
-                        onChange={(e) => setFolderForm(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Enter folder description"
-                      />
-                    </div>
-                    <div>
-                      <Label>Upload Cover Image</Label>
+                    <div className="form-section">
+                      <h4 className="form-section-title">
+                        <Upload className="w-5 h-5" />
+                        Upload Cover Image
+                      </h4>
                       <ImageUploader
                         onImageUploaded={(url) => setFolderForm(prev => ({ ...prev, cover_image_url: url }))}
                         maxFiles={1}
                       />
                     </div>
-                    <Button onClick={handleSaveFolder} className="w-full">
+                    <Button onClick={handleSaveFolder} className="w-full gold-gradient hover-scale">
                       {editingFolder ? 'Update' : 'Create'} Folder
                     </Button>
                   </div>
@@ -545,23 +594,33 @@ export default function GalleryManager() {
             />
           </TabsContent>
 
-          <TabsContent value="projects" className="space-y-4">
+          <TabsContent value="projects" className="space-y-6 animate-slide-up">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-4">
-                <h3 className="text-lg font-semibold">Gallery Projects</h3>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Image className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-navy">Gallery Projects</h3>
+                    <p className="text-sm text-muted-foreground">Manage your project portfolio</p>
+                  </div>
+                </div>
                 {selectedFolder && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectedFolder(null)}
+                    className="hover-scale"
                   >
+                    <TrendingUp className="w-4 h-4 mr-2" />
                     Show All Projects
                   </Button>
                 )}
               </div>
               <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button className="gold-gradient hover-scale">
                     <Plus className="w-4 h-4 mr-2" />
                     New Project
                   </Button>
@@ -618,7 +677,7 @@ export default function GalleryManager() {
                             <SelectValue placeholder="Select folder" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">No folder</SelectItem>
+                            <SelectItem value="none">No folder</SelectItem>
                             {folders.map((folder) => (
                               <SelectItem key={folder.id} value={folder.id}>
                                 {folder.name}
@@ -701,36 +760,67 @@ export default function GalleryManager() {
             />
           </TabsContent>
 
-          <TabsContent value="settings" className="space-y-4">
-            <Card>
+          <TabsContent value="settings" className="space-y-6 animate-slide-up">
+            <Card className="admin-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-navy">
                   <Settings className="w-5 h-5" />
                   Gallery Settings
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Available Categories</h4>
+              <CardContent className="space-y-6">
+                <div className="form-section">
+                  <h4 className="form-section-title">
+                    <Eye className="w-5 h-5" />
+                    Available Categories
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {categories.map((category) => (
-                      <Badge key={category} variant="secondary">
+                      <Badge key={category} variant="secondary" className="hover-scale">
                         {category}
                       </Badge>
                     ))}
                   </div>
                 </div>
-                <div>
-                  <h4 className="font-medium mb-2">Quick Actions</h4>
-                  <div className="space-y-2">
-                    <Button variant="outline" onClick={fetchData}>
+                <div className="form-section">
+                  <h4 className="form-section-title">
+                    <TrendingUp className="w-5 h-5" />
+                    Quick Actions
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button variant="outline" onClick={fetchData} className="hover-lift">
                       <Upload className="w-4 h-4 mr-2" />
                       Refresh Gallery Data
                     </Button>
-                    <Button variant="outline" onClick={() => window.open('/gallery', '_blank')}>
+                    <Button variant="outline" onClick={() => window.open('/gallery', '_blank')} className="hover-lift">
                       <Eye className="w-4 h-4 mr-2" />
                       View Public Gallery
                     </Button>
+                  </div>
+                </div>
+                
+                <div className="form-section">
+                  <h4 className="form-section-title">
+                    <Sparkles className="w-5 h-5" />
+                    Gallery Statistics
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-primary/5 rounded-lg">
+                      <p className="dashboard-metric">{folders.length}</p>
+                      <p className="dashboard-label">Total Folders</p>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <p className="dashboard-metric text-green-600">{projects.filter(p => p.is_featured).length}</p>
+                      <p className="dashboard-label">Featured</p>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <p className="dashboard-metric text-blue-600">{projects.length}</p>
+                      <p className="dashboard-label">Projects</p>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <p className="dashboard-metric text-purple-600">{categories.length}</p>
+                      <p className="dashboard-label">Categories</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>

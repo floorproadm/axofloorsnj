@@ -25,7 +25,9 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  Settings
+  Settings,
+  Sparkles,
+  TrendingUp
 } from "lucide-react";
 
 interface Project {
@@ -362,52 +364,60 @@ export default function ProjectsManager() {
 
   return (
     <AdminLayout title="Projects Manager" breadcrumbs={[{ label: "Projects" }]}>
-      <div className="space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-8 h-8 text-primary" />
+      <div className="space-y-6 animate-fade-in">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="admin-stat-card admin-gradient">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{projects.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Projects</p>
+                  <p className="dashboard-metric text-white">{projects.length}</p>
+                  <p className="text-white/80 text-sm font-medium">Total Projects</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full">
+                  <Building2 className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Clock className="w-8 h-8 text-blue-500" />
+          <Card className="admin-stat-card bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{statusStats.in_progress || 0}</p>
-                  <p className="text-sm text-muted-foreground">In Progress</p>
+                  <p className="dashboard-metric text-white">{statusStats.in_progress || 0}</p>
+                  <p className="text-white/80 text-sm font-medium">In Progress</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full">
+                  <Clock className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-8 h-8 text-green-500" />
+          <Card className="admin-stat-card bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{statusStats.completed || 0}</p>
-                  <p className="text-sm text-muted-foreground">Completed</p>
+                  <p className="dashboard-metric text-white">{statusStats.completed || 0}</p>
+                  <p className="text-white/80 text-sm font-medium">Completed</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full">
+                  <CheckCircle className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-8 h-8 text-green-600" />
+          <Card className="admin-stat-card gold-gradient">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">${totalRevenue.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+                  <p className="dashboard-metric text-navy">${totalRevenue.toLocaleString()}</p>
+                  <p className="text-navy/80 text-sm font-medium">Total Revenue</p>
+                </div>
+                <div className="p-3 bg-navy/20 rounded-full">
+                  <DollarSign className="w-8 h-8 text-navy" />
                 </div>
               </div>
             </CardContent>
@@ -415,67 +425,89 @@ export default function ProjectsManager() {
         </div>
 
         <Tabs defaultValue="all" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <TabsList>
-              <TabsTrigger value="all" onClick={() => setSelectedStatus("all")}>
-                All Projects ({projects.length})
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <TabsList className="grid w-full md:w-auto grid-cols-4 bg-muted/50">
+              <TabsTrigger 
+                value="all" 
+                onClick={() => setSelectedStatus("all")}
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                All ({projects.length})
               </TabsTrigger>
-              <TabsTrigger value="pending" onClick={() => setSelectedStatus("pending")}>
+              <TabsTrigger 
+                value="pending" 
+                onClick={() => setSelectedStatus("pending")}
+                className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+              >
                 Pending ({statusStats.pending || 0})
               </TabsTrigger>
-              <TabsTrigger value="in_progress" onClick={() => setSelectedStatus("in_progress")}>
-                In Progress ({statusStats.in_progress || 0})
+              <TabsTrigger 
+                value="in_progress" 
+                onClick={() => setSelectedStatus("in_progress")}
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+              >
+                Active ({statusStats.in_progress || 0})
               </TabsTrigger>
-              <TabsTrigger value="completed" onClick={() => setSelectedStatus("completed")}>
-                Completed ({statusStats.completed || 0})
+              <TabsTrigger 
+                value="completed" 
+                onClick={() => setSelectedStatus("completed")}
+                className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
+              >
+                Done ({statusStats.completed || 0})
               </TabsTrigger>
             </TabsList>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="gold-gradient hover-scale">
                   <Plus className="w-4 h-4 mr-2" />
                   New Project
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto animate-scale-in">
                 <DialogHeader>
-                  <DialogTitle>{editingProject ? 'Edit' : 'Create'} Project</DialogTitle>
+                  <DialogTitle className="text-navy flex items-center gap-2">
+                    <Building2 className="w-6 h-6" />
+                    {editingProject ? 'Edit Project' : 'Create New Project'}
+                  </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {/* Customer Information */}
-                  <div>
-                    <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <div className="form-section">
+                    <h3 className="form-section-title">
                       <User className="w-5 h-5" />
                       Customer Information
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <Label htmlFor="customerName">Customer Name *</Label>
+                        <Label htmlFor="customerName" className="text-navy font-medium">Customer Name *</Label>
                         <Input
                           id="customerName"
                           value={projectForm.customer_name}
                           onChange={(e) => setProjectForm(prev => ({ ...prev, customer_name: e.target.value }))}
                           placeholder="Enter customer name"
+                          className="mt-1"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="customerEmail">Email</Label>
+                        <Label htmlFor="customerEmail" className="text-navy font-medium">Email</Label>
                         <Input
                           id="customerEmail"
                           type="email"
                           value={projectForm.customer_email}
                           onChange={(e) => setProjectForm(prev => ({ ...prev, customer_email: e.target.value }))}
                           placeholder="Enter email address"
+                          className="mt-1"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="customerPhone">Phone *</Label>
+                        <Label htmlFor="customerPhone" className="text-navy font-medium">Phone *</Label>
                         <Input
                           id="customerPhone"
                           value={projectForm.customer_phone}
                           onChange={(e) => setProjectForm(prev => ({ ...prev, customer_phone: e.target.value }))}
                           placeholder="Enter phone number"
+                          className="mt-1"
                         />
                       </div>
                     </div>

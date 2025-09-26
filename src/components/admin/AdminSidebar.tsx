@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 const navigationItems = [
@@ -120,48 +121,54 @@ export function AdminSidebar() {
 
   return (
     <Sidebar
-      className={collapsed ? "w-14" : "w-64"}
+      className={collapsed ? "w-16" : "w-64"}
       collapsible="icon"
     >
-      <SidebarContent className="bg-card border-r">
-        {/* Logo/Brand */}
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">A</span>
+      <SidebarContent className="bg-card/95 backdrop-blur-sm border-r border-border/50">
+        {/* Enhanced Logo/Brand */}
+        <div className="p-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 gold-gradient rounded-xl flex items-center justify-center shadow-gold">
+              <span className="text-navy font-bold text-lg">A</span>
             </div>
             {!collapsed && (
-              <div>
-                <h2 className="font-semibold text-foreground">AXO Admin</h2>
-                <p className="text-xs text-muted-foreground">Painel Administrativo</p>
+              <div className="animate-fade-in">
+                <h2 className="font-semibold text-navy text-lg">AXO Admin</h2>
+                <p className="text-xs text-muted-foreground">Sistema Administrativo</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>
+        {/* Enhanced Main Navigation */}
+        <SidebarGroup className="px-2">
+          <SidebarGroupLabel className="text-navy font-medium">
             {!collapsed && "Navegação Principal"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/admin/dashboard"}
-                      className={getNavClassName}
+                      className={({ isActive }) => `
+                        relative rounded-lg transition-admin hover-lift
+                        ${isActive 
+                          ? "bg-primary/10 text-primary font-medium border border-primary/20 shadow-soft" 
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-navy"
+                        }
+                      `}
                     >
-                      <item.icon className="w-4 h-4" />
+                      <item.icon className="w-5 h-5" />
                       {!collapsed && (
                         <div className="flex items-center justify-between flex-1">
                           <span>{item.title}</span>
                           {item.badge && (
-                            <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                            <Badge className="bg-primary/20 text-primary text-xs animate-pulse">
                               {item.badge}
-                            </span>
+                            </Badge>
                           )}
                         </div>
                       )}
@@ -173,22 +180,28 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Quick Actions */}
-        <SidebarGroup>
-          <SidebarGroupLabel>
+        {/* Enhanced Quick Actions */}
+        <SidebarGroup className="px-2">
+          <SidebarGroupLabel className="text-navy font-medium">
             {!collapsed && "Ações Rápidas"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {quickActions.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={getNavClassName}
+                      className={({ isActive }) => `
+                        rounded-lg transition-admin hover-lift
+                        ${isActive 
+                          ? "bg-accent/50 text-accent-foreground font-medium" 
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-navy"
+                        }
+                      `}
                       target={item.url === "/" ? "_blank" : undefined}
                     >
-                      <item.icon className="w-4 h-4" />
+                      <item.icon className="w-5 h-5" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -198,15 +211,15 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Logout Button */}
-        <div className="mt-auto p-4 border-t">
+        {/* Enhanced Logout Button */}
+        <div className="mt-auto p-4 border-t border-border/50">
           <Button
             onClick={handleLogout}
             variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted"
+            className="w-full justify-start text-muted-foreground hover:text-red-600 hover:bg-red-50 transition-admin"
           >
-            <LogOut className="w-4 h-4" />
-            {!collapsed && <span className="ml-2">Sair</span>}
+            <LogOut className="w-5 h-5" />
+            {!collapsed && <span className="ml-2">Sair do Sistema</span>}
           </Button>
         </div>
       </SidebarContent>
