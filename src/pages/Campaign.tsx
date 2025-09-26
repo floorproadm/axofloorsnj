@@ -471,10 +471,10 @@ const Campaign = () => {
               
               <div className="flex flex-col gap-4 justify-center max-w-md mx-auto sm:max-w-none sm:flex-row">
                 <Button size="lg" className="bg-navy text-white hover:bg-navy/90 text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-6 w-full sm:w-auto" asChild>
-                  <Link to="/contact">
-                    Book Your Free Floor Assessment
-                    <ArrowRight className="ml-2 h-5 w-5 sm:h-6 sm:w-6" />
-                  </Link>
+                <Link to="/contact">
+                  Book Your Spot Today
+                  <ArrowRight className="ml-2 h-5 w-5 sm:h-6 sm:w-6" />
+                </Link>
                 </Button>
                 
                 <Button 
