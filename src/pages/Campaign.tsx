@@ -20,7 +20,7 @@ import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
 import realDamagedFloor from "@/assets/real-damaged-floor-better.png";
 import afterCampaignNew from "@/assets/after-campaign-new.png";
 import happyCustomers from "@/assets/happy-customers.jpg";
-import happyCoupleFloors from "@/assets/happy-couple-beautiful-floors.png";
+import happyCoupleFloors from "@/assets/happy-couple-with-mascot.png";
 import professionalProcess from "@/assets/professional-process.jpg";
 
 const Campaign = () => {
