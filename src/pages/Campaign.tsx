@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, ArrowRight, Phone, CheckCircle, Shield, Calendar, Award, Users, Sparkles } from "lucide-react";
+import { Star, ArrowRight, Phone, CheckCircle, Shield, Calendar, Award, Users, Sparkles, TrendingUp, MapPin } from "lucide-react";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import SEOHead from "@/components/shared/SEOHead";
@@ -13,6 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useState, useEffect } from "react";
 
 // Import existing assets
 import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
@@ -22,25 +23,57 @@ import happyCustomers from "@/assets/happy-customers.jpg";
 import professionalProcess from "@/assets/professional-process.jpg";
 
 const Campaign = () => {
+  const [showStickyButton, setShowStickyButton] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyButton(window.scrollY > 800);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const testimonials = [
     {
       quote: "Our Christmas tree lights literally reflected on the floor. Stunning.",
       location: "Princeton, NJ",
+      name: "Sarah M.",
       rating: 5
     },
     {
       quote: "We feared dust everywhere, but AXO's system kept the house spotless.",
       location: "Brooklyn, NY", 
+      name: "Michael R.",
       rating: 5
     },
     {
       quote: "Kids, dog, daily chaos… two months later the floor still looks new.",
       location: "Doylestown, PA",
+      name: "Jennifer L.",
       rating: 5
     },
     {
       quote: "Professional, punctual, premium. Worth every dollar.",
       location: "Jersey City, NJ",
+      name: "David K.",
+      rating: 5
+    },
+    {
+      quote: "Neighbors keep asking who did our floors. AXO transformed our entire home's feel.",
+      location: "Holmdel, NJ",
+      name: "Lisa W.",
+      rating: 5
+    },
+    {
+      quote: "From consultation to cleanup, flawless experience. Our Alpine home looks magazine-ready.",
+      location: "Alpine, NJ",
+      name: "Robert T.",
+      rating: 5
+    },
+    {
+      quote: "Hosting Thanksgiving was a dream. Everyone complimented our 'new' 15-year-old floors.",
+      location: "Short Hills, NJ",
+      name: "Amanda C.",
       rating: 5
     }
   ];
@@ -87,6 +120,21 @@ const Campaign = () => {
           </div>
           
           <div className="relative z-10 container mx-auto px-4 py-16 sm:py-20 text-center text-white">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-6">
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <TrendingUp className="h-4 w-4 text-gold" />
+                <span className="text-sm font-semibold">9+ Years Experience</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <Award className="h-4 w-4 text-gold" />
+                <span className="text-sm font-semibold">500+ Homes Transformed</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <MapPin className="h-4 w-4 text-gold" />
+                <span className="text-sm font-semibold">NJ, NY & PA</span>
+              </div>
+            </div>
+            
             <Badge className="mb-6 bg-gold text-navy font-semibold px-6 py-2 text-sm">
               LIMITED OCTOBER SLOTS AVAILABLE
             </Badge>
@@ -103,14 +151,14 @@ const Campaign = () => {
             <div className="flex flex-col gap-4 justify-center px-4 max-w-md sm:max-w-none mx-auto sm:flex-row">
               <Button size="lg" className="bg-gold text-navy hover:bg-gold/90 text-base sm:text-lg px-6 sm:px-8 py-4 transform hover:scale-105 transition-all duration-300 shadow-gold w-full sm:w-auto" asChild>
                 <Link to="/contact">
-                  Book Your Free Floor Assessment
+                  Get My Free Estimate
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-navy text-base sm:text-lg px-6 sm:px-8 py-4 backdrop-blur-sm w-full sm:w-auto" asChild>
                 <Link to="/gallery">
-                  See Before & After Gallery
+                  See My Home's Potential
                 </Link>
               </Button>
             </div>
@@ -195,7 +243,7 @@ const Campaign = () => {
           </div>
         </section>
 
-        {/* Section 4 - Customer Story */}
+        {/* Section 4 - Holiday Storytelling */}
         <section className="py-12 sm:py-16 lg:py-20 bg-gold/5">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -209,8 +257,13 @@ const Campaign = () => {
               
               <div className="text-center lg:text-left">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-navy mb-6 sm:mb-8 px-4 lg:px-0">
-                  From Avoiding Guests… to <span className="text-gold">Proudly Hosting</span> Again
+                  Picture This: <span className="text-gold">Thanksgiving Dinner</span>
                 </h2>
+                
+                <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 px-4 lg:px-0">
+                  Instead of apologizing for scratched floors, you proudly host with floors that shine. 
+                  Every reflection of the chandelier, every compliment from family — it all starts with one decision today.
+                </p>
                 
                 <blockquote className="text-lg sm:text-xl italic text-muted-foreground mb-6 sm:mb-8 pl-6 border-l-4 border-gold">
                   "We delayed hosting dinners for years because of our floors. AXO Floors restored them in 4 days. 
@@ -223,13 +276,35 @@ const Campaign = () => {
                   ))}
                 </div>
                 
+                <p className="text-sm text-muted-foreground mb-6">— The Johnson Family, Short Hills, NJ</p>
+                
                 <Button variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white w-full sm:w-auto" asChild>
                   <Link to="/gallery">
-                    Read More Client Stories
+                    Read More Success Stories
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Mid-Page CTA Section */}
+        <section className="py-12 sm:py-16 bg-navy text-white">
+          <div className="container mx-auto px-4 text-center">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold mb-4">
+                Every Month You Wait, <span className="text-destructive">The Wood Suffers More</span>
+              </h2>
+              <p className="text-lg mb-8">
+                Scratches deepen. Stains set. What could be fixed today becomes a replacement tomorrow.
+              </p>
+              <Button size="lg" className="bg-gold text-navy hover:bg-gold/90 text-lg px-8 py-4" asChild>
+                <Link to="/contact">
+                  Get My Free Estimate Now
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -269,10 +344,13 @@ const Campaign = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-gold/20 to-transparent opacity-50"></div>
               <div className="relative z-10">
                 <h3 className="text-xl sm:text-2xl font-heading font-bold mb-3 sm:mb-4">
-                  This Month Only: Special Holiday Package
+                  October Special: Save Up to $500
                 </h3>
-                <p className="text-base sm:text-lg font-semibold">
-                  Free Design Consultation + Traffic-Grade Sealant Upgrade + Maintenance Kit
+                <p className="text-base sm:text-lg font-semibold mb-4">
+                  Free Stair Repair ($350 value) + Premium Traffic-Grade Sealant Upgrade ($150 value)
+                </p>
+                <p className="text-sm opacity-90">
+                  When you book before October 31st. Limited to 5 projects this month.
                 </p>
               </div>
             </div>
@@ -338,11 +416,19 @@ const Campaign = () => {
           </div>
         </section>
 
-        {/* Section 8 - Guarantee + Scarcity */}
+        {/* Section 8 - Enhanced Guarantee + Scarcity */}
         <section className="py-12 sm:py-16 lg:py-20 bg-navy text-white">
           <div className="container mx-auto px-4 text-center">
             <div className="max-w-3xl mx-auto">
-              <Shield className="h-12 w-12 sm:h-16 sm:w-16 text-gold mx-auto mb-6 sm:mb-8" />
+              <div className="flex items-center justify-center mb-6 sm:mb-8">
+                <div className="bg-gold rounded-full p-4 mr-4">
+                  <Shield className="h-12 w-12 sm:h-16 sm:w-16 text-navy" />
+                </div>
+                <div className="bg-gold/20 border border-gold rounded-lg px-6 py-3">
+                  <div className="text-gold font-bold text-lg">10-YEAR WARRANTY</div>
+                  <div className="text-xs text-gold/80">Peace of Mind for a Full Decade</div>
+                </div>
+              </div>
               
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold mb-6 sm:mb-8 px-4">
                 Protected by Our <span className="text-gold">10-Year AXO Warranty</span>
@@ -350,6 +436,7 @@ const Campaign = () => {
               
               <p className="text-lg sm:text-xl mb-8 sm:mb-12 px-4">
                 If your finish peels or fails due to application within 10 years, we'll fix it. Period.
+                No questions. No hassles. Complete peace of mind for a full decade.
               </p>
               
               <div className="bg-destructive/20 border border-destructive/30 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8 mx-4 sm:mx-0">
@@ -408,6 +495,22 @@ const Campaign = () => {
 
         <Footer />
       </div>
+
+      {/* Sticky CTA Button for Mobile */}
+      {showStickyButton && (
+        <div className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
+          <Button 
+            size="lg" 
+            className="w-full bg-gold text-navy hover:bg-gold/90 text-lg font-bold py-4 shadow-2xl border-2 border-navy/20" 
+            asChild
+          >
+            <Link to="/contact">
+              Book My Free Estimate
+              <Phone className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
+        </div>
+      )}
     </>
   );
 };
