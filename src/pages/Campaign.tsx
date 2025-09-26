@@ -16,7 +16,7 @@ import {
 
 // Import existing assets
 import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
-import realDamagedFloor from "@/assets/real-damaged-floor.png";
+import realDamagedFloor from "@/assets/real-damaged-floor-better.png";
 import dramaticBeforeAfter from "@/assets/dramatic-before-after.jpg";
 import happyCustomers from "@/assets/happy-customers.jpg";
 import professionalProcess from "@/assets/professional-process.jpg";
