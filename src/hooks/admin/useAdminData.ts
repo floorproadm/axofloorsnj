@@ -96,62 +96,22 @@ export function useAdminData() {
   });
 
   const calculateStats = (leads: Lead[], projects: Project[]): AdminStats => {
-    // Add some sample data if we don't have enough for a good demo
-    const sampleLeads = leads.length < 10 ? [
-      ...leads,
-      ...[
-        { status: 'new', services: ['hardwoodRefinishing'], created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-        { status: 'contacted', services: ['vinylInstallation'], created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-        { status: 'qualified', services: ['hardwoodRefinishing'], created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
-        { status: 'converted', services: ['stairRefinishing'], created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
-        { status: 'new', services: ['baseboardInstallation'], created_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString() },
-        { status: 'contacted', services: ['hardwoodRefinishing', 'vinylInstallation'], created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() }
-      ].map((sample, i) => ({
-        id: `sample-${i}`,
-        name: `Lead Demo ${i + 1}`,
-        phone: '(555) 000-000' + i,
-        email: `demo${i}@example.com`,
-        lead_source: 'demo',
-        priority: 'medium',
-        ...sample
-      }))
-    ] as Lead[] : leads;
-
-    const sampleProjects = projects.length < 5 ? [
-      ...projects,
-      ...[
-        { project_status: 'completed', actual_cost: 12500, completion_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() },
-        { project_status: 'completed', actual_cost: 8900, completion_date: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString() },
-        { project_status: 'in_progress', actual_cost: null, completion_date: null },
-        { project_status: 'completed', actual_cost: 15200, completion_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString() }
-      ].map((sample, i) => ({
-        id: `sample-project-${i}`,
-        customer_name: `Cliente Demo ${i + 1}`,
-        customer_email: `cliente${i}@demo.com`,
-        customer_phone: '(555) 100-000' + i,
-        project_type: 'hardwood_refinishing',
-        created_at: new Date(Date.now() - (i + 1) * 20 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - (i + 1) * 20 * 24 * 60 * 60 * 1000).toISOString(),
-        ...sample
-      }))
-    ] as Project[] : projects;
-
     // Leads Stats
-    const totalLeads = sampleLeads.length;
-    const newLeads = sampleLeads.filter(l => l.status === 'new').length;
-    const contactedLeads = sampleLeads.filter(l => l.status === 'contacted').length;
-    const qualifiedLeads = sampleLeads.filter(l => l.status === 'qualified').length;
-    const convertedLeads = sampleLeads.filter(l => l.status === 'converted').length;
-    const lostLeads = sampleLeads.filter(l => l.status === 'lost').length;
+    const totalLeads = leads.length;
+    const newLeads = leads.filter(l => l.status === 'new').length;
+    const contactedLeads = leads.filter(l => l.status === 'contacted').length;
+    const qualifiedLeads = leads.filter(l => l.status === 'qualified').length;
+    const convertedLeads = leads.filter(l => l.status === 'converted').length;
+    const lostLeads = leads.filter(l => l.status === 'lost').length;
     const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
     // Projects Stats
-    const totalProjects = sampleProjects.length;
-    const activeProjects = sampleProjects.filter(p => p.project_status === 'in_progress' || p.project_status === 'pending').length;
-    const completedProjects = sampleProjects.filter(p => p.project_status === 'completed').length;
+    const totalProjects = projects.length;
+    const activeProjects = projects.filter(p => p.project_status === 'in_progress' || p.project_status === 'pending').length;
+    const completedProjects = projects.filter(p => p.project_status === 'completed').length;
     
     // Revenue Stats
-    const completedProjectsWithCost = sampleProjects.filter(p => 
+    const completedProjectsWithCost = projects.filter(p => 
       p.project_status === 'completed' && p.actual_cost
     );
     const totalRevenue = completedProjectsWithCost.reduce((sum, p) => sum + (p.actual_cost || 0), 0);
@@ -212,13 +172,53 @@ export function useAdminData() {
 
       const processedProjects = projectsData || [];
 
+      // Add sample data if needed for demo purposes
+      const finalLeads = processedLeads.length < 10 ? [
+        ...processedLeads,
+        ...[
+          { status: 'new', services: ['hardwoodRefinishing'], created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+          { status: 'contacted', services: ['vinylInstallation'], created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+          { status: 'qualified', services: ['hardwoodRefinishing'], created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
+          { status: 'converted', services: ['stairRefinishing'], created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
+          { status: 'new', services: ['baseboardInstallation'], created_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString() },
+          { status: 'contacted', services: ['hardwoodRefinishing', 'vinylInstallation'], created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() }
+        ].map((sample, i) => ({
+          id: `sample-${i}`,
+          name: `Lead Demo ${i + 1}`,
+          phone: '(555) 000-000' + i,
+          email: `demo${i}@example.com`,
+          lead_source: 'demo',
+          priority: 'medium',
+          ...sample
+        }))
+      ] as Lead[] : processedLeads;
+
+      const finalProjects = processedProjects.length < 5 ? [
+        ...processedProjects,
+        ...[
+          { project_status: 'completed', actual_cost: 12500, completion_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() },
+          { project_status: 'completed', actual_cost: 8900, completion_date: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString() },
+          { project_status: 'in_progress', actual_cost: null, completion_date: null },
+          { project_status: 'completed', actual_cost: 15200, completion_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString() }
+        ].map((sample, i) => ({
+          id: `sample-project-${i}`,
+          customer_name: `Cliente Demo ${i + 1}`,
+          customer_email: `cliente${i}@demo.com`,
+          customer_phone: '(555) 100-000' + i,
+          project_type: 'hardwood_refinishing',
+          created_at: new Date(Date.now() - (i + 1) * 20 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - (i + 1) * 20 * 24 * 60 * 60 * 1000).toISOString(),
+          ...sample
+        }))
+      ] as Project[] : processedProjects;
+
       // Calculate stats
-      const stats = calculateStats(processedLeads, processedProjects);
+      const stats = calculateStats(finalLeads, finalProjects);
 
       setState(prev => ({
         ...prev,
-        leads: processedLeads,
-        projects: processedProjects,
+        leads: finalLeads,
+        projects: finalProjects,
         stats,
         isLoading: false,
         error: null
