@@ -11,15 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUploader } from "@/components/admin/ImageUploader";
+import { DragDropGrid } from "@/components/admin/DragDropGrid";
 import { 
   FolderOpen, 
   Plus, 
   Image, 
-  Edit, 
-  Trash2, 
   Star, 
   Upload,
-  GripVertical,
   Eye,
   Settings
 } from "lucide-react";
@@ -121,6 +120,46 @@ export default function GalleryManager() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const updateProjectOrder = async (projectId: string, newOrder: number) => {
+    try {
+      const { error } = await supabase
+        .from('gallery_projects')
+        .update({ display_order: newOrder })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Error updating project order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update project order",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateFolderOrder = async (folderId: string, newOrder: number) => {
+    try {
+      const { error } = await supabase
+        .from('gallery_folders')
+        .update({ display_order: newOrder })
+        .eq('id', folderId);
+
+      if (error) throw error;
+
+      fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Error updating folder order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update folder order",
+        variant: "destructive",
+      });
     }
   };
 
@@ -433,19 +472,30 @@ export default function GalleryManager() {
                     New Folder
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>{editingFolder ? 'Edit' : 'Create'} Folder</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="folderName">Name</Label>
-                      <Input
-                        id="folderName"
-                        value={folderForm.name}
-                        onChange={(e) => setFolderForm(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Enter folder name"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="folderName">Name</Label>
+                        <Input
+                          id="folderName"
+                          value={folderForm.name}
+                          onChange={(e) => setFolderForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Enter folder name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="folderCover">Cover Image URL</Label>
+                        <Input
+                          id="folderCover"
+                          value={folderForm.cover_image_url}
+                          onChange={(e) => setFolderForm(prev => ({ ...prev, cover_image_url: e.target.value }))}
+                          placeholder="Enter cover image URL"
+                        />
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="folderDescription">Description</Label>
@@ -457,12 +507,10 @@ export default function GalleryManager() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="folderCover">Cover Image URL</Label>
-                      <Input
-                        id="folderCover"
-                        value={folderForm.cover_image_url}
-                        onChange={(e) => setFolderForm(prev => ({ ...prev, cover_image_url: e.target.value }))}
-                        placeholder="Enter cover image URL"
+                      <Label>Upload Cover Image</Label>
+                      <ImageUploader
+                        onImageUploaded={(url) => setFolderForm(prev => ({ ...prev, cover_image_url: url }))}
+                        maxFiles={1}
                       />
                     </div>
                     <Button onClick={handleSaveFolder} className="w-full">
@@ -473,60 +521,28 @@ export default function GalleryManager() {
               </Dialog>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {folders.map((folder) => (
-                <Card key={folder.id} className="relative group">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{folder.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {getProjectCount(folder.id)} projects
-                        </p>
-                      </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditFolder(folder)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteFolder(folder)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {folder.cover_image_url && (
-                      <div className="aspect-video bg-muted rounded-md mb-2 overflow-hidden">
-                        <img 
-                          src={folder.cover_image_url} 
-                          alt={folder.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {folder.description}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-2"
-                      onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
-                    >
-                      {selectedFolder === folder.id ? 'Hide Projects' : 'View Projects'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <DragDropGrid
+              items={folders.map(folder => ({
+                id: folder.id,
+                title: folder.name,
+                description: folder.description,
+                imageUrl: folder.cover_image_url,
+                order: folder.display_order
+              }))}
+              onReorder={(oldIndex, newIndex) => {
+                const folderId = folders[oldIndex].id;
+                updateFolderOrder(folderId, newIndex);
+              }}
+              onEdit={(item) => {
+                const folder = folders.find(f => f.id === item.id);
+                if (folder) handleEditFolder(folder);
+              }}
+              onDelete={(item) => {
+                const folder = folders.find(f => f.id === item.id);
+                if (folder) handleDeleteFolder(folder);
+              }}
+              type="folder"
+            />
           </TabsContent>
 
           <TabsContent value="projects" className="space-y-4">
@@ -550,67 +566,69 @@ export default function GalleryManager() {
                     New Project
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{editingProject ? 'Edit' : 'Create'} Project</DialogTitle>
                   </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="projectTitle">Title</Label>
-                      <Input
-                        id="projectTitle"
-                        value={projectForm.title}
-                        onChange={(e) => setProjectForm(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Enter project title"
-                      />
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="projectTitle">Title</Label>
+                        <Input
+                          id="projectTitle"
+                          value={projectForm.title}
+                          onChange={(e) => setProjectForm(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="Enter project title"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="projectCategory">Category</Label>
+                        <Select
+                          value={projectForm.category}
+                          onValueChange={(value) => setProjectForm(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="projectLocation">Location</Label>
+                        <Input
+                          id="projectLocation"
+                          value={projectForm.location}
+                          onChange={(e) => setProjectForm(prev => ({ ...prev, location: e.target.value }))}
+                          placeholder="Enter project location"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="projectFolder">Folder</Label>
+                        <Select
+                          value={projectForm.parent_folder_id}
+                          onValueChange={(value) => setProjectForm(prev => ({ ...prev, parent_folder_id: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select folder" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">No folder</SelectItem>
+                            {folders.map((folder) => (
+                              <SelectItem key={folder.id} value={folder.id}>
+                                {folder.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div>
-                      <Label htmlFor="projectCategory">Category</Label>
-                      <Select
-                        value={projectForm.category}
-                        onValueChange={(value) => setProjectForm(prev => ({ ...prev, category: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="projectLocation">Location</Label>
-                      <Input
-                        id="projectLocation"
-                        value={projectForm.location}
-                        onChange={(e) => setProjectForm(prev => ({ ...prev, location: e.target.value }))}
-                        placeholder="Enter project location"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="projectFolder">Folder</Label>
-                      <Select
-                        value={projectForm.parent_folder_id}
-                        onValueChange={(value) => setProjectForm(prev => ({ ...prev, parent_folder_id: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select folder" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">No folder</SelectItem>
-                          {folders.map((folder) => (
-                            <SelectItem key={folder.id} value={folder.id}>
-                              {folder.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-2">
                       <Label htmlFor="projectDescription">Description</Label>
                       <Textarea
                         id="projectDescription"
@@ -619,7 +637,7 @@ export default function GalleryManager() {
                         placeholder="Enter project description"
                       />
                     </div>
-                    <div className="col-span-2">
+                    <div>
                       <Label htmlFor="projectImage">Image URL</Label>
                       <Input
                         id="projectImage"
@@ -628,92 +646,59 @@ export default function GalleryManager() {
                         placeholder="Enter image URL"
                       />
                     </div>
-                    <div className="col-span-2">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="projectFeatured"
-                          checked={projectForm.is_featured}
-                          onChange={(e) => setProjectForm(prev => ({ ...prev, is_featured: e.target.checked }))}
-                        />
-                        <Label htmlFor="projectFeatured">Featured Project</Label>
-                      </div>
+                    <div>
+                      <Label>Upload Project Image</Label>
+                      <ImageUploader
+                        onImageUploaded={(url) => setProjectForm(prev => ({ ...prev, image_url: url }))}
+                        maxFiles={1}
+                      />
                     </div>
-                    <div className="col-span-2">
-                      <Button onClick={handleSaveProject} className="w-full">
-                        {editingProject ? 'Update' : 'Create'} Project
-                      </Button>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="projectFeatured"
+                        checked={projectForm.is_featured}
+                        onChange={(e) => setProjectForm(prev => ({ ...prev, is_featured: e.target.checked }))}
+                      />
+                      <Label htmlFor="projectFeatured">Featured Project</Label>
                     </div>
+                    <Button onClick={handleSaveProject} className="w-full">
+                      {editingProject ? 'Update' : 'Create'} Project
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="relative group">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-lg">{project.title}</CardTitle>
-                          {project.is_featured && (
-                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {project.category}
-                          </Badge>
-                          {project.location && (
-                            <Badge variant="outline" className="text-xs">
-                              {project.location}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => toggleFeatured(project)}
-                        >
-                          <Star className={`w-4 h-4 ${project.is_featured ? 'text-yellow-500 fill-yellow-500' : ''}`} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditProject(project)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteProject(project)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {project.image_url && (
-                      <div className="aspect-video bg-muted rounded-md mb-2 overflow-hidden">
-                        <img 
-                          src={project.image_url} 
-                          alt={project.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {project.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <DragDropGrid
+              items={filteredProjects.map(project => ({
+                id: project.id,
+                title: project.title,
+                description: project.description,
+                imageUrl: project.image_url,
+                category: project.category,
+                location: project.location,
+                isFeatured: project.is_featured,
+                order: project.display_order
+              }))}
+              onReorder={(oldIndex, newIndex) => {
+                const projectId = filteredProjects[oldIndex].id;
+                updateProjectOrder(projectId, newIndex);
+              }}
+              onEdit={(item) => {
+                const project = projects.find(p => p.id === item.id);
+                if (project) handleEditProject(project);
+              }}
+              onDelete={(item) => {
+                const project = projects.find(p => p.id === item.id);
+                if (project) handleDeleteProject(project);
+              }}
+              onToggleFeatured={(item) => {
+                const project = projects.find(p => p.id === item.id);
+                if (project) toggleFeatured(project);
+              }}
+              type="project"
+            />
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">

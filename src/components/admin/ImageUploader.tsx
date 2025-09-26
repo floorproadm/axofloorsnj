@@ -24,7 +24,7 @@ interface UploadingFile {
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageUploaded,
-  bucket = 'gallery-images',
+  bucket = 'gallery',
   maxFiles = 5,
   maxSize = 10,
   acceptedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
