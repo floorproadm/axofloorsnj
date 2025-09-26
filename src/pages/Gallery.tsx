@@ -18,6 +18,10 @@ import beforeAfter5 from "@/assets/before-after/before-after-5.png";
 import beforeAfter6 from "@/assets/before-after/before-after-6.png";
 import beforeAfter7 from "@/assets/before-after/before-after-7.png";
 import beforeAfter8 from "@/assets/before-after/before-after-8.png";
+import beforeAfter9 from "@/assets/before-after/before-after-9.png";
+import beforeAfter10 from "@/assets/before-after/before-after-10.png";
+import beforeAfter11 from "@/assets/before-after/before-after-11.png";
+import beforeAfter12 from "@/assets/before-after/before-after-12.png";
 
 interface GalleryProject {
   id: string;
@@ -51,6 +55,10 @@ const imageMap: Record<string, string> = {
   "before-after-6.png": beforeAfter6,
   "before-after-7.png": beforeAfter7,
   "before-after-8.png": beforeAfter8,
+  "before-after-9.png": beforeAfter9,
+  "before-after-10.png": beforeAfter10,
+  "before-after-11.png": beforeAfter11,
+  "before-after-12.png": beforeAfter12,
 };
 
 const Gallery = () => {
