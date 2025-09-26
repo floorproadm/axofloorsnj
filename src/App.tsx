@@ -28,6 +28,7 @@ import Realtors from "./pages/Realtors";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import LeadsManagement from './pages/LeadsManagement';
+import Campaign from "./pages/Campaign";
 import NotFound from "./pages/NotFound";
 
 
@@ -55,6 +56,7 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
             <Route path="/funnel" element={<FunnelPage />} />
+            <Route path="/campaign" element={<Campaign />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/builders" element={<Builders />} />
