@@ -54,9 +54,8 @@ serve(async (req) => {
     };
 
     // Remove undefined fields
-    conversionData.data[0].user_data = Object.fromEntries(
-      Object.entries(conversionData.data[0].user_data).filter(([_, v]) => v !== undefined)
-    );
+    const userData = Object.entries(conversionData.data[0].user_data).filter(([_, v]) => v !== undefined);
+    conversionData.data[0].user_data = Object.fromEntries(userData) as any;
 
     console.log('Sending Facebook conversion data:', JSON.stringify(conversionData, null, 2));
 
@@ -90,7 +89,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in facebook-conversions function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: (error as Error).message,
       success: false 
     }), {
       status: 500,

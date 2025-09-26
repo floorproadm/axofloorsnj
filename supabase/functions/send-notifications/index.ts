@@ -169,8 +169,8 @@ const handler = async (req: Request): Promise<Response> => {
         }),
       });
 
-      if (emailResponse.error) {
-        throw new Error(emailResponse.error.message);
+      if (!emailResponse.ok) {
+        throw new Error(`Email service returned ${emailResponse.status}`);
       }
 
       results.email.success = true;
@@ -178,11 +178,11 @@ const handler = async (req: Request): Promise<Response> => {
     } catch (error) {
       // Secure error logging
       const sanitizedError = {
-        message: error.message?.substring(0, 100) || 'Unknown error',
-        type: error.name || 'Error'
+        message: (error as Error).message?.substring(0, 100) || 'Unknown error',
+        type: (error as Error).name || 'Error'
       };
       console.error("[NOTIFICATIONS] Email error:", sanitizedError);
-      results.email.error = 'Email service temporarily unavailable';
+      results.email.error = 'Email service temporarily unavailable' as any;
     }
 
     // Send SMS notification (if phone number provided)
@@ -215,11 +215,11 @@ const handler = async (req: Request): Promise<Response> => {
       } catch (error) {
         // Secure error logging
         const sanitizedError = {
-          message: error.message?.substring(0, 100) || 'Unknown error',
-          type: error.name || 'Error'
+          message: (error as Error).message?.substring(0, 100) || 'Unknown error',
+          type: (error as Error).name || 'Error'
         };
         console.error("[NOTIFICATIONS] SMS error:", sanitizedError);
-        results.sms.error = 'SMS service temporarily unavailable';
+        results.sms.error = 'SMS service temporarily unavailable' as any;
       }
     } else {
       console.log("[NOTIFICATIONS] SMS skipped - missing configuration");

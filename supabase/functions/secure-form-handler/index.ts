@@ -220,7 +220,7 @@ serve(async (req) => {
 
     console.log('Form submission successful:', {
       formType,
-      recordId: result.data?.[0]?.id,
+      recordId: (result.data as any)?.[0]?.id,
       timestamp: new Date().toISOString()
     })
 
@@ -228,14 +228,14 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Form submitted successfully',
-        id: result.data?.[0]?.id 
+        id: (result.data as any)?.[0]?.id 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
     console.error('Error in secure form handler:', {
-      error: error.message,
+      error: (error as Error).message,
       timestamp: new Date().toISOString()
     })
     

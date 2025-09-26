@@ -3,8 +3,9 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Eye, Folder, Image } from "lucide-react";
+import { ArrowRight, Star, Eye, Folder, Image, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -56,10 +57,12 @@ const Gallery = () => {
   const [projects, setProjects] = useState<GalleryProject[]>([]);
   const [folders, setFolders] = useState<GalleryFolder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [lightboxImages, setLightboxImages] = useState<GalleryProject[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [filteredProjects, setFilteredProjects] = useState<GalleryProject[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'folders' | 'projects'>('folders');
   const [visibleCount, setVisibleCount] = useState(9);
   const { toast } = useToast();
 
@@ -121,19 +124,28 @@ const Gallery = () => {
   };
 
   const handleFolderClick = (folder: GalleryFolder) => {
-    setSelectedFolder(folder.id);
-    setViewMode('projects');
-    setSelectedCategory("All");
+    const folderProjects = projects.filter(project => project.parent_folder_id === folder.id);
+    if (folderProjects.length > 0) {
+      setLightboxImages(folderProjects);
+      setCurrentImageIndex(0);
+      setIsLightboxOpen(true);
+    }
+  };
+
+  const handlePreviousImage = () => {
+    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : lightboxImages.length - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev < lightboxImages.length - 1 ? prev + 1 : 0));
   };
 
   const handleBackToFolders = () => {
-    setViewMode('folders');
     setSelectedFolder(null);
     setSelectedCategory("All");
   };
 
   const visibleProjects = filteredProjects.slice(0, visibleCount);
-  const currentFolder = folders.find(f => f.id === selectedFolder);
 
   return (
     <div className="min-h-screen">
@@ -152,27 +164,12 @@ const Gallery = () => {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
-            {viewMode === 'folders' ? 'Nossa Galeria' : currentFolder?.name || 'Projetos'}
+            Nossa Galeria de Projetos
           </h1>
           
-          {viewMode === 'folders' ? (
-            <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
-              Explore nossos álbuns organizados por tipo de projeto. Veja a qualidade e atenção aos detalhes que diferenciam a AXO Floors.
-            </p>
-          ) : (
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-xl text-white/80 max-w-3xl mx-auto">
-                {currentFolder?.description}
-              </p>
-              <Button 
-                variant="outline" 
-                onClick={handleBackToFolders}
-                className="text-white border-white hover:bg-white hover:text-navy"
-              >
-                ← Voltar aos Álbuns
-              </Button>
-            </div>
-          )}
+          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
+            Explore nossos álbuns organizados por tipo de projeto. Clique para ver as transformações incríveis que fazemos.
+          </p>
           
           <div className="flex items-center justify-center gap-2 text-white/60">
             <Eye className="w-5 h-5" />
@@ -188,7 +185,7 @@ const Gallery = () => {
             <div className="text-center py-20">
               <p className="text-grey text-lg">Carregando galeria...</p>
             </div>
-          ) : viewMode === 'folders' ? (
+          ) : (
             /* Folder View */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {folders.map((folder) => (
@@ -205,8 +202,8 @@ const Gallery = () => {
                     />
                     <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
                       <div className="text-white text-center">
-                        <Folder className="w-12 h-12 mx-auto mb-2" />
-                        <span className="font-medium text-lg">Abrir Álbum</span>
+                        <Image className="w-12 h-12 mx-auto mb-2" />
+                        <span className="font-medium text-lg">Ver Fotos</span>
                       </div>
                     </div>
                     <div className="absolute top-4 left-4">
@@ -225,81 +222,69 @@ const Gallery = () => {
                 </Card>
               ))}
             </div>
-          ) : (
-            /* Project View */
-            <>
-              {/* Filter Tabs */}
-              <div className="flex flex-wrap justify-center gap-4 mb-12">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={category === selectedCategory ? "default" : "outline"}
-                    className={category === selectedCategory ? "gold-gradient" : "hover:bg-gold hover:text-navy hover:border-gold"}
-                    onClick={() => setSelectedCategory(category)}
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {visibleProjects.map((project) => (
-                  <Card key={project.id} className="group hover:shadow-gold transition-smooth hover:-translate-y-2 overflow-hidden">
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <img 
-                        src={imageMap[project.image_url] || project.image_url} 
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
-                      />
-                      <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
-                        <div className="text-white text-center">
-                          <Eye className="w-8 h-8 mx-auto mb-2" />
-                          <span className="font-medium">Ver Projeto</span>
-                        </div>
-                      </div>
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-gold text-navy px-3 py-1 rounded-full text-sm font-medium">
-                          {project.category}
-                        </span>
-                      </div>
-                      {project.is_featured && (
-                        <div className="absolute top-4 right-4">
-                          <span className="bg-navy text-white px-2 py-1 rounded-full text-xs font-medium">
-                            Destaque
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-6">
-                      <h3 className="text-xl font-heading font-semibold text-navy mb-2 group-hover:text-gold transition-smooth">
-                        {project.title}
-                      </h3>
-                      <p className="text-sm text-gold font-medium mb-2">{project.location}</p>
-                      <p className="text-grey leading-relaxed">{project.description}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Load More Button */}
-              <div className="text-center mt-16">
-                <p className="text-grey mb-6">
-                  Mostrando {visibleProjects.length} de {filteredProjects.length} projetos
-                </p>
-                {visibleCount < filteredProjects.length && (
-                  <Button 
-                    variant="outline" 
-                    className="hover:bg-gold hover:text-navy hover:border-gold"
-                    onClick={handleLoadMore}
-                  >
-                    Ver Mais Projetos
-                  </Button>
-                )}
-              </div>
-            </>
           )}
         </div>
       </section>
+
+      {/* Lightbox Modal */}
+      <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
+        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 bg-black/95 border-0">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
+              onClick={() => setIsLightboxOpen(false)}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+
+            {/* Image Navigation */}
+            {lightboxImages.length > 0 && (
+              <>
+                {/* Previous Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
+                  onClick={handlePreviousImage}
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </Button>
+
+                {/* Current Image */}
+                <div className="w-full h-full flex items-center justify-center p-8">
+                  <img
+                    src={imageMap[lightboxImages[currentImageIndex]?.image_url] || lightboxImages[currentImageIndex]?.image_url}
+                    alt={lightboxImages[currentImageIndex]?.title}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+
+                {/* Next Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
+                  onClick={handleNextImage}
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </Button>
+
+                {/* Image Info */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center text-white">
+                  <h3 className="text-xl font-semibold mb-2">{lightboxImages[currentImageIndex]?.title}</h3>
+                  <p className="text-white/80">{lightboxImages[currentImageIndex]?.description}</p>
+                  <p className="text-sm text-white/60 mt-2">
+                    {currentImageIndex + 1} de {lightboxImages.length}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Testimonial Section */}
       <section className="py-20 bg-grey-light">

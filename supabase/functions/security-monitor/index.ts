@@ -72,7 +72,7 @@ const logSecurityEvent = async (supabase: any, eventType: string, details: any, 
     });
     
   } catch (error) {
-    console.error('[SECURITY-MONITOR] Error logging security event:', error.message);
+    console.error('[SECURITY-MONITOR] Error logging security event:', (error as Error).message);
   }
 };
 
