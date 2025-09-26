@@ -218,12 +218,12 @@ export default function LeadsManager() {
       id: "actions",
       header: "Ações",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline">
-            <Phone className="w-4 h-4" />
+        <div className="flex items-center gap-1">
+          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+            <Phone className="w-3 h-3" />
           </Button>
-          <Button size="sm" variant="outline">
-            <Mail className="w-4 h-4" />
+          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+            <Mail className="w-3 h-3" />
           </Button>
         </div>
       ),
@@ -250,33 +250,36 @@ export default function LeadsManager() {
       title="CRM Avançado" 
       breadcrumbs={[{ label: "CRM Avançado" }]}
     >
-      <div className="space-y-6">
+      <div className="space-y-4 max-w-full overflow-hidden">
         {/* Header with View Toggle and Actions */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="order-2 sm:order-1">
             <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as typeof currentView)}>
-              <TabsList>
-                <TabsTrigger value="kanban" className="flex items-center gap-2">
-                  <LayoutGrid className="w-4 h-4" />
-                  Pipeline
+              <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:grid-cols-3">
+                <TabsTrigger value="kanban" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <LayoutGrid className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Pipeline</span>
+                  <span className="sm:hidden">Board</span>
                 </TabsTrigger>
-                <TabsTrigger value="table" className="flex items-center gap-2">
-                  <Table className="w-4 h-4" />
+                <TabsTrigger value="table" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <Table className="w-3 h-3 sm:w-4 sm:h-4" />
                   Tabela
                 </TabsTrigger>
-                <TabsTrigger value="followup" className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Follow-up
+                <TabsTrigger value="followup" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Follow-up</span>
+                  <span className="sm:hidden">F-up</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
-          <div className="flex items-center gap-2">
-            <ExportManager leads={filteredLeads} />
-            <Button size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Lead
+          <div className="flex items-center gap-2 order-1 sm:order-2 sm:ml-auto">
+            <ExportManager leads={filteredLeads} className="flex-1 sm:flex-none" />
+            <Button size="sm" className="flex-1 sm:flex-none">
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Novo Lead</span>
+              <span className="sm:hidden">Novo</span>
             </Button>
           </div>
         </div>
@@ -292,8 +295,8 @@ export default function LeadsManager() {
         />
 
         {/* Content based on current view */}
-        <Tabs value={currentView} className="space-y-6">
-          <TabsContent value="kanban" className="space-y-0">
+        <Tabs value={currentView} className="space-y-4">
+          <TabsContent value="kanban" className="space-y-0 mt-0">
             <KanbanBoard 
               leads={filteredLeads}
               onLeadUpdate={handleLeadUpdate}
@@ -301,7 +304,7 @@ export default function LeadsManager() {
             />
           </TabsContent>
 
-          <TabsContent value="table" className="space-y-0">
+          <TabsContent value="table" className="space-y-0 mt-0">
             <DataTable
               columns={columns}
               data={filteredLeads}
@@ -313,7 +316,7 @@ export default function LeadsManager() {
             />
           </TabsContent>
 
-          <TabsContent value="followup" className="space-y-0">
+          <TabsContent value="followup" className="space-y-0 mt-0">
             <FollowUpSystem 
               leads={filteredLeads}
               onLeadUpdate={handleLeadUpdate}

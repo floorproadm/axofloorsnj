@@ -197,16 +197,16 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3 sm:gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Card key={i} className="h-80">
-            <CardHeader>
+          <Card key={i} className="h-64 sm:h-80">
+            <CardHeader className="p-3 sm:p-6">
               <div className="h-4 bg-muted animate-pulse rounded" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6 pt-0">
               <div className="space-y-3">
                 {[1, 2, 3].map((j) => (
-                  <div key={j} className="h-20 bg-muted animate-pulse rounded" />
+                  <div key={j} className="h-16 sm:h-20 bg-muted animate-pulse rounded" />
                 ))}
               </div>
             </CardContent>
@@ -217,12 +217,12 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3 sm:gap-4">
       {columns.map((column) => (
         <Card 
           key={column.id}
           className={cn(
-            "min-h-80 transition-all duration-200",
+            "min-h-64 sm:min-h-80 transition-all duration-200",
             column.color,
             dragOverColumn === column.status && "ring-2 ring-primary ring-opacity-50"
           )}
@@ -230,16 +230,16 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, column.status)}
         >
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-6">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
-              <span>{column.title}</span>
-              <Badge variant="secondary" className="text-xs">
+              <span className="truncate">{column.title}</span>
+              <Badge variant="secondary" className="text-xs ml-2 flex-shrink-0">
                 {column.leads.length}
               </Badge>
             </CardTitle>
           </CardHeader>
           
-          <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+          <CardContent className="space-y-2 sm:space-y-3 max-h-72 sm:max-h-96 overflow-y-auto p-3 sm:p-6 pt-0">
             {column.leads.map((lead) => (
               <Card
                 key={lead.id}
@@ -251,22 +251,22 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                   draggedLead?.id === lead.id && "opacity-50 scale-95"
                 )}
               >
-                <CardContent className="p-3">
+                <CardContent className="p-2 sm:p-3">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">
+                      <h4 className="font-medium text-xs sm:text-sm truncate">
                         {lead.name}
                       </h4>
-                      <div className="flex items-center gap-1 mt-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 mt-1">
                         <Badge 
                           variant="outline" 
-                          className={`text-xs px-1.5 py-0.5 ${getSourceBadgeColor(lead.lead_source)}`}
+                          className={`text-xs px-1 py-0.5 ${getSourceBadgeColor(lead.lead_source)}`}
                         >
                           {lead.lead_source.replace('_', ' ')}
                         </Badge>
                         {lead.priority === 'high' && (
-                          <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                          <Badge variant="destructive" className="text-xs px-1 py-0.5 w-fit">
                             Alta
                           </Badge>
                         )}
@@ -275,7 +275,7 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                     
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 flex-shrink-0">
                           <MoreHorizontal className="w-3 h-3" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -299,25 +299,25 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                   {/* Contact Info */}
                   <div className="space-y-1 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <Phone className="w-3 h-3" />
-                      <span className="font-mono">{lead.phone}</span>
+                      <Phone className="w-3 h-3 flex-shrink-0" />
+                      <span className="font-mono text-xs truncate">{lead.phone}</span>
                     </div>
                     {lead.email && (
-                      <div className="flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        <span className="truncate">{lead.email}</span>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Mail className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate text-xs">{lead.email}</span>
                       </div>
                     )}
                     {lead.city && (
                       <div className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        <span>{lead.city}</span>
+                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                        <span className="text-xs">{lead.city}</span>
                       </div>
                     )}
                     {lead.budget && (
                       <div className="flex items-center gap-1">
-                        <DollarSign className="w-3 h-3" />
-                        <span>${lead.budget.toLocaleString()}</span>
+                        <DollarSign className="w-3 h-3 flex-shrink-0" />
+                        <span className="text-xs">${lead.budget.toLocaleString()}</span>
                       </div>
                     )}
                   </div>
@@ -327,12 +327,12 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                     <div className="mt-2">
                       <div className="flex flex-wrap gap-1">
                         {lead.services.slice(0, 2).map((service, index) => (
-                          <Badge key={index} variant="outline" className="text-xs px-1.5 py-0.5">
+                          <Badge key={index} variant="outline" className="text-xs px-1 py-0.5">
                             {service.replace(/([A-Z])/g, ' $1').trim()}
                           </Badge>
                         ))}
                         {lead.services.length > 2 && (
-                          <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                          <Badge variant="outline" className="text-xs px-1 py-0.5">
                             +{lead.services.length - 2}
                           </Badge>
                         )}
@@ -341,10 +341,10 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                   )}
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between mt-3 pt-2 border-t">
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
-                      <span>{formatTimeAgo(lead.created_at)}</span>
+                      <span className="text-xs">{formatTimeAgo(lead.created_at)}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -352,9 +352,9 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
             ))}
             
             {column.leads.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Nenhum lead</p>
+              <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                <User className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-xs sm:text-sm">Nenhum lead</p>
               </div>
             )}
           </CardContent>

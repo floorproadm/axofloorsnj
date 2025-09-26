@@ -17,6 +17,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { useLeadsExport } from "@/hooks/admin/useLeadsExport";
+import { cn } from "@/lib/utils";
 
 interface Lead {
   id: string;
@@ -68,11 +69,12 @@ export function ExportManager({ leads, selectedLeads, className }: ExportManager
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className={className}>
-          <Download className="w-4 h-4 mr-2" />
-          Exportar
+        <Button variant="outline" size="sm" className={cn("h-9", className)}>
+          <Download className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar</span>
+          <span className="sm:hidden">Export</span>
           {hasSelection && (
-            <Badge variant="secondary" className="ml-2">
+            <Badge variant="secondary" className="ml-1 sm:ml-2">
               {selectedLeads!.length}
             </Badge>
           )}

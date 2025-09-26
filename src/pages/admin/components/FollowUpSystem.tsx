@@ -214,17 +214,17 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-red-800">Atrasados</p>
-                <p className="text-2xl font-bold text-red-900">{overdue.length}</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-900">{overdue.length}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+              <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
@@ -234,9 +234,9 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-800">Hoje</p>
-                <p className="text-2xl font-bold text-blue-900">{today.length}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">{today.length}</p>
               </div>
-              <Clock className="w-8 h-8 text-blue-600" />
+              <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -246,9 +246,9 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-800">Próximos 7 dias</p>
-                <p className="text-2xl font-bold text-green-900">{upcoming.length}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{upcoming.length}</p>
               </div>
-              <CalendarIcon className="w-8 h-8 text-green-600" />
+              <CalendarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -257,13 +257,13 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
       {/* Overdue Follow-ups */}
       {overdue.length > 0 && (
         <Card className="border-red-200">
-          <CardHeader>
-            <CardTitle className="text-red-800 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-red-800 flex items-center gap-2 text-base sm:text-lg">
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
               Follow-ups Atrasados ({overdue.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             <div className="space-y-3">
               {overdue.slice(0, 5).map((lead) => (
                 <div 
@@ -273,31 +273,34 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
                     getPriorityColor(lead.priority)
                   )}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium">{lead.name}</h4>
-                        <Badge variant="outline" className="text-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                        <h4 className="font-medium text-sm">{lead.name}</h4>
+                        <Badge variant="outline" className="text-xs w-fit">
                           {lead.priority} prioridade
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Phone className="w-3 h-3" />
-                          {lead.phone}
+                          <span className="font-mono text-xs">{lead.phone}</span>
                         </span>
                         <span className="flex items-center gap-1">
                           <CalendarIcon className="w-3 h-3" />
-                          {lead.follow_up_date && format(new Date(lead.follow_up_date), "dd/MM/yyyy")}
+                          <span className="text-xs">
+                            {lead.follow_up_date && format(new Date(lead.follow_up_date), "dd/MM/yyyy")}
+                          </span>
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => markAsContacted(lead.id)}
+                        className="h-9"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Contatado
@@ -305,12 +308,12 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
                       
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button size="sm">
+                          <Button size="sm" className="h-9">
                             <CalendarIcon className="w-4 h-4 mr-1" />
                             Reagendar
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-lg">
                           <DialogHeader>
                             <DialogTitle>Reagendar Follow-up</DialogTitle>
                           </DialogHeader>
@@ -340,13 +343,13 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
       {/* Today's Follow-ups */}
       {today.length > 0 && (
         <Card className="border-blue-200">
-          <CardHeader>
-            <CardTitle className="text-blue-800 flex items-center gap-2">
-              <Clock className="w-5 h-5" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-blue-800 flex items-center gap-2 text-base sm:text-lg">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
               Follow-ups de Hoje ({today.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             <div className="space-y-3">
               {today.map((lead) => (
                 <div 
@@ -356,33 +359,34 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
                     getPriorityColor(lead.priority)
                   )}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium">{lead.name}</h4>
-                        <Badge variant="outline" className="text-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                        <h4 className="font-medium text-sm">{lead.name}</h4>
+                        <Badge variant="outline" className="text-xs w-fit">
                           {lead.priority} prioridade
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Phone className="w-3 h-3" />
-                          {lead.phone}
+                          <span className="font-mono text-xs">{lead.phone}</span>
                         </span>
                         {lead.email && (
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 min-w-0">
                             <Mail className="w-3 h-3" />
-                            {lead.email}
+                            <span className="text-xs truncate">{lead.email}</span>
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => markAsContacted(lead.id)}
+                        className="w-full sm:w-auto h-9"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Concluído
@@ -399,12 +403,12 @@ export function FollowUpSystem({ leads, onLeadUpdate }: FollowUpSystemProps) {
       {/* No follow-ups message */}
       {overdue.length === 0 && today.length === 0 && upcoming.length === 0 && (
         <Card>
-          <CardContent className="text-center py-10">
-            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">
+          <CardContent className="text-center py-8 sm:py-10">
+            <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 text-green-600 mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
               Tudo em dia!
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Não há follow-ups pendentes no momento.
             </p>
           </CardContent>
