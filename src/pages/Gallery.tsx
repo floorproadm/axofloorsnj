@@ -274,9 +274,7 @@ const Gallery = () => {
 
                 {/* Image Info */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center text-white">
-                  <h3 className="text-xl font-semibold mb-2">{lightboxImages[currentImageIndex]?.title}</h3>
-                  <p className="text-white/80">{lightboxImages[currentImageIndex]?.description}</p>
-                  <p className="text-sm text-white/60 mt-2">
+                  <p className="text-sm text-white/60">
                     {currentImageIndex + 1} de {lightboxImages.length}
                   </p>
                 </div>
