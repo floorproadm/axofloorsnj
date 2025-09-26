@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Eye, Folder, Image, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowRight, Star, Eye, Folder, Image, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -230,16 +230,6 @@ const Gallery = () => {
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogContent className="max-w-6xl w-full h-[90vh] p-0 bg-black/95 border-0">
           <div className="relative w-full h-full flex items-center justify-center">
-            {/* Close Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
-              onClick={() => setIsLightboxOpen(false)}
-            >
-              <X className="w-6 h-6" />
-            </Button>
-
             {/* Image Navigation */}
             {lightboxImages.length > 0 && (
               <>
