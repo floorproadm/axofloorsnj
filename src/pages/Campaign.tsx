@@ -152,9 +152,9 @@ const Campaign = () => {
                 </Link>
               </Button>
               
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-navy text-base sm:text-lg px-6 sm:px-8 py-4 backdrop-blur-sm w-full sm:w-auto" asChild>
+              <Button size="lg" variant="outline" className="border-white bg-white/10 text-white hover:bg-white hover:text-navy text-base sm:text-lg px-6 sm:px-8 py-4 backdrop-blur-sm w-full sm:w-auto font-semibold" asChild>
                 <Link to="/gallery">
-                  See My Home's Potential
+                  See Before & After Gallery
                 </Link>
               </Button>
             </div>
