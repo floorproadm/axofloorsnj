@@ -20,6 +20,7 @@ import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
 import realDamagedFloor from "@/assets/real-damaged-floor-better.png";
 import afterCampaignNew from "@/assets/after-campaign-new.png";
 import happyCustomers from "@/assets/happy-customers.jpg";
+import happyCoupleFloors from "@/assets/happy-couple-beautiful-floors.png";
 import professionalProcess from "@/assets/professional-process.jpg";
 
 const Campaign = () => {
@@ -247,8 +248,8 @@ const Campaign = () => {
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div>
                 <img 
-                  src={happyCustomers} 
-                  alt="Happy homeowners proudly showcasing their beautifully restored hardwood floors"
+                  src={happyCoupleFloors} 
+                  alt="Happy couple standing in their beautiful living room with restored hardwood floors"
                   className="rounded-lg shadow-elegant w-full"
                 />
               </div>
