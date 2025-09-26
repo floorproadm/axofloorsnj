@@ -60,6 +60,7 @@ const imageMap: Record<string, string> = {
   "before-after-10.png": beforeAfter10,
   "before-after-11.png": beforeAfter11,
   "before-after-12.png": beforeAfter12,
+  "album-cover.png": albumCover,
 };
 
 const Gallery = () => {
