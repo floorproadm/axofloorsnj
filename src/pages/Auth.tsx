@@ -73,7 +73,7 @@ export default function Auth() {
           </Link>
         </div>
 
-        <Card className="border-2 border-gold/20 shadow-xl">
+        <Card className="border-2 border-gold/20 shadow-xl bg-white">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <img 
