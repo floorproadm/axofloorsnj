@@ -29,6 +29,7 @@ import Admin from "./pages/Admin";
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import AdminGalleryManager from './pages/admin/GalleryManager';
+import AdminProjectsManager from './pages/admin/ProjectsManager';
 import Auth from "./pages/Auth";
 import LeadsManagement from './pages/LeadsManagement';
 import Campaign from "./pages/Campaign";
@@ -89,6 +90,11 @@ const App = () => {
             <Route path="/admin/gallery" element={
               <ProtectedRoute>
                 <AdminGalleryManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/projects" element={
+              <ProtectedRoute>
+                <AdminProjectsManager />
               </ProtectedRoute>
             } />
             
