@@ -22,6 +22,7 @@ import beforeAfter9 from "@/assets/before-after/before-after-9.png";
 import beforeAfter10 from "@/assets/before-after/before-after-10.png";
 import beforeAfter11 from "@/assets/before-after/before-after-11.png";
 import beforeAfter12 from "@/assets/before-after/before-after-12.png";
+import albumCover from "@/assets/before-after/album-cover.png";
 
 interface GalleryProject {
   id: string;
