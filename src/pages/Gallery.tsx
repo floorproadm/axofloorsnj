@@ -8,6 +8,16 @@ import { ArrowRight, Star, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+// Import before and after images
+import beforeAfter1 from "@/assets/before-after/before-after-1.png";
+import beforeAfter2 from "@/assets/before-after/before-after-2.png";
+import beforeAfter3 from "@/assets/before-after/before-after-3.png";
+import beforeAfter4 from "@/assets/before-after/before-after-4.png";
+import beforeAfter5 from "@/assets/before-after/before-after-5.png";
+import beforeAfter6 from "@/assets/before-after/before-after-6.png";
+import beforeAfter7 from "@/assets/before-after/before-after-7.png";
+import beforeAfter8 from "@/assets/before-after/before-after-8.png";
+
 interface GalleryProject {
   id: string;
   title: string;
@@ -18,6 +28,18 @@ interface GalleryProject {
   display_order: number;
   is_featured: boolean;
 }
+
+// Image mapping for local imports
+const imageMap: Record<string, string> = {
+  "before-after-1.png": beforeAfter1,
+  "before-after-2.png": beforeAfter2,
+  "before-after-3.png": beforeAfter3,
+  "before-after-4.png": beforeAfter4,
+  "before-after-5.png": beforeAfter5,
+  "before-after-6.png": beforeAfter6,
+  "before-after-7.png": beforeAfter7,
+  "before-after-8.png": beforeAfter8,
+};
 
 const Gallery = () => {
   const [projects, setProjects] = useState<GalleryProject[]>([]);
@@ -128,12 +150,12 @@ const Gallery = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {visibleProjects.map((project) => (
                   <Card key={project.id} className="group hover:shadow-gold transition-smooth hover:-translate-y-2 overflow-hidden">
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <img 
-                        src={project.image_url} 
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
-                      />
+                     <div className="relative aspect-[4/3] overflow-hidden">
+                       <img 
+                         src={imageMap[project.image_url] || project.image_url} 
+                         alt={project.title}
+                         className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
+                       />
                       <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
                         <div className="text-white text-center">
                           <Eye className="w-8 h-8 mx-auto mb-2" />
