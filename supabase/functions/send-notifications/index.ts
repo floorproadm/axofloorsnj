@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
 const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
 const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
@@ -158,11 +155,18 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
 
-      const emailResponse = await resend.emails.send({
-        from: "AXO Floors <notifications@resend.dev>",
-        to: [adminEmail],
-        subject: emailSubject,
-        html: emailHtml,
+      const emailResponse = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "AXO Floors <notifications@resend.dev>",
+          to: [adminEmail],
+          subject: emailSubject,
+          html: emailHtml,
+        }),
       });
 
       if (emailResponse.error) {

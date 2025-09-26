@@ -106,16 +106,48 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_folders: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gallery_projects: {
         Row: {
           category: string
           created_at: string
           description: string
           display_order: number | null
+          folder_name: string | null
           id: string
           image_url: string
           is_featured: boolean | null
           location: string
+          parent_folder_id: string | null
           title: string
           updated_at: string
         }
@@ -124,10 +156,12 @@ export type Database = {
           created_at?: string
           description: string
           display_order?: number | null
+          folder_name?: string | null
           id?: string
           image_url: string
           is_featured?: boolean | null
           location: string
+          parent_folder_id?: string | null
           title: string
           updated_at?: string
         }
@@ -136,10 +170,12 @@ export type Database = {
           created_at?: string
           description?: string
           display_order?: number | null
+          folder_name?: string | null
           id?: string
           image_url?: string
           is_featured?: boolean | null
           location?: string
+          parent_folder_id?: string | null
           title?: string
           updated_at?: string
         }
