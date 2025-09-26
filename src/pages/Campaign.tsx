@@ -266,7 +266,7 @@ const Campaign = () => {
                 </p>
                 
                 <blockquote className="text-lg sm:text-xl italic text-muted-foreground mb-6 sm:mb-8 pl-6 border-l-4 border-gold">
-                  "We delayed hosting dinners for years because of our floors. AXO Floors restored them in 4 days. 
+                  "We delayed hosting dinners for years because of our floors. AXO Floors restored them in 2 days. 
                   The first words we heard? 'Did you replace the entire floor?' We just smiled."
                 </blockquote>
                 
