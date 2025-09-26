@@ -61,7 +61,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-6">
           <Link 
@@ -73,7 +73,7 @@ export default function Auth() {
           </Link>
         </div>
 
-        <Card className="border-2 border-gold/20 shadow-xl bg-white">
+        <Card className="border-2 border-gold/20 shadow-xl bg-black text-white">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <img 
