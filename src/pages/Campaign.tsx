@@ -16,7 +16,7 @@ import {
 
 // Import existing assets
 import holidayHeroFloor from "@/assets/holiday-hero-floor.jpg";
-import damagedFloorCloseup from "@/assets/damaged-floor-closeup.jpg";
+import realDamagedFloor from "@/assets/real-damaged-floor.png";
 import dramaticBeforeAfter from "@/assets/dramatic-before-after.jpg";
 import happyCustomers from "@/assets/happy-customers.jpg";
 import professionalProcess from "@/assets/professional-process.jpg";
@@ -123,8 +123,8 @@ const Campaign = () => {
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="order-2 lg:order-1">
                 <img 
-                  src={damagedFloorCloseup} 
-                  alt="Severely scratched and worn hardwood floor showing damage that embarrasses homeowners"
+                  src={realDamagedFloor} 
+                  alt="Real damaged hardwood floor showing scratches, stains and wear that embarrasses homeowners"
                   className="rounded-lg shadow-elegant w-full"
                 />
               </div>
