@@ -12,7 +12,10 @@ import {
   DollarSign,
   ChevronRight,
   MoreHorizontal,
-  Eye
+  Eye,
+  Edit,
+  MessageSquare,
+  ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -20,7 +23,19 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -99,7 +114,92 @@ const KANBAN_COLUMNS: Omit<KanbanColumn, 'leads'>[] = [
 export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps) {
   const { toast } = useToast();
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState("");
+  const [priority, setPriority] = useState("");
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
+  // Handle lead details view
+  const handleViewDetails = (lead: Lead) => {
+    setSelectedLead(lead);
+    setNotes(lead.notes || "");
+    setStatus(lead.status);
+    setPriority(lead.priority);
+    setIsDetailModalOpen(true);
+  };
+
+  // Handle lead updates (status, notes, etc.)
+  const handleUpdateLead = async (leadId: string, updates: Partial<Lead>) => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Lead atualizado",
+        description: "As informações do lead foram atualizadas com sucesso."
+      });
+
+      onLeadUpdate({
+        ...selectedLead,
+        ...updates
+      } as Lead);
+      
+      // Update local state
+      setSelectedLead(prev => prev ? { ...prev, ...updates } : null);
+      
+    } catch (error) {
+      console.error('Erro ao atualizar lead:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o lead. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Handle phone call
+  const handlePhoneCall = (lead: Lead) => {
+    window.open(`tel:${lead.phone}`, '_self');
+    // Mark as contacted
+    handleUpdateLead(lead.id, {
+      last_contacted_at: new Date().toISOString(),
+      status: lead.status === 'new' ? 'contacted' : lead.status
+    });
+  };
+
+  // Handle email
+  const handleEmail = (lead: Lead) => {
+    const subject = `Axo Floors - Contato sobre ${lead.services?.join(', ') || 'serviços'}`;
+    const body = `Olá ${lead.name},\n\nEntramos em contato sobre sua solicitação de orçamento.\n\nAtenciosamente,\nEquipe Axo Floors`;
+    window.open(`mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
+  };
+
+  // Format time ago
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Agora mesmo';
+    if (diffInHours < 24) return `${diffInHours}h atrás`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays}d atrás`;
+    const diffInMonths = Math.floor(diffInDays / 30);
+    return `${diffInMonths}m atrás`;
+  };
 
   // Organize leads into columns
   const columns: KanbanColumn[] = KANBAN_COLUMNS.map(col => ({
@@ -185,16 +285,6 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
     }
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 24) return `${diffInHours}h atrás`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d atrás`;
-  };
-
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3 sm:gap-4">
@@ -251,7 +341,10 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                   draggedLead?.id === lead.id && "opacity-50 scale-95"
                 )}
               >
-                <CardContent className="p-2 sm:p-3">
+                <CardContent 
+                  className="p-2 sm:p-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => handleViewDetails(lead)}
+                >
                   {/* Header */}
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
@@ -280,17 +373,24 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewDetails(lead)}>
                           <Eye className="w-4 h-4 mr-2" />
                           Ver detalhes
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePhoneCall(lead)}>
                           <Phone className="w-4 h-4 mr-2" />
                           Ligar
                         </DropdownMenuItem>
+                        {lead.email && (
+                          <DropdownMenuItem onClick={() => handleEmail(lead)}>
+                            <Mail className="w-4 h-4 mr-2" />
+                            Enviar email
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem>
-                          <Mail className="w-4 h-4 mr-2" />
-                          Enviar email
+                          <Edit className="w-4 h-4 mr-2" />
+                          Editar lead
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -360,6 +460,203 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
           </CardContent>
         </Card>
       ))}
+      
+      {/* Lead Detail Modal */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              {selectedLead?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Informações completas e ações do lead
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedLead && (
+            <div className="space-y-6">
+              {/* Contact Information */}
+              <div>
+                <h3 className="font-medium text-sm text-muted-foreground mb-3">Informações de Contato</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-mono text-sm">{selectedLead.phone}</span>
+                    <Button size="sm" variant="outline" onClick={() => handlePhoneCall(selectedLead)}>
+                      Ligar
+                    </Button>
+                  </div>
+                  {selectedLead.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{selectedLead.email}</span>
+                      <Button size="sm" variant="outline" onClick={() => handleEmail(selectedLead)}>
+                        Email
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Lead Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-medium text-sm text-muted-foreground mb-3">Status & Prioridade</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="status">Status</Label>
+                      <Select 
+                        value={status} 
+                        onValueChange={(value) => {
+                          setStatus(value);
+                          handleUpdateLead(selectedLead.id, { status: value });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">Novo</SelectItem>
+                          <SelectItem value="contacted">Contatado</SelectItem>
+                          <SelectItem value="qualified">Qualificado</SelectItem>
+                          <SelectItem value="proposal">Proposta</SelectItem>
+                          <SelectItem value="converted">Convertido</SelectItem>
+                          <SelectItem value="lost">Perdido</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="priority">Prioridade</Label>
+                      <Select 
+                        value={priority} 
+                        onValueChange={(value) => {
+                          setPriority(value);
+                          handleUpdateLead(selectedLead.id, { priority: value });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Baixa</SelectItem>
+                          <SelectItem value="medium">Média</SelectItem>
+                          <SelectItem value="high">Alta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-sm text-muted-foreground mb-3">Informações do Lead</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Fonte:</span>
+                      <Badge variant="outline">
+                        {selectedLead.lead_source.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    
+                    {selectedLead.city && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Cidade:</span>
+                        <span>{selectedLead.city}</span>
+                      </div>
+                    )}
+                    
+                    {selectedLead.budget && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Orçamento:</span>
+                        <span className="font-medium">${selectedLead.budget.toLocaleString()}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Criado:</span>
+                      <span>{new Date(selectedLead.created_at).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    
+                    {selectedLead.last_contacted_at && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Último contato:</span>
+                        <span>{new Date(selectedLead.last_contacted_at).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Services */}
+              {selectedLead.services && selectedLead.services.length > 0 && (
+                <>
+                  <div>
+                    <h3 className="font-medium text-sm text-muted-foreground mb-3">Serviços Solicitados</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedLead.services.map((service, index) => (
+                        <Badge key={index} variant="outline">
+                          {service.replace(/([A-Z])/g, ' $1').trim()}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Notes */}
+              <div>
+                <Label htmlFor="notes">Notas & Observações</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Adicione notas sobre este lead..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="mt-1"
+                  rows={4}
+                />
+                <div className="flex justify-end mt-2">
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleUpdateLead(selectedLead.id, { notes })}
+                    disabled={isUpdating}
+                  >
+                    {isUpdating ? "Salvando..." : "Salvar Notas"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <Separator />
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button onClick={() => handlePhoneCall(selectedLead)}>
+                  <Phone className="w-4 h-4 mr-2" />
+                  Ligar Agora
+                </Button>
+                {selectedLead.email && (
+                  <Button variant="outline" onClick={() => handleEmail(selectedLead)}>
+                    <Mail className="w-4 h-4 mr-2" />
+                    Enviar Email
+                  </Button>
+                )}
+                <Button variant="outline">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Agendar Follow-up
+                </Button>
+                <Button variant="outline">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  WhatsApp
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
