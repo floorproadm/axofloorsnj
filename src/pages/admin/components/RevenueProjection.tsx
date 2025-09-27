@@ -22,7 +22,12 @@ interface RevenueData {
 }
 
 export function RevenueProjection() {
-  const { projects, stats, isLoading } = useAdminData();
+  const { projects, stats, isLoading, refreshData } = useAdminData();
+
+  // Force refresh data when component mounts to ensure latest calculations
+  React.useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   const generateRevenueData = (): RevenueData[] => {
     const months = [];
@@ -119,6 +124,16 @@ export function RevenueProjection() {
   const currentMonth = data[5]; // Mês atual está no índice 5
   const totalProjected = data.slice(6).reduce((sum, d) => sum + d.projected, 0);
   const annualTarget = data[0]?.target ? data[0].target * 12 : 0; // Meta anual baseada na meta mensal real
+
+  // Debug logging to help troubleshoot
+  console.log('Revenue Projection Debug:', {
+    projectsCount: projects.length,
+    completedProjects: projects.filter(p => p.project_status === 'completed').length,
+    monthlyTarget: data[0]?.target,
+    totalProjected,
+    annualTarget,
+    sampleData: data.slice(0, 3)
+  });
 
   const formatCurrency = (value: number) => {
     return `$${(value / 1000).toFixed(0)}k`;
