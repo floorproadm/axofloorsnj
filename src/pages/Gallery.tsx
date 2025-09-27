@@ -221,32 +221,6 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Referral Sticky Banner */}
-      <div className="sticky top-0 z-40 bg-gold/95 backdrop-blur-sm border-b border-gold/20">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
-            <div className="flex items-center gap-3">
-              <Gift className="w-5 h-5 text-black" />
-              <p className="text-black font-medium text-sm sm:text-base">
-                <span className="hidden sm:inline">Love these transformations? </span>
-                Refer friends & earn 7-10% of their project value!
-              </p>
-            </div>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="bg-black text-white hover:bg-black/80 border-black"
-                onClick={() => {
-                  console.log('[Referral CTA] Gallery sticky banner clicked');
-                  window.location.href = "/referral-program";
-                }}
-              >
-                <span className="hidden sm:inline">Start Earning</span>
-                <span className="sm:hidden">Earn 7-10%</span>
-              </Button>
-          </div>
-        </div>
-      </div>
 
       {/* Content Section */}
       <section className="py-20 bg-background">
