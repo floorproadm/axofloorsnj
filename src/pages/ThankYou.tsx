@@ -230,7 +230,7 @@ const ThankYou = () => {
                   </div>
                   
                   <p className="text-grey mb-6 leading-relaxed">
-                    Share your great experience and <strong className="text-navy">earn 1% when you refer</strong> friends, 
+                    Share your great experience and <strong className="text-navy">earn 7-10% when you refer</strong> friends, 
                     family, or neighbors to AXO Floors. There's no limit to how much you can earn!
                   </p>
                   
@@ -241,7 +241,7 @@ const ThankYou = () => {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-gold" />
-                      <span className="text-grey">You get 1% of their project value</span>
+                      <span className="text-grey">You get 7-10% of their project value</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-gold" />
@@ -264,12 +264,12 @@ const ThankYou = () => {
                 {/* Visual Element */}
                 <div className="bg-gradient-to-br from-gold/10 to-gold/5 p-8 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-gold mb-2">1%</div>
+                    <div className="text-4xl font-bold text-gold mb-2">7-10%</div>
                     <p className="text-navy font-medium mb-4">of every referral</p>
                     <div className="space-y-2 text-sm text-grey">
-                      <div>$5K project = <span className="font-semibold text-gold">$50 for you</span></div>
-                      <div>$15K project = <span className="font-semibold text-gold">$150 for you</span></div>
-                      <div>$25K project = <span className="font-semibold text-gold">$250 for you</span></div>
+                      <div>$5K project = <span className="font-semibold text-gold">$350-500</span></div>
+                      <div>$15K project = <span className="font-semibold text-gold">$1,050-1,500</span></div>
+                      <div>$25K project = <span className="font-semibold text-gold">$1,750-2,500</span></div>
                     </div>
                   </div>
                 </div>

@@ -42,11 +42,11 @@ const ReferralProgram = () => {
           </div>
           
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading mb-4">
-            Refer & Earn 1%
+            Refer & Earn 7-10%
           </h1>
           
           <p className="text-lg sm:text-xl text-white/80 max-w-3xl mx-auto mb-8">
-            Happy with your floors? Let others experience it too — and earn 1% of every project you refer.
+            Happy with your floors? Let others experience it too — and earn 7-10% of every project you refer.
           </p>
           
           <div className="flex items-center justify-center gap-2 text-gold">
@@ -64,7 +64,7 @@ const ReferralProgram = () => {
               How It Works
             </h2>
             <p className="text-lg text-grey max-w-2xl mx-auto">
-              Three simple steps to start earning. Your friends get perfect floors. You get paid.
+              Three simple steps to start earning 7-10% commission. Your friends get perfect floors. You get paid.
             </p>
           </div>
 
@@ -118,7 +118,7 @@ const ReferralProgram = () => {
                   Get Paid
                 </h3>
                 <p className="text-grey leading-relaxed">
-                  Receive 1% of the total project value once their project is completed. No limits, no caps.
+                  Receive 7-10% of the total project value once their project is completed. No limits, no caps.
                 </p>
               </CardContent>
             </Card>
@@ -163,8 +163,8 @@ const ReferralProgram = () => {
                     <Check className="w-5 h-5 text-black" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-navy mb-2">Unlimited Earnings</h3>
-                    <p className="text-grey">Get 1% of the total project value for every successful referral — no limits, no caps.</p>
+                    <h3 className="font-semibold text-navy mb-2">High Commission Earnings</h3>
+                    <p className="text-grey">Get 7-10% of the total project value for every successful referral — no limits, no caps.</p>
                   </div>
                 </div>
 
@@ -216,8 +216,8 @@ const ReferralProgram = () => {
                       <p className="text-sm text-grey">Your friend saves their floors</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-gold">$50</p>
-                      <p className="text-sm text-grey">Your earning</p>
+                      <p className="text-xl font-bold text-gold">$350-500</p>
+                      <p className="text-sm text-grey">Your earning (7-10%)</p>
                     </div>
                   </div>
 
@@ -227,8 +227,8 @@ const ReferralProgram = () => {
                       <p className="text-sm text-grey">Your neighbor gets dream floors</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-gold">$120</p>
-                      <p className="text-sm text-grey">Your earning</p>
+                      <p className="text-xl font-bold text-gold">$840-1,200</p>
+                      <p className="text-sm text-grey">Your earning (7-10%)</p>
                     </div>
                   </div>
 
@@ -238,15 +238,15 @@ const ReferralProgram = () => {
                       <p className="text-sm text-grey">Your family gets stunning floors</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-gold">$250</p>
-                      <p className="text-sm text-grey">Your earning</p>
+                      <p className="text-xl font-bold text-gold">$1,750-2,500</p>
+                      <p className="text-sm text-grey">Your earning (7-10%)</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-6 p-4 bg-navy text-white rounded-lg text-center">
-                  <p className="text-gold font-semibold">Multiple referrals per year?</p>
-                  <p className="text-white/80">Your earnings can add up quickly!</p>
+                  <p className="text-gold font-semibold">Real Example: Designer earned $880 in June</p>
+                  <p className="text-white/80">Just two referrals - your earnings add up quickly!</p>
                 </div>
               </CardContent>
             </Card>
@@ -298,7 +298,7 @@ const ReferralProgram = () => {
                   ))}
                 </div>
                 <p className="text-grey mb-4 leading-relaxed italic">
-                  "I've referred 3 families to AXO Floors and earned over $400. Everyone loves their work, and I love the extra income!"
+                  "I've referred 3 families to AXO Floors and earned over $2,800. Everyone loves their work, and I love the substantial income!"
                 </p>
                 <p className="font-heading font-semibold text-navy">
                   - Sarah T.
@@ -314,7 +314,7 @@ const ReferralProgram = () => {
                   ))}
                 </div>
                 <p className="text-grey mb-4 leading-relaxed italic">
-                  "Best referral program I've seen. My neighbor got amazing floors and I got a nice check. Win-win!"
+                  "Best referral program I've seen - 8% commission! My neighbor got amazing floors and I got a $960 check. Win-win!"
                 </p>
                 <p className="font-heading font-semibold text-navy">
                   - Mike R.

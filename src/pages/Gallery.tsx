@@ -229,21 +229,21 @@ const Gallery = () => {
               <Gift className="w-5 h-5 text-black" />
               <p className="text-black font-medium text-sm sm:text-base">
                 <span className="hidden sm:inline">Love these transformations? </span>
-                Refer friends & earn 1% of their project value!
+                Refer friends & earn 7-10% of their project value!
               </p>
             </div>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="bg-black text-white hover:bg-black/80 border-black"
-              onClick={() => {
-                console.log('[Referral CTA] Gallery sticky banner clicked');
-                window.location.href = "/referral-program";
-              }}
-            >
-              <span className="hidden sm:inline">Start Earning</span>
-              <span className="sm:hidden">Earn 1%</span>
-            </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="bg-black text-white hover:bg-black/80 border-black"
+                onClick={() => {
+                  console.log('[Referral CTA] Gallery sticky banner clicked');
+                  window.location.href = "/referral-program";
+                }}
+              >
+                <span className="hidden sm:inline">Start Earning</span>
+                <span className="sm:hidden">Earn 7-10%</span>
+              </Button>
           </div>
         </div>
       </div>
@@ -424,8 +424,8 @@ const Gallery = () => {
                   </h3>
                 </div>
                 <p className="text-grey mb-4">
-                  Share your experience and earn 1% of every project you refer. 
-                  Help your friends get beautiful floors while you earn extra income!
+                  Share your experience and earn 7-10% of every project you refer. 
+                  Help your friends get beautiful floors while you earn substantial income!
                 </p>
                 <Button 
                   onClick={() => {
