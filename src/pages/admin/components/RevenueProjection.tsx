@@ -28,13 +28,50 @@ export function RevenueProjection() {
     const months = [];
     const now = new Date();
     
-    // Calculr meta mensal baseada na receita histórica real
-    const historicalProjects = projects.filter(p => 
-      p.project_status === 'completed' && p.actual_cost
-    );
-    const historicalRevenue = historicalProjects.reduce((sum, p) => sum + (p.actual_cost || 0), 0);
-    const monthsOfHistory = Math.max(1, historicalProjects.length / 6); // Estimate months
-    const monthlyTarget = historicalRevenue / monthsOfHistory || 0; // Target baseado no histórico real
+    // Calcular meta mensal baseada na receita histórica real
+    const completedProjects = projects.filter(p => p.project_status === 'completed');
+    
+    if (completedProjects.length === 0) {
+      // Se não há projetos completos, usar valores padrão baixos
+      const defaultMonthlyTarget = 5000; // Meta conservadora de $5k
+      
+      for (let i = -5; i <= 6; i++) {
+        const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
+        
+        months.push({
+          month: monthName,
+          actual: 0,
+          projected: i >= 0 ? defaultMonthlyTarget : 0,
+          target: defaultMonthlyTarget
+        });
+      }
+      
+      return months;
+    }
+    
+    // Calcular receita total dos projetos completos (usar actual_cost ou estimated_cost como fallback)
+    const totalHistoricalRevenue = completedProjects.reduce((sum, p) => {
+      const revenue = p.actual_cost || p.estimated_cost || 0;
+      return sum + revenue;
+    }, 0);
+    
+    // Calcular quantos meses de histórico temos baseado nas datas de conclusão
+    const completionDates = completedProjects
+      .filter(p => p.completion_date)
+      .map(p => new Date(p.completion_date!));
+      
+    let monthsOfHistory = 1;
+    if (completionDates.length > 1) {
+      const oldestDate = new Date(Math.min(...completionDates.map(d => d.getTime())));
+      const newestDate = new Date(Math.max(...completionDates.map(d => d.getTime())));
+      monthsOfHistory = Math.max(1, 
+        (newestDate.getFullYear() - oldestDate.getFullYear()) * 12 + 
+        (newestDate.getMonth() - oldestDate.getMonth()) + 1
+      );
+    }
+    
+    const monthlyTarget = totalHistoricalRevenue / monthsOfHistory;
     
     // Últimos 6 meses + próximos 6 meses
     for (let i = -5; i <= 6; i++) {
@@ -53,14 +90,17 @@ export function RevenueProjection() {
                  completionDate.getFullYear() === date.getFullYear();
         });
         
-        actualRevenue = monthProjects.reduce((sum, p) => sum + (p.actual_cost || p.estimated_cost || 0), 0);
+        actualRevenue = monthProjects.reduce((sum, p) => {
+          const revenue = p.actual_cost || p.estimated_cost || 0;
+          return sum + revenue;
+        }, 0);
       }
       
       // Projeção baseada na média histórica real apenas
       let projectedRevenue = 0;
       
-      if (isCurrentOrFuture && historicalRevenue > 0) {
-        // Para meses futuros, usar média histórica real sem growth fictício
+      if (isCurrentOrFuture) {
+        // Para meses futuros, usar média histórica real
         projectedRevenue = monthlyTarget;
       }
       
