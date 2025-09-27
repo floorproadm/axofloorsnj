@@ -103,20 +103,20 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
 
       {/* CTAs na parte inferior */}
       <div className="p-4 border-t border-white/10 space-y-3">
-        <a 
-          href="tel:(732) 351-8653" 
+        <Link 
+          to="/quiz" 
           onClick={onClose}
           className="block w-full py-3 px-4 bg-gradient-to-r from-gold to-gold-warm text-black font-bold text-center rounded-xl hover:shadow-lg transition-all"
         >
           GET A QUOTE
-        </a>
-        <Link 
-          to="/contact" 
+        </Link>
+        <a 
+          href="tel:(732) 351-8653" 
           onClick={onClose}
           className="block w-full py-3 px-4 border-2 border-gold text-gold font-semibold text-center rounded-xl hover:bg-gold hover:text-black transition-all"
         >
           CONTACT US
-        </Link>
+        </a>
         
         {/* Reviews */}
         <div className="text-center pt-2">
