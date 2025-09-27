@@ -914,7 +914,13 @@ export default function GalleryManager() {
                                       title: "Sucesso",
                                       description: "Projeto criado automaticamente!",
                                     });
-                                    fetchData(); // Refresh data
+                                    // Atualizar apenas o estado local para manter na página atual
+                                    setProjects(prev => [...prev, { 
+                                      id: crypto.randomUUID(), // Temporary ID
+                                      ...projectData,
+                                      created_at: new Date().toISOString(),
+                                      updated_at: new Date().toISOString()
+                                    }]);
                                   }
                                 });
                             }}
