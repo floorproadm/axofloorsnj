@@ -238,7 +238,7 @@ const Contact = () => {
             <div className="flex items-center gap-3 text-center sm:text-left">
               <AlertTriangle className="w-8 h-8 text-gold flex-shrink-0" />
               <div>
-                <p className="text-navy font-bold text-lg">September Schedule is 85% full.</p>
+                <p className="text-navy font-bold text-lg">October Schedule is 65% full.</p>
                 <p className="text-grey">Only 5 project slots left this month.</p>
               </div>
             </div>
