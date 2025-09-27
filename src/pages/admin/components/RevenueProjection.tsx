@@ -27,7 +27,14 @@ export function RevenueProjection() {
   const generateRevenueData = (): RevenueData[] => {
     const months = [];
     const now = new Date();
-    const monthlyTarget = 50000; // Target mensal de $50k
+    
+    // Calculr meta mensal baseada na receita histórica real
+    const historicalProjects = projects.filter(p => 
+      p.project_status === 'completed' && p.actual_cost
+    );
+    const historicalRevenue = historicalProjects.reduce((sum, p) => sum + (p.actual_cost || 0), 0);
+    const monthsOfHistory = Math.max(1, historicalProjects.length / 6); // Estimate months
+    const monthlyTarget = historicalRevenue / monthsOfHistory || 0; // Target baseado no histórico real
     
     // Últimos 6 meses + próximos 6 meses
     for (let i = -5; i <= 6; i++) {
@@ -46,17 +53,15 @@ export function RevenueProjection() {
                  completionDate.getFullYear() === date.getFullYear();
         });
         
-        actualRevenue = monthProjects.reduce((sum, p) => sum + (p.actual_cost || 0), 0);
+        actualRevenue = monthProjects.reduce((sum, p) => sum + (p.actual_cost || p.estimated_cost || 0), 0);
       }
       
-      // Projeção baseada na média histórica e conversão atual
-      const averageMonthlyRevenue = stats.averageProjectValue * (stats.conversionRate / 100) * 10; // Estimativa
+      // Projeção baseada na média histórica real apenas
       let projectedRevenue = 0;
       
-      if (isCurrentOrFuture) {
-        // Para meses futuros, usar média histórica + tendência
-        const growthFactor = 1 + (i * 0.05); // 5% growth per month
-        projectedRevenue = Math.max(averageMonthlyRevenue * growthFactor, actualRevenue);
+      if (isCurrentOrFuture && historicalRevenue > 0) {
+        // Para meses futuros, usar média histórica real sem growth fictício
+        projectedRevenue = monthlyTarget;
       }
       
       months.push({
@@ -73,7 +78,7 @@ export function RevenueProjection() {
   const data = generateRevenueData();
   const currentMonth = data[5]; // Mês atual está no índice 5
   const totalProjected = data.slice(6).reduce((sum, d) => sum + d.projected, 0);
-  const annualTarget = 600000; // $600k anual
+  const annualTarget = data[0]?.target ? data[0].target * 12 : 0; // Meta anual baseada na meta mensal real
 
   const formatCurrency = (value: number) => {
     return `$${(value / 1000).toFixed(0)}k`;

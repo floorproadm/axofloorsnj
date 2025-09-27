@@ -19,32 +19,32 @@ export function DashboardStats() {
     {
       title: "Total de Leads",
       value: stats.totalLeads.toLocaleString(),
-      change: stats.newLeads > 0 ? 5 : 0, // Mock change calculation
-      trend: stats.newLeads > 0 ? 'up' : 'neutral',
+      change: 0, // Removido cálculo fictício
+      trend: 'neutral',
       icon: Users,
       description: `${stats.newLeads} novos este mês`
     },
     {
       title: "Taxa de Conversão",
       value: `${stats.conversionRate}%`,
-      change: stats.conversionRate > 15 ? 2 : -1, // Mock change
-      trend: stats.conversionRate > 15 ? 'up' : 'down',
+      change: 0, // Removido cálculo fictício
+      trend: 'neutral',
       icon: Target,
       description: `${stats.convertedLeads} leads convertidos`
     },
     {
       title: "Projetos Ativos",
       value: stats.activeProjects.toLocaleString(),
-      change: stats.activeProjects > 0 ? 3 : 0,
-      trend: stats.activeProjects > 0 ? 'up' : 'neutral',
+      change: 0, // Removido cálculo fictício
+      trend: 'neutral',
       icon: Building,
       description: `${stats.completedProjects} concluídos`
     },
     {
       title: "Receita Mensal",
       value: `$${(stats.monthlyRevenue / 1000).toFixed(1)}k`,
-      change: stats.monthlyRevenue > 0 ? 8 : 0,
-      trend: stats.monthlyRevenue > 0 ? 'up' : 'neutral',
+      change: 0, // Removido cálculo fictício
+      trend: 'neutral',
       icon: DollarSign,
       description: `$${(stats.averageProjectValue / 1000).toFixed(1)}k ticket médio`
     }
