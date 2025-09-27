@@ -33,8 +33,8 @@ export default function Dashboard() {
         
         {/* Charts - Stack completely on mobile, side by side on xl+ */}
         <div className="flex flex-col xl:grid xl:grid-cols-2 gap-4">
-          <ConversionChart />
           <ServicesChart />
+          <ConversionChart />
         </div>
       </div>
     </AdminLayout>
