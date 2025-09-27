@@ -20,9 +20,8 @@ import {
   Star, 
   Upload,
   Eye,
-  Settings,
-  Sparkles,
-  TrendingUp
+  CheckCircle,
+  Info
 } from "lucide-react";
 
 interface GalleryProject {
@@ -125,11 +124,11 @@ export default function GalleryManager() {
     }
   };
 
-  const updateProjectOrder = async (projectId: string, newOrder: number) => {
+  const updateProjectOrder = async (projectId: string, newOrder: string) => {
     try {
       const { error } = await supabase
         .from('gallery_projects')
-        .update({ display_order: newOrder })
+        .update({ display_order: Number(newOrder) })
         .eq('id', projectId);
 
       if (error) throw error;
@@ -145,11 +144,11 @@ export default function GalleryManager() {
     }
   };
 
-  const updateFolderOrder = async (folderId: string, newOrder: number) => {
+  const updateFolderOrder = async (folderId: string, newOrder: string) => {
     try {
       const { error } = await supabase
         .from('gallery_folders')
-        .update({ display_order: newOrder })
+        .update({ display_order: Number(newOrder) })
         .eq('id', folderId);
 
       if (error) throw error;
@@ -196,8 +195,8 @@ export default function GalleryManager() {
       if (result.error) throw result.error;
 
       toast({
-        title: "Success",
-        description: `Folder ${editingFolder ? 'updated' : 'created'} successfully`,
+        title: "Sucesso",
+        description: `Pasta ${editingFolder ? 'atualizada' : 'criada'} com sucesso`,
       });
 
       setIsFolderDialogOpen(false);
@@ -246,8 +245,8 @@ export default function GalleryManager() {
       if (result.error) throw result.error;
 
       toast({
-        title: "Success",
-        description: `Project ${editingProject ? 'updated' : 'created'} successfully`,
+        title: "Sucesso",
+        description: `Projeto ${editingProject ? 'atualizado' : 'criado'} com sucesso`,
       });
 
       setIsProjectDialogOpen(false);
@@ -273,7 +272,7 @@ export default function GalleryManager() {
   };
 
   const handleDeleteFolder = async (folder: GalleryFolder) => {
-    if (!confirm(`Are you sure you want to delete the folder "${folder.name}"? This will also delete all projects in this folder.`)) {
+    if (!confirm(`Tem certeza que deseja deletar a pasta "${folder.name}"? Isso também deletará todos os projetos desta pasta.`)) {
       return;
     }
 
@@ -293,8 +292,8 @@ export default function GalleryManager() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Folder deleted successfully",
+        title: "Sucesso",
+        description: "Pasta deletada com sucesso",
       });
 
       fetchData();
@@ -309,7 +308,7 @@ export default function GalleryManager() {
   };
 
   const handleDeleteProject = async (project: GalleryProject) => {
-    if (!confirm(`Are you sure you want to delete the project "${project.title}"?`)) {
+    if (!confirm(`Tem certeza que deseja deletar o projeto "${project.title}"?`)) {
       return;
     }
 
@@ -322,8 +321,8 @@ export default function GalleryManager() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Project deleted successfully",
+        title: "Sucesso",
+        description: "Projeto deletado com sucesso",
       });
 
       fetchData();
@@ -371,8 +370,8 @@ export default function GalleryManager() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: `Project ${!project.is_featured ? 'marked as featured' : 'unmarked as featured'}`,
+        title: "Sucesso",
+        description: `Projeto ${!project.is_featured ? 'marcado como destaque' : 'removido dos destaques'}`,
       });
 
       fetchData();
@@ -398,23 +397,23 @@ export default function GalleryManager() {
     return (
       <AdminLayout title="Gallery Manager" breadcrumbs={[{ label: "Gallery" }]}>
         <div className="flex items-center justify-center py-20">
-          <p className="text-muted-foreground">Loading gallery data...</p>
+          <p className="text-muted-foreground">Carregando dados da galeria...</p>
         </div>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout title="Gallery Manager" breadcrumbs={[{ label: "Gallery" }]}>
+    <AdminLayout title="Gerenciador da Galeria" breadcrumbs={[{ label: "Galeria" }]}>
       <div className="space-y-6 animate-fade-in">
-        {/* Enhanced Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Stats Cards Simplificados */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="admin-stat-card admin-gradient">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="dashboard-metric text-white">{folders.length}</p>
-                  <p className="text-white/80 text-sm font-medium">Gallery Folders</p>
+                  <p className="text-white/80 text-sm font-medium">Pastas</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full">
                   <FolderOpen className="w-8 h-8 text-white" />
@@ -428,7 +427,7 @@ export default function GalleryManager() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="dashboard-metric text-navy">{projects.length}</p>
-                  <p className="text-navy/80 text-sm font-medium">Total Projects</p>
+                  <p className="text-navy/80 text-sm font-medium">Projetos</p>
                 </div>
                 <div className="p-3 bg-navy/20 rounded-full">
                   <Image className="w-8 h-8 text-navy" />
@@ -442,7 +441,7 @@ export default function GalleryManager() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="dashboard-metric text-white">{projects.filter(p => p.is_featured).length}</p>
-                  <p className="text-white/80 text-sm font-medium">Featured Projects</p>
+                  <p className="text-white/80 text-sm font-medium">Em Destaque</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full">
                   <Star className="w-8 h-8 text-white" />
@@ -450,509 +449,495 @@ export default function GalleryManager() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="admin-stat-card bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="dashboard-metric text-white">{categories.length}</p>
-                  <p className="text-white/80 text-sm font-medium">Categories</p>
-                </div>
-                <div className="p-3 bg-white/20 rounded-full">
-                  <Eye className="w-8 h-8 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        <Tabs defaultValue="folders" className="space-y-6">
+        <Tabs defaultValue="manage" className="space-y-6">
           <div className="flex items-center justify-between">
-            <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-muted/50">
-              <TabsTrigger value="folders" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50">
+              <TabsTrigger value="manage" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <FolderOpen className="w-4 h-4 mr-2" />
-                Folders
+                Gerenciar Galeria
               </TabsTrigger>
-              <TabsTrigger value="projects" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Image className="w-4 h-4 mr-2" />
-                Projects
-              </TabsTrigger>
-              <TabsTrigger value="bulk-upload" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="upload" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Upload className="w-4 h-4 mr-2" />
-                Bulk Upload
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
+                Upload Fotos
               </TabsTrigger>
             </TabsList>
             
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="animate-pulse">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Live Updates
-              </Badge>
+              <Button 
+                onClick={() => window.open('/gallery', '_blank')}
+                variant="outline"
+                size="sm"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Ver Galeria Pública
+              </Button>
             </div>
           </div>
 
-          <TabsContent value="folders" className="space-y-6 animate-slide-up">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <FolderOpen className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-navy">Gallery Folders</h3>
-                  <p className="text-sm text-muted-foreground">Organize your projects into folders</p>
-                </div>
-              </div>
-              <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="gold-gradient hover-scale">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Folder
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl animate-scale-in">
-                  <DialogHeader>
-                    <DialogTitle className="text-navy flex items-center gap-2">
+          <TabsContent value="manage" className="space-y-6 animate-slide-up">
+            {/* Folder Management Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
                       <FolderOpen className="w-5 h-5" />
-                      {editingFolder ? 'Edit' : 'Create'} Folder
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-6">
-                    <div className="form-section">
-                      <div className="grid grid-cols-2 gap-4">
+                      Pastas da Galeria
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Organize seus projetos em pastas temáticas
+                    </p>
+                  </div>
+                  
+                  <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => {
+                        setEditingFolder(null);
+                        setFolderForm({ name: "", description: "", cover_image_url: "" });
+                      }}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Nova Pasta
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {editingFolder ? 'Editar Pasta' : 'Criar Nova Pasta'}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
                         <div>
-                          <Label htmlFor="folderName" className="text-navy font-medium">Folder Name</Label>
+                          <Label htmlFor="folder-name">Nome da Pasta</Label>
                           <Input
-                            id="folderName"
+                            id="folder-name"
                             value={folderForm.name}
                             onChange={(e) => setFolderForm(prev => ({ ...prev, name: e.target.value }))}
-                            placeholder="Enter folder name"
-                            className="mt-1"
+                            placeholder="Ex: Projetos Sala de Estar"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="folderCover" className="text-navy font-medium">Cover Image URL</Label>
+                          <Label htmlFor="folder-description">Descrição (Opcional)</Label>
+                          <Textarea
+                            id="folder-description"
+                            value={folderForm.description}
+                            onChange={(e) => setFolderForm(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Breve descrição desta pasta..."
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="folder-cover">URL da Imagem de Capa (Opcional)</Label>
                           <Input
-                            id="folderCover"
+                            id="folder-cover"
                             value={folderForm.cover_image_url}
                             onChange={(e) => setFolderForm(prev => ({ ...prev, cover_image_url: e.target.value }))}
-                            placeholder="Enter cover image URL"
-                            className="mt-1"
+                            placeholder="https://exemplo.com/imagem-capa.jpg"
                           />
                         </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsFolderDialogOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button onClick={handleSaveFolder}>
+                            {editingFolder ? 'Atualizar' : 'Criar'} Pasta
+                          </Button>
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="folderDescription" className="text-navy font-medium">Description</Label>
-                        <Textarea
-                          id="folderDescription"
-                          value={folderForm.description}
-                          onChange={(e) => setFolderForm(prev => ({ ...prev, description: e.target.value }))}
-                          placeholder="Enter folder description"
-                          className="mt-1"
-                          rows={3}
-                        />
-                      </div>
-                    </div>
-                    <div className="form-section">
-                      <h4 className="form-section-title">
-                        <Upload className="w-5 h-5" />
-                        Upload Cover Image
-                      </h4>
-                      <ImageUploader
-                        onImageUploaded={(url) => setFolderForm(prev => ({ ...prev, cover_image_url: url }))}
-                        maxFiles={1}
-                      />
-                    </div>
-                    <Button onClick={handleSaveFolder} className="w-full gold-gradient hover-scale">
-                      {editingFolder ? 'Update' : 'Create'} Folder
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <DragDropGrid
-              items={folders.map(folder => ({
-                id: folder.id,
-                title: folder.name,
-                description: folder.description,
-                imageUrl: folder.cover_image_url,
-                order: folder.display_order
-              }))}
-              onReorder={(oldIndex, newIndex) => {
-                const folderId = folders[oldIndex].id;
-                updateFolderOrder(folderId, newIndex);
-              }}
-              onEdit={(item) => {
-                const folder = folders.find(f => f.id === item.id);
-                if (folder) handleEditFolder(folder);
-              }}
-              onDelete={(item) => {
-                const folder = folders.find(f => f.id === item.id);
-                if (folder) handleDeleteFolder(folder);
-              }}
-              type="folder"
-            />
-          </TabsContent>
-
-          <TabsContent value="projects" className="space-y-6 animate-slide-up">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Image className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-navy">Gallery Projects</h3>
-                    <p className="text-sm text-muted-foreground">Manage your project portfolio</p>
-                  </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-                {selectedFolder && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedFolder(null)}
-                    className="hover-scale"
-                  >
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    Show All Projects
-                  </Button>
-                )}
-              </div>
-              <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="gold-gradient hover-scale">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Project
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>{editingProject ? 'Edit' : 'Create'} Project</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="projectTitle">Title</Label>
-                        <Input
-                          id="projectTitle"
-                          value={projectForm.title}
-                          onChange={(e) => setProjectForm(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Enter project title"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="projectCategory">Category</Label>
-                        <Select
-                          value={projectForm.category}
-                          onValueChange={(value) => setProjectForm(prev => ({ ...prev, category: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="projectLocation">Location</Label>
-                        <Input
-                          id="projectLocation"
-                          value={projectForm.location}
-                          onChange={(e) => setProjectForm(prev => ({ ...prev, location: e.target.value }))}
-                          placeholder="Enter project location"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="projectFolder">Folder</Label>
-                        <Select
-                          value={projectForm.parent_folder_id}
-                          onValueChange={(value) => setProjectForm(prev => ({ ...prev, parent_folder_id: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select folder" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">No folder</SelectItem>
-                            {folders.map((folder) => (
-                              <SelectItem key={folder.id} value={folder.id}>
-                                {folder.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="projectDescription">Description</Label>
-                      <Textarea
-                        id="projectDescription"
-                        value={projectForm.description}
-                        onChange={(e) => setProjectForm(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Enter project description"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="projectImage">Image URL</Label>
-                      <Input
-                        id="projectImage"
-                        value={projectForm.image_url}
-                        onChange={(e) => setProjectForm(prev => ({ ...prev, image_url: e.target.value }))}
-                        placeholder="Enter image URL"
-                      />
-                    </div>
-                    <div>
-                      <Label>Upload Project Image</Label>
-                      <ImageUploader
-                        onImageUploaded={(url) => setProjectForm(prev => ({ ...prev, image_url: url }))}
-                        maxFiles={1}
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="projectFeatured"
-                        checked={projectForm.is_featured}
-                        onChange={(e) => setProjectForm(prev => ({ ...prev, is_featured: e.target.checked }))}
-                      />
-                      <Label htmlFor="projectFeatured">Featured Project</Label>
-                    </div>
-                    <Button onClick={handleSaveProject} className="w-full">
-                      {editingProject ? 'Update' : 'Create'} Project
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <DragDropGrid
-              items={filteredProjects.map(project => ({
-                id: project.id,
-                title: project.title,
-                description: project.description,
-                imageUrl: project.image_url,
-                category: project.category,
-                location: project.location,
-                isFeatured: project.is_featured,
-                order: project.display_order
-              }))}
-              onReorder={(oldIndex, newIndex) => {
-                const projectId = filteredProjects[oldIndex].id;
-                updateProjectOrder(projectId, newIndex);
-              }}
-              onEdit={(item) => {
-                const project = projects.find(p => p.id === item.id);
-                if (project) handleEditProject(project);
-              }}
-              onDelete={(item) => {
-                const project = projects.find(p => p.id === item.id);
-                if (project) handleDeleteProject(project);
-              }}
-              onToggleFeatured={(item) => {
-                const project = projects.find(p => p.id === item.id);
-                if (project) toggleFeatured(project);
-              }}
-              type="project"
-            />
-          </TabsContent>
-
-          <TabsContent value="bulk-upload" className="space-y-6 animate-slide-up">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Upload className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-navy">Bulk Photo Upload</h3>
-                <p className="text-sm text-muted-foreground">Upload multiple photos to a folder at once</p>
-              </div>
-            </div>
-
-            <Card className="admin-card">
-              <CardHeader>
-                <CardTitle className="text-navy">Select Target Folder</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="targetFolder">Choose folder to upload photos to:</Label>
-                  <Select
-                    value={selectedFolder || ""}
-                    onValueChange={(value) => setSelectedFolder(value || null)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select a folder" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {folders.map((folder) => (
-                        <SelectItem key={folder.id} value={folder.id}>
-                          {folder.name} ({getProjectCount(folder.id)} photos)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedFolder && (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-primary/5 rounded-lg">
-                      <h4 className="font-medium text-navy mb-2">Upload Photos to: {folders.find(f => f.id === selectedFolder)?.name}</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Each photo will be automatically created as a project in this folder
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label htmlFor="bulkCategory">Default Category</Label>
-                          <Select
-                            value={projectForm.category}
-                            onValueChange={(value) => setProjectForm(prev => ({ ...prev, category: value }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.map((category) => (
-                                <SelectItem key={category} value={category}>
-                                  {category}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="bulkLocation">Default Location</Label>
-                          <Input
-                            id="bulkLocation"
-                            value={projectForm.location}
-                            onChange={(e) => setProjectForm(prev => ({ ...prev, location: e.target.value }))}
-                            placeholder="Enter default location"
-                          />
-                        </div>
-                      </div>
-
-                      <ImageUploader
-                        onImageUploaded={async (url) => {
-                          try {
-                            const fileName = url.split('/').pop() || 'Uploaded Photo';
-                            const projectData = {
-                              title: fileName.split('.')[0].replace(/[-_]/g, ' '),
-                              description: `Photo uploaded to ${folders.find(f => f.id === selectedFolder)?.name}`,
-                              category: projectForm.category || categories[0],
-                              location: projectForm.location || '',
-                              image_url: url,
-                              is_featured: false,
-                              parent_folder_id: selectedFolder,
-                              display_order: projects.filter(p => p.parent_folder_id === selectedFolder).length
-                            };
-
-                            const { error } = await supabase
-                              .from('gallery_projects')
-                              .insert([projectData]);
-
-                            if (error) throw error;
-
-                            toast({
-                              title: "Success",
-                              description: `Photo "${projectData.title}" added to folder`,
-                            });
-
-                            fetchData();
-                          } catch (error) {
-                            console.error('Error creating project from upload:', error);
-                            toast({
-                              title: "Error",
-                              description: "Failed to create project from uploaded photo",
-                              variant: "destructive",
-                            });
-                          }
-                        }}
-                        maxFiles={10}
-                        bucket="gallery"
-                      />
-                    </div>
+              <CardContent>
+                {folders.length > 0 ? (
+                  <DragDropGrid
+                    items={folders.map(folder => ({
+                      id: folder.id,
+                      title: folder.name,
+                      description: folder.description || '',
+                      imageUrl: folder.cover_image_url || '',
+                      category: `${getProjectCount(folder.id)} projetos`,
+                      location: '',
+                      isFeatured: false,
+                      order: folder.display_order
+                    }))}
+                    onReorder={(itemId, newOrder) => updateFolderOrder(itemId, newOrder)}
+                    onEdit={(item) => {
+                      const folder = folders.find(f => f.id === item.id);
+                      if (folder) handleEditFolder(folder);
+                    }}
+                    onDelete={(item) => {
+                      const folder = folders.find(f => f.id === item.id);
+                      if (folder) handleDeleteFolder(folder);
+                    }}
+                    type="folder"
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FolderOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>Nenhuma pasta criada ainda</p>
+                    <p className="text-sm">Crie sua primeira pasta para organizar os projetos</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
 
-                {!selectedFolder && (
+            {/* Project Management Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Image className="w-5 h-5" />
+                      Projetos da Galeria
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Gerencie e organize todos os seus projetos
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Select value={selectedFolder || "all"} onValueChange={(value) => setSelectedFolder(value === "all" ? null : value)}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Filtrar por pasta" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Projetos</SelectItem>
+                        <SelectItem value="none">Sem Pasta</SelectItem>
+                        {folders.map((folder) => (
+                          <SelectItem key={folder.id} value={folder.id}>
+                            {folder.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={() => {
+                          setEditingProject(null);
+                          setProjectForm({
+                            title: "",
+                            description: "",
+                            category: "",
+                            location: "",
+                            image_url: "",
+                            is_featured: false,
+                            parent_folder_id: "none"
+                          });
+                        }}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Novo Projeto
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>
+                            {editingProject ? 'Editar Projeto' : 'Criar Novo Projeto'}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="project-title">Título do Projeto</Label>
+                              <Input
+                                id="project-title"
+                                value={projectForm.title}
+                                onChange={(e) => setProjectForm(prev => ({ ...prev, title: e.target.value }))}
+                                placeholder="Ex: Piso de Carvalho Elegante"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="project-location">Localização</Label>
+                              <Input
+                                id="project-location"
+                                value={projectForm.location}
+                                onChange={(e) => setProjectForm(prev => ({ ...prev, location: e.target.value }))}
+                                placeholder="Ex: São Paulo, SP"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="project-description">Descrição</Label>
+                            <Textarea
+                              id="project-description"
+                              value={projectForm.description}
+                              onChange={(e) => setProjectForm(prev => ({ ...prev, description: e.target.value }))}
+                              placeholder="Descreva os detalhes do projeto..."
+                              rows={3}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="project-category">Categoria</Label>
+                              <Select value={projectForm.category} onValueChange={(value) => setProjectForm(prev => ({ ...prev, category: value }))}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecionar categoria" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {categories.map((category) => (
+                                    <SelectItem key={category} value={category}>
+                                      {category}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor="project-folder">Pasta</Label>
+                              <Select value={projectForm.parent_folder_id} onValueChange={(value) => setProjectForm(prev => ({ ...prev, parent_folder_id: value }))}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecionar pasta" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Sem Pasta</SelectItem>
+                                  {folders.map((folder) => (
+                                    <SelectItem key={folder.id} value={folder.id}>
+                                      {folder.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="project-image">URL da Imagem</Label>
+                            <Input
+                              id="project-image"
+                              value={projectForm.image_url}
+                              onChange={(e) => setProjectForm(prev => ({ ...prev, image_url: e.target.value }))}
+                              placeholder="https://exemplo.com/imagem-projeto.jpg"
+                            />
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="project-featured"
+                              checked={projectForm.is_featured}
+                              onChange={(e) => setProjectForm(prev => ({ ...prev, is_featured: e.target.checked }))}
+                            />
+                            <Label htmlFor="project-featured">Projeto em Destaque</Label>
+                          </div>
+
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setIsProjectDialogOpen(false)}>
+                              Cancelar
+                            </Button>
+                            <Button onClick={handleSaveProject}>
+                              {editingProject ? 'Atualizar' : 'Criar'} Projeto
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {selectedFolder && (
+                  <div className="mb-4 p-3 bg-muted/50 rounded-lg flex items-center gap-2">
+                    <FolderOpen className="w-4 h-4" />
+                    <span className="text-sm">
+                      Mostrando projetos da pasta: <strong>{folders.find(f => f.id === selectedFolder)?.name}</strong>
+                    </span>
+                    <Badge variant="secondary" className="ml-auto">
+                      {filteredProjects.length} projetos
+                    </Badge>
+                  </div>
+                )}
+                
+                {filteredProjects.length > 0 ? (
+                  <DragDropGrid
+                    items={filteredProjects.map(project => ({
+                      id: project.id,
+                      title: project.title,
+                      description: project.description,
+                      imageUrl: project.image_url,
+                      category: project.category,
+                      location: project.location,
+                      isFeatured: project.is_featured,
+                      order: project.display_order
+                    }))}
+                    onReorder={(itemId, newOrder) => updateProjectOrder(itemId, newOrder)}
+                    onEdit={(item) => {
+                      const project = projects.find(p => p.id === item.id);
+                      if (project) handleEditProject(project);
+                    }}
+                    onDelete={(item) => {
+                      const project = projects.find(p => p.id === item.id);
+                      if (project) handleDeleteProject(project);
+                    }}
+                    onToggleFeatured={(item) => {
+                      const project = projects.find(p => p.id === item.id);
+                      if (project) toggleFeatured(project);
+                    }}
+                    type="project"
+                  />
+                ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <Upload className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Select a folder above to start uploading photos</p>
+                    <Image className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>
+                      {selectedFolder 
+                        ? 'Nenhum projeto nesta pasta ainda' 
+                        : 'Nenhum projeto criado ainda'
+                      }
+                    </p>
+                    <p className="text-sm">
+                      {selectedFolder 
+                        ? 'Use o upload de fotos para adicionar projetos a esta pasta'
+                        : 'Crie seu primeiro projeto ou use o upload de fotos'
+                      }
+                    </p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="settings" className="space-y-6 animate-slide-up">
-            <Card className="admin-card">
+          <TabsContent value="upload" className="space-y-6 animate-slide-up">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-navy">
-                  <Settings className="w-5 h-5" />
-                  Gallery Settings
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="w-5 h-5" />
+                  Upload de Múltiplas Fotos
                 </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Faça upload de várias fotos de uma vez para uma pasta específica
+                </p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="form-section">
-                  <h4 className="form-section-title">
-                    <Eye className="w-5 h-5" />
-                    Available Categories
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                      <Badge key={category} variant="secondary" className="hover-scale">
-                        {category}
-                      </Badge>
-                    ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-1">
+                    <Card className="border-dashed">
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <FolderOpen className="w-4 h-4" />
+                          Selecionar Pasta
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {folders.length > 0 ? (
+                          <>
+                            <Select value={selectedFolder || ""} onValueChange={setSelectedFolder}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Escolha uma pasta" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {folders.map((folder) => (
+                                  <SelectItem key={folder.id} value={folder.id}>
+                                    {folder.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            
+                            {selectedFolder && (
+                              <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                                <h4 className="font-medium">
+                                  {folders.find(f => f.id === selectedFolder)?.name}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {getProjectCount(selectedFolder)} projetos existentes
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-center py-4">
+                            <FolderOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm text-muted-foreground">
+                              Você precisa criar uma pasta primeiro
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="lg:col-span-2">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Upload className="w-4 h-4" />
+                          Área de Upload
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {selectedFolder ? (
+                          <ImageUploader
+                            bucket="gallery-images"
+                            onImageUploaded={(url) => {
+                              // Auto-create project for each uploaded image
+                              const fileName = url.split('/').pop()?.split('.')[0] || 'Novo Projeto';
+                              const projectData = {
+                                title: fileName.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                                description: `Projeto criado via upload automático`,
+                                category: categories[0], // Default to first category
+                                location: '',
+                                image_url: url,
+                                is_featured: false,
+                                parent_folder_id: selectedFolder,
+                                display_order: projects.length
+                              };
+
+                              supabase
+                                .from('gallery_projects')
+                                .insert([projectData])
+                                .then(({ error }) => {
+                                  if (error) {
+                                    console.error('Error creating project:', error);
+                                    toast({
+                                      title: "Erro",
+                                      description: "Falha ao criar projeto automaticamente",
+                                      variant: "destructive",
+                                    });
+                                  } else {
+                                    toast({
+                                      title: "Sucesso",
+                                      description: "Projeto criado automaticamente!",
+                                    });
+                                    fetchData(); // Refresh data
+                                  }
+                                });
+                            }}
+                            maxFiles={10}
+                            maxSize={10 * 1024 * 1024} // 10MB
+                          />
+                        ) : (
+                          <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
+                            <Upload className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p>Selecione uma pasta primeiro para fazer upload das fotos</p>
+                            <p className="text-sm">Cada foto será automaticamente convertida em um projeto</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
-                <div className="form-section">
-                  <h4 className="form-section-title">
-                    <TrendingUp className="w-5 h-5" />
-                    Quick Actions
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button variant="outline" onClick={fetchData} className="hover-lift">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Refresh Gallery Data
-                    </Button>
-                    <Button variant="outline" onClick={() => window.open('/gallery', '_blank')} className="hover-lift">
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Public Gallery
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="form-section">
-                  <h4 className="form-section-title">
-                    <Sparkles className="w-5 h-5" />
-                    Gallery Statistics
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center p-4 bg-primary/5 rounded-lg">
-                      <p className="dashboard-metric">{folders.length}</p>
-                      <p className="dashboard-label">Total Folders</p>
-                    </div>
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <p className="dashboard-metric text-green-600">{projects.filter(p => p.is_featured).length}</p>
-                      <p className="dashboard-label">Featured</p>
-                    </div>
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <p className="dashboard-metric text-blue-600">{projects.length}</p>
-                      <p className="dashboard-label">Projects</p>
-                    </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <p className="dashboard-metric text-purple-600">{categories.length}</p>
-                      <p className="dashboard-label">Categories</p>
+
+                {selectedFolder && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Info className="w-3 h-3 text-white" />
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-medium text-blue-900 mb-1">Como funciona o upload automático:</p>
+                        <ul className="text-blue-800 space-y-1">
+                          <li>• Cada foto enviada vira automaticamente um projeto</li>
+                          <li>• O nome do arquivo vira o título do projeto</li>
+                          <li>• Você pode editar os detalhes depois na aba "Gerenciar Galeria"</li>
+                          <li>• Máximo de 10 fotos por vez (10MB cada)</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
