@@ -882,7 +882,7 @@ export default function GalleryManager() {
                       <CardContent>
                         {selectedFolder ? (
                           <ImageUploader
-                            bucket="gallery-images"
+                            bucket="gallery"
                             acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif']}
                             onImageUploaded={(url) => {
                               // Auto-create project for each uploaded image
