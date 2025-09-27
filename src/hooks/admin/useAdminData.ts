@@ -110,18 +110,21 @@ export function useAdminData() {
     const activeProjects = projects.filter(p => p.project_status === 'in_progress' || p.project_status === 'pending').length;
     const completedProjects = projects.filter(p => p.project_status === 'completed').length;
     
-    // Revenue Stats
+    // Revenue Stats - Use actual_cost OR estimated_cost for completed projects
     const completedProjectsWithCost = projects.filter(p => 
-      p.project_status === 'completed' && p.actual_cost
+      p.project_status === 'completed' && (p.actual_cost || p.estimated_cost)
     );
-    const totalRevenue = completedProjectsWithCost.reduce((sum, p) => sum + (p.actual_cost || 0), 0);
+    
+    const totalRevenue = completedProjectsWithCost.reduce((sum, p) => 
+      sum + (p.actual_cost || p.estimated_cost || 0), 0
+    );
     
     // Monthly revenue (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const monthlyRevenue = completedProjectsWithCost
       .filter(p => p.completion_date && new Date(p.completion_date) >= thirtyDaysAgo)
-      .reduce((sum, p) => sum + (p.actual_cost || 0), 0);
+      .reduce((sum, p) => sum + (p.actual_cost || p.estimated_cost || 0), 0);
     
     const averageProjectValue = completedProjectsWithCost.length > 0 
       ? Math.round(totalRevenue / completedProjectsWithCost.length)
@@ -172,45 +175,9 @@ export function useAdminData() {
 
       const processedProjects = projectsData || [];
 
-      // Add sample data if needed for demo purposes
-      const finalLeads = processedLeads.length < 10 ? [
-        ...processedLeads,
-        ...[
-          { status: 'new', services: ['hardwoodRefinishing'], created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-          { status: 'contacted', services: ['vinylInstallation'], created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-          { status: 'qualified', services: ['hardwoodRefinishing'], created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
-          { status: 'converted', services: ['stairRefinishing'], created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
-          { status: 'new', services: ['baseboardInstallation'], created_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString() },
-          { status: 'contacted', services: ['hardwoodRefinishing', 'vinylInstallation'], created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() }
-        ].map((sample, i) => ({
-          id: `sample-${i}`,
-          name: `Lead Demo ${i + 1}`,
-          phone: '(555) 000-000' + i,
-          email: `demo${i}@example.com`,
-          lead_source: 'demo',
-          priority: 'medium',
-          ...sample
-        }))
-      ] as Lead[] : processedLeads;
-
-      const finalProjects = processedProjects.length < 5 ? [
-        ...processedProjects,
-        ...[
-          { project_status: 'completed', actual_cost: 12500, completion_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() },
-          { project_status: 'completed', actual_cost: 8900, completion_date: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString() },
-          { project_status: 'in_progress', actual_cost: null, completion_date: null },
-          { project_status: 'completed', actual_cost: 15200, completion_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString() }
-        ].map((sample, i) => ({
-          id: `sample-project-${i}`,
-          customer_name: `Cliente Demo ${i + 1}`,
-          customer_email: `cliente${i}@demo.com`,
-          customer_phone: '(555) 100-000' + i,
-          project_type: 'hardwood_refinishing',
-          created_at: new Date(Date.now() - (i + 1) * 20 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date(Date.now() - (i + 1) * 20 * 24 * 60 * 60 * 1000).toISOString(),
-          ...sample
-        }))
-      ] as Project[] : processedProjects;
+      // Use only real data - no sample data
+      const finalLeads = processedLeads;
+      const finalProjects = processedProjects;
 
       // Calculate stats
       const stats = calculateStats(finalLeads, finalProjects);
