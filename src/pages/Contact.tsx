@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
@@ -182,7 +182,12 @@ const Contact = () => {
     question: "Is there dust?",
     answer: "We use dust-free sanding systems."
   }];
-  const isFormValid = !Object.keys(formErrors).length && formData.name && formData.email && formData.phone && formData.city;
+  // Calculate form validity dynamically
+  const isFormValid = useMemo(() => {
+    const hasErrors = Object.values(formErrors).some(error => error !== '');
+    const hasRequiredFields = formData.name.trim() && formData.email.trim() && formData.phone.trim() && formData.city.trim();
+    return !hasErrors && hasRequiredFields;
+  }, [formErrors, formData.name, formData.email, formData.phone, formData.city]);
   return <div className="min-h-screen">
       <Header />
       

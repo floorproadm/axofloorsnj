@@ -8,10 +8,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, Mail, Send } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Phone, Mail, Send, AlertCircle } from 'lucide-react';
+import { 
+  validateForm, 
+  sanitizeInput, 
+  checkRateLimit, 
+  getClientIdentifier,
+  formatPhoneNumber,
+  useFieldValidation 
+} from '@/utils/validation';
 
 const ContactForm = () => {
   const { toast } = useToast();
+  const { validateField } = useFieldValidation();
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -43,6 +54,25 @@ const ContactForm = () => {
         ? [...prev.services, service]
         : prev.services.filter(s => s !== service)
     }));
+  };
+
+  const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
+    const sanitizedValue = sanitizeInput(value);
+    
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+    
+    // Clear previous error
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    
+    // Validate field if it has rules
+    if (rules.length > 0) {
+      const error = validateField(sanitizedValue, rules);
+      if (error) {
+        setFormErrors(prev => ({ ...prev, [field]: error }));
+      }
+    }
   };
 
   // Helper function to get Facebook pixel data

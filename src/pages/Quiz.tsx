@@ -886,15 +886,20 @@ const Quiz = () => {
                     </div>
 
                     {/* Display form-level errors */}
-                    {Object.entries(formErrors).filter(([key, value]) => value !== '').length > 0 && (
+                    {Object.values(formErrors).some(error => error !== '') && (
                       <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>
                           Please fix the errors above before submitting.
-                          <div className="mt-2 text-xs">
-                            {Object.entries(formErrors).filter(([key, value]) => value !== '').map(([field, error]) => (
-                              <div key={field}>{field}: {error}</div>
-                            ))}
+                          <div className="mt-2 text-xs space-y-1">
+                            {Object.entries(formErrors)
+                              .filter(([_, error]) => error !== '')
+                              .map(([field, error]) => (
+                                <div key={field} className="text-red-600">
+                                  <strong>{field}:</strong> {error}
+                                </div>
+                              ))
+                            }
                           </div>
                         </AlertDescription>
                       </Alert>
