@@ -2,6 +2,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAdminAuth } from "@/hooks/admin/useAdminAuth";
 import { useAdminData } from "@/hooks/admin/useAdminData";
 import { KanbanBoard } from "./components/KanbanBoard";
+import { LinearPipeline } from "./components/LinearPipeline";
 import { AdvancedFilters, FilterOptions } from "./components/AdvancedFilters";
 import { FollowUpSystem } from "./components/FollowUpSystem";
 import { DataTable } from "@/components/admin/DataTable";
@@ -16,7 +17,8 @@ import {
   Download,
   Plus,
   Phone,
-  Mail
+  Mail,
+  ArrowRight
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { ExportManager } from "./components/ExportManager";
@@ -43,7 +45,7 @@ interface Lead {
 export default function LeadsManager() {
   const { shouldShowLoading, canAccessAdmin } = useAdminAuth();
   const { leads, isLoading, refreshData } = useAdminData();
-  const [currentView, setCurrentView] = useState<'kanban' | 'table' | 'followup'>('kanban');
+  const [currentView, setCurrentView] = useState<'linear' | 'kanban' | 'table' | 'followup'>('linear');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     search: '',
@@ -255,10 +257,15 @@ export default function LeadsManager() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="order-2 sm:order-1">
             <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as typeof currentView)}>
-              <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4 sm:w-auto sm:grid-cols-4">
+                <TabsTrigger value="linear" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Pipeline</span>
+                  <span className="sm:hidden">Linear</span>
+                </TabsTrigger>
                 <TabsTrigger value="kanban" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                   <LayoutGrid className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Pipeline</span>
+                  <span className="hidden sm:inline">Kanban</span>
                   <span className="sm:hidden">Board</span>
                 </TabsTrigger>
                 <TabsTrigger value="table" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
@@ -296,6 +303,14 @@ export default function LeadsManager() {
 
         {/* Content based on current view */}
         <Tabs value={currentView} className="space-y-4">
+          <TabsContent value="linear" className="space-y-0 mt-0">
+            <LinearPipeline 
+              leads={filteredLeads}
+              onLeadUpdate={handleLeadUpdate}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
           <TabsContent value="kanban" className="space-y-0 mt-0">
             <KanbanBoard 
               leads={filteredLeads}
