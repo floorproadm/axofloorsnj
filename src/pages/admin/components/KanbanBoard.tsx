@@ -207,14 +207,15 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
         description: `O lead "${leadName}" foi removido com sucesso.`
       });
 
-      // Update leads list by filtering out the deleted lead
-      const updatedLeads = leads.filter(lead => lead.id !== leadId);
-      // This assumes onLeadUpdate can handle a full leads array update
-      // If not, we might need to add a separate onLeadDelete prop
+      // Close modal if the deleted lead was selected
       if (selectedLead?.id === leadId) {
         setIsDetailModalOpen(false);
         setSelectedLead(null);
       }
+
+      // Force refresh by triggering parent component refresh
+      // This will reload all leads from the database
+      onLeadUpdate({} as Lead);
 
     } catch (error) {
       console.error('Erro ao deletar lead:', error);

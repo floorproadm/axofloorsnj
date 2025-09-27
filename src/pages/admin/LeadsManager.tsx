@@ -139,7 +139,8 @@ export default function LeadsManager() {
 
   // Handle lead updates
   const handleLeadUpdate = (updatedLead: Lead) => {
-    refreshData(); // Refresh the data to get updated state
+    // Always refresh data from database to ensure consistency
+    refreshData();
   };
 
   // Table columns for DataTable view

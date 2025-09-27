@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import { 
   User, 
   Phone, 
   Mail, 
@@ -20,7 +27,10 @@ import {
   MessageSquare,
   MapPin,
   ChevronRight,
-  Plus
+  Plus,
+  MoreHorizontal,
+  Trash2,
+  Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,6 +167,43 @@ export function LinearPipeline({ leads, onLeadUpdate, isLoading }: LinearPipelin
     }
   };
 
+  const handleDeleteLead = async (leadId: string, leadName: string) => {
+    if (!confirm(`Tem certeza que deseja deletar o lead "${leadName}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .delete()
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Lead deletado",
+        description: `O lead "${leadName}" foi removido com sucesso.`
+      });
+
+      // Close modal if the deleted lead was selected
+      if (selectedLead?.id === leadId) {
+        setIsActionDialogOpen(false);
+        setSelectedLead(null);
+      }
+
+      // Force refresh by triggering parent component refresh
+      onLeadUpdate({} as Lead);
+
+    } catch (error) {
+      console.error('Erro ao deletar lead:', error);
+      toast({
+        title: "Erro ao deletar",
+        description: "Não foi possível deletar o lead. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -184,23 +231,49 @@ export function LinearPipeline({ leads, onLeadUpdate, isLoading }: LinearPipelin
   };
 
   const LeadCard = ({ lead }: { lead: Lead }) => (
-    <div className="p-3 border rounded-lg bg-white hover:shadow-sm transition-all duration-200 cursor-pointer"
-         onClick={() => {setSelectedLead(lead); setIsActionDialogOpen(true);}}>
+    <div className="p-3 border rounded-lg bg-white hover:shadow-sm transition-all duration-200 group">
       <div className="space-y-2">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 cursor-pointer" 
+               onClick={() => {setSelectedLead(lead); setIsActionDialogOpen(true);}}>
             <h4 className="font-medium text-sm truncate">{lead.name}</h4>
             <div className="flex items-center gap-1 mt-1">
               <Phone className="w-3 h-3 text-muted-foreground" />
               <span className="text-xs font-mono">{lead.phone}</span>
             </div>
           </div>
-          {lead.priority === 'high' && (
-            <Badge className={`text-xs px-1.5 py-0.5 ${getPriorityColor(lead.priority)}`}>
-              Alta
-            </Badge>
-          )}
+          <div className="flex items-center gap-1">
+            {lead.priority === 'high' && (
+              <Badge className={`text-xs px-1.5 py-0.5 ${getPriorityColor(lead.priority)}`}>
+                Alta
+              </Badge>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreHorizontal className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => {setSelectedLead(lead); setIsActionDialogOpen(true);}}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Gerenciar lead
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteLead(lead.id, lead.name);
+                  }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Deletar lead
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Details */}
