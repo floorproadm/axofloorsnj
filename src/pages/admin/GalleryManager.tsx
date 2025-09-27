@@ -562,7 +562,13 @@ export default function GalleryManager() {
                       isFeatured: false,
                       order: folder.display_order
                     }))}
-                    onReorder={(itemId, newOrder) => updateFolderOrder(itemId, newOrder)}
+                    onReorder={(oldIndex, newIndex) => {
+                      // Get the item that was moved
+                      const movedItem = folders[oldIndex];
+                      if (movedItem) {
+                        updateFolderOrder(movedItem.id, newIndex.toString());
+                      }
+                    }}
                     onEdit={(item) => {
                       const folder = folders.find(f => f.id === item.id);
                       if (folder) handleEditFolder(folder);
@@ -763,7 +769,13 @@ export default function GalleryManager() {
                       isFeatured: project.is_featured,
                       order: project.display_order
                     }))}
-                    onReorder={(itemId, newOrder) => updateProjectOrder(itemId, newOrder)}
+                    onReorder={(oldIndex, newIndex) => {
+                      // Get the item that was moved
+                      const movedItem = filteredProjects[oldIndex];
+                      if (movedItem) {
+                        updateProjectOrder(movedItem.id, newIndex.toString());
+                      }
+                    }}
                     onEdit={(item) => {
                       const project = projects.find(p => p.id === item.id);
                       if (project) handleEditProject(project);
@@ -871,6 +883,7 @@ export default function GalleryManager() {
                         {selectedFolder ? (
                           <ImageUploader
                             bucket="gallery-images"
+                            acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif']}
                             onImageUploaded={(url) => {
                               // Auto-create project for each uploaded image
                               const fileName = url.split('/').pop()?.split('.')[0] || 'Novo Projeto';
@@ -932,7 +945,8 @@ export default function GalleryManager() {
                           <li>• Cada foto enviada vira automaticamente um projeto</li>
                           <li>• O nome do arquivo vira o título do projeto</li>
                           <li>• Você pode editar os detalhes depois na aba "Gerenciar Galeria"</li>
-                          <li>• Máximo de 10 fotos por vez (10MB cada)</li>
+                          <li>• Aceita JPEG, PNG, WebP, HEIC e HEIF (máximo 10MB cada)</li>
+                          <li>• Máximo de 10 fotos por vez</li>
                         </ul>
                       </div>
                     </div>
