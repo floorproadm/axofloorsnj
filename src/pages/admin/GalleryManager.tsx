@@ -468,7 +468,7 @@ export default function GalleryManager() {
 
         <Tabs defaultValue="folders" className="space-y-6">
           <div className="flex items-center justify-between">
-            <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/50">
+            <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-muted/50">
               <TabsTrigger value="folders" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <FolderOpen className="w-4 h-4 mr-2" />
                 Folders
@@ -476,6 +476,10 @@ export default function GalleryManager() {
               <TabsTrigger value="projects" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Image className="w-4 h-4 mr-2" />
                 Projects
+              </TabsTrigger>
+              <TabsTrigger value="bulk-upload" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Upload className="w-4 h-4 mr-2" />
+                Bulk Upload
               </TabsTrigger>
               <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Settings className="w-4 h-4 mr-2" />
@@ -758,6 +762,132 @@ export default function GalleryManager() {
               }}
               type="project"
             />
+          </TabsContent>
+
+          <TabsContent value="bulk-upload" className="space-y-6 animate-slide-up">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Upload className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-navy">Bulk Photo Upload</h3>
+                <p className="text-sm text-muted-foreground">Upload multiple photos to a folder at once</p>
+              </div>
+            </div>
+
+            <Card className="admin-card">
+              <CardHeader>
+                <CardTitle className="text-navy">Select Target Folder</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="targetFolder">Choose folder to upload photos to:</Label>
+                  <Select
+                    value={selectedFolder || ""}
+                    onValueChange={(value) => setSelectedFolder(value || null)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select a folder" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {folders.map((folder) => (
+                        <SelectItem key={folder.id} value={folder.id}>
+                          {folder.name} ({getProjectCount(folder.id)} photos)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedFolder && (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-primary/5 rounded-lg">
+                      <h4 className="font-medium text-navy mb-2">Upload Photos to: {folders.find(f => f.id === selectedFolder)?.name}</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Each photo will be automatically created as a project in this folder
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <Label htmlFor="bulkCategory">Default Category</Label>
+                          <Select
+                            value={projectForm.category}
+                            onValueChange={(value) => setProjectForm(prev => ({ ...prev, category: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="bulkLocation">Default Location</Label>
+                          <Input
+                            id="bulkLocation"
+                            value={projectForm.location}
+                            onChange={(e) => setProjectForm(prev => ({ ...prev, location: e.target.value }))}
+                            placeholder="Enter default location"
+                          />
+                        </div>
+                      </div>
+
+                      <ImageUploader
+                        onImageUploaded={async (url) => {
+                          try {
+                            const fileName = url.split('/').pop() || 'Uploaded Photo';
+                            const projectData = {
+                              title: fileName.split('.')[0].replace(/[-_]/g, ' '),
+                              description: `Photo uploaded to ${folders.find(f => f.id === selectedFolder)?.name}`,
+                              category: projectForm.category || categories[0],
+                              location: projectForm.location || '',
+                              image_url: url,
+                              is_featured: false,
+                              parent_folder_id: selectedFolder,
+                              display_order: projects.filter(p => p.parent_folder_id === selectedFolder).length
+                            };
+
+                            const { error } = await supabase
+                              .from('gallery_projects')
+                              .insert([projectData]);
+
+                            if (error) throw error;
+
+                            toast({
+                              title: "Success",
+                              description: `Photo "${projectData.title}" added to folder`,
+                            });
+
+                            fetchData();
+                          } catch (error) {
+                            console.error('Error creating project from upload:', error);
+                            toast({
+                              title: "Error",
+                              description: "Failed to create project from uploaded photo",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        maxFiles={10}
+                        bucket="gallery"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {!selectedFolder && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Upload className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Select a folder above to start uploading photos</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6 animate-slide-up">
