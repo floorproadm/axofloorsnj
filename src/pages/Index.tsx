@@ -207,34 +207,7 @@ const Index = () => {
       <Portfolio />
 
       {/* Lead Magnets Section */}
-      <section className="py-12 sm:py-20 bg-gold/5">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            
-            
-            <p className="text-lg text-muted-foreground mb-8">Download our expert guides and learn everything about wood flooring with tips from specialists.</p>
-            
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              
-              
-              
-              
-              <div className="bg-white p-6 rounded-lg shadow-lg group hover:shadow-gold transition-all duration-300 sm:col-span-2 lg:col-span-1">
-                <Palette className="h-8 w-8 text-gold mb-4 mx-auto group-hover:scale-110 transition-transform duration-300" />
-                <h3 className="font-semibold text-navy mb-2">Color Guide</h3>
-                <p className="text-sm text-muted-foreground mb-4">Trends and perfect combinations for 2025</p>
-                <LeadMagnetGate title="Guia de Seleção de Cores e Acabamentos 2024" description="Descubra as tendências mais atuais em stains e acabamentos" fileName="guia-cores-acabamentos-2024.pdf" downloadUrl="/downloads/guia-cores-acabamentos-2024.pdf" benefits={["50+ combinações de cores testadas", "Tendências 2024 para pisos de madeira", "Como combinar com móveis e decoração", "Acabamentos para cada ambiente da casa", "Dicas de iluminação para realçar a madeira"]} triggerText="Baixar Grátis" triggerVariant="gold" value="$87" category="design" />
-              </div>
-            </div>
-            
-            <div className="mt-8">
-              <Button variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white" asChild>
-                
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Google Business Integration */}
       <GoogleBusinessIntegration />
