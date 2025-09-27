@@ -305,6 +305,11 @@ const Gallery = () => {
                     className="max-w-full max-h-full object-contain"
                     onClick={(e) => e.stopPropagation()}
                   />
+                  
+                  {/* Photo Counter */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {currentImageIndex + 1} / {lightboxImages.length}
+                  </div>
                 </div>
 
                 {/* Next Button */}
