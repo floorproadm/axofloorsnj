@@ -648,9 +648,15 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                   <Calendar className="w-4 h-4 mr-2" />
                   Agendar Follow-up
                 </Button>
-                <Button variant="outline">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    const message = `Hi ${selectedLead.name}, this is Eduardo from Axo Floors. Thank you for your interest in our flooring services. I'd like to schedule a quick call to discuss your project details and provide you with a personalized quote. When would be a good time to connect?`;
+                    window.open(`sms:${selectedLead.phone}?body=${encodeURIComponent(message)}`, '_self');
+                  }}
+                >
                   <MessageSquare className="w-4 h-4 mr-2" />
-                  WhatsApp
+                  Send SMS
                 </Button>
               </div>
             </div>
