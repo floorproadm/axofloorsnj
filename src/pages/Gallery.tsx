@@ -4,7 +4,7 @@ import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Eye, Image, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowRight, Star, Eye, Image, ChevronLeft, ChevronRight, X, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -221,6 +221,33 @@ const Gallery = () => {
         </div>
       </section>
 
+      {/* Referral Sticky Banner */}
+      <div className="sticky top-0 z-40 bg-gold/95 backdrop-blur-sm border-b border-gold/20">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <div className="flex items-center gap-3">
+              <Gift className="w-5 h-5 text-black" />
+              <p className="text-black font-medium text-sm sm:text-base">
+                <span className="hidden sm:inline">Love these transformations? </span>
+                Refer friends & earn 1% of their project value!
+              </p>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="bg-black text-white hover:bg-black/80 border-black"
+              onClick={() => {
+                console.log('[Referral CTA] Gallery sticky banner clicked');
+                window.location.href = "/referral-program";
+              }}
+            >
+              <span className="hidden sm:inline">Start Earning</span>
+              <span className="sm:hidden">Earn 1%</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Content Section */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
@@ -374,7 +401,7 @@ const Gallery = () => {
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
               <Link to="/contact" className="flex items-center gap-2">
                 Start Your Project
@@ -384,6 +411,34 @@ const Gallery = () => {
             <Button variant="outline" asChild className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold hover:bg-gold hover:text-navy hover:border-gold">
               <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
             </Button>
+          </div>
+          
+          {/* Inline Referral CTA */}
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-2 border-gold/20 bg-gold/5">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Gift className="w-5 h-5 text-gold" />
+                  <h3 className="text-lg font-heading font-semibold text-navy">
+                    Impressed by Our Work?
+                  </h3>
+                </div>
+                <p className="text-grey mb-4">
+                  Share your experience and earn 1% of every project you refer. 
+                  Help your friends get beautiful floors while you earn extra income!
+                </p>
+                <Button 
+                  onClick={() => {
+                    console.log('[Referral CTA] Gallery inline section clicked');
+                    window.location.href = "/referral-program";
+                  }}
+                  className="gold-gradient text-black font-semibold"
+                >
+                  <Gift className="w-4 h-4 mr-2" />
+                  Start Referring & Earning
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

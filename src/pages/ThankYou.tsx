@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
-import { CheckCircle, Phone, Mail, Calendar, ArrowRight, Home } from "lucide-react";
+import { CheckCircle, Phone, Mail, Calendar, ArrowRight, Home, Gift } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 interface QuizData {
   name: string;
@@ -208,6 +208,73 @@ const ThankYou = () => {
                 </Card>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Referral CTA Section */}
+      <section className="py-16 bg-gold/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-gold/20 overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                {/* Content */}
+                <div className="p-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gold/20 rounded-full flex items-center justify-center">
+                      <Gift className="w-6 h-6 text-gold" />
+                    </div>
+                    <h2 className="text-2xl font-heading font-bold text-navy">
+                      Know Someone Who Needs New Floors?
+                    </h2>
+                  </div>
+                  
+                  <p className="text-grey mb-6 leading-relaxed">
+                    Share your great experience and <strong className="text-navy">earn 1% when you refer</strong> friends, 
+                    family, or neighbors to AXO Floors. There's no limit to how much you can earn!
+                  </p>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-gold" />
+                      <span className="text-grey">Your friends get VIP treatment</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-gold" />
+                      <span className="text-grey">You get 1% of their project value</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-gold" />
+                      <span className="text-grey">No limits on earnings</span>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    onClick={() => {
+                      console.log('[Referral CTA] Thank you page - Learn more clicked');
+                      navigate("/referral-program");
+                    }}
+                    className="gold-gradient text-black font-semibold w-full sm:w-auto"
+                  >
+                    <Gift className="w-4 h-4 mr-2" />
+                    Learn More & Start Earning
+                  </Button>
+                </div>
+                
+                {/* Visual Element */}
+                <div className="bg-gradient-to-br from-gold/10 to-gold/5 p-8 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-gold mb-2">1%</div>
+                    <p className="text-navy font-medium mb-4">of every referral</p>
+                    <div className="space-y-2 text-sm text-grey">
+                      <div>$5K project = <span className="font-semibold text-gold">$50 for you</span></div>
+                      <div>$15K project = <span className="font-semibold text-gold">$150 for you</span></div>
+                      <div>$25K project = <span className="font-semibold text-gold">$250 for you</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </section>

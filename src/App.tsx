@@ -23,6 +23,7 @@ import StainGallery from "./pages/StainGallery";
 import BuilderPartnerships from "./pages/BuilderPartnerships";
 import Quiz from "./pages/Quiz";
 import ThankYou from "./pages/ThankYou";
+import ReferralProgram from "./pages/ReferralProgram";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import Admin from "./pages/Admin";
@@ -63,6 +64,7 @@ const App = () => {
             <Route path="/campaign" element={<Campaign />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/thank-you" element={<ThankYou />} />
+            <Route path="/referral-program" element={<ReferralProgram />} />
             <Route path="/builders" element={<Builders />} />
             <Route path="/realtors" element={<Realtors />} />
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
