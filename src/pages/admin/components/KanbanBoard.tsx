@@ -15,7 +15,8 @@ import {
   Eye,
   Edit,
   MessageSquare,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -185,6 +186,44 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
     const subject = `Axo Floors - Contato sobre ${lead.services?.join(', ') || 'serviços'}`;
     const body = `Olá ${lead.name},\n\nEntramos em contato sobre sua solicitação de orçamento.\n\nAtenciosamente,\nEquipe Axo Floors`;
     window.open(`mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
+  };
+
+  // Handle delete lead
+  const handleDeleteLead = async (leadId: string, leadName: string) => {
+    if (!confirm(`Tem certeza que deseja deletar o lead "${leadName}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .delete()
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Lead deletado",
+        description: `O lead "${leadName}" foi removido com sucesso.`
+      });
+
+      // Update leads list by filtering out the deleted lead
+      const updatedLeads = leads.filter(lead => lead.id !== leadId);
+      // This assumes onLeadUpdate can handle a full leads array update
+      // If not, we might need to add a separate onLeadDelete prop
+      if (selectedLead?.id === leadId) {
+        setIsDetailModalOpen(false);
+        setSelectedLead(null);
+      }
+
+    } catch (error) {
+      console.error('Erro ao deletar lead:', error);
+      toast({
+        title: "Erro ao deletar",
+        description: "Não foi possível deletar o lead. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Format time ago
@@ -388,9 +427,9 @@ export function KanbanBoard({ leads, onLeadUpdate, isLoading }: KanbanBoardProps
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Edit className="w-4 h-4 mr-2" />
-                          Editar lead
+                        <DropdownMenuItem onClick={() => handleDeleteLead(lead.id, lead.name)}>
+                          <Trash2 className="w-4 h-4 mr-2 text-destructive" />
+                          <span className="text-destructive">Deletar lead</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
