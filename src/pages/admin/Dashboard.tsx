@@ -4,7 +4,6 @@ import { DashboardStats } from "./components/DashboardStats";
 import { ConversionChart } from "./components/ConversionChart";
 import { ServicesChart } from "./components/ServicesChart";
 import { RevenueProjection } from "./components/RevenueProjection";
-import { LeadAlerts } from "./components/LeadAlerts";
 
 export default function Dashboard() {
   const { shouldShowLoading, canAccessAdmin } = useAdminAuth();
@@ -32,9 +31,6 @@ export default function Dashboard() {
       <div className="space-y-4 max-w-full overflow-hidden">
         {/* Métricas Principais */}
         <DashboardStats />
-        
-        {/* Alertas Urgentes */}
-        <LeadAlerts />
         
         {/* Charts - Stack completely on mobile, side by side on xl+ */}
         <div className="flex flex-col xl:grid xl:grid-cols-2 gap-4">
