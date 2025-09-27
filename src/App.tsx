@@ -34,6 +34,7 @@ import AdminProjectsManager from './pages/admin/ProjectsManager';
 import Auth from "./pages/Auth";
 import LeadsManagement from './pages/LeadsManagement';
 import Campaign from "./pages/Campaign";
+import LeadMagnets from "./pages/LeadMagnets";
 import NotFound from "./pages/NotFound";
 
 
@@ -62,6 +63,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/funnel" element={<FunnelPage />} />
             <Route path="/campaign" element={<Campaign />} />
+            <Route path="/lead-magnets" element={<LeadMagnets />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/referral-program" element={<ReferralProgram />} />

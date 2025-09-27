@@ -10,9 +10,10 @@ import SEOHead from "@/components/shared/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles } from "lucide-react";
+import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles, BookOpen, Calculator, Palette } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
 import { useState, useEffect, useRef } from "react";
+import LeadMagnetGate from "@/components/shared/LeadMagnetGate";
 
 const Index = () => {
   const [activeServiceIndex, setActiveServiceIndex] = useState<number | null>(null);
@@ -224,8 +225,106 @@ const Index = () => {
       {/* Portfolio Section */}
       <Portfolio />
 
+      {/* Lead Magnets Section */}
+      <section className="py-12 sm:py-20 bg-gold/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-accent/10 backdrop-blur-sm rounded-full px-6 py-2 mb-6 border border-accent/20">
+              <BookOpen className="w-5 h-5 text-accent" />
+              <span className="text-accent font-medium">Recursos Gratuitos</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-navy mb-6">
+              Guias Profissionais <span className="text-accent">100% Gratuitos</span>
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Baixe nossos guias especializados e aprenda tudo sobre pisos de madeira com dicas de especialistas
+            </p>
+            
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-lg group hover:shadow-gold transition-all duration-300">
+                <BookOpen className="h-8 w-8 text-gold mb-4 mx-auto group-hover:scale-110 transition-transform duration-300" />
+                <h3 className="font-semibold text-navy mb-2">Guia de Cuidados</h3>
+                <p className="text-sm text-muted-foreground mb-4">Como manter seus pisos como novos por décadas</p>
+                <LeadMagnetGate
+                  title="Guia Completo de Cuidados com Piso de Madeira"
+                  description="Aprenda a manter seus pisos de madeira como novos por décadas"
+                  fileName="guia-cuidados-piso-madeira.pdf"
+                  downloadUrl="/downloads/guia-cuidados-piso-madeira.pdf"
+                  benefits={[
+                    "Cronograma de manutenção semanal, mensal e anual",
+                    "Lista dos melhores produtos de limpeza para madeira",
+                    "Como remover manchas e arranhões em casa",
+                    "Sinais de quando chamar um profissional",
+                    "Dicas para aumentar a vida útil em 50%"
+                  ]}
+                  triggerText="Baixar Grátis"
+                  triggerVariant="gold"
+                  value="$97"
+                  category="maintenance"
+                />
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-lg group hover:shadow-gold transition-all duration-300">
+                <Calculator className="h-8 w-8 text-gold mb-4 mx-auto group-hover:scale-110 transition-transform duration-300" />
+                <h3 className="font-semibold text-navy mb-2">Calculadora de Custos</h3>
+                <p className="text-sm text-muted-foreground mb-4">Estime o valor do seu projeto com precisão</p>
+                <LeadMagnetGate
+                  title="Calculadora de Custos & Planejamento de Orçamento"
+                  description="Ferramenta completa para estimar custos de instalação e reforma de pisos"
+                  fileName="calculadora-custos-pisos.pdf"
+                  downloadUrl="/downloads/calculadora-custos-pisos.pdf"
+                  benefits={[
+                    "Calculadora Excel para diferentes tipos de piso",
+                    "Custos médios por m² atualizados 2024",
+                    "Como negociar com fornecedores",
+                    "Checklist de custos extras escondidos",
+                    "Planejamento financeiro para reformas"
+                  ]}
+                  triggerText="Baixar Grátis"
+                  triggerVariant="gold"
+                  value="$129"
+                  category="budgeting"
+                />
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-lg group hover:shadow-gold transition-all duration-300 sm:col-span-2 lg:col-span-1">
+                <Palette className="h-8 w-8 text-gold mb-4 mx-auto group-hover:scale-110 transition-transform duration-300" />
+                <h3 className="font-semibold text-navy mb-2">Guia de Cores</h3>
+                <p className="text-sm text-muted-foreground mb-4">Tendências e combinações perfeitas para 2024</p>
+                <LeadMagnetGate
+                  title="Guia de Seleção de Cores e Acabamentos 2024"
+                  description="Descubra as tendências mais atuais em stains e acabamentos"
+                  fileName="guia-cores-acabamentos-2024.pdf"
+                  downloadUrl="/downloads/guia-cores-acabamentos-2024.pdf"
+                  benefits={[
+                    "50+ combinações de cores testadas",
+                    "Tendências 2024 para pisos de madeira",
+                    "Como combinar com móveis e decoração",
+                    "Acabamentos para cada ambiente da casa",
+                    "Dicas de iluminação para realçar a madeira"
+                  ]}
+                  triggerText="Baixar Grátis"
+                  triggerVariant="gold"
+                  value="$87"
+                  category="design"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <Button variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white" asChild>
+                <Link to="/lead-magnets">
+                  Ver Todos os Guias
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Google Business Integration */}
+      <GoogleBusinessIntegration />
       
 
       {/* Testimonials Section */}
