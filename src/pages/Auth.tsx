@@ -8,32 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertCircle, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { validatePasswordStrength } from '@/utils/validation';
 import axoLogoOfficial from '@/assets/axo-logo-official.png';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Validação de senha em tempo real - CORREÇÃO DE SEGURANÇA CRÍTICA
-  const handlePasswordChange = (value: string) => {
-    setPassword(value);
-    if (isSignUp && value) {
-      const validation = validatePasswordStrength(value);
-      setPasswordErrors(validation.errors);
-    } else {
-      setPasswordErrors([]);
-    }
-  };
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -47,46 +32,18 @@ export default function Auth() {
     setLoading(true);
     setError('');
 
-    // Validação adicional de segurança para cadastro
-    if (isSignUp) {
-      const passwordValidation = validatePasswordStrength(password);
-      if (!passwordValidation.isValid) {
-        setError('A senha não atende aos requisitos de segurança');
-        toast({
-          title: "Senha inválida",
-          description: passwordValidation.errors.join(', '),
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-    }
-
     try {
-      let result;
-      if (isSignUp) {
-        result = await signUp(email, password, fullName);
-        if (!result.error) {
-          toast({
-            title: "Cadastro realizado!",
-            description: "Verifique seu email para confirmar a conta.",
-          });
-        }
+      const result = await signIn(email, password);
+      if (!result.error) {
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Redirecionando para a área administrativa...",
+        });
+        navigate('/admin');
       } else {
-        result = await signIn(email, password);
-        if (!result.error) {
-          toast({
-            title: "Login realizado com sucesso!",
-            description: "Redirecionando para a área administrativa...",
-          });
-          navigate('/admin');
-        }
-      }
-      
-      if (result.error) {
         setError(result.error.message);
         toast({
-          title: isSignUp ? "Erro no cadastro" : "Erro no login",
+          title: "Erro no login",
           description: result.error.message,
           variant: "destructive",
         });
@@ -126,10 +83,10 @@ export default function Auth() {
               />
             </div>
             <CardTitle className="text-white">
-              {isSignUp ? 'Criar Conta' : 'Login'}
+              Login Administrativo
             </CardTitle>
             <CardDescription className="text-gray-300">
-              {isSignUp ? 'Crie uma nova conta administrativa' : 'Acesse a área administrativa'}
+              Acesse a área administrativa
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -141,21 +98,6 @@ export default function Auth() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-white">Nome Completo</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Seu nome completo"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required={isSignUp}
-                    className="bg-gray-800 border-gray-600 text-white"
-                  />
-                </div>
-              )}
-              
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white">Email</Label>
                 <Input
@@ -177,7 +119,7 @@ export default function Auth() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                     className="bg-gray-800 border-gray-600 text-white pr-10"
                   />
@@ -189,38 +131,16 @@ export default function Auth() {
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                {isSignUp && passwordErrors.length > 0 && (
-                  <div className="text-sm text-red-400 space-y-1">
-                    <div className="font-medium">A senha deve conter:</div>
-                    {passwordErrors.map((error, index) => (
-                      <div key={index} className="text-xs">• {error}</div>
-                    ))}
-                  </div>
-                )}
               </div>
               
               <Button 
                 type="submit" 
                 className="w-full bg-gold hover:bg-gold/90" 
-                disabled={loading || (isSignUp && passwordErrors.length > 0)}
+                disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSignUp ? 'Criar Conta' : 'Entrar'}
+                Entrar
               </Button>
-              
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSignUp(!isSignUp);
-                    setError('');
-                    setPasswordErrors([]);
-                  }}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
-                  {isSignUp ? 'Já tem uma conta? Faça login' : 'Precisa criar uma conta? Cadastre-se'}
-                </button>
-              </div>
             </form>
           </CardContent>
         </Card>
