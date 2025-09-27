@@ -3,7 +3,6 @@ import { useAdminAuth } from "@/hooks/admin/useAdminAuth";
 import { DashboardStats } from "./components/DashboardStats";
 import { ConversionChart } from "./components/ConversionChart";
 import { ServicesChart } from "./components/ServicesChart";
-import { RevenueProjection } from "./components/RevenueProjection";
 
 export default function Dashboard() {
   const { shouldShowLoading, canAccessAdmin } = useAdminAuth();
@@ -37,9 +36,6 @@ export default function Dashboard() {
           <ConversionChart />
           <ServicesChart />
         </div>
-        
-        {/* Revenue Projection - Full width */}
-        <RevenueProjection />
       </div>
     </AdminLayout>
   );
