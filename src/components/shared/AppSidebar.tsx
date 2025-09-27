@@ -110,13 +110,13 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
         >
           GET A QUOTE
         </Link>
-        <a 
-          href="tel:(732) 351-8653" 
+        <Link 
+          to="/contact" 
           onClick={onClose}
           className="block w-full py-3 px-4 border-2 border-gold text-gold font-semibold text-center rounded-xl hover:bg-gold hover:text-black transition-all"
         >
           CONTACT US
-        </a>
+        </Link>
         
         {/* Reviews */}
         <div className="text-center pt-2">
