@@ -5,33 +5,25 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Award, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import teamPhoto from "@/assets/team-photo.jpg";
-
 const About = () => {
-  const values = [
-    {
-      icon: Award,
-      title: "Quality Excellence",
-      description: "We use only premium materials and proven installation techniques to ensure lasting results."
-    },
-    {
-      icon: Users,
-      title: "Expert Team",
-      description: "Our certified flooring specialists bring years of experience to every project."
-    },
-    {
-      icon: Clock,
-      title: "Timely Service",
-      description: "We respect your time and complete projects on schedule without compromising quality."
-    },
-    {
-      icon: CheckCircle,
-      title: "Customer Satisfaction",
-      description: "Your satisfaction is our priority, backed by our comprehensive warranty."
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
+  const values = [{
+    icon: Award,
+    title: "Quality Excellence",
+    description: "We use only premium materials and proven installation techniques to ensure lasting results."
+  }, {
+    icon: Users,
+    title: "Expert Team",
+    description: "Our certified flooring specialists bring years of experience to every project."
+  }, {
+    icon: Clock,
+    title: "Timely Service",
+    description: "We respect your time and complete projects on schedule without compromising quality."
+  }, {
+    icon: CheckCircle,
+    title: "Customer Satisfaction",
+    description: "Your satisfaction is our priority, backed by our comprehensive warranty."
+  }];
+  return <div className="min-h-screen bg-background">
       <Header />
       
       <main>
@@ -57,11 +49,7 @@ const About = () => {
               {/* Team Photo */}
               <div className="flex flex-col items-center mb-16">
                 <div className="w-80 h-96 sm:w-96 sm:h-[28rem] mx-auto mb-6 rounded-2xl overflow-hidden shadow-elegant border-4 border-gold/20">
-                  <img 
-                    src={teamPhoto} 
-                    alt="Ademir and Eduardo - AXO Floors Team" 
-                    className="w-full h-full object-cover object-top"
-                  />
+                  <img src={teamPhoto} alt="Ademir and Eduardo - AXO Floors Team" className="w-full h-full object-cover object-top" />
                 </div>
                 
                 <div className="text-center space-y-2">
@@ -86,10 +74,7 @@ const About = () => {
                       sanding, staining, and hardwood installation — helping families protect their 
                       investment with floors that are both durable and elegant.
                     </p>
-                    <p className="text-muted-foreground leading-relaxed mt-4">
-                      Ademir's mission is simple: deliver results that last, with honesty and care 
-                      in every detail, so customers can enjoy their floors for years to come.
-                    </p>
+                    <p className="text-muted-foreground leading-relaxed mt-4">With over 15 years serving NJ, NY, and PA, Ademir built AXO Floors with his hands and reputation. Known for precision sanding and installations, his commitment is simple: do it once, do it right — helping families protect their investment with floors that are both durable and elegant.</p>
                   </CardContent>
                 </Card>
 
@@ -138,9 +123,8 @@ const About = () => {
             <h2 className="text-2xl md:text-4xl font-bold text-center mb-12">Why Choose AXO Floors</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {values.map((value, index) => {
-                const Icon = value.icon;
-                return (
-                  <Card key={index} className="text-center">
+              const Icon = value.icon;
+              return <Card key={index} className="text-center">
                     <CardContent className="pt-6">
                       <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Icon className="h-6 w-6 text-gold" />
@@ -148,9 +132,8 @@ const About = () => {
                       <h3 className="font-semibold mb-2">{value.title}</h3>
                       <p className="text-sm text-muted-foreground">{value.description}</p>
                     </CardContent>
-                  </Card>
-                );
-              })}
+                  </Card>;
+            })}
             </div>
           </div>
         </section>
@@ -201,8 +184,6 @@ const About = () => {
       </main>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default About;
