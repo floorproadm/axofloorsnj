@@ -60,89 +60,57 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Comprehensive form validation
-    const validationRules = {
-      name: ['required', 'name'],
-      email: ['required', 'email'],
-      phone: ['required', 'phone'],
-      city: ['required', 'city']
-    };
-    const validation = validateForm(formData, validationRules);
-    if (!validation.isValid) {
-      setFormErrors(validation.errors);
+    // Simple validation - only check required fields
+    if (!formData.name.trim() || !formData.phone.trim()) {
       toast({
-        title: "Please fix the errors below",
+        title: "Required fields missing",
+        description: "Please fill in your name and phone number",
         variant: "destructive"
       });
       return;
     }
 
-    // Rate limiting check
-    const clientId = getClientIdentifier();
-    const rateLimitCheck = checkRateLimit(clientId);
-    if (!rateLimitCheck.allowed) {
-      monitorRateLimit(clientId, rateLimitCheck.remainingTime!);
-      toast({
-        title: "Too many submissions",
-        description: `Please wait ${rateLimitCheck.remainingTime} seconds before submitting again.`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate request size
-    if (!validateRequestSize(formData)) {
-      logSecurityEvent('suspicious_activity', {
-        reason: 'oversized_form_data',
-        formType: 'contact'
-      });
-      toast({
-        title: "Form data too large",
-        description: "Please reduce the amount of information and try again.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Monitor form submission for suspicious activity
-    const isSecure = monitorFormSubmission('contact', formData);
-    if (!isSecure) {
-      toast({
-        title: "Suspicious activity detected",
-        description: "Your submission has been flagged for review. Please try again later.",
-        variant: "destructive"
-      });
-      return;
-    }
     setIsSubmitting(true);
     try {
-      // Save to Supabase leads table
-      const {
-        error
-      } = await supabase.from('leads').insert([{
+      console.log('Submitting contact form with data:', {
         name: formData.name,
-        email: formData.email || null,
         phone: formData.phone,
-        city: formData.city || null,
+        hasEmail: !!formData.email,
+        hasCity: !!formData.city
+      });
+
+      // Save to Supabase leads table
+      const leadData = {
+        name: sanitizeInput(formData.name),
+        email: formData.email.trim() ? sanitizeInput(formData.email) : null,
+        phone: sanitizeInput(formData.phone),
+        city: formData.city.trim() ? sanitizeInput(formData.city) : null,
         lead_source: 'contact_page',
         status: 'new',
         priority: 'medium',
         services: formData.service ? [formData.service] : [],
         message: `Timeline: ${formData.timeline || 'Not specified'}`
-      }]);
+      };
+
+      console.log('Prepared lead data:', leadData);
+
+      const { data, error } = await supabase
+        .from('leads')
+        .insert([leadData])
+        .select();
+
       if (error) {
-        console.error('Error saving contact lead:', error);
+        console.error('Supabase error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
 
-      // Also store in localStorage as backup
-      const contactData = {
-        ...formData,
-        source: 'contact_page',
-        type: 'contact_inquiry',
-        created_at: new Date().toISOString()
-      };
-      localStorage.setItem('contactLead', JSON.stringify(contactData));
+      console.log('Successfully saved lead:', data);
+
       toast({
         title: "Thank you for contacting us!",
         description: "We'll get back to you within 24 hours with your free estimate."
@@ -158,11 +126,21 @@ const Contact = () => {
         timeline: ""
       });
       setFormErrors({});
-    } catch (error) {
+    } catch (error: any) {
       console.error('Contact form submission error:', error);
+      
+      let errorMessage = "Please try again or call us directly at (732) 351-8653";
+      
+      // Provide specific error messages
+      if (error.message?.includes('violates row-level security')) {
+        errorMessage = "Security check failed. Please ensure all required fields are filled correctly.";
+      } else if (error.message?.includes('duplicate')) {
+        errorMessage = "You've already submitted a request. We'll contact you soon!";
+      }
+      
       toast({
-        title: "Something went wrong",
-        description: "Please try again or call us directly at (732) 351-8653",
+        title: "Error",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -182,12 +160,10 @@ const Contact = () => {
     question: "Is there dust?",
     answer: "We use dust-free sanding systems."
   }];
-  // Calculate form validity dynamically
+  // Calculate form validity dynamically - only require name and phone
   const isFormValid = useMemo(() => {
-    const hasErrors = Object.values(formErrors).some(error => error !== '');
-    const hasRequiredFields = formData.name.trim() && formData.email.trim() && formData.phone.trim() && formData.city.trim();
-    return !hasErrors && hasRequiredFields;
-  }, [formErrors, formData.name, formData.email, formData.phone, formData.city]);
+    return formData.name.trim().length > 0 && formData.phone.trim().length > 0 && !isSubmitting;
+  }, [formData.name, formData.phone, isSubmitting]);
   return <div className="min-h-screen">
       <Header />
       
@@ -266,29 +242,50 @@ const Contact = () => {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name *</Label>
-                      <Input id="name" placeholder="Full Name" required className={`h-12 ${formErrors.name ? 'border-red-500' : ''}`} value={formData.name} onChange={e => handleFieldChange('name', e.target.value, ['required', 'name'])} />
-                      {formErrors.name && <p className="text-red-500 text-sm">{formErrors.name}</p>}
+                      <Input 
+                        id="name" 
+                        placeholder="Full Name" 
+                        required 
+                        className="h-12"
+                        value={formData.name} 
+                        onChange={e => setFormData(prev => ({...prev, name: e.target.value}))} 
+                      />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone *</Label>
-                      <Input id="phone" type="tel" placeholder="(732) 555-0123" required className={`h-12 ${formErrors.phone ? 'border-red-500' : ''}`} value={formData.phone} onChange={e => {
-                      const formatted = formatPhoneNumber(e.target.value);
-                      handleFieldChange('phone', formatted, ['required', 'phone']);
-                    }} />
-                      {formErrors.phone && <p className="text-red-500 text-sm">{formErrors.phone}</p>}
+                      <Input 
+                        id="phone" 
+                        type="tel" 
+                        placeholder="(732) 555-0123" 
+                        required 
+                        className="h-12"
+                        value={formData.phone} 
+                        onChange={e => setFormData(prev => ({...prev, phone: e.target.value}))} 
+                      />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
-                      <Input id="email" type="email" placeholder="your@email.com" required className={`h-12 ${formErrors.email ? 'border-red-500' : ''}`} value={formData.email} onChange={e => handleFieldChange('email', e.target.value, ['required', 'email'])} />
-                      {formErrors.email && <p className="text-red-500 text-sm">{formErrors.email}</p>}
+                      <Label htmlFor="email">Email (Optional)</Label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="your@email.com" 
+                        className="h-12"
+                        value={formData.email} 
+                        onChange={e => setFormData(prev => ({...prev, email: e.target.value}))} 
+                      />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="city">City *</Label>
-                      <Input id="city" placeholder="Enter your city" required className={`h-12 ${formErrors.city ? 'border-red-500' : ''}`} value={formData.city} onChange={e => handleFieldChange('city', e.target.value, ['required', 'city'])} />
-                      {formErrors.city && <p className="text-red-500 text-sm">{formErrors.city}</p>}
+                      <Label htmlFor="city">City (Optional)</Label>
+                      <Input 
+                        id="city" 
+                        placeholder="Enter your city" 
+                        className="h-12"
+                        value={formData.city} 
+                        onChange={e => setFormData(prev => ({...prev, city: e.target.value}))} 
+                      />
                     </div>
                     
                     <div className="space-y-2">
@@ -325,16 +322,12 @@ const Contact = () => {
                       </Select>
                     </div>
 
-                    {/* Display form-level errors */}
-                    {Object.keys(formErrors).length > 0 && <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                          Please fix the errors above before submitting.
-                        </AlertDescription>
-                      </Alert>}
-                    
-                    <Button type="submit" className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 h-auto min-h-[48px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" disabled={isSubmitting || !isFormValid}>
-                      {isSubmitting ? "Submitting..." : "Get My Free Estimate in 24h"}
+                    <Button 
+                      type="submit" 
+                      className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 h-auto min-h-[48px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" 
+                      disabled={!isFormValid}
+                    >
+                      {isSubmitting ? "Sending..." : "Get My Free Estimate in 24h"}
                     </Button>
                     
                     <p className="text-xs text-grey text-center">
