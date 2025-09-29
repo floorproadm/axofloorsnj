@@ -68,12 +68,7 @@ const About = () => {
                         <p className="text-gold font-medium">Owner</p>
                       </div>
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">
-                      With over 15 years of hands-on experience, Ademir brings the precision and 
-                      craftsmanship hardwood services across tri-state homes. He specializes in 
-                      sanding, staining, and hardwood installation — helping families protect their 
-                      investment with floors that are both durable and elegant.
-                    </p>
+                    
                     <p className="text-muted-foreground leading-relaxed mt-4">With over 15 years serving NJ, NY, and PA, Ademir built AXO Floors with his hands and reputation. Known for precision sanding and installations, his commitment is simple: do it once, do it right — helping families protect their investment with floors that are both durable and elegant.</p>
                   </CardContent>
                 </Card>
