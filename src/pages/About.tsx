@@ -137,9 +137,7 @@ const About = () => {
         <section className="py-16 md:py-24 bg-black text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl md:text-4xl font-bold mb-6">
-                Ready to see how your floors can look?
-              </h2>
+              <h2 className="text-2xl md:text-4xl font-bold mb-6">Ready to transform your floors?</h2>
               <p className="text-lg text-white/80 mb-8">
                 Request your free in-home consultation today and let us show you 
                 the possibilities for your space.
