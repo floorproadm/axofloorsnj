@@ -65,7 +65,7 @@ const About = () => {
                 </div>
                 
                 <div className="text-center space-y-2">
-                  <p className="text-sm text-muted-foreground mt-4">Father & Son Team</p>
+                  <p className="text-sm text-muted-foreground mt-4">Father and son, side by side, bringing dedication and precision to every floor we touch.</p>
                 </div>
               </div>
               
