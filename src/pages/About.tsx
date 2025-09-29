@@ -166,22 +166,24 @@ const About = () => {
         {/* Stats Section */}
         <section className="py-16 md:py-24 bg-black text-white">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-gold mb-2">500+</div>
-                <div className="text-white/80">Projects Completed</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-gold mb-2">10+</div>
-                <div className="text-white/80">Years Experience</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-gold mb-2">35+</div>
-                <div className="text-white/80">Google Reviews</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-gold mb-2">100%</div>
-                <div className="text-white/80">Satisfaction Rate</div>
+            <div className="max-w-6xl mx-auto">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center">
+                <div>
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">500+</div>
+                  <div className="text-white/80">Projects Completed</div>
+                </div>
+                <div>
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">10+</div>
+                  <div className="text-white/80">Years Experience</div>
+                </div>
+                <div>
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">35+</div>
+                  <div className="text-white/80">Google Reviews</div>
+                </div>
+                <div>
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">100%</div>
+                  <div className="text-white/80">Satisfaction Rate</div>
+                </div>
               </div>
             </div>
           </div>
