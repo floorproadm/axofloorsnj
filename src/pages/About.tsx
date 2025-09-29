@@ -8,20 +8,20 @@ import teamPhoto from "@/assets/team-photo.jpg";
 const About = () => {
   const values = [{
     icon: Award,
-    title: "Quality Excellence",
-    description: "We use only premium materials and proven installation techniques to ensure lasting results."
-  }, {
-    icon: Users,
-    title: "Expert Team",
-    description: "Our certified flooring specialists bring years of experience to every project."
-  }, {
-    icon: Clock,
-    title: "Timely Service",
-    description: "We respect your time and complete projects on schedule without compromising quality."
+    title: "Hands-On Leadership",
+    description: "We lead from the job site, not just the office."
   }, {
     icon: CheckCircle,
-    title: "Customer Satisfaction",
-    description: "Your satisfaction is our priority, backed by our comprehensive warranty."
+    title: "Craftsmanship You Can Trust",
+    description: "Every detail matters. If we wouldn't put it in our own home, we won't put it in yours."
+  }, {
+    icon: Users,
+    title: "Family-Owned & Operated",
+    description: "Built on legacy, dedication, and trust."
+  }, {
+    icon: Clock,
+    title: "Client-First Service",
+    description: "Clear communication, respect for your time, and results that increase the value of your home."
   }];
   return <div className="min-h-screen bg-background">
       <Header />
@@ -115,7 +115,7 @@ const About = () => {
         {/* Values Section */}
         <section className="py-16 md:py-24 bg-muted/50">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl md:text-4xl font-bold text-center mb-12">Why Choose AXO Floors</h2>
+            <h2 className="text-2xl md:text-4xl font-bold text-center mb-12">Our Values</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {values.map((value, index) => {
               const Icon = value.icon;
@@ -129,6 +129,18 @@ const About = () => {
                     </CardContent>
                   </Card>;
             })}
+            </div>
+            
+            {/* Our Promise */}
+            <div className="max-w-4xl mx-auto mt-16">
+              <Card className="bg-background p-6 md:p-8 border-2 border-gold/20">
+                <CardContent className="p-0">
+                  <h3 className="text-2xl font-bold text-center mb-6">Our Promise</h3>
+                  <p className="text-lg text-muted-foreground leading-relaxed text-center">
+                    When you choose AXO Floors, you're not hiring strangers — you're trusting a family-owned flooring company that treats every project like our own home. Whether it's hardwood floor installation, refinishing experts work, or custom solutions, we deliver with pride, precision, and accountability.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
