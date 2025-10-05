@@ -79,12 +79,8 @@ const About = () => {
                         <p className="text-gold font-medium">General Manager</p>
                       </div>
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">
-                      Following in his father's footsteps, Eduardo has been in the flooring industry 
-                      for 9 years. He focuses on guiding customers through every decision — from stain 
-                      colors to finish options — so they feel confident before work even begins.
-                    </p>
-                    <p className="text-muted-foreground leading-relaxed mt-4">Known for his precision and customer-first mindset, Eduardo has become recognized for turning flooring projects into works of pride. He makes sure every homeowner feels that sense of certainty and joy when the job is complete — knowing they made the right choice.</p>
+                    <p className="text-muted-foreground leading-relaxed">Following in his father’s footsteps, Eduardo has nearly a decade of experience in the hardwood flooring industry, proudly serving homeowners across NJ, NY, and PA. He guides clients through every decision — from stain colors to finish options — ensuring clarity, confidence, and satisfaction at every step. His mission: to make sure every client feels they made the right choice when the job is complete.</p>
+                    
                   </CardContent>
                 </Card>
               </div>
