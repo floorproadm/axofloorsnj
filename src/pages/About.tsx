@@ -34,10 +34,7 @@ const About = () => {
               <h1 className="text-3xl md:text-5xl font-bold mb-6">
                 About <span className="text-gold">AXO Floors</span>
               </h1>
-              <p className="text-lg md:text-xl text-white/80 leading-relaxed">
-                With over a decade of experience, AXO Floors has been transforming homes and businesses 
-                throughout the tri-state area (NJ, NY & PA) with premium flooring solutions and exceptional craftsmanship.
-              </p>
+              <p className="text-lg md:text-xl text-white/80 leading-relaxed">Over a decade of experience, AXO Floors has been transforming homes and businesses throughout the tri-state area (NJ, NY & PA) with premium flooring solutions and exceptional craftsmanship.</p>
             </div>
           </div>
         </section>
