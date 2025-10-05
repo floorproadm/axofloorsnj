@@ -528,13 +528,35 @@ export default function GalleryManager() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="folder-cover">URL da Imagem de Capa (Opcional)</Label>
-                          <Input
-                            id="folder-cover"
-                            value={folderForm.cover_image_url}
-                            onChange={(e) => setFolderForm(prev => ({ ...prev, cover_image_url: e.target.value }))}
-                            placeholder="https://exemplo.com/imagem-capa.jpg"
-                          />
+                          <Label htmlFor="folder-cover">Imagem de Capa (Opcional)</Label>
+                          <div className="space-y-3">
+                            <ImageUploader
+                              bucket="gallery"
+                              maxFiles={1}
+                              maxSize={10}
+                              onImageUploaded={(url) => {
+                                setFolderForm(prev => ({ ...prev, cover_image_url: url }));
+                              }}
+                            />
+                            {folderForm.cover_image_url && (
+                              <div className="relative">
+                                <img 
+                                  src={folderForm.cover_image_url} 
+                                  alt="Preview da capa" 
+                                  className="w-full h-40 object-cover rounded-md"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute top-2 right-2"
+                                  onClick={() => setFolderForm(prev => ({ ...prev, cover_image_url: "" }))}
+                                >
+                                  Remover
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" onClick={() => setIsFolderDialogOpen(false)}>
