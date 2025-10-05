@@ -84,12 +84,7 @@ const About = () => {
                       for 9 years. He focuses on guiding customers through every decision — from stain 
                       colors to finish options — so they feel confident before work even begins.
                     </p>
-                    <p className="text-muted-foreground leading-relaxed mt-4">
-                      Known for his precision and customer-first approach, Eduardo has supported dozens 
-                      of homeowners across NJ, NY, and PA, earning a reputation for excellence and reliability. 
-                      His passion: making sure every client sees exactly how their new floor will look 
-                      before the job is done — and walking away knowing they made the right choice.
-                    </p>
+                    <p className="text-muted-foreground leading-relaxed mt-4">Known for his precision and customer-first mindset, Eduardo has become recognized for turning flooring projects into works of pride. He makes sure every homeowner feels that sense of certainty and joy when the job is complete — knowing they made the right choice.</p>
                   </CardContent>
                 </Card>
               </div>
