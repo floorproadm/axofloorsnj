@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.security-monitor]
 verify_jwt = false
+
+[functions.send-to-notion]
+verify_jwt = false

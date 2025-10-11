@@ -79,6 +79,24 @@ export const useLeadCapture = () => {
         console.warn('Failed to send admin notification:', notificationError);
       }
 
+      // Send to Notion
+      try {
+        await supabase.functions.invoke('send-to-notion', {
+          body: {
+            name: leadData.name,
+            email: leadData.email,
+            phone: dbData.phone,
+            source: leadData.source,
+            services: leadData.category ? [leadData.category] : ['lead_magnet'],
+            notes: leadData.downloadTitle ? `Downloaded: ${leadData.downloadTitle}` : 'Lead magnet download'
+          }
+        });
+        console.log('Lead sent to Notion successfully');
+      } catch (notionError) {
+        console.warn('Failed to send to Notion:', notionError);
+        // Don't fail the whole process for Notion errors
+      }
+
       toast({
         title: "Success! 🎉",
         description: "Your download should start automatically. Check your email for more resources!"
