@@ -31,39 +31,9 @@ import { useToast } from "@/hooks/use-toast";
 
 const navigationItems = [
   {
-    title: "Dashboard",
-    url: "/admin/dashboard",
-    icon: LayoutDashboard,
-    badge: null
-  },
-  {
-    title: "Gestão de Leads",
-    url: "/admin/leads",
-    icon: Users,
-    badge: null
-  },
-  {
     title: "Galeria",
     url: "/admin/gallery",
     icon: Images,
-    badge: null
-  },
-  {
-    title: "Projetos",
-    url: "/admin/projects",
-    icon: Building,
-    badge: null
-  },
-  {
-    title: "Relatórios",
-    url: "/admin/reports",
-    icon: FileText,
-    badge: null
-  },
-  {
-    title: "Agendamentos",
-    url: "/admin/appointments",
-    icon: Calendar,
     badge: null
   }
 ];
@@ -73,16 +43,6 @@ const quickActions = [
     title: "Site Principal",
     url: "/",
     icon: Home
-  },
-  {
-    title: "Analytics",
-    url: "/admin/analytics",
-    icon: TrendingUp
-  },
-  {
-    title: "Configurações",
-    url: "/admin/settings",
-    icon: Settings
   }
 ];
 

@@ -26,13 +26,8 @@ import ThankYou from "./pages/ThankYou";
 import ReferralProgram from "./pages/ReferralProgram";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
-import Admin from "./pages/Admin";
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminLeadsManager from './pages/admin/LeadsManager';
 import AdminGalleryManager from './pages/admin/GalleryManager';
-import AdminProjectsManager from './pages/admin/ProjectsManager';
 import Auth from "./pages/Auth";
-import LeadsManagement from './pages/LeadsManagement';
 import Campaign from "./pages/Campaign";
 import LeadMagnets from "./pages/LeadMagnets";
 import NotFound from "./pages/NotFound";
@@ -71,34 +66,14 @@ const App = () => {
             <Route path="/realtors" element={<Realtors />} />
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/leads-management" element={
-              <ProtectedRoute>
-                <LeadsManagement />
-              </ProtectedRoute>
-            } />
             <Route path="/admin" element={
               <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/dashboard" element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/leads" element={
-              <ProtectedRoute>
-                <AdminLeadsManager />
+                <AdminGalleryManager />
               </ProtectedRoute>
             } />
             <Route path="/admin/gallery" element={
               <ProtectedRoute>
                 <AdminGalleryManager />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/projects" element={
-              <ProtectedRoute>
-                <AdminProjectsManager />
               </ProtectedRoute>
             } />
             
