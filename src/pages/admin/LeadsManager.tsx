@@ -1,8 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { DataTable } from "@/components/admin/DataTable";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { useAdminData } from "@/hooks/admin/useAdminData";
 import { useLeadsExport } from "@/hooks/admin/useLeadsExport";
 import { ColumnDef } from "@tanstack/react-table";
@@ -16,7 +18,12 @@ import {
   AlertCircle,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  Calendar,
+  DollarSign,
+  MessageSquare,
+  Tag,
+  Home
 } from "lucide-react";
 
 type Lead = {
@@ -60,6 +67,13 @@ const sourceLabels: Record<string, string> = {
 export default function LeadsManager() {
   const { leads, stats, isLoading } = useAdminData();
   const { exportToCSV, exportToJSON } = useLeadsExport();
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const handleRowClick = (lead: Lead) => {
+    setSelectedLead(lead);
+    setIsDetailModalOpen(true);
+  };
 
   const columns: ColumnDef<Lead>[] = useMemo(() => [
     {
@@ -271,10 +285,182 @@ export default function LeadsManager() {
               title="Todos os Leads"
               description="Visualize e gerencie todos os leads capturados através dos formulários e quiz do site"
               onExport={handleExport}
+              onRowClick={handleRowClick}
             />
           </CardContent>
         </Card>
       </div>
+
+      {/* Lead Detail Modal */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Detalhes do Lead</DialogTitle>
+            <DialogDescription>
+              Informações completas capturadas do lead
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedLead && (
+            <div className="space-y-6 py-4">
+              {/* Status Badges */}
+              <div className="flex gap-2 flex-wrap">
+                <Badge 
+                  variant="outline" 
+                  className={statusColors[selectedLead.status as keyof typeof statusColors]}
+                >
+                  Status: {selectedLead.status}
+                </Badge>
+                <Badge 
+                  variant="outline" 
+                  className={priorityColors[selectedLead.priority as keyof typeof priorityColors]}
+                >
+                  Prioridade: {selectedLead.priority}
+                </Badge>
+                <Badge variant="outline">
+                  {sourceLabels[selectedLead.lead_source] || selectedLead.lead_source}
+                </Badge>
+              </div>
+
+              <Separator />
+
+              {/* Contact Information */}
+              <div>
+                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Informações de Contato
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Nome</p>
+                    <p className="font-medium">{selectedLead.name}</p>
+                  </div>
+                  
+                  {selectedLead.email && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Mail className="w-3 h-3" />
+                        Email
+                      </p>
+                      <a 
+                        href={`mailto:${selectedLead.email}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {selectedLead.email}
+                      </a>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Phone className="w-3 h-3" />
+                      Telefone
+                    </p>
+                    <a 
+                      href={`tel:${selectedLead.phone}`}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {selectedLead.phone}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Location Information */}
+              {selectedLead.city && (
+                <>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-primary" />
+                      Localização
+                    </h3>
+                    <div className="space-y-1">
+                      <p className="font-medium">{selectedLead.city}</p>
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Project Details */}
+              {(selectedLead.services.length > 0 || selectedLead.budget) && (
+                <>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <Home className="w-5 h-5 text-primary" />
+                      Detalhes do Projeto
+                    </h3>
+                    <div className="space-y-4">
+                      {selectedLead.services.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            Serviços de Interesse
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedLead.services.map((service, idx) => (
+                              <Badge key={idx} variant="secondary">
+                                {service}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {selectedLead.budget && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" />
+                            Orçamento
+                          </p>
+                          <p className="font-medium text-lg">
+                            ${selectedLead.budget.toLocaleString()}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Notes */}
+              {selectedLead.notes && (
+                <>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                      Observações
+                    </h3>
+                    <p className="text-sm bg-muted p-3 rounded-lg">
+                      {selectedLead.notes}
+                    </p>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Timestamps */}
+              <div>
+                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  Datas
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">Data de Criação</p>
+                    <p className="font-medium">
+                      {format(new Date(selectedLead.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

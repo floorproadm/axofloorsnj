@@ -52,6 +52,7 @@ interface DataTableProps<TData, TValue> {
   description?: string;
   isLoading?: boolean;
   onExport?: () => void;
+  onRowClick?: (row: TData) => void;
   pageSize?: number;
 }
 
@@ -66,6 +67,7 @@ export function DataTable<TData, TValue>({
   description,
   isLoading = false,
   onExport,
+  onRowClick,
   pageSize = 10,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -176,7 +178,11 @@ export function DataTable<TData, TValue>({
           {table.getRowModel().rows?.length ? (
             <div className="space-y-3">
               {table.getRowModel().rows.map((row) => (
-                <Card key={row.id} className="p-3">
+                <Card 
+                  key={row.id} 
+                  className={`p-3 ${onRowClick ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}`}
+                  onClick={() => onRowClick?.(row.original)}
+                >
                   <div className="space-y-2">
                     {row.getVisibleCells().map((cell, index) => {
                       const header = table.getHeaderGroups()[0]?.headers[index];
@@ -261,6 +267,8 @@ export function DataTable<TData, TValue>({
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
+                        className={onRowClick ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}
+                        onClick={() => onRowClick?.(row.original)}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id} className="whitespace-nowrap">
