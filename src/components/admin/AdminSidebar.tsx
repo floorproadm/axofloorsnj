@@ -31,6 +31,12 @@ import { useToast } from "@/hooks/use-toast";
 
 const navigationItems = [
   {
+    title: "Leads",
+    url: "/admin/leads",
+    icon: Users,
+    badge: null
+  },
+  {
     title: "Galeria",
     url: "/admin/gallery",
     icon: Images,

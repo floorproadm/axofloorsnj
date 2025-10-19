@@ -27,6 +27,7 @@ import ReferralProgram from "./pages/ReferralProgram";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import AdminGalleryManager from './pages/admin/GalleryManager';
+import AdminLeadsManager from './pages/admin/LeadsManager';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 import LeadMagnets from "./pages/LeadMagnets";
@@ -74,6 +75,11 @@ const App = () => {
             <Route path="/admin/gallery" element={
               <ProtectedRoute>
                 <AdminGalleryManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/leads" element={
+              <ProtectedRoute>
+                <AdminLeadsManager />
               </ProtectedRoute>
             } />
             
