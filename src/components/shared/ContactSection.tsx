@@ -65,6 +65,27 @@ const ContactSection = () => {
         throw new Error(`Failed to save contact: ${saveError.message}`);
       }
 
+      // Send to Notion
+      try {
+        await supabase.functions.invoke('send-to-notion', {
+          body: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            source: 'contact_section',
+            services: formData.service ? [formData.service] : ['general_inquiry'],
+            priority: 'medium',
+            status: 'new',
+            message: formData.message,
+            notes: `Contact section submission - Service: ${formData.service || 'General Inquiry'}`
+          }
+        });
+        console.log('Contact section lead sent to Notion successfully');
+      } catch (notionError) {
+        console.error('Error sending contact section lead to Notion:', notionError);
+        // Não falhar o processo todo por erro do Notion
+      }
+
       // Send follow-up email to customer
       try {
         await supabase.functions.invoke('send-follow-up', {

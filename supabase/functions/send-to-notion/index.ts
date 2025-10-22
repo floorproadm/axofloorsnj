@@ -15,6 +15,13 @@ interface LeadData {
   source: string;
   services?: string[];
   notes?: string;
+  budget?: number;
+  room_size?: string;
+  city?: string;
+  zip_code?: string;
+  message?: string;
+  priority?: string;
+  status?: string;
 }
 
 serve(async (req) => {
@@ -65,13 +72,82 @@ serve(async (req) => {
       }
     };
 
-    // Se houver notas, adicionar ao payload
+    // Adicionar campos opcionais ao payload
+    if (leadData.budget) {
+      notionPayload.properties["Budget"] = {
+        number: leadData.budget
+      };
+    }
+
+    if (leadData.room_size) {
+      notionPayload.properties["Room Size"] = {
+        rich_text: [
+          {
+            text: {
+              content: leadData.room_size
+            }
+          }
+        ]
+      };
+    }
+
+    if (leadData.city) {
+      notionPayload.properties["City"] = {
+        rich_text: [
+          {
+            text: {
+              content: leadData.city
+            }
+          }
+        ]
+      };
+    }
+
+    if (leadData.zip_code) {
+      notionPayload.properties["Zip Code"] = {
+        rich_text: [
+          {
+            text: {
+              content: leadData.zip_code
+            }
+          }
+        ]
+      };
+    }
+
+    if (leadData.priority) {
+      notionPayload.properties["Priority"] = {
+        select: {
+          name: leadData.priority
+        }
+      };
+    }
+
+    if (leadData.status) {
+      notionPayload.properties["Status"] = {
+        select: {
+          name: leadData.status
+        }
+      };
+    }
+
+    // Se houver notas ou mensagem, adicionar ao payload
+    const notesContent = [];
+    
+    if (leadData.message) {
+      notesContent.push(`Message: ${leadData.message}`);
+    }
+    
     if (leadData.notes) {
+      notesContent.push(leadData.notes);
+    }
+    
+    if (notesContent.length > 0) {
       notionPayload.properties["Notes"] = {
         rich_text: [
           {
             text: {
-              content: leadData.notes
+              content: notesContent.join('\n\n')
             }
           }
         ]

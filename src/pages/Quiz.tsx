@@ -237,6 +237,29 @@ const Quiz = () => {
 
       console.log('Successfully saved quiz lead:', savedLead);
 
+      // Send to Notion
+      try {
+        await supabase.functions.invoke('send-to-notion', {
+          body: {
+            name: quizData.name,
+            email: quizData.email,
+            phone: quizData.phone,
+            source: 'quiz',
+            services: quizData.services,
+            budget: quizData.budget,
+            room_size: quizData.room_size,
+            city: quizData.city,
+            priority: quizData.priority,
+            status: 'new',
+            notes: `Quiz submission - Service: ${formData.serviceType}, Square Footage: ${formData.squareFootage || 'Not specified'}, Timeline: ${formData.timeline || 'Not specified'}, Wood Type: ${formData.woodType || 'Not specified'}, Condition: ${formData.currentCondition || 'Not specified'}, Color Change: ${formData.colorChange || 'Not specified'}`
+          }
+        });
+        console.log('Quiz lead sent to Notion successfully');
+      } catch (notionError) {
+        console.error('Error sending quiz lead to Notion:', notionError);
+        // Não falhar o processo todo por erro do Notion
+      }
+
       // Send follow-up email
       try {
         await supabase.functions.invoke('send-follow-up', {

@@ -157,6 +157,31 @@ const ContactForm = () => {
 
       if (error) throw error;
 
+      // Send to Notion
+      try {
+        await supabase.functions.invoke('send-to-notion', {
+          body: {
+            name: formData.name,
+            email: formData.email || 'no-email@provided.com',
+            phone: formData.phone,
+            source: 'contact_form',
+            services: formData.services,
+            budget: formData.budget ? parseInt(formData.budget) : null,
+            room_size: formData.room_size,
+            city: formData.city,
+            zip_code: formData.zip_code,
+            priority: formData.priority || 'medium',
+            status: 'new',
+            message: formData.message,
+            notes: `Contact form submission - Services: ${formData.services.join(', ')}`
+          }
+        });
+        console.log('Contact form lead sent to Notion successfully');
+      } catch (notionError) {
+        console.error('Error sending contact form lead to Notion:', notionError);
+        // Não falhar o processo todo por erro do Notion
+      }
+
       // Send Facebook conversion event
       await sendFacebookConversion(formData);
 
