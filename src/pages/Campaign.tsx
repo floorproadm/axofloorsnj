@@ -133,7 +133,7 @@ const Campaign = () => {
             </div>
             
             <Badge className="mb-6 bg-gold text-navy font-semibold px-6 py-2 text-sm">
-              LIMITED OCTOBER SLOTS AVAILABLE
+              LIMITED NOVEMBRO SLOTS AVAILABLE
             </Badge>
             
             <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-6 leading-tight px-4">
