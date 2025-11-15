@@ -104,7 +104,7 @@ const Campaign = () => {
     <>
       <SEOHead
         title="Get Ready for the Holidays - Premium Floor Transformation | AXO Floors"
-        description="Transform worn floors to stunning in just 72 hours. Premium hardwood restoration across NJ, NY & PA. Limited October slots available. Book your free assessment."
+        description="Transform worn floors to stunning in just 72 hours. Premium hardwood restoration across NJ, NY & PA. Limited November slots available. Book your free assessment."
         keywords="holiday floor renovation, hardwood restoration NJ NY PA, floor refinishing, premium flooring services"
       />
       
@@ -343,13 +343,13 @@ const Campaign = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-gold/20 to-transparent opacity-50"></div>
               <div className="relative z-10">
                 <h3 className="text-xl sm:text-2xl font-heading font-bold mb-3 sm:mb-4">
-                  October Special: Save Up to $500
+                  November Special: Save Up to $500
                 </h3>
                 <p className="text-base sm:text-lg font-semibold mb-4">
                   Free Stair Repair ($350 value) + Premium Traffic-Grade Sealant Upgrade ($150 value)
                 </p>
                 <p className="text-sm opacity-90">
-                  When you book before October 31st. Limited to 5 projects this month.
+                  When you book before November 30th. Limited to 5 projects this month.
                 </p>
               </div>
             </div>
@@ -441,13 +441,13 @@ const Campaign = () => {
               <div className="bg-destructive/20 border border-destructive/30 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8 mx-4 sm:mx-0">
                 <p className="text-base sm:text-lg font-semibold">
                   ⚠️ We take on only 5 projects per week to maintain premium standards. 
-                  <span className="text-gold block sm:inline"> October is almost full.</span>
+                  <span className="text-gold block sm:inline"> November is almost full.</span>
                 </p>
               </div>
               
               <Button size="lg" className="bg-gold text-navy hover:bg-gold/90 text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-6 w-full sm:w-auto" asChild>
                 <Link to="/contact">
-                  Reserve Your October Spot
+                  Reserve Your November Spot
                   <Calendar className="ml-2 h-5 w-5 sm:h-6 sm:w-6" />
                 </Link>
               </Button>
