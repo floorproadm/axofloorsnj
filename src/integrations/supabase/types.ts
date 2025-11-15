@@ -396,10 +396,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
       log_admin_access: {
         Args: { operation: string; table_name: string; user_id?: string }
         Returns: undefined
@@ -408,18 +405,12 @@ export type Database = {
         Args: { data_type?: string; operation: string; table_name: string }
         Returns: undefined
       }
-      migrate_quiz_responses_to_leads: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      migrate_quiz_responses_to_leads: { Args: never; Returns: undefined }
       sanitize_error_response: {
         Args: { error_message: string }
         Returns: string
       }
-      test_quiz_submission: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      test_quiz_submission: { Args: never; Returns: Json }
       validate_sensitive_data_access: {
         Args: { operation: string; table_name: string; user_role: string }
         Returns: boolean
