@@ -279,7 +279,7 @@ const Campaign = () => {
                 
                 <Button variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white w-full sm:w-auto" asChild>
                   <Link to="/gallery">
-                    Read More Success Stories
+                    See Real Transformations
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
