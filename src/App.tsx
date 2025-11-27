@@ -31,6 +31,7 @@ import AdminLeadsManager from './pages/admin/LeadsManager';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 import LeadMagnets from "./pages/LeadMagnets";
+import Sales2026 from "./pages/Sales2026";
 import NotFound from "./pages/NotFound";
 
 
@@ -66,6 +67,7 @@ const App = () => {
             <Route path="/builders" element={<Builders />} />
             <Route path="/realtors" element={<Realtors />} />
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
+            <Route path="/sales2026" element={<Sales2026 />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={
               <ProtectedRoute>
