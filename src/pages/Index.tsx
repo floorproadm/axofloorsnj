@@ -109,7 +109,7 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <Hero title="Your Flooring deserves the attention that only us can provide!" subtitle="Premium Flooring Solutions in New Jersey" description="Over time, flooring often fades and becomes damaged. However, with expert care and the right team by your side, this won't be a problem anymore." image={homeHero} showReviews={true} />
+      <Hero title="Your Flooring deserves the attention that only us can provide!" subtitle="Flooring Solutions in New Jersey and Beyond" description="Over time, flooring often fades and becomes damaged. However, with expert care and the right team by your side, this won't be a problem anymore." image={homeHero} showReviews={true} />
 
       {/* Services Section */}
       <section className="spacing-mobile-md bg-secondary/30">
