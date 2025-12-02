@@ -36,18 +36,6 @@ const Hero = ({
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-12 sm:py-20">
         <div className="max-w-4xl mx-auto text-center text-white">
-          {/* Reviews Badge */}
-          {showReviews && (
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-2 sm:px-4 mb-4 sm:mb-6 border border-white/20">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-gold text-gold" />
-                ))}
-              </div>
-              <span className="text-xs sm:text-sm font-medium">35+ Google Reviews</span>
-            </div>
-          )}
-
           {/* Subtitle */}
           <p className="text-base sm:text-lg md:text-xl font-medium text-gold mb-3 sm:mb-4 font-heading">
             {subtitle}
