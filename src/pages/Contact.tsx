@@ -207,23 +207,6 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* Scarcity & Urgency */}
-      <section className="py-8 bg-gold/10 border-l-4 border-gold">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3 text-center sm:text-left">
-              <AlertTriangle className="w-8 h-8 text-gold flex-shrink-0" />
-              <div>
-                <p className="text-navy font-bold text-lg">October Schedule is 65% full.</p>
-                <p className="text-grey">Only 5 project slots left this month.</p>
-              </div>
-            </div>
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce font-bold">
-              <a href="#quote-form">Reserve My Spot Now</a>
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* Main Content */}
       <section id="quote-form" className="py-16 sm:py-20 bg-grey-light">
