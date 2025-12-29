@@ -30,7 +30,6 @@ import AdminGalleryManager from './pages/admin/GalleryManager';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
-import LeadMagnets from "./pages/LeadMagnets";
 import Sales2026 from "./pages/Sales2026";
 import NotFound from "./pages/NotFound";
 
@@ -60,7 +59,6 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/funnel" element={<FunnelPage />} />
             <Route path="/campaign" element={<Campaign />} />
-            <Route path="/lead-magnets" element={<LeadMagnets />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/referral-program" element={<ReferralProgram />} />
