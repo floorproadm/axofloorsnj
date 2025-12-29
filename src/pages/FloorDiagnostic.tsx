@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
@@ -72,6 +72,32 @@ const FloorDiagnostic = () => {
 
   const totalSteps = 5;
 
+  // Pre-fill contact info from localStorage on step 5
+  useEffect(() => {
+    if (currentStep === 5) {
+      const savedName = localStorage.getItem('user_name');
+      const savedEmail = localStorage.getItem('user_email');
+      const savedPhone = localStorage.getItem('user_phone');
+      const savedAddress = localStorage.getItem('user_address');
+      
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || savedName || '',
+        email: prev.email || savedEmail || '',
+        phone: prev.phone || savedPhone || '',
+        address: prev.address || savedAddress || ''
+      }));
+    }
+  }, [currentStep]);
+
+  // Save contact info to localStorage when submitted
+  const saveContactToLocalStorage = () => {
+    if (formData.name) localStorage.setItem('user_name', formData.name);
+    if (formData.email) localStorage.setItem('user_email', formData.email);
+    if (formData.phone) localStorage.setItem('user_phone', formData.phone);
+    if (formData.address) localStorage.setItem('user_address', formData.address);
+  };
+
   const handleFieldChange = (field: string, value: string) => {
     const sanitizedValue = sanitizeInput(value);
     setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
@@ -128,6 +154,9 @@ const FloorDiagnostic = () => {
       return;
     }
 
+    // Save contact info for future pre-fill
+    saveContactToLocalStorage();
+    
     setIsLoading(true);
 
     try {
