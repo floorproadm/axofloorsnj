@@ -18,11 +18,11 @@ const services = [
 ];
 
 const mainNavigation = [
+  { name: "Floor Diagnostic™", href: "/floor-diagnostic", highlight: true },
   { name: "Contact", href: "/contact" },
   { name: "About", href: "/about" },
   { name: "Gallery", href: "/gallery" },
   { name: "Stain Colors", href: "/stain-gallery" },
-  { name: "Quiz", href: "/quiz" },
   { name: "Builders", href: "/builders" },
 ];
 
@@ -92,7 +92,9 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
               className={`block py-3 px-4 rounded-xl font-medium transition-all ${
                 isActive(item.href)
                   ? 'text-gold bg-gold/10 border-l-2 border-gold'
-                  : 'text-white hover:text-gold hover:bg-white/5'
+                  : 'highlight' in item && item.highlight
+                    ? 'text-gold hover:bg-gold/10'
+                    : 'text-white hover:text-gold hover:bg-white/5'
               }`}
             >
               {item.name}
@@ -104,11 +106,11 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
       {/* CTAs na parte inferior */}
       <div className="p-4 border-t border-white/10 space-y-3">
         <Link 
-          to="/quiz" 
+          to="/floor-diagnostic" 
           onClick={onClose}
           className="block w-full py-3 px-4 bg-gradient-to-r from-gold to-gold-warm text-black font-bold text-center rounded-xl hover:shadow-lg transition-all"
         >
-          GET A QUOTE
+          APPLY FOR DIAGNOSTIC
         </Link>
         <Link 
           to="/contact" 
