@@ -397,7 +397,7 @@ const Campaign = () => {
               
               <Button size="lg" className="bg-gold text-navy hover:bg-gold/90 text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-6 w-full sm:w-auto" asChild>
                 <Link to="/contact">
-                  Reserve Your November Spot
+                  Reserve Your January Spot
                   <Calendar className="ml-2 h-5 w-5 sm:h-6 sm:w-6" />
                 </Link>
               </Button>
