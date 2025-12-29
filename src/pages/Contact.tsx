@@ -317,36 +317,30 @@ const Contact = () => {
                   </h4>
                   
                   <div className="space-y-3">
-                    <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
-                      <a href="tel:(732) 351-8653" className="flex items-center gap-3">
-                        <Phone className="w-5 h-5" />
-                        <div className="text-left">
-                          <div className="font-semibold text-base">(732) 351-8653</div>
-                          <div className="text-sm text-gold/90">Click to call directly</div>
-                        </div>
-                      </a>
-                    </Button>
+                    <a href="tel:(732) 351-8653" className="flex items-center gap-3 p-4 rounded-lg border border-gold text-gold hover:bg-gold hover:text-navy transition-all w-full">
+                      <Phone className="w-5 h-5 flex-shrink-0" />
+                      <div className="text-left min-w-0">
+                        <div className="font-semibold text-base">(732) 351-8653</div>
+                        <div className="text-sm opacity-80">Ligar agora</div>
+                      </div>
+                    </a>
                     
-                    <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
-                      <a href="mailto:axofloorsnj@gmail.com" className="flex items-center gap-3">
-                        <Mail className="w-5 h-5" />
-                        <div className="text-left">
-                          <div className="font-semibold text-sm">axofloorsnj@gmail.com</div>
-                          <div className="text-sm text-gold/90">Click to send email</div>
-                        </div>
-                      </a>
-                    </Button>
+                    <a href="mailto:axofloorsnj@gmail.com" className="flex items-center gap-3 p-4 rounded-lg border border-gold text-gold hover:bg-gold hover:text-navy transition-all w-full">
+                      <Mail className="w-5 h-5 flex-shrink-0" />
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="font-semibold text-sm truncate">axofloorsnj@gmail.com</div>
+                        <div className="text-sm opacity-80">Enviar email</div>
+                      </div>
+                    </a>
                     
-                    <Button asChild variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy w-full justify-start">
-                      <a href="https://wa.me/17323518653" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
-                        <MessageSquare className="w-4 h-4" />
-                        <div className="text-left">
-                          <div className="font-medium">WhatsApp</div>
-                          <div className="text-xs opacity-80">Instant response</div>
-                        </div>
-                        <ExternalLink className="w-3 h-3 ml-auto" />
-                      </a>
-                    </Button>
+                    <a href="https://wa.me/17323518653" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 rounded-lg border border-gold text-gold hover:bg-gold hover:text-navy transition-all w-full">
+                      <MessageSquare className="w-5 h-5 flex-shrink-0" />
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="font-semibold">WhatsApp</div>
+                        <div className="text-sm opacity-80">Resposta instantânea</div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                    </a>
                   </div>
                 </CardContent>
               </Card>
