@@ -6,13 +6,7 @@ import { Star, ArrowRight, Phone, CheckCircle, Shield, Calendar, Award, Users, S
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import SEOHead from "@/components/shared/SEOHead";
-import { 
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useState, useEffect } from "react";
 
 // Import existing assets
@@ -22,10 +16,8 @@ import afterCampaignNew from "@/assets/after-campaign-new.png";
 import happyCustomers from "@/assets/happy-customers.jpg";
 import happyCoupleFloors from "@/assets/happy-couple-with-mascot.png";
 import professionalProcess from "@/assets/professional-process.jpg";
-
 const Campaign = () => {
   const [showStickyButton, setShowStickyButton] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => {
       setShowStickyButton(window.scrollY > 800);
@@ -33,90 +25,76 @@ const Campaign = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const testimonials = [
-    {
-      quote: "Our Christmas tree lights literally reflected on the floor. Stunning.",
-      location: "Princeton, NJ",
-      name: "Sarah M.",
-      rating: 5
-    },
-    {
-      quote: "We feared dust everywhere, but AXO's system kept the house spotless.",
-      location: "Brooklyn, NY", 
-      name: "Michael R.",
-      rating: 5
-    },
-    {
-      quote: "Kids, dog, daily chaos… two months later the floor still looks new.",
-      location: "Doylestown, PA",
-      name: "Jennifer L.",
-      rating: 5
-    },
-    {
-      quote: "Professional, punctual, premium. Worth every dollar.",
-      location: "Jersey City, NJ",
-      name: "David K.",
-      rating: 5
-    },
-    {
-      quote: "Neighbors keep asking who did our floors. AXO transformed our entire home's feel.",
-      location: "Holmdel, NJ",
-      name: "Lisa W.",
-      rating: 5
-    },
-    {
-      quote: "From consultation to cleanup, flawless experience. Our Alpine home looks magazine-ready.",
-      location: "Alpine, NJ",
-      name: "Robert T.",
-      rating: 5
-    },
-    {
-      quote: "Hosting Thanksgiving was a dream. Everyone complimented our 'new' 15-year-old floors.",
-      location: "Short Hills, NJ",
-      name: "Amanda C.",
-      rating: 5
-    }
-  ];
-
-  const signatureServices = [
-    { icon: Users, title: "In-home Floor Assessment & Samples" },
-    { icon: Sparkles, title: "Low-dust Sanding (HEPA system)" },
-    { icon: Award, title: "Premium Low-odor Finishes" },
-    { icon: CheckCircle, title: "Custom Color & Tone Matching" },
-    { icon: Sparkles, title: "Post-project Deep Cleaning" },
-    { icon: Calendar, title: "30-Day Follow-up Visit" },
-    { icon: Shield, title: "10-Year Written Warranty" }
-  ];
-
-  const benefits = [
-    "Immediate pride — a floor that gets compliments instantly",
-    "More light & space — finishes that brighten the room",
-    "Hygienic & easy-to-clean surfaces",
-    "Long-lasting durability (kids & pets approved)",
-    "No mess, no heavy odors",
-    "Custom look — samples shown under your lighting",
-    "Added home value for future resale",
-    "Stress-free premium experience from start to finish"
-  ];
-
-  return (
-    <>
-      <SEOHead
-        title="Get Ready for the Holidays - Premium Floor Transformation | AXO Floors"
-        description="Transform worn floors to stunning in just 72 hours. Premium hardwood restoration across NJ, NY & PA. Limited November slots available. Book your free assessment."
-        keywords="holiday floor renovation, hardwood restoration NJ NY PA, floor refinishing, premium flooring services"
-      />
+  const testimonials = [{
+    quote: "Our Christmas tree lights literally reflected on the floor. Stunning.",
+    location: "Princeton, NJ",
+    name: "Sarah M.",
+    rating: 5
+  }, {
+    quote: "We feared dust everywhere, but AXO's system kept the house spotless.",
+    location: "Brooklyn, NY",
+    name: "Michael R.",
+    rating: 5
+  }, {
+    quote: "Kids, dog, daily chaos… two months later the floor still looks new.",
+    location: "Doylestown, PA",
+    name: "Jennifer L.",
+    rating: 5
+  }, {
+    quote: "Professional, punctual, premium. Worth every dollar.",
+    location: "Jersey City, NJ",
+    name: "David K.",
+    rating: 5
+  }, {
+    quote: "Neighbors keep asking who did our floors. AXO transformed our entire home's feel.",
+    location: "Holmdel, NJ",
+    name: "Lisa W.",
+    rating: 5
+  }, {
+    quote: "From consultation to cleanup, flawless experience. Our Alpine home looks magazine-ready.",
+    location: "Alpine, NJ",
+    name: "Robert T.",
+    rating: 5
+  }, {
+    quote: "Hosting Thanksgiving was a dream. Everyone complimented our 'new' 15-year-old floors.",
+    location: "Short Hills, NJ",
+    name: "Amanda C.",
+    rating: 5
+  }];
+  const signatureServices = [{
+    icon: Users,
+    title: "In-home Floor Assessment & Samples"
+  }, {
+    icon: Sparkles,
+    title: "Low-dust Sanding (HEPA system)"
+  }, {
+    icon: Award,
+    title: "Premium Low-odor Finishes"
+  }, {
+    icon: CheckCircle,
+    title: "Custom Color & Tone Matching"
+  }, {
+    icon: Sparkles,
+    title: "Post-project Deep Cleaning"
+  }, {
+    icon: Calendar,
+    title: "30-Day Follow-up Visit"
+  }, {
+    icon: Shield,
+    title: "10-Year Written Warranty"
+  }];
+  const benefits = ["Immediate pride — a floor that gets compliments instantly", "More light & space — finishes that brighten the room", "Hygienic & easy-to-clean surfaces", "Long-lasting durability (kids & pets approved)", "No mess, no heavy odors", "Custom look — samples shown under your lighting", "Added home value for future resale", "Stress-free premium experience from start to finish"];
+  return <>
+      <SEOHead title="Get Ready for the Holidays - Premium Floor Transformation | AXO Floors" description="Transform worn floors to stunning in just 72 hours. Premium hardwood restoration across NJ, NY & PA. Limited November slots available. Book your free assessment." keywords="holiday floor renovation, hardwood restoration NJ NY PA, floor refinishing, premium flooring services" />
       
       <div className="min-h-screen bg-background">
         <Header />
         
         {/* Section 1 - Hero */}
         <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center justify-center overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${holidayHeroFloor})` }}
-          >
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
+          backgroundImage: `url(${holidayHeroFloor})`
+        }}>
             <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/70 to-navy/40" />
           </div>
           
@@ -132,9 +110,7 @@ const Campaign = () => {
               </div>
             </div>
             
-            <Badge className="mb-6 bg-gold text-navy font-semibold px-6 py-2 text-sm">
-              LIMITED NOVEMBER SLOTS AVAILABLE
-            </Badge>
+            <Badge className="mb-6 bg-gold text-navy font-semibold px-6 py-2 text-sm">LIMITED JANUARY SLOTS AVAILABLE</Badge>
             
             <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-6 leading-tight px-4">
               From Worn to <span className="text-gold animate-pulse">WOW</span><br />
@@ -167,11 +143,7 @@ const Campaign = () => {
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="order-2 lg:order-1">
-                <img 
-                  src={realDamagedFloor} 
-                  alt="Real damaged hardwood floor showing scratches, stains and wear that embarrasses homeowners"
-                  className="rounded-lg shadow-elegant w-full"
-                />
+                <img src={realDamagedFloor} alt="Real damaged hardwood floor showing scratches, stains and wear that embarrasses homeowners" className="rounded-lg shadow-elegant w-full" />
               </div>
               
               <div className="order-1 lg:order-2 text-center lg:text-left">
@@ -223,11 +195,7 @@ const Campaign = () => {
             
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="order-2 lg:order-1">
-                <img 
-                  src={afterCampaignNew} 
-                  alt="Beautiful restored hardwood floor after AXO Floors transformation showing stunning craftsmanship"
-                  className="rounded-lg shadow-elegant w-full"
-                />
+                <img src={afterCampaignNew} alt="Beautiful restored hardwood floor after AXO Floors transformation showing stunning craftsmanship" className="rounded-lg shadow-elegant w-full" />
               </div>
               
               <div className="order-1 lg:order-2 text-center lg:text-left">
@@ -247,11 +215,7 @@ const Campaign = () => {
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div>
-                <img 
-                  src={happyCoupleFloors} 
-                  alt="Happy couple standing in their beautiful living room with restored hardwood floors"
-                  className="rounded-lg shadow-elegant w-full"
-                />
+                <img src={happyCoupleFloors} alt="Happy couple standing in their beautiful living room with restored hardwood floors" className="rounded-lg shadow-elegant w-full" />
               </div>
               
               <div className="text-center lg:text-left">
@@ -270,9 +234,7 @@ const Campaign = () => {
                 </blockquote>
                 
                 <div className="flex gap-1 mb-4 sm:mb-6 justify-center lg:justify-start">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-gold text-gold" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-gold text-gold" />)}
                 </div>
                 
                 <p className="text-sm text-muted-foreground mb-6">— The Johnson Family, Short Hills, NJ</p>
@@ -312,11 +274,7 @@ const Campaign = () => {
         <section className="py-12 sm:py-16 lg:py-20 bg-background relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute inset-0 opacity-5">
-            <img 
-              src={professionalProcess} 
-              alt="Professional floor refinishing equipment"
-              className="w-full h-full object-cover"
-            />
+            <img src={professionalProcess} alt="Professional floor refinishing equipment" className="w-full h-full object-cover" />
           </div>
           <div className="relative z-10 container mx-auto px-4">
             <div className="text-center mb-12 sm:mb-16">
@@ -329,14 +287,12 @@ const Campaign = () => {
             </div>
             
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
-              {signatureServices.map((service, index) => (
-                <Card key={index} className="text-center p-4 sm:p-6 hover:shadow-elegant transition-smooth">
+              {signatureServices.map((service, index) => <Card key={index} className="text-center p-4 sm:p-6 hover:shadow-elegant transition-smooth">
                   <CardContent className="pt-4 sm:pt-6">
                     <service.icon className="h-10 w-10 sm:h-12 sm:w-12 text-gold mx-auto mb-3 sm:mb-4" />
                     <h3 className="font-semibold text-navy text-sm sm:text-base">{service.title}</h3>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
             
             <div className="bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-navy rounded-lg p-6 sm:p-8 text-center shadow-gold relative overflow-hidden mx-4 sm:mx-0">
@@ -368,14 +324,11 @@ const Campaign = () => {
             <div className="max-w-4xl mx-auto">
               <Carousel className="w-full">
                 <CarouselContent>
-                  {testimonials.map((testimonial, index) => (
-                    <CarouselItem key={index}>
+                  {testimonials.map((testimonial, index) => <CarouselItem key={index}>
                       <Card className="bg-white/10 border-white/20 text-center p-6 sm:p-8 mx-2">
                         <CardContent className="pt-4 sm:pt-6">
                           <div className="flex justify-center gap-1 mb-4 sm:mb-6">
-                            {[...Array(testimonial.rating)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-gold text-gold" />
-                            ))}
+                            {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-gold text-gold" />)}
                           </div>
                           <blockquote className="text-lg sm:text-xl italic mb-4 sm:mb-6 text-white/90 font-medium">
                             "{testimonial.quote}"
@@ -385,8 +338,7 @@ const Campaign = () => {
                           </p>
                         </CardContent>
                       </Card>
-                    </CarouselItem>
-                  ))}
+                    </CarouselItem>)}
                 </CarouselContent>
                 <CarouselPrevious className="hidden sm:flex" />
                 <CarouselNext className="hidden sm:flex" />
@@ -405,12 +357,10 @@ const Campaign = () => {
             </div>
             
             <div className="grid gap-4 sm:gap-6 max-w-4xl mx-auto">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-0">
+              {benefits.map((benefit, index) => <div key={index} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-0">
                   <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-gold flex-shrink-0 mt-0.5 sm:mt-1" />
                   <p className="text-base sm:text-lg text-muted-foreground">{benefit}</p>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </section>
@@ -476,12 +426,7 @@ const Campaign = () => {
                 </Link>
                 </Button>
                 
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-navy text-navy hover:bg-navy hover:text-white text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-6 w-full sm:w-auto"
-                  asChild
-                >
+                <Button size="lg" variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-6 w-full sm:w-auto" asChild>
                   <a href="tel:+1-555-AXO-FLOOR">
                     <Phone className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
                     Call Us Now
@@ -496,22 +441,14 @@ const Campaign = () => {
       </div>
 
       {/* Sticky CTA Button for Mobile */}
-      {showStickyButton && (
-        <div className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
-          <Button 
-            size="lg" 
-            className="w-full bg-gold text-navy hover:bg-gold/90 text-lg font-bold py-4 shadow-2xl border-2 border-navy/20" 
-            asChild
-          >
+      {showStickyButton && <div className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
+          <Button size="lg" className="w-full bg-gold text-navy hover:bg-gold/90 text-lg font-bold py-4 shadow-2xl border-2 border-navy/20" asChild>
             <Link to="/contact">
               Book My Free Estimate
               <Phone className="ml-2 h-5 w-5" />
             </Link>
           </Button>
-        </div>
-      )}
-    </>
-  );
+        </div>}
+    </>;
 };
-
 export default Campaign;
