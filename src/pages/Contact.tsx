@@ -162,10 +162,7 @@ const Contact = () => {
       {/* Hero Section */}
       <section className="py-16 sm:py-20 navy-gradient text-white relative overflow-hidden">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-4 sm:mb-6">Get Your Free Floor Estimate in 24h – Guaranteed Response.</h1>
-          <p className="text-lg sm:text-xl text-white/90 max-w-4xl mx-auto mb-8 sm:mb-12">
-            Tired of waiting weeks for contractors? We'll get back to you in less than 24 hours so you can start your project fast.
-          </p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-6 sm:mb-10">Get Your Free Floor Estimate in 24h – Guaranteed Response.</h1>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold w-full sm:w-auto">
