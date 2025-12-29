@@ -318,7 +318,7 @@ const Contact = () => {
                       <Phone className="w-5 h-5 flex-shrink-0" />
                       <div className="text-left min-w-0">
                         <div className="font-semibold text-base">(732) 351-8653</div>
-                        <div className="text-sm opacity-80">Ligar agora</div>
+                        <div className="text-sm opacity-80">Click to call</div>
                       </div>
                     </a>
                     
@@ -326,7 +326,7 @@ const Contact = () => {
                       <Mail className="w-5 h-5 flex-shrink-0" />
                       <div className="text-left min-w-0 flex-1">
                         <div className="font-semibold text-sm truncate">axofloorsnj@gmail.com</div>
-                        <div className="text-sm opacity-80">Enviar email</div>
+                        <div className="text-sm opacity-80">Send email</div>
                       </div>
                     </a>
                     
@@ -334,7 +334,7 @@ const Contact = () => {
                       <MessageSquare className="w-5 h-5 flex-shrink-0" />
                       <div className="text-left min-w-0 flex-1">
                         <div className="font-semibold">WhatsApp</div>
-                        <div className="text-sm opacity-80">Resposta instantânea</div>
+                        <div className="text-sm opacity-80">Instant response</div>
                       </div>
                       <ExternalLink className="w-4 h-4 flex-shrink-0" />
                     </a>
