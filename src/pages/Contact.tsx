@@ -69,7 +69,6 @@ const Contact = () => {
       });
       return;
     }
-
     setIsSubmitting(true);
     try {
       console.log('Submitting contact form with data:', {
@@ -91,14 +90,11 @@ const Contact = () => {
         services: formData.service ? [formData.service] : [],
         message: `Timeline: ${formData.timeline || 'Not specified'}`
       };
-
       console.log('Prepared lead data:', leadData);
-
-      const { data, error } = await supabase
-        .from('leads')
-        .insert([leadData])
-        .select();
-
+      const {
+        data,
+        error
+      } = await supabase.from('leads').insert([leadData]).select();
       if (error) {
         console.error('Supabase error details:', {
           message: error.message,
@@ -108,9 +104,7 @@ const Contact = () => {
         });
         throw error;
       }
-
       console.log('Successfully saved lead:', data);
-
       toast({
         title: "Thank you for contacting us!",
         description: "We'll get back to you within 24 hours with your free estimate."
@@ -128,16 +122,14 @@ const Contact = () => {
       setFormErrors({});
     } catch (error: any) {
       console.error('Contact form submission error:', error);
-      
       let errorMessage = "Please try again or call us directly at (732) 351-8653";
-      
+
       // Provide specific error messages
       if (error.message?.includes('violates row-level security')) {
         errorMessage = "Security check failed. Please ensure all required fields are filled correctly.";
       } else if (error.message?.includes('duplicate')) {
         errorMessage = "You've already submitted a request. We'll contact you soon!";
       }
-      
       toast({
         title: "Error",
         description: errorMessage,
@@ -198,7 +190,7 @@ const Contact = () => {
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-gold text-gold" />)}
             </div>
-            <span className="text-navy font-medium text-lg">35+ Google Reviews</span>
+            
           </div>
           <blockquote className="text-grey max-w-4xl mx-auto text-base sm:text-lg italic">
             "Eduardo gave me a quote the same day, finished my project in 4 days, and saved me $3,200 vs. replacement. Amazing team!"
@@ -207,6 +199,23 @@ const Contact = () => {
         </div>
       </section>
 
+      {/* Scarcity & Urgency */}
+      <section className="py-8 bg-gold/10 border-l-4 border-gold">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <AlertTriangle className="w-8 h-8 text-gold flex-shrink-0" />
+              <div>
+                <p className="text-navy font-bold text-lg">October Schedule is 65% full.</p>
+                <p className="text-grey">Only 5 project slots left this month.</p>
+              </div>
+            </div>
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce font-bold">
+              <a href="#quote-form">Reserve My Spot Now</a>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Main Content */}
       <section id="quote-form" className="py-16 sm:py-20 bg-grey-light">
@@ -225,50 +234,34 @@ const Contact = () => {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name *</Label>
-                      <Input 
-                        id="name" 
-                        placeholder="Full Name" 
-                        required 
-                        className="h-12"
-                        value={formData.name} 
-                        onChange={e => setFormData(prev => ({...prev, name: e.target.value}))} 
-                      />
+                      <Input id="name" placeholder="Full Name" required className="h-12" value={formData.name} onChange={e => setFormData(prev => ({
+                      ...prev,
+                      name: e.target.value
+                    }))} />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone *</Label>
-                      <Input 
-                        id="phone" 
-                        type="tel" 
-                        placeholder="(732) 555-0123" 
-                        required 
-                        className="h-12"
-                        value={formData.phone} 
-                        onChange={e => setFormData(prev => ({...prev, phone: e.target.value}))} 
-                      />
+                      <Input id="phone" type="tel" placeholder="(732) 555-0123" required className="h-12" value={formData.phone} onChange={e => setFormData(prev => ({
+                      ...prev,
+                      phone: e.target.value
+                    }))} />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="email">Email (Optional)</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        placeholder="your@email.com" 
-                        className="h-12"
-                        value={formData.email} 
-                        onChange={e => setFormData(prev => ({...prev, email: e.target.value}))} 
-                      />
+                      <Input id="email" type="email" placeholder="your@email.com" className="h-12" value={formData.email} onChange={e => setFormData(prev => ({
+                      ...prev,
+                      email: e.target.value
+                    }))} />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="city">City (Optional)</Label>
-                      <Input 
-                        id="city" 
-                        placeholder="Enter your city" 
-                        className="h-12"
-                        value={formData.city} 
-                        onChange={e => setFormData(prev => ({...prev, city: e.target.value}))} 
-                      />
+                      <Input id="city" placeholder="Enter your city" className="h-12" value={formData.city} onChange={e => setFormData(prev => ({
+                      ...prev,
+                      city: e.target.value
+                    }))} />
                     </div>
                     
                     <div className="space-y-2">
@@ -305,11 +298,7 @@ const Contact = () => {
                       </Select>
                     </div>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 h-auto min-h-[48px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" 
-                      disabled={!isFormValid}
-                    >
+                    <Button type="submit" className="w-full gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg py-4 sm:py-5 h-auto min-h-[48px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" disabled={!isFormValid}>
                       {isSubmitting ? "Sending..." : "Get My Free Estimate in 24h"}
                     </Button>
                     
