@@ -10,7 +10,6 @@ interface AdminAuthState {
     id: string;
     email: string;
     full_name?: string;
-    role: string;
   } | null;
   error: string | null;
 }
@@ -50,25 +49,33 @@ export function useAdminAuth() {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-      // Busca o perfil do usuário para verificar role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role')
-        .eq('id', user.id)
-        .single();
+      // Check admin role using the secure has_role function via RPC
+      const { data: hasAdminRole, error: roleError } = await supabase
+        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
 
-      if (profileError) {
-        throw new Error(`Erro ao buscar perfil: ${profileError.message}`);
+      if (roleError) {
+        throw new Error(`Erro ao verificar role: ${roleError.message}`);
       }
 
-      const isAdmin = profile?.role === 'admin';
+      // Get profile info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const isAdmin = hasAdminRole === true;
 
       // Se não é admin, redireciona para home
       if (!isAdmin) {
         setState({
           isLoading: false,
           isAdmin: false,
-          userProfile: profile,
+          userProfile: profile ? {
+            id: profile.id,
+            email: profile.email || user.email || '',
+            full_name: profile.full_name || undefined
+          } : null,
           error: 'Acesso negado: Permissões de administrador necessárias'
         });
         navigate('/');
@@ -79,7 +86,14 @@ export function useAdminAuth() {
       setState({
         isLoading: false,
         isAdmin: true,
-        userProfile: profile,
+        userProfile: profile ? {
+          id: profile.id,
+          email: profile.email || user.email || '',
+          full_name: profile.full_name || undefined
+        } : {
+          id: user.id,
+          email: user.email || ''
+        },
         error: null
       });
 
