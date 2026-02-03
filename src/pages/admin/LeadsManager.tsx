@@ -10,7 +10,8 @@ import { useLeadsExport } from "@/hooks/admin/useLeadsExport";
 import { LeadPipelineStatus } from "@/components/admin/LeadPipelineStatus";
 import { STAGE_LABELS, type PipelineStage } from "@/hooks/useLeadPipeline";
 import { LeadFollowUpAlert } from "@/components/admin/LeadFollowUpAlert";
-import { Bell } from "lucide-react";
+import { JobProofUploader } from "@/components/admin/JobProofUploader";
+import { Bell, Camera } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -46,6 +47,7 @@ type Lead = {
   follow_up_required?: boolean;
   next_action_date?: string;
   follow_up_actions?: { date: string; action: string; notes?: string }[];
+  converted_to_project_id?: string;
 };
 
 const statusColors: Record<PipelineStage, string> = {
@@ -483,6 +485,20 @@ export default function LeadsManager() {
                         setIsDetailModalOpen(false);
                       }} 
                     />
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Job Proof Section - Show for leads with project */}
+              {selectedLead.converted_to_project_id && (
+                <>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <Camera className="w-5 h-5 text-primary" />
+                      Prova de Trabalho (Job Proof)
+                    </h3>
+                    <JobProofUploader projectId={selectedLead.converted_to_project_id} />
                   </div>
                   <Separator />
                 </>
