@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { LeadControlModal } from "@/components/admin/LeadControlModal";
 import { 
   Plus, 
   TrendingUp, 
@@ -34,7 +35,8 @@ import {
   Phone,
   Mail,
   MapPin,
-  Calendar
+  Calendar,
+  ChevronRight
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -45,9 +47,16 @@ interface Lead {
   email: string | null;
   lead_source: string;
   status: string;
+  priority?: string;
+  services?: any;
   budget: number | null;
   city: string | null;
   created_at: string;
+  updated_at?: string;
+  notes?: string | null;
+  follow_up_required?: boolean | null;
+  next_action_date?: string | null;
+  follow_up_actions?: any;
   converted_to_project_id: string | null;
 }
 
@@ -80,6 +89,7 @@ export default function Intake() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const { toast } = useToast();
 
   // Form state for manual lead
@@ -100,7 +110,7 @@ export default function Intake() {
 
       const { data, error } = await supabase
         .from('leads')
-        .select('id, name, phone, email, lead_source, status, budget, city, created_at, converted_to_project_id')
+        .select('id, name, phone, email, lead_source, status, priority, services, budget, city, created_at, updated_at, notes, follow_up_required, next_action_date, follow_up_actions, converted_to_project_id')
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: false });
 
@@ -870,11 +880,15 @@ export default function Intake() {
                         {selectedSourceLeads.map((lead) => (
                           <div 
                             key={lead.id} 
-                            className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                            className="p-3 rounded-lg border bg-card hover:bg-accent/50 hover:border-primary/30 transition-all cursor-pointer group"
+                            onClick={() => setSelectedLead(lead)}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
-                                <p className="font-medium text-sm truncate">{lead.name}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{lead.name}</p>
+                                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
                                 <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                                   <Phone className="h-3 w-3" />
                                   <span>{lead.phone}</span>
@@ -918,6 +932,20 @@ export default function Intake() {
             )}
           </SheetContent>
         </Sheet>
+
+        {/* Lead Control Modal */}
+        <LeadControlModal
+          lead={selectedLead ? {
+            ...selectedLead,
+            email: selectedLead.email || undefined,
+            priority: selectedLead.priority || 'medium',
+            services: selectedLead.services || [],
+            updated_at: selectedLead.updated_at || selectedLead.created_at,
+          } : null}
+          isOpen={!!selectedLead}
+          onClose={() => setSelectedLead(null)}
+          onRefresh={fetchLeads}
+        />
       </div>
     </AdminLayout>
   );
