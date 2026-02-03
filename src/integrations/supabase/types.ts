@@ -318,6 +318,41 @@ export type Database = {
           },
         ]
       }
+      job_proof: {
+        Row: {
+          after_image_url: string | null
+          before_image_url: string | null
+          created_at: string
+          id: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          after_image_url?: string | null
+          before_image_url?: string | null
+          created_at?: string
+          id?: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          after_image_url?: string | null
+          before_image_url?: string | null
+          created_at?: string
+          id?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_proof_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           address: string | null
@@ -613,6 +648,15 @@ export type Database = {
           current_status: string
           error_message: string
           required_status: string
+        }[]
+      }
+      validate_project_completion: {
+        Args: { p_project_id: string }
+        Returns: {
+          can_complete: boolean
+          error_message: string
+          has_after_image: boolean
+          has_before_image: boolean
         }[]
       }
       validate_proposal_margin: {
