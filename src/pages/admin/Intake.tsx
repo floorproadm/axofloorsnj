@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -22,7 +23,11 @@ import {
   FileText,
   Building,
   Home,
-  Pencil
+  Pencil,
+  BarChart3,
+  List,
+  ExternalLink,
+  Globe
 } from "lucide-react";
 
 interface Lead {
@@ -341,185 +346,319 @@ export default function Intake() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <>
-            {/* Quality Insights Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Best Conversion */}
-              <Card className="border-success/30 bg-success/5">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-success/20">
-                      <TrendingUp className="h-5 w-5 text-success" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">Maior Conversão</p>
-                      <p className="font-semibold text-sm truncate">
-                        {insights.bestConversion 
-                          ? getSourceLabel(insights.bestConversion.source)
-                          : 'Sem dados'}
-                      </p>
-                      {insights.bestConversion && (
-                        <p className="text-xs text-success">
-                          {Math.round((insights.bestConversion.converted / insights.bestConversion.total) * 100)}% convertidos
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="overview" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Visão Geral</span>
+                <span className="sm:hidden">Geral</span>
+              </TabsTrigger>
+              <TabsTrigger value="sources" className="gap-2">
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline">Todas as Fontes</span>
+                <span className="sm:hidden">Fontes</span>
+                <Badge variant="secondary" className="ml-1 text-xs">
+                  {Object.keys(SOURCE_LABELS).length}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
 
-              {/* Most Lost */}
-              <Card className="border-blocked/30 bg-blocked/5">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blocked/20">
-                      <TrendingDown className="h-5 w-5 text-blocked" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">Mais Perdidos</p>
-                      <p className="font-semibold text-sm truncate">
-                        {insights.mostLost 
-                          ? getSourceLabel(insights.mostLost.source)
-                          : 'Nenhum'}
-                      </p>
-                      {insights.mostLost && (
-                        <p className="text-xs text-blocked">
-                          {insights.mostLost.lost} leads perdidos
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              {/* Quality Insights Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Best Conversion */}
+                <Card className="border-success/30 bg-success/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-success/20">
+                        <TrendingUp className="h-5 w-5 text-success" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-muted-foreground">Maior Conversão</p>
+                        <p className="font-semibold text-sm truncate">
+                          {insights.bestConversion 
+                            ? getSourceLabel(insights.bestConversion.source)
+                            : 'Sem dados'}
                         </p>
-                      )}
+                        {insights.bestConversion && (
+                          <p className="text-xs text-success">
+                            {Math.round((insights.bestConversion.converted / insights.bestConversion.total) * 100)}% convertidos
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              {/* Stuck in Proposal */}
-              <Card className="border-risk/30 bg-risk/5">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-risk/20">
-                      <Clock className="h-5 w-5 text-risk" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">Travados em Proposta</p>
-                      <p className="font-semibold text-sm truncate">
-                        {insights.stuckSource 
-                          ? getSourceLabel(insights.stuckSource)
-                          : 'Nenhum'}
-                      </p>
-                      {insights.stuckCount > 0 && (
-                        <p className="text-xs text-risk">
-                          {insights.stuckCount} leads parados
+                {/* Most Lost */}
+                <Card className="border-blocked/30 bg-blocked/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blocked/20">
+                        <TrendingDown className="h-5 w-5 text-blocked" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-muted-foreground">Mais Perdidos</p>
+                        <p className="font-semibold text-sm truncate">
+                          {insights.mostLost 
+                            ? getSourceLabel(insights.mostLost.source)
+                            : 'Nenhum'}
                         </p>
-                      )}
+                        {insights.mostLost && (
+                          <p className="text-xs text-blocked">
+                            {insights.mostLost.lost} leads perdidos
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              {/* Best Ticket */}
-              <Card className="border-primary/30 bg-primary/5">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/20">
-                      <DollarSign className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">Maior Ticket Médio</p>
-                      <p className="font-semibold text-sm truncate">
-                        {insights.bestTicket 
-                          ? getSourceLabel(insights.bestTicket.source)
-                          : 'Sem dados'}
-                      </p>
-                      {insights.bestTicket && insights.bestTicket.avgBudget > 0 && (
-                        <p className="text-xs text-primary">
-                          {formatCurrency(insights.bestTicket.avgBudget)} média
+                {/* Stuck in Proposal */}
+                <Card className="border-risk/30 bg-risk/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-risk/20">
+                        <Clock className="h-5 w-5 text-risk" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-muted-foreground">Travados em Proposta</p>
+                        <p className="font-semibold text-sm truncate">
+                          {insights.stuckSource 
+                            ? getSourceLabel(insights.stuckSource)
+                            : 'Nenhum'}
                         </p>
-                      )}
+                        {insights.stuckCount > 0 && (
+                          <p className="text-xs text-risk">
+                            {insights.stuckCount} leads parados
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
 
-            {/* Operational Alerts */}
-            {alerts.length > 0 && (
-              <div className="space-y-2">
-                {alerts.map((alert, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center gap-3 p-3 rounded-lg border ${
-                      alert.type === 'error' 
-                        ? 'bg-blocked/10 border-blocked/30 text-blocked' 
-                        : alert.type === 'warning'
-                        ? 'bg-risk/10 border-risk/30 text-risk'
-                        : 'bg-success/10 border-success/30 text-success'
-                    }`}
-                  >
-                    {alert.type === 'error' && <AlertCircle className="h-5 w-5 shrink-0" />}
-                    {alert.type === 'warning' && <AlertTriangle className="h-5 w-5 shrink-0" />}
-                    {alert.type === 'success' && <CheckCircle className="h-5 w-5 shrink-0" />}
-                    <p className="text-sm font-medium">{alert.message}</p>
-                  </div>
-                ))}
+                {/* Best Ticket */}
+                <Card className="border-primary/30 bg-primary/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/20">
+                        <DollarSign className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-muted-foreground">Maior Ticket Médio</p>
+                        <p className="font-semibold text-sm truncate">
+                          {insights.bestTicket 
+                            ? getSourceLabel(insights.bestTicket.source)
+                            : 'Sem dados'}
+                        </p>
+                        {insights.bestTicket && insights.bestTicket.avgBudget > 0 && (
+                          <p className="text-xs text-primary">
+                            {formatCurrency(insights.bestTicket.avgBudget)} média
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            )}
 
-            {/* Source Stats Table */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Fontes de Captação (Últimos 30 dias)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {sourceStats.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhum lead nos últimos 30 dias</p>
-                    <p className="text-sm">Adicione leads manualmente para começar</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto -mx-6 px-6">
-                    <table className="w-full min-w-[500px]">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Fonte</th>
-                          <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Tipo</th>
-                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Leads</th>
-                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Convertidos</th>
-                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Perdidos</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sourceStats.map((stat) => (
-                          <tr key={stat.source} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                            <td className="py-3 px-2">
-                              <div className="flex items-center gap-2">
-                                {getSourceIcon(stat.source)}
-                                <span className="font-medium text-sm">{getSourceLabel(stat.source)}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {stat.type}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                              <span className="font-semibold">{stat.total}</span>
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                              <span className="text-success font-medium">{stat.converted}</span>
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                              <span className="text-blocked font-medium">{stat.lost}</span>
-                            </td>
+              {/* Operational Alerts */}
+              {alerts.length > 0 && (
+                <div className="space-y-2">
+                  {alerts.map((alert, index) => (
+                    <div 
+                      key={index}
+                      className={`flex items-center gap-3 p-3 rounded-lg border ${
+                        alert.type === 'error' 
+                          ? 'bg-blocked/10 border-blocked/30 text-blocked' 
+                          : alert.type === 'warning'
+                          ? 'bg-risk/10 border-risk/30 text-risk'
+                          : 'bg-success/10 border-success/30 text-success'
+                      }`}
+                    >
+                      {alert.type === 'error' && <AlertCircle className="h-5 w-5 shrink-0" />}
+                      {alert.type === 'warning' && <AlertTriangle className="h-5 w-5 shrink-0" />}
+                      {alert.type === 'success' && <CheckCircle className="h-5 w-5 shrink-0" />}
+                      <p className="text-sm font-medium">{alert.message}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Source Stats Table - Last 30 Days */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Fontes Ativas (Últimos 30 dias)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {sourceStats.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p>Nenhum lead nos últimos 30 dias</p>
+                      <p className="text-sm">Adicione leads manualmente para começar</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto -mx-6 px-6">
+                      <table className="w-full min-w-[500px]">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Fonte</th>
+                            <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Tipo</th>
+                            <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Leads</th>
+                            <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Convertidos</th>
+                            <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Perdidos</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {sourceStats.map((stat) => (
+                            <tr key={stat.source} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                              <td className="py-3 px-2">
+                                <div className="flex items-center gap-2">
+                                  {getSourceIcon(stat.source)}
+                                  <span className="font-medium text-sm">{getSourceLabel(stat.source)}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {stat.type}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                <span className="font-semibold">{stat.total}</span>
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                <span className="text-success font-medium">{stat.converted}</span>
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                <span className="text-blocked font-medium">{stat.lost}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* All Sources Tab */}
+            <TabsContent value="sources" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">Todas as Fontes de Captação</CardTitle>
+                    <Badge variant="outline" className="text-xs">
+                      {Object.keys(SOURCE_LABELS).length} fontes configuradas
+                    </Badge>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Lista completa de todas as fontes de captação disponíveis no sistema
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(SOURCE_LABELS).map(([sourceKey, sourceInfo]) => {
+                      const stats = sourceStats.find(s => s.source === sourceKey);
+                      const IconComponent = sourceInfo.icon;
+                      const hasActivity = stats && stats.total > 0;
+                      
+                      return (
+                        <Card 
+                          key={sourceKey} 
+                          className={`transition-all ${
+                            hasActivity 
+                              ? 'border-success/30 bg-success/5' 
+                              : 'border-muted bg-muted/20 opacity-75'
+                          }`}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className={`p-2 rounded-lg ${
+                                hasActivity ? 'bg-success/20' : 'bg-muted'
+                              }`}>
+                                <IconComponent className={`h-5 w-5 ${
+                                  hasActivity ? 'text-success' : 'text-muted-foreground'
+                                }`} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="font-semibold text-sm truncate">
+                                    {sourceInfo.label}
+                                  </p>
+                                  {hasActivity && (
+                                    <Badge className="bg-success/20 text-success text-xs shrink-0">
+                                      Ativo
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {sourceInfo.type}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {sourceKey}
+                                  </span>
+                                </div>
+                                {stats ? (
+                                  <div className="flex items-center gap-3 mt-2 text-xs">
+                                    <span className="text-foreground font-medium">
+                                      {stats.total} leads
+                                    </span>
+                                    <span className="text-success">
+                                      {stats.converted} ✓
+                                    </span>
+                                    <span className="text-blocked">
+                                      {stats.lost} ✗
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    Sem leads nos últimos 30 dias
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Source Types Summary */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Tipos de Fonte</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {['Página', 'Qualificador', 'B2B', 'Isca', 'Interno', 'Referência'].map(type => {
+                      const sourcesOfType = Object.entries(SOURCE_LABELS).filter(
+                        ([_, info]) => info.type === type
+                      );
+                      const activeCount = sourcesOfType.filter(([key]) => 
+                        sourceStats.some(s => s.source === key && s.total > 0)
+                      ).length;
+                      
+                      return (
+                        <div key={type} className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-2xl font-bold">{sourcesOfType.length}</p>
+                          <p className="text-sm text-muted-foreground">{type}</p>
+                          <p className="text-xs text-success mt-1">
+                            {activeCount} ativas
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         )}
 
         {/* Add Manual Lead Modal */}
