@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, Phone, Camera, CheckCircle, AlertOctagon, Clock } from 'lucide-react';
+import { AlertTriangle, Phone, CheckCircle, AlertOctagon, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { normalizeStatus } from '@/hooks/useLeadPipeline';
 import { cn } from '@/lib/utils';
@@ -13,22 +13,8 @@ interface Lead {
   updated_at: string;
 }
 
-interface Project {
-  id: string;
-  customer_name: string;
-  project_status: string;
-}
-
-interface JobProof {
-  project_id: string;
-  before_image_url: string | null;
-  after_image_url: string | null;
-}
-
 interface TensionMetricsCardsProps {
   leads: Lead[];
-  projects: Project[];
-  jobProofs: JobProof[];
 }
 
 type TensionLevel = 'ok' | 'attention' | 'critical';
@@ -69,7 +55,7 @@ function getTensionStyles(level: TensionLevel) {
   }
 }
 
-export function TensionMetricsCards({ leads, projects, jobProofs }: TensionMetricsCardsProps) {
+export function TensionMetricsCards({ leads }: TensionMetricsCardsProps) {
   const navigate = useNavigate();
   const now = new Date();
   const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
@@ -93,13 +79,6 @@ export function TensionMetricsCards({ leads, projects, jobProofs }: TensionMetri
     return actions.length === 0;
   });
 
-  // 3. Jobs bloqueados (in_progress without complete job proof)
-  const blockedJobs = projects.filter(p => {
-    if (p.project_status !== 'in_progress') return false;
-    const proof = jobProofs.find(jp => jp.project_id === p.id);
-    return !proof || !proof.before_image_url || !proof.after_image_url;
-  });
-
   const metrics = [
     {
       label: 'Leads Novos',
@@ -118,20 +97,11 @@ export function TensionMetricsCards({ leads, projects, jobProofs }: TensionMetri
       onClick: () => navigate('/admin/leads'),
       descriptionZero: 'Todos acompanhados ✓',
       descriptionActive: 'Sem follow-up registrado'
-    },
-    {
-      label: 'Jobs Travados',
-      count: blockedJobs.length,
-      icon: Camera,
-      criticalIcon: AlertOctagon,
-      onClick: () => navigate('/admin/leads'),
-      descriptionZero: 'Nenhum bloqueio ✓',
-      descriptionActive: 'Aguardando fotos before/after'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
       {metrics.map((metric) => {
         const level = getTensionLevel(metric.count);
         const styles = getTensionStyles(level);
