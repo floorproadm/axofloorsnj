@@ -116,6 +116,36 @@ export type Database = {
         }
         Relationships: []
       }
+      company_settings: {
+        Row: {
+          company_name: string
+          created_at: string
+          default_labor_rate: number
+          default_margin_min_percent: number
+          id: string
+          labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string
+          created_at?: string
+          default_labor_rate?: number
+          default_margin_min_percent?: number
+          id?: string
+          labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          default_labor_rate?: number
+          default_margin_min_percent?: number
+          id?: string
+          labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -506,6 +536,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      labor_pricing_model: "sqft" | "daily"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -634,6 +665,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      labor_pricing_model: ["sqft", "daily"],
     },
   },
 } as const
