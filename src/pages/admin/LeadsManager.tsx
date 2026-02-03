@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { DataTable } from "@/components/admin/DataTable";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Separator } from "@/components/ui/separator";
 import { useAdminData } from "@/hooks/admin/useAdminData";
 import { useLeadsExport } from "@/hooks/admin/useLeadsExport";
+import { LeadPipelineStatus } from "@/components/admin/LeadPipelineStatus";
+import { STAGE_LABELS, type PipelineStage } from "@/hooks/useLeadPipeline";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -41,11 +43,11 @@ type Lead = {
   notes?: string;
 };
 
-const statusColors = {
+const statusColors: Record<PipelineStage, string> = {
   new: "bg-blue-100 text-blue-800 border-blue-200",
   contacted: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  qualified: "bg-purple-100 text-purple-800 border-purple-200",
-  converted: "bg-green-100 text-green-800 border-green-200",
+  quoted: "bg-purple-100 text-purple-800 border-purple-200",
+  won: "bg-green-100 text-green-800 border-green-200",
   lost: "bg-red-100 text-red-800 border-red-200"
 };
 
@@ -65,7 +67,7 @@ const sourceLabels: Record<string, string> = {
 };
 
 export default function LeadsManager() {
-  const { leads, stats, isLoading } = useAdminData();
+  const { leads, stats, isLoading, refreshData } = useAdminData();
   const { exportToCSV, exportToJSON } = useLeadsExport();
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -74,6 +76,10 @@ export default function LeadsManager() {
     setSelectedLead(lead);
     setIsDetailModalOpen(true);
   };
+
+  const handleStatusChange = useCallback(() => {
+    refreshData();
+  }, [refreshData]);
 
   const columns: ColumnDef<Lead>[] = useMemo(() => [
     {
@@ -126,16 +132,18 @@ export default function LeadsManager() {
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: "Status (Pipeline)",
       cell: ({ row }) => {
+        const leadId = row.original.id;
         const status = row.getValue("status") as string;
         return (
-          <Badge 
-            variant="outline" 
-            className={statusColors[status as keyof typeof statusColors]}
-          >
-            {status}
-          </Badge>
+          <div onClick={(e) => e.stopPropagation()}>
+            <LeadPipelineStatus 
+              leadId={leadId}
+              currentStatus={status}
+              onStatusChange={handleStatusChange}
+            />
+          </div>
         );
       },
     },
@@ -307,9 +315,9 @@ export default function LeadsManager() {
               <div className="flex gap-2 flex-wrap">
                 <Badge 
                   variant="outline" 
-                  className={statusColors[selectedLead.status as keyof typeof statusColors]}
+                  className={statusColors[selectedLead.status as PipelineStage] || 'bg-gray-100'}
                 >
-                  Status: {selectedLead.status}
+                  Status: {STAGE_LABELS[selectedLead.status as PipelineStage] || selectedLead.status}
                 </Badge>
                 <Badge 
                   variant="outline" 
