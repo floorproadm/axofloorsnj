@@ -38,6 +38,13 @@ export default {
           light: "hsl(var(--grey-light))",
         },
         
+        // Admin State Colors - Sistema de Sinais Visuais
+        "state-blocked": "hsl(var(--state-blocked))",
+        "state-risk": "hsl(var(--state-risk))",
+        "state-success": "hsl(var(--state-success))",
+        "state-neutral": "hsl(var(--state-neutral))",
+        "state-terminal": "hsl(var(--state-terminal))",
+        
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
