@@ -268,6 +268,56 @@ export type Database = {
           },
         ]
       }
+      job_costs: {
+        Row: {
+          additional_costs: number
+          created_at: string
+          estimated_revenue: number
+          id: string
+          labor_cost: number
+          margin_percent: number | null
+          material_cost: number
+          profit_amount: number | null
+          project_id: string
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          additional_costs?: number
+          created_at?: string
+          estimated_revenue?: number
+          id?: string
+          labor_cost?: number
+          margin_percent?: number | null
+          material_cost?: number
+          profit_amount?: number | null
+          project_id: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          additional_costs?: number
+          created_at?: string
+          estimated_revenue?: number
+          id?: string
+          labor_cost?: number
+          margin_percent?: number | null
+          material_cost?: number
+          profit_amount?: number | null
+          project_id?: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_costs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           address: string | null
@@ -526,6 +576,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_job_margin: {
+        Args: { p_project_id: string }
+        Returns: {
+          additional_costs: number
+          estimated_revenue: number
+          labor_cost: number
+          margin_percent: number
+          margin_status: string
+          material_cost: number
+          profit_amount: number
+          project_id: string
+          total_cost: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
