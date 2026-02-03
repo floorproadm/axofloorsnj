@@ -69,20 +69,20 @@ interface SourceStats {
   avgBudget: number;
 }
 
-const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.ComponentType<any> }> = {
-  'contact': { label: 'Formulário de Contato', type: 'Página', icon: FileText },
+const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.ComponentType<any>; url?: string }> = {
+  'contact': { label: 'Formulário de Contato', type: 'Página', icon: FileText, url: '/contact' },
   // Legacy sources - map to 'contact' in stats calculation
-  'contact_form': { label: 'Formulário de Contato', type: 'Página', icon: FileText },
-  'contact_page': { label: 'Página de Contato', type: 'Página', icon: FileText },
-  'contact_section': { label: 'Seção de Contato', type: 'Página', icon: FileText },
-  'quiz': { label: 'Quiz Qualificador', type: 'Qualificador', icon: CheckCircle },
-  'floor-diagnostic': { label: 'Diagnóstico de Piso', type: 'Qualificador', icon: CheckCircle },
-  'builders_page': { label: 'Página Builders', type: 'B2B', icon: Building },
-  'realtors_page': { label: 'Página Realtors', type: 'B2B', icon: Home },
-  'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp },
-  'review_system': { label: 'Sistema de Reviews', type: 'Referência', icon: Users },
+  'contact_form': { label: 'Formulário de Contato', type: 'Página', icon: FileText, url: '/contact' },
+  'contact_page': { label: 'Página de Contato', type: 'Página', icon: FileText, url: '/contact' },
+  'contact_section': { label: 'Seção de Contato', type: 'Página', icon: FileText, url: '/#contact' },
+  'quiz': { label: 'Quiz Qualificador', type: 'Qualificador', icon: CheckCircle, url: '/quiz' },
+  'floor-diagnostic': { label: 'Diagnóstico de Piso', type: 'Qualificador', icon: CheckCircle, url: '/floor-diagnostic' },
+  'builders_page': { label: 'Página Builders', type: 'B2B', icon: Building, url: '/builders' },
+  'realtors_page': { label: 'Página Realtors', type: 'B2B', icon: Home, url: '/realtors' },
+  'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp, url: '/gallery' },
+  'review_system': { label: 'Sistema de Reviews', type: 'Referência', icon: Users, url: '/review-management' },
   'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
-  'website': { label: 'Website Geral', type: 'Página', icon: FileText },
+  'website': { label: 'Website Geral', type: 'Página', icon: FileText, url: '/' },
 };
 
 // Normalize legacy contact sources to unified 'contact'
@@ -684,6 +684,18 @@ export default function Intake() {
                                     Sem leads nos últimos 30 dias
                                   </p>
                                 )}
+                                {sourceInfo.url && (
+                                  <a
+                                    href={sourceInfo.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    Ir para formulário
+                                  </a>
+                                )}
                               </div>
                               <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
                             </div>
@@ -822,6 +834,17 @@ export default function Intake() {
                   </SheetDescription>
                 </div>
               </div>
+              {selectedSource && SOURCE_LABELS[selectedSource]?.url && (
+                <a
+                  href={SOURCE_LABELS[selectedSource].url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary border border-primary/30 rounded-md hover:bg-primary/10 transition-colors"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Abrir Formulário
+                </a>
+              )}
             </SheetHeader>
             
             {selectedSourceStats && (
