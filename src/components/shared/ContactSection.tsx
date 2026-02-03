@@ -48,7 +48,7 @@ const ContactSection = () => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone || '',
-        lead_source: 'contact_section',
+        lead_source: 'contact',
         status: 'new',
         priority: 'medium',
         city: null,
@@ -72,7 +72,7 @@ const ContactSection = () => {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            source: 'contact_section',
+            source: 'contact',
             services: formData.service ? [formData.service] : ['general_inquiry'],
             priority: 'medium',
             status: 'new',
@@ -92,7 +92,7 @@ const ContactSection = () => {
           body: {
             name: formData.name,
             email: formData.email,
-            source: 'contact_form',
+            source: 'contact',
             leadType: 'contact'
           }
         });

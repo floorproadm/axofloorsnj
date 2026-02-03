@@ -70,6 +70,8 @@ interface SourceStats {
 }
 
 const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.ComponentType<any> }> = {
+  'contact': { label: 'Formulário de Contato', type: 'Página', icon: FileText },
+  // Legacy sources - map to 'contact' in stats calculation
   'contact_form': { label: 'Formulário de Contato', type: 'Página', icon: FileText },
   'contact_page': { label: 'Página de Contato', type: 'Página', icon: FileText },
   'contact_section': { label: 'Seção de Contato', type: 'Página', icon: FileText },
@@ -81,6 +83,14 @@ const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.C
   'review_system': { label: 'Sistema de Reviews', type: 'Referência', icon: Users },
   'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
   'website': { label: 'Website Geral', type: 'Página', icon: FileText },
+};
+
+// Normalize legacy contact sources to unified 'contact'
+const normalizeSource = (source: string): string => {
+  if (['contact_form', 'contact_page', 'contact_section'].includes(source)) {
+    return 'contact';
+  }
+  return source;
 };
 
 export default function Intake() {
@@ -137,7 +147,9 @@ export default function Intake() {
     const statsMap = new Map<string, SourceStats>();
 
     leads.forEach(lead => {
-      const source = lead.lead_source || 'website';
+      // Normalize legacy contact sources to unified 'contact'
+      const rawSource = lead.lead_source || 'website';
+      const source = normalizeSource(rawSource);
       const existing = statsMap.get(source) || {
         source,
         type: SOURCE_LABELS[source]?.type || 'Outro',
@@ -341,11 +353,11 @@ export default function Intake() {
     return <IconComponent className="h-4 w-4" />;
   };
 
-  // Get leads filtered by selected source
+  // Get leads filtered by selected source (normalize legacy sources)
   const selectedSourceLeads = useMemo(() => {
     if (!selectedSource) return [];
     return leads
-      .filter(l => l.lead_source === selectedSource)
+      .filter(l => normalizeSource(l.lead_source || 'website') === selectedSource)
       .slice(0, 10); // Show last 10 leads
   }, [selectedSource, leads]);
 
