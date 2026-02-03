@@ -33,6 +33,12 @@ import { useToast } from "@/hooks/use-toast";
 // Navegação principal - linguagem de operador
 const navigationItems = [
   {
+    title: "Dashboard",
+    url: "/admin/dashboard",
+    icon: LayoutDashboard,
+    badge: null
+  },
+  {
     title: "Captação",
     url: "/admin/intake",
     icon: Inbox,
