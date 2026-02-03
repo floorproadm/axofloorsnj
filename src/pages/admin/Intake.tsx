@@ -80,9 +80,7 @@ const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.C
   'builders_page': { label: 'Página Builders', type: 'B2B', icon: Building, url: '/builders' },
   'realtors_page': { label: 'Página Realtors', type: 'B2B', icon: Home, url: '/realtors' },
   'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp, url: '/gallery' },
-  'review_system': { label: 'Sistema de Reviews', type: 'Referência', icon: Users, url: '/review-management' },
   'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
-  'website': { label: 'Website Geral', type: 'Página', icon: FileText, url: '/' },
 };
 
 // Normalize legacy contact sources to unified 'contact'
