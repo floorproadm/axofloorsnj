@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { ActionableAlertsSection } from "./ActionableAlertsSection";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface BreadcrumbItem {
   label: string;
@@ -14,7 +16,60 @@ interface AdminLayoutProps {
   breadcrumbs?: BreadcrumbItem[];
 }
 
+interface Lead {
+  id: string;
+  name: string;
+  status: string;
+  follow_up_actions?: { date: string; action: string }[];
+  next_action_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Project {
+  id: string;
+  customer_name: string;
+  project_status: string;
+}
+
+interface JobProof {
+  project_id: string;
+  before_image_url: string | null;
+  after_image_url: string | null;
+}
+
 export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [jobProofs, setJobProofs] = useState<JobProof[]>([]);
+
+  useEffect(() => {
+    const fetchAlertData = async () => {
+      try {
+        const [leadsRes, projectsRes, jobProofsRes] = await Promise.all([
+          supabase.from('leads').select('id, name, status, follow_up_actions, next_action_date, created_at, updated_at'),
+          supabase.from('projects').select('id, customer_name, project_status'),
+          supabase.from('job_proof').select('project_id, before_image_url, after_image_url')
+        ]);
+
+        if (leadsRes.data) {
+          setLeads(leadsRes.data.map(l => ({
+            ...l,
+            follow_up_actions: Array.isArray(l.follow_up_actions) 
+              ? l.follow_up_actions as { date: string; action: string }[]
+              : []
+          })));
+        }
+        if (projectsRes.data) setProjects(projectsRes.data);
+        if (jobProofsRes.data) setJobProofs(jobProofsRes.data);
+      } catch (error) {
+        console.error('Error fetching alert data:', error);
+      }
+    };
+
+    fetchAlertData();
+  }, []);
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-grey-light/30">
@@ -68,6 +123,13 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
           {/* Main Content */}
           <main className="flex-1 p-4 sm:p-6 overflow-auto animate-fade-in max-w-full">
+            {/* Ações Obrigatórias - Fixed Section at Top */}
+            <ActionableAlertsSection 
+              leads={leads} 
+              projects={projects} 
+              jobProofs={jobProofs} 
+            />
+            
             {children}
           </main>
         </div>
