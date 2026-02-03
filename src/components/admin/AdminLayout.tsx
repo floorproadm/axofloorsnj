@@ -72,7 +72,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   }, []);
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full bg-grey-light/30">
         <AdminSidebar />
         

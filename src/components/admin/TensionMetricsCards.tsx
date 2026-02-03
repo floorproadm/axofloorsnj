@@ -120,7 +120,7 @@ export function TensionMetricsCards({ leads, projects, jobProofs }: TensionMetri
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
       {metrics.map((metric) => {
         const level = getTensionLevel(metric.count);
         const styles = getTensionStyles(level);
@@ -132,21 +132,21 @@ export function TensionMetricsCards({ leads, projects, jobProofs }: TensionMetri
             className={`cursor-pointer transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg ${styles.card}`}
             onClick={metric.onClick}
           >
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-3xl font-bold ${styles.text}`}>
+                <div className="min-w-0 flex-1">
+                  <p className={`text-2xl sm:text-3xl font-bold ${styles.text}`}>
                     {metric.count}
                   </p>
-                  <p className={`text-sm font-semibold ${styles.text}`}>
+                  <p className={`text-xs sm:text-sm font-semibold ${styles.text} truncate`}>
                     {metric.label}
                   </p>
-                  <p className={`text-xs mt-1 ${styles.subtext}`}>
+                  <p className={`text-[10px] sm:text-xs mt-1 ${styles.subtext} truncate`}>
                     {metric.description}
                   </p>
                 </div>
-                <div className={`p-3 rounded-full ${styles.icon}`}>
-                  <Icon className={`w-8 h-8 ${styles.text}`} />
+                <div className={`p-2 sm:p-3 rounded-full ${styles.icon} flex-shrink-0 ml-2`}>
+                  <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${styles.text}`} />
                 </div>
               </div>
             </CardContent>
