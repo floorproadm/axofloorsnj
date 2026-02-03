@@ -597,6 +597,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_proposal_margin: {
+        Args: { p_project_id: string }
+        Returns: {
+          can_send: boolean
+          current_margin: number
+          error_message: string
+          min_margin: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
