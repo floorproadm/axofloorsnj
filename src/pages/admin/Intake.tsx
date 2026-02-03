@@ -71,10 +71,6 @@ interface SourceStats {
 
 const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.ComponentType<any>; url?: string }> = {
   'contact': { label: 'Formulário de Contato', type: 'Página', icon: FileText, url: '/contact' },
-  // Legacy sources - map to 'contact' in stats calculation
-  'contact_form': { label: 'Formulário de Contato', type: 'Página', icon: FileText, url: '/contact' },
-  'contact_page': { label: 'Página de Contato', type: 'Página', icon: FileText, url: '/contact' },
-  'contact_section': { label: 'Seção de Contato', type: 'Página', icon: FileText, url: '/#contact' },
   'quiz': { label: 'Quiz Qualificador', type: 'Qualificador', icon: CheckCircle, url: '/quiz' },
   'floor-diagnostic': { label: 'Diagnóstico de Piso', type: 'Qualificador', icon: CheckCircle, url: '/floor-diagnostic' },
   'builders_page': { label: 'Página Builders', type: 'B2B', icon: Building, url: '/builders' },
