@@ -1,6 +1,6 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAdminData } from "@/hooks/admin/useAdminData";
-import { LeadsPipeline } from "./components/LeadsPipeline";
+import { LinearPipeline } from "./components/LinearPipeline";
 
 export default function LeadsManager() {
   const { leads, isLoading, refreshData } = useAdminData();
@@ -16,7 +16,7 @@ export default function LeadsManager() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <LeadsPipeline leads={leads} onRefresh={refreshData} />
+          <LinearPipeline leads={leads} onRefresh={refreshData} />
         )}
       </div>
     </AdminLayout>

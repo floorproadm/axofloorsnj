@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, Phone, Camera, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { normalizeStatus } from '@/hooks/useLeadPipeline';
 
 interface Lead {
   id: string;
@@ -68,19 +69,21 @@ export function TensionMetricsCards({ leads, projects, jobProofs }: TensionMetri
   const now = new Date();
   const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
 
-  // 1. Leads sem resposta (new status or stalled > 48h in early stages)
+  // 1. Leads sem resposta (new_lead status or stalled > 48h in early stages)
   const leadsWithoutResponse = leads.filter(l => {
-    if (l.status === 'new') return true;
-    if (l.status === 'contacted') {
+    const normalized = normalizeStatus(l.status);
+    if (normalized === 'new_lead') return true;
+    if (normalized === 'appt_scheduled') {
       const lastUpdate = new Date(l.updated_at);
       return lastUpdate < fortyEightHoursAgo;
     }
     return false;
   });
 
-  // 2. Propostas sem follow-up (quoted without follow-up actions)
+  // 2. Propostas sem follow-up (proposal without follow-up actions)
   const proposalsWithoutFollowUp = leads.filter(l => {
-    if (l.status !== 'quoted') return false;
+    const normalized = normalizeStatus(l.status);
+    if (normalized !== 'proposal') return false;
     const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
     return actions.length === 0;
   });
