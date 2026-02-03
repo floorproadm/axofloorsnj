@@ -597,6 +597,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_lead_transition: {
+        Args: { p_lead_id: string; p_new_status: string }
+        Returns: {
+          can_transition: boolean
+          current_status: string
+          error_message: string
+          required_status: string
+        }[]
+      }
       validate_proposal_margin: {
         Args: { p_project_id: string }
         Returns: {
