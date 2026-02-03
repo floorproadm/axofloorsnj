@@ -2,6 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface FollowUpAction {
+  date: string;
+  action: string;
+  notes?: string;
+}
+
 interface Lead {
   id: string;
   name: string;
@@ -23,6 +29,9 @@ interface Lead {
   last_contacted_at?: string;
   converted_to_project_id?: string;
   notes?: string;
+  follow_up_required?: boolean;
+  next_action_date?: string;
+  follow_up_actions?: FollowUpAction[];
   created_at: string;
   updated_at: string;
 }
@@ -159,10 +168,13 @@ export function useAdminData() {
 
       if (leadsError) throw leadsError;
 
-      // Process leads to ensure services is an array
-      const processedLeads = (leadsData || []).map(lead => ({
+      // Process leads to ensure services and follow_up_actions are arrays
+      const processedLeads: Lead[] = (leadsData || []).map(lead => ({
         ...lead,
-        services: Array.isArray(lead.services) ? lead.services as string[] : []
+        services: Array.isArray(lead.services) ? lead.services as string[] : [],
+        follow_up_actions: Array.isArray(lead.follow_up_actions) 
+          ? (lead.follow_up_actions as unknown as FollowUpAction[]) 
+          : []
       }));
 
       // Fetch projects
