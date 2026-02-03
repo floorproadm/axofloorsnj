@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   PIPELINE_STAGES, 
   STAGE_LABELS, 
@@ -14,9 +15,9 @@ import {
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
 import { LeadSignalBadge } from "@/components/admin/LeadSignalBadge";
 import { 
-  Phone, MapPin, DollarSign, 
+  Phone, MapPin, 
   ChevronRight, Clock, CheckCircle, XCircle,
-  CalendarCheck, FileText, Hammer, AlertTriangle, Ban
+  CalendarCheck, FileText, Hammer, Ban, Users, Briefcase
 } from "lucide-react";
 import { format, differenceInHours } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -80,7 +81,18 @@ const stageActionLabel: Record<PipelineStage, string> = {
 export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'leads' | 'jobs'>('leads');
   const { getNextAllowedStatuses } = useLeadPipeline();
+
+  // Separate leads vs jobs (leads with project = jobs)
+  const { pureLeads, jobLeads } = useMemo(() => {
+    const pure = leads.filter(l => !l.converted_to_project_id);
+    const jobs = leads.filter(l => l.converted_to_project_id);
+    return { pureLeads: pure, jobLeads: jobs };
+  }, [leads]);
+
+  // Current working set based on active tab
+  const workingLeads = activeTab === 'leads' ? pureLeads : jobLeads;
 
   // Group leads by normalized status
   const leadsByStage = useMemo(() => {
@@ -93,7 +105,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       lost: []
     };
 
-    leads.forEach(lead => {
+    workingLeads.forEach(lead => {
       const stage = normalizeStatus(lead.status);
       grouped[stage].push(lead);
     });
@@ -106,7 +118,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     });
 
     return grouped;
-  }, [leads]);
+  }, [workingLeads]);
 
   // Calculate stage stats with blocking info
   const stageStats = useMemo(() => {
@@ -146,7 +158,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
   // Calculate total pipeline health
   const pipelineHealth = useMemo(() => {
-    const activeLeads = leads.filter(l => {
+    const activeLeads = workingLeads.filter(l => {
       const stage = normalizeStatus(l.status);
       return stage !== 'completed' && stage !== 'lost';
     });
@@ -156,7 +168,22 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     const staleCount = Object.values(stageStats).reduce((sum, s) => sum + s.stale, 0);
     
     return { activeLeads: activeLeads.length, totalValue, blockedCount, staleCount };
-  }, [leads, stageStats]);
+  }, [workingLeads, stageStats]);
+
+  // Global counts for tab badges
+  const globalCounts = useMemo(() => {
+    const pureActiveCount = pureLeads.filter(l => {
+      const stage = normalizeStatus(l.status);
+      return stage !== 'completed' && stage !== 'lost';
+    }).length;
+    
+    const jobsActiveCount = jobLeads.filter(l => {
+      const stage = normalizeStatus(l.status);
+      return stage !== 'completed' && stage !== 'lost';
+    }).length;
+    
+    return { leads: pureActiveCount, jobs: jobsActiveCount };
+  }, [pureLeads, jobLeads]);
 
   const handleCardClick = (lead: Lead) => {
     setSelectedLead(lead);
@@ -176,10 +203,14 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     return false;
   };
 
-  // Active stages (exclude terminal)
-  const activeStages = PIPELINE_STAGES.filter(s => s !== 'completed' && s !== 'lost');
+  // Active stages based on context
+  // Leads: new_lead, appt_scheduled (early pipeline)
+  // Jobs: proposal, in_production (post-conversion)
+  const leadStages: PipelineStage[] = ['new_lead', 'appt_scheduled'];
+  const jobStages: PipelineStage[] = ['proposal', 'in_production'];
+  const activeStages = activeTab === 'leads' ? leadStages : jobStages;
 
-  // Empty state
+  // Empty state for entire dataset
   if (leads.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
@@ -197,29 +228,88 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* Alert: All blocked */}
-      {allBlocked && (
+      {/* Leads vs Jobs Tab Switcher */}
+      <div className="flex items-center justify-between">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'leads' | 'jobs')}>
+          <TabsList className="h-11">
+            <TabsTrigger 
+              value="leads" 
+              className="gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <Users className="w-4 h-4" />
+              <span className="font-medium">Leads</span>
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                {globalCounts.leads}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="jobs" 
+              className="gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <Briefcase className="w-4 h-4" />
+              <span className="font-medium">Jobs</span>
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                {globalCounts.jobs}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        {/* Context hint */}
+        <p className="text-xs text-muted-foreground hidden sm:block">
+          {activeTab === 'leads' 
+            ? 'Contatos que ainda não viraram projeto' 
+            : 'Leads com projeto vinculado em produção'}
+        </p>
+      </div>
+
+      {/* Alert: All blocked (only in jobs tab) */}
+      {allBlocked && activeTab === 'jobs' && (
         <div className="p-4 rounded-lg bg-state-blocked/10 border-2 border-state-blocked flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-state-blocked/20 flex items-center justify-center flex-shrink-0">
             <Ban className="w-5 h-5 text-state-blocked" />
           </div>
           <div>
             <h3 className="font-bold text-state-blocked">
-              🔴 Dinheiro Parado — Todos os leads estão bloqueados
+              🔴 Dinheiro Parado — Todos os jobs estão bloqueados
             </h3>
             <p className="text-sm text-state-blocked/80">
-              Clique em cada lead para ver o que está faltando
+              Clique em cada job para ver o que está faltando
             </p>
           </div>
         </div>
       )}
 
+      {/* Empty state for current tab */}
+      {workingLeads.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-48 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
+          {activeTab === 'leads' ? (
+            <>
+              <Users className="w-10 h-10 text-muted-foreground/50 mb-3" />
+              <h3 className="font-semibold text-muted-foreground">Nenhum lead novo</h3>
+              <p className="text-sm text-muted-foreground/70 mt-1">
+                Todos os leads já foram convertidos em jobs
+              </p>
+            </>
+          ) : (
+            <>
+              <Briefcase className="w-10 h-10 text-muted-foreground/50 mb-3" />
+              <h3 className="font-semibold text-muted-foreground">Nenhum job ativo</h3>
+              <p className="text-sm text-muted-foreground/70 mt-1">
+                Converta leads em projetos para vê-los aqui
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Pipeline Summary Bar */}
+      {workingLeads.length > 0 && (
       <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto scrollbar-hide w-full max-w-full">
-        {PIPELINE_STAGES.map((stage, idx) => {
+        {activeStages.map((stage, idx) => {
           const config = STAGE_CONFIG[stage];
           const stats = stageStats[stage];
-          const isLast = idx === PIPELINE_STAGES.length - 1;
+          const isLast = idx === activeStages.length - 1;
           const hasBlockedLeads = stats.blocked > 0;
           
           return (
@@ -243,7 +333,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                     {stats.blocked}
                   </Badge>
                 )}
-                {stats.stale > 0 && !hasBlockedLeads && stage !== 'completed' && stage !== 'lost' && (
+                {stats.stale > 0 && !hasBlockedLeads && (
                   <Badge className="h-4 sm:h-5 px-1.5 text-[10px] sm:text-xs bg-state-risk text-white hidden sm:flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {stats.stale}
@@ -257,9 +347,11 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           );
         })}
       </div>
+      )}
 
       {/* Main Pipeline Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+      {workingLeads.length > 0 && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         {activeStages.map(stage => {
           const config = STAGE_CONFIG[stage];
           const stageLeads = leadsByStage[stage];
@@ -412,6 +504,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           );
         })}
       </div>
+      )}
 
       {/* Terminal States (Completed & Lost) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
