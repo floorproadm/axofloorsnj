@@ -84,7 +84,7 @@ const Contact = () => {
         email: formData.email.trim() ? sanitizeInput(formData.email) : null,
         phone: sanitizeInput(formData.phone),
         city: formData.city.trim() ? sanitizeInput(formData.city) : null,
-        lead_source: 'contact_page',
+        lead_source: 'contact',
         status: 'new',
         priority: 'medium',
         services: formData.service ? [formData.service] : [],

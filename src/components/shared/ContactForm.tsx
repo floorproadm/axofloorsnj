@@ -111,7 +111,7 @@ const ContactForm = () => {
         fbc,
         fbp,
         custom_data: {
-          lead_source: 'contact_form',
+          lead_source: 'contact',
           services: leadData.services,
           city: leadData.city,
           zip_code: leadData.zip_code
@@ -144,7 +144,7 @@ const ContactForm = () => {
           name: formData.name,
           email: formData.email || null,
           phone: formData.phone,
-          lead_source: 'contact_form',
+          lead_source: 'contact',
           status: 'new',
           priority: formData.priority,
           services: formData.services,
@@ -164,7 +164,7 @@ const ContactForm = () => {
             name: formData.name,
             email: formData.email || 'no-email@provided.com',
             phone: formData.phone,
-            source: 'contact_form',
+            source: 'contact',
             services: formData.services,
             budget: formData.budget ? parseInt(formData.budget) : null,
             room_size: formData.room_size,
