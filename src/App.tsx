@@ -26,6 +26,7 @@ import ThankYou from "./pages/ThankYou";
 import ReferralProgram from "./pages/ReferralProgram";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
+import AdminDashboard from './pages/admin/Dashboard';
 import AdminGalleryManager from './pages/admin/GalleryManager';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import AdminIntake from './pages/admin/Intake';
@@ -71,7 +72,12 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={
               <ProtectedRoute>
-                <AdminGalleryManager />
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/dashboard" element={
+              <ProtectedRoute>
+                <AdminDashboard />
               </ProtectedRoute>
             } />
             <Route path="/admin/gallery" element={
