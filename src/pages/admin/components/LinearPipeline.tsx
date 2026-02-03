@@ -149,44 +149,44 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const activeStages = PIPELINE_STAGES.filter(s => s !== 'completed' && s !== 'lost');
 
   return (
-    <div className="space-y-4">
-      {/* Pipeline Summary Bar */}
-      <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto">
+    <div className="space-y-3 sm:space-y-4">
+      {/* Pipeline Summary Bar - Scrollable on mobile */}
+      <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-2">
         {PIPELINE_STAGES.map((stage, idx) => {
           const config = STAGE_CONFIG[stage];
           const stats = stageStats[stage];
           const isLast = idx === PIPELINE_STAGES.length - 1;
           
           return (
-            <div key={stage} className="flex items-center">
+            <div key={stage} className="flex items-center flex-shrink-0">
               <div className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg min-w-fit",
+                "flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg min-w-fit",
                 config.bgColor,
                 config.borderColor,
                 "border"
               )}>
-                <span className={cn("font-medium text-sm", config.textColor)}>
+                <span className={cn("font-medium text-xs sm:text-sm whitespace-nowrap", config.textColor)}>
                   {STAGE_LABELS[stage]}
                 </span>
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs font-bold">
+                <Badge variant="secondary" className="h-4 sm:h-5 px-1 sm:px-1.5 text-[10px] sm:text-xs font-bold">
                   {stats.count}
                 </Badge>
                 {stats.stale > 0 && stage !== 'completed' && stage !== 'lost' && (
-                  <Badge variant="destructive" className="h-4 px-1 text-[10px]">
+                  <Badge variant="destructive" className="h-3.5 sm:h-4 px-1 text-[9px] sm:text-[10px] hidden sm:flex">
                     {stats.stale} stale
                   </Badge>
                 )}
               </div>
               {!isLast && (
-                <ChevronRight className="w-4 h-4 text-muted-foreground mx-1 flex-shrink-0" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground mx-0.5 sm:mx-1 flex-shrink-0" />
               )}
             </div>
           );
         })}
       </div>
 
-      {/* Main Pipeline Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* Main Pipeline Grid - Stack on mobile, 2 cols tablet, 4 cols desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {activeStages.map(stage => {
           const config = STAGE_CONFIG[stage];
           const stageLeads = leadsByStage[stage];
@@ -202,29 +202,29 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
             >
               {/* Stage Header */}
               <div className={cn(
-                "flex items-center justify-between px-4 py-3 border-b",
+                "flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-b",
                 config.bgColor
               )}>
-                <div className="flex items-center gap-2">
-                  <span className={config.color}>{stageIcons[stage]}</span>
-                  <span className={cn("font-semibold", config.textColor)}>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className={cn("w-4 h-4 sm:w-5 sm:h-5", config.color)}>{stageIcons[stage]}</span>
+                  <span className={cn("font-semibold text-sm sm:text-base", config.textColor)}>
                     {STAGE_LABELS[stage]}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   {stats.value > 0 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">
                       ${(stats.value / 1000).toFixed(0)}k
                     </span>
                   )}
-                  <Badge variant="outline" className={cn("font-bold", config.textColor)}>
+                  <Badge variant="outline" className={cn("font-bold text-xs", config.textColor)}>
                     {stats.count}
                   </Badge>
                 </div>
               </div>
 
-              {/* Leads List */}
-              <ScrollArea className="h-[400px]">
+              {/* Leads List - Shorter on mobile */}
+              <ScrollArea className="h-[280px] sm:h-[350px] lg:h-[400px]">
                 <div className="p-2 space-y-2">
                   {stageLeads.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm">
@@ -337,7 +337,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       </div>
 
       {/* Terminal States (Completed & Lost) - Collapsed */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {(['completed', 'lost'] as PipelineStage[]).map(stage => {
           const config = STAGE_CONFIG[stage];
           const stats = stageStats[stage];
@@ -345,18 +345,18 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           return (
             <Card key={stage} className={cn("border", config.borderColor)}>
               <div className={cn(
-                "flex items-center justify-between px-4 py-2",
+                "flex items-center justify-between px-3 sm:px-4 py-2",
                 config.bgColor
               )}>
-                <div className="flex items-center gap-2">
-                  <span className={config.color}>{stageIcons[stage]}</span>
-                  <span className={cn("font-medium text-sm", config.textColor)}>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className={cn("w-4 h-4 sm:w-5 sm:h-5", config.color)}>{stageIcons[stage]}</span>
+                  <span className={cn("font-medium text-xs sm:text-sm", config.textColor)}>
                     {STAGE_LABELS[stage]}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   {stats.value > 0 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">
                       ${(stats.value / 1000).toFixed(0)}k
                     </span>
                   )}
@@ -370,14 +370,14 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         })}
       </div>
 
-      {/* Lead Detail Modal */}
+      {/* Lead Detail Modal - Full screen on mobile */}
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-16px)] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
+            <DialogTitle className="text-lg sm:text-xl font-bold pr-6">
               {selectedLead?.name}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm">
               Detalhes do lead
             </DialogDescription>
           </DialogHeader>
