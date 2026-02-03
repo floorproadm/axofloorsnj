@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -27,8 +29,14 @@ import {
   BarChart3,
   List,
   ExternalLink,
-  Globe
+  Globe,
+  X,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar
 } from "lucide-react";
+import { format } from "date-fns";
 
 interface Lead {
   id: string;
@@ -71,6 +79,7 @@ export default function Intake() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Form state for manual lead
@@ -322,6 +331,39 @@ export default function Intake() {
     return <IconComponent className="h-4 w-4" />;
   };
 
+  // Get leads filtered by selected source
+  const selectedSourceLeads = useMemo(() => {
+    if (!selectedSource) return [];
+    return leads
+      .filter(l => l.lead_source === selectedSource)
+      .slice(0, 10); // Show last 10 leads
+  }, [selectedSource, leads]);
+
+  const selectedSourceStats = useMemo(() => {
+    if (!selectedSource) return null;
+    return sourceStats.find(s => s.source === selectedSource) || {
+      source: selectedSource,
+      type: SOURCE_LABELS[selectedSource]?.type || 'Outro',
+      total: 0,
+      converted: 0,
+      lost: 0,
+      avgBudget: 0
+    };
+  }, [selectedSource, sourceStats]);
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { label: string; variant: string }> = {
+      'new_lead': { label: 'Novo', variant: 'bg-blue-100 text-blue-800' },
+      'appt_scheduled': { label: 'Visita', variant: 'bg-purple-100 text-purple-800' },
+      'proposal': { label: 'Orçamento', variant: 'bg-amber-100 text-amber-800' },
+      'in_production': { label: 'Em Execução', variant: 'bg-cyan-100 text-cyan-800' },
+      'completed': { label: 'Finalizado', variant: 'bg-green-100 text-green-800' },
+      'lost': { label: 'Perdido', variant: 'bg-red-100 text-red-800' },
+    };
+    const config = statusConfig[status] || { label: status, variant: 'bg-gray-100 text-gray-800' };
+    return <Badge className={`${config.variant} text-xs`}>{config.label}</Badge>;
+  };
+
   return (
     <AdminLayout 
       title="Captação & Entrada de Leads" 
@@ -568,11 +610,12 @@ export default function Intake() {
                       return (
                         <Card 
                           key={sourceKey} 
-                          className={`transition-all ${
+                          className={`transition-all cursor-pointer hover:shadow-md hover:scale-[1.02] ${
                             hasActivity 
-                              ? 'border-success/30 bg-success/5' 
-                              : 'border-muted bg-muted/20 opacity-75'
+                              ? 'border-success/30 bg-success/5 hover:border-success/50' 
+                              : 'border-muted bg-muted/20 opacity-75 hover:opacity-100'
                           }`}
+                          onClick={() => setSelectedSource(sourceKey)}
                         >
                           <CardContent className="p-4">
                             <div className="flex items-start gap-3">
@@ -620,6 +663,7 @@ export default function Intake() {
                                   </p>
                                 )}
                               </div>
+                              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
                             </div>
                           </CardContent>
                         </Card>
@@ -738,6 +782,142 @@ export default function Intake() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Source Quickview Sheet */}
+        <Sheet open={!!selectedSource} onOpenChange={(open) => !open && setSelectedSource(null)}>
+          <SheetContent className="w-full sm:max-w-lg">
+            <SheetHeader>
+              <div className="flex items-center gap-3">
+                {selectedSource && (
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    {getSourceIcon(selectedSource)}
+                  </div>
+                )}
+                <div>
+                  <SheetTitle>{selectedSource ? getSourceLabel(selectedSource) : ''}</SheetTitle>
+                  <SheetDescription>
+                    {selectedSource && SOURCE_LABELS[selectedSource]?.type || 'Fonte de captação'}
+                  </SheetDescription>
+                </div>
+              </div>
+            </SheetHeader>
+            
+            {selectedSourceStats && (
+              <div className="mt-6 space-y-6">
+                {/* Stats Summary */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold">{selectedSourceStats.total}</p>
+                    <p className="text-xs text-muted-foreground">Total (30d)</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-success/10">
+                    <p className="text-2xl font-bold text-success">{selectedSourceStats.converted}</p>
+                    <p className="text-xs text-muted-foreground">Convertidos</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-blocked/10">
+                    <p className="text-2xl font-bold text-blocked">{selectedSourceStats.lost}</p>
+                    <p className="text-xs text-muted-foreground">Perdidos</p>
+                  </div>
+                </div>
+
+                {/* Conversion Rate */}
+                {selectedSourceStats.total > 0 && (
+                  <div className="p-4 rounded-lg border bg-card">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-muted-foreground">Taxa de Conversão</span>
+                      <span className="font-semibold">
+                        {Math.round((selectedSourceStats.converted / selectedSourceStats.total) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-success transition-all"
+                        style={{ 
+                          width: `${(selectedSourceStats.converted / selectedSourceStats.total) * 100}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Average Ticket */}
+                {selectedSourceStats.avgBudget > 0 && (
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-muted-foreground">Ticket Médio</span>
+                    </div>
+                    <span className="font-semibold text-primary">
+                      {formatCurrency(selectedSourceStats.avgBudget)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Recent Leads */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Leads Recentes
+                  </h4>
+                  {selectedSourceLeads.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Nenhum lead nos últimos 30 dias</p>
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[280px]">
+                      <div className="space-y-2 pr-4">
+                        {selectedSourceLeads.map((lead) => (
+                          <div 
+                            key={lead.id} 
+                            className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-sm truncate">{lead.name}</p>
+                                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                  <Phone className="h-3 w-3" />
+                                  <span>{lead.phone}</span>
+                                </div>
+                                {lead.email && (
+                                  <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                                    <Mail className="h-3 w-3" />
+                                    <span className="truncate">{lead.email}</span>
+                                  </div>
+                                )}
+                                {lead.city && (
+                                  <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                                    <MapPin className="h-3 w-3" />
+                                    <span>{lead.city}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-end gap-1">
+                                {getStatusBadge(lead.status)}
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {format(new Date(lead.created_at), 'dd/MM')}
+                                </span>
+                              </div>
+                            </div>
+                            {lead.budget && lead.budget > 0 && (
+                              <div className="mt-2 pt-2 border-t flex items-center gap-1 text-xs">
+                                <DollarSign className="h-3 w-3 text-primary" />
+                                <span className="text-primary font-medium">
+                                  {formatCurrency(lead.budget)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </div>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </AdminLayout>
   );
