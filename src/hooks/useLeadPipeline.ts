@@ -2,90 +2,121 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-// Pipeline stages in order
-export const PIPELINE_STAGES = ['new', 'contacted', 'quoted', 'won', 'lost'] as const;
+// 6-stage linear pipeline
+export const PIPELINE_STAGES = [
+  'new_lead', 
+  'appt_scheduled', 
+  'proposal', 
+  'in_production', 
+  'completed', 
+  'lost'
+] as const;
+
 export type PipelineStage = typeof PIPELINE_STAGES[number];
 
 // Stage labels for display
 export const STAGE_LABELS: Record<PipelineStage, string> = {
-  new: 'Novo',
-  contacted: 'Contatado',
-  quoted: 'Cotado',
-  won: 'Ganho',
-  lost: 'Perdido'
+  new_lead: 'New Lead',
+  appt_scheduled: 'Appt. Scheduled',
+  proposal: 'Proposal',
+  in_production: 'In Production',
+  completed: 'Completed',
+  lost: 'Lost'
 };
 
-// Valid transitions map
+// Stage icons and colors config
+export const STAGE_CONFIG: Record<PipelineStage, { 
+  color: string; 
+  bgColor: string; 
+  borderColor: string;
+  textColor: string;
+}> = {
+  new_lead: { 
+    color: 'text-blue-600', 
+    bgColor: 'bg-blue-50', 
+    borderColor: 'border-blue-300',
+    textColor: 'text-blue-700'
+  },
+  appt_scheduled: { 
+    color: 'text-cyan-600', 
+    bgColor: 'bg-cyan-50', 
+    borderColor: 'border-cyan-300',
+    textColor: 'text-cyan-700'
+  },
+  proposal: { 
+    color: 'text-purple-600', 
+    bgColor: 'bg-purple-50', 
+    borderColor: 'border-purple-300',
+    textColor: 'text-purple-700'
+  },
+  in_production: { 
+    color: 'text-amber-600', 
+    bgColor: 'bg-amber-50', 
+    borderColor: 'border-amber-300',
+    textColor: 'text-amber-700'
+  },
+  completed: { 
+    color: 'text-green-600', 
+    bgColor: 'bg-green-50', 
+    borderColor: 'border-green-300',
+    textColor: 'text-green-700'
+  },
+  lost: { 
+    color: 'text-red-600', 
+    bgColor: 'bg-red-50', 
+    borderColor: 'border-red-300',
+    textColor: 'text-red-700'
+  }
+};
+
+// Valid transitions map for 6-stage pipeline
 export const VALID_TRANSITIONS: Record<PipelineStage, PipelineStage[]> = {
-  new: ['contacted'],
-  contacted: ['quoted'],
-  quoted: ['won', 'lost'],
-  won: [],
+  new_lead: ['appt_scheduled'],
+  appt_scheduled: ['proposal'],
+  proposal: ['in_production', 'lost'],
+  in_production: ['completed', 'lost'],
+  completed: [],
   lost: []
 };
 
-interface TransitionValidation {
-  canTransition: boolean;
-  errorMessage: string | null;
-  currentStatus: string | null;
-  requiredStatus: string | null;
+// Map old statuses to new ones for backwards compatibility
+const STATUS_MAP: Record<string, PipelineStage> = {
+  'new': 'new_lead',
+  'contacted': 'appt_scheduled',
+  'quoted': 'proposal',
+  'won': 'completed',
+  'lost': 'lost',
+  // New statuses map to themselves
+  'new_lead': 'new_lead',
+  'appt_scheduled': 'appt_scheduled',
+  'proposal': 'proposal',
+  'in_production': 'in_production',
+  'completed': 'completed'
+};
+
+export function normalizeStatus(status: string): PipelineStage {
+  return STATUS_MAP[status] || 'new_lead';
 }
 
 interface UseLeadPipelineReturn {
-  validateTransition: (leadId: string, newStatus: PipelineStage) => Promise<TransitionValidation>;
   updateLeadStatus: (leadId: string, newStatus: PipelineStage) => Promise<boolean>;
-  isValidating: boolean;
   isUpdating: boolean;
   getNextAllowedStatuses: (currentStatus: string) => PipelineStage[];
+  getStageIndex: (status: string) => number;
 }
 
 export function useLeadPipeline(): UseLeadPipelineReturn {
   const { toast } = useToast();
-  const [isValidating, setIsValidating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const validateTransition = useCallback(async (
-    leadId: string, 
-    newStatus: PipelineStage
-  ): Promise<TransitionValidation> => {
-    setIsValidating(true);
-    
-    try {
-      const { data, error } = await supabase
-        .rpc('validate_lead_transition', {
-          p_lead_id: leadId,
-          p_new_status: newStatus
-        });
+  const getStageIndex = useCallback((status: string): number => {
+    const normalized = normalizeStatus(status);
+    return PIPELINE_STAGES.indexOf(normalized);
+  }, []);
 
-      if (error) {
-        console.error('Validation error:', error);
-        return {
-          canTransition: false,
-          errorMessage: error.message,
-          currentStatus: null,
-          requiredStatus: null
-        };
-      }
-
-      const result = data?.[0];
-      
-      return {
-        canTransition: result?.can_transition ?? false,
-        errorMessage: result?.error_message ?? null,
-        currentStatus: result?.current_status ?? null,
-        requiredStatus: result?.required_status ?? null
-      };
-    } catch (err) {
-      console.error('Validation exception:', err);
-      return {
-        canTransition: false,
-        errorMessage: 'Erro ao validar transição',
-        currentStatus: null,
-        requiredStatus: null
-      };
-    } finally {
-      setIsValidating(false);
-    }
+  const getNextAllowedStatuses = useCallback((currentStatus: string): PipelineStage[] => {
+    const normalized = normalizeStatus(currentStatus);
+    return VALID_TRANSITIONS[normalized] || [];
   }, []);
 
   const updateLeadStatus = useCallback(async (
@@ -95,13 +126,30 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
     setIsUpdating(true);
     
     try {
-      // First validate
-      const validation = await validateTransition(leadId, newStatus);
-      
-      if (!validation.canTransition) {
+      // Get current status
+      const { data: lead, error: fetchError } = await supabase
+        .from('leads')
+        .select('status')
+        .eq('id', leadId)
+        .single();
+
+      if (fetchError || !lead) {
+        toast({
+          title: "Erro",
+          description: "Lead não encontrado",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const currentNormalized = normalizeStatus(lead.status);
+      const allowedNext = VALID_TRANSITIONS[currentNormalized] || [];
+
+      // Validate transition
+      if (!allowedNext.includes(newStatus)) {
         toast({
           title: "Transição Bloqueada",
-          description: validation.errorMessage || "Transição não permitida",
+          description: `De "${STAGE_LABELS[currentNormalized]}" só pode ir para: ${allowedNext.map(s => STAGE_LABELS[s]).join(', ') || 'nenhum (terminal)'}`,
           variant: "destructive"
         });
         return false;
@@ -142,18 +190,12 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
     } finally {
       setIsUpdating(false);
     }
-  }, [validateTransition, toast]);
-
-  const getNextAllowedStatuses = useCallback((currentStatus: string): PipelineStage[] => {
-    const stage = currentStatus as PipelineStage;
-    return VALID_TRANSITIONS[stage] || [];
-  }, []);
+  }, [toast]);
 
   return {
-    validateTransition,
     updateLeadStatus,
-    isValidating,
     isUpdating,
-    getNextAllowedStatuses
+    getNextAllowedStatuses,
+    getStageIndex
   };
 }

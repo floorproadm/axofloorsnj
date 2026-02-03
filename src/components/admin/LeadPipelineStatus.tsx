@@ -11,7 +11,9 @@ import {
   useLeadPipeline, 
   PIPELINE_STAGES, 
   STAGE_LABELS, 
+  STAGE_CONFIG,
   VALID_TRANSITIONS,
+  normalizeStatus,
   type PipelineStage 
 } from '@/hooks/useLeadPipeline';
 import { ChevronDown, Lock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
@@ -23,14 +25,6 @@ interface LeadPipelineStatusProps {
   onStatusChange?: () => void;
 }
 
-const statusColors: Record<PipelineStage, string> = {
-  new: 'bg-blue-100 text-blue-800 border-blue-200',
-  contacted: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  quoted: 'bg-purple-100 text-purple-800 border-purple-200',
-  won: 'bg-green-100 text-green-800 border-green-200',
-  lost: 'bg-red-100 text-red-800 border-red-200'
-};
-
 export function LeadPipelineStatus({ 
   leadId, 
   currentStatus, 
@@ -39,7 +33,8 @@ export function LeadPipelineStatus({
   const { updateLeadStatus, isUpdating, getNextAllowedStatuses } = useLeadPipeline();
   const [isOpen, setIsOpen] = useState(false);
 
-  const stage = currentStatus as PipelineStage;
+  const stage = normalizeStatus(currentStatus);
+  const config = STAGE_CONFIG[stage];
   const allowedNext = getNextAllowedStatuses(currentStatus);
   const isTerminal = allowedNext.length === 0;
 
@@ -56,9 +51,9 @@ export function LeadPipelineStatus({
     return (
       <Badge 
         variant="outline" 
-        className={cn(statusColors[stage], 'flex items-center gap-1')}
+        className={cn(config.bgColor, config.textColor, config.borderColor, 'flex items-center gap-1 border')}
       >
-        {stage === 'won' && <CheckCircle className="w-3 h-3" />}
+        {stage === 'completed' && <CheckCircle className="w-3 h-3" />}
         {stage === 'lost' && <XCircle className="w-3 h-3" />}
         {STAGE_LABELS[stage]}
         <Lock className="w-3 h-3 ml-1 opacity-50" />
@@ -73,7 +68,9 @@ export function LeadPipelineStatus({
           variant="outline" 
           size="sm"
           className={cn(
-            statusColors[stage],
+            config.bgColor,
+            config.textColor,
+            config.borderColor,
             'h-7 px-2 text-xs font-medium border',
             isUpdating && 'opacity-50 cursor-not-allowed'
           )}
@@ -88,32 +85,35 @@ export function LeadPipelineStatus({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
         <div className="px-2 py-1.5 text-xs text-muted-foreground font-medium">
-          Próxima etapa permitida:
+          Próxima etapa:
         </div>
-        {allowedNext.map((nextStatus) => (
-          <DropdownMenuItem
-            key={nextStatus}
-            onClick={() => handleStatusChange(nextStatus)}
-            className="cursor-pointer"
-          >
-            <Badge 
-              variant="outline" 
-              className={cn(statusColors[nextStatus], 'mr-2')}
+        {allowedNext.map((nextStatus) => {
+          const nextConfig = STAGE_CONFIG[nextStatus];
+          return (
+            <DropdownMenuItem
+              key={nextStatus}
+              onClick={() => handleStatusChange(nextStatus)}
+              className="cursor-pointer"
             >
-              {STAGE_LABELS[nextStatus]}
-            </Badge>
-          </DropdownMenuItem>
-        ))}
+              <Badge 
+                variant="outline" 
+                className={cn(nextConfig.bgColor, nextConfig.textColor, nextConfig.borderColor, 'mr-2 border')}
+              >
+                {STAGE_LABELS[nextStatus]}
+              </Badge>
+            </DropdownMenuItem>
+          );
+        })}
         
         {/* Show blocked stages */}
         <div className="border-t mt-1 pt-1">
           <div className="px-2 py-1.5 text-xs text-muted-foreground">
-            Bloqueadas (requer etapa anterior):
+            Bloqueadas:
           </div>
           {PIPELINE_STAGES.filter(s => 
-            s !== currentStatus && 
+            s !== stage && 
             !allowedNext.includes(s) &&
-            s !== 'new' // Can't go back to new
+            s !== 'new_lead' // Can't go back to new_lead
           ).map((blockedStatus) => (
             <DropdownMenuItem
               key={blockedStatus}

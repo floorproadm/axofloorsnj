@@ -1,41 +1,31 @@
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu";
+  PIPELINE_STAGES, 
+  STAGE_LABELS, 
+  STAGE_CONFIG,
+  normalizeStatus,
+  useLeadPipeline,
+  type PipelineStage 
+} from "@/hooks/useLeadPipeline";
+import { LeadFollowUpAlert } from "@/components/admin/LeadFollowUpAlert";
+import { JobProofUploader } from "@/components/admin/JobProofUploader";
 import { 
-  User, 
-  Phone, 
-  Mail, 
-  ArrowRight, 
-  Calendar, 
-  DollarSign,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  TrendingUp,
-  MessageSquare,
-  MapPin,
-  ChevronRight,
-  Plus,
-  MoreHorizontal,
-  Trash2,
-  Edit
+  Phone, Mail, MapPin, DollarSign, 
+  MessageSquare, Tag, Bell, Camera, 
+  ChevronRight, Clock, CheckCircle, XCircle,
+  CalendarCheck, FileText, Hammer, AlertTriangle
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { format, differenceInHours } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
-interface Lead {
+type Lead = {
   id: string;
   name: string;
   email?: string;
@@ -45,474 +35,500 @@ interface Lead {
   priority: string;
   services: string[];
   budget?: number;
-  room_size?: string;
   city?: string;
-  location?: string;
-  address?: string;
-  message?: string;
-  notes?: string;
   created_at: string;
-  follow_up_date?: string;
-  last_contacted_at?: string;
-}
+  updated_at: string;
+  notes?: string;
+  follow_up_required?: boolean;
+  next_action_date?: string;
+  follow_up_actions?: { date: string; action: string; notes?: string }[];
+  converted_to_project_id?: string;
+};
 
 interface LinearPipelineProps {
   leads: Lead[];
-  onLeadUpdate: (lead: Lead) => void;
-  isLoading: boolean;
+  onRefresh: () => void;
 }
 
-const PIPELINE_STAGES = [
-  {
-    key: 'new',
-    title: 'Novos Leads',
-    color: 'bg-blue-50 border-blue-200',
-    headerColor: 'bg-blue-100',
-    textColor: 'text-blue-800',
-    icon: AlertCircle,
-    nextActions: ['Ligar', 'Email', 'WhatsApp'],
-    nextStatuses: ['contacted']
-  },
-  {
-    key: 'contacted',
-    title: 'Contatados',
-    color: 'bg-yellow-50 border-yellow-200',
-    headerColor: 'bg-yellow-100',
-    textColor: 'text-yellow-800',
-    icon: Phone,
-    nextActions: ['Agendar Visita', 'Enviar Orçamento', 'Follow-up'],
-    nextStatuses: ['qualified', 'lost']
-  },
-  {
-    key: 'qualified',
-    title: 'Qualificados',
-    color: 'bg-orange-50 border-orange-200',
-    headerColor: 'bg-orange-100',
-    textColor: 'text-orange-800',
-    icon: CheckCircle,
-    nextActions: ['Apresentar Proposta', 'Negociar', 'Fechar'],
-    nextStatuses: ['proposal', 'converted', 'lost']
-  },
-  {
-    key: 'proposal',
-    title: 'Proposta Enviada',
-    color: 'bg-purple-50 border-purple-200',
-    headerColor: 'bg-purple-100',
-    textColor: 'text-purple-800',
-    icon: TrendingUp,
-    nextActions: ['Follow-up Proposta', 'Negociar Preço', 'Fechar'],
-    nextStatuses: ['converted', 'lost']
-  },
-  {
-    key: 'converted',
-    title: 'Convertidos',
-    color: 'bg-green-50 border-green-200',
-    headerColor: 'bg-green-100',
-    textColor: 'text-green-800',
-    icon: CheckCircle,
-    nextActions: ['Criar Projeto', 'Agendar Início'],
-    nextStatuses: []
-  }
-];
+const stageIcons: Record<PipelineStage, React.ReactNode> = {
+  new_lead: <Clock className="w-5 h-5" />,
+  appt_scheduled: <CalendarCheck className="w-5 h-5" />,
+  proposal: <FileText className="w-5 h-5" />,
+  in_production: <Hammer className="w-5 h-5" />,
+  completed: <CheckCircle className="w-5 h-5" />,
+  lost: <XCircle className="w-5 h-5" />
+};
 
-export function LinearPipeline({ leads, onLeadUpdate, isLoading }: LinearPipelineProps) {
-  const { toast } = useToast();
+const priorityConfig = {
+  low: { color: "text-gray-600", bg: "bg-gray-100" },
+  medium: { color: "text-orange-600", bg: "bg-orange-100" },
+  high: { color: "text-red-600", bg: "bg-red-100" }
+};
+
+const sourceLabels: Record<string, string> = {
+  quiz: "Quiz",
+  contact_form: "Form",
+  contact_page: "Contact",
+  builders_page: "Builders",
+  realtors_page: "Realtors",
+  lead_magnet: "Magnet",
+  website: "Website"
+};
+
+export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const { updateLeadStatus, isUpdating, getNextAllowedStatuses } = useLeadPipeline();
 
-  const getLeadsByStatus = (status: string) => {
-    return leads.filter(lead => lead.status === status);
+  // Group leads by normalized status
+  const leadsByStage = useMemo(() => {
+    const grouped: Record<PipelineStage, Lead[]> = {
+      new_lead: [],
+      appt_scheduled: [],
+      proposal: [],
+      in_production: [],
+      completed: [],
+      lost: []
+    };
+
+    leads.forEach(lead => {
+      const stage = normalizeStatus(lead.status);
+      grouped[stage].push(lead);
+    });
+
+    // Sort each group by updated_at (most recent first)
+    Object.keys(grouped).forEach(stage => {
+      grouped[stage as PipelineStage].sort((a, b) => 
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
+    });
+
+    return grouped;
+  }, [leads]);
+
+  // Calculate stage stats
+  const stageStats = useMemo(() => {
+    const stats: Record<PipelineStage, { count: number; value: number; stale: number }> = {
+      new_lead: { count: 0, value: 0, stale: 0 },
+      appt_scheduled: { count: 0, value: 0, stale: 0 },
+      proposal: { count: 0, value: 0, stale: 0 },
+      in_production: { count: 0, value: 0, stale: 0 },
+      completed: { count: 0, value: 0, stale: 0 },
+      lost: { count: 0, value: 0, stale: 0 }
+    };
+
+    Object.entries(leadsByStage).forEach(([stage, stageLeads]) => {
+      const s = stage as PipelineStage;
+      stats[s].count = stageLeads.length;
+      stats[s].value = stageLeads.reduce((sum, l) => sum + (l.budget || 0), 0);
+      stats[s].stale = stageLeads.filter(l => 
+        differenceInHours(new Date(), new Date(l.updated_at)) > 48
+      ).length;
+    });
+
+    return stats;
+  }, [leadsByStage]);
+
+  const handleCardClick = (lead: Lead) => {
+    setSelectedLead(lead);
+    setIsDetailModalOpen(true);
   };
 
-  const updateLeadStatus = async (leadId: string, newStatus: string, notes?: string) => {
-    try {
-      const updateData: any = { 
-        status: newStatus,
-        updated_at: new Date().toISOString()
-      };
-      
-      if (newStatus === 'contacted' && !selectedLead?.last_contacted_at) {
-        updateData.last_contacted_at = new Date().toISOString();
-      }
-
-      if (notes) {
-        updateData.notes = notes;
-      }
-
-      const { error } = await supabase
-        .from('leads')
-        .update(updateData)
-        .eq('id', leadId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Status atualizado",
-        description: `Lead movido para ${PIPELINE_STAGES.find(s => s.key === newStatus)?.title || newStatus}`
-      });
-
-      onLeadUpdate({ ...selectedLead!, status: newStatus, notes: notes || selectedLead?.notes });
-      setIsActionDialogOpen(false);
-      setSelectedLead(null);
-      setNotes("");
-      
-    } catch (error) {
-      console.error('Error updating lead status:', error);
-      toast({
-        title: "Erro ao atualizar",
-        description: "Tente novamente.",
-        variant: "destructive"
-      });
+  const handleAdvanceStatus = async (lead: Lead, newStatus: PipelineStage) => {
+    const success = await updateLeadStatus(lead.id, newStatus);
+    if (success) {
+      onRefresh();
     }
   };
 
-  const handleDeleteLead = async (leadId: string, leadName: string) => {
-    if (!confirm(`Tem certeza que deseja deletar o lead "${leadName}"? Esta ação não pode ser desfeita.`)) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .delete()
-        .eq('id', leadId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Lead deletado",
-        description: `O lead "${leadName}" foi removido com sucesso.`
-      });
-
-      // Close modal if the deleted lead was selected
-      if (selectedLead?.id === leadId) {
-        setIsActionDialogOpen(false);
-        setSelectedLead(null);
-      }
-
-      // Force refresh by triggering parent component refresh
-      onLeadUpdate({} as Lead);
-
-    } catch (error) {
-      console.error('Erro ao deletar lead:', error);
-      toast({
-        title: "Erro ao deletar",
-        description: "Não foi possível deletar o lead. Tente novamente.",
-        variant: "destructive"
-      });
-    }
+  const isStale = (lead: Lead) => {
+    return differenceInHours(new Date(), new Date(lead.updated_at)) > 48;
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 24) return `${diffInHours}h atrás`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d atrás`;
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const LeadCard = ({ lead }: { lead: Lead }) => (
-    <div className="p-3 border rounded-lg bg-white hover:shadow-sm transition-all duration-200 group">
-      <div className="space-y-2">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0 cursor-pointer" 
-               onClick={() => {setSelectedLead(lead); setIsActionDialogOpen(true);}}>
-            <h4 className="font-medium text-sm truncate">{lead.name}</h4>
-            <div className="flex items-center gap-1 mt-1">
-              <Phone className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs font-mono">{lead.phone}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {lead.priority === 'high' && (
-              <Badge className={`text-xs px-1.5 py-0.5 ${getPriorityColor(lead.priority)}`}>
-                Alta
-              </Badge>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreHorizontal className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => {setSelectedLead(lead); setIsActionDialogOpen(true);}}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Gerenciar lead
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteLead(lead.id, lead.name);
-                  }}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Deletar lead
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Details */}
-        <div className="space-y-1">
-          {lead.email && (
-            <div className="flex items-center gap-1">
-              <Mail className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground truncate">{lead.email}</span>
-            </div>
-          )}
-          
-          {(lead.city || lead.address) && (
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground truncate">
-                {lead.city || lead.address}
-              </span>
-            </div>
-          )}
-
-          {lead.budget && (
-            <div className="flex items-center gap-1">
-              <DollarSign className="w-3 h-3 text-green-600" />
-              <span className="text-xs font-medium text-green-600">
-                {formatCurrency(lead.budget)}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-1 border-t">
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">
-              {formatTimeAgo(lead.created_at)}
-            </span>
-          </div>
-          <Badge variant="outline" className="text-xs">
-            {lead.lead_source.replace('_', ' ')}
-          </Badge>
-        </div>
-      </div>
-    </div>
-  );
-
-  const ActionDialog = () => {
-    if (!selectedLead) return null;
-
-    const currentStage = PIPELINE_STAGES.find(stage => stage.key === selectedLead.status);
-    
-    return (
-      <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              {selectedLead.name}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            {/* Lead Info */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
-              <div>
-                <div className="text-xs text-muted-foreground">Telefone</div>
-                <div className="font-mono text-sm">{selectedLead.phone}</div>
-              </div>
-              {selectedLead.email && (
-                <div>
-                  <div className="text-xs text-muted-foreground">Email</div>
-                  <div className="text-sm">{selectedLead.email}</div>
-                </div>
-              )}
-              {selectedLead.budget && (
-                <div>
-                  <div className="text-xs text-muted-foreground">Orçamento</div>
-                  <div className="text-sm font-medium text-green-600">
-                    {formatCurrency(selectedLead.budget)}
-                  </div>
-                </div>
-              )}
-              <div>
-                <div className="text-xs text-muted-foreground">Origem</div>
-                <Badge variant="outline" className="text-xs">
-                  {selectedLead.lead_source.replace('_', ' ')}
-                </Badge>
-              </div>
-            </div>
-
-            {/* Message */}
-            {selectedLead.message && (
-              <div>
-                <Label className="text-sm font-medium">Mensagem</Label>
-                <div className="mt-1 p-3 bg-muted/30 rounded-lg text-sm">
-                  {selectedLead.message}
-                </div>
-              </div>
-            )}
-
-            {/* Current Notes */}
-            {selectedLead.notes && (
-              <div>
-                <Label className="text-sm font-medium">Notas Atuais</Label>
-                <div className="mt-1 p-3 bg-muted/30 rounded-lg text-sm">
-                  {selectedLead.notes}
-                </div>
-              </div>
-            )}
-
-            {/* Add Notes */}
-            <div>
-              <Label htmlFor="notes" className="text-sm font-medium">
-                Adicionar Notas
-              </Label>
-              <Textarea
-                id="notes"
-                placeholder="Adicione observações sobre o contato..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="mt-1"
-                rows={3}
-              />
-            </div>
-
-            {/* Actions */}
-            {currentStage && currentStage.nextStatuses.length > 0 && (
-              <div>
-                <Label className="text-sm font-medium mb-3 block">
-                  Próximas Ações
-                </Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {currentStage.nextStatuses.map((nextStatus) => {
-                    const nextStage = PIPELINE_STAGES.find(s => s.key === nextStatus);
-                    if (!nextStage) return null;
-
-                    return (
-                      <Button
-                        key={nextStatus}
-                        variant="outline"
-                        className="justify-between"
-                        onClick={() => updateLeadStatus(selectedLead.id, nextStatus, notes)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <nextStage.icon className="w-4 h-4" />
-                          Mover para: {nextStage.title}
-                        </div>
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Contact Actions */}
-            <div className="flex gap-2 pt-4 border-t">
-              <Button variant="outline" className="flex-1" size="sm">
-                <Phone className="w-4 h-4 mr-2" />
-                Ligar
-              </Button>
-              <Button variant="outline" className="flex-1" size="sm">
-                <Mail className="w-4 h-4 mr-2" />
-                Email
-              </Button>
-              <Button variant="outline" className="flex-1" size="sm">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                WhatsApp
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {PIPELINE_STAGES.map((stage) => (
-          <Card key={stage.key} className={`${stage.color} border-2`}>
-            <CardHeader className={`${stage.headerColor} rounded-t-lg`}>
-              <div className="h-6 bg-white/50 rounded animate-pulse" />
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-white/50 rounded animate-pulse" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  // Active stages (exclude terminal)
+  const activeStages = PIPELINE_STAGES.filter(s => s !== 'completed' && s !== 'lost');
 
   return (
     <div className="space-y-4">
-      {PIPELINE_STAGES.map((stage, index) => {
-        const stageLeads = getLeadsByStatus(stage.key);
-        const Icon = stage.icon;
+      {/* Pipeline Summary Bar */}
+      <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto">
+        {PIPELINE_STAGES.map((stage, idx) => {
+          const config = STAGE_CONFIG[stage];
+          const stats = stageStats[stage];
+          const isLast = idx === PIPELINE_STAGES.length - 1;
+          
+          return (
+            <div key={stage} className="flex items-center">
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg min-w-fit",
+                config.bgColor,
+                config.borderColor,
+                "border"
+              )}>
+                <span className={cn("font-medium text-sm", config.textColor)}>
+                  {STAGE_LABELS[stage]}
+                </span>
+                <Badge variant="secondary" className="h-5 px-1.5 text-xs font-bold">
+                  {stats.count}
+                </Badge>
+                {stats.stale > 0 && stage !== 'completed' && stage !== 'lost' && (
+                  <Badge variant="destructive" className="h-4 px-1 text-[10px]">
+                    {stats.stale} stale
+                  </Badge>
+                )}
+              </div>
+              {!isLast && (
+                <ChevronRight className="w-4 h-4 text-muted-foreground mx-1 flex-shrink-0" />
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-        return (
-          <Card key={stage.key} className={`${stage.color} border-2 relative`}>
-            <CardHeader className={`${stage.headerColor} rounded-t-lg`}>
-              <CardTitle className={`${stage.textColor} text-lg flex items-center justify-between`}>
+      {/* Main Pipeline Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        {activeStages.map(stage => {
+          const config = STAGE_CONFIG[stage];
+          const stageLeads = leadsByStage[stage];
+          const stats = stageStats[stage];
+          
+          return (
+            <Card 
+              key={stage} 
+              className={cn(
+                "border-2",
+                config.borderColor
+              )}
+            >
+              {/* Stage Header */}
+              <div className={cn(
+                "flex items-center justify-between px-4 py-3 border-b",
+                config.bgColor
+              )}>
                 <div className="flex items-center gap-2">
-                  <Icon className="w-5 h-5" />
-                  {stage.title}
-                  <Badge className="bg-white/50 text-current">
-                    {stageLeads.length}
+                  <span className={config.color}>{stageIcons[stage]}</span>
+                  <span className={cn("font-semibold", config.textColor)}>
+                    {STAGE_LABELS[stage]}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {stats.value > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      ${(stats.value / 1000).toFixed(0)}k
+                    </span>
+                  )}
+                  <Badge variant="outline" className={cn("font-bold", config.textColor)}>
+                    {stats.count}
                   </Badge>
                 </div>
-                {index < PIPELINE_STAGES.length - 1 && (
-                  <ArrowRight className="w-5 h-5 text-muted-foreground" />
+              </div>
+
+              {/* Leads List */}
+              <ScrollArea className="h-[400px]">
+                <div className="p-2 space-y-2">
+                  {stageLeads.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground text-sm">
+                      Nenhum lead
+                    </div>
+                  ) : (
+                    stageLeads.map(lead => {
+                      const stale = isStale(lead);
+                      const nextStatuses = getNextAllowedStatuses(lead.status);
+                      const prioConfig = priorityConfig[lead.priority as keyof typeof priorityConfig] || priorityConfig.medium;
+                      
+                      return (
+                        <div 
+                          key={lead.id}
+                          onClick={() => handleCardClick(lead)}
+                          className={cn(
+                            "p-3 rounded-lg border bg-card cursor-pointer transition-all",
+                            "hover:shadow-md hover:border-primary/50",
+                            stale && "ring-2 ring-orange-400/50 bg-orange-50/30"
+                          )}
+                        >
+                          {/* Stale Alert */}
+                          {stale && (
+                            <div className="flex items-center gap-1 text-orange-600 text-xs mb-2">
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>+48h parado</span>
+                            </div>
+                          )}
+
+                          {/* Lead Info */}
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-medium text-sm truncate">{lead.name}</h4>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                                <Phone className="w-3 h-3" />
+                                <span>{lead.phone}</span>
+                              </div>
+                            </div>
+                            <Badge 
+                              variant="outline" 
+                              className={cn("text-[10px] shrink-0", prioConfig.color, prioConfig.bg)}
+                            >
+                              {lead.priority}
+                            </Badge>
+                          </div>
+
+                          {/* Meta Row */}
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              {lead.city && (
+                                <span className="flex items-center gap-0.5 text-muted-foreground">
+                                  <MapPin className="w-3 h-3" />
+                                  {lead.city}
+                                </span>
+                              )}
+                              <Badge variant="outline" className="text-[10px] px-1">
+                                {sourceLabels[lead.lead_source] || lead.lead_source}
+                              </Badge>
+                            </div>
+                            {lead.budget && (
+                              <span className="font-semibold text-green-600">
+                                ${lead.budget.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Next Action Button */}
+                          {nextStatuses.length > 0 && (
+                            <div className="mt-3 pt-2 border-t flex gap-1">
+                              {nextStatuses.map(next => {
+                                const nextConfig = STAGE_CONFIG[next];
+                                return (
+                                  <Button
+                                    key={next}
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={isUpdating}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAdvanceStatus(lead, next);
+                                    }}
+                                    className={cn(
+                                      "flex-1 h-7 text-xs",
+                                      nextConfig.bgColor,
+                                      nextConfig.textColor,
+                                      "hover:opacity-80"
+                                    )}
+                                  >
+                                    <ChevronRight className="w-3 h-3 mr-1" />
+                                    {STAGE_LABELS[next]}
+                                  </Button>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Date */}
+                          <div className="text-[10px] text-muted-foreground mt-2">
+                            {format(new Date(lead.updated_at), "dd/MM HH:mm")}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </ScrollArea>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Terminal States (Completed & Lost) - Collapsed */}
+      <div className="grid grid-cols-2 gap-4">
+        {(['completed', 'lost'] as PipelineStage[]).map(stage => {
+          const config = STAGE_CONFIG[stage];
+          const stats = stageStats[stage];
+          
+          return (
+            <Card key={stage} className={cn("border", config.borderColor)}>
+              <div className={cn(
+                "flex items-center justify-between px-4 py-2",
+                config.bgColor
+              )}>
+                <div className="flex items-center gap-2">
+                  <span className={config.color}>{stageIcons[stage]}</span>
+                  <span className={cn("font-medium text-sm", config.textColor)}>
+                    {STAGE_LABELS[stage]}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {stats.value > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      ${(stats.value / 1000).toFixed(0)}k
+                    </span>
+                  )}
+                  <Badge variant="outline" className={cn("font-bold text-xs", config.textColor)}>
+                    {stats.count}
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Lead Detail Modal */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {selectedLead?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Detalhes do lead
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedLead && (
+            <div className="space-y-4 py-4">
+              {/* Status & Actions */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <Badge 
+                  className={cn(
+                    "px-3 py-1",
+                    STAGE_CONFIG[normalizeStatus(selectedLead.status)].bgColor,
+                    STAGE_CONFIG[normalizeStatus(selectedLead.status)].textColor
+                  )}
+                >
+                  {STAGE_LABELS[normalizeStatus(selectedLead.status)]}
+                </Badge>
+                
+                {getNextAllowedStatuses(selectedLead.status).map(next => (
+                  <Button
+                    key={next}
+                    size="sm"
+                    variant="outline"
+                    disabled={isUpdating}
+                    onClick={() => {
+                      handleAdvanceStatus(selectedLead, next);
+                      setIsDetailModalOpen(false);
+                    }}
+                    className={cn(
+                      STAGE_CONFIG[next].bgColor,
+                      STAGE_CONFIG[next].textColor
+                    )}
+                  >
+                    <ChevronRight className="w-4 h-4 mr-1" />
+                    {STAGE_LABELS[next]}
+                  </Button>
+                ))}
+              </div>
+
+              <Separator />
+
+              {/* Contact Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Phone className="w-3 h-3" /> Telefone
+                  </p>
+                  <a href={`tel:${selectedLead.phone}`} className="font-medium text-primary hover:underline">
+                    {selectedLead.phone}
+                  </a>
+                </div>
+                {selectedLead.email && (
+                  <div>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Mail className="w-3 h-3" /> Email
+                    </p>
+                    <a href={`mailto:${selectedLead.email}`} className="font-medium text-primary hover:underline">
+                      {selectedLead.email}
+                    </a>
+                  </div>
                 )}
-              </CardTitle>
-            </CardHeader>
-            
-            <CardContent className="p-4">
-              {stageLeads.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Icon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Nenhum lead neste estágio</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                  {stageLeads.map((lead) => (
-                    <LeadCard key={lead.id} lead={lead} />
-                  ))}
-                </div>
+                {selectedLead.city && (
+                  <div>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> Cidade
+                    </p>
+                    <p className="font-medium">{selectedLead.city}</p>
+                  </div>
+                )}
+                {selectedLead.budget && (
+                  <div>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <DollarSign className="w-3 h-3" /> Orçamento
+                    </p>
+                    <p className="font-medium text-green-600">${selectedLead.budget.toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Services */}
+              {selectedLead.services.length > 0 && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                      <Tag className="w-3 h-3" /> Serviços
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedLead.services.map((s, i) => (
+                        <Badge key={i} variant="secondary">{s}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
-            </CardContent>
-          </Card>
-        );
-      })}
-      
-      <ActionDialog />
+
+              {/* Notes */}
+              {selectedLead.notes && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                      <MessageSquare className="w-3 h-3" /> Notas
+                    </p>
+                    <p className="text-sm bg-muted p-3 rounded-lg">{selectedLead.notes}</p>
+                  </div>
+                </>
+              )}
+
+              {/* Follow-up for proposal stage */}
+              {normalizeStatus(selectedLead.status) === 'proposal' && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                      <Bell className="w-4 h-4 text-primary" /> Follow-Up
+                    </p>
+                    <LeadFollowUpAlert 
+                      lead={selectedLead} 
+                      onUpdate={() => {
+                        onRefresh();
+                        setIsDetailModalOpen(false);
+                      }} 
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Job Proof for projects */}
+              {selectedLead.converted_to_project_id && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                      <Camera className="w-4 h-4 text-primary" /> Job Proof
+                    </p>
+                    <JobProofUploader projectId={selectedLead.converted_to_project_id} />
+                  </div>
+                </>
+              )}
+
+              {/* Timestamps */}
+              <Separator />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Criado: {format(new Date(selectedLead.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
+                <span>Atualizado: {format(new Date(selectedLead.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

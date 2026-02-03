@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, Clock, Camera, Phone } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { normalizeStatus, STAGE_LABELS } from '@/hooks/useLeadPipeline';
 
 interface Lead {
   id: string;
@@ -42,21 +43,24 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
     return !proof || !proof.before_image_url || !proof.after_image_url;
   });
 
-  // 2. Proposals sent without follow-up (leads in 'quoted' status without follow-up actions)
-  const quotedWithoutFollowUp = leads.filter(l => {
-    if (l.status !== 'quoted') return false;
+  // 2. Proposals sent without follow-up (leads in 'proposal' or 'quoted' status without follow-up actions)
+  const proposalWithoutFollowUp = leads.filter(l => {
+    const normalized = normalizeStatus(l.status);
+    if (normalized !== 'proposal') return false;
     const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
     return actions.length === 0;
   });
 
-  // 3. Leads stalled > 48h (new or contacted leads not updated in 48h)
+  // 3. Leads stalled > 48h (active leads not updated in 48h)
   const stalledLeads = leads.filter(l => {
-    if (l.status === 'won' || l.status === 'lost' || l.status === 'converted') return false;
+    const normalized = normalizeStatus(l.status);
+    // Exclude terminal states
+    if (normalized === 'completed' || normalized === 'lost') return false;
     const lastUpdate = new Date(l.updated_at);
     return lastUpdate < fortyEightHoursAgo;
   });
 
-  const hasAlerts = projectsNeedingJobProof.length > 0 || quotedWithoutFollowUp.length > 0 || stalledLeads.length > 0;
+  const hasAlerts = projectsNeedingJobProof.length > 0 || proposalWithoutFollowUp.length > 0 || stalledLeads.length > 0;
 
   return (
     <div className="mb-6 space-y-3">
@@ -104,13 +108,13 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
           )}
 
           {/* Proposals without follow-up */}
-          {quotedWithoutFollowUp.length > 0 && (
+          {proposalWithoutFollowUp.length > 0 && (
             <Alert className="border-amber-500/50 bg-amber-50">
               <Phone className="h-4 w-4 text-amber-600" />
               <AlertTitle className="text-amber-700 font-semibold flex items-center gap-2">
                 Follow-up Obrigatório
                 <Badge className="ml-2 bg-amber-500 hover:bg-amber-600">
-                  {quotedWithoutFollowUp.length}
+                  {proposalWithoutFollowUp.length}
                 </Badge>
               </AlertTitle>
               <AlertDescription className="mt-2">
@@ -118,14 +122,14 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
                   Propostas enviadas aguardando primeiro follow-up:
                 </p>
                 <ul className="space-y-1">
-                  {quotedWithoutFollowUp.slice(0, 5).map(l => (
+                  {proposalWithoutFollowUp.slice(0, 5).map(l => (
                     <li key={l.id} className="text-sm font-medium text-amber-700">
                       • {l.name}
                     </li>
                   ))}
-                  {quotedWithoutFollowUp.length > 5 && (
+                  {proposalWithoutFollowUp.length > 5 && (
                     <li className="text-sm text-muted-foreground">
-                      ... e mais {quotedWithoutFollowUp.length - 5}
+                      ... e mais {proposalWithoutFollowUp.length - 5}
                     </li>
                   )}
                 </ul>
@@ -150,7 +154,7 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
                 <ul className="space-y-1">
                   {stalledLeads.slice(0, 5).map(l => (
                     <li key={l.id} className="text-sm font-medium text-orange-700">
-                      • {l.name} ({l.status})
+                      • {l.name} ({STAGE_LABELS[normalizeStatus(l.status)]})
                     </li>
                   ))}
                   {stalledLeads.length > 5 && (
