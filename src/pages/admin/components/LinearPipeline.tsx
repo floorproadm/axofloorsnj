@@ -151,7 +151,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* Pipeline Summary Bar - Scrollable on mobile */}
-      <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-2">
+      <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto scrollbar-hide w-full max-w-full">
         {PIPELINE_STAGES.map((stage, idx) => {
           const config = STAGE_CONFIG[stage];
           const stats = stageStats[stage];

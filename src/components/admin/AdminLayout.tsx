@@ -43,6 +43,16 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [jobProofs, setJobProofs] = useState<JobProof[]>([]);
+  const [defaultSidebarOpen, setDefaultSidebarOpen] = useState(true);
+
+  // Sidebar: aberta em desktop (>=1024px) e colapsada em mobile/tablet
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const update = () => setDefaultSidebarOpen(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     const fetchAlertData = async () => {
@@ -72,11 +82,11 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   }, []);
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen flex w-full bg-grey-light/30">
+    <SidebarProvider defaultOpen={defaultSidebarOpen}>
+      <div className="min-h-screen flex w-full bg-grey-light/30 min-w-0 overflow-x-hidden">
         <AdminSidebar />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Enhanced Header */}
           <header className="h-16 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 shadow-soft">
             <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
@@ -123,7 +133,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-4 sm:p-6 overflow-auto animate-fade-in max-w-full">
+          <main className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0">
             {/* Ações Obrigatórias - Fixed Section at Top */}
             <ActionableAlertsSection 
               leads={leads} 
