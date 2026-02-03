@@ -449,13 +449,13 @@ export default function Dashboard() {
           </h2>
           
           {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               {[1, 2, 3].map(i => (
                 <Skeleton key={i} className="h-28" />
               ))}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -476,19 +476,6 @@ export default function Dashboard() {
                 <CardContent>
                   <p className={`text-3xl font-bold ${executionMetrics.jobsReadyToComplete > 0 ? "text-green-600" : "text-navy"}`}>
                     {executionMetrics.jobsReadyToComplete}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className={executionMetrics.jobsBlockedByProof > 0 ? "border-red-200 bg-red-50/30" : ""}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Bloqueados por JobProof
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-3xl font-bold ${executionMetrics.jobsBlockedByProof > 0 ? "text-red-600" : "text-green-600"}`}>
-                    {executionMetrics.jobsBlockedByProof}
                   </p>
                 </CardContent>
               </Card>
@@ -579,7 +566,7 @@ export default function Dashboard() {
 
         {/* Footer: Read-only notice */}
         <div className="text-center text-xs text-muted-foreground pt-4 border-t">
-          Dashboard somente leitura • Dados: leads, projects, job_costs, job_proof, company_settings
+          Dashboard somente leitura • Dados: leads, projects, job_costs, company_settings
         </div>
       </div>
     </AdminLayout>
