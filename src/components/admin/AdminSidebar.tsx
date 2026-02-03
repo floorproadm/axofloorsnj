@@ -29,15 +29,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
+// Navegação principal - linguagem de operador
 const navigationItems = [
   {
-    title: "Leads",
+    title: "Pipeline de Vendas",
     url: "/admin/leads",
     icon: Users,
     badge: null
   },
   {
-    title: "Galeria",
+    title: "Portfólio de Jobs",
     url: "/admin/gallery",
     icon: Images,
     badge: null
@@ -46,7 +47,7 @@ const navigationItems = [
 
 const quickActions = [
   {
-    title: "Site Principal",
+    title: "Ver Site",
     url: "/",
     icon: Home
   }
@@ -91,16 +92,16 @@ export function AdminSidebar() {
       collapsible="icon"
     >
       <SidebarContent className="bg-card/95 backdrop-blur-sm border-r border-border/50">
-        {/* Enhanced Logo/Brand */}
+        {/* Logo/Brand - Sistema Operacional */}
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 gold-gradient rounded-xl flex items-center justify-center shadow-gold">
-              <span className="text-navy font-bold text-lg">A</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">A</span>
             </div>
             {!collapsed && (
               <div className="animate-fade-in">
-                <h2 className="font-semibold text-navy text-lg">AXO Admin</h2>
-                <p className="text-xs text-muted-foreground">Sistema Administrativo</p>
+                <h2 className="font-bold text-navy text-lg">AXO OS</h2>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Sistema Operacional</p>
               </div>
             )}
           </div>

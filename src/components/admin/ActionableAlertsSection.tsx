@@ -64,37 +64,41 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
 
   return (
     <div className="mb-6 space-y-3">
-      <h2 className="text-lg font-semibold text-navy flex items-center gap-2">
-        <AlertTriangle className="h-5 w-5 text-destructive" />
+      <h2 className="text-lg font-bold text-navy flex items-center gap-2">
+        <AlertTriangle className="h-5 w-5 text-[hsl(var(--state-blocked))]" />
         Ações Obrigatórias
       </h2>
 
       {!hasAlerts ? (
-        <Alert className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-700 font-medium">
-            ✓ Nenhuma ação crítica agora
-          </AlertDescription>
-        </Alert>
+        <div className="p-4 rounded-lg bg-[hsl(var(--state-success-bg))] border-2 border-[hsl(var(--state-success))] flex items-center gap-3">
+          <div className="p-2 rounded-full bg-[hsl(var(--state-success))]">
+            <Clock className="h-4 w-4 text-white" />
+          </div>
+          <p className="text-[hsl(var(--state-success))] font-semibold">
+            ✓ Nenhuma ação crítica agora — Tudo em dia!
+          </p>
+        </div>
       ) : (
         <div className="space-y-3">
           {/* Projects blocked by JobProof */}
           {projectsNeedingJobProof.length > 0 && (
-            <Alert className="border-destructive/50 bg-destructive/5">
-              <Camera className="h-4 w-4 text-destructive" />
-              <AlertTitle className="text-destructive font-semibold flex items-center gap-2">
-                JobProof Pendente
-                <Badge variant="destructive" className="ml-2">
+            <Alert className="border-2 border-[hsl(var(--state-blocked))] bg-[hsl(var(--state-blocked-bg))]">
+              <Camera className="h-4 w-4 text-[hsl(var(--state-blocked))]" />
+              <AlertTitle className="text-[hsl(var(--state-blocked))] font-bold flex items-center gap-2">
+                🛑 Jobs Travados — Faltam Fotos
+                <Badge className="ml-2 bg-[hsl(var(--state-blocked))] text-white">
                   {projectsNeedingJobProof.length}
                 </Badge>
               </AlertTitle>
               <AlertDescription className="mt-2">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Projetos bloqueados para conclusão - adicione fotos before/after:
+                <p className="text-sm text-red-700 mb-2">
+                  Estes jobs não podem ser fechados sem fotos before/after:
                 </p>
                 <ul className="space-y-1">
                   {projectsNeedingJobProof.slice(0, 5).map(p => (
-                    <li key={p.id} className="text-sm font-medium text-destructive">
-                      • {p.customer_name}
+                    <li key={p.id} className="text-sm font-medium text-[hsl(var(--state-blocked))] flex items-center gap-2">
+                      <Camera className="w-3 h-3" />
+                      {p.customer_name}
                     </li>
                   ))}
                   {projectsNeedingJobProof.length > 5 && (
@@ -109,22 +113,23 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
 
           {/* Proposals without follow-up */}
           {proposalWithoutFollowUp.length > 0 && (
-            <Alert className="border-amber-500/50 bg-amber-50">
-              <Phone className="h-4 w-4 text-amber-600" />
-              <AlertTitle className="text-amber-700 font-semibold flex items-center gap-2">
-                Follow-up Obrigatório
-                <Badge className="ml-2 bg-amber-500 hover:bg-amber-600">
+            <Alert className="border-2 border-[hsl(var(--state-risk))] bg-[hsl(var(--state-risk-bg))]">
+              <Phone className="h-4 w-4 text-[hsl(var(--state-risk))]" />
+              <AlertTitle className="text-amber-700 font-bold flex items-center gap-2">
+                ⚠️ Follow-up Obrigatório
+                <Badge className="ml-2 bg-[hsl(var(--state-risk))] text-white">
                   {proposalWithoutFollowUp.length}
                 </Badge>
               </AlertTitle>
               <AlertDescription className="mt-2">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Propostas enviadas aguardando primeiro follow-up:
+                <p className="text-sm text-amber-700 mb-2">
+                  Orçamentos enviados aguardando primeiro contato:
                 </p>
                 <ul className="space-y-1">
                   {proposalWithoutFollowUp.slice(0, 5).map(l => (
-                    <li key={l.id} className="text-sm font-medium text-amber-700">
-                      • {l.name}
+                    <li key={l.id} className="text-sm font-medium text-amber-700 flex items-center gap-2">
+                      <Phone className="w-3 h-3" />
+                      {l.name}
                     </li>
                   ))}
                   {proposalWithoutFollowUp.length > 5 && (
@@ -139,22 +144,23 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
 
           {/* Stalled leads */}
           {stalledLeads.length > 0 && (
-            <Alert className="border-orange-500/50 bg-orange-50">
+            <Alert className="border-2 border-orange-400 bg-orange-50">
               <Clock className="h-4 w-4 text-orange-600" />
-              <AlertTitle className="text-orange-700 font-semibold flex items-center gap-2">
-                Leads Parados +48h
-                <Badge className="ml-2 bg-orange-500 hover:bg-orange-600">
+              <AlertTitle className="text-orange-700 font-bold flex items-center gap-2">
+                ⏰ Leads Parados +48h
+                <Badge className="ml-2 bg-orange-500 text-white">
                   {stalledLeads.length}
                 </Badge>
               </AlertTitle>
               <AlertDescription className="mt-2">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Leads sem atualização há mais de 48 horas:
+                <p className="text-sm text-orange-700 mb-2">
+                  Leads sem atualização há mais de 48 horas — Ligar agora:
                 </p>
                 <ul className="space-y-1">
                   {stalledLeads.slice(0, 5).map(l => (
-                    <li key={l.id} className="text-sm font-medium text-orange-700">
-                      • {l.name} ({STAGE_LABELS[normalizeStatus(l.status)]})
+                    <li key={l.id} className="text-sm font-medium text-orange-700 flex items-center gap-2">
+                      <Clock className="w-3 h-3" />
+                      {l.name} <span className="text-xs text-orange-500">({STAGE_LABELS[normalizeStatus(l.status)]})</span>
                     </li>
                   ))}
                   {stalledLeads.length > 5 && (

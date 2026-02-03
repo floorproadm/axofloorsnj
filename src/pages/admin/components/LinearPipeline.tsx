@@ -50,6 +50,7 @@ interface LinearPipelineProps {
   onRefresh: () => void;
 }
 
+// Ícones por etapa - linguagem visual clara
 const stageIcons: Record<PipelineStage, React.ReactNode> = {
   new_lead: <Clock className="w-5 h-5" />,
   appt_scheduled: <CalendarCheck className="w-5 h-5" />,
@@ -59,20 +60,32 @@ const stageIcons: Record<PipelineStage, React.ReactNode> = {
   lost: <XCircle className="w-5 h-5" />
 };
 
+// Config de prioridade - sistema de sinais visuais
 const priorityConfig = {
-  low: { color: "text-gray-600", bg: "bg-gray-100" },
-  medium: { color: "text-orange-600", bg: "bg-orange-100" },
-  high: { color: "text-red-600", bg: "bg-red-100" }
+  low: { color: "text-slate-600", bg: "bg-slate-100", label: "Baixa" },
+  medium: { color: "text-amber-600", bg: "bg-amber-100", label: "Média" },
+  high: { color: "text-red-600", bg: "bg-red-100", label: "Alta" }
 };
 
+// Labels de fonte - linguagem de operador
 const sourceLabels: Record<string, string> = {
   quiz: "Quiz",
-  contact_form: "Form",
-  contact_page: "Contact",
+  contact_form: "Formulário",
+  contact_page: "Contato",
   builders_page: "Builders",
   realtors_page: "Realtors",
-  lead_magnet: "Magnet",
-  website: "Website"
+  lead_magnet: "E-book",
+  website: "Site"
+};
+
+// Botões de ação por etapa - microcopy operacional
+const actionLabels: Record<PipelineStage, string> = {
+  new_lead: 'Agendar Visita',
+  appt_scheduled: 'Enviar Orçamento',
+  proposal: 'Iniciar Job',
+  in_production: 'Fechar Job',
+  completed: '',
+  lost: ''
 };
 
 export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
@@ -168,12 +181,13 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                 <span className={cn("font-medium text-xs sm:text-sm whitespace-nowrap", config.textColor)}>
                   {STAGE_LABELS[stage]}
                 </span>
-                <Badge variant="secondary" className="h-4 sm:h-5 px-1 sm:px-1.5 text-[10px] sm:text-xs font-bold">
+                <Badge variant="secondary" className="h-5 sm:h-6 px-1.5 sm:px-2 text-xs sm:text-sm font-bold bg-white/80">
                   {stats.count}
                 </Badge>
                 {stats.stale > 0 && stage !== 'completed' && stage !== 'lost' && (
-                  <Badge variant="destructive" className="h-3.5 sm:h-4 px-1 text-[9px] sm:text-[10px] hidden sm:flex">
-                    {stats.stale} stale
+                  <Badge variant="destructive" className="h-4 sm:h-5 px-1.5 text-[10px] sm:text-xs hidden sm:flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {stats.stale} parados
                   </Badge>
                 )}
               </div>
@@ -246,11 +260,11 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                             stale && "ring-2 ring-orange-400/50 bg-orange-50/30"
                           )}
                         >
-                          {/* Stale Alert */}
+                          {/* Alerta de lead parado - destaque visual */}
                           {stale && (
-                            <div className="flex items-center gap-1 text-orange-600 text-xs mb-2">
-                              <AlertTriangle className="w-3 h-3" />
-                              <span>+48h parado</span>
+                            <div className="flex items-center gap-1.5 text-amber-700 bg-amber-100 text-xs mb-2 px-2 py-1 rounded-md border border-amber-300">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span className="font-medium">+48h parado — Ligar agora</span>
                             </div>
                           )}
 
@@ -265,9 +279,9 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                             </div>
                             <Badge 
                               variant="outline" 
-                              className={cn("text-[10px] shrink-0", prioConfig.color, prioConfig.bg)}
+                              className={cn("text-[10px] shrink-0 font-medium", prioConfig.color, prioConfig.bg)}
                             >
-                              {lead.priority}
+                              {prioConfig.label}
                             </Badge>
                           </div>
 
@@ -291,30 +305,35 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                             )}
                           </div>
 
-                          {/* Next Action Button */}
+                          {/* Botão de próxima ação - microcopy operacional */}
                           {nextStatuses.length > 0 && (
-                            <div className="mt-3 pt-2 border-t flex gap-1">
+                            <div className="mt-3 pt-2 border-t flex gap-1.5">
                               {nextStatuses.map(next => {
                                 const nextConfig = STAGE_CONFIG[next];
+                                const isLost = next === 'lost';
                                 return (
                                   <Button
                                     key={next}
                                     size="sm"
-                                    variant="outline"
+                                    variant={isLost ? "ghost" : "outline"}
                                     disabled={isUpdating}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleAdvanceStatus(lead, next);
                                     }}
                                     className={cn(
-                                      "flex-1 h-7 text-xs",
-                                      nextConfig.bgColor,
-                                      nextConfig.textColor,
-                                      "hover:opacity-80"
+                                      "flex-1 h-8 text-xs font-medium",
+                                      isLost 
+                                        ? "text-slate-500 hover:text-slate-700 hover:bg-slate-100" 
+                                        : cn(nextConfig.bgColor, nextConfig.textColor, "hover:opacity-90 border-2", nextConfig.borderColor)
                                     )}
                                   >
-                                    <ChevronRight className="w-3 h-3 mr-1" />
-                                    {STAGE_LABELS[next]}
+                                    {isLost ? (
+                                      <XCircle className="w-3.5 h-3.5 mr-1" />
+                                    ) : (
+                                      <ChevronRight className="w-3.5 h-3.5 mr-1" />
+                                    )}
+                                    {actionLabels[next] || STAGE_LABELS[next]}
                                   </Button>
                                 );
                               })}
@@ -373,48 +392,63 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       {/* Lead Detail Modal - Full screen on mobile */}
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="w-[calc(100vw-16px)] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader>
-            <DialogTitle className="text-lg sm:text-xl font-bold pr-6">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl sm:text-2xl font-bold pr-6 text-navy">
               {selectedLead?.name}
             </DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
-              Detalhes do lead
+            <DialogDescription className="text-sm text-muted-foreground">
+              Detalhes do lead e ações disponíveis
             </DialogDescription>
           </DialogHeader>
 
           {selectedLead && (
             <div className="space-y-4 py-4">
-              {/* Status & Actions */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <Badge 
-                  className={cn(
-                    "px-3 py-1",
-                    STAGE_CONFIG[normalizeStatus(selectedLead.status)].bgColor,
-                    STAGE_CONFIG[normalizeStatus(selectedLead.status)].textColor
-                  )}
-                >
-                  {STAGE_LABELS[normalizeStatus(selectedLead.status)]}
-                </Badge>
-                
-                {getNextAllowedStatuses(selectedLead.status).map(next => (
-                  <Button
-                    key={next}
-                    size="sm"
-                    variant="outline"
-                    disabled={isUpdating}
-                    onClick={() => {
-                      handleAdvanceStatus(selectedLead, next);
-                      setIsDetailModalOpen(false);
-                    }}
-                    className={cn(
-                      STAGE_CONFIG[next].bgColor,
-                      STAGE_CONFIG[next].textColor
-                    )}
-                  >
-                    <ChevronRight className="w-4 h-4 mr-1" />
-                    {STAGE_LABELS[next]}
-                  </Button>
-                ))}
+              {/* Status atual e ações - seção primária */}
+              <div className="p-4 rounded-lg bg-muted/50 border">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Etapa atual:</span>
+                    <Badge 
+                      className={cn(
+                        "px-3 py-1.5 text-sm font-semibold",
+                        STAGE_CONFIG[normalizeStatus(selectedLead.status)].bgColor,
+                        STAGE_CONFIG[normalizeStatus(selectedLead.status)].textColor,
+                        STAGE_CONFIG[normalizeStatus(selectedLead.status)].borderColor,
+                        "border"
+                      )}
+                    >
+                      {STAGE_LABELS[normalizeStatus(selectedLead.status)]}
+                    </Badge>
+                  </div>
+                  
+                  {/* Botões de ação */}
+                  <div className="flex gap-2 flex-wrap">
+                    {getNextAllowedStatuses(selectedLead.status).map(next => {
+                      const isLost = next === 'lost';
+                      return (
+                        <Button
+                          key={next}
+                          size="sm"
+                          variant={isLost ? "ghost" : "default"}
+                          disabled={isUpdating}
+                          onClick={() => {
+                            handleAdvanceStatus(selectedLead, next);
+                            setIsDetailModalOpen(false);
+                          }}
+                          className={cn(
+                            "font-medium",
+                            isLost 
+                              ? "text-slate-500 hover:text-slate-700" 
+                              : cn(STAGE_CONFIG[next].bgColor, STAGE_CONFIG[next].textColor, "hover:opacity-90")
+                          )}
+                        >
+                          {isLost ? <XCircle className="w-4 h-4 mr-1" /> : <ChevronRight className="w-4 h-4 mr-1" />}
+                          {actionLabels[next] || STAGE_LABELS[next]}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <Separator />
@@ -487,13 +521,17 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                 </>
               )}
 
-              {/* Follow-up for proposal stage */}
+              {/* Follow-up obrigatório para proposta - destaque visual */}
               {normalizeStatus(selectedLead.status) === 'proposal' && (
                 <>
                   <Separator />
-                  <div>
-                    <p className="text-sm font-medium mb-2 flex items-center gap-1">
-                      <Bell className="w-4 h-4 text-primary" /> Follow-Up
+                  <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                    <p className="text-sm font-semibold mb-3 flex items-center gap-2 text-amber-700">
+                      <Bell className="w-4 h-4" /> 
+                      📞 Follow-Up Obrigatório
+                    </p>
+                    <p className="text-xs text-amber-600 mb-3">
+                      Registre pelo menos 1 contato para avançar este lead
                     </p>
                     <LeadFollowUpAlert 
                       lead={selectedLead} 
@@ -506,13 +544,17 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                 </>
               )}
 
-              {/* Job Proof for projects */}
+              {/* Job Proof - destaque visual para bloqueio */}
               {selectedLead.converted_to_project_id && (
                 <>
                   <Separator />
-                  <div>
-                    <p className="text-sm font-medium mb-2 flex items-center gap-1">
-                      <Camera className="w-4 h-4 text-primary" /> Job Proof
+                  <div className="p-4 rounded-lg bg-violet-50 border border-violet-200">
+                    <p className="text-sm font-semibold mb-3 flex items-center gap-2 text-violet-700">
+                      <Camera className="w-4 h-4" /> 
+                      📷 Prova de Trabalho (JobProof)
+                    </p>
+                    <p className="text-xs text-violet-600 mb-3">
+                      Envie fotos ANTES e DEPOIS para poder fechar o job
                     </p>
                     <JobProofUploader projectId={selectedLead.converted_to_project_id} />
                   </div>

@@ -14,58 +14,65 @@ export const PIPELINE_STAGES = [
 
 export type PipelineStage = typeof PIPELINE_STAGES[number];
 
-// Stage labels for display
+// Stage labels for display - Linguagem de operador de flooring
 export const STAGE_LABELS: Record<PipelineStage, string> = {
-  new_lead: 'New Lead',
-  appt_scheduled: 'Appt. Scheduled',
-  proposal: 'Proposal',
-  in_production: 'In Production',
-  completed: 'Completed',
-  lost: 'Lost'
+  new_lead: 'Novo Contato',
+  appt_scheduled: 'Visita Agendada',
+  proposal: 'Orçamento Enviado',
+  in_production: 'Em Execução',
+  completed: 'Job Fechado',
+  lost: 'Perdido'
 };
 
-// Stage icons and colors config
+// Stage icons and colors config - Sistema de sinais visuais
 export const STAGE_CONFIG: Record<PipelineStage, { 
   color: string; 
   bgColor: string; 
   borderColor: string;
   textColor: string;
+  stateType: 'active' | 'warning' | 'success' | 'terminal';
 }> = {
   new_lead: { 
-    color: 'text-blue-600', 
-    bgColor: 'bg-blue-50', 
-    borderColor: 'border-blue-300',
-    textColor: 'text-blue-700'
+    color: 'text-sky-600', 
+    bgColor: 'bg-sky-50', 
+    borderColor: 'border-sky-400',
+    textColor: 'text-sky-700',
+    stateType: 'active'
   },
   appt_scheduled: { 
-    color: 'text-cyan-600', 
-    bgColor: 'bg-cyan-50', 
-    borderColor: 'border-cyan-300',
-    textColor: 'text-cyan-700'
+    color: 'text-indigo-600', 
+    bgColor: 'bg-indigo-50', 
+    borderColor: 'border-indigo-400',
+    textColor: 'text-indigo-700',
+    stateType: 'active'
   },
   proposal: { 
-    color: 'text-purple-600', 
-    bgColor: 'bg-purple-50', 
-    borderColor: 'border-purple-300',
-    textColor: 'text-purple-700'
-  },
-  in_production: { 
     color: 'text-amber-600', 
     bgColor: 'bg-amber-50', 
-    borderColor: 'border-amber-300',
-    textColor: 'text-amber-700'
+    borderColor: 'border-amber-400',
+    textColor: 'text-amber-700',
+    stateType: 'warning'
+  },
+  in_production: { 
+    color: 'text-violet-600', 
+    bgColor: 'bg-violet-50', 
+    borderColor: 'border-violet-400',
+    textColor: 'text-violet-700',
+    stateType: 'active'
   },
   completed: { 
-    color: 'text-green-600', 
-    bgColor: 'bg-green-50', 
-    borderColor: 'border-green-300',
-    textColor: 'text-green-700'
+    color: 'text-emerald-600', 
+    bgColor: 'bg-emerald-50', 
+    borderColor: 'border-emerald-400',
+    textColor: 'text-emerald-700',
+    stateType: 'success'
   },
   lost: { 
-    color: 'text-red-600', 
-    bgColor: 'bg-red-50', 
-    borderColor: 'border-red-300',
-    textColor: 'text-red-700'
+    color: 'text-slate-500', 
+    bgColor: 'bg-slate-100', 
+    borderColor: 'border-slate-300',
+    textColor: 'text-slate-600',
+    stateType: 'terminal'
   }
 };
 
@@ -147,11 +154,11 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
 
       // Validate transition
       if (!allowedNext.includes(newStatus)) {
-        toast({
-          title: "Transição Bloqueada",
-          description: `De "${STAGE_LABELS[currentNormalized]}" só pode ir para: ${allowedNext.map(s => STAGE_LABELS[s]).join(', ') || 'nenhum (terminal)'}`,
-          variant: "destructive"
-        });
+      toast({
+        title: "⚠️ Transição Bloqueada",
+        description: `Não é possível pular etapas. De "${STAGE_LABELS[currentNormalized]}" só pode ir para: ${allowedNext.map(s => STAGE_LABELS[s]).join(', ') || 'nenhum (estado final)'}`,
+        variant: "destructive"
+      });
         return false;
       }
 
@@ -174,8 +181,8 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
       }
 
       toast({
-        title: "Status Atualizado",
-        description: `Lead movido para "${STAGE_LABELS[newStatus]}"`,
+        title: "✓ Lead Avançado",
+        description: `Movido para "${STAGE_LABELS[newStatus]}"`,
       });
       
       return true;
