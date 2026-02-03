@@ -9,6 +9,8 @@ import { useAdminData } from "@/hooks/admin/useAdminData";
 import { useLeadsExport } from "@/hooks/admin/useLeadsExport";
 import { LeadPipelineStatus } from "@/components/admin/LeadPipelineStatus";
 import { STAGE_LABELS, type PipelineStage } from "@/hooks/useLeadPipeline";
+import { LeadFollowUpAlert } from "@/components/admin/LeadFollowUpAlert";
+import { Bell } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -41,6 +43,9 @@ type Lead = {
   city?: string;
   created_at: string;
   notes?: string;
+  follow_up_required?: boolean;
+  next_action_date?: string;
+  follow_up_actions?: { date: string; action: string; notes?: string }[];
 };
 
 const statusColors: Record<PipelineStage, string> = {
@@ -159,6 +164,19 @@ export default function LeadsManager() {
           >
             {priority}
           </Badge>
+        );
+      },
+    },
+    {
+      id: "follow_up",
+      header: "Follow-Up",
+      cell: ({ row }) => {
+        const lead = row.original;
+        if (lead.status !== 'quoted') return null;
+        return (
+          <div onClick={(e) => e.stopPropagation()}>
+            <LeadFollowUpAlert lead={lead} compact onUpdate={handleStatusChange} />
+          </div>
         );
       },
     },
@@ -445,6 +463,26 @@ export default function LeadsManager() {
                     <p className="text-sm bg-muted p-3 rounded-lg">
                       {selectedLead.notes}
                     </p>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Follow-Up Section - Show for quoted leads */}
+              {selectedLead.status === 'quoted' && (
+                <>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <Bell className="w-5 h-5 text-primary" />
+                      Follow-Up Obrigatório
+                    </h3>
+                    <LeadFollowUpAlert 
+                      lead={selectedLead} 
+                      onUpdate={() => {
+                        refreshData();
+                        setIsDetailModalOpen(false);
+                      }} 
+                    />
                   </div>
                   <Separator />
                 </>

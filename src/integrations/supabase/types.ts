@@ -328,13 +328,16 @@ export type Database = {
           created_at: string
           customer_id: string | null
           email: string | null
+          follow_up_actions: Json | null
           follow_up_date: string | null
+          follow_up_required: boolean | null
           id: string
           last_contacted_at: string | null
           lead_source: string
           location: string | null
           message: string | null
           name: string
+          next_action_date: string | null
           notes: string | null
           phone: string
           priority: string
@@ -353,13 +356,16 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           email?: string | null
+          follow_up_actions?: Json | null
           follow_up_date?: string | null
+          follow_up_required?: boolean | null
           id?: string
           last_contacted_at?: string | null
           lead_source?: string
           location?: string | null
           message?: string | null
           name: string
+          next_action_date?: string | null
           notes?: string | null
           phone: string
           priority?: string
@@ -378,13 +384,16 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           email?: string | null
+          follow_up_actions?: Json | null
           follow_up_date?: string | null
+          follow_up_required?: boolean | null
           id?: string
           last_contacted_at?: string | null
           lead_source?: string
           location?: string | null
           message?: string | null
           name?: string
+          next_action_date?: string | null
           notes?: string | null
           phone?: string
           priority?: string
