@@ -17,7 +17,6 @@ import {
   TrendingDown,
   ArrowRight,
   Briefcase,
-  Camera,
   Target,
   Percent,
   Activity,
@@ -150,28 +149,7 @@ export default function Dashboard() {
                 </Link>
               )}
 
-              {/* CRÍTICO: Jobs bloqueados por JobProof */}
-              {criticalAlerts.jobsBlockedByProof.length > 0 && (
-                <Link to="/admin/leads?tab=jobs" className="block">
-                  <Card className="border-red-300 bg-red-50/50 hover:bg-red-50 transition-colors cursor-pointer">
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <Camera className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <Badge variant="destructive" className="mb-1">CRÍTICO</Badge>
-                          <p className="font-medium text-red-800">
-                            {criticalAlerts.jobsBlockedByProof.length} job(s) sem JobProof
-                          </p>
-                          <p className="text-sm text-red-600">
-                            Não podem ser finalizados
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-red-400" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )}
+
 
               {/* CRÍTICO: Leads parados +48h */}
               {criticalAlerts.leadsStalled48h.length > 0 && (
