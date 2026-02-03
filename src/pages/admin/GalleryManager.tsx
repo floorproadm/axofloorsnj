@@ -406,50 +406,6 @@ export default function GalleryManager() {
   return (
     <AdminLayout title="Gerenciador da Galeria" breadcrumbs={[{ label: "Galeria" }]}>
       <div className="space-y-6 animate-fade-in">
-        {/* Stats Cards Simplificados */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="admin-stat-card admin-gradient">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="dashboard-metric text-white">{folders.length}</p>
-                  <p className="text-white/80 text-sm font-medium">Pastas</p>
-                </div>
-                <div className="p-3 bg-white/20 rounded-full">
-                  <FolderOpen className="w-8 h-8 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="admin-stat-card gold-gradient">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="dashboard-metric text-navy">{projects.length}</p>
-                  <p className="text-navy/80 text-sm font-medium">Projetos</p>
-                </div>
-                <div className="p-3 bg-navy/20 rounded-full">
-                  <Image className="w-8 h-8 text-navy" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="admin-stat-card bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="dashboard-metric text-white">{projects.filter(p => p.is_featured).length}</p>
-                  <p className="text-white/80 text-sm font-medium">Em Destaque</p>
-                </div>
-                <div className="p-3 bg-white/20 rounded-full">
-                  <Star className="w-8 h-8 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         <Tabs defaultValue="manage" className="space-y-6">
           <div className="flex items-center justify-between">

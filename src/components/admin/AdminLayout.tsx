@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { ActionableAlertsSection } from "./ActionableAlertsSection";
+import { TensionMetricsCards } from "./TensionMetricsCards";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface BreadcrumbItem {
@@ -125,6 +126,13 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
           <main className="flex-1 p-4 sm:p-6 overflow-auto animate-fade-in max-w-full">
             {/* Ações Obrigatórias - Fixed Section at Top */}
             <ActionableAlertsSection 
+              leads={leads} 
+              projects={projects} 
+              jobProofs={jobProofs} 
+            />
+            
+            {/* Tension Metrics Cards */}
+            <TensionMetricsCards 
               leads={leads} 
               projects={projects} 
               jobProofs={jobProofs} 
