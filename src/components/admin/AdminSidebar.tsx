@@ -10,7 +10,8 @@ import {
   Home,
   TrendingUp,
   Calendar,
-  FileText
+  FileText,
+  Inbox
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,12 @@ import { useToast } from "@/hooks/use-toast";
 
 // Navegação principal - linguagem de operador
 const navigationItems = [
+  {
+    title: "Captação",
+    url: "/admin/intake",
+    icon: Inbox,
+    badge: null
+  },
   {
     title: "Pipeline de Vendas",
     url: "/admin/leads",

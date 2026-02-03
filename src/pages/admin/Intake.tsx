@@ -1,0 +1,605 @@
+import { useState, useEffect, useMemo } from "react";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Plus, 
+  TrendingUp, 
+  TrendingDown, 
+  Clock, 
+  DollarSign,
+  AlertCircle,
+  CheckCircle,
+  AlertTriangle,
+  Users,
+  FileText,
+  Building,
+  Home,
+  Pencil
+} from "lucide-react";
+
+interface Lead {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  lead_source: string;
+  status: string;
+  budget: number | null;
+  city: string | null;
+  created_at: string;
+  converted_to_project_id: string | null;
+}
+
+interface SourceStats {
+  source: string;
+  type: string;
+  total: number;
+  converted: number;
+  lost: number;
+  avgBudget: number;
+}
+
+const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.ComponentType<any> }> = {
+  'contact_form': { label: 'Formulário de Contato', type: 'Página', icon: FileText },
+  'contact_page': { label: 'Página de Contato', type: 'Página', icon: FileText },
+  'contact_section': { label: 'Seção de Contato', type: 'Página', icon: FileText },
+  'quiz': { label: 'Quiz Qualificador', type: 'Qualificador', icon: CheckCircle },
+  'floor-diagnostic': { label: 'Diagnóstico de Piso', type: 'Qualificador', icon: CheckCircle },
+  'builders_page': { label: 'Página Builders', type: 'B2B', icon: Building },
+  'realtors_page': { label: 'Página Realtors', type: 'B2B', icon: Home },
+  'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp },
+  'review_system': { label: 'Sistema de Reviews', type: 'Referência', icon: Users },
+  'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
+  'website': { label: 'Website Geral', type: 'Página', icon: FileText },
+};
+
+export default function Intake() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+
+  // Form state for manual lead
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    city: '',
+    budget: '',
+    notes: ''
+  });
+
+  const fetchLeads = async () => {
+    setIsLoading(true);
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('leads')
+        .select('id, name, phone, email, lead_source, status, budget, city, created_at, converted_to_project_id')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setLeads(data || []);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar os leads.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  // Calculate source statistics
+  const sourceStats = useMemo((): SourceStats[] => {
+    const statsMap = new Map<string, SourceStats>();
+
+    leads.forEach(lead => {
+      const source = lead.lead_source || 'website';
+      const existing = statsMap.get(source) || {
+        source,
+        type: SOURCE_LABELS[source]?.type || 'Outro',
+        total: 0,
+        converted: 0,
+        lost: 0,
+        avgBudget: 0,
+        budgetSum: 0,
+        budgetCount: 0
+      };
+
+      existing.total++;
+      
+      if (lead.status === 'completed' || lead.converted_to_project_id) {
+        existing.converted++;
+      }
+      if (lead.status === 'lost') {
+        existing.lost++;
+      }
+      if (lead.budget && lead.budget > 0) {
+        (existing as any).budgetSum += lead.budget;
+        (existing as any).budgetCount++;
+      }
+
+      statsMap.set(source, existing);
+    });
+
+    return Array.from(statsMap.values())
+      .map(stat => ({
+        ...stat,
+        avgBudget: (stat as any).budgetCount > 0 
+          ? Math.round((stat as any).budgetSum / (stat as any).budgetCount)
+          : 0
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [leads]);
+
+  // Quality insights
+  const insights = useMemo(() => {
+    const validSources = sourceStats.filter(s => s.total >= 2);
+    
+    const bestConversion = validSources.reduce((best, current) => {
+      const currentRate = current.total > 0 ? current.converted / current.total : 0;
+      const bestRate = best && best.total > 0 ? best.converted / best.total : 0;
+      return currentRate > bestRate ? current : best;
+    }, null as SourceStats | null);
+
+    const mostLost = validSources.reduce((worst, current) => {
+      return current.lost > (worst?.lost || 0) ? current : worst;
+    }, null as SourceStats | null);
+
+    const stuckInProposal = leads.filter(l => 
+      l.status === 'proposal' && !l.converted_to_project_id
+    );
+    const stuckBySource = new Map<string, number>();
+    stuckInProposal.forEach(l => {
+      const source = l.lead_source || 'website';
+      stuckBySource.set(source, (stuckBySource.get(source) || 0) + 1);
+    });
+    let maxStuckSource: string | null = null;
+    let maxStuckCount = 0;
+    stuckBySource.forEach((count, source) => {
+      if (count > maxStuckCount) {
+        maxStuckCount = count;
+        maxStuckSource = source;
+      }
+    });
+
+    const bestTicket = validSources.reduce((best, current) => {
+      return current.avgBudget > (best?.avgBudget || 0) ? current : best;
+    }, null as SourceStats | null);
+
+    return {
+      bestConversion,
+      mostLost,
+      stuckSource: maxStuckSource,
+      stuckCount: maxStuckCount,
+      bestTicket
+    };
+  }, [sourceStats, leads]);
+
+  // Operational alerts
+  const alerts = useMemo(() => {
+    const result: { type: 'error' | 'warning' | 'success'; message: string }[] = [];
+    
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentLeads = leads.filter(l => new Date(l.created_at) >= sevenDaysAgo);
+    const recentWithAppointment = recentLeads.filter(l => 
+      l.status !== 'new_lead' && l.status !== 'lost'
+    );
+
+    if (recentLeads.length > 0 && recentWithAppointment.length === 0) {
+      result.push({
+        type: 'error',
+        message: `Você recebeu ${recentLeads.length} leads nos últimos 7 dias, mas nenhum virou visita.`
+      });
+    }
+
+    // Check if quiz leads are stuck
+    const quizLeads = leads.filter(l => l.lead_source === 'quiz');
+    const quizStuck = quizLeads.filter(l => l.status === 'new_lead' || l.status === 'appt_scheduled');
+    if (quizLeads.length >= 3 && quizStuck.length / quizLeads.length > 0.5) {
+      result.push({
+        type: 'warning',
+        message: "A fonte 'Quiz' gera bons leads, mas está travando no follow-up."
+      });
+    }
+
+    // Check manual vs forms performance
+    const manualLeads = leads.filter(l => l.lead_source === 'manual');
+    const formLeads = leads.filter(l => 
+      l.lead_source === 'contact_form' || 
+      l.lead_source === 'contact_page' ||
+      l.lead_source === 'contact_section'
+    );
+    const manualConverted = manualLeads.filter(l => l.status === 'completed' || l.converted_to_project_id).length;
+    const formConverted = formLeads.filter(l => l.status === 'completed' || l.converted_to_project_id).length;
+    
+    if (manualLeads.length >= 3 && formLeads.length >= 3) {
+      const manualRate = manualConverted / manualLeads.length;
+      const formRate = formConverted / formLeads.length;
+      if (manualRate > formRate) {
+        result.push({
+          type: 'success',
+          message: "Leads manuais estão convertendo melhor que formulários."
+        });
+      }
+    }
+
+    // No leads recently
+    if (recentLeads.length === 0) {
+      result.push({
+        type: 'warning',
+        message: "Nenhum lead nos últimos 7 dias. Hora de ativar a captação."
+      });
+    }
+
+    return result;
+  }, [leads]);
+
+  const handleSubmit = async () => {
+    if (!formData.name.trim() || !formData.phone.trim()) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Nome e telefone são obrigatórios.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.from('leads').insert({
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || null,
+        city: formData.city.trim() || null,
+        budget: formData.budget ? parseFloat(formData.budget) : null,
+        notes: formData.notes.trim() || null,
+        lead_source: 'manual',
+        status: 'new_lead'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Lead adicionado",
+        description: `${formData.name} foi adicionado com sucesso.`
+      });
+
+      setFormData({ name: '', phone: '', email: '', city: '', budget: '', notes: '' });
+      setIsModalOpen(false);
+      fetchLeads();
+    } catch (error) {
+      console.error('Error adding lead:', error);
+      toast({
+        title: "Erro ao adicionar",
+        description: "Não foi possível adicionar o lead.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0
+    }).format(value);
+  };
+
+  const getSourceLabel = (source: string) => {
+    return SOURCE_LABELS[source]?.label || source;
+  };
+
+  const getSourceIcon = (source: string) => {
+    const IconComponent = SOURCE_LABELS[source]?.icon || FileText;
+    return <IconComponent className="h-4 w-4" />;
+  };
+
+  return (
+    <AdminLayout 
+      title="Captação & Entrada de Leads" 
+      breadcrumbs={[{ label: "Captação" }]}
+    >
+      <div className="space-y-6 animate-fade-in">
+        {/* Header with CTA */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-muted-foreground">
+              Entenda de onde vêm seus leads e adicione novos contatos manualmente
+            </p>
+          </div>
+          <Button onClick={() => setIsModalOpen(true)} className="shrink-0">
+            <Plus className="h-4 w-4 mr-2" />
+            Adicionar Lead Manual
+          </Button>
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <>
+            {/* Quality Insights Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Best Conversion */}
+              <Card className="border-success/30 bg-success/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-success/20">
+                      <TrendingUp className="h-5 w-5 text-success" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Maior Conversão</p>
+                      <p className="font-semibold text-sm truncate">
+                        {insights.bestConversion 
+                          ? getSourceLabel(insights.bestConversion.source)
+                          : 'Sem dados'}
+                      </p>
+                      {insights.bestConversion && (
+                        <p className="text-xs text-success">
+                          {Math.round((insights.bestConversion.converted / insights.bestConversion.total) * 100)}% convertidos
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Most Lost */}
+              <Card className="border-blocked/30 bg-blocked/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-blocked/20">
+                      <TrendingDown className="h-5 w-5 text-blocked" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Mais Perdidos</p>
+                      <p className="font-semibold text-sm truncate">
+                        {insights.mostLost 
+                          ? getSourceLabel(insights.mostLost.source)
+                          : 'Nenhum'}
+                      </p>
+                      {insights.mostLost && (
+                        <p className="text-xs text-blocked">
+                          {insights.mostLost.lost} leads perdidos
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Stuck in Proposal */}
+              <Card className="border-risk/30 bg-risk/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-risk/20">
+                      <Clock className="h-5 w-5 text-risk" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Travados em Proposta</p>
+                      <p className="font-semibold text-sm truncate">
+                        {insights.stuckSource 
+                          ? getSourceLabel(insights.stuckSource)
+                          : 'Nenhum'}
+                      </p>
+                      {insights.stuckCount > 0 && (
+                        <p className="text-xs text-risk">
+                          {insights.stuckCount} leads parados
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Best Ticket */}
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/20">
+                      <DollarSign className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Maior Ticket Médio</p>
+                      <p className="font-semibold text-sm truncate">
+                        {insights.bestTicket 
+                          ? getSourceLabel(insights.bestTicket.source)
+                          : 'Sem dados'}
+                      </p>
+                      {insights.bestTicket && insights.bestTicket.avgBudget > 0 && (
+                        <p className="text-xs text-primary">
+                          {formatCurrency(insights.bestTicket.avgBudget)} média
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Operational Alerts */}
+            {alerts.length > 0 && (
+              <div className="space-y-2">
+                {alerts.map((alert, index) => (
+                  <div 
+                    key={index}
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      alert.type === 'error' 
+                        ? 'bg-blocked/10 border-blocked/30 text-blocked' 
+                        : alert.type === 'warning'
+                        ? 'bg-risk/10 border-risk/30 text-risk'
+                        : 'bg-success/10 border-success/30 text-success'
+                    }`}
+                  >
+                    {alert.type === 'error' && <AlertCircle className="h-5 w-5 shrink-0" />}
+                    {alert.type === 'warning' && <AlertTriangle className="h-5 w-5 shrink-0" />}
+                    {alert.type === 'success' && <CheckCircle className="h-5 w-5 shrink-0" />}
+                    <p className="text-sm font-medium">{alert.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Source Stats Table */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Fontes de Captação (Últimos 30 dias)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {sourceStats.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>Nenhum lead nos últimos 30 dias</p>
+                    <p className="text-sm">Adicione leads manualmente para começar</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto -mx-6 px-6">
+                    <table className="w-full min-w-[500px]">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Fonte</th>
+                          <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Tipo</th>
+                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Leads</th>
+                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Convertidos</th>
+                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Perdidos</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sourceStats.map((stat) => (
+                          <tr key={stat.source} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                            <td className="py-3 px-2">
+                              <div className="flex items-center gap-2">
+                                {getSourceIcon(stat.source)}
+                                <span className="font-medium text-sm">{getSourceLabel(stat.source)}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {stat.type}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                              <span className="font-semibold">{stat.total}</span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                              <span className="text-success font-medium">{stat.converted}</span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                              <span className="text-blocked font-medium">{stat.lost}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {/* Add Manual Lead Modal */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Adicionar Lead Manual</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Nome completo do cliente"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone *</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="(000) 000-0000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="email@exemplo.com"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Cidade</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="Ex: Newark"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="budget">Budget ($)</Label>
+                  <Input
+                    id="budget"
+                    type="number"
+                    value={formData.budget}
+                    onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Observação inicial</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Como você conheceu esse cliente? Algum detalhe importante?"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSubmit} disabled={isSaving}>
+                {isSaving ? "Salvando..." : "Adicionar Lead"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AdminLayout>
+  );
+}
