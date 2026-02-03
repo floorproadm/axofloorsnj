@@ -232,6 +232,64 @@ audit_log (standalone)
 
 ---
 
+## PARTE 9 — ROADMAP SUGERIDO
+
+### Prioridade Alta (Impacto Direto em Receita)
+
+| # | Funcionalidade | Descrição | Complexidade | Impacto |
+|---|----------------|-----------|--------------|---------|
+| 1 | **Conversão Lead → Project** | Botão no modal que cria projeto automaticamente a partir do lead, linkando `converted_to_project_id` | Média | 🔥 Alto |
+| 2 | **Filtros Avançados na Lista** | Filtrar por status, data, source, prioridade na página de leads | Baixa | ⚡ Médio |
+| 3 | **Ações em Massa** | Selecionar múltiplos leads e aplicar ação (marcar como lost, exportar) | Média | ⚡ Médio |
+
+### Prioridade Média (Eficiência Operacional)
+
+| # | Funcionalidade | Descrição | Complexidade | Impacto |
+|---|----------------|-----------|--------------|---------|
+| 4 | **Calendário de Agendamentos** | UI para tabela `appointments`, integrada com leads | Alta | ⚡ Médio |
+| 5 | **Envio Real de Propostas** | Integração com email/WhatsApp para enviar PDF da proposta | Alta | 🔥 Alto |
+| 6 | **UI de Company Settings** | Página para editar margem mínima, labor rate, pricing model | Baixa | ⚡ Médio |
+| 7 | **Gestão de Clientes** | Página dedicada para CRUD de `customers` com histórico | Média | ⚡ Médio |
+
+### Prioridade Baixa (Nice-to-Have)
+
+| # | Funcionalidade | Descrição | Complexidade | Impacto |
+|---|----------------|-----------|--------------|---------|
+| 8 | **Drag-and-Drop Pipeline** | Permitir arrastar cards entre estágios (com validação) | Alta | 💡 Baixo |
+| 9 | **Notificações Push** | Alertar sobre leads parados, follow-ups vencidos | Alta | ⚡ Médio |
+| 10 | **Relatórios Exportáveis** | PDFs de performance mensal, margem por projeto | Média | 💡 Baixo |
+
+### Ordem Recomendada de Implementação
+
+```
+FASE 1 (Quick Wins):
+├── 2. Filtros Avançados ─────────► 1-2 horas
+└── 6. UI Company Settings ───────► 1-2 horas
+
+FASE 2 (Core Features):
+├── 1. Conversão Lead → Project ──► 2-4 horas
+└── 3. Ações em Massa ────────────► 2-3 horas
+
+FASE 3 (Integrations):
+├── 4. Calendário ────────────────► 4-6 horas
+└── 5. Envio de Propostas ────────► 4-8 horas
+
+FASE 4 (Polish):
+├── 7. Gestão de Clientes ────────► 3-4 horas
+└── 8-10. Nice-to-haves ──────────► Conforme demanda
+```
+
+### Dependências Técnicas
+
+| Feature | Depende de |
+|---------|------------|
+| Conversão Lead→Project | Modal atual, criação de projeto |
+| Calendário | Tabela `appointments` (já existe) |
+| Envio de Propostas | Edge function, template PDF |
+| Notificações Push | Service worker, permissões |
+
+---
+
 ## ASSINATURA DO CHECKPOINT
 
 ```
@@ -240,6 +298,7 @@ Gerado em: 2026-02-03
 Sessão: Refinamento de Dashboard + Remoção JobProof Alert
 Status: ATIVO
 Substitui: AXO_ADMIN_STATE_2026_02_03.md
+Roadmap: 10 funcionalidades priorizadas
 ```
 
 ---
