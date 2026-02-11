@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   STAGE_LABELS, 
   STAGE_CONFIG,
@@ -14,11 +15,13 @@ import {
   type PipelineStage 
 } from '@/hooks/useLeadPipeline';
 import { useLeadFollowUp, type FollowUpAction } from '@/hooks/useLeadFollowUp';
+import { useLeadConversion } from '@/hooks/useLeadConversion';
 import { JobProofUploader } from '@/components/admin/JobProofUploader';
 import { 
   Phone, Mail, MapPin, DollarSign, 
-  ChevronRight, Clock, XCircle, AlertTriangle,
-  CheckCircle2, Plus, Loader2, History, Ban
+  ChevronRight, Clock, XCircle,
+  CheckCircle2, Plus, Loader2, History, Ban,
+  ArrowRightLeft
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -51,7 +54,6 @@ interface LeadControlModalProps {
   onRefresh: () => void;
 }
 
-// Microcopy operacional - ações por etapa
 const actionLabels: Record<PipelineStage, string> = {
   new_lead: 'Agendar Visita',
   appt_scheduled: 'Enviar Orçamento',
@@ -61,7 +63,6 @@ const actionLabels: Record<PipelineStage, string> = {
   lost: ''
 };
 
-// Status descriptions - linguagem de dono de flooring
 const statusDescriptions: Record<PipelineStage, string> = {
   new_lead: 'Cliente novo esperando contato',
   appt_scheduled: 'Visita marcada, preparar orçamento',
@@ -71,13 +72,26 @@ const statusDescriptions: Record<PipelineStage, string> = {
   lost: 'Oportunidade perdida'
 };
 
+const PROJECT_TYPES = [
+  'Sanding & Refinishing',
+  'Hardwood Installation',
+  'Vinyl Plank Installation',
+  'Staircase Refinishing',
+  'Baseboard Installation',
+  'Repair & Patch',
+  'Other'
+];
+
 export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadControlModalProps) {
   const { updateLeadStatus, isUpdating, getNextAllowedStatuses } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
+  const { convertLeadToProject, isConverting } = useLeadConversion();
   
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
   const [actionType, setActionType] = useState('');
   const [actionNotes, setActionNotes] = useState('');
+  const [showConvertForm, setShowConvertForm] = useState(false);
+  const [projectType, setProjectType] = useState('');
 
   if (!lead) return null;
 
@@ -88,10 +102,12 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   
   const isStale = differenceInHours(new Date(), new Date(lead.updated_at)) > 48;
   const isTerminal = stage === 'completed' || stage === 'lost';
+  const hasProject = !!lead.converted_to_project_id;
   
-  // Determine blocking conditions
+  // Blocking conditions
   const needsFollowUp = stage === 'proposal' && !followUpStatus.hasActions;
-  const needsJobProof = stage === 'in_production' && lead.converted_to_project_id;
+  const needsConversion = stage === 'appt_scheduled' && !hasProject;
+  const needsJobProof = stage === 'in_production' && hasProject;
   const isBlocked = needsFollowUp;
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
@@ -120,18 +136,24 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
     }
   };
 
-  // Get the primary next action (non-lost)
+  const handleConvertToProject = async () => {
+    if (!projectType) return;
+    const projectId = await convertLeadToProject(lead.id, projectType);
+    if (projectId) {
+      setShowConvertForm(false);
+      setProjectType('');
+      onRefresh();
+    }
+  };
+
   const primaryNextStatus = nextStatuses.find(s => s !== 'lost');
   const canMarkLost = nextStatuses.includes('lost');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[calc(100vw-16px)] sm:max-w-xl max-h-[90vh] overflow-hidden p-0">
-        {/* Header with Status */}
-        <div className={cn(
-          "px-4 sm:px-6 py-4 border-b",
-          config.bgColor
-        )}>
+        {/* Header */}
+        <div className={cn("px-4 sm:px-6 py-4 border-b", config.bgColor)}>
           <DialogHeader className="pb-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
@@ -139,16 +161,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                   {lead.name}
                 </DialogTitle>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <Badge 
-                    className={cn(
-                      "px-2.5 py-0.5 text-xs font-semibold border",
-                      config.bgColor,
-                      config.textColor,
-                      config.borderColor
-                    )}
-                  >
+                  <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", config.bgColor, config.textColor, config.borderColor)}>
                     {STAGE_LABELS[stage]}
                   </Badge>
+                  {hasProject && (
+                    <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300">
+                      Projeto ✓
+                    </Badge>
+                  )}
                   {isStale && !isTerminal && (
                     <Badge variant="destructive" className="text-xs flex items-center gap-1">
                       <Clock className="w-3 h-3" />
@@ -167,7 +187,66 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
         <ScrollArea className="max-h-[calc(90vh-120px)]">
           <div className="p-4 sm:p-6 space-y-4">
             
-            {/* BLOCKING SECTION - Highest Priority */}
+            {/* CONVERSION SECTION — appt_scheduled without project */}
+            {needsConversion && (
+              <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-400">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <ArrowRightLeft className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-amber-700 text-base">
+                      🟡 Converter para Projeto
+                    </h3>
+                    <p className="text-sm text-amber-600 mt-1">
+                      Para avançar para "Orçamento", o lead precisa virar projeto primeiro.
+                    </p>
+                    
+                    {!showConvertForm ? (
+                      <Button 
+                        onClick={() => setShowConvertForm(true)}
+                        className="mt-3 bg-amber-600 hover:bg-amber-700 text-white"
+                      >
+                        <ArrowRightLeft className="w-4 h-4 mr-1.5" />
+                        Criar Projeto
+                      </Button>
+                    ) : (
+                      <div className="mt-3 space-y-3 p-3 bg-white rounded-lg border">
+                        <Select value={projectType} onValueChange={setProjectType}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Tipo do projeto..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PROJECT_TYPES.map(type => (
+                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={handleConvertToProject}
+                            disabled={!projectType || isConverting}
+                            size="sm"
+                          >
+                            {isConverting ? (
+                              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                            )}
+                            Converter
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setShowConvertForm(false)}>
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* BLOCKING SECTION */}
             {isBlocked && (
               <div className="p-4 rounded-lg bg-state-blocked/10 border-2 border-state-blocked">
                 <div className="flex items-start gap-3">
@@ -182,7 +261,6 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                       {needsFollowUp && "Registre pelo menos 1 contato para poder avançar este lead."}
                     </p>
                     
-                    {/* Inline Follow-up Form */}
                     {needsFollowUp && (
                       <div className="mt-4 space-y-3">
                         {!showFollowUpForm ? (
@@ -194,42 +272,15 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                             Registrar Contato Agora
                           </Button>
                         ) : (
-                          <div className="space-y-3 p-3 bg-white rounded-lg border">
-                            <Input
-                              placeholder="Ex: Ligação, WhatsApp, Email..."
-                              value={actionType}
-                              onChange={(e) => setActionType(e.target.value)}
-                              className="text-sm"
-                            />
-                            <Textarea
-                              placeholder="Notas do contato (opcional)"
-                              value={actionNotes}
-                              onChange={(e) => setActionNotes(e.target.value)}
-                              rows={2}
-                              className="text-sm"
-                            />
-                            <div className="flex gap-2">
-                              <Button 
-                                onClick={handleAddFollowUp}
-                                disabled={!actionType.trim() || isFollowUpUpdating}
-                                size="sm"
-                              >
-                                {isFollowUpUpdating ? (
-                                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                                ) : (
-                                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                                )}
-                                Salvar
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => setShowFollowUpForm(false)}
-                              >
-                                Cancelar
-                              </Button>
-                            </div>
-                          </div>
+                          <FollowUpForm
+                            actionType={actionType}
+                            actionNotes={actionNotes}
+                            onActionTypeChange={setActionType}
+                            onActionNotesChange={setActionNotes}
+                            onSubmit={handleAddFollowUp}
+                            onCancel={() => setShowFollowUpForm(false)}
+                            isUpdating={isFollowUpUpdating}
+                          />
                         )}
                       </div>
                     )}
@@ -238,7 +289,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
               </div>
             )}
 
-            {/* NEXT ACTION SECTION - Single CTA */}
+            {/* NEXT ACTION SECTION */}
             {!isTerminal && !isBlocked && primaryNextStatus && (
               <div className="p-4 rounded-lg bg-state-success/10 border-2 border-state-success">
                 <div className="flex items-center justify-between gap-3">
@@ -273,7 +324,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
               </div>
             )}
 
-            {/* JobProof Section - Visual Block */}
+            {/* JobProof Section */}
             {needsJobProof && (
               <div className="p-4 rounded-lg bg-violet-50 border-2 border-violet-300">
                 <h3 className="font-bold text-violet-700 text-base mb-2">
@@ -286,7 +337,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
               </div>
             )}
 
-            {/* FOLLOW-UP HISTORY - If has actions */}
+            {/* FOLLOW-UP HISTORY */}
             {followUpStatus.hasActions && lead.follow_up_actions && (
               <div className="p-4 rounded-lg bg-muted/50 border">
                 <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
@@ -312,7 +363,6 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                   ))}
                 </div>
                 
-                {/* Add more follow-up */}
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -324,41 +374,16 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                 </Button>
 
                 {showFollowUpForm && (
-                  <div className="space-y-3 p-3 mt-3 bg-background rounded-lg border">
-                    <Input
-                      placeholder="Ex: Ligação, WhatsApp, Email..."
-                      value={actionType}
-                      onChange={(e) => setActionType(e.target.value)}
-                      className="text-sm"
+                  <div className="mt-3">
+                    <FollowUpForm
+                      actionType={actionType}
+                      actionNotes={actionNotes}
+                      onActionTypeChange={setActionType}
+                      onActionNotesChange={setActionNotes}
+                      onSubmit={handleAddFollowUp}
+                      onCancel={() => setShowFollowUpForm(false)}
+                      isUpdating={isFollowUpUpdating}
                     />
-                    <Textarea
-                      placeholder="Notas do contato (opcional)"
-                      value={actionNotes}
-                      onChange={(e) => setActionNotes(e.target.value)}
-                      rows={2}
-                      className="text-sm"
-                    />
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleAddFollowUp}
-                        disabled={!actionType.trim() || isFollowUpUpdating}
-                        size="sm"
-                      >
-                        {isFollowUpUpdating ? (
-                          <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                        )}
-                        Salvar
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setShowFollowUpForm(false)}
-                      >
-                        Cancelar
-                      </Button>
-                    </div>
                   </div>
                 )}
               </div>
@@ -366,7 +391,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
 
             <Separator />
 
-            {/* CONTACT INFO - Secondary */}
+            {/* CONTACT INFO */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-muted/30">
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
@@ -412,7 +437,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
           </div>
         </ScrollArea>
 
-        {/* Footer Actions - Lost option */}
+        {/* Footer - Lost option */}
         {canMarkLost && !isTerminal && (
           <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
             <span className="text-xs text-muted-foreground">
@@ -432,5 +457,54 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+// Extracted sub-component to avoid duplication
+function FollowUpForm({ 
+  actionType, actionNotes, onActionTypeChange, onActionNotesChange, 
+  onSubmit, onCancel, isUpdating 
+}: {
+  actionType: string;
+  actionNotes: string;
+  onActionTypeChange: (v: string) => void;
+  onActionNotesChange: (v: string) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+  isUpdating: boolean;
+}) {
+  return (
+    <div className="space-y-3 p-3 bg-background rounded-lg border">
+      <Input
+        placeholder="Ex: Ligação, WhatsApp, Email..."
+        value={actionType}
+        onChange={(e) => onActionTypeChange(e.target.value)}
+        className="text-sm"
+      />
+      <Textarea
+        placeholder="Notas do contato (opcional)"
+        value={actionNotes}
+        onChange={(e) => onActionNotesChange(e.target.value)}
+        rows={2}
+        className="text-sm"
+      />
+      <div className="flex gap-2">
+        <Button 
+          onClick={onSubmit}
+          disabled={!actionType.trim() || isUpdating}
+          size="sm"
+        >
+          {isUpdating ? (
+            <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 mr-1.5" />
+          )}
+          Salvar
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          Cancelar
+        </Button>
+      </div>
+    </div>
   );
 }

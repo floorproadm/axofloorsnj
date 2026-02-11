@@ -634,12 +634,20 @@ export type Database = {
           total_cost: number
         }[]
       }
+      convert_lead_to_project: {
+        Args: { p_lead_id: string; p_project_type: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      transition_lead_status: {
+        Args: { p_lead_id: string; p_new_status: string }
+        Returns: Json
       }
       validate_lead_transition: {
         Args: { p_lead_id: string; p_new_status: string }
