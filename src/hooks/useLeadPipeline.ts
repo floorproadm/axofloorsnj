@@ -133,48 +133,18 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
     setIsUpdating(true);
     
     try {
-      // Get current status
-      const { data: lead, error: fetchError } = await supabase
-        .from('leads')
-        .select('status')
-        .eq('id', leadId)
-        .single();
-
-      if (fetchError || !lead) {
-        toast({
-          title: "Erro",
-          description: "Lead não encontrado",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      const currentNormalized = normalizeStatus(lead.status);
-      const allowedNext = VALID_TRANSITIONS[currentNormalized] || [];
-
-      // Validate transition
-      if (!allowedNext.includes(newStatus)) {
-      toast({
-        title: "⚠️ Transição Bloqueada",
-        description: `Não é possível pular etapas. De "${STAGE_LABELS[currentNormalized]}" só pode ir para: ${allowedNext.map(s => STAGE_LABELS[s]).join(', ') || 'nenhum (estado final)'}`,
-        variant: "destructive"
+      // Use RPC — trigger validates everything server-side
+      const { data, error } = await supabase.rpc('transition_lead_status', {
+        p_lead_id: leadId,
+        p_new_status: newStatus
       });
-        return false;
-      }
-
-      // Perform update
-      const { error } = await supabase
-        .from('leads')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', leadId);
 
       if (error) {
+        // Extract human-readable message from trigger exception
+        const msg = error.message?.replace(/^.*?ERROR:\s*/, '') || error.message;
         toast({
-          title: "Erro ao atualizar",
-          description: error.message,
+          title: "⚠️ Transição Bloqueada",
+          description: msg,
           variant: "destructive"
         });
         return false;
@@ -187,7 +157,7 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
       
       return true;
     } catch (err) {
-      console.error('Update exception:', err);
+      console.error('Transition RPC exception:', err);
       toast({
         title: "Erro",
         description: "Falha ao atualizar status do lead",
