@@ -76,11 +76,11 @@ const NRA_STYLES: Record<string, { bg: string; border: string; text: string; ico
     title: '🔴 Ação Obrigatória'
   },
   blocked: {
-    bg: 'bg-red-50',
-    border: 'border-red-600',
-    text: 'text-red-800',
+    bg: 'bg-slate-100',
+    border: 'border-slate-500',
+    text: 'text-slate-700',
     icon: <AlertTriangle className="w-5 h-5" />,
-    title: '⛔ Bloqueado — Problema Técnico'
+    title: '⚠️ Erro do Sistema — Revisar'
   },
   normal: {
     bg: 'bg-emerald-50',
@@ -99,7 +99,7 @@ const NRA_STYLES: Record<string, { bg: string; border: string; text: string; ico
 };
 
 export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadControlModalProps) {
-  const { updateLeadStatus, isUpdating, getNextAllowedStatuses } = useLeadPipeline();
+  const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToProject, isConverting } = useLeadConversion();
   const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id);
@@ -114,13 +114,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
 
   const stage = normalizeStatus(lead.status);
   const config = STAGE_CONFIG[stage];
-  const nextStatuses = getNextAllowedStatuses(lead.status);
   const followUpStatus = getFollowUpStatus(lead);
   
   const isStale = differenceInHours(new Date(), new Date(lead.updated_at)) > 48;
   const isTerminal = stage === 'completed' || stage === 'lost';
   const hasProject = !!lead.converted_to_project_id;
-  const canMarkLost = nextStatuses.includes('lost');
+  
+  // "Lost" is allowed from proposal and in_production (non-terminal, non-early stages)
+  const canMarkLost = !isTerminal && (stage === 'proposal' || stage === 'in_production');
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
     const success = await updateLeadStatus(lead.id, newStatus);
@@ -160,8 +161,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
     }
   };
 
-  // Determine primary advance action from NRA
-  const primaryNextStatus = nextStatuses.find(s => s !== 'lost');
+  // Primary next status derived from NRA action mapping
+  const NRA_TO_NEXT_STATUS: Record<string, PipelineStage> = {
+    schedule_visit: 'appt_scheduled',
+    advance_to_proposal: 'proposal',
+    advance_pipeline: stage === 'proposal' ? 'in_production' : 'completed',
+    complete_job: 'completed',
+  };
+  const primaryNextStatus = nra ? NRA_TO_NEXT_STATUS[nra.action] : undefined;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

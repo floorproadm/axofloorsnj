@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  PIPELINE_STAGES, 
   STAGE_LABELS, 
   STAGE_CONFIG,
   normalizeStatus,
-  useLeadPipeline,
   type PipelineStage 
 } from "@/hooks/useLeadPipeline";
 import { useLeadNRABatch } from "@/hooks/useLeadNRA";
@@ -69,21 +67,11 @@ const sourceLabels: Record<string, string> = {
   website: "Site"
 };
 
-// Microcopy por etapa - única ação correta
-const stageActionLabel: Record<PipelineStage, string> = {
-  new_lead: 'Agendar Visita',
-  appt_scheduled: 'Enviar Orçamento',
-  proposal: 'Iniciar Job',
-  in_production: 'Fechar Job',
-  completed: '',
-  lost: ''
-};
-
 export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'leads' | 'jobs'>('leads');
-  const { getNextAllowedStatuses } = useLeadPipeline();
+  
 
   // Batch NRA for all active leads
   const activeLeadIds = useMemo(() => 
@@ -404,8 +392,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                     stageLeads.map(lead => {
                       const stale = isStale(lead);
                       const blocked = isBlocked(lead);
-                      const nextStatuses = getNextAllowedStatuses(lead.status);
-                      const primaryNext = nextStatuses.find(s => s !== 'lost');
+                      const leadNra = nraMap[lead.id];
                       
                       return (
                         <div 
@@ -420,7 +407,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                         >
                           {/* Signal Badge - Highest Priority */}
                           <div className="mb-2">
-                            <LeadSignalBadge lead={lead} nra={nraMap[lead.id]} compact />
+                            <LeadSignalBadge lead={lead} nra={leadNra} compact />
                           </div>
 
                           {/* Lead Info */}
@@ -452,44 +439,31 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                             </Badge>
                           </div>
 
-                          {/* Single CTA - Only shows the one correct action */}
-                          {primaryNext && !blocked && (
+                          {/* NRA-driven CTA */}
+                          {leadNra && leadNra.action !== 'none' && (
                             <div className="mt-3 pt-2 border-t">
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className={cn(
                                   "w-full h-8 text-xs font-medium",
-                                  STAGE_CONFIG[primaryNext].bgColor,
-                                  STAGE_CONFIG[primaryNext].textColor,
-                                  "hover:opacity-90 border-2",
-                                  STAGE_CONFIG[primaryNext].borderColor
+                                  blocked
+                                    ? "bg-state-blocked/10 text-state-blocked border-state-blocked hover:bg-state-blocked/20"
+                                    : leadNra.severity === 'normal'
+                                      ? "bg-state-success/10 text-state-success border-state-success hover:bg-state-success/20"
+                                      : "bg-state-risk/10 text-state-risk border-state-risk hover:bg-state-risk/20"
                                 )}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleCardClick(lead);
                                 }}
                               >
-                                <ChevronRight className="w-3.5 h-3.5 mr-1" />
-                                {stageActionLabel[primaryNext]}
-                              </Button>
-                            </div>
-                          )}
-
-                          {/* Blocked CTA */}
-                          {blocked && (
-                            <div className="mt-3 pt-2 border-t">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full h-8 text-xs font-medium bg-state-blocked/10 text-state-blocked border-state-blocked hover:bg-state-blocked/20"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCardClick(lead);
-                                }}
-                              >
-                                <Ban className="w-3.5 h-3.5 mr-1" />
-                                Desbloquear Lead
+                                {blocked ? (
+                                  <Ban className="w-3.5 h-3.5 mr-1" />
+                                ) : (
+                                  <ChevronRight className="w-3.5 h-3.5 mr-1" />
+                                )}
+                                {leadNra.label}
                               </Button>
                             </div>
                           )}

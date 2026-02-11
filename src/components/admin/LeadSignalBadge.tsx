@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { type LeadNRA } from '@/hooks/useLeadNRA';
-import { AlertTriangle, Ban, CheckCircle2, Clock } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle2, Clock, Bug } from 'lucide-react';
 import { differenceInHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -36,11 +36,18 @@ export function LeadSignalBadge({ lead, nra, compact = false }: LeadSignalBadgeP
 
     // Use NRA severity as single source of truth
     if (nra) {
-      if (nra.severity === 'critical' || nra.severity === 'blocked') {
+      if (nra.severity === 'critical') {
         return {
           type: 'blocked',
-          label: compact ? 'Bloqueado' : nra.label,
+          label: compact ? 'Ação Obrigatória' : nra.label,
           icon: <Ban className="w-3 h-3" />
+        };
+      }
+      if (nra.severity === 'blocked') {
+        return {
+          type: 'blocked',
+          label: compact ? 'Erro Sistema' : nra.label,
+          icon: <Bug className="w-3 h-3" />
         };
       }
     }
