@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { 
   STAGE_LABELS, 
   STAGE_CONFIG,
@@ -16,12 +17,13 @@ import {
 } from '@/hooks/useLeadPipeline';
 import { useLeadFollowUp, type FollowUpAction } from '@/hooks/useLeadFollowUp';
 import { useLeadConversion } from '@/hooks/useLeadConversion';
+import { useLeadNRA, type LeadNRA } from '@/hooks/useLeadNRA';
 import { JobProofUploader } from '@/components/admin/JobProofUploader';
 import { 
   Phone, Mail, MapPin, DollarSign, 
   ChevronRight, Clock, XCircle,
   CheckCircle2, Plus, Loader2, History, Ban,
-  ArrowRightLeft
+  ArrowRightLeft, AlertTriangle
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -54,24 +56,6 @@ interface LeadControlModalProps {
   onRefresh: () => void;
 }
 
-const actionLabels: Record<PipelineStage, string> = {
-  new_lead: 'Agendar Visita',
-  appt_scheduled: 'Enviar Orçamento',
-  proposal: 'Iniciar Job',
-  in_production: 'Fechar Job',
-  completed: '',
-  lost: ''
-};
-
-const statusDescriptions: Record<PipelineStage, string> = {
-  new_lead: 'Cliente novo esperando contato',
-  appt_scheduled: 'Visita marcada, preparar orçamento',
-  proposal: 'Orçamento enviado, acompanhar fechamento',
-  in_production: 'Trabalho em andamento',
-  completed: 'Job finalizado com sucesso',
-  lost: 'Oportunidade perdida'
-};
-
 const PROJECT_TYPES = [
   'Sanding & Refinishing',
   'Hardwood Installation',
@@ -82,10 +66,43 @@ const PROJECT_TYPES = [
   'Other'
 ];
 
+// NRA severity → visual config
+const NRA_STYLES: Record<string, { bg: string; border: string; text: string; icon: React.ReactNode; title: string }> = {
+  critical: {
+    bg: 'bg-red-50',
+    border: 'border-red-500',
+    text: 'text-red-700',
+    icon: <Ban className="w-5 h-5" />,
+    title: '🔴 Ação Obrigatória'
+  },
+  blocked: {
+    bg: 'bg-red-50',
+    border: 'border-red-600',
+    text: 'text-red-800',
+    icon: <AlertTriangle className="w-5 h-5" />,
+    title: '⛔ Bloqueado — Problema Técnico'
+  },
+  normal: {
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-400',
+    text: 'text-emerald-700',
+    icon: <CheckCircle2 className="w-5 h-5" />,
+    title: '🟢 Pronto para Avançar'
+  },
+  error: {
+    bg: 'bg-red-50',
+    border: 'border-red-500',
+    text: 'text-red-700',
+    icon: <AlertTriangle className="w-5 h-5" />,
+    title: '⚠️ Erro'
+  }
+};
+
 export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadControlModalProps) {
   const { updateLeadStatus, isUpdating, getNextAllowedStatuses } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToProject, isConverting } = useLeadConversion();
+  const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id);
   
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
   const [actionType, setActionType] = useState('');
@@ -103,12 +120,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const isStale = differenceInHours(new Date(), new Date(lead.updated_at)) > 48;
   const isTerminal = stage === 'completed' || stage === 'lost';
   const hasProject = !!lead.converted_to_project_id;
-  
-  // Blocking conditions
-  const needsFollowUp = stage === 'proposal' && !followUpStatus.hasActions;
-  const needsConversion = stage === 'appt_scheduled' && !hasProject;
-  const needsJobProof = stage === 'in_production' && hasProject;
-  const isBlocked = needsFollowUp;
+  const canMarkLost = nextStatuses.includes('lost');
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
     const success = await updateLeadStatus(lead.id, newStatus);
@@ -132,6 +144,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
       setActionType('');
       setActionNotes('');
       setShowFollowUpForm(false);
+      refreshNRA();
       onRefresh();
     }
   };
@@ -142,12 +155,13 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
     if (projectId) {
       setShowConvertForm(false);
       setProjectType('');
+      refreshNRA();
       onRefresh();
     }
   };
 
+  // Determine primary advance action from NRA
   const primaryNextStatus = nextStatuses.find(s => s !== 'lost');
-  const canMarkLost = nextStatuses.includes('lost');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -178,154 +192,48 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                 </div>
               </div>
             </div>
-            <p className={cn("text-sm mt-2", config.textColor)}>
-              {statusDescriptions[stage]}
-            </p>
           </DialogHeader>
         </div>
 
         <ScrollArea className="max-h-[calc(90vh-120px)]">
           <div className="p-4 sm:p-6 space-y-4">
             
-            {/* CONVERSION SECTION — appt_scheduled without project */}
-            {needsConversion && (
-              <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-400">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <ArrowRightLeft className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-amber-700 text-base">
-                      🟡 Converter para Projeto
-                    </h3>
-                    <p className="text-sm text-amber-600 mt-1">
-                      Para avançar para "Orçamento", o lead precisa virar projeto primeiro.
-                    </p>
-                    
-                    {!showConvertForm ? (
-                      <Button 
-                        onClick={() => setShowConvertForm(true)}
-                        className="mt-3 bg-amber-600 hover:bg-amber-700 text-white"
-                      >
-                        <ArrowRightLeft className="w-4 h-4 mr-1.5" />
-                        Criar Projeto
-                      </Button>
-                    ) : (
-                      <div className="mt-3 space-y-3 p-3 bg-white rounded-lg border">
-                        <Select value={projectType} onValueChange={setProjectType}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Tipo do projeto..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PROJECT_TYPES.map(type => (
-                              <SelectItem key={type} value={type}>{type}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <div className="flex gap-2">
-                          <Button 
-                            onClick={handleConvertToProject}
-                            disabled={!projectType || isConverting}
-                            size="sm"
-                          >
-                            {isConverting ? (
-                              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                            ) : (
-                              <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                            )}
-                            Converter
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setShowConvertForm(false)}>
-                            Cancelar
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {/* ═══════════════════════════════════════════════════ */}
+            {/* NRA PANEL — Single source of truth from the bank  */}
+            {/* ═══════════════════════════════════════════════════ */}
+            {nraLoading ? (
+              <div className="p-4 rounded-lg bg-muted/50 border flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm text-muted-foreground">Calculando ação...</span>
               </div>
-            )}
+            ) : nra && nra.action !== 'none' ? (
+              <NRAPanel 
+                nra={nra} 
+                lead={lead}
+                stage={stage}
+                hasProject={hasProject}
+                primaryNextStatus={primaryNextStatus}
+                isUpdating={isUpdating}
+                isConverting={isConverting}
+                isFollowUpUpdating={isFollowUpUpdating}
+                showFollowUpForm={showFollowUpForm}
+                showConvertForm={showConvertForm}
+                actionType={actionType}
+                actionNotes={actionNotes}
+                projectType={projectType}
+                onAdvanceStatus={handleAdvanceStatus}
+                onShowFollowUpForm={setShowFollowUpForm}
+                onShowConvertForm={setShowConvertForm}
+                onActionTypeChange={setActionType}
+                onActionNotesChange={setActionNotes}
+                onProjectTypeChange={setProjectType}
+                onSubmitFollowUp={handleAddFollowUp}
+                onConvertToProject={handleConvertToProject}
+              />
+            ) : null}
 
-            {/* BLOCKING SECTION */}
-            {isBlocked && (
-              <div className="p-4 rounded-lg bg-state-blocked/10 border-2 border-state-blocked">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-state-blocked/20 flex items-center justify-center flex-shrink-0">
-                    <Ban className="w-5 h-5 text-state-blocked" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-state-blocked text-base">
-                      🔴 Bloqueado — Ação Obrigatória
-                    </h3>
-                    <p className="text-sm text-state-blocked/80 mt-1">
-                      {needsFollowUp && "Registre pelo menos 1 contato para poder avançar este lead."}
-                    </p>
-                    
-                    {needsFollowUp && (
-                      <div className="mt-4 space-y-3">
-                        {!showFollowUpForm ? (
-                          <Button 
-                            onClick={() => setShowFollowUpForm(true)}
-                            className="bg-state-blocked hover:bg-state-blocked/90 text-white"
-                          >
-                            <Plus className="w-4 h-4 mr-1.5" />
-                            Registrar Contato Agora
-                          </Button>
-                        ) : (
-                          <FollowUpForm
-                            actionType={actionType}
-                            actionNotes={actionNotes}
-                            onActionTypeChange={setActionType}
-                            onActionNotesChange={setActionNotes}
-                            onSubmit={handleAddFollowUp}
-                            onCancel={() => setShowFollowUpForm(false)}
-                            isUpdating={isFollowUpUpdating}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* NEXT ACTION SECTION */}
-            {!isTerminal && !isBlocked && primaryNextStatus && (
-              <div className="p-4 rounded-lg bg-state-success/10 border-2 border-state-success">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="font-bold text-state-success text-base flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5" />
-                      🟢 Pronto para Avançar
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Próximo passo no caminho até o dinheiro
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => handleAdvanceStatus(primaryNextStatus)}
-                    disabled={isUpdating}
-                    className={cn(
-                      "font-semibold",
-                      STAGE_CONFIG[primaryNextStatus].bgColor,
-                      STAGE_CONFIG[primaryNextStatus].textColor,
-                      "hover:opacity-90 border",
-                      STAGE_CONFIG[primaryNextStatus].borderColor
-                    )}
-                  >
-                    {isUpdating ? (
-                      <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 mr-1.5" />
-                    )}
-                    {actionLabels[primaryNextStatus] || STAGE_LABELS[primaryNextStatus]}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* JobProof Section */}
-            {needsJobProof && (
+            {/* JobProof Section — only when NRA says upload photos */}
+            {nra && ['upload_photos', 'upload_before_photo', 'upload_after_photo'].includes(nra.action) && hasProject && (
               <div className="p-4 rounded-lg bg-violet-50 border-2 border-violet-300">
                 <h3 className="font-bold text-violet-700 text-base mb-2">
                   📷 Prova de Trabalho
@@ -447,7 +355,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
               variant="ghost"
               size="sm"
               onClick={() => handleAdvanceStatus('lost')}
-              disabled={isBlocked || isUpdating}
+              disabled={isUpdating}
               className="text-muted-foreground hover:text-state-blocked hover:bg-state-blocked/10"
             >
               <XCircle className="w-4 h-4 mr-1.5" />
@@ -460,7 +368,220 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   );
 }
 
-// Extracted sub-component to avoid duplication
+// ═══════════════════════════════════════════════════════════
+// NRA PANEL — renders the single required action from DB
+// ═══════════════════════════════════════════════════════════
+function NRAPanel({ 
+  nra, lead, stage, hasProject, primaryNextStatus,
+  isUpdating, isConverting, isFollowUpUpdating,
+  showFollowUpForm, showConvertForm, actionType, actionNotes, projectType,
+  onAdvanceStatus, onShowFollowUpForm, onShowConvertForm,
+  onActionTypeChange, onActionNotesChange, onProjectTypeChange,
+  onSubmitFollowUp, onConvertToProject
+}: {
+  nra: LeadNRA;
+  lead: Lead;
+  stage: PipelineStage;
+  hasProject: boolean;
+  primaryNextStatus?: PipelineStage;
+  isUpdating: boolean;
+  isConverting: boolean;
+  isFollowUpUpdating: boolean;
+  showFollowUpForm: boolean;
+  showConvertForm: boolean;
+  actionType: string;
+  actionNotes: string;
+  projectType: string;
+  onAdvanceStatus: (status: PipelineStage) => void;
+  onShowFollowUpForm: (show: boolean) => void;
+  onShowConvertForm: (show: boolean) => void;
+  onActionTypeChange: (v: string) => void;
+  onActionNotesChange: (v: string) => void;
+  onProjectTypeChange: (v: string) => void;
+  onSubmitFollowUp: () => void;
+  onConvertToProject: () => void;
+}) {
+  const style = NRA_STYLES[nra.severity] || NRA_STYLES.normal;
+
+  return (
+    <Card className={cn("border-2", style.border, style.bg)}>
+      <CardHeader className="pb-2">
+        <CardTitle className={cn("text-base flex items-center gap-2", style.text)}>
+          {style.icon}
+          {style.title}
+        </CardTitle>
+        <CardDescription className={cn("text-sm font-medium", style.text, "opacity-80")}>
+          {nra.label}
+        </CardDescription>
+      </CardHeader>
+
+      <CardFooter className="pt-2 flex-col items-stretch gap-3">
+        <NRAActionButton
+          nra={nra}
+          lead={lead}
+          primaryNextStatus={primaryNextStatus}
+          isUpdating={isUpdating}
+          isConverting={isConverting}
+          isFollowUpUpdating={isFollowUpUpdating}
+          showFollowUpForm={showFollowUpForm}
+          showConvertForm={showConvertForm}
+          actionType={actionType}
+          actionNotes={actionNotes}
+          projectType={projectType}
+          onAdvanceStatus={onAdvanceStatus}
+          onShowFollowUpForm={onShowFollowUpForm}
+          onShowConvertForm={onShowConvertForm}
+          onActionTypeChange={onActionTypeChange}
+          onActionNotesChange={onActionNotesChange}
+          onProjectTypeChange={onProjectTypeChange}
+          onSubmitFollowUp={onSubmitFollowUp}
+          onConvertToProject={onConvertToProject}
+        />
+      </CardFooter>
+    </Card>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// NRA ACTION BUTTON — maps NRA action to correct UI control
+// ═══════════════════════════════════════════════════════════
+function NRAActionButton({
+  nra, lead, primaryNextStatus,
+  isUpdating, isConverting, isFollowUpUpdating,
+  showFollowUpForm, showConvertForm, actionType, actionNotes, projectType,
+  onAdvanceStatus, onShowFollowUpForm, onShowConvertForm,
+  onActionTypeChange, onActionNotesChange, onProjectTypeChange,
+  onSubmitFollowUp, onConvertToProject
+}: {
+  nra: LeadNRA;
+  lead: Lead;
+  primaryNextStatus?: PipelineStage;
+  isUpdating: boolean;
+  isConverting: boolean;
+  isFollowUpUpdating: boolean;
+  showFollowUpForm: boolean;
+  showConvertForm: boolean;
+  actionType: string;
+  actionNotes: string;
+  projectType: string;
+  onAdvanceStatus: (status: PipelineStage) => void;
+  onShowFollowUpForm: (show: boolean) => void;
+  onShowConvertForm: (show: boolean) => void;
+  onActionTypeChange: (v: string) => void;
+  onActionNotesChange: (v: string) => void;
+  onProjectTypeChange: (v: string) => void;
+  onSubmitFollowUp: () => void;
+  onConvertToProject: () => void;
+}) {
+  switch (nra.action) {
+    case 'record_follow_up':
+      return showFollowUpForm ? (
+        <FollowUpForm
+          actionType={actionType}
+          actionNotes={actionNotes}
+          onActionTypeChange={onActionTypeChange}
+          onActionNotesChange={onActionNotesChange}
+          onSubmit={onSubmitFollowUp}
+          onCancel={() => onShowFollowUpForm(false)}
+          isUpdating={isFollowUpUpdating}
+        />
+      ) : (
+        <Button 
+          onClick={() => onShowFollowUpForm(true)}
+          className="bg-red-600 hover:bg-red-700 text-white"
+        >
+          <Plus className="w-4 h-4 mr-1.5" />
+          Registrar Contato Agora
+        </Button>
+      );
+
+    case 'convert_to_project':
+    case 'enter_job_costs':
+      return showConvertForm ? (
+        <div className="space-y-3 p-3 bg-white rounded-lg border">
+          <Select value={projectType} onValueChange={onProjectTypeChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Tipo do projeto..." />
+            </SelectTrigger>
+            <SelectContent>
+              {PROJECT_TYPES.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
+            <Button 
+              onClick={onConvertToProject}
+              disabled={!projectType || isConverting}
+              size="sm"
+            >
+              {isConverting ? (
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              )}
+              Converter
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => onShowConvertForm(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button 
+          onClick={() => onShowConvertForm(true)}
+          className="bg-amber-600 hover:bg-amber-700 text-white"
+        >
+          <ArrowRightLeft className="w-4 h-4 mr-1.5" />
+          {nra.action === 'enter_job_costs' ? 'Preencher Custos' : 'Criar Projeto'}
+        </Button>
+      );
+
+    case 'fix_margin':
+      return (
+        <div className="text-sm text-red-700 font-medium">
+          Ajuste os custos do projeto para atingir a margem mínima.
+        </div>
+      );
+
+    case 'schedule_visit':
+    case 'advance_to_proposal':
+    case 'advance_pipeline':
+    case 'complete_job':
+      if (!primaryNextStatus) return null;
+      return (
+        <Button
+          onClick={() => onAdvanceStatus(primaryNextStatus)}
+          disabled={isUpdating}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+        >
+          {isUpdating ? (
+            <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+          ) : (
+            <ChevronRight className="w-4 h-4 mr-1.5" />
+          )}
+          {STAGE_LABELS[primaryNextStatus]}
+        </Button>
+      );
+
+    case 'upload_photos':
+    case 'upload_before_photo':
+    case 'upload_after_photo':
+      // Handled by the JobProofUploader section above
+      return (
+        <p className="text-sm text-violet-600 font-medium">
+          ↓ Use o uploader abaixo
+        </p>
+      );
+
+    default:
+      return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FOLLOW-UP FORM — extracted sub-component
+// ═══════════════════════════════════════════════════════════
 function FollowUpForm({ 
   actionType, actionNotes, onActionTypeChange, onActionNotesChange, 
   onSubmit, onCancel, isUpdating 

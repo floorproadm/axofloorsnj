@@ -1,15 +1,15 @@
 import { Badge } from '@/components/ui/badge';
-import { normalizeStatus, type PipelineStage } from '@/hooks/useLeadPipeline';
-import { useLeadFollowUp, type LeadWithFollowUp } from '@/hooks/useLeadFollowUp';
+import { type LeadNRA } from '@/hooks/useLeadNRA';
 import { AlertTriangle, Ban, CheckCircle2, Clock } from 'lucide-react';
 import { differenceInHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 interface LeadSignalBadgeProps {
-  lead: LeadWithFollowUp & {
+  lead: {
     updated_at: string;
-    converted_to_project_id?: string;
+    status: string;
   };
+  nra?: LeadNRA | null;
   compact?: boolean;
 }
 
@@ -21,50 +21,28 @@ interface Signal {
   icon: React.ReactNode;
 }
 
-export function LeadSignalBadge({ lead, compact = false }: LeadSignalBadgeProps) {
-  const { getFollowUpStatus } = useLeadFollowUp();
-  const stage = normalizeStatus(lead.status);
-  const followUpStatus = getFollowUpStatus(lead);
-  
+export function LeadSignalBadge({ lead, nra, compact = false }: LeadSignalBadgeProps) {
   const isStale = differenceInHours(new Date(), new Date(lead.updated_at)) > 48;
-  const isTerminal = stage === 'completed' || stage === 'lost';
+  const isTerminal = lead.status === 'completed' || lead.status === 'lost';
   
-  // Determine signal
   const getSignal = (): Signal => {
-    // Terminal states
     if (isTerminal) {
       return {
         type: 'terminal',
-        label: stage === 'completed' ? 'Fechado' : 'Perdido',
-        icon: stage === 'completed' ? <CheckCircle2 className="w-3 h-3" /> : null
+        label: lead.status === 'completed' ? 'Fechado' : 'Perdido',
+        icon: lead.status === 'completed' ? <CheckCircle2 className="w-3 h-3" /> : null
       };
     }
-    
-    // Blocked: proposal without follow-up
-    if (stage === 'proposal' && !followUpStatus.hasActions) {
-      return {
-        type: 'blocked',
-        label: compact ? 'Bloqueado' : 'Sem follow-up registrado',
-        icon: <Ban className="w-3 h-3" />
-      };
-    }
-    
-    // Blocked: in_production without project
-    if (stage === 'in_production' && !lead.converted_to_project_id) {
-      return {
-        type: 'blocked',
-        label: compact ? 'Bloqueado' : 'Sem projeto vinculado',
-        icon: <Ban className="w-3 h-3" />
-      };
-    }
-    
-    // Risk: overdue follow-up
-    if (followUpStatus.isOverdue) {
-      return {
-        type: 'risk',
-        label: compact ? 'Atrasado' : 'Follow-up atrasado',
-        icon: <AlertTriangle className="w-3 h-3" />
-      };
+
+    // Use NRA severity as single source of truth
+    if (nra) {
+      if (nra.severity === 'critical' || nra.severity === 'blocked') {
+        return {
+          type: 'blocked',
+          label: compact ? 'Bloqueado' : nra.label,
+          icon: <Ban className="w-3 h-3" />
+        };
+      }
     }
     
     // Risk: stale lead
@@ -76,7 +54,6 @@ export function LeadSignalBadge({ lead, compact = false }: LeadSignalBadgeProps)
       };
     }
     
-    // OK: ready to advance
     return {
       type: 'ok',
       label: compact ? 'OK' : 'Pronto para avançar',
@@ -94,7 +71,7 @@ export function LeadSignalBadge({ lead, compact = false }: LeadSignalBadgeProps)
   };
 
   if (compact && signal.type === 'ok') {
-    return null; // Don't show OK badge in compact mode
+    return null;
   }
 
   return (

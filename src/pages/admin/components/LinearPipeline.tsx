@@ -12,6 +12,7 @@ import {
   useLeadPipeline,
   type PipelineStage 
 } from "@/hooks/useLeadPipeline";
+import { useLeadNRABatch } from "@/hooks/useLeadNRA";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
 import { LeadSignalBadge } from "@/components/admin/LeadSignalBadge";
 import { 
@@ -84,6 +85,15 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [activeTab, setActiveTab] = useState<'leads' | 'jobs'>('leads');
   const { getNextAllowedStatuses } = useLeadPipeline();
 
+  // Batch NRA for all active leads
+  const activeLeadIds = useMemo(() => 
+    leads
+      .filter(l => !['completed', 'lost'].includes(normalizeStatus(l.status)))
+      .map(l => l.id),
+    [leads]
+  );
+  const { nraMap } = useLeadNRABatch(activeLeadIds);
+
   // Separate leads vs jobs (leads with project = jobs)
   const { pureLeads, jobLeads } = useMemo(() => {
     const pure = leads.filter(l => !l.converted_to_project_id);
@@ -144,17 +154,15 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         differenceInHours(new Date(), new Date(l.updated_at)) > 48
       ).length;
       
-      // Count blocked leads in proposal stage (no follow-up)
-      if (s === 'proposal') {
-        stats[s].blocked = stageLeads.filter(l => {
-          const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
-          return actions.length === 0;
-        }).length;
-      }
+      // Count blocked leads using NRA
+      stats[s].blocked = stageLeads.filter(l => {
+        const leadNra = nraMap[l.id];
+        return leadNra && (leadNra.severity === 'critical' || leadNra.severity === 'blocked');
+      }).length;
     });
 
     return stats;
-  }, [leadsByStage]);
+  }, [leadsByStage, nraMap]);
 
   // Calculate total pipeline health
   const pipelineHealth = useMemo(() => {
@@ -195,12 +203,8 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   };
 
   const isBlocked = (lead: Lead) => {
-    const stage = normalizeStatus(lead.status);
-    if (stage === 'proposal') {
-      const actions = Array.isArray(lead.follow_up_actions) ? lead.follow_up_actions : [];
-      return actions.length === 0;
-    }
-    return false;
+    const leadNra = nraMap[lead.id];
+    return leadNra && (leadNra.severity === 'critical' || leadNra.severity === 'blocked');
   };
 
   // Active stages based on context
@@ -416,7 +420,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                         >
                           {/* Signal Badge - Highest Priority */}
                           <div className="mb-2">
-                            <LeadSignalBadge lead={lead} compact />
+                            <LeadSignalBadge lead={lead} nra={nraMap[lead.id]} compact />
                           </div>
 
                           {/* Lead Info */}
