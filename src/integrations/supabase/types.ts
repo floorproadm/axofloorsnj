@@ -638,6 +638,7 @@ export type Database = {
         Args: { p_lead_id: string; p_project_type: string }
         Returns: string
       }
+      get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
