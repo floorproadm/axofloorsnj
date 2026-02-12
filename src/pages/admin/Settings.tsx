@@ -71,6 +71,7 @@ export default function Settings() {
       }
 
       await refetch();
+      console.log('[AdminSettings] Saved', payload);
       toast({ title: "✓ Salvo", description: "Configurações atualizadas com sucesso." });
     } catch (err: any) {
       console.error("Settings save error:", err);
