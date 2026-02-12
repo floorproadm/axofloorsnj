@@ -33,6 +33,7 @@ import AdminJobsManager from './pages/admin/JobsManager';
 import AdminIntake from './pages/admin/Intake';
 import AdminSettings from './pages/admin/Settings';
 import ProjectDetail from './pages/admin/ProjectDetail';
+import ProjectDocuments from './pages/admin/ProjectDocuments';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 import Sales2026 from "./pages/Sales2026";
@@ -111,6 +112,11 @@ const App = () => {
             <Route path="/admin/projects/:projectId" element={
               <ProtectedRoute>
                 <ProjectDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/jobs/:projectId/documents" element={
+              <ProtectedRoute>
+                <ProjectDocuments />
               </ProtectedRoute>
             } />
             
