@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,7 @@ import { JobProofUploader } from "@/components/admin/JobProofUploader";
 import {
   Hammer, CheckCircle, Clock, DollarSign, MapPin,
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
-  Ban, Loader2, User
+  Ban, Loader2, User, FolderOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -346,6 +347,7 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const { data: jobCost, refetch: refetchCost } = useJobCost(project.id);
   const { marginMinPercent } = useCompanySettings();
   const validation = useMarginValidation(project.id);
+  const navigate = useNavigate();
 
   const [showBlock, setShowBlock] = useState<"costs" | "proposal" | "proof" | null>(null);
 
@@ -395,7 +397,7 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
         <ScrollArea className="max-h-[calc(90vh-120px)]">
           <div className="p-4 sm:p-6 space-y-4">
             {/* Block Navigator */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               <Button
                 variant={showBlock === "costs" ? "default" : "outline"}
                 size="sm"
@@ -412,7 +414,7 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               </Button>
 
               <Button
-                variant={showBlock === "costs" ? "outline" : "outline"}
+                variant="outline"
                 size="sm"
                 className="justify-start gap-2"
                 disabled
@@ -451,6 +453,19 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                 ) : (
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-auto flex-shrink-0" />
                 )}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="justify-start gap-2"
+                onClick={() => {
+                  onClose();
+                  navigate(`/admin/jobs/${project.id}/documents`);
+                }}
+              >
+                <FolderOpen className="w-4 h-4" />
+                <span className="truncate">Docs</span>
               </Button>
             </div>
 
