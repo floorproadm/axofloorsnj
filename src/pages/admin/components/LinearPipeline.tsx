@@ -227,39 +227,69 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* Leads vs Jobs Tab Switcher */}
-      <div className="flex items-center justify-between">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'leads' | 'jobs')}>
-          <TabsList className="h-11">
-            <TabsTrigger 
-              value="leads" 
-              className="gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Users className="w-4 h-4" />
-              <span className="font-medium">Leads</span>
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                {globalCounts.leads}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="jobs" 
-              className="gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Briefcase className="w-4 h-4" />
-              <span className="font-medium">Jobs</span>
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                {globalCounts.jobs}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-        
-        {/* Context hint */}
-        <p className="text-xs text-muted-foreground hidden sm:block">
-          {activeTab === 'leads' 
-            ? 'Contatos que ainda não viraram projeto' 
-            : 'Leads com projeto vinculado em produção'}
-        </p>
+      {/* Leads vs Jobs Tab Switcher + Financial Summary */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'leads' | 'jobs')}>
+            <TabsList className="h-11">
+              <TabsTrigger 
+                value="leads" 
+                className="gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <Users className="w-4 h-4" />
+                <span className="font-medium">Leads</span>
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {globalCounts.leads}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="jobs" 
+                className="gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <Briefcase className="w-4 h-4" />
+                <span className="font-medium">Jobs</span>
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {globalCounts.jobs}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          {/* Financial summary chips */}
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-state-success/10 border border-state-success/30">
+              <span className="text-xs text-muted-foreground">Pipeline</span>
+              <span className="text-sm font-bold text-state-success">
+                ${(pipelineHealth.totalValue / 1000).toFixed(pipelineHealth.totalValue >= 1000 ? 0 : 1)}k
+              </span>
+            </div>
+            {pipelineHealth.blockedCount > 0 && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-state-blocked/10 border border-state-blocked/30">
+                <Ban className="w-3.5 h-3.5 text-state-blocked" />
+                <span className="text-sm font-bold text-state-blocked">{pipelineHealth.blockedCount}</span>
+              </div>
+            )}
+            {pipelineHealth.staleCount > 0 && pipelineHealth.blockedCount === 0 && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-state-risk/10 border border-state-risk/30">
+                <Clock className="w-3.5 h-3.5 text-state-risk" />
+                <span className="text-sm font-bold text-state-risk">{pipelineHealth.staleCount}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile financial bar */}
+        <div className="flex sm:hidden items-center gap-2 text-xs">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-state-success/10 border border-state-success/30">
+            <span className="text-muted-foreground">Pipeline</span>
+            <span className="font-bold text-state-success">
+              ${(pipelineHealth.totalValue / 1000).toFixed(pipelineHealth.totalValue >= 1000 ? 0 : 1)}k
+            </span>
+          </div>
+          <span className="text-muted-foreground">
+            {pipelineHealth.activeLeads} ativos
+          </span>
+        </div>
       </div>
 
       {/* Alert: All blocked (only in jobs tab) */}
