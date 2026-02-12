@@ -15,9 +15,10 @@ import { LeadSignalBadge } from "@/components/admin/LeadSignalBadge";
 import { 
   Phone, MapPin, 
   ChevronRight, Clock,
-  CalendarCheck, FileText, Ban
+  CalendarCheck, FileText, Ban,
+  TrendingUp, TrendingDown, Target
 } from "lucide-react";
-import { format, differenceInHours } from "date-fns";
+import { format, differenceInHours, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type Lead = {
@@ -127,6 +128,18 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     const staleCount = SALES_STAGES.reduce((sum, s) => sum + (stageStats[s]?.stale || 0), 0);
     return { active, totalValue, blockedCount, staleCount };
   }, [stageStats]);
+
+  // Conversion metrics (last 30 days)
+  const conversionMetrics = useMemo(() => {
+    const thirtyDaysAgo = subDays(new Date(), 30);
+    const recent = leads.filter(l => new Date(l.created_at) >= thirtyDaysAgo);
+    const total = recent.length;
+    const converted = recent.filter(l => l.converted_to_project_id).length;
+    const lost = recent.filter(l => normalizeStatus(l.status) === 'lost').length;
+    const conversionRate = total > 0 ? (converted / total) * 100 : 0;
+    const lossRate = total > 0 ? (lost / total) * 100 : 0;
+    return { total, converted, lost, conversionRate, lossRate };
+  }, [leads]);
 
   // Sync selected lead with refreshed data
   const syncedSelectedLead = useMemo(() => {
@@ -367,7 +380,50 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         })}
       </div>
 
-      {/* Lead Control Modal */}
+      {/* 30-Day Conversion Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-3 sm:p-4 border border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <Target className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Leads 30d</span>
+          </div>
+          <span className="text-xl sm:text-2xl font-bold text-foreground">{conversionMetrics.total}</span>
+        </Card>
+        <Card className="p-3 sm:p-4 border border-state-success/30 bg-state-success/5">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4 text-state-success" />
+            <span className="text-xs text-muted-foreground">Convertidos</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold text-state-success">{conversionMetrics.converted}</span>
+            <span className="text-xs font-medium text-state-success">{conversionMetrics.conversionRate.toFixed(0)}%</span>
+          </div>
+        </Card>
+        <Card className="p-3 sm:p-4 border border-state-blocked/30 bg-state-blocked/5">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingDown className="w-4 h-4 text-state-blocked" />
+            <span className="text-xs text-muted-foreground">Perdidos</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold text-state-blocked">{conversionMetrics.lost}</span>
+            <span className="text-xs font-medium text-state-blocked">{conversionMetrics.lossRate.toFixed(0)}%</span>
+          </div>
+        </Card>
+        <Card className="p-3 sm:p-4 border border-primary/30 bg-primary/5">
+          <div className="flex items-center gap-2 mb-1">
+            <ChevronRight className="w-4 h-4 text-primary" />
+            <span className="text-xs text-muted-foreground">Taxa Conversão</span>
+          </div>
+          <span className={cn(
+            "text-xl sm:text-2xl font-bold",
+            conversionMetrics.conversionRate >= 30 ? "text-state-success" :
+            conversionMetrics.conversionRate >= 15 ? "text-state-risk" :
+            "text-state-blocked"
+          )}>
+            {conversionMetrics.conversionRate.toFixed(1)}%
+          </span>
+        </Card>
+      </div>
       <LeadControlModal
         lead={syncedSelectedLead}
         isOpen={isModalOpen}
