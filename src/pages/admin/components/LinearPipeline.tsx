@@ -199,7 +199,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   // Leads: new_lead, appt_scheduled (early pipeline)
   // Jobs: proposal, in_production (post-conversion)
   const leadStages: PipelineStage[] = ['new_lead', 'appt_scheduled'];
-  const jobStages: PipelineStage[] = ['proposal', 'in_production'];
+  const jobStages: PipelineStage[] = ['appt_scheduled', 'proposal', 'in_production'];
   const activeStages = activeTab === 'leads' ? leadStages : jobStages;
 
   // Empty state for entire dataset
