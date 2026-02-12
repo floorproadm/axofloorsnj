@@ -29,6 +29,7 @@ import Realtors from "./pages/Realtors";
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminGalleryManager from './pages/admin/GalleryManager';
 import AdminLeadsManager from './pages/admin/LeadsManager';
+import AdminJobsManager from './pages/admin/JobsManager';
 import AdminIntake from './pages/admin/Intake';
 import AdminSettings from './pages/admin/Settings';
 import ProjectDetail from './pages/admin/ProjectDetail';
@@ -90,6 +91,11 @@ const App = () => {
             <Route path="/admin/leads" element={
               <ProtectedRoute>
                 <AdminLeadsManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/jobs" element={
+              <ProtectedRoute>
+                <AdminJobsManager />
               </ProtectedRoute>
             } />
             <Route path="/admin/intake" element={

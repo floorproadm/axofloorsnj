@@ -51,6 +51,12 @@ const navigationItems = [
     badge: null
   },
   {
+    title: "Pipeline Operacional",
+    url: "/admin/jobs",
+    icon: Building,
+    badge: null
+  },
+  {
     title: "Portfólio de Jobs",
     url: "/admin/gallery",
     icon: Images,

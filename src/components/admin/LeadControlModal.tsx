@@ -18,16 +18,11 @@ import {
 import { useLeadFollowUp, type FollowUpAction } from '@/hooks/useLeadFollowUp';
 import { useLeadConversion } from '@/hooks/useLeadConversion';
 import { useLeadNRA, type LeadNRA } from '@/hooks/useLeadNRA';
-import { useJobCost } from '@/hooks/useJobCosts';
-import { useCompanySettings } from '@/hooks/useCompanySettings';
-import { JobProofUploader } from '@/components/admin/JobProofUploader';
-import { JobCostEditor } from '@/components/admin/JobCostEditor';
-import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { 
   Phone, Mail, MapPin, DollarSign, 
   ChevronRight, Clock, XCircle,
   CheckCircle2, Plus, Loader2, History, Ban,
-  ArrowRightLeft, AlertTriangle, FileText, Calculator
+  ArrowRightLeft, AlertTriangle
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -108,21 +103,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const { convertLeadToProject, isConverting } = useLeadConversion();
   const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id);
   
-  // Job cost data for the linked project
-  const projectId = lead?.converted_to_project_id;
-  const { data: jobCost, refetch: refetchJobCost } = useJobCost(projectId || undefined);
-  const { marginMinPercent } = useCompanySettings();
-  
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
   const [actionType, setActionType] = useState('');
   const [actionNotes, setActionNotes] = useState('');
   const [showConvertForm, setShowConvertForm] = useState(false);
   const [projectType, setProjectType] = useState('');
-  
-  // Flow state for cost → proposal → advance
-  const [showCostEditor, setShowCostEditor] = useState(false);
-  const [showProposalGen, setShowProposalGen] = useState(false);
-  const [proposalGenerated, setProposalGenerated] = useState(false);
 
   if (!lead) return null;
 
@@ -134,10 +119,6 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const isTerminal = stage === 'completed' || stage === 'lost';
   const hasProject = !!lead.converted_to_project_id;
   const canMarkLost = !isTerminal && (stage === 'proposal' || stage === 'in_production');
-
-  // Margin state from live job cost data
-  const currentMargin = jobCost?.margin_percent ?? 0;
-  const marginOk = hasProject && jobCost && currentMargin >= marginMinPercent && (jobCost.estimated_revenue ?? 0) > 0;
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
     const success = await updateLeadStatus(lead.id, newStatus);
@@ -175,16 +156,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
     }
   };
 
-  const handleCostSaved = () => {
-    refetchJobCost();
-    refreshNRA();
-    onRefresh();
-  };
-
   // Primary next status derived from NRA action mapping
   const NRA_TO_NEXT_STATUS: Record<string, PipelineStage> = {
     schedule_visit: 'appt_scheduled',
     advance_pipeline: stage === 'proposal' ? 'in_production' : 'completed',
+    advance_to_proposal: 'proposal',
     complete_job: 'completed',
   };
   const primaryNextStatus = nra ? NRA_TO_NEXT_STATUS[nra.action] : undefined;
@@ -209,11 +185,6 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                       Projeto ✓
                     </Badge>
                   )}
-                  {hasProject && jobCost && (
-                    <Badge variant="outline" className={cn("text-xs", marginOk ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-red-50 text-red-700 border-red-300")}>
-                      Margem {currentMargin.toFixed(1)}%
-                    </Badge>
-                  )}
                   {isStale && !isTerminal && (
                     <Badge variant="destructive" className="text-xs flex items-center gap-1">
                       <Clock className="w-3 h-3" />
@@ -229,9 +200,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
         <ScrollArea className="max-h-[calc(90vh-120px)]">
           <div className="p-4 sm:p-6 space-y-4">
             
-            {/* ═══════════════════════════════════════════════════ */}
-            {/* NRA PANEL — Single source of truth from the bank  */}
-            {/* ═══════════════════════════════════════════════════ */}
+            {/* NRA PANEL */}
             {nraLoading ? (
               <div className="p-4 rounded-lg bg-muted/50 border flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -244,77 +213,29 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                 stage={stage}
                 hasProject={hasProject}
                 primaryNextStatus={primaryNextStatus}
-                marginOk={!!marginOk}
                 isUpdating={isUpdating}
                 isConverting={isConverting}
                 isFollowUpUpdating={isFollowUpUpdating}
                 showFollowUpForm={showFollowUpForm}
                 showConvertForm={showConvertForm}
-                showCostEditor={showCostEditor}
-                showProposalGen={showProposalGen}
-                proposalGenerated={proposalGenerated}
                 actionType={actionType}
                 actionNotes={actionNotes}
                 projectType={projectType}
                 onAdvanceStatus={handleAdvanceStatus}
                 onShowFollowUpForm={setShowFollowUpForm}
                 onShowConvertForm={setShowConvertForm}
-                onShowCostEditor={setShowCostEditor}
-                onShowProposalGen={setShowProposalGen}
-                onSetProposalGenerated={setProposalGenerated}
                 onActionTypeChange={setActionType}
                 onActionNotesChange={setActionNotes}
                 onProjectTypeChange={setProjectType}
                 onSubmitFollowUp={handleAddFollowUp}
                 onConvertToProject={handleConvertToProject}
-                onCostSaved={handleCostSaved}
               />
             ) : null}
 
-            {/* ═══════════════════════════════════════════════════ */}
-            {/* INLINE JOB COST EDITOR                             */}
-            {/* Shows when NRA is enter_job_costs or fix_margin    */}
-            {/* ═══════════════════════════════════════════════════ */}
-            {hasProject && showCostEditor && (
-              <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
-                <h3 className="font-bold text-amber-800 text-base mb-3 flex items-center gap-2">
-                  <Calculator className="w-5 h-5" />
-                  Custos do Projeto
-                </h3>
-                <JobCostEditor 
-                  projectId={lead.converted_to_project_id!} 
-                  onSaved={handleCostSaved}
-                />
-              </div>
-            )}
-
-            {/* ═══════════════════════════════════════════════════ */}
-            {/* INLINE PROPOSAL GENERATOR                          */}
-            {/* Shows when NRA is advance_to_proposal + margin OK  */}
-            {/* ═══════════════════════════════════════════════════ */}
-            {hasProject && showProposalGen && (
-              <div className="p-4 rounded-lg bg-blue-50 border-2 border-blue-300">
-                <h3 className="font-bold text-blue-800 text-base mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Proposta 3-Tiers
-                </h3>
-                <ProposalGenerator 
-                  projectId={lead.converted_to_project_id!}
-                  onClose={() => setShowProposalGen(false)}
-                />
-              </div>
-            )}
-
-            {/* JobProof Section — only when NRA says upload photos */}
-            {nra && ['upload_photos', 'upload_before_photo', 'upload_after_photo'].includes(nra.action) && hasProject && (
-              <div className="p-4 rounded-lg bg-violet-50 border-2 border-violet-300">
-                <h3 className="font-bold text-violet-700 text-base mb-2">
-                  📷 Prova de Trabalho
-                </h3>
-                <p className="text-sm text-violet-600 mb-3">
-                  Envie fotos ANTES e DEPOIS para poder fechar o job
-                </p>
-                <JobProofUploader projectId={lead.converted_to_project_id!} />
+            {/* Info: Job operations moved to /admin/jobs */}
+            {hasProject && (nra?.action === 'enter_job_costs' || nra?.action === 'fix_margin' || nra?.action === 'advance_to_proposal') && (
+              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-700">
+                💡 Custos, margem e proposta são gerenciados em <strong>Pipeline Operacional</strong> (/admin/jobs)
               </div>
             )}
 
@@ -445,44 +366,35 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
 // NRA PANEL — renders the single required action from DB
 // ═══════════════════════════════════════════════════════════
 function NRAPanel({ 
-  nra, lead, stage, hasProject, primaryNextStatus, marginOk,
+  nra, lead, stage, hasProject, primaryNextStatus,
   isUpdating, isConverting, isFollowUpUpdating,
-  showFollowUpForm, showConvertForm, showCostEditor, showProposalGen, proposalGenerated,
+  showFollowUpForm, showConvertForm,
   actionType, actionNotes, projectType,
   onAdvanceStatus, onShowFollowUpForm, onShowConvertForm,
-  onShowCostEditor, onShowProposalGen, onSetProposalGenerated,
   onActionTypeChange, onActionNotesChange, onProjectTypeChange,
-  onSubmitFollowUp, onConvertToProject, onCostSaved
+  onSubmitFollowUp, onConvertToProject
 }: {
   nra: LeadNRA;
   lead: Lead;
   stage: PipelineStage;
   hasProject: boolean;
   primaryNextStatus?: PipelineStage;
-  marginOk: boolean;
   isUpdating: boolean;
   isConverting: boolean;
   isFollowUpUpdating: boolean;
   showFollowUpForm: boolean;
   showConvertForm: boolean;
-  showCostEditor: boolean;
-  showProposalGen: boolean;
-  proposalGenerated: boolean;
   actionType: string;
   actionNotes: string;
   projectType: string;
   onAdvanceStatus: (status: PipelineStage) => void;
   onShowFollowUpForm: (show: boolean) => void;
   onShowConvertForm: (show: boolean) => void;
-  onShowCostEditor: (show: boolean) => void;
-  onShowProposalGen: (show: boolean) => void;
-  onSetProposalGenerated: (v: boolean) => void;
   onActionTypeChange: (v: string) => void;
   onActionNotesChange: (v: string) => void;
   onProjectTypeChange: (v: string) => void;
   onSubmitFollowUp: () => void;
   onConvertToProject: () => void;
-  onCostSaved: () => void;
 }) {
   const style = NRA_STYLES[nra.severity] || NRA_STYLES.normal;
 
@@ -503,30 +415,22 @@ function NRAPanel({
           nra={nra}
           lead={lead}
           primaryNextStatus={primaryNextStatus}
-          marginOk={marginOk}
           isUpdating={isUpdating}
           isConverting={isConverting}
           isFollowUpUpdating={isFollowUpUpdating}
           showFollowUpForm={showFollowUpForm}
           showConvertForm={showConvertForm}
-          showCostEditor={showCostEditor}
-          showProposalGen={showProposalGen}
-          proposalGenerated={proposalGenerated}
           actionType={actionType}
           actionNotes={actionNotes}
           projectType={projectType}
           onAdvanceStatus={onAdvanceStatus}
           onShowFollowUpForm={onShowFollowUpForm}
           onShowConvertForm={onShowConvertForm}
-          onShowCostEditor={onShowCostEditor}
-          onShowProposalGen={onShowProposalGen}
-          onSetProposalGenerated={onSetProposalGenerated}
           onActionTypeChange={onActionTypeChange}
           onActionNotesChange={onActionNotesChange}
           onProjectTypeChange={onProjectTypeChange}
           onSubmitFollowUp={onSubmitFollowUp}
           onConvertToProject={onConvertToProject}
-          onCostSaved={onCostSaved}
         />
       </CardFooter>
     </Card>
@@ -535,44 +439,36 @@ function NRAPanel({
 
 // ═══════════════════════════════════════════════════════════
 // NRA ACTION BUTTON — maps NRA action to correct UI control
+// Simplified: no more job_costs / proposal / jobproof here
 // ═══════════════════════════════════════════════════════════
 function NRAActionButton({
-  nra, lead, primaryNextStatus, marginOk,
+  nra, lead, primaryNextStatus,
   isUpdating, isConverting, isFollowUpUpdating,
-  showFollowUpForm, showConvertForm, showCostEditor, showProposalGen, proposalGenerated,
+  showFollowUpForm, showConvertForm,
   actionType, actionNotes, projectType,
   onAdvanceStatus, onShowFollowUpForm, onShowConvertForm,
-  onShowCostEditor, onShowProposalGen, onSetProposalGenerated,
   onActionTypeChange, onActionNotesChange, onProjectTypeChange,
-  onSubmitFollowUp, onConvertToProject, onCostSaved
+  onSubmitFollowUp, onConvertToProject
 }: {
   nra: LeadNRA;
   lead: Lead;
   primaryNextStatus?: PipelineStage;
-  marginOk: boolean;
   isUpdating: boolean;
   isConverting: boolean;
   isFollowUpUpdating: boolean;
   showFollowUpForm: boolean;
   showConvertForm: boolean;
-  showCostEditor: boolean;
-  showProposalGen: boolean;
-  proposalGenerated: boolean;
   actionType: string;
   actionNotes: string;
   projectType: string;
   onAdvanceStatus: (status: PipelineStage) => void;
   onShowFollowUpForm: (show: boolean) => void;
   onShowConvertForm: (show: boolean) => void;
-  onShowCostEditor: (show: boolean) => void;
-  onShowProposalGen: (show: boolean) => void;
-  onSetProposalGenerated: (v: boolean) => void;
   onActionTypeChange: (v: string) => void;
   onActionNotesChange: (v: string) => void;
   onProjectTypeChange: (v: string) => void;
   onSubmitFollowUp: () => void;
   onConvertToProject: () => void;
-  onCostSaved: () => void;
 }) {
   switch (nra.action) {
     case 'record_follow_up':
@@ -637,74 +533,14 @@ function NRAActionButton({
         </Button>
       );
 
-    // ═══════════════════════════════════════════════════
-    // COST ENTRY + MARGIN FIX — opens inline editor
-    // ═══════════════════════════════════════════════════
+    // Cost/margin/proposal actions → redirect to /admin/jobs
     case 'enter_job_costs':
     case 'fix_margin':
-      return (
-        <Button 
-          onClick={() => onShowCostEditor(!showCostEditor)}
-          className={showCostEditor ? "bg-amber-700 text-white" : "bg-amber-600 hover:bg-amber-700 text-white"}
-        >
-          <Calculator className="w-4 h-4 mr-1.5" />
-          {showCostEditor ? 'Fechar Editor de Custos' : (nra.action === 'fix_margin' ? 'Corrigir Margem' : 'Preencher Custos')}
-        </Button>
-      );
-
-    // ═══════════════════════════════════════════════════
-    // ADVANCE TO PROPOSAL — sequential: costs ✓ → margin ✓ → proposal → advance
-    // ═══════════════════════════════════════════════════
     case 'advance_to_proposal':
       return (
-        <div className="space-y-2 w-full">
-          {/* Step 1: View/Edit costs */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            onClick={() => {
-              onShowCostEditor(!showCostEditor);
-              if (showProposalGen) onShowProposalGen(false);
-            }}
-          >
-            <Calculator className="w-4 h-4 mr-2" />
-            {marginOk ? '✓ Custos OK' : 'Verificar Custos'}
-            {marginOk && <CheckCircle2 className="w-4 h-4 ml-auto text-emerald-600" />}
-          </Button>
-
-          {/* Step 2: Generate proposal (only if margin OK) */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            disabled={!marginOk}
-            onClick={() => {
-              onShowProposalGen(!showProposalGen);
-              if (showCostEditor) onShowCostEditor(false);
-            }}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            {proposalGenerated ? '✓ Proposta Gerada' : 'Gerar Proposta 3-Tiers'}
-            {proposalGenerated && <CheckCircle2 className="w-4 h-4 ml-auto text-emerald-600" />}
-            {!marginOk && <span className="text-xs ml-auto text-muted-foreground">Margem insuficiente</span>}
-          </Button>
-
-          {/* Step 3: Advance button (only if margin OK) */}
-          <Button
-            onClick={() => onAdvanceStatus('proposal')}
-            disabled={isUpdating || !marginOk}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-          >
-            {isUpdating ? (
-              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-            ) : (
-              <ChevronRight className="w-4 h-4 mr-1.5" />
-            )}
-            Enviar para Proposal
-            {!marginOk && <span className="text-xs ml-2 opacity-75">(bloqueado)</span>}
-          </Button>
-        </div>
+        <p className="text-sm text-blue-700 font-medium">
+          → Gerencie custos e proposta em <strong>Pipeline Operacional</strong>
+        </p>
       );
 
     case 'schedule_visit':
@@ -730,8 +566,8 @@ function NRAActionButton({
     case 'upload_before_photo':
     case 'upload_after_photo':
       return (
-        <p className="text-sm text-violet-600 font-medium">
-          ↓ Use o uploader abaixo
+        <p className="text-sm text-blue-700 font-medium">
+          → Envie fotos em <strong>Pipeline Operacional</strong>
         </p>
       );
 
