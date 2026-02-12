@@ -483,6 +483,7 @@ export type Database = {
       }
       project_documents: {
         Row: {
+          category: string | null
           created_at: string
           file_name: string
           file_type: string
@@ -493,8 +494,10 @@ export type Database = {
           source: string
           updated_at: string
           uploaded_by: string | null
+          version: number | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           file_name: string
           file_type?: string
@@ -505,8 +508,10 @@ export type Database = {
           source?: string
           updated_at?: string
           uploaded_by?: string | null
+          version?: number | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           file_name?: string
           file_type?: string
@@ -517,6 +522,7 @@ export type Database = {
           source?: string
           updated_at?: string
           uploaded_by?: string | null
+          version?: number | null
         }
         Relationships: [
           {
