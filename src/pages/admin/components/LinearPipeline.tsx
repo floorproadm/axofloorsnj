@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -181,9 +181,20 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     return { leads: pureActiveCount, jobs: jobsActiveCount };
   }, [pureLeads, jobLeads]);
 
+  // Sync selectedLead when leads data refreshes (e.g. after conversion)
+  const syncedSelectedLead = useMemo(() => {
+    if (!selectedLead) return null;
+    return leads.find(l => l.id === selectedLead.id) || selectedLead;
+  }, [leads, selectedLead]);
+
   const handleCardClick = (lead: Lead) => {
     setSelectedLead(lead);
     setIsModalOpen(true);
+  };
+
+  const handleModalRefresh = () => {
+    onRefresh();
+    // Don't close modal — let it stay open and re-sync via syncedSelectedLead
   };
 
   const isStale = (lead: Lead) => {
@@ -195,12 +206,8 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     return leadNra && (leadNra.severity === 'critical' || leadNra.severity === 'blocked');
   };
 
-  // Active stages based on context
-  // Leads: new_lead, appt_scheduled (early pipeline)
-  // Jobs: proposal, in_production (post-conversion)
-  const leadStages: PipelineStage[] = ['new_lead', 'appt_scheduled'];
-  const jobStages: PipelineStage[] = ['appt_scheduled', 'proposal', 'in_production'];
-  const activeStages = activeTab === 'leads' ? leadStages : jobStages;
+  // All 4 active stages shown in both tabs — data filtering already separates leads vs jobs
+  const activeStages: PipelineStage[] = ['new_lead', 'appt_scheduled', 'proposal', 'in_production'];
 
   // Empty state for entire dataset
   if (leads.length === 0) {
@@ -343,7 +350,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
       {/* Main Pipeline Grid */}
       {workingLeads.length > 0 && (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {activeStages.map(stage => {
           const config = STAGE_CONFIG[stage];
           const stageLeads = leadsByStage[stage];
@@ -520,13 +527,13 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
       {/* Lead Control Modal */}
       <LeadControlModal
-        lead={selectedLead}
+        lead={syncedSelectedLead}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setSelectedLead(null);
         }}
-        onRefresh={onRefresh}
+        onRefresh={handleModalRefresh}
       />
     </div>
   );
