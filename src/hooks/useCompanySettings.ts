@@ -44,6 +44,7 @@ export function useCompanySettings() {
       if (fetchError) throw fetchError;
 
       if (data) {
+        console.log('[AdminSettings] Loaded', data);
         setSettings(data as unknown as CompanySettings);
       } else {
         // No settings found - use defaults

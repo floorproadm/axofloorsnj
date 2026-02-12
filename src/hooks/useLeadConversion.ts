@@ -33,12 +33,15 @@ export function useLeadConversion(): UseLeadConversionReturn {
         return null;
       }
 
+      const createdProjectId = data as string;
+      console.log('[LeadToJob]', { leadId, createdJobId: createdProjectId });
+
       toast({
         title: "✓ Projeto Criado",
         description: "Lead convertido para projeto com sucesso. Customer + Project + Job Costs criados.",
       });
 
-      return data as string;
+      return createdProjectId;
     } catch (err) {
       console.error('Conversion RPC exception:', err);
       toast({
