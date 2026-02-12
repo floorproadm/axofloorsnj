@@ -156,8 +156,10 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
     if (projectId) {
       setShowConvertForm(false);
       setProjectType('');
-      refreshNRA();
+      // Keep modal open — refresh data so NRA auto-adapts to job context
       onRefresh();
+      // Small delay to let parent re-fetch, then refresh NRA
+      setTimeout(() => refreshNRA(), 500);
     }
   };
 
