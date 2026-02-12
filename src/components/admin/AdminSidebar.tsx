@@ -55,6 +55,12 @@ const navigationItems = [
     url: "/admin/gallery",
     icon: Images,
     badge: null
+  },
+  {
+    title: "Configurações",
+    url: "/admin/settings",
+    icon: Settings,
+    badge: null
   }
 ];
 

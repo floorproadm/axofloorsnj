@@ -30,6 +30,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminGalleryManager from './pages/admin/GalleryManager';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import AdminIntake from './pages/admin/Intake';
+import AdminSettings from './pages/admin/Settings';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 import Sales2026 from "./pages/Sales2026";
@@ -93,6 +94,11 @@ const App = () => {
             <Route path="/admin/intake" element={
               <ProtectedRoute>
                 <AdminIntake />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/settings" element={
+              <ProtectedRoute>
+                <AdminSettings />
               </ProtectedRoute>
             } />
             
