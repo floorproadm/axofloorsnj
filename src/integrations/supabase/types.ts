@@ -124,6 +124,7 @@ export type Database = {
           default_margin_min_percent: number
           id: string
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
+          singleton_key: boolean
           updated_at: string
         }
         Insert: {
@@ -133,6 +134,7 @@ export type Database = {
           default_margin_min_percent?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
+          singleton_key?: boolean
           updated_at?: string
         }
         Update: {
@@ -142,6 +144,7 @@ export type Database = {
           default_margin_min_percent?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
+          singleton_key?: boolean
           updated_at?: string
         }
         Relationships: []
