@@ -242,7 +242,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       </div>
 
       {/* 3-Column Pipeline Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         {SALES_STAGES.map(stage => {
           const config = STAGE_CONFIG[stage];
           const stageLeads = leadsByStage[stage];
@@ -257,19 +257,19 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
               )}
             >
               {/* Stage Header */}
-              <div className={cn(
-                "flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-b",
+               <div className={cn(
+                "flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b",
                 config.bgColor
               )}>
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className={cn("w-4 h-4 sm:w-5 sm:h-5", config.color)}>{stageIcons[stage]}</span>
-                  <span className={cn("font-semibold text-sm sm:text-base", config.textColor)}>
+                <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
+                  <span className={cn("w-4 h-4 md:w-5 md:h-5 flex-shrink-0", config.color)}>{stageIcons[stage]}</span>
+                  <span className={cn("font-semibold text-sm md:text-base truncate", config.textColor)}>
                     {STAGE_LABELS[stage]}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
                   {stats.value > 0 && (
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">
+                    <span className="text-[10px] md:text-xs text-muted-foreground">
                       ${(stats.value / 1000).toFixed(0)}k
                     </span>
                   )}
@@ -280,7 +280,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
               </div>
 
               {/* Lead Cards */}
-              <ScrollArea className="h-[280px] sm:h-[350px] lg:h-[400px]">
+              <ScrollArea className="h-[280px] md:h-[350px] lg:h-[400px]">
                 <div className="p-2 space-y-2">
                   {stageLeads.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm">
@@ -382,41 +382,41 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       </div>
 
       {/* 30-Day Conversion Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-3 sm:p-4 border border-border">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="p-3 md:p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <Target className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Leads 30d</span>
           </div>
-          <span className="text-xl sm:text-2xl font-bold text-foreground">{conversionMetrics.total}</span>
+          <span className="text-xl md:text-2xl font-bold text-foreground">{conversionMetrics.total}</span>
         </Card>
-        <Card className="p-3 sm:p-4 border border-state-success/30 bg-state-success/5">
+        <Card className="p-3 md:p-4 border border-state-success/30 bg-state-success/5">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-state-success" />
             <span className="text-xs text-muted-foreground">Convertidos</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl sm:text-2xl font-bold text-state-success">{conversionMetrics.converted}</span>
+            <span className="text-xl md:text-2xl font-bold text-state-success">{conversionMetrics.converted}</span>
             <span className="text-xs font-medium text-state-success">{conversionMetrics.conversionRate.toFixed(0)}%</span>
           </div>
         </Card>
-        <Card className="p-3 sm:p-4 border border-state-blocked/30 bg-state-blocked/5">
+        <Card className="p-3 md:p-4 border border-state-blocked/30 bg-state-blocked/5">
           <div className="flex items-center gap-2 mb-1">
             <TrendingDown className="w-4 h-4 text-state-blocked" />
             <span className="text-xs text-muted-foreground">Perdidos</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl sm:text-2xl font-bold text-state-blocked">{conversionMetrics.lost}</span>
+            <span className="text-xl md:text-2xl font-bold text-state-blocked">{conversionMetrics.lost}</span>
             <span className="text-xs font-medium text-state-blocked">{conversionMetrics.lossRate.toFixed(0)}%</span>
           </div>
         </Card>
-        <Card className="p-3 sm:p-4 border border-primary/30 bg-primary/5">
+        <Card className="p-3 md:p-4 border border-primary/30 bg-primary/5">
           <div className="flex items-center gap-2 mb-1">
             <ChevronRight className="w-4 h-4 text-primary" />
             <span className="text-xs text-muted-foreground">Taxa Conversão</span>
           </div>
           <span className={cn(
-            "text-xl sm:text-2xl font-bold",
+            "text-xl md:text-2xl font-bold",
             conversionMetrics.conversionRate >= 30 ? "text-state-success" :
             conversionMetrics.conversionRate >= 15 ? "text-state-risk" :
             "text-state-blocked"
