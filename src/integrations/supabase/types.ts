@@ -605,6 +605,91 @@ export type Database = {
           },
         ]
       }
+      proposals: {
+        Row: {
+          accepted_at: string | null
+          best_price: number
+          better_price: number
+          created_at: string
+          customer_id: string
+          good_price: number
+          id: string
+          margin_best: number
+          margin_better: number
+          margin_good: number
+          pdf_document_id: string | null
+          project_id: string
+          proposal_number: string
+          selected_tier: string | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+          valid_until: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          best_price: number
+          better_price: number
+          created_at?: string
+          customer_id: string
+          good_price: number
+          id?: string
+          margin_best: number
+          margin_better: number
+          margin_good: number
+          pdf_document_id?: string | null
+          project_id: string
+          proposal_number: string
+          selected_tier?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          valid_until: string
+        }
+        Update: {
+          accepted_at?: string | null
+          best_price?: number
+          better_price?: number
+          created_at?: string
+          customer_id?: string
+          good_price?: number
+          id?: string
+          margin_best?: number
+          margin_better?: number
+          margin_good?: number
+          pdf_document_id?: string | null
+          project_id?: string
+          proposal_number?: string
+          selected_tier?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          valid_until?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_pdf_document_id_fkey"
+            columns: ["pdf_document_id"]
+            isOneToOne: false
+            referencedRelation: "project_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_responses: {
         Row: {
           budget: number
