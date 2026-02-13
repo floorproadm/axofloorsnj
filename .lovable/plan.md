@@ -1,120 +1,136 @@
 
+# Redesign do PipelineCard -- Operacional First
 
-# Plano: Adicionar Mais Stages ao Pipeline de Vendas
+## Resumo
 
-## Contexto Atual
+Refatorar o componente `PipelineCard` em `src/pages/admin/components/LinearPipeline.tsx` para um card compacto (~110px), de alta densidade, orientado a decisao rapida. Tambem ajustar a ordenacao dentro de cada coluna para priorizar urgencia.
 
-O pipeline atual tem **6 stages** no banco de dados:
-```text
-new_lead -> appt_scheduled -> proposal -> in_production -> completed / lost
+**Escopo**: Apenas frontend/UI. Zero mudancas em banco de dados, triggers ou RPCs.
+
+## Arquivo Modificado
+
+`src/pages/admin/components/LinearPipeline.tsx`
+
+## Mudancas Detalhadas
+
+### 1. Imports
+
+Remover: `Button`, `LeadSignalBadge`, `ChevronRight`, `Ban`, `format`
+
+Adicionar: `AlertTriangle`
+
+### 2. Novo mapeamento de servicos
+
+Adicionar constante `serviceLabels` para converter slugs em labels amigaveis:
+
+```typescript
+const serviceLabels: Record<string, string> = {
+  'new-installation': 'Installation',
+  'sanding': 'Sanding',
+  'refinishing': 'Refinishing',
+  'staining': 'Staining',
+  'repair': 'Repair',
+  'vinyl': 'Vinyl',
+  'baseboards': 'Baseboards',
+  'staircase': 'Staircase',
+};
 ```
 
-O **Pipeline de Vendas** (UI) exibe apenas 3 colunas: `new_lead`, `appt_scheduled`, `proposal`.
-O **Pipeline Operacional** (Jobs) exibe: `pending`, `in_production`, `completed`.
+### 3. Helper: formatTimeInStage
 
-A imagem de referencia mostra 7 colunas estilo CRM:
-- Cold Leads, Warm Leads, Estimate Requested, Estimate Scheduled, In Draft, Proposal Sent, Proposal Rejected
+Funcao que calcula o tempo no stage e retorna texto + classe de cor:
 
----
-
-## O Que Precisa Mudar (Escopo Completo)
-
-### 1. Banco de Dados (Migration)
-
-Atualmente o trigger `axo_validate_lead_transition` hardcoda as transicoes validas. Precisamos:
-
-- **Adicionar novos valores de status** na tabela `leads` (o campo `status` e TEXT, nao enum, entao nao precisa ALTER TYPE)
-- **Reescrever o trigger `axo_validate_lead_transition`** para aceitar os novos stages e a nova ordem
-- **Atualizar a RPC `get_lead_nra`** para mapear os novos stages para acoes corretas
-- **Atualizar `validate_lead_transition`** (a funcao RPC antiga que ainda usa `new/contacted/quoted/won/lost`)
-- **Atualizar `set_follow_up_on_quoted`** para funcionar com o novo nome de stage equivalente
-- **Atualizar `STATUS_MAP`** no frontend para compatibilidade com leads existentes
-
-### 2. Novos Stages Propostos
-
-Baseado na imagem de referencia, adaptado para o fluxo AXO:
-
-| Stage Key | Label (UI) | Transicoes Permitidas |
-|-----------|------------|----------------------|
-| `cold_lead` | Cold Lead | -> `warm_lead` |
-| `warm_lead` | Warm Lead | -> `estimate_requested` |
-| `estimate_requested` | Estimate Requested | -> `estimate_scheduled` |
-| `estimate_scheduled` | Estimate Scheduled | -> `in_draft` |
-| `in_draft` | In Draft | -> `proposal_sent` |
-| `proposal_sent` | Proposal Sent | -> `in_production`, `proposal_rejected` |
-| `proposal_rejected` | Proposal Rejected | -> (terminal, ou reabrir para `in_draft`) |
-| `in_production` | In Production | -> `completed`, `lost` |
-| `completed` | Completed | (terminal) |
-| `lost` | Lost | (terminal) |
-
-### 3. Migracao de Dados
-
-Leads existentes precisam ser mapeados:
-
-| Status Atual | Novo Status |
-|-------------|------------|
-| `new_lead` | `cold_lead` |
-| `appt_scheduled` | `estimate_scheduled` |
-| `proposal` | `proposal_sent` |
-| `in_production` | `in_production` (mantido) |
-| `completed` | `completed` (mantido) |
-| `lost` | `lost` (mantido) |
-
-### 4. Frontend - Arquivos Afetados
-
-| Arquivo | Mudanca |
-|---------|--------|
-| `src/hooks/useLeadPipeline.ts` | Reescrever `PIPELINE_STAGES`, `STAGE_LABELS`, `STAGE_CONFIG`, `VALID_TRANSITIONS`, `STATUS_MAP` |
-| `src/components/admin/LeadPipelineStatus.tsx` | Funciona automaticamente (usa hook) |
-| `src/pages/admin/components/LinearPipeline.tsx` | Atualizar `SALES_STAGES` para os novos 7 stages de vendas, ajustar grid para 7 colunas |
-| `src/pages/admin/Dashboard.tsx` | Atualizar referencias aos stages no funil |
-| `src/hooks/admin/useDashboardData.ts` | Atualizar `activeStatuses` |
-| `src/hooks/useLeadNRA.ts` | Sem mudanca (chama RPC) |
-
-### 5. Backend - Funcoes a Reescrever
-
-| Funcao | Mudanca |
-|--------|--------|
-| `axo_validate_lead_transition()` | Reescrever com novos stages e gates |
-| `get_lead_nra()` | Reescrever mapeamento de NRA por stage |
-| `validate_lead_transition()` | Deprecar ou reescrever (funcao antiga com `new/contacted/quoted`) |
-| `set_follow_up_on_quoted()` | Adaptar para `proposal_sent` |
-| `convert_lead_to_project()` | Ajustar se necessario |
-
-### 6. Gates de Negocio (Manter/Adaptar)
-
-| Gate | Stage Atual | Novo Stage |
-|------|------------|-----------|
-| Projeto linkado + margem | `proposal` | `in_draft` (antes de criar proposta) |
-| Follow-up obrigatorio | saindo de `proposal` | saindo de `proposal_sent` |
-| Proposta aceita para producao | `proposal -> in_production` | `proposal_sent -> in_production` |
-| JobProof obrigatorio | `in_production -> completed` | mantido |
-
----
-
-## Ordem de Execucao
-
-```text
-PASSO 1: Migration - Atualizar dados existentes (UPDATE leads SET status = ...)
-PASSO 2: Migration - Reescrever triggers e RPCs
-PASSO 3: Frontend - useLeadPipeline.ts (stages, labels, config, transitions)
-PASSO 4: Frontend - LinearPipeline.tsx (7 colunas, scroll horizontal)
-PASSO 5: Frontend - Dashboard.tsx + useDashboardData.ts (referencias)
-PASSO 6: Testar E2E
+```typescript
+function getTimeBadge(updatedAt: string) {
+  const hours = differenceInHours(new Date(), new Date(updatedAt));
+  if (hours < 24) return { text: `${hours}h`, className: 'bg-muted text-muted-foreground' };
+  if (hours < 48) return { text: `${Math.round(hours)}h`, className: 'bg-amber-100 text-amber-700' };
+  const days = Math.floor(hours / 24);
+  return { text: `${days}d+`, className: 'bg-red-100 text-red-700 font-semibold' };
+}
 ```
 
----
+### 4. Helper: getOperationalAlert
 
-## Riscos e Consideracoes
+Retorna alerta operacional condicional baseado em NRA e dados do lead:
 
-1. **Leads existentes no Live**: Se houver leads em producao, a migracao precisa ser rodada tambem no ambiente Live antes de publicar
-2. **Complexidade do trigger**: Mais stages = mais validacoes no trigger
-3. **Layout**: 7 colunas nao cabem em desktop sem scroll horizontal - o layout Kanban com scroll ja esta preparado para isso
-4. **`proposal_rejected`**: Decidir se e terminal (lead morre) ou se pode voltar para `in_draft` para retrabalho
+```typescript
+function getOperationalAlert(lead, nra) {
+  if (nra?.severity === 'critical' || nra?.severity === 'blocked')
+    return { text: nra.label, type: 'critical' };
+  if (lead.follow_up_required)
+    return { text: 'Follow-up obrigatorio', type: 'warning' };
+  if (nra?.action && nra.action !== 'none')
+    return { text: nra.label, type: 'info' };
+  return null;
+}
+```
 
----
+### 5. Novo PipelineCard -- Layout
 
-## Pergunta Para Voce
+```text
++-------------------------------------+
+| [72h]  EDUARDO OLIVEIRA      $6,300 |  <- Linha 1: TimeBadge + Nome + Valor
+| (phone) 555-123   (pin) Orlando [Site] | <- Linha 2: Contato rapido
+| [Installation] [Sanding] +1         |  <- Linha 3: Servicos (max 2 + overflow)
+| /!\ Follow-up obrigatorio           |  <- Alerta operacional (condicional)
++-------------------------------------+
+```
 
-Antes de implementar, preciso confirmar: os **nomes dos stages na imagem de referencia** (Cold Leads, Warm Leads, Estimate Requested, etc.) sao exatamente os que voce quer, ou prefere adaptar os nomes para portugues ou para outro vocabulario?
+Estrutura JSX:
 
+- **Container**: `p-3 rounded-lg border bg-card cursor-pointer hover:shadow-md`, com ring condicional (blocked=vermelho, stale=amarelo)
+- **Linha 1**: flex justify-between, align-center
+  - TimeBadge (Badge compacta com cor semantica)
+  - Nome (font-semibold text-xs truncate, max-w limitado)
+  - Valor alinhado a direita (font-bold text-xs) ou "--" se nenhum
+- **Linha 2**: flex gap-2, text-[10px]
+  - Phone com icone, clicavel via `<a href="tel:...">`  com `e.stopPropagation()`
+  - Cidade com icone MapPin
+  - Badge fonte do lead (outline, text-[9px])
+- **Linha 3**: flex gap-1, mostrar ate 2 servicos como Badge secondary + "+N" se houver mais
+- **Alerta operacional** (condicional): barra fina com icone AlertTriangle, texto curto, cor semantica (amber para warning, red para critico)
+
+### 6. Ordenacao por Urgencia
+
+Alterar o sort dentro de `leadsByStage` de:
+
+```typescript
+// ANTES: apenas por updated_at DESC
+sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+```
+
+Para sort multi-criterio:
+
+```typescript
+// DEPOIS: urgencia primeiro, depois valor, depois criacao
+sort((a, b) => {
+  // 1. Tempo no stage DESC (mais antigo primeiro = mais urgente)
+  const timeA = new Date(a.updated_at).getTime();
+  const timeB = new Date(b.updated_at).getTime();
+  if (timeA !== timeB) return timeA - timeB; // oldest first
+  // 2. Valor potencial DESC
+  const valA = a.budget || 0;
+  const valB = b.budget || 0;
+  if (valA !== valB) return valB - valA;
+  // 3. created_at ASC
+  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+})
+```
+
+### 7. Summary Bar -- Traduzir para portugues
+
+Trocar "Total Deals" por "Total Leads" e "Total Value" por "Valor Total" para consistencia com AXO OS em portugues.
+
+## Resultado Visual Esperado
+
+```text
++-------------------------------------+
+| 72h   EDUARDO OLIVEIRA       $6,300 |
+| tel (555) 123-4567  pin Orlando [Site]|
+| [Installation] [Sanding] +1         |
+| /!\ Follow-up obrigatorio           |
++-------------------------------------+
+```
+
+Card com ~110px de altura, denso, sem elementos decorativos desnecessarios. Alertas operacionais aparecem apenas quando ha problema real. Ordenacao automatica prioriza leads mais antigos no stage (urgentes) e de maior valor.
