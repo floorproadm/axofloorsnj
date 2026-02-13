@@ -46,7 +46,6 @@ interface LinearPipelineProps {
   onRefresh: () => void;
 }
 
-// 3 estágios de vendas — produção e conclusão ficam em /admin/jobs
 const SALES_STAGES: PipelineStage[] = ['new_lead', 'appt_scheduled', 'proposal'];
 
 const stageIcons: Record<string, React.ReactNode> = {
@@ -199,6 +198,50 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         </div>
       </div>
 
+      {/* 30-Day Conversion Summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="p-3 lg:p-4 border border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <Target className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Leads 30d</span>
+          </div>
+          <span className="text-xl lg:text-2xl font-bold text-foreground">{conversionMetrics.total}</span>
+        </Card>
+        <Card className="p-3 lg:p-4 border border-state-success/30 bg-state-success/5">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4 text-state-success" />
+            <span className="text-xs text-muted-foreground">Convertidos</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl lg:text-2xl font-bold text-state-success">{conversionMetrics.converted}</span>
+            <span className="text-xs font-medium text-state-success">{conversionMetrics.conversionRate.toFixed(0)}%</span>
+          </div>
+        </Card>
+        <Card className="p-3 lg:p-4 border border-state-blocked/30 bg-state-blocked/5">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingDown className="w-4 h-4 text-state-blocked" />
+            <span className="text-xs text-muted-foreground">Perdidos</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl lg:text-2xl font-bold text-state-blocked">{conversionMetrics.lost}</span>
+            <span className="text-xs font-medium text-state-blocked">{conversionMetrics.lossRate.toFixed(0)}%</span>
+          </div>
+        </Card>
+        <Card className="p-3 lg:p-4 border border-primary/30 bg-primary/5">
+          <div className="flex items-center gap-2 mb-1">
+            <ChevronRight className="w-4 h-4 text-primary" />
+            <span className="text-xs text-muted-foreground">Taxa Conversão</span>
+          </div>
+          <span className={cn(
+            "text-xl lg:text-2xl font-bold",
+            conversionMetrics.conversionRate >= 30 ? "text-state-success" :
+            conversionMetrics.conversionRate >= 15 ? "text-state-risk" :
+            "text-state-blocked"
+          )}>
+            {conversionMetrics.conversionRate.toFixed(1)}%
+          </span>
+        </Card>
+      </div>
 
       {/* 3-Column Pipeline Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
@@ -216,7 +259,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
               )}
             >
               {/* Stage Header */}
-               <div className={cn(
+              <div className={cn(
                 "flex items-center justify-between px-3 lg:px-4 py-2 lg:py-3 border-b",
                 config.bgColor
               )}>
@@ -340,50 +383,6 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         })}
       </div>
 
-      {/* 30-Day Conversion Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="p-3 lg:p-4 border border-border">
-          <div className="flex items-center gap-2 mb-1">
-            <Target className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Leads 30d</span>
-          </div>
-          <span className="text-xl lg:text-2xl font-bold text-foreground">{conversionMetrics.total}</span>
-        </Card>
-        <Card className="p-3 lg:p-4 border border-state-success/30 bg-state-success/5">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 text-state-success" />
-            <span className="text-xs text-muted-foreground">Convertidos</span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl lg:text-2xl font-bold text-state-success">{conversionMetrics.converted}</span>
-            <span className="text-xs font-medium text-state-success">{conversionMetrics.conversionRate.toFixed(0)}%</span>
-          </div>
-        </Card>
-        <Card className="p-3 lg:p-4 border border-state-blocked/30 bg-state-blocked/5">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingDown className="w-4 h-4 text-state-blocked" />
-            <span className="text-xs text-muted-foreground">Perdidos</span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl lg:text-2xl font-bold text-state-blocked">{conversionMetrics.lost}</span>
-            <span className="text-xs font-medium text-state-blocked">{conversionMetrics.lossRate.toFixed(0)}%</span>
-          </div>
-        </Card>
-        <Card className="p-3 lg:p-4 border border-primary/30 bg-primary/5">
-          <div className="flex items-center gap-2 mb-1">
-            <ChevronRight className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Taxa Conversão</span>
-          </div>
-          <span className={cn(
-            "text-xl lg:text-2xl font-bold",
-            conversionMetrics.conversionRate >= 30 ? "text-state-success" :
-            conversionMetrics.conversionRate >= 15 ? "text-state-risk" :
-            "text-state-blocked"
-          )}>
-            {conversionMetrics.conversionRate.toFixed(1)}%
-          </span>
-        </Card>
-      </div>
       <LeadControlModal
         lead={syncedSelectedLead}
         isOpen={isModalOpen}
