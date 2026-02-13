@@ -814,9 +814,9 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
       {/* List View */}
       {viewMode === 'list' && (
-        <div className="border rounded-xl bg-card overflow-hidden">
+        <div className="space-y-2">
           {/* Table Header — hidden on mobile */}
-          <div className="hidden md:grid grid-cols-[1fr_120px_120px_140px_100px_80px] gap-2 px-4 py-2.5 bg-muted/50 border-b text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="hidden md:grid grid-cols-[2fr_130px_140px_160px_100px_90px] gap-3 px-5 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">
             <span>Lead</span>
             <span>Estágio</span>
             <span>Contato</span>
@@ -826,22 +826,24 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           </div>
           {/* Table Body */}
           <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
-            {sortedLeads.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground/60 text-xs">
-                Nenhum lead
-              </div>
-            ) : (
-              sortedLeads.map(lead => (
-                <PipelineListRow
-                  key={lead.id}
-                  lead={lead}
-                  nra={nraMap[lead.id]}
-                  isStale={isStale(lead)}
-                  isBlocked={isBlocked(lead)}
-                  onClick={() => handleCardClick(lead)}
-                />
-              ))
-            )}
+            <div className="space-y-1.5 px-0.5">
+              {sortedLeads.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground/60 text-xs">
+                  Nenhum lead encontrado
+                </div>
+              ) : (
+                sortedLeads.map(lead => (
+                  <PipelineListRow
+                    key={lead.id}
+                    lead={lead}
+                    nra={nraMap[lead.id]}
+                    isStale={isStale(lead)}
+                    isBlocked={isBlocked(lead)}
+                    onClick={() => handleCardClick(lead)}
+                  />
+                ))
+              )}
+            </div>
           </ScrollArea>
         </div>
       )}
@@ -979,95 +981,130 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick }: {
       <div
         onClick={onClick}
         className={cn(
-          "hidden md:grid grid-cols-[1fr_120px_120px_140px_100px_80px] gap-2 px-4 py-2.5 border-b cursor-pointer transition-colors",
-          "hover:bg-muted/40",
-          isBlocked && "bg-destructive/5",
-          isStale && !isBlocked && "bg-[hsl(var(--state-risk))]/5"
+          "hidden md:grid grid-cols-[2fr_130px_140px_160px_100px_90px] gap-3 px-5 py-3.5 rounded-xl border bg-card cursor-pointer transition-all duration-200",
+          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-[1px]",
+          isBlocked && "border-destructive/40 bg-destructive/5 shadow-destructive/10",
+          isStale && !isBlocked && "border-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
         )}
       >
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="font-semibold text-xs text-foreground truncate">{lead.name}</span>
-          {alert && (
-            <AlertTriangle className={cn(
-              "w-3 h-3 flex-shrink-0",
-              alert.type === 'critical' && "text-destructive",
-              alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
-              alert.type === 'info' && "text-primary"
-            )} />
-          )}
-          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 flex-shrink-0">
-            {sourceLabels[lead.lead_source] || lead.lead_source}
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Avatar circle */}
+          <div className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0",
+            config.bgColor, config.textColor
+          )}>
+            {lead.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="font-semibold text-sm text-foreground truncate leading-tight">{lead.name}</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-3.5 border-muted-foreground/20">
+                {sourceLabels[lead.lead_source] || lead.lead_source}
+              </Badge>
+              {alert && (
+                <AlertTriangle className={cn(
+                  "w-3 h-3 flex-shrink-0",
+                  alert.type === 'critical' && "text-destructive",
+                  alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
+                  alert.type === 'info' && "text-primary"
+                )} />
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center">
+          <Badge className={cn("text-[10px] px-2 py-0.5 h-5 font-semibold rounded-md", config.bgColor, config.textColor, "border-0")}>
+            {STAGE_LABELS[stage]}
           </Badge>
         </div>
         <div className="flex items-center">
-          <Badge className={cn("text-[9px] px-1.5 py-0 h-4", config.bgColor, config.textColor, "border-0")}>
-            {STAGE_LABELS[stage]}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground min-w-0">
-          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-0.5 hover:text-primary transition-colors truncate">
-            <Phone className="w-2.5 h-2.5 flex-shrink-0" />
+          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors group">
+            <div className="w-6 h-6 rounded-md bg-muted/60 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+              <Phone className="w-3 h-3" />
+            </div>
             <span className="truncate">{lead.phone}</span>
           </a>
         </div>
-        <div className="flex items-center gap-1 min-w-0">
+        <div className="flex items-center gap-1 min-w-0 flex-wrap">
           {services.slice(0, 2).map(s => (
-            <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0 h-4 flex-shrink-0">
+            <Badge key={s} variant="secondary" className="text-[9px] px-2 py-0.5 h-5 bg-muted/80 text-muted-foreground font-medium">
               {serviceLabels[s] || s}
             </Badge>
           ))}
-          {services.length > 2 && <span className="text-[9px] text-muted-foreground">+{services.length - 2}</span>}
+          {services.length > 2 && <span className="text-[9px] text-muted-foreground font-medium">+{services.length - 2}</span>}
+          {services.length === 0 && <span className="text-[10px] text-muted-foreground/40">—</span>}
         </div>
         <div className="flex items-center justify-end">
-          <span className="font-bold text-xs text-foreground">{lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}</span>
-        </div>
-        <div className="flex items-center justify-end">
-          <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", timeBadge.className)}>{timeBadge.text}</span>
-        </div>
-      </div>
-
-      {/* Mobile card row */}
-      <div
-        onClick={onClick}
-        className={cn(
-          "md:hidden flex flex-col gap-1.5 px-3 py-2.5 border-b cursor-pointer transition-colors",
-          "hover:bg-muted/40 active:bg-muted/60",
-          isBlocked && "bg-destructive/5",
-          isStale && !isBlocked && "bg-[hsl(var(--state-risk))]/5"
-        )}
-      >
-        {/* Row 1: Time + Name + Value */}
-        <div className="flex items-center justify-between gap-1">
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0", timeBadge.className)}>
-              {timeBadge.text}
-            </span>
-            <span className="font-semibold text-xs text-foreground truncate">{lead.name}</span>
-          </div>
-          <span className="font-bold text-xs text-foreground whitespace-nowrap flex-shrink-0">
+          <span className={cn(
+            "font-bold text-sm",
+            lead.budget ? "text-foreground" : "text-muted-foreground/40"
+          )}>
             {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
           </span>
         </div>
-        {/* Row 2: Stage + Contact */}
-        <div className="flex items-center gap-2 text-[10px]">
-          <Badge className={cn("text-[9px] px-1.5 py-0 h-4 flex-shrink-0", config.bgColor, config.textColor, "border-0")}>
-            {STAGE_LABELS[stage]}
-          </Badge>
-          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors">
-            <Phone className="w-2.5 h-2.5" />
+        <div className="flex items-center justify-end">
+          <span className={cn("text-[10px] px-2 py-1 rounded-md font-semibold", timeBadge.className)}>{timeBadge.text}</span>
+        </div>
+      </div>
+
+      {/* Mobile card */}
+      <div
+        onClick={onClick}
+        className={cn(
+          "md:hidden rounded-xl border bg-card p-3.5 cursor-pointer transition-all duration-200",
+          "hover:shadow-md active:scale-[0.99]",
+          isBlocked && "border-destructive/40 bg-destructive/5",
+          isStale && !isBlocked && "border-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
+        )}
+      >
+        {/* Row 1: Avatar + Name + Value */}
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0",
+            config.bgColor, config.textColor
+          )}>
+            {lead.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold text-sm text-foreground truncate">{lead.name}</span>
+              <span className={cn(
+                "font-bold text-sm whitespace-nowrap",
+                lead.budget ? "text-foreground" : "text-muted-foreground/40"
+              )}>
+                {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-semibold rounded", config.bgColor, config.textColor, "border-0")}>
+                {STAGE_LABELS[stage]}
+              </Badge>
+              <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", timeBadge.className)}>
+                {timeBadge.text}
+              </span>
+            </div>
+          </div>
+        </div>
+        {/* Row 2: Contact info */}
+        <div className="flex items-center gap-3 mt-2.5 pl-12 text-[11px] text-muted-foreground">
+          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 hover:text-primary transition-colors">
+            <Phone className="w-3 h-3" />
             <span>{lead.phone}</span>
           </a>
           {lead.city && (
-            <span className="flex items-center gap-0.5 text-muted-foreground">
-              <MapPin className="w-2.5 h-2.5" />
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
               {lead.city}
             </span>
           )}
+          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-muted-foreground/20">
+            {sourceLabels[lead.lead_source] || lead.lead_source}
+          </Badge>
         </div>
-        {/* Row 3: Alert (if any) */}
+        {/* Row 3: Alert */}
         {alert && (
           <div className={cn(
-            "flex items-center gap-1 text-[10px] font-medium",
+            "flex items-center gap-1.5 mt-2 pl-12 text-[10px] font-medium",
             alert.type === 'critical' && "text-destructive",
             alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
             alert.type === 'info' && "text-primary"
