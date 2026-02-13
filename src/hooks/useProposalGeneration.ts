@@ -54,9 +54,9 @@ export const TIER_TEMPLATES: Omit<ProposalTier, 'price' | 'margin_percent'>[] = 
  * These are TARGETS - actual margins must be >= company minimum
  */
 export const DEFAULT_TIER_MARGINS = {
-  good: 30,   // Minimum acceptable
-  better: 38, // Standard profit
-  best: 45,   // Premium profit
+  good: 30,
+  better: 38,
+  best: 45,
 };
 
 interface UseProposalGenerationReturn {
@@ -78,16 +78,11 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
    */
   const generateTiers = useCallback((baseCost: number, minMargin: number): ProposalTier[] => {
     return TIER_TEMPLATES.map((template) => {
-      // Get target margin, ensure it's at least minimum
       const targetMargin = Math.max(DEFAULT_TIER_MARGINS[template.id], minMargin);
-      
-      // Calculate price from cost and margin
-      // price = cost / (1 - margin%)
       const price = baseCost / (1 - targetMargin / 100);
-      
       return {
         ...template,
-        price: Math.ceil(price), // Round up to nearest dollar
+        price: Math.ceil(price),
         margin_percent: targetMargin,
       };
     });
@@ -104,8 +99,8 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         tier_id: tier.id,
         is_valid: isValid,
         margin_percent: tier.margin_percent,
-        error_message: isValid 
-          ? null 
+        error_message: isValid
+          ? null
           : `BLOCKED: ${tier.name} tier margin ${tier.margin_percent}% < minimum ${minMargin}%`,
       };
     });
@@ -124,6 +119,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
 
   /**
    * Fetch all data needed for proposal generation
+   * Now also persists the proposal to the database
    */
   const fetchProjectData = useCallback(async (projectId: string): Promise<ProposalData | null> => {
     setIsLoading(true);
@@ -149,7 +145,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
       if (costError) throw new Error('Job costs not found. Calculate costs first.');
 
       // Fetch company settings for minimum margin
-      const { data: settings, error: settingsError } = await supabase
+      const { data: settings } = await supabase
         .from('company_settings')
         .select('default_margin_min_percent')
         .limit(1)
@@ -163,7 +159,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
 
       // Validate all tiers
       const validation = validateAllTiers(tiers, minMargin);
-      
+
       if (!validation.all_valid) {
         throw new Error('BLOCKED: Some tiers below minimum margin. Adjust costs.');
       }
@@ -171,8 +167,37 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
       const validUntil = new Date();
       validUntil.setDate(validUntil.getDate() + 30);
 
+      // Find good/better/best tiers
+      const goodTier = tiers.find(t => t.id === 'good')!;
+      const betterTier = tiers.find(t => t.id === 'better')!;
+      const bestTier = tiers.find(t => t.id === 'best')!;
+
+      // Persist proposal to database
+      const { data: savedProposal, error: saveError } = await supabase
+        .from('proposals')
+        .insert({
+          project_id: projectId,
+          customer_id: project.customer_id!,
+          good_price: goodTier.price,
+          better_price: betterTier.price,
+          best_price: bestTier.price,
+          margin_good: goodTier.margin_percent,
+          margin_better: betterTier.margin_percent,
+          margin_best: bestTier.margin_percent,
+          valid_until: validUntil.toISOString().slice(0, 10),
+          status: 'draft',
+          proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
+        })
+        .select()
+        .single();
+
+      if (saveError) throw new Error('Failed to save proposal: ' + saveError.message);
+
       return {
         project_id: projectId,
+        proposal_id: savedProposal.id,
+        proposal_number: savedProposal.proposal_number,
+        proposal_status: savedProposal.status,
         customer_name: project.customer_name,
         customer_email: project.customer_email,
         customer_phone: project.customer_phone,
@@ -180,8 +205,8 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         project_type: project.project_type,
         square_footage: project.square_footage ?? 0,
         tiers,
-        created_at: new Date().toISOString(),
-        valid_until: validUntil.toISOString(),
+        created_at: savedProposal.created_at,
+        valid_until: savedProposal.valid_until,
         base_cost: baseCost,
       };
     } catch (err) {

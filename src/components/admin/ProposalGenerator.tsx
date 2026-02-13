@@ -171,6 +171,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         <div className="proposal-header text-center mb-8 pb-4 border-b-2">
           <h1 className="text-2xl font-bold mb-2">AXO Floors</h1>
           <p className="text-muted-foreground">Professional Flooring Services</p>
+          {proposal.proposal_number && (
+            <p className="text-xs text-muted-foreground mt-1">#{proposal.proposal_number}</p>
+          )}
         </div>
 
         <div className="customer-info mb-6">
