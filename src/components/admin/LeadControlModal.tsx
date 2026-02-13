@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -21,7 +22,7 @@ import { useLeadNRA, type LeadNRA } from '@/hooks/useLeadNRA';
 import { useProposals, type ProposalStatus } from '@/hooks/useProposals';
 import { 
   Phone, Mail, MapPin, DollarSign, 
-  ChevronRight, Clock, XCircle,
+  ChevronRight, Clock, XCircle, Trash2,
   CheckCircle2, Plus, Loader2, History, Ban,
   ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown
 } from 'lucide-react';
@@ -29,6 +30,7 @@ import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 type Lead = {
   id: string;
@@ -116,6 +118,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const [projectType, setProjectType] = useState('');
   const [showAcceptForm, setShowAcceptForm] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!lead) return null;
 
@@ -127,6 +130,21 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const isTerminal = stage === 'completed' || stage === 'lost';
   const hasProject = !!lead.converted_to_project_id;
   const canMarkLost = !isTerminal && (stage === 'proposal_sent' || stage === 'in_production');
+
+  const handleDeleteLead = async () => {
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from('leads').delete().eq('id', lead.id);
+      if (error) throw error;
+      toast.success(`Lead "${lead.name}" deletado com sucesso`);
+      onRefresh();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao deletar lead');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
     const success = await updateLeadStatus(lead.id, newStatus);
@@ -391,12 +409,47 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
           </div>
         </ScrollArea>
 
-        {/* Footer - Lost option */}
-        {canMarkLost && !isTerminal && (
-          <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">
-              Não deu certo?
-            </span>
+        {/* Footer - Actions */}
+        <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
+          {/* Delete Lead */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isDeleting}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              >
+                {isDeleting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
+                Deletar
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Deletar lead "{lead.name}"?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta ação é irreversível. O lead e todo o seu histórico de follow-up serão removidos permanentemente.
+                  {hasProject && (
+                    <span className="block mt-2 font-semibold text-destructive">
+                      ⚠️ Este lead possui um projeto vinculado. O projeto NÃO será deletado.
+                    </span>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteLead}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Sim, deletar permanentemente
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Mark as Lost */}
+          {canMarkLost && !isTerminal && (
             <Button
               variant="ghost"
               size="sm"
@@ -407,8 +460,8 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
               <XCircle className="w-4 h-4 mr-1.5" />
               Marcar como Perdido
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
