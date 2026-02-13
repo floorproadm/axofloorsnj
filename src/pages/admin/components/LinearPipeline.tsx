@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   STAGE_LABELS, 
@@ -10,13 +9,11 @@ import {
 } from "@/hooks/useLeadPipeline";
 import { useLeadNRABatch } from "@/hooks/useLeadNRA";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
-import { LeadSignalBadge } from "@/components/admin/LeadSignalBadge";
 import { 
   Phone, MapPin, 
-  ChevronRight, Clock,
-  Ban
+  Clock, AlertTriangle
 } from "lucide-react";
-import { format, differenceInHours } from "date-fns";
+import { differenceInHours } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type Lead = {
@@ -60,6 +57,35 @@ const sourceLabels: Record<string, string> = {
   website: "Site"
 };
 
+const serviceLabels: Record<string, string> = {
+  'new-installation': 'Installation',
+  'sanding': 'Sanding',
+  'refinishing': 'Refinishing',
+  'staining': 'Staining',
+  'repair': 'Repair',
+  'vinyl': 'Vinyl',
+  'baseboards': 'Baseboards',
+  'staircase': 'Staircase',
+};
+
+function getTimeBadge(updatedAt: string) {
+  const hours = differenceInHours(new Date(), new Date(updatedAt));
+  if (hours < 24) return { text: `${hours}h`, className: 'bg-muted text-muted-foreground' };
+  if (hours < 48) return { text: `${Math.round(hours)}h`, className: 'bg-amber-100 text-amber-700' };
+  const days = Math.floor(hours / 24);
+  return { text: `${days}d+`, className: 'bg-red-100 text-red-700 font-semibold' };
+}
+
+function getOperationalAlert(lead: Lead, nra: any) {
+  if (nra?.severity === 'critical' || nra?.severity === 'blocked')
+    return { text: nra.label, type: 'critical' as const };
+  if (lead.follow_up_required)
+    return { text: 'Follow-up obrigatório', type: 'warning' as const };
+  if (nra?.action && nra.action !== 'none')
+    return { text: nra.label, type: 'info' as const };
+  return null;
+}
+
 export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,9 +115,18 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       grouped[stage].push(lead);
     });
     Object.keys(grouped).forEach(stage => {
-      grouped[stage as PipelineStage].sort((a, b) => 
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-      );
+      grouped[stage as PipelineStage].sort((a, b) => {
+        // 1. Oldest first (most urgent)
+        const timeA = new Date(a.updated_at).getTime();
+        const timeB = new Date(b.updated_at).getTime();
+        if (timeA !== timeB) return timeA - timeB;
+        // 2. Higher value first
+        const valA = a.budget || 0;
+        const valB = b.budget || 0;
+        if (valA !== valB) return valB - valA;
+        // 3. Oldest created first
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
     });
     return grouped;
   }, [salesLeads]);
@@ -153,12 +188,12 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       <div className="flex items-center justify-between bg-card border rounded-xl px-4 py-3">
         <div className="flex items-center gap-6">
           <div>
-            <span className="text-xs text-muted-foreground block">Total Deals</span>
+            <span className="text-xs text-muted-foreground block">Total Leads</span>
             <span className="text-xl font-bold text-foreground">{pipelineHealth.active}</span>
           </div>
           <div className="h-8 w-px bg-border" />
           <div>
-            <span className="text-xs text-muted-foreground block">Total Value</span>
+            <span className="text-xs text-muted-foreground block">Valor Total</span>
             <span className="text-xl font-bold text-primary">
               ${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
@@ -242,7 +277,6 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   );
 }
 
-// Extracted card component for cleaner code
 function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
   lead: Lead;
   nra: any;
@@ -250,77 +284,87 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
   isBlocked: boolean;
   onClick: () => void;
 }) {
+  const timeBadge = getTimeBadge(lead.updated_at);
+  const alert = getOperationalAlert(lead, nra);
+  const services = Array.isArray(lead.services) ? lead.services : [];
+  const visibleServices = services.slice(0, 2);
+  const overflowCount = services.length - 2;
+
   return (
     <div
       onClick={onClick}
       className={cn(
-        "p-2.5 rounded-lg border bg-card cursor-pointer transition-all shadow-sm",
+        "p-3 rounded-lg border bg-card cursor-pointer transition-all",
         "hover:shadow-md hover:border-primary/40",
-        isBlocked && "ring-2 ring-state-blocked/50 bg-state-blocked/5",
-        isStale && !isBlocked && "ring-2 ring-state-risk/50 bg-state-risk/5"
+        isBlocked && "ring-2 ring-red-500/50 bg-red-50/5",
+        isStale && !isBlocked && "ring-2 ring-amber-500/50 bg-amber-50/5"
       )}
     >
-      {/* Budget + signal */}
-      <div className="flex items-start justify-between mb-1.5">
-        <LeadSignalBadge lead={lead} nra={nra} compact />
-        {lead.budget && (
-          <span className="font-bold text-xs text-foreground">
-            ${lead.budget.toLocaleString()}
+      {/* Row 1: TimeBadge + Name + Value */}
+      <div className="flex items-center justify-between gap-1">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <span className={cn(
+            "text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0",
+            timeBadge.className
+          )}>
+            {timeBadge.text}
           </span>
-        )}
+          <span className="font-semibold text-xs text-foreground truncate">
+            {lead.name.toUpperCase()}
+          </span>
+        </div>
+        <span className="font-bold text-xs text-foreground whitespace-nowrap flex-shrink-0">
+          {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
+        </span>
       </div>
 
-      {/* Name + phone */}
-      <div className="mb-1">
-        <h4 className="font-semibold text-xs text-primary truncate">{lead.name}</h4>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+      {/* Row 2: Contact */}
+      <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+        <a
+          href={`tel:${lead.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-0.5 hover:text-primary transition-colors"
+        >
           <Phone className="w-2.5 h-2.5 flex-shrink-0" />
           <span>{lead.phone}</span>
-        </div>
-      </div>
-
-      {/* Meta */}
-      <div className="flex items-center gap-1.5 text-[10px] flex-wrap">
+        </a>
         {lead.city && (
-          <span className="flex items-center gap-0.5 text-muted-foreground">
-            <MapPin className="w-2.5 h-2.5" />
+          <span className="flex items-center gap-0.5">
+            <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
             {lead.city}
           </span>
         )}
-        <Badge variant="outline" className="text-[9px] px-1 py-0">
+        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5">
           {sourceLabels[lead.lead_source] || lead.lead_source}
         </Badge>
       </div>
 
-      {/* NRA CTA */}
-      {nra && nra.action !== 'none' && (
-        <div className="mt-2 pt-1.5 border-t">
-          <Button
-            size="sm"
-            variant="outline"
-            className={cn(
-              "w-full h-6 text-[10px] font-medium",
-              isBlocked
-                ? "bg-state-blocked/10 text-state-blocked border-state-blocked hover:bg-state-blocked/20"
-                : nra.severity === 'normal'
-                  ? "bg-state-success/10 text-state-success border-state-success hover:bg-state-success/20"
-                  : "bg-state-risk/10 text-state-risk border-state-risk hover:bg-state-risk/20"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick();
-            }}
-          >
-            {isBlocked ? <Ban className="w-2.5 h-2.5 mr-1" /> : <ChevronRight className="w-2.5 h-2.5 mr-1" />}
-            {nra.label}
-          </Button>
+      {/* Row 3: Services */}
+      {services.length > 0 && (
+        <div className="flex items-center gap-1 mt-1.5">
+          {visibleServices.map(s => (
+            <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
+              {serviceLabels[s] || s}
+            </Badge>
+          ))}
+          {overflowCount > 0 && (
+            <span className="text-[9px] text-muted-foreground font-medium">+{overflowCount}</span>
+          )}
         </div>
       )}
 
-      {/* Footer date */}
-      <div className="flex items-center justify-end mt-1.5 text-[9px] text-muted-foreground">
-        <span>{format(new Date(lead.updated_at), "dd/MM HH:mm")}</span>
-      </div>
+      {/* Operational Alert (conditional) */}
+      {alert && (
+        <div className={cn(
+          "flex items-center gap-1 mt-1.5 pt-1.5 border-t text-[10px] font-medium",
+          alert.type === 'critical' && "text-red-600",
+          alert.type === 'warning' && "text-amber-600",
+          alert.type === 'info' && "text-blue-600"
+        )}>
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate">{alert.text}</span>
+        </div>
+      )}
     </div>
   );
 }
