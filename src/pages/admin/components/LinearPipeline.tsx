@@ -1,20 +1,44 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   STAGE_LABELS, 
   STAGE_CONFIG,
   normalizeStatus,
+  useLeadPipeline,
   type PipelineStage 
 } from "@/hooks/useLeadPipeline";
+import { useLeadFollowUp } from "@/hooks/useLeadFollowUp";
 import { useLeadNRABatch } from "@/hooks/useLeadNRA";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
   Phone, MapPin, 
   Clock, AlertTriangle,
   LayoutGrid, List,
-  UserPlus, CalendarPlus, FileText, PlusCircle
+  UserPlus, CalendarPlus, FileText, PlusCircle,
+  Loader2
 } from "lucide-react";
 import { differenceInHours, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -73,6 +97,8 @@ const serviceLabels: Record<string, string> = {
   'staircase': 'Staircase',
 };
 
+const SERVICE_OPTIONS = Object.entries(serviceLabels);
+
 function getTimeBadge(updatedAt: string) {
   const hours = differenceInHours(new Date(), new Date(updatedAt));
   if (hours < 24) return { text: `${hours}h`, className: 'bg-muted text-muted-foreground' };
@@ -91,10 +117,444 @@ function getOperationalAlert(lead: Lead, nra: any) {
   return null;
 }
 
+/* ════════════════════════════════════════════════════════════
+   QUICK ACTION MODALS
+   ════════════════════════════════════════════════════════════ */
+
+/* ─── 1. New Lead Modal ─── */
+function QuickNewLeadModal({ open, onOpenChange, onSuccess }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', phone: '', email: '', city: '', budget: '', notes: '' });
+
+  const resetForm = () => setForm({ name: '', phone: '', email: '', city: '', budget: '', notes: '' });
+
+  const handleSave = async () => {
+    if (!form.name.trim() || !form.phone.trim()) {
+      toast.error('Nome e telefone são obrigatórios');
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('leads').insert({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim() || null,
+        city: form.city.trim() || null,
+        budget: form.budget ? parseFloat(form.budget) : null,
+        notes: form.notes.trim() || null,
+        lead_source: 'manual',
+        // status defaults to 'cold_lead' via DB default
+      });
+      if (error) throw error;
+      toast.success('Lead criado com sucesso');
+      resetForm();
+      onOpenChange(false);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao criar lead');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="w-5 h-5 text-primary" />
+            Novo Lead Manual
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="nl-name">Nome *</Label>
+              <Input id="nl-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome completo" />
+            </div>
+            <div>
+              <Label htmlFor="nl-phone">Telefone *</Label>
+              <Input id="nl-phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(XXX) XXX-XXXX" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="nl-email">Email</Label>
+              <Input id="nl-email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com" />
+            </div>
+            <div>
+              <Label htmlFor="nl-city">Cidade</Label>
+              <Input id="nl-city" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="nl-budget">Budget ($)</Label>
+            <Input id="nl-budget" type="number" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} placeholder="0.00" />
+          </div>
+          <div>
+            <Label htmlFor="nl-notes">Notas</Label>
+            <Textarea id="nl-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} placeholder="Observações..." />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
+            {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+            Criar Lead
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ─── 2. New Appointment Modal ─── */
+function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  leads: Lead[];
+  onSuccess: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState('');
+  const [apptDate, setApptDate] = useState('');
+  const [apptTime, setApptTime] = useState('');
+  const [notes, setNotes] = useState('');
+  const { updateLeadStatus } = useLeadPipeline();
+  const { addFollowUpAction } = useLeadFollowUp();
+
+  // Leads eligible for scheduling: early stages, not yet converted
+  const eligibleLeads = useMemo(() =>
+    leads.filter(l => {
+      const s = normalizeStatus(l.status);
+      return ['cold_lead', 'warm_lead', 'estimate_requested'].includes(s) && !l.converted_to_project_id;
+    }),
+    [leads]
+  );
+
+  const resetForm = () => { setSelectedLeadId(''); setApptDate(''); setApptTime(''); setNotes(''); };
+
+  const handleSave = async () => {
+    if (!selectedLeadId || !apptDate || !apptTime) {
+      toast.error('Selecione lead, data e hora');
+      return;
+    }
+    const lead = eligibleLeads.find(l => l.id === selectedLeadId);
+    if (!lead) return;
+
+    setSaving(true);
+    try {
+      // 1. Insert appointment
+      const { error: apptError } = await supabase.from('appointments').insert({
+        customer_name: lead.name,
+        customer_phone: lead.phone,
+        appointment_date: apptDate,
+        appointment_time: apptTime,
+        appointment_type: 'estimate',
+        notes: notes.trim() || null,
+      });
+      if (apptError) throw apptError;
+
+      // 2. Transition status via RPC (trigger validates)
+      const ok = await updateLeadStatus(lead.id, 'estimate_scheduled');
+
+      // 3. Register follow-up action
+      await addFollowUpAction(lead.id, {
+        date: new Date().toISOString(),
+        action: 'Visita agendada',
+        notes: notes.trim() || undefined,
+      });
+
+      if (ok) {
+        toast.success('Visita agendada com sucesso');
+      }
+      resetForm();
+      onOpenChange(false);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao agendar visita');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarPlus className="w-5 h-5 text-primary" />
+            Agendar Visita
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Lead *</Label>
+            <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um lead..." />
+              </SelectTrigger>
+              <SelectContent>
+                {eligibleLeads.length === 0 ? (
+                  <SelectItem value="_none" disabled>Nenhum lead elegível</SelectItem>
+                ) : (
+                  eligibleLeads.map(l => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name}{l.city ? ` — ${l.city}` : ''}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="appt-date">Data *</Label>
+              <Input id="appt-date" type="date" value={apptDate} onChange={e => setApptDate(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="appt-time">Hora *</Label>
+              <Input id="appt-time" type="time" value={apptTime} onChange={e => setApptTime(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="appt-notes">Notas</Label>
+            <Textarea id="appt-notes" value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Observações da visita..." />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
+            {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+            Agendar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ─── 3. Proposal Shortcut Modal ─── */
+function QuickProposalModal({ open, onOpenChange, leads }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  leads: Lead[];
+}) {
+  const navigate = useNavigate();
+  const [selectedLeadId, setSelectedLeadId] = useState('');
+
+  // Leads with project linked
+  const eligibleLeads = useMemo(() =>
+    leads.filter(l => !!l.converted_to_project_id),
+    [leads]
+  );
+
+  const handleGo = () => {
+    const lead = eligibleLeads.find(l => l.id === selectedLeadId);
+    if (!lead?.converted_to_project_id) return;
+    onOpenChange(false);
+    setSelectedLeadId('');
+    navigate(`/admin/projects/${lead.converted_to_project_id}`);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) setSelectedLeadId(''); onOpenChange(v); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            Ir para Proposta
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Selecione o lead com projeto para abrir o gerador de proposta.</p>
+          <div>
+            <Label>Lead com Projeto *</Label>
+            <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                {eligibleLeads.length === 0 ? (
+                  <SelectItem value="_none" disabled>Nenhum lead com projeto</SelectItem>
+                ) : (
+                  eligibleLeads.map(l => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name} — {STAGE_LABELS[normalizeStatus(l.status)]}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={handleGo} disabled={!selectedLeadId} className="bg-primary text-primary-foreground">
+            Abrir Projeto
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ─── 4. Request (Estimate Request) Modal ─── */
+function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  leads: Lead[];
+  onSuccess: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState('');
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [budget, setBudget] = useState('');
+  const [notes, setNotes] = useState('');
+  const { updateLeadStatus } = useLeadPipeline();
+  const { addFollowUpAction } = useLeadFollowUp();
+
+  // Leads eligible: warm leads that can move to estimate_requested
+  const eligibleLeads = useMemo(() =>
+    leads.filter(l => {
+      const s = normalizeStatus(l.status);
+      return ['cold_lead', 'warm_lead'].includes(s);
+    }),
+    [leads]
+  );
+
+  const resetForm = () => { setSelectedLeadId(''); setSelectedServices([]); setBudget(''); setNotes(''); };
+
+  const toggleService = (svc: string) => {
+    setSelectedServices(prev => 
+      prev.includes(svc) ? prev.filter(s => s !== svc) : [...prev, svc]
+    );
+  };
+
+  const handleSave = async () => {
+    if (!selectedLeadId) {
+      toast.error('Selecione um lead');
+      return;
+    }
+    const lead = eligibleLeads.find(l => l.id === selectedLeadId);
+    if (!lead) return;
+
+    setSaving(true);
+    try {
+      // 1. Update informational fields (services, budget)
+      const updateData: Record<string, any> = {};
+      if (selectedServices.length > 0) updateData.services = selectedServices;
+      if (budget) updateData.budget = parseFloat(budget);
+      if (Object.keys(updateData).length > 0) {
+        const { error } = await supabase.from('leads').update(updateData).eq('id', lead.id);
+        if (error) throw error;
+      }
+
+      // 2. Transition via RPC — trigger validates the path
+      const ok = await updateLeadStatus(lead.id, 'estimate_requested');
+
+      // 3. Register follow-up
+      await addFollowUpAction(lead.id, {
+        date: new Date().toISOString(),
+        action: 'Orçamento solicitado',
+        notes: notes.trim() || undefined,
+      });
+
+      if (ok) {
+        toast.success('Solicitação de orçamento registrada');
+      }
+      resetForm();
+      onOpenChange(false);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao registrar solicitação');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PlusCircle className="w-5 h-5 text-primary" />
+            Solicitação de Orçamento
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Lead *</Label>
+            <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um lead..." />
+              </SelectTrigger>
+              <SelectContent>
+                {eligibleLeads.length === 0 ? (
+                  <SelectItem value="_none" disabled>Nenhum lead elegível</SelectItem>
+                ) : (
+                  eligibleLeads.map(l => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name}{l.city ? ` — ${l.city}` : ''}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="mb-2 block">Serviços Solicitados</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {SERVICE_OPTIONS.map(([key, label]) => (
+                <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox
+                    checked={selectedServices.includes(key)}
+                    onCheckedChange={() => toggleService(key)}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="rq-budget">Budget ($)</Label>
+            <Input id="rq-budget" type="number" value={budget} onChange={e => setBudget(e.target.value)} placeholder="0.00" />
+          </div>
+          <div>
+            <Label htmlFor="rq-notes">Notas</Label>
+            <Textarea id="rq-notes" value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Detalhes da solicitação..." />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
+            {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+            Registrar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   MAIN PIPELINE COMPONENT
+   ════════════════════════════════════════════════════════════ */
+
 export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
+
+  // Quick-action modal states
+  const [showNewLeadModal, setShowNewLeadModal] = useState(false);
+  const [showApptModal, setShowApptModal] = useState(false);
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const salesLeads = useMemo(() => 
     leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)), 
@@ -188,13 +648,19 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
   if (salesLeads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
-        <Clock className="w-12 h-12 text-muted-foreground/50 mb-4" />
-        <h3 className="text-lg font-semibold text-muted-foreground">Nenhum lead no pipeline</h3>
-        <p className="text-sm text-muted-foreground/70 mt-2">
-          Quando novos leads chegarem, eles aparecerão aqui
-        </p>
-      </div>
+      <>
+        <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
+          <Clock className="w-12 h-12 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground">Nenhum lead no pipeline</h3>
+          <p className="text-sm text-muted-foreground/70 mt-2">
+            Quando novos leads chegarem, eles aparecerão aqui
+          </p>
+          <Button onClick={() => setShowNewLeadModal(true)} className="mt-4 bg-primary text-primary-foreground">
+            <UserPlus className="w-4 h-4 mr-1" /> Criar Lead Manual
+          </Button>
+        </div>
+        <QuickNewLeadModal open={showNewLeadModal} onOpenChange={setShowNewLeadModal} onSuccess={onRefresh} />
+      </>
     );
   }
 
@@ -252,7 +718,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => {/* TODO */}}
+            onClick={() => setShowNewLeadModal(true)}
           >
             <UserPlus className="w-3.5 h-3.5" />
             <span className="hidden xs:inline">New</span> Lead
@@ -260,7 +726,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => {/* TODO */}}
+            onClick={() => setShowApptModal(true)}
           >
             <CalendarPlus className="w-3.5 h-3.5" />
             <span className="hidden xs:inline">New</span> Appt.
@@ -268,7 +734,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => {/* TODO */}}
+            onClick={() => setShowProposalModal(true)}
           >
             <FileText className="w-3.5 h-3.5" />
             Proposal
@@ -276,7 +742,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => {/* TODO */}}
+            onClick={() => setShowRequestModal(true)}
           >
             <PlusCircle className="w-3.5 h-3.5" />
             Request
@@ -380,6 +846,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         </div>
       )}
 
+      {/* Lead Detail Modal */}
       <LeadControlModal
         lead={syncedSelectedLead}
         isOpen={isModalOpen}
@@ -389,6 +856,12 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         }}
         onRefresh={() => onRefresh()}
       />
+
+      {/* Quick Action Modals */}
+      <QuickNewLeadModal open={showNewLeadModal} onOpenChange={setShowNewLeadModal} onSuccess={onRefresh} />
+      <QuickApptModal open={showApptModal} onOpenChange={setShowApptModal} leads={salesLeads} onSuccess={onRefresh} />
+      <QuickProposalModal open={showProposalModal} onOpenChange={setShowProposalModal} leads={salesLeads} />
+      <QuickRequestModal open={showRequestModal} onOpenChange={setShowRequestModal} leads={salesLeads} onSuccess={onRefresh} />
     </div>
   );
 }
