@@ -18,15 +18,17 @@ import {
 import { useLeadFollowUp, type FollowUpAction } from '@/hooks/useLeadFollowUp';
 import { useLeadConversion } from '@/hooks/useLeadConversion';
 import { useLeadNRA, type LeadNRA } from '@/hooks/useLeadNRA';
+import { useProposals, type ProposalStatus } from '@/hooks/useProposals';
 import { 
   Phone, Mail, MapPin, DollarSign, 
   ChevronRight, Clock, XCircle,
   CheckCircle2, Plus, Loader2, History, Ban,
-  ArrowRightLeft, AlertTriangle
+  ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type Lead = {
   id: string;
@@ -102,12 +104,18 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToProject, isConverting } = useLeadConversion();
   const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id);
+  const { useProposalByProject, updateProposalStatus } = useProposals();
+  
+  const projectId = lead?.converted_to_project_id || undefined;
+  const { data: proposal, refetch: refetchProposal } = useProposalByProject(projectId);
   
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
   const [actionType, setActionType] = useState('');
   const [actionNotes, setActionNotes] = useState('');
   const [showConvertForm, setShowConvertForm] = useState(false);
   const [projectType, setProjectType] = useState('');
+  const [showAcceptForm, setShowAcceptForm] = useState(false);
+  const [selectedTier, setSelectedTier] = useState('');
 
   if (!lead) return null;
 
@@ -152,7 +160,31 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
       setShowConvertForm(false);
       setProjectType('');
       onRefresh();
-      setTimeout(() => refreshNRA(), 500);
+      setTimeout(() => { refreshNRA(); refetchProposal(); }, 500);
+    }
+  };
+
+  const handleProposalAction = async (action: 'send' | 'accept' | 'reject') => {
+    if (!proposal) return;
+    try {
+      if (action === 'send') {
+        await updateProposalStatus.mutateAsync({ id: proposal.id, status: 'sent' });
+        toast.success('Proposta enviada');
+      } else if (action === 'accept') {
+        if (!selectedTier) { toast.error('Selecione um tier'); return; }
+        await updateProposalStatus.mutateAsync({ id: proposal.id, status: 'accepted', selected_tier: selectedTier });
+        toast.success('Proposta aceita');
+        setShowAcceptForm(false);
+        setSelectedTier('');
+      } else if (action === 'reject') {
+        await updateProposalStatus.mutateAsync({ id: proposal.id, status: 'rejected' });
+        toast.success('Proposta rejeitada');
+      }
+      refetchProposal();
+      refreshNRA();
+      onRefresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao atualizar proposta');
     }
   };
 
@@ -185,6 +217,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                       Projeto ✓
                     </Badge>
                   )}
+                  {proposal && <ProposalStatusBadge status={proposal.status as ProposalStatus} />}
                   {isStale && !isTerminal && (
                     <Badge variant="destructive" className="text-xs flex items-center gap-1">
                       <Clock className="w-3 h-3" />
@@ -231,6 +264,21 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                 onConvertToProject={handleConvertToProject}
               />
             ) : null}
+
+            {/* PROPOSAL ACTIONS PANEL */}
+            {hasProject && (
+              <ProposalActionsPanel
+                proposal={proposal}
+                showAcceptForm={showAcceptForm}
+                selectedTier={selectedTier}
+                isUpdating={updateProposalStatus.isPending}
+                onSend={() => handleProposalAction('send')}
+                onAccept={() => handleProposalAction('accept')}
+                onReject={() => handleProposalAction('reject')}
+                onShowAcceptForm={setShowAcceptForm}
+                onSelectTier={setSelectedTier}
+              />
+            )}
 
             {/* Info: Job operations moved to /admin/jobs */}
             {hasProject && (nra?.action === 'enter_job_costs' || nra?.action === 'fix_margin' || nra?.action === 'advance_to_proposal') && (
@@ -623,6 +671,142 @@ function FollowUpForm({
           Cancelar
         </Button>
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROPOSAL STATUS BADGE
+// ═══════════════════════════════════════════════════════════
+const PROPOSAL_BADGE_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  draft: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-300', label: '🟡 Rascunho' },
+  sent: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-300', label: '🔵 Enviada' },
+  viewed: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-300', label: '👁️ Visualizada' },
+  accepted: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-300', label: '🟢 Aceita' },
+  rejected: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-300', label: '🔴 Rejeitada' },
+  expired: { bg: 'bg-gray-50', text: 'text-gray-500', border: 'border-gray-300', label: '⚫ Expirada' },
+};
+
+function ProposalStatusBadge({ status }: { status: ProposalStatus }) {
+  const style = PROPOSAL_BADGE_STYLES[status] || PROPOSAL_BADGE_STYLES.draft;
+  return (
+    <Badge variant="outline" className={cn("text-xs", style.bg, style.text, style.border)}>
+      <FileText className="w-3 h-3 mr-1" />
+      {style.label}
+    </Badge>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROPOSAL ACTIONS PANEL — contextual actions based on status
+// ═══════════════════════════════════════════════════════════
+function ProposalActionsPanel({
+  proposal, showAcceptForm, selectedTier, isUpdating,
+  onSend, onAccept, onReject, onShowAcceptForm, onSelectTier,
+}: {
+  proposal: any;
+  showAcceptForm: boolean;
+  selectedTier: string;
+  isUpdating: boolean;
+  onSend: () => void;
+  onAccept: () => void;
+  onReject: () => void;
+  onShowAcceptForm: (v: boolean) => void;
+  onSelectTier: (v: string) => void;
+}) {
+  if (!proposal) return null;
+
+  const status = proposal.status as ProposalStatus;
+
+  if (status === 'accepted') {
+    const tierLabel = proposal.selected_tier === 'good' ? 'Good' : proposal.selected_tier === 'better' ? 'Better' : 'Best';
+    const tierPrice = proposal.selected_tier === 'good' ? proposal.good_price : proposal.selected_tier === 'better' ? proposal.better_price : proposal.best_price;
+    return (
+      <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-300">
+        <h3 className="font-semibold text-sm text-emerald-800 flex items-center gap-2 mb-2">
+          <CheckCircle2 className="w-4 h-4" />
+          Proposta Aceita — Tier {tierLabel}
+        </h3>
+        <p className="text-lg font-bold text-emerald-700">${Number(tierPrice).toLocaleString()}</p>
+        <p className="text-xs text-emerald-600 mt-1">
+          Aceita em {proposal.accepted_at ? format(new Date(proposal.accepted_at), "dd/MM/yyyy HH:mm", { locale: ptBR }) : '—'}
+        </p>
+      </div>
+    );
+  }
+
+  if (status === 'rejected' || status === 'expired') {
+    return (
+      <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+        Proposta {status === 'rejected' ? 'rejeitada' : 'expirada'} — #{proposal.proposal_number}
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 rounded-lg bg-muted/50 border space-y-3">
+      <h3 className="font-semibold text-sm flex items-center gap-2">
+        <FileText className="w-4 h-4" />
+        Proposta #{proposal.proposal_number}
+      </h3>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="p-2 rounded bg-background border">
+          <p className="text-xs text-muted-foreground">Good</p>
+          <p className="font-bold text-sm">${Number(proposal.good_price).toLocaleString()}</p>
+        </div>
+        <div className="p-2 rounded bg-background border">
+          <p className="text-xs text-muted-foreground">Better</p>
+          <p className="font-bold text-sm">${Number(proposal.better_price).toLocaleString()}</p>
+        </div>
+        <div className="p-2 rounded bg-background border">
+          <p className="text-xs text-muted-foreground">Best</p>
+          <p className="font-bold text-sm">${Number(proposal.best_price).toLocaleString()}</p>
+        </div>
+      </div>
+
+      {status === 'draft' && (
+        <Button onClick={onSend} disabled={isUpdating} className="w-full" size="sm">
+          {isUpdating ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Send className="w-4 h-4 mr-1.5" />}
+          Enviar Proposta
+        </Button>
+      )}
+
+      {(status === 'sent' || status === 'viewed') && (
+        <>
+          {showAcceptForm ? (
+            <div className="space-y-2 p-3 bg-background rounded-lg border">
+              <Select value={selectedTier} onValueChange={onSelectTier}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar tier aceito..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="good">Good — ${Number(proposal.good_price).toLocaleString()}</SelectItem>
+                  <SelectItem value="better">Better — ${Number(proposal.better_price).toLocaleString()}</SelectItem>
+                  <SelectItem value="best">Best — ${Number(proposal.best_price).toLocaleString()}</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2">
+                <Button onClick={onAccept} disabled={!selectedTier || isUpdating} size="sm">
+                  {isUpdating ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-1.5" />}
+                  Confirmar Aceite
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onShowAcceptForm(false)}>Cancelar</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button onClick={() => onShowAcceptForm(true)} size="sm" className="flex-1">
+                <ThumbsUp className="w-4 h-4 mr-1.5" />
+                Marcar Aceita
+              </Button>
+              <Button onClick={onReject} disabled={isUpdating} variant="destructive" size="sm" className="flex-1">
+                <ThumbsDown className="w-4 h-4 mr-1.5" />
+                Rejeitar
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
