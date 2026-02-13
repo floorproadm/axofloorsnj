@@ -65,7 +65,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
+    <Sidebar className={collapsed ? "w-0 min-w-0 overflow-hidden border-0" : "w-64"} collapsible="icon">
       <SidebarContent className="bg-card/95 backdrop-blur-sm border-r border-border/50">
         {/* Brand */}
         <div className="p-4 border-b border-border/50">
