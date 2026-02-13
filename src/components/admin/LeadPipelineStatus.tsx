@@ -113,7 +113,7 @@ export function LeadPipelineStatus({
           {PIPELINE_STAGES.filter(s => 
             s !== stage && 
             !allowedNext.includes(s) &&
-            s !== 'new_lead' // Can't go back to new_lead
+            s !== 'cold_lead' // Can't go back to cold_lead
           ).map((blockedStatus) => (
             <DropdownMenuItem
               key={blockedStatus}

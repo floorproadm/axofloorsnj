@@ -70,9 +70,13 @@ interface MoneyMetrics {
 }
 
 interface FunnelMetrics {
-  new_lead: number;
-  appt_scheduled: number;
-  proposal: number;
+  cold_lead: number;
+  warm_lead: number;
+  estimate_requested: number;
+  estimate_scheduled: number;
+  in_draft: number;
+  proposal_sent: number;
+  proposal_rejected: number;
   in_production: number;
   completed: number;
   lost: number;
@@ -163,7 +167,7 @@ export function useDashboardData() {
 
     // Leads in "proposal" without follow-up action recorded
     const proposalWithoutFollowUp = data.leads.filter(l => {
-      if (l.status !== 'proposal') return false;
+      if (l.status !== 'proposal_sent') return false;
       const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
       return actions.length === 0;
     });
@@ -177,7 +181,7 @@ export function useDashboardData() {
     });
 
     // Leads stalled > 48h (not updated in 48h, not completed/lost)
-    const activeStatuses = ['new_lead', 'appt_scheduled', 'proposal', 'in_production'];
+    const activeStatuses = ['cold_lead', 'warm_lead', 'estimate_requested', 'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected', 'in_production'];
     const leadsStalled48h = data.leads.filter(l => {
       if (!activeStatuses.includes(l.status)) return false;
       const updatedAt = new Date(l.updated_at);
@@ -186,7 +190,7 @@ export function useDashboardData() {
 
     // New leads without contact in 24h
     const newLeadsNoContact24h = data.leads.filter(l => {
-      if (l.status !== 'new_lead') return false;
+      if (l.status !== 'cold_lead') return false;
       const createdAt = new Date(l.created_at);
       return createdAt < h24Ago;
     });
@@ -228,7 +232,7 @@ export function useDashboardData() {
 
   // Computed: Money Metrics
   const moneyMetrics = useMemo((): MoneyMetrics => {
-    const activeStatuses = ['new_lead', 'appt_scheduled', 'proposal', 'in_production'];
+    const activeStatuses = ['cold_lead', 'warm_lead', 'estimate_requested', 'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected', 'in_production'];
     const activeLeads = data.leads.filter(l => activeStatuses.includes(l.status));
     
     const activeLeadsCount = activeLeads.length;
@@ -236,7 +240,7 @@ export function useDashboardData() {
 
     // Blocked leads = proposal without follow-up
     const blockedLeads = data.leads.filter(l => {
-      if (l.status !== 'proposal') return false;
+      if (l.status !== 'proposal_sent') return false;
       const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
       return actions.length === 0;
     });
@@ -267,9 +271,13 @@ export function useDashboardData() {
   // Computed: Funnel Metrics
   const funnelMetrics = useMemo((): FunnelMetrics => {
     const counts: FunnelMetrics = {
-      new_lead: 0,
-      appt_scheduled: 0,
-      proposal: 0,
+      cold_lead: 0,
+      warm_lead: 0,
+      estimate_requested: 0,
+      estimate_scheduled: 0,
+      in_draft: 0,
+      proposal_sent: 0,
+      proposal_rejected: 0,
       in_production: 0,
       completed: 0,
       lost: 0,
@@ -278,13 +286,20 @@ export function useDashboardData() {
 
     // Map legacy statuses
     const statusMap: Record<string, keyof FunnelMetrics> = {
-      'new': 'new_lead',
-      'new_lead': 'new_lead',
-      'contacted': 'appt_scheduled',
-      'appt_scheduled': 'appt_scheduled',
-      'qualified': 'proposal',
-      'quoted': 'proposal',
-      'proposal': 'proposal',
+      'new': 'cold_lead',
+      'new_lead': 'cold_lead',
+      'cold_lead': 'cold_lead',
+      'contacted': 'warm_lead',
+      'warm_lead': 'warm_lead',
+      'estimate_requested': 'estimate_requested',
+      'appt_scheduled': 'estimate_scheduled',
+      'estimate_scheduled': 'estimate_scheduled',
+      'in_draft': 'in_draft',
+      'qualified': 'proposal_sent',
+      'quoted': 'proposal_sent',
+      'proposal': 'proposal_sent',
+      'proposal_sent': 'proposal_sent',
+      'proposal_rejected': 'proposal_rejected',
       'won': 'in_production',
       'in_production': 'in_production',
       'converted': 'completed',
