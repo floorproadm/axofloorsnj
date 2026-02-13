@@ -809,6 +809,10 @@ export type Database = {
           has_before_image: boolean
         }[]
       }
+      validate_proposal_acceptance: {
+        Args: { p_proposal_id: string }
+        Returns: Json
+      }
       validate_proposal_margin: {
         Args: { p_project_id: string }
         Returns: {

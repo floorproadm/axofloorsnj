@@ -104,12 +104,19 @@ export function useProposals() {
 
   /** Update proposal status */
   const updateProposalStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: ProposalStatus }) => {
+    mutationFn: async ({ id, status, selected_tier }: { id: string; status: ProposalStatus; selected_tier?: string }) => {
       const updates: ProposalUpdate = { status };
 
       // Set sent_at when transitioning to sent
       if (status === 'sent') {
         updates.sent_at = new Date().toISOString();
+      }
+
+      // Set accepted fields — trigger auto-fills accepted_at if null
+      if (status === 'accepted') {
+        if (!selected_tier) throw new Error('selected_tier is required for acceptance');
+        updates.selected_tier = selected_tier;
+        updates.accepted_at = new Date().toISOString();
       }
 
       const { data, error } = await supabase
