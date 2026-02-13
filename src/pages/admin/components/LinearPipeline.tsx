@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   STAGE_LABELS, 
@@ -11,9 +12,11 @@ import { useLeadNRABatch } from "@/hooks/useLeadNRA";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
 import { 
   Phone, MapPin, 
-  Clock, AlertTriangle
+  Clock, AlertTriangle,
+  LayoutGrid, List,
+  UserPlus, CalendarPlus, FileText, PlusCircle
 } from "lucide-react";
-import { differenceInHours } from "date-fns";
+import { differenceInHours, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type Lead = {
@@ -40,6 +43,8 @@ interface LinearPipelineProps {
   leads: Lead[];
   onRefresh: () => void;
 }
+
+type ViewMode = 'board' | 'list';
 
 // 7 sales stages (excludes in_production, completed, lost — those are in Jobs)
 const SALES_STAGES: PipelineStage[] = [
@@ -89,6 +94,7 @@ function getOperationalAlert(lead: Lead, nra: any) {
 export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('board');
 
   const salesLeads = useMemo(() => 
     leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)), 
@@ -116,19 +122,29 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     });
     Object.keys(grouped).forEach(stage => {
       grouped[stage as PipelineStage].sort((a, b) => {
-        // 1. Oldest first (most urgent)
         const timeA = new Date(a.updated_at).getTime();
         const timeB = new Date(b.updated_at).getTime();
         if (timeA !== timeB) return timeA - timeB;
-        // 2. Higher value first
         const valA = a.budget || 0;
         const valB = b.budget || 0;
         if (valA !== valB) return valB - valA;
-        // 3. Oldest created first
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       });
     });
     return grouped;
+  }, [salesLeads]);
+
+  // Flat sorted list for list view
+  const sortedLeads = useMemo(() => {
+    return [...salesLeads].sort((a, b) => {
+      const timeA = new Date(a.updated_at).getTime();
+      const timeB = new Date(b.updated_at).getTime();
+      if (timeA !== timeB) return timeA - timeB;
+      const valA = a.budget || 0;
+      const valB = b.budget || 0;
+      if (valA !== valB) return valB - valA;
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
   }, [salesLeads]);
 
   const stageStats = useMemo(() => {
@@ -185,8 +201,9 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   return (
     <div className="space-y-3">
       {/* Top Summary Bar */}
-      <div className="flex items-center justify-between bg-card border rounded-xl px-4 py-3">
-        <div className="flex items-center gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-card border rounded-xl px-4 py-3">
+        {/* Left: Stats + View Toggle */}
+        <div className="flex items-center gap-4">
           <div>
             <span className="text-xs text-muted-foreground block">Total Leads</span>
             <span className="text-xl font-bold text-foreground">{pipelineHealth.active}</span>
@@ -198,71 +215,168 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
               ${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
+          <div className="h-8 w-px bg-border" />
+          {/* View Toggle */}
+          <div className="flex items-center border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode('board')}
+              className={cn(
+                "flex items-center gap-1 px-3 py-1.5 text-xs font-medium transition-colors",
+                viewMode === 'board'
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Board
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                "flex items-center gap-1 px-3 py-1.5 text-xs font-medium transition-colors border-l",
+                viewMode === 'list'
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <List className="w-3.5 h-3.5" />
+              List
+            </button>
+          </div>
+        </div>
+
+        {/* Right: Action Buttons */}
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8"
+            onClick={() => {/* TODO: New Lead action */}}
+          >
+            <UserPlus className="w-3.5 h-3.5 mr-1" />
+            New Lead
+          </Button>
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8"
+            onClick={() => {/* TODO: New Appt action */}}
+          >
+            <CalendarPlus className="w-3.5 h-3.5 mr-1" />
+            New Appt.
+          </Button>
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8"
+            onClick={() => {/* TODO: New Proposal action */}}
+          >
+            <FileText className="w-3.5 h-3.5 mr-1" />
+            New Proposal
+          </Button>
+          <Button
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8"
+            onClick={() => {/* TODO: New Request action */}}
+          >
+            <PlusCircle className="w-3.5 h-3.5 mr-1" />
+            New Request
+          </Button>
         </div>
       </div>
 
-      {/* Kanban Board — horizontal scroll for 7 columns */}
-      <div className="overflow-x-auto pb-2 -mx-1 px-1">
-        <div className="flex gap-3 min-w-max">
-          {SALES_STAGES.map(stage => {
-            const config = STAGE_CONFIG[stage];
-            const stageLeads = leadsByStage[stage];
-            const stats = stageStats[stage];
+      {/* Board View */}
+      {viewMode === 'board' && (
+        <div className="overflow-x-auto pb-2 -mx-1 px-1">
+          <div className="flex gap-3 min-w-max">
+            {SALES_STAGES.map(stage => {
+              const config = STAGE_CONFIG[stage];
+              const stageLeads = leadsByStage[stage];
+              const stats = stageStats[stage];
 
-            return (
-              <div
-                key={stage}
-                className="w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col"
-              >
-                {/* Column Header */}
-                <div className={cn(
-                  "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
-                  config.bgColor
-                )}>
-                  <span className={cn("font-semibold text-xs truncate", config.textColor)}>
-                    {STAGE_LABELS[stage]}
-                  </span>
-                </div>
+              return (
+                <div
+                  key={stage}
+                  className="w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col"
+                >
+                  <div className={cn(
+                    "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
+                    config.bgColor
+                  )}>
+                    <span className={cn("font-semibold text-xs truncate", config.textColor)}>
+                      {STAGE_LABELS[stage]}
+                    </span>
+                  </div>
 
-                {/* Column Sub-header: count + value */}
-                <div className={cn(
-                  "flex items-center justify-between px-3 py-1.5 border-x text-xs",
-                  config.bgColor, "border-b"
-                )}>
-                  <span className="text-muted-foreground font-medium">{stats.count}</span>
-                  <span className="text-muted-foreground font-medium">
-                    ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </span>
-                </div>
+                  <div className={cn(
+                    "flex items-center justify-between px-3 py-1.5 border-x text-xs",
+                    config.bgColor, "border-b"
+                  )}>
+                    <span className="text-muted-foreground font-medium">{stats.count}</span>
+                    <span className="text-muted-foreground font-medium">
+                      ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
 
-                {/* Cards Area */}
-                <div className="flex-1 border border-t-0 rounded-b-xl bg-muted/20">
-                  <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
-                    <div className="p-1.5 space-y-1.5">
-                      {stageLeads.length === 0 ? (
-                        <div className="text-center py-16 text-muted-foreground/60 text-xs">
-                          Nenhum lead
-                        </div>
-                      ) : (
-                        stageLeads.map(lead => (
-                          <PipelineCard
-                            key={lead.id}
-                            lead={lead}
-                            nra={nraMap[lead.id]}
-                            isStale={isStale(lead)}
-                            isBlocked={isBlocked(lead)}
-                            onClick={() => handleCardClick(lead)}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </ScrollArea>
+                  <div className="flex-1 border border-t-0 rounded-b-xl bg-muted/20">
+                    <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
+                      <div className="p-1.5 space-y-1.5">
+                        {stageLeads.length === 0 ? (
+                          <div className="text-center py-16 text-muted-foreground/60 text-xs">
+                            Nenhum lead
+                          </div>
+                        ) : (
+                          stageLeads.map(lead => (
+                            <PipelineCard
+                              key={lead.id}
+                              lead={lead}
+                              nra={nraMap[lead.id]}
+                              isStale={isStale(lead)}
+                              isBlocked={isBlocked(lead)}
+                              onClick={() => handleCardClick(lead)}
+                            />
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* List View */}
+      {viewMode === 'list' && (
+        <div className="border rounded-xl bg-card overflow-hidden">
+          {/* Table Header */}
+          <div className="grid grid-cols-[1fr_120px_120px_140px_100px_80px] gap-2 px-4 py-2.5 bg-muted/50 border-b text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <span>Lead</span>
+            <span>Estágio</span>
+            <span>Contato</span>
+            <span>Serviços</span>
+            <span className="text-right">Valor</span>
+            <span className="text-right">Tempo</span>
+          </div>
+          {/* Table Body */}
+          <ScrollArea className="h-[calc(100vh-280px)] min-h-[300px]">
+            {sortedLeads.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground/60 text-xs">
+                Nenhum lead
               </div>
-            );
-          })}
+            ) : (
+              sortedLeads.map(lead => (
+                <PipelineListRow
+                  key={lead.id}
+                  lead={lead}
+                  nra={nraMap[lead.id]}
+                  isStale={isStale(lead)}
+                  isBlocked={isBlocked(lead)}
+                  onClick={() => handleCardClick(lead)}
+                />
+              ))
+            )}
+          </ScrollArea>
         </div>
-      </div>
+      )}
 
       <LeadControlModal
         lead={syncedSelectedLead}
@@ -277,6 +391,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   );
 }
 
+/* ─── Board Card ─── */
 function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
   lead: Lead;
   nra: any;
@@ -296,8 +411,8 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
       className={cn(
         "p-3 rounded-lg border bg-card cursor-pointer transition-all",
         "hover:shadow-md hover:border-primary/40",
-        isBlocked && "ring-2 ring-red-500/50 bg-red-50/5",
-        isStale && !isBlocked && "ring-2 ring-amber-500/50 bg-amber-50/5"
+        isBlocked && "ring-2 ring-destructive/50 bg-destructive/5",
+        isStale && !isBlocked && "ring-2 ring-[hsl(var(--state-risk))]/50 bg-[hsl(var(--state-risk))]/5"
       )}
     >
       {/* Row 1: TimeBadge + Name + Value */}
@@ -357,14 +472,107 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
       {alert && (
         <div className={cn(
           "flex items-center gap-1 mt-1.5 pt-1.5 border-t text-[10px] font-medium",
-          alert.type === 'critical' && "text-red-600",
-          alert.type === 'warning' && "text-amber-600",
-          alert.type === 'info' && "text-blue-600"
+          alert.type === 'critical' && "text-destructive",
+          alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
+          alert.type === 'info' && "text-primary"
         )}>
           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
           <span className="truncate">{alert.text}</span>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── List Row ─── */
+function PipelineListRow({ lead, nra, isStale, isBlocked, onClick }: {
+  lead: Lead;
+  nra: any;
+  isStale: boolean;
+  isBlocked: boolean;
+  onClick: () => void;
+}) {
+  const timeBadge = getTimeBadge(lead.updated_at);
+  const alert = getOperationalAlert(lead, nra);
+  const services = Array.isArray(lead.services) ? lead.services : [];
+  const stage = normalizeStatus(lead.status);
+  const config = STAGE_CONFIG[stage];
+
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "grid grid-cols-[1fr_120px_120px_140px_100px_80px] gap-2 px-4 py-2.5 border-b cursor-pointer transition-colors",
+        "hover:bg-muted/40",
+        isBlocked && "bg-destructive/5",
+        isStale && !isBlocked && "bg-[hsl(var(--state-risk))]/5"
+      )}
+    >
+      {/* Lead Name + Alert */}
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="font-semibold text-xs text-foreground truncate">
+          {lead.name}
+        </span>
+        {alert && (
+          <AlertTriangle className={cn(
+            "w-3 h-3 flex-shrink-0",
+            alert.type === 'critical' && "text-destructive",
+            alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
+            alert.type === 'info' && "text-primary"
+          )} />
+        )}
+        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 flex-shrink-0">
+          {sourceLabels[lead.lead_source] || lead.lead_source}
+        </Badge>
+      </div>
+
+      {/* Stage */}
+      <div className="flex items-center">
+        <Badge className={cn("text-[9px] px-1.5 py-0 h-4", config.bgColor, config.textColor, "border-0")}>
+          {STAGE_LABELS[stage]}
+        </Badge>
+      </div>
+
+      {/* Contact */}
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground min-w-0">
+        <a
+          href={`tel:${lead.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-0.5 hover:text-primary transition-colors truncate"
+        >
+          <Phone className="w-2.5 h-2.5 flex-shrink-0" />
+          <span className="truncate">{lead.phone}</span>
+        </a>
+      </div>
+
+      {/* Services */}
+      <div className="flex items-center gap-1 min-w-0">
+        {services.slice(0, 2).map(s => (
+          <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0 h-4 flex-shrink-0">
+            {serviceLabels[s] || s}
+          </Badge>
+        ))}
+        {services.length > 2 && (
+          <span className="text-[9px] text-muted-foreground">+{services.length - 2}</span>
+        )}
+      </div>
+
+      {/* Value */}
+      <div className="flex items-center justify-end">
+        <span className="font-bold text-xs text-foreground">
+          {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
+        </span>
+      </div>
+
+      {/* Time */}
+      <div className="flex items-center justify-end">
+        <span className={cn(
+          "text-[9px] px-1.5 py-0.5 rounded-full font-medium",
+          timeBadge.className
+        )}>
+          {timeBadge.text}
+        </span>
+      </div>
     </div>
   );
 }
