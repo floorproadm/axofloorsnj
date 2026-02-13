@@ -69,9 +69,10 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Only sales leads (not yet converted to project)
+  // Sales leads = those in sales stages (new_lead, appt_scheduled, proposal)
+  // NOT filtered by converted_to_project_id — proposal stage REQUIRES a project
   const salesLeads = useMemo(() => 
-    leads.filter(l => !l.converted_to_project_id), 
+    leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)), 
     [leads]
   );
 
