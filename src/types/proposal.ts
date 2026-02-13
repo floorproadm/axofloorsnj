@@ -15,6 +15,9 @@ export interface ProposalTier {
 
 export interface ProposalData {
   project_id: string;
+  proposal_id?: string;
+  proposal_number?: string;
+  proposal_status?: string;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
