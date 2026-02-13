@@ -24,12 +24,16 @@ import {
 } from "lucide-react";
 
 const STAGE_LABELS: Record<string, string> = {
-  new_lead: "Novo Contato",
-  appt_scheduled: "Visita Agendada",
-  proposal: "Orçamento Enviado",
-  in_production: "Em Execução",
-  completed: "Finalizado",
-  lost: "Perdido"
+  cold_lead: "Cold Lead",
+  warm_lead: "Warm Lead",
+  estimate_requested: "Estimate Requested",
+  estimate_scheduled: "Estimate Scheduled",
+  in_draft: "In Draft",
+  proposal_sent: "Proposal Sent",
+  proposal_rejected: "Proposal Rejected",
+  in_production: "In Production",
+  completed: "Completed",
+  lost: "Lost"
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -126,7 +130,7 @@ export default function Dashboard() {
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {/* CRÍTICO: Proposals sem follow-up */}
               {criticalAlerts.proposalWithoutFollowUp.length > 0 && (
-                <Link to="/admin/leads?status=proposal" className="block">
+                <Link to="/admin/leads?status=proposal_sent" className="block">
                   <Card className="border-red-300 bg-red-50/50 hover:bg-red-50 transition-colors cursor-pointer">
                     <CardContent className="py-4">
                       <div className="flex items-start gap-3">
@@ -176,7 +180,7 @@ export default function Dashboard() {
 
               {/* ATENÇÃO: Novos sem contato 24h */}
               {criticalAlerts.newLeadsNoContact24h.length > 0 && (
-                <Link to="/admin/leads?status=new_lead" className="block">
+                <Link to="/admin/leads?status=cold_lead" className="block">
                   <Card className="border-amber-300 bg-amber-50/50 hover:bg-amber-50 transition-colors cursor-pointer">
                     <CardContent className="py-4">
                       <div className="flex items-start gap-3">
@@ -315,7 +319,7 @@ export default function Dashboard() {
               <CardContent className="py-4">
                 {/* Desktop: Horizontal */}
                 <div className="hidden md:flex items-center justify-between gap-2">
-                  {(["new_lead", "appt_scheduled", "proposal", "in_production", "completed"] as const).map((stage, idx, arr) => (
+                  {(["cold_lead", "warm_lead", "estimate_requested", "estimate_scheduled", "in_draft", "proposal_sent", "in_production", "completed"] as const).map((stage, idx, arr) => (
                     <div key={stage} className="flex items-center flex-1">
                       <div className="flex-1 text-center p-3 rounded-lg bg-muted/50">
                         <p className="text-2xl font-bold text-navy">{funnelMetrics[stage]}</p>
@@ -336,7 +340,7 @@ export default function Dashboard() {
 
                 {/* Mobile: Vertical */}
                 <div className="md:hidden space-y-2">
-                  {(["new_lead", "appt_scheduled", "proposal", "in_production", "completed", "lost"] as const).map((stage) => (
+                  {(["cold_lead", "warm_lead", "estimate_requested", "estimate_scheduled", "in_draft", "proposal_sent", "in_production", "completed", "lost"] as const).map((stage) => (
                     <div 
                       key={stage} 
                       className={`flex items-center justify-between p-3 rounded-lg ${

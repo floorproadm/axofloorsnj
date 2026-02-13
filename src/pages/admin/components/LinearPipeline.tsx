@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,7 +14,7 @@ import { LeadSignalBadge } from "@/components/admin/LeadSignalBadge";
 import { 
   Phone, MapPin, 
   ChevronRight, Clock,
-  Ban, Filter
+  Ban
 } from "lucide-react";
 import { format, differenceInHours } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -45,7 +44,11 @@ interface LinearPipelineProps {
   onRefresh: () => void;
 }
 
-const SALES_STAGES: PipelineStage[] = ['new_lead', 'appt_scheduled', 'proposal'];
+// 7 sales stages (excludes in_production, completed, lost — those are in Jobs)
+const SALES_STAGES: PipelineStage[] = [
+  'cold_lead', 'warm_lead', 'estimate_requested', 
+  'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected'
+];
 
 const sourceLabels: Record<string, string> = {
   quiz: "Quiz",
@@ -76,7 +79,9 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
 
   const leadsByStage = useMemo(() => {
     const grouped: Record<PipelineStage, Lead[]> = {
-      new_lead: [], appt_scheduled: [], proposal: [],
+      cold_lead: [], warm_lead: [], estimate_requested: [],
+      estimate_scheduled: [], in_draft: [], proposal_sent: [],
+      proposal_rejected: [],
       in_production: [], completed: [], lost: []
     };
     salesLeads.forEach(lead => {
@@ -161,9 +166,9 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         </div>
       </div>
 
-      {/* Kanban Board — horizontal scroll */}
+      {/* Kanban Board — horizontal scroll for 7 columns */}
       <div className="overflow-x-auto pb-2 -mx-1 px-1">
-        <div className="flex gap-3 min-w-max lg:min-w-0 lg:grid lg:grid-cols-3">
+        <div className="flex gap-3 min-w-max">
           {SALES_STAGES.map(stage => {
             const config = STAGE_CONFIG[stage];
             const stageLeads = leadsByStage[stage];
@@ -172,19 +177,16 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
             return (
               <div
                 key={stage}
-                className="w-[280px] sm:w-[300px] lg:w-auto flex-shrink-0 lg:flex-shrink flex flex-col"
+                className="w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col"
               >
                 {/* Column Header */}
                 <div className={cn(
                   "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
                   config.bgColor
                 )}>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={cn("font-semibold text-sm truncate", config.textColor)}>
-                      {STAGE_LABELS[stage]}
-                    </span>
-                    <Filter className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />
-                  </div>
+                  <span className={cn("font-semibold text-xs truncate", config.textColor)}>
+                    {STAGE_LABELS[stage]}
+                  </span>
                 </div>
 
                 {/* Column Sub-header: count + value */}
@@ -192,103 +194,31 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                   "flex items-center justify-between px-3 py-1.5 border-x text-xs",
                   config.bgColor, "border-b"
                 )}>
-                  <span className="text-muted-foreground font-medium">{stats.count} Deals</span>
+                  <span className="text-muted-foreground font-medium">{stats.count}</span>
                   <span className="text-muted-foreground font-medium">
-                    ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </span>
                 </div>
 
                 {/* Cards Area */}
-                <div className={cn(
-                  "flex-1 border border-t-0 rounded-b-xl bg-muted/20"
-                )}>
+                <div className="flex-1 border border-t-0 rounded-b-xl bg-muted/20">
                   <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
-                    <div className="p-2 space-y-2">
+                    <div className="p-1.5 space-y-1.5">
                       {stageLeads.length === 0 ? (
-                        <div className="text-center py-16 text-muted-foreground/60 text-sm">
+                        <div className="text-center py-16 text-muted-foreground/60 text-xs">
                           Nenhum lead
                         </div>
                       ) : (
-                        stageLeads.map(lead => {
-                          const stale = isStale(lead);
-                          const blocked = isBlocked(lead);
-                          const leadNra = nraMap[lead.id];
-
-                          return (
-                            <div
-                              key={lead.id}
-                              onClick={() => handleCardClick(lead)}
-                              className={cn(
-                                "p-3 rounded-lg border bg-card cursor-pointer transition-all shadow-sm",
-                                "hover:shadow-md hover:border-primary/40",
-                                blocked && "ring-2 ring-state-blocked/50 bg-state-blocked/5",
-                                stale && !blocked && "ring-2 ring-state-risk/50 bg-state-risk/5"
-                              )}
-                            >
-                              {/* Budget + actions row */}
-                              <div className="flex items-start justify-between mb-2">
-                                <LeadSignalBadge lead={lead} nra={leadNra} compact />
-                                {lead.budget && (
-                                  <span className="font-bold text-sm text-foreground">
-                                    ${lead.budget.toLocaleString()}
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Name + phone */}
-                              <div className="mb-1.5">
-                                <h4 className="font-semibold text-sm text-primary truncate">{lead.name}</h4>
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                                  <Phone className="w-3 h-3 flex-shrink-0" />
-                                  <span>{lead.phone}</span>
-                                </div>
-                              </div>
-
-                              {/* Meta row */}
-                              <div className="flex items-center gap-2 text-xs flex-wrap">
-                                {lead.city && (
-                                  <span className="flex items-center gap-0.5 text-muted-foreground">
-                                    <MapPin className="w-3 h-3" />
-                                    {lead.city}
-                                  </span>
-                                )}
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                  {sourceLabels[lead.lead_source] || lead.lead_source}
-                                </Badge>
-                              </div>
-
-                              {/* NRA CTA */}
-                              {leadNra && leadNra.action !== 'none' && (
-                                <div className="mt-2.5 pt-2 border-t">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full h-7 text-xs font-medium",
-                                      blocked
-                                        ? "bg-state-blocked/10 text-state-blocked border-state-blocked hover:bg-state-blocked/20"
-                                        : leadNra.severity === 'normal'
-                                          ? "bg-state-success/10 text-state-success border-state-success hover:bg-state-success/20"
-                                          : "bg-state-risk/10 text-state-risk border-state-risk hover:bg-state-risk/20"
-                                    )}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCardClick(lead);
-                                    }}
-                                  >
-                                    {blocked ? <Ban className="w-3 h-3 mr-1" /> : <ChevronRight className="w-3 h-3 mr-1" />}
-                                    {leadNra.label}
-                                  </Button>
-                                </div>
-                              )}
-
-                              {/* Footer: date */}
-                              <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
-                                <span>{format(new Date(lead.updated_at), "dd/MM HH:mm")}</span>
-                              </div>
-                            </div>
-                          );
-                        })
+                        stageLeads.map(lead => (
+                          <PipelineCard
+                            key={lead.id}
+                            lead={lead}
+                            nra={nraMap[lead.id]}
+                            isStale={isStale(lead)}
+                            isBlocked={isBlocked(lead)}
+                            onClick={() => handleCardClick(lead)}
+                          />
+                        ))
                       )}
                     </div>
                   </ScrollArea>
@@ -308,6 +238,89 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         }}
         onRefresh={() => onRefresh()}
       />
+    </div>
+  );
+}
+
+// Extracted card component for cleaner code
+function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
+  lead: Lead;
+  nra: any;
+  isStale: boolean;
+  isBlocked: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "p-2.5 rounded-lg border bg-card cursor-pointer transition-all shadow-sm",
+        "hover:shadow-md hover:border-primary/40",
+        isBlocked && "ring-2 ring-state-blocked/50 bg-state-blocked/5",
+        isStale && !isBlocked && "ring-2 ring-state-risk/50 bg-state-risk/5"
+      )}
+    >
+      {/* Budget + signal */}
+      <div className="flex items-start justify-between mb-1.5">
+        <LeadSignalBadge lead={lead} nra={nra} compact />
+        {lead.budget && (
+          <span className="font-bold text-xs text-foreground">
+            ${lead.budget.toLocaleString()}
+          </span>
+        )}
+      </div>
+
+      {/* Name + phone */}
+      <div className="mb-1">
+        <h4 className="font-semibold text-xs text-primary truncate">{lead.name}</h4>
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+          <Phone className="w-2.5 h-2.5 flex-shrink-0" />
+          <span>{lead.phone}</span>
+        </div>
+      </div>
+
+      {/* Meta */}
+      <div className="flex items-center gap-1.5 text-[10px] flex-wrap">
+        {lead.city && (
+          <span className="flex items-center gap-0.5 text-muted-foreground">
+            <MapPin className="w-2.5 h-2.5" />
+            {lead.city}
+          </span>
+        )}
+        <Badge variant="outline" className="text-[9px] px-1 py-0">
+          {sourceLabels[lead.lead_source] || lead.lead_source}
+        </Badge>
+      </div>
+
+      {/* NRA CTA */}
+      {nra && nra.action !== 'none' && (
+        <div className="mt-2 pt-1.5 border-t">
+          <Button
+            size="sm"
+            variant="outline"
+            className={cn(
+              "w-full h-6 text-[10px] font-medium",
+              isBlocked
+                ? "bg-state-blocked/10 text-state-blocked border-state-blocked hover:bg-state-blocked/20"
+                : nra.severity === 'normal'
+                  ? "bg-state-success/10 text-state-success border-state-success hover:bg-state-success/20"
+                  : "bg-state-risk/10 text-state-risk border-state-risk hover:bg-state-risk/20"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
+          >
+            {isBlocked ? <Ban className="w-2.5 h-2.5 mr-1" /> : <ChevronRight className="w-2.5 h-2.5 mr-1" />}
+            {nra.label}
+          </Button>
+        </div>
+      )}
+
+      {/* Footer date */}
+      <div className="flex items-center justify-end mt-1.5 text-[9px] text-muted-foreground">
+        <span>{format(new Date(lead.updated_at), "dd/MM HH:mm")}</span>
+      </div>
     </div>
   );
 }

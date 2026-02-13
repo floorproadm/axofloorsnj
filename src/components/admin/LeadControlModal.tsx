@@ -126,7 +126,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const isStale = differenceInHours(new Date(), new Date(lead.updated_at)) > 48;
   const isTerminal = stage === 'completed' || stage === 'lost';
   const hasProject = !!lead.converted_to_project_id;
-  const canMarkLost = !isTerminal && (stage === 'proposal' || stage === 'in_production');
+  const canMarkLost = !isTerminal && (stage === 'proposal_sent' || stage === 'in_production');
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
     const success = await updateLeadStatus(lead.id, newStatus);
@@ -190,9 +190,13 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
 
   // Primary next status derived from NRA action mapping
   const NRA_TO_NEXT_STATUS: Record<string, PipelineStage> = {
-    schedule_visit: 'appt_scheduled',
-    advance_pipeline: stage === 'proposal' ? 'in_production' : 'completed',
-    advance_to_proposal: 'proposal',
+    warm_up: 'warm_lead',
+    request_estimate: 'estimate_requested',
+    schedule_estimate: 'estimate_scheduled',
+    advance_to_draft: 'in_draft',
+    send_proposal: 'proposal_sent',
+    advance_pipeline: stage === 'proposal_sent' ? 'in_production' : 'completed',
+    reopen_draft: 'in_draft',
     complete_job: 'completed',
   };
   const primaryNextStatus = nra ? NRA_TO_NEXT_STATUS[nra.action] : undefined;

@@ -46,7 +46,7 @@ export function ActionableAlertsSection({ leads, projects, jobProofs = [] }: Act
   // 2. Proposals sent without follow-up (leads in 'proposal' or 'quoted' status without follow-up actions)
   const proposalWithoutFollowUp = leads.filter(l => {
     const normalized = normalizeStatus(l.status);
-    if (normalized !== 'proposal') return false;
+    if (normalized !== 'proposal_sent') return false;
     const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
     return actions.length === 0;
   });

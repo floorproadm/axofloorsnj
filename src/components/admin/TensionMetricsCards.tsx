@@ -63,8 +63,8 @@ export function TensionMetricsCards({ leads }: TensionMetricsCardsProps) {
   // 1. Leads sem resposta (new_lead status or stalled > 48h in early stages)
   const leadsWithoutResponse = leads.filter(l => {
     const normalized = normalizeStatus(l.status);
-    if (normalized === 'new_lead') return true;
-    if (normalized === 'appt_scheduled') {
+    if (normalized === 'cold_lead') return true;
+    if (normalized === 'warm_lead' || normalized === 'estimate_requested') {
       const lastUpdate = new Date(l.updated_at);
       return lastUpdate < fortyEightHoursAgo;
     }
@@ -74,7 +74,7 @@ export function TensionMetricsCards({ leads }: TensionMetricsCardsProps) {
   // 2. Propostas sem follow-up (proposal without follow-up actions)
   const proposalsWithoutFollowUp = leads.filter(l => {
     const normalized = normalizeStatus(l.status);
-    if (normalized !== 'proposal') return false;
+    if (normalized !== 'proposal_sent') return false;
     const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
     return actions.length === 0;
   });
