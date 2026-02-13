@@ -20,16 +20,16 @@ export type PipelineStage = typeof PIPELINE_STAGES[number];
 
 // Stage labels for display
 export const STAGE_LABELS: Record<PipelineStage, string> = {
-  cold_lead: 'Cold Lead',
-  warm_lead: 'Warm Lead',
-  estimate_requested: 'Estimate Requested',
-  estimate_scheduled: 'Estimate Scheduled',
-  in_draft: 'In Draft',
-  proposal_sent: 'Proposal Sent',
-  proposal_rejected: 'Proposal Rejected',
-  in_production: 'In Production',
-  completed: 'Completed',
-  lost: 'Lost'
+  cold_lead: 'Lead Frio',
+  warm_lead: 'Lead Quente',
+  estimate_requested: 'Orçamento Solicitado',
+  estimate_scheduled: 'Visita Agendada',
+  in_draft: 'Em Elaboração',
+  proposal_sent: 'Proposta Enviada',
+  proposal_rejected: 'Proposta Rejeitada',
+  in_production: 'Em Produção',
+  completed: 'Concluído',
+  lost: 'Perdido'
 };
 
 // Stage visual config
