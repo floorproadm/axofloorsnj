@@ -199,47 +199,6 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         </div>
       </div>
 
-      {/* Summary Bar */}
-      <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto scrollbar-hide w-full max-w-full">
-        {SALES_STAGES.map((stage, idx) => {
-          const config = STAGE_CONFIG[stage];
-          const stats = stageStats[stage];
-          const isLast = idx === SALES_STAGES.length - 1;
-          const hasBlockedLeads = stats.blocked > 0;
-          
-          return (
-            <div key={stage} className="flex items-center flex-shrink-0">
-              <div className={cn(
-                "flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg min-w-fit",
-                config.bgColor, config.borderColor, "border",
-                hasBlockedLeads && "ring-2 ring-state-blocked/50"
-              )}>
-                <span className={cn("font-medium text-xs sm:text-sm whitespace-nowrap", config.textColor)}>
-                  {STAGE_LABELS[stage]}
-                </span>
-                <Badge variant="secondary" className="h-5 sm:h-6 px-1.5 sm:px-2 text-xs sm:text-sm font-bold bg-white/80">
-                  {stats.count}
-                </Badge>
-                {hasBlockedLeads && (
-                  <Badge className="h-4 sm:h-5 px-1.5 text-[10px] sm:text-xs bg-state-blocked text-white flex items-center gap-1">
-                    <Ban className="w-3 h-3" />
-                    {stats.blocked}
-                  </Badge>
-                )}
-                {stats.stale > 0 && !hasBlockedLeads && (
-                  <Badge className="h-4 sm:h-5 px-1.5 text-[10px] sm:text-xs bg-state-risk text-white hidden sm:flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {stats.stale}
-                  </Badge>
-                )}
-              </div>
-              {!isLast && (
-                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground mx-0.5 sm:mx-1 flex-shrink-0" />
-              )}
-            </div>
-          );
-        })}
-      </div>
 
       {/* 3-Column Pipeline Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
