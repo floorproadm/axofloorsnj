@@ -205,28 +205,6 @@ export default function JobsManager() {
           )}
         </div>
 
-        {/* Pipeline Summary Bar */}
-        <div className="flex items-center gap-1 p-2 bg-muted/50 rounded-lg overflow-x-auto">
-          {ACTIVE_STATUSES.map((status, idx) => {
-            const config = STATUS_CONFIG[status];
-            const count = grouped[status].length;
-            return (
-              <div key={status} className="flex items-center flex-shrink-0">
-                <div className={cn("flex items-center gap-1.5 px-3 py-2 rounded-lg border", config.bg, config.border)}>
-                  <span className={cn("font-medium text-sm whitespace-nowrap", config.text)}>
-                    {config.label}
-                  </span>
-                  <Badge variant="secondary" className="h-6 px-2 text-sm font-bold bg-white/80">
-                    {count}
-                  </Badge>
-                </div>
-                {idx < ACTIVE_STATUSES.length - 1 && (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground mx-1 flex-shrink-0" />
-                )}
-              </div>
-            );
-          })}
-        </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
