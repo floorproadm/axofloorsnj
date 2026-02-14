@@ -693,7 +693,10 @@ export type Database = {
           project_type: string
           square_footage: number | null
           start_date: string | null
+          team_lead: string | null
+          team_members: string[] | null
           updated_at: string
+          work_schedule: string | null
           zip_code: string | null
         }
         Insert: {
@@ -713,7 +716,10 @@ export type Database = {
           project_type: string
           square_footage?: number | null
           start_date?: string | null
+          team_lead?: string | null
+          team_members?: string[] | null
           updated_at?: string
+          work_schedule?: string | null
           zip_code?: string | null
         }
         Update: {
@@ -733,7 +739,10 @@ export type Database = {
           project_type?: string
           square_footage?: number | null
           start_date?: string | null
+          team_lead?: string | null
+          team_members?: string[] | null
           updated_at?: string
+          work_schedule?: string | null
           zip_code?: string | null
         }
         Relationships: [
