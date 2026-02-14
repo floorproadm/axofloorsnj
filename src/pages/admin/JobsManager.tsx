@@ -43,6 +43,11 @@ interface ProjectWithRelations {
   zip_code: string | null;
   square_footage: number | null;
   notes: string | null;
+  start_date: string | null;
+  completion_date: string | null;
+  team_lead: string | null;
+  team_members: string[] | null;
+  work_schedule: string | null;
   created_at: string;
   updated_at: string;
   job_costs: {
@@ -118,8 +123,11 @@ function useProjectsWithRelations() {
         proofMap.set(p.project_id, arr);
       });
 
-      return (projects || []).map((p) => ({
+      return (projects || []).map((p: any) => ({
         ...p,
+        team_lead: p.team_lead || null,
+        team_members: p.team_members || [],
+        work_schedule: p.work_schedule || '8:00 AM - 5:00 PM',
         job_costs: costsMap.get(p.id) || null,
         job_proof: proofMap.get(p.id) || [],
       }));
@@ -384,14 +392,22 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const { marginMinPercent } = useCompanySettings();
   const validation = useMarginValidation(project.id);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [showBlock, setShowBlock] = useState<"costs" | "proposal" | "proof" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteStep, setDeleteStep] = useState<0 | 1>(0);
+  const [isEditingTeam, setIsEditingTeam] = useState(false);
+  const [teamLead, setTeamLead] = useState(project.team_lead || '');
+  const [teamMembers, setTeamMembers] = useState<string[]>(project.team_members || []);
+  const [workSchedule, setWorkSchedule] = useState(project.work_schedule || '8:00 AM - 5:00 PM');
+  const [newMember, setNewMember] = useState('');
+  const [isSavingTeam, setIsSavingTeam] = useState(false);
 
   const handleDeleteProject = async () => {
     setIsDeleting(true);
     try {
+      await supabase.from('project_comments').delete().eq('project_id', project.id);
       await supabase.from('job_proof').delete().eq('project_id', project.id);
       await supabase.from('job_costs').delete().eq('project_id', project.id);
       await supabase.from('project_documents').delete().eq('project_id', project.id);
@@ -409,6 +425,39 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
     }
   };
 
+  const handleSaveTeam = async () => {
+    setIsSavingTeam(true);
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          team_lead: teamLead || null,
+          team_members: teamMembers,
+          work_schedule: workSchedule,
+        } as any)
+        .eq('id', project.id);
+      if (error) throw error;
+      toast.success('Time atualizado');
+      setIsEditingTeam(false);
+      onRefresh();
+    } catch {
+      toast.error('Erro ao salvar time');
+    } finally {
+      setIsSavingTeam(false);
+    }
+  };
+
+  const addMember = () => {
+    if (newMember.trim() && !teamMembers.includes(newMember.trim())) {
+      setTeamMembers([...teamMembers, newMember.trim()]);
+      setNewMember('');
+    }
+  };
+
+  const removeMember = (name: string) => {
+    setTeamMembers(teamMembers.filter(m => m !== name));
+  };
+
   const currentMargin = jobCost?.margin_percent ?? 0;
   const marginOk = jobCost && currentMargin >= marginMinPercent && (jobCost.estimated_revenue ?? 0) > 0;
   const hasCosts = jobCost && (jobCost.labor_cost > 0 || jobCost.material_cost > 0);
@@ -422,6 +471,11 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const handleCostSaved = () => {
     refetchCost();
     onRefresh();
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   return (
@@ -443,70 +497,177 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
         </div>
 
         <ScrollArea className="max-h-[calc(90vh-140px)]">
-          <div className="p-4 sm:p-6 space-y-5">
+          <div className="p-4 sm:p-6 space-y-4">
 
-            {/* ── Customer Info Section ── */}
+            {/* ── Customer Info + Contact Actions ── */}
             <div className="rounded-xl border bg-card p-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Informações do Cliente</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</h3>
+                <div className="flex gap-1.5">
+                  <a
+                    href={`tel:${project.customer_phone}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Ligar
+                  </a>
+                  <a
+                    href={`sms:${project.customer_phone}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-medium hover:bg-emerald-200 transition-colors"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    SMS
+                  </a>
+                  {project.customer_email && (
+                    <a
+                      href={`mailto:${project.customer_email}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      Email
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Cliente</p>
-                    <p className="text-sm font-semibold truncate">{project.customer_name}</p>
-                  </div>
+                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-sm font-semibold">{project.customer_name}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Telefone</p>
-                    <a href={`tel:${project.customer_phone}`} className="text-sm font-semibold text-primary hover:underline">
-                      {project.customer_phone}
-                    </a>
-                  </div>
+                  <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-sm">{project.customer_phone}</span>
                 </div>
                 {project.customer_email && (
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">Email</p>
-                      <p className="text-sm font-medium truncate">{project.customer_email}</p>
-                    </div>
+                    <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-sm truncate">{project.customer_email}</span>
                   </div>
                 )}
                 {project.address && (
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">Endereço</p>
-                      <p className="text-sm font-medium truncate">
-                        {[project.address, project.city, project.zip_code].filter(Boolean).join(", ")}
-                      </p>
-                    </div>
+                    <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-sm">
+                      {[project.address, project.city, project.zip_code].filter(Boolean).join(", ")}
+                    </span>
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Project meta tags */}
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t flex-wrap">
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Hash className="w-3 h-3" />
-                  {project.project_type}
-                </Badge>
-                {project.square_footage && (
-                  <Badge variant="outline" className="text-xs">
-                    {project.square_footage} sqft
-                  </Badge>
-                )}
+            {/* ── Project Details (Roofr-style) ── */}
+            <div className="rounded-xl border bg-card p-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Detalhes do Projeto</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Área</p>
+                  <p className="text-sm font-bold">{project.square_footage ? `${project.square_footage} sqft` : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Tipo de Serviço</p>
+                  <p className="text-sm font-bold">{project.project_type}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Início</p>
+                  <p className="text-sm font-bold">{formatDate(project.start_date)}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Est. Conclusão</p>
+                  <p className="text-sm font-bold">{formatDate(project.completion_date)}</p>
+                </div>
               </div>
+            </div>
+
+            {/* ── Team Section (Roofr-style) ── */}
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Time</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    if (isEditingTeam) {
+                      handleSaveTeam();
+                    } else {
+                      setIsEditingTeam(true);
+                    }
+                  }}
+                  disabled={isSavingTeam}
+                >
+                  {isSavingTeam ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                  {isEditingTeam ? 'Salvar' : 'Editar'}
+                </Button>
+              </div>
+
+              {isEditingTeam ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Team Lead</label>
+                    <Input
+                      value={teamLead}
+                      onChange={(e) => setTeamLead(e.target.value)}
+                      placeholder="Nome do líder..."
+                      className="mt-1 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Horário</label>
+                    <Input
+                      value={workSchedule}
+                      onChange={(e) => setWorkSchedule(e.target.value)}
+                      placeholder="8:00 AM - 5:00 PM"
+                      className="mt-1 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Membros</label>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5 mb-2">
+                      {teamMembers.map((m) => (
+                        <Badge key={m} variant="secondary" className="text-xs gap-1 pr-1">
+                          {m}
+                          <button onClick={() => removeMember(m)} className="hover:text-destructive">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Input
+                        value={newMember}
+                        onChange={(e) => setNewMember(e.target.value)}
+                        placeholder="Adicionar membro..."
+                        className="text-sm"
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); } }}
+                      />
+                      <Button size="sm" onClick={addMember} disabled={!newMember.trim()}>
+                        <Send className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Team Lead</span>
+                    </div>
+                    <span className="text-sm font-semibold">{teamLead || '—'}</span>
+                  </div>
+                  {teamMembers.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {teamMembers.map((m) => (
+                        <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{workSchedule}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ── Quick Actions ── */}
