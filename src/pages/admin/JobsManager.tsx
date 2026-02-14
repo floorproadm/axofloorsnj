@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,7 +8,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
-import { useQuery } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useJobCost, useMarginValidation } from "@/hooks/useJobCosts";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
@@ -20,7 +22,8 @@ import {
   Hammer, CheckCircle, Clock, DollarSign, MapPin,
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
   Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
-  CalendarDays, TrendingUp, Eye, MessageSquare, Hash, Ruler
+  CalendarDays, TrendingUp, Eye, MessageSquare, Hash, Ruler,
+  Send, ImagePlus, X, StickyNote
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
@@ -668,18 +671,8 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               </div>
             )}
 
-            {/* ── Notes Section ── */}
-            <div className="rounded-xl border bg-card p-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5" />
-                Notas
-              </h3>
-              {project.notes ? (
-                <p className="text-sm text-foreground leading-relaxed">{project.notes}</p>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">Nenhuma nota registrada.</p>
-              )}
-            </div>
+            {/* ── Notes & Comments Section ── */}
+            <ProjectNotesSection projectId={project.id} initialNotes={project.notes} onRefresh={onRefresh} />
 
           </div>
         </ScrollArea>
@@ -747,5 +740,303 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT NOTES SECTION — Rich notes, photos & comments
+// ═══════════════════════════════════════════════════════════
+
+interface ProjectNotesSectionProps {
+  projectId: string;
+  initialNotes: string | null;
+  onRefresh: () => void;
+}
+
+function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNotesSectionProps) {
+  const queryClient = useQueryClient();
+  const [notes, setNotes] = useState(initialNotes || '');
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [commentImage, setCommentImage] = useState<File | null>(null);
+  const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch comments
+  const { data: comments = [], isLoading: loadingComments } = useQuery({
+    queryKey: ['project-comments', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_comments')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const handleSaveNotes = async () => {
+    setIsSavingNotes(true);
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ notes })
+        .eq('id', projectId);
+      if (error) throw error;
+      toast.success('Notas salvas');
+      setIsEditingNotes(false);
+      onRefresh();
+    } catch {
+      toast.error('Erro ao salvar notas');
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCommentImage(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setCommentImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setCommentImage(null);
+    setCommentImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSubmitComment = async () => {
+    if (!commentText.trim() && !commentImage) return;
+    setIsSubmitting(true);
+
+    try {
+      let imageUrl: string | null = null;
+
+      if (commentImage) {
+        const ext = commentImage.name.split('.').pop() || 'jpg';
+        const path = `${projectId}/comments/${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from('project-documents')
+          .upload(path, commentImage);
+        if (upErr) throw upErr;
+
+        const { data: urlData } = await supabase.storage
+          .from('project-documents')
+          .createSignedUrl(path, 60 * 60 * 24 * 365);
+        imageUrl = urlData?.signedUrl || null;
+      }
+
+      const { error } = await supabase
+        .from('project_comments')
+        .insert({
+          project_id: projectId,
+          content: commentText.trim() || '📷 Foto adicionada',
+          image_url: imageUrl,
+          author_name: 'Admin',
+        });
+      if (error) throw error;
+
+      setCommentText('');
+      clearImage();
+      queryClient.invalidateQueries({ queryKey: ['project-comments', projectId] });
+      toast.success('Comentário adicionado');
+    } catch {
+      toast.error('Erro ao enviar comentário');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    const { error } = await supabase
+      .from('project_comments')
+      .delete()
+      .eq('id', commentId);
+    if (error) {
+      toast.error('Erro ao remover');
+    } else {
+      queryClient.invalidateQueries({ queryKey: ['project-comments', projectId] });
+    }
+  };
+
+  const formatCommentDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
+      ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <div className="rounded-xl border bg-card overflow-hidden">
+      {/* Project Notes */}
+      <div className="p-4 border-b">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <StickyNote className="w-3.5 h-3.5" />
+            Notas do Projeto
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => {
+              if (isEditingNotes) {
+                handleSaveNotes();
+              } else {
+                setIsEditingNotes(true);
+              }
+            }}
+            disabled={isSavingNotes}
+          >
+            {isSavingNotes ? (
+              <Loader2 className="w-3 h-3 animate-spin mr-1" />
+            ) : null}
+            {isEditingNotes ? 'Salvar' : 'Editar'}
+          </Button>
+        </div>
+        {isEditingNotes ? (
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Garage Code: 86753&#10;There are dogs so be sure to close the gate...&#10;&#10;Informações importantes sobre o local, acesso, pets, etc."
+            className="min-h-[100px] text-sm"
+            autoFocus
+          />
+        ) : (
+          <div className="text-sm leading-relaxed whitespace-pre-wrap min-h-[40px]">
+            {notes ? (
+              notes
+            ) : (
+              <span className="text-muted-foreground italic">Clique em Editar para adicionar notas...</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Comments Timeline */}
+      <div className="p-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
+          <MessageSquare className="w-3.5 h-3.5" />
+          Comentários & Fotos
+          {comments.length > 0 && (
+            <Badge variant="secondary" className="text-[10px] ml-1 px-1.5 py-0 h-4">
+              {comments.length}
+            </Badge>
+          )}
+        </h3>
+
+        {/* Comment input */}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1 space-y-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Adicionar comentário..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                className="text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitComment();
+                  }
+                }}
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={handleImageSelect}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="flex-shrink-0 h-9 w-9"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <ImagePlus className="w-4 h-4" />
+              </Button>
+              <Button
+                size="icon"
+                className="flex-shrink-0 h-9 w-9"
+                disabled={isSubmitting || (!commentText.trim() && !commentImage)}
+                onClick={handleSubmitComment}
+              >
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              </Button>
+            </div>
+
+            {/* Image preview */}
+            {commentImagePreview && (
+              <div className="relative inline-block">
+                <img
+                  src={commentImagePreview}
+                  alt="Preview"
+                  className="h-20 rounded-lg border object-cover"
+                />
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full"
+                  onClick={clearImage}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Comments list */}
+        {loadingComments ? (
+          <div className="flex justify-center py-4">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : comments.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-4 italic">
+            Nenhum comentário. Adicione notas, fotos do local ou observações.
+          </p>
+        ) : (
+          <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+            {comments.map((c: any) => (
+              <div key={c.id} className="group flex gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-xs font-semibold">{c.author_name}</span>
+                    <span className="text-[10px] text-muted-foreground">{formatCommentDate(c.created_at)}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleDeleteComment(c.id)}
+                    >
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </Button>
+                  </div>
+                  <p className="text-sm leading-relaxed">{c.content}</p>
+                  {c.image_url && (
+                    <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
+                      <img
+                        src={c.image_url}
+                        alt="Anexo"
+                        className="max-h-40 rounded-lg border object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                      />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
