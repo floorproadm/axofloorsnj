@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,9 +19,11 @@ import { JobProofUploader } from "@/components/admin/JobProofUploader";
 import {
   Hammer, CheckCircle, Clock, DollarSign, MapPin,
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
-  Ban, Loader2, User, FolderOpen, Trash2
+  Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
+  CalendarDays, TrendingUp, Eye, MessageSquare, Hash
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 
 type ProjectStatus = "pending" | "in_production" | "completed";
@@ -56,13 +58,14 @@ interface ProjectWithRelations {
   }[];
 }
 
-const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: string; border: string; icon: React.ReactNode }> = {
+const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: string; border: string; icon: React.ReactNode; headerBg: string }> = {
   pending: {
     label: "Pendente",
     bg: "bg-amber-50",
     text: "text-amber-700",
     border: "border-amber-300",
     icon: <Clock className="w-5 h-5" />,
+    headerBg: "bg-gradient-to-r from-amber-600 to-amber-500",
   },
   in_production: {
     label: "Em Produção",
@@ -70,6 +73,7 @@ const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: st
     text: "text-blue-700",
     border: "border-blue-300",
     icon: <Hammer className="w-5 h-5" />,
+    headerBg: "bg-gradient-to-r from-blue-700 to-blue-500",
   },
   completed: {
     label: "Concluído",
@@ -77,6 +81,7 @@ const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: st
     text: "text-emerald-700",
     border: "border-emerald-300",
     icon: <CheckCircle className="w-5 h-5" />,
+    headerBg: "bg-gradient-to-r from-emerald-700 to-emerald-500",
   },
 };
 
@@ -93,7 +98,6 @@ function useProjectsWithRelations() {
 
       if (error) throw error;
 
-      // Fetch job_costs and job_proof for all projects
       const projectIds = (projects || []).map((p) => p.id);
 
       const [costsRes, proofRes] = await Promise.all([
@@ -123,19 +127,31 @@ function useProjectsWithRelations() {
 function getProjectIndicator(project: ProjectWithRelations, minMargin: number) {
   const costs = project.job_costs;
   if (!costs || (costs.total_cost === null && costs.labor_cost === 0 && costs.material_cost === 0)) {
-    return { color: "bg-amber-500", label: "Sem custos" };
+    return { color: "bg-amber-500", label: "Sem custos", severity: "warning" as const };
   }
   if (costs.margin_percent !== null && costs.margin_percent < minMargin) {
-    return { color: "bg-red-500", label: "Margem baixa" };
+    return { color: "bg-red-500", label: "Margem baixa", severity: "error" as const };
   }
   if (project.project_status === "in_production" || project.project_status === "completed") {
     const hasBefore = project.job_proof.some((p) => p.before_image_url);
     const hasAfter = project.job_proof.some((p) => p.after_image_url);
     if (!hasBefore || !hasAfter) {
-      return { color: "bg-red-500", label: "Sem fotos" };
+      return { color: "bg-red-500", label: "Sem fotos", severity: "error" as const };
     }
   }
-  return { color: "bg-emerald-500", label: "OK" };
+  return { color: "bg-emerald-500", label: "OK", severity: "ok" as const };
+}
+
+function timeAgo(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "hoje";
+  if (diffDays === 1) return "1 dia";
+  if (diffDays < 30) return `${diffDays} dias`;
+  const months = Math.floor(diffDays / 30);
+  return months === 1 ? "1 mês" : `${months} meses`;
 }
 
 export default function JobsManager() {
@@ -207,7 +223,6 @@ export default function JobsManager() {
           )}
         </div>
 
-
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -220,7 +235,7 @@ export default function JobsManager() {
               const statusProjects = grouped[status];
 
               return (
-                <Card key={status} className={cn("border-2", config.border)}>
+                <Card key={status} className={cn("border-2 overflow-hidden", config.border)}>
                   <div className={cn("flex items-center justify-between px-4 py-3 border-b", config.bg)}>
                     <div className="flex items-center gap-2">
                       <span className={config.text}>{config.icon}</span>
@@ -231,7 +246,7 @@ export default function JobsManager() {
                     </Badge>
                   </div>
 
-                  <ScrollArea className="h-[400px]">
+                  <ScrollArea className="h-[420px]">
                     <div className="p-2 space-y-2">
                       {statusProjects.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground text-sm">
@@ -240,51 +255,89 @@ export default function JobsManager() {
                       ) : (
                         statusProjects.map((project) => {
                           const indicator = getProjectIndicator(project, marginMinPercent);
+                          const revenue = project.job_costs?.estimated_revenue || 0;
+                          const margin = project.job_costs?.margin_percent;
+                          const hasBefore = project.job_proof.some((p) => p.before_image_url);
+                          const hasAfter = project.job_proof.some((p) => p.after_image_url);
+
                           return (
                             <div
                               key={project.id}
                               onClick={() => setSelectedProject(project)}
                               className={cn(
-                                "p-3 rounded-lg border bg-card cursor-pointer transition-all",
-                                "hover:shadow-md hover:border-primary/50",
-                                indicator.color === "bg-red-500" && "ring-2 ring-red-300 bg-red-50/30"
+                                "group p-3 rounded-lg border bg-card cursor-pointer transition-all duration-200",
+                                "hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5",
+                                indicator.severity === "error" && "ring-2 ring-red-200 border-red-300"
                               )}
                             >
-                              <div className="flex items-start justify-between gap-2">
+                              {/* Top row: Name + indicator */}
+                              <div className="flex items-start justify-between gap-2 mb-2">
                                 <div className="min-w-0 flex-1">
-                                  <p className="font-semibold text-sm truncate">{project.customer_name}</p>
-                                  {project.city && (
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                      <MapPin className="w-3 h-3" />
-                                      {project.city}
-                                    </p>
-                                  )}
+                                  <p className="font-bold text-sm truncate">{project.customer_name}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                                      {project.project_type}
+                                    </Badge>
+                                    <span className="text-[10px] text-muted-foreground">
+                                      {timeAgo(project.created_at)}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className={cn("w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1", indicator.color)} title={indicator.label} />
+                                <div className={cn(
+                                  "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0",
+                                  indicator.severity === "ok" && "bg-emerald-100 text-emerald-700",
+                                  indicator.severity === "warning" && "bg-amber-100 text-amber-700",
+                                  indicator.severity === "error" && "bg-red-100 text-red-700",
+                                )}>
+                                  <div className={cn("w-1.5 h-1.5 rounded-full", indicator.color)} />
+                                  {indicator.label}
+                                </div>
                               </div>
 
-                              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                {project.job_costs?.estimated_revenue ? (
-                                  <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
-                                    ${project.job_costs.estimated_revenue.toLocaleString()}
-                                  </Badge>
-                                ) : null}
-                                {project.job_costs?.margin_percent !== null && project.job_costs?.margin_percent !== undefined ? (
-                                  <Badge
-                                    variant="outline"
-                                    className={cn(
-                                      "text-xs",
-                                      project.job_costs.margin_percent >= marginMinPercent
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                        : "bg-red-50 text-red-700 border-red-200"
-                                    )}
-                                  >
-                                    {project.job_costs.margin_percent.toFixed(1)}%
-                                  </Badge>
-                                ) : null}
-                                <Badge variant="secondary" className="text-[10px]">
-                                  {project.project_type}
-                                </Badge>
+                              {/* Location */}
+                              {project.city && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                                  {[project.city, project.zip_code].filter(Boolean).join(", ")}
+                                </p>
+                              )}
+
+                              {/* Financial row */}
+                              <div className="flex items-center justify-between pt-2 border-t border-dashed">
+                                <div className="flex items-center gap-2">
+                                  {revenue > 0 ? (
+                                    <span className="text-sm font-bold text-emerald-700">
+                                      {formatCurrency(revenue)}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground italic">Sem valor</span>
+                                  )}
+                                  {margin !== null && margin !== undefined && (
+                                    <Badge
+                                      variant="outline"
+                                      className={cn(
+                                        "text-[10px] px-1.5 py-0 h-4",
+                                        margin >= marginMinPercent
+                                          ? "border-emerald-300 text-emerald-700 bg-emerald-50"
+                                          : "border-red-300 text-red-700 bg-red-50"
+                                      )}
+                                    >
+                                      <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+                                      {margin.toFixed(0)}%
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {/* Quick status icons */}
+                                <div className="flex items-center gap-1">
+                                  <div className={cn(
+                                    "w-5 h-5 rounded flex items-center justify-center",
+                                    hasBefore && hasAfter ? "bg-emerald-100" : "bg-muted"
+                                  )}>
+                                    <Camera className={cn("w-3 h-3", hasBefore && hasAfter ? "text-emerald-600" : "text-muted-foreground")} />
+                                  </div>
+                                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
                               </div>
                             </div>
                           );
@@ -313,7 +366,7 @@ export default function JobsManager() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// JOB CONTROL MODAL — 4 blocks: Costs, Margin, Proposal, Proof
+// JOB CONTROL MODAL — Redesigned with sectioned layout
 // ═══════════════════════════════════════════════════════════
 
 interface JobControlModalProps {
@@ -336,7 +389,6 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const handleDeleteProject = async () => {
     setIsDeleting(true);
     try {
-      // Delete related records first
       await supabase.from('job_proof').delete().eq('project_id', project.id);
       await supabase.from('job_costs').delete().eq('project_id', project.id);
       await supabase.from('project_documents').delete().eq('project_id', project.id);
@@ -372,207 +424,253 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[calc(100vw-16px)] sm:max-w-2xl max-h-[90vh] overflow-hidden p-0">
-        {/* Header */}
-        <div className={cn("px-4 sm:px-6 py-4 border-b", statusConfig.bg)}>
+        {/* Status Banner */}
+        <div className={cn("px-4 sm:px-6 py-4 text-white", statusConfig.headerBg)}>
           <DialogHeader className="pb-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <DialogTitle className="text-xl font-bold truncate pr-8">
-                  {project.customer_name}
-                </DialogTitle>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", statusConfig.bg, statusConfig.text, statusConfig.border)}>
-                    {statusConfig.label}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">{project.project_type}</Badge>
-                  {project.city && (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {project.city}
-                    </span>
-                  )}
-                </div>
-              </div>
+            <div className="flex items-center gap-2 text-white/80 text-xs mb-1">
+              {statusConfig.icon}
+              <span className="font-medium">{statusConfig.label}</span>
+              <span className="mx-1">•</span>
+              <span>Criado {timeAgo(project.created_at)} atrás</span>
             </div>
+            <DialogTitle className="text-xl font-bold text-white truncate pr-8">
+              {project.customer_name}
+            </DialogTitle>
           </DialogHeader>
         </div>
 
-        <ScrollArea className="max-h-[calc(90vh-120px)]">
-          <div className="p-4 sm:p-6 space-y-4">
-            {/* Block Navigator */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              <Button
-                variant={showBlock === "costs" ? "default" : "outline"}
-                size="sm"
-                className="justify-start gap-2"
-                onClick={() => setShowBlock(showBlock === "costs" ? null : "costs")}
-              >
-                <Calculator className="w-4 h-4" />
-                <span className="truncate">Custos</span>
-                {hasCosts ? (
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 ml-auto flex-shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-auto flex-shrink-0" />
-                )}
-              </Button>
+        <ScrollArea className="max-h-[calc(90vh-140px)]">
+          <div className="p-4 sm:p-6 space-y-5">
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="justify-start gap-2"
-                disabled
-              >
-                <DollarSign className="w-4 h-4" />
-                <span className="truncate">Margem</span>
-                {marginOk ? (
-                  <span className="text-xs text-emerald-600 ml-auto">{currentMargin.toFixed(0)}%</span>
-                ) : (
-                  <span className="text-xs text-red-600 ml-auto">{currentMargin.toFixed(0)}%</span>
-                )}
-              </Button>
-
-              <Button
-                variant={showBlock === "proposal" ? "default" : "outline"}
-                size="sm"
-                className="justify-start gap-2"
-                onClick={() => setShowBlock(showBlock === "proposal" ? null : "proposal")}
-                disabled={!marginOk}
-              >
-                <FileText className="w-4 h-4" />
-                <span className="truncate">Proposta</span>
-                {!marginOk && <Ban className="w-3.5 h-3.5 text-red-400 ml-auto flex-shrink-0" />}
-              </Button>
-
-              <Button
-                variant={showBlock === "proof" ? "default" : "outline"}
-                size="sm"
-                className="justify-start gap-2"
-                onClick={() => setShowBlock(showBlock === "proof" ? null : "proof")}
-              >
-                <Camera className="w-4 h-4" />
-                <span className="truncate">Fotos</span>
-                {proofComplete ? (
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 ml-auto flex-shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-auto flex-shrink-0" />
-                )}
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="justify-start gap-2"
-                onClick={() => {
-                  onClose();
-                  navigate(`/admin/jobs/${project.id}/documents`);
-                }}
-              >
-                <FolderOpen className="w-4 h-4" />
-                <span className="truncate">Docs</span>
-              </Button>
-            </div>
-
-            {/* Margin Status Bar — Always visible */}
-            <div
-              className={cn(
-                "p-3 rounded-lg border-2 flex items-center justify-between",
-                marginOk ? "bg-emerald-50 border-emerald-400" : "bg-red-50 border-red-400"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                {marginOk ? (
-                  <CheckCircle className="w-5 h-5 text-emerald-600" />
-                ) : (
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                )}
-                <div>
-                  <p className={cn("text-sm font-bold", marginOk ? "text-emerald-700" : "text-red-700")}>
-                    Margem: {currentMargin.toFixed(1)}%
-                  </p>
-                  <p className={cn("text-xs", marginOk ? "text-emerald-600" : "text-red-600")}>
-                    {marginOk
-                      ? `Lucro: $${(jobCost?.profit_amount ?? 0).toFixed(0)}`
-                      : `Mínimo: ${marginMinPercent}% — Ajuste custos`}
-                  </p>
+            {/* ── Customer Info Section ── */}
+            <div className="rounded-xl border bg-card p-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Informações do Cliente</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Cliente</p>
+                    <p className="text-sm font-semibold truncate">{project.customer_name}</p>
+                  </div>
                 </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Telefone</p>
+                    <a href={`tel:${project.customer_phone}`} className="text-sm font-semibold text-primary hover:underline">
+                      {project.customer_phone}
+                    </a>
+                  </div>
+                </div>
+                {project.customer_email && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium truncate">{project.customer_email}</p>
+                    </div>
+                  </div>
+                )}
+                {project.address && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Endereço</p>
+                      <p className="text-sm font-medium truncate">
+                        {[project.address, project.city, project.zip_code].filter(Boolean).join(", ")}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Revenue</p>
-                <p className="text-sm font-bold">${(jobCost?.estimated_revenue ?? 0).toLocaleString()}</p>
+
+              {/* Project meta tags */}
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t flex-wrap">
+                <Badge variant="secondary" className="text-xs gap-1">
+                  <Hash className="w-3 h-3" />
+                  {project.project_type}
+                </Badge>
+                {project.square_footage && (
+                  <Badge variant="outline" className="text-xs">
+                    {project.square_footage} sqft
+                  </Badge>
+                )}
               </div>
             </div>
 
-            {/* BLOCK 1 — Custos */}
+            {/* ── Quick Actions ── */}
+            <div className="rounded-xl border bg-card p-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações Rápidas</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <Button
+                  variant={showBlock === "costs" ? "default" : "outline"}
+                  size="sm"
+                  className="h-auto py-2.5 flex-col gap-1"
+                  onClick={() => setShowBlock(showBlock === "costs" ? null : "costs")}
+                >
+                  <Calculator className="w-4 h-4" />
+                  <span className="text-[11px]">Custos</span>
+                  {hasCosts ? (
+                    <CheckCircle className="w-3 h-3 text-emerald-500" />
+                  ) : (
+                    <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-auto py-2.5 flex-col gap-1 cursor-default"
+                  disabled
+                >
+                  <DollarSign className="w-4 h-4" />
+                  <span className="text-[11px]">Margem</span>
+                  <span className={cn("text-[11px] font-bold", marginOk ? "text-emerald-600" : "text-red-600")}>
+                    {currentMargin.toFixed(0)}%
+                  </span>
+                </Button>
+
+                <Button
+                  variant={showBlock === "proposal" ? "default" : "outline"}
+                  size="sm"
+                  className="h-auto py-2.5 flex-col gap-1"
+                  onClick={() => setShowBlock(showBlock === "proposal" ? null : "proposal")}
+                  disabled={!marginOk}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span className="text-[11px]">Proposta</span>
+                  {!marginOk ? (
+                    <Ban className="w-3 h-3 text-red-400" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3" />
+                  )}
+                </Button>
+
+                <Button
+                  variant={showBlock === "proof" ? "default" : "outline"}
+                  size="sm"
+                  className="h-auto py-2.5 flex-col gap-1"
+                  onClick={() => setShowBlock(showBlock === "proof" ? null : "proof")}
+                >
+                  <Camera className="w-4 h-4" />
+                  <span className="text-[11px]">Fotos</span>
+                  {proofComplete ? (
+                    <CheckCircle className="w-3 h-3 text-emerald-500" />
+                  ) : (
+                    <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-auto py-2.5 flex-col gap-1"
+                  onClick={() => {
+                    onClose();
+                    navigate(`/admin/jobs/${project.id}/documents`);
+                  }}
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  <span className="text-[11px]">Docs</span>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                </Button>
+              </div>
+            </div>
+
+            {/* ── Financial Summary (Always Visible) ── */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className={cn(
+                "rounded-xl border-2 p-3.5",
+                marginOk ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50"
+              )}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  {marginOk ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Margem</span>
+                </div>
+                <p className={cn("text-2xl font-bold", marginOk ? "text-emerald-700" : "text-red-700")}>
+                  {currentMargin.toFixed(1)}%
+                </p>
+                <p className={cn("text-xs mt-0.5", marginOk ? "text-emerald-600" : "text-red-600")}>
+                  {marginOk
+                    ? `Lucro: ${formatCurrency(jobCost?.profit_amount ?? 0)}`
+                    : `Mínimo: ${marginMinPercent}%`}
+                </p>
+              </div>
+
+              <div className="rounded-xl border-2 border-border p-3.5 bg-card">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <DollarSign className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Revenue</span>
+                </div>
+                <p className="text-2xl font-bold">
+                  {formatCurrency(jobCost?.estimated_revenue ?? 0)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Custo: {formatCurrency(jobCost?.total_cost ?? 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* ── Expandable Blocks ── */}
             {showBlock === "costs" && (
-              <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
-                <h3 className="font-bold text-amber-800 text-base mb-3 flex items-center gap-2">
-                  <Calculator className="w-5 h-5" />
+              <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 animate-fade-in">
+                <h3 className="font-bold text-amber-800 text-sm mb-3 flex items-center gap-2">
+                  <Calculator className="w-4 h-4" />
                   Custos do Projeto
                 </h3>
                 <JobCostEditor projectId={project.id} onSaved={handleCostSaved} />
               </div>
             )}
 
-            {/* BLOCK 3 — Proposal (only if margin OK) */}
             {showBlock === "proposal" && marginOk && (
-              <div className="p-4 rounded-lg bg-blue-50 border-2 border-blue-300">
-                <h3 className="font-bold text-blue-800 text-base mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
+              <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-4 animate-fade-in">
+                <h3 className="font-bold text-blue-800 text-sm mb-3 flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
                   Proposta 3-Tiers
                 </h3>
                 <ProposalGenerator projectId={project.id} onClose={() => setShowBlock(null)} />
               </div>
             )}
 
-            {/* BLOCK 4 — JobProof */}
             {showBlock === "proof" && (
-              <div className="p-4 rounded-lg bg-violet-50 border-2 border-violet-300">
-                <h3 className="font-bold text-violet-700 text-base mb-3 flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
+              <div className="rounded-xl border-2 border-violet-300 bg-violet-50 p-4 animate-fade-in">
+                <h3 className="font-bold text-violet-700 text-sm mb-3 flex items-center gap-2">
+                  <Camera className="w-4 h-4" />
                   Prova de Trabalho
                 </h3>
                 <JobProofUploader projectId={project.id} />
               </div>
             )}
 
-            <Separator />
-
-            {/* Contact Info */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                  <User className="w-3 h-3" /> Cliente
-                </p>
-                <p className="font-medium text-sm">{project.customer_name}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground mb-1">Telefone</p>
-                <a href={`tel:${project.customer_phone}`} className="font-medium text-sm text-primary hover:underline">
-                  {project.customer_phone}
-                </a>
-              </div>
-              {project.address && (
-                <div className="p-3 rounded-lg bg-muted/30 col-span-2">
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                    <MapPin className="w-3 h-3" /> Endereço
-                  </p>
-                  <p className="font-medium text-sm">
-                    {[project.address, project.city, project.zip_code].filter(Boolean).join(", ")}
-                  </p>
-                </div>
+            {/* ── Notes Section ── */}
+            <div className="rounded-xl border bg-card p-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5" />
+                Notas
+              </h3>
+              {project.notes ? (
+                <p className="text-sm text-foreground leading-relaxed">{project.notes}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Nenhuma nota registrada.</p>
               )}
             </div>
 
-            {project.notes && (
-              <div className="p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground mb-1">Notas</p>
-                <p className="text-sm">{project.notes}</p>
-              </div>
-            )}
           </div>
         </ScrollArea>
 
-        {/* Footer - Delete */}
+        {/* Footer */}
         <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
           <AlertDialog onOpenChange={(open) => { if (!open) setDeleteStep(0); }}>
             <AlertDialogTrigger asChild>
@@ -580,9 +678,9 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                 variant="ghost"
                 size="sm"
                 disabled={isDeleting}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 gap-1.5"
               >
-                {isDeleting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
+                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 Deletar Job
               </Button>
             </AlertDialogTrigger>
@@ -629,7 +727,9 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <span className="text-xs text-muted-foreground">Apenas admins</span>
+          <span className="text-[10px] text-muted-foreground">
+            Job criado em {new Date(project.created_at).toLocaleDateString('pt-BR')} • Apenas admins
+          </span>
         </div>
       </DialogContent>
     </Dialog>
