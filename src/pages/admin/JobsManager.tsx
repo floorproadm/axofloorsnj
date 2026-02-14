@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,9 +19,10 @@ import { JobProofUploader } from "@/components/admin/JobProofUploader";
 import {
   Hammer, CheckCircle, Clock, DollarSign, MapPin,
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
-  Ban, Loader2, User, FolderOpen
+  Ban, Loader2, User, FolderOpen, Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type ProjectStatus = "pending" | "in_production" | "completed";
 
@@ -328,6 +330,29 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const navigate = useNavigate();
 
   const [showBlock, setShowBlock] = useState<"costs" | "proposal" | "proof" | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<0 | 1>(0);
+
+  const handleDeleteProject = async () => {
+    setIsDeleting(true);
+    try {
+      // Delete related records first
+      await supabase.from('job_proof').delete().eq('project_id', project.id);
+      await supabase.from('job_costs').delete().eq('project_id', project.id);
+      await supabase.from('project_documents').delete().eq('project_id', project.id);
+      await supabase.from('proposals').delete().eq('project_id', project.id);
+      const { error } = await supabase.from('projects').delete().eq('id', project.id);
+      if (error) throw error;
+      toast.success(`Job "${project.customer_name}" deletado com sucesso`);
+      onRefresh();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao deletar job');
+    } finally {
+      setIsDeleting(false);
+      setDeleteStep(0);
+    }
+  };
 
   const currentMargin = jobCost?.margin_percent ?? 0;
   const marginOk = jobCost && currentMargin >= marginMinPercent && (jobCost.estimated_revenue ?? 0) > 0;
@@ -546,6 +571,66 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
             )}
           </div>
         </ScrollArea>
+
+        {/* Footer - Delete */}
+        <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
+          <AlertDialog onOpenChange={(open) => { if (!open) setDeleteStep(0); }}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isDeleting}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              >
+                {isDeleting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
+                Deletar Job
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {deleteStep === 0 ? `Deletar job "${project.customer_name}"?` : "⚠️ Confirmação final"}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {deleteStep === 0 ? (
+                    <>
+                      Esta ação removerá o job e todos os dados relacionados (custos, propostas, fotos, documentos).
+                      <span className="block mt-2 font-semibold text-destructive">
+                        Esta ação é irreversível.
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Você está prestes a deletar permanentemente o job de <strong>{project.customer_name}</strong> e todos os registros associados.
+                      <span className="block mt-2 font-semibold text-destructive">
+                        Tem certeza absoluta? Não será possível recuperar.
+                      </span>
+                    </>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                {deleteStep === 0 ? (
+                  <Button
+                    variant="destructive"
+                    onClick={(e) => { e.preventDefault(); setDeleteStep(1); }}
+                  >
+                    Sim, quero deletar
+                  </Button>
+                ) : (
+                  <AlertDialogAction
+                    onClick={handleDeleteProject}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Confirmar exclusão permanente
+                  </AlertDialogAction>
+                )}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <span className="text-xs text-muted-foreground">Apenas admins</span>
+        </div>
       </DialogContent>
     </Dialog>
   );
