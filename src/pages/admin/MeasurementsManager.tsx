@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,9 @@ const AREA_TYPES = [
 ];
 
 export default function MeasurementsManager() {
+  const [searchParams] = useSearchParams();
+  const projectFromUrl = searchParams.get('project');
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -69,10 +73,16 @@ export default function MeasurementsManager() {
       m.project?.customer_name?.toLowerCase().includes(search.toLowerCase()) ||
       m.project?.address?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || m.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesProject = !projectFromUrl || m.project_id === projectFromUrl;
+    return matchesSearch && matchesStatus && matchesProject;
   });
 
-  // --- Detail View ---
+  // Auto-open create if navigated from job with no existing measurements
+  useEffect(() => {
+    if (projectFromUrl && !isLoading && filtered.length === 0) {
+      setShowCreate(true);
+    }
+  }, [projectFromUrl, isLoading, filtered.length]);
   if (selectedId && detail) {
     return (
       <AdminLayout title="Medição">
@@ -192,6 +202,7 @@ export default function MeasurementsManager() {
         onClose={() => setShowCreate(false)}
         projects={projects}
         onCreate={createMutation}
+        defaultProjectId={projectFromUrl || undefined}
       />
     </AdminLayout>
   );
@@ -609,16 +620,21 @@ function EditMeasurementView({
 
 // --- Create Dialog ---
 function CreateMeasurementDialog({
-  open, onClose, projects, onCreate,
+  open, onClose, projects, onCreate, defaultProjectId,
 }: {
   open: boolean;
   onClose: () => void;
   projects: any[];
   onCreate: any;
+  defaultProjectId?: string;
 }) {
-  const [projectId, setProjectId] = useState('');
+  const [projectId, setProjectId] = useState(defaultProjectId || '');
   const [date, setDate] = useState('');
   const [measuredBy, setMeasuredBy] = useState('');
+
+  useEffect(() => {
+    if (defaultProjectId) setProjectId(defaultProjectId);
+  }, [defaultProjectId]);
 
   const handleCreate = () => {
     if (!projectId) return;

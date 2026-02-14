@@ -20,7 +20,7 @@ import {
   Hammer, CheckCircle, Clock, DollarSign, MapPin,
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
   Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
-  CalendarDays, TrendingUp, Eye, MessageSquare, Hash
+  CalendarDays, TrendingUp, Eye, MessageSquare, Hash, Ruler
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
@@ -509,7 +509,7 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
             {/* ── Quick Actions ── */}
             <div className="rounded-xl border bg-card p-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações Rápidas</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 <Button
                   variant={showBlock === "costs" ? "default" : "outline"}
                   size="sm"
@@ -567,6 +567,20 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                   ) : (
                     <AlertTriangle className="w-3 h-3 text-amber-500" />
                   )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-auto py-2.5 flex-col gap-1"
+                  onClick={() => {
+                    onClose();
+                    navigate(`/admin/measurements?project=${project.id}`);
+                  }}
+                >
+                  <Ruler className="w-4 h-4" />
+                  <span className="text-[11px]">Medições</span>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
                 </Button>
 
                 <Button
