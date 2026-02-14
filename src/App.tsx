@@ -34,6 +34,7 @@ import AdminIntake from './pages/admin/Intake';
 import AdminSettings from './pages/admin/Settings';
 import ProjectDetail from './pages/admin/ProjectDetail';
 import ProjectDocuments from './pages/admin/ProjectDocuments';
+import MeasurementsManager from './pages/admin/MeasurementsManager';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 import Sales2026 from "./pages/Sales2026";
@@ -117,6 +118,11 @@ const App = () => {
             <Route path="/admin/jobs/:projectId/documents" element={
               <ProtectedRoute>
                 <ProjectDocuments />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/measurements" element={
+              <ProtectedRoute>
+                <MeasurementsManager />
               </ProtectedRoute>
             } />
             

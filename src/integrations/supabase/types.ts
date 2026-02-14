@@ -451,6 +451,53 @@ export type Database = {
           },
         ]
       }
+      measurement_areas: {
+        Row: {
+          area_sqft: number
+          area_type: string
+          created_at: string
+          dimensions: string | null
+          display_order: number
+          id: string
+          linear_ft: number
+          measurement_id: string
+          notes: string | null
+          room_name: string
+        }
+        Insert: {
+          area_sqft?: number
+          area_type?: string
+          created_at?: string
+          dimensions?: string | null
+          display_order?: number
+          id?: string
+          linear_ft?: number
+          measurement_id: string
+          notes?: string | null
+          room_name: string
+        }
+        Update: {
+          area_sqft?: number
+          area_type?: string
+          created_at?: string
+          dimensions?: string | null
+          display_order?: number
+          id?: string
+          linear_ft?: number
+          measurement_id?: string
+          notes?: string | null
+          room_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_areas_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "project_measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -527,6 +574,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_measurements: {
+        Row: {
+          created_at: string
+          finish_type: string | null
+          id: string
+          material: string | null
+          measured_by: string | null
+          measurement_date: string | null
+          notes: string | null
+          project_id: string
+          service_type: string | null
+          status: string
+          total_linear_ft: number
+          total_sqft: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          finish_type?: string | null
+          id?: string
+          material?: string | null
+          measured_by?: string | null
+          measurement_date?: string | null
+          notes?: string | null
+          project_id: string
+          service_type?: string | null
+          status?: string
+          total_linear_ft?: number
+          total_sqft?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          finish_type?: string | null
+          id?: string
+          material?: string | null
+          measured_by?: string | null
+          measurement_date?: string | null
+          notes?: string | null
+          project_id?: string
+          service_type?: string | null
+          status?: string
+          total_linear_ft?: number
+          total_sqft?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_measurements_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"

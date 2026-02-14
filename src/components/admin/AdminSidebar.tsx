@@ -9,6 +9,7 @@ import {
   Home,
   Inbox,
   FolderOpen,
+  Ruler,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ const menuItems = [
 const toolsItems = [
   { title: "Pipeline de Vendas", url: "/admin/leads", icon: Users },
   { title: "Pipeline Operacional", url: "/admin/jobs", icon: Building },
+  { title: "Medições", url: "/admin/measurements", icon: Ruler },
   { title: "Portfólio", url: "/admin/gallery", icon: Images },
 ];
 
