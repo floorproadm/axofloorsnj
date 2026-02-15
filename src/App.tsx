@@ -29,6 +29,8 @@ import Realtors from "./pages/Realtors";
 import AdminDashboard from './pages/admin/Dashboard';
 
 import CompanyFeed from './pages/admin/CompanyFeed';
+import FeedPostDetail from './pages/admin/FeedPostDetail';
+import FeedPostEdit from './pages/admin/FeedPostEdit';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import AdminJobsManager from './pages/admin/JobsManager';
 import AdminIntake from './pages/admin/Intake';
@@ -92,6 +94,16 @@ const App = () => {
             <Route path="/admin/feed" element={
               <ProtectedRoute>
                 <CompanyFeed />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/feed/:postId" element={
+              <ProtectedRoute>
+                <FeedPostDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/feed/:postId/edit" element={
+              <ProtectedRoute>
+                <FeedPostEdit />
               </ProtectedRoute>
             } />
             <Route path="/admin/leads" element={
