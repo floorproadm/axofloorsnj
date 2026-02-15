@@ -1,57 +1,42 @@
 
+# New Job Quick Action Modal
 
-# Pagina de Schedule - Estilo Roofr
+## Overview
+When clicking "Novo Job" in the Quick Actions drawer, instead of just navigating to `/admin/jobs`, a clean modal will open with a simple form to create a new job -- inspired by the reference image you shared.
 
-## Resumo
+## User Flow
+1. User taps the FAB (+) on the bottom nav
+2. Taps "Novo Job" in the quick actions grid
+3. The quick actions drawer closes and a Dialog opens with:
+   - Title: **"New Job"**
+   - Field: **Job address** (text input with placeholder "Enter address and select")
+   - Field: **Customer name** (required to create a project)
+   - Field: **Customer phone** (required by the database)
+   - Field: **Project type** (select with common options like Sanding, Refinishing, etc.)
+   - Button: **"Continue"** (gradient style, creates the project and navigates to the job detail)
+4. On submit, a new project is created in the database and the user is taken to the Jobs page with the new job's control modal open
 
-Criar uma pagina dedicada de **Schedule** no admin com tres modos de visualizacao inspirados no Roofr: **Day** (calendario diario com blocos de horario), **List** (lista vertical de compromissos) e **Week** (visao semanal). A pagina usara a tabela `appointments` que ja existe no banco de dados.
+## Design
+- Clean, minimal modal matching the reference screenshot style
+- Large centered title "New Job"
+- Simple form fields with clear labels
+- Full-width gradient "Continue" button at the bottom
+- Close (X) button in the top-right corner
 
----
+## Technical Details
 
-## O que sera construido
+### File: `src/components/admin/NewJobDialog.tsx` (new)
+- New component with a Dialog containing the creation form
+- Uses `supabase` to insert into the `projects` table
+- Required fields: `customer_name`, `customer_email` (can default to empty), `customer_phone`, `project_type`, `address`
+- On success: closes the dialog, shows a toast, and navigates to `/admin/jobs`
+- Uses react-hook-form with zod validation for input safety
 
-### 1. Nova pagina: `/admin/schedule`
+### File: `src/components/admin/MobileBottomNav.tsx` (modify)
+- Import `NewJobDialog`
+- Add state `newJobOpen` to control the dialog
+- Update `handleQuickAction("job")` to set `newJobOpen = true` instead of navigating
+- Render the `NewJobDialog` component
 
-Uma pagina completa com:
-
-- **Header com navegacao de semana**: Barra de dias (Dom-Sab) com o dia atual destacado, setas para navegar entre semanas
-- **Seletor de mes**: Dropdown no topo para pular para meses especificos
-- **3 modos de visualizacao** (tabs):
-  - **Day**: Grade de horarios (5AM-9PM) com blocos coloridos representando agendamentos
-  - **List**: Cards verticais mostrando endereco, cliente e horario (como na imagem 2)
-  - **Week**: Visao semanal com colunas por dia
-- **Contador de jobs**: Indicador "X/Y" mostrando quantos jobs estao agendados no dia
-- **Botao + (FAB)**: Para criar novo agendamento rapidamente
-- **Responsivo**: Funcional em 375px, 768px e desktop
-
-### 2. Modal de criar/editar agendamento
-
-- Campos: Cliente (autocomplete dos projetos existentes), Tipo, Data, Horario, Duracao, Localizacao, Notas
-- Possibilidade de vincular a um projeto existente (`project_id`)
-
-### 3. Sidebar e Rotas
-
-- Adicionar "Schedule" ao grupo **Ferramentas** na sidebar com icone de calendario
-- Registrar rota `/admin/schedule` no App.tsx com ProtectedRoute
-
----
-
-## Detalhes Tecnicos
-
-### Banco de dados
-- **Nenhuma migracao necessaria** - a tabela `appointments` ja existe com todos os campos: `customer_name`, `customer_phone`, `appointment_type`, `appointment_date`, `appointment_time`, `duration_hours`, `location`, `status`, `notes`, `project_id`
-- RLS ja configurada para admins
-
-### Arquivos a criar
-- `src/pages/admin/Schedule.tsx` - Pagina principal com os 3 modos de visualizacao e toda a logica de CRUD
-
-### Arquivos a modificar
-- `src/components/admin/AdminSidebar.tsx` - Adicionar item "Schedule" com icone `CalendarDays` no grupo Ferramentas
-- `src/App.tsx` - Registrar rota `/admin/schedule` com ProtectedRoute e import do componente
-
-### Dependencias
-- Nenhuma nova dependencia. Usaremos `date-fns` (ja instalado) para manipulacao de datas e o calendario do shadcn para selecao de data no formulario.
-
-### Cores dos blocos
-- Agendamentos usarao cores por tipo (medicao = verde, producao = azul, follow-up = amarelo) com borda lateral colorida no estilo Roofr.
-
+### Database
+- No schema changes needed -- the `projects` table already has all required columns with sensible defaults (`project_status` defaults to `'pending'`)
