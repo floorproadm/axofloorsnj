@@ -4,9 +4,21 @@ import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Eye, Image, ChevronLeft, ChevronRight, X, Gift } from "lucide-react";
+import { ArrowRight, Star, Eye, Image, ChevronLeft, ChevronRight, X, Gift, MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+interface PublicFeedPost {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  category: string | null;
+  tags: string[];
+  created_at: string;
+  images: { id: string; file_url: string; display_order: number }[];
+}
 
 // Import before and after images
 import beforeAfter1 from "@/assets/before-after/before-after-1.png";
@@ -73,12 +85,16 @@ const Gallery = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(9);
+  const [publicPosts, setPublicPosts] = useState<PublicFeedPost[]>([]);
+  const [selectedPost, setSelectedPost] = useState<PublicFeedPost | null>(null);
+  const [postImageIndex, setPostImageIndex] = useState(0);
   const { toast } = useToast();
 
   const categories = ["All", "Hardwood Flooring", "Sanding & Refinish", "Before and After", "Vinyl Plank", "Staircase", "Baseboards & Trim"];
 
   useEffect(() => {
     fetchFoldersAndProjects();
+    fetchPublicFeedPosts();
   }, []);
 
   useEffect(() => {
@@ -153,6 +169,42 @@ const Gallery = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchPublicFeedPosts = async () => {
+    try {
+      const { data: posts, error } = await supabase
+        .from("feed_posts")
+        .select("id, title, description, location, category, tags, created_at")
+        .eq("visibility", "public")
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+
+      const postIds = (posts || []).map((p) => p.id);
+      let images: { id: string; file_url: string; feed_post_id: string; display_order: number }[] = [];
+      if (postIds.length > 0) {
+        const { data: imgData } = await supabase
+          .from("feed_post_images")
+          .select("id, file_url, feed_post_id, display_order")
+          .in("feed_post_id", postIds)
+          .order("display_order", { ascending: true });
+        images = imgData || [];
+      }
+
+      setPublicPosts(
+        (posts || [])
+          .map((p) => ({
+            ...p,
+            tags: p.tags || [],
+            images: images.filter((img) => img.feed_post_id === p.id),
+          }))
+          .filter((p) => p.images.length > 0) // only show posts with images
+      );
+    } catch (err) {
+      console.error("Error fetching public feed posts:", err);
     }
   };
 
@@ -264,6 +316,140 @@ const Gallery = () => {
           )}
         </div>
       </section>
+
+      {/* Public Feed Posts Section */}
+      {publicPosts.length > 0 && (
+        <section className="py-20 bg-grey-light">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-4">
+                Recent <span className="text-gradient-gold">Project Updates</span>
+              </h2>
+              <p className="text-grey max-w-2xl mx-auto">
+                See the latest work from our team — real projects, real results.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {publicPosts.map((post) => (
+                <Card
+                  key={post.id}
+                  className="group hover:shadow-gold transition-smooth hover:-translate-y-2 overflow-hidden cursor-pointer"
+                  onClick={() => {
+                    setSelectedPost(post);
+                    setPostImageIndex(0);
+                  }}
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={post.images[0]?.file_url}
+                      alt={post.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
+                    />
+                    {post.images.length > 1 && (
+                      <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                        {post.images.length} photos
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-smooth flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <Image className="w-12 h-12 mx-auto mb-2" />
+                        <span className="font-medium text-lg">View Project</span>
+                      </div>
+                    </div>
+                  </div>
+                  <CardContent className="p-5">
+                    <h3 className="text-lg font-heading font-semibold text-navy mb-1 group-hover:text-gold transition-smooth truncate">
+                      {post.title || "Project Update"}
+                    </h3>
+                    {post.location && (
+                      <p className="text-sm text-grey flex items-center gap-1 mb-2">
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="truncate">{post.location}</span>
+                      </p>
+                    )}
+                    {post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {post.tags.slice(0, 3).map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-[10px] px-2 py-0.5">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Feed Post Lightbox */}
+      {selectedPost && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          onClick={() => setSelectedPost(null)}
+        >
+          <div className="relative w-full h-full max-w-6xl flex items-center justify-center p-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-20 text-white hover:bg-white/20"
+              onClick={() => setSelectedPost(null)}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+
+            {selectedPost.images.length > 1 && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPostImageIndex((prev) => (prev > 0 ? prev - 1 : selectedPost.images.length - 1));
+                  }}
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPostImageIndex((prev) => (prev < selectedPost.images.length - 1 ? prev + 1 : 0));
+                  }}
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </Button>
+              </>
+            )}
+
+            <div className="flex flex-col items-center justify-center w-full h-full" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={selectedPost.images[postImageIndex]?.file_url}
+                alt={selectedPost.title}
+                className="max-w-full max-h-[75vh] object-contain rounded-lg"
+              />
+              <div className="mt-4 text-center text-white">
+                <h3 className="text-xl font-heading font-semibold">{selectedPost.title}</h3>
+                {selectedPost.description && (
+                  <p className="text-white/70 mt-1 max-w-xl">{selectedPost.description}</p>
+                )}
+                {selectedPost.images.length > 1 && (
+                  <div className="mt-2 bg-black/50 inline-block px-3 py-1 rounded-full text-sm">
+                    {postImageIndex + 1} / {selectedPost.images.length}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox Modal */}
       {isLightboxOpen && (
