@@ -7,8 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { format, getWeek, isToday, parseISO, startOfWeek, endOfWeek, addDays } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { format, getWeek, startOfWeek, endOfWeek, addDays } from "date-fns";
 import {
   DollarSign,
   Briefcase,
@@ -16,8 +15,6 @@ import {
   Clock,
   Bell,
   ChevronRight,
-  CalendarDays,
-  MapPin
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -26,10 +23,8 @@ export default function Dashboard() {
     moneyMetrics,
     funnelMetrics,
     criticalAlerts,
-    executionMetrics,
   } = useDashboardData();
 
-  // Fetch today's appointments
   const today = new Date();
   const todayStr = format(today, "yyyy-MM-dd");
 
@@ -46,7 +41,6 @@ export default function Dashboard() {
     },
   });
 
-  // Fetch this week's job count
   const weekStart = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
   const tomorrow = addDays(today, 1);
@@ -67,19 +61,17 @@ export default function Dashboard() {
 
   const tomorrowCount = weekAppointments.filter(a => a.appointment_date === tomorrowStr).length;
 
-  // New leads today count
   const newLeadsToday = useMemo(() => {
     return criticalAlerts.newLeadsNoContact24h.length;
   }, [criticalAlerts]);
 
-  // Priority tasks from critical alerts
   const priorityTasks = useMemo(() => {
-    const tasks: { label: string; time?: string; color: string; link: string }[] = [];
+    const tasks: { label: string; color: "blocked" | "risk" | "success"; link: string }[] = [];
 
     criticalAlerts.proposalWithoutFollowUp.slice(0, 2).forEach(l => {
       tasks.push({
         label: `Follow up - ${l.name}`,
-        color: "bg-red-500",
+        color: "blocked",
         link: "/admin/leads?status=proposal_sent",
       });
     });
@@ -87,7 +79,7 @@ export default function Dashboard() {
     criticalAlerts.newLeadsNoContact24h.slice(0, 2).forEach(l => {
       tasks.push({
         label: `Resposta Lead - ${l.name}`,
-        color: "bg-amber-500",
+        color: "risk",
         link: "/admin/leads?status=cold_lead",
       });
     });
@@ -95,7 +87,7 @@ export default function Dashboard() {
     criticalAlerts.leadsStalled48h.slice(0, 1).forEach(l => {
       tasks.push({
         label: `Lead parado +48h - ${l.name}`,
-        color: "bg-red-500",
+        color: "blocked",
         link: "/admin/leads",
       });
     });
@@ -113,11 +105,17 @@ export default function Dashboard() {
   const weekNumber = getWeek(today);
   const greeting = today.getHours() < 12 ? "Good morning" : today.getHours() < 18 ? "Good afternoon" : "Good evening";
 
-  const statusColors: Record<string, string> = {
-    confirmed: "bg-green-100 text-green-700",
-    scheduled: "bg-blue-100 text-blue-700",
-    in_progress: "bg-amber-100 text-amber-700",
-    pending: "bg-gray-100 text-gray-700",
+  const dotColor = {
+    blocked: "bg-[hsl(var(--state-blocked))]",
+    risk: "bg-[hsl(var(--state-risk))]",
+    success: "bg-[hsl(var(--state-success))]",
+  };
+
+  const statusBadge: Record<string, { label: string; className: string }> = {
+    confirmed: { label: "Em Andamento", className: "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]" },
+    scheduled: { label: "Agendado", className: "bg-[hsl(var(--state-neutral-bg))] text-[hsl(var(--state-neutral))] border-[hsl(var(--state-neutral)/0.3)]" },
+    in_progress: { label: "Em Andamento", className: "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-neutral)/0.3)]" },
+    pending: { label: "Pendente", className: "bg-[hsl(var(--state-neutral-bg))] text-[hsl(var(--state-neutral))] border-[hsl(var(--state-neutral)/0.3)]" },
   };
 
   const typeLabels: Record<string, string> = {
@@ -129,116 +127,92 @@ export default function Dashboard() {
 
   return (
     <AdminLayout title="" breadcrumbs={[]}>
-      <div className="max-w-lg mx-auto space-y-6 pb-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground font-medium">
-            Week {weekNumber} | {format(today, "MMM d")}
-          </span>
-          <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
+      <div className="max-w-2xl mx-auto px-1 sm:px-0 pb-10">
+        {/* Header bar */}
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+            Week {weekNumber} &middot; {format(today, "MMM d")}
+          </p>
+          <button className="relative p-2 -mr-2 rounded-full hover:bg-secondary transition-colors">
             <Bell className="w-5 h-5 text-muted-foreground" />
             {priorityTasks.length > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[hsl(var(--state-blocked))]" />
             )}
           </button>
         </div>
 
         {/* Greeting */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{greeting}, Eduardo</h1>
-          <p className="text-muted-foreground text-sm">
-            You have {appointments.length} job{appointments.length !== 1 ? "s" : ""} scheduled for today
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            {greeting}, Eduardo
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            You have <span className="font-semibold text-foreground">{appointments.length}</span> job{appointments.length !== 1 ? "s" : ""} scheduled for today
           </p>
         </div>
 
         {/* Summary Cards */}
         {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-[88px] rounded-xl" />)}
+          <div className="space-y-3 mb-8">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
           </div>
         ) : (
-          <div className="space-y-3">
-            {/* Faturas Abertas */}
-            <Card className="rounded-xl border shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <DollarSign className="w-4 h-4" />
-                  <span>Faturas Abertas</span>
-                </div>
-                <p className="text-3xl font-bold text-foreground">
-                  {formatCurrency(moneyMetrics.estimatedValueOpen)}
-                </p>
-                <p className="text-sm text-blue-600 font-medium mt-0.5">
-                  +{moneyMetrics.activeLeadsCount} pendentes
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Jobs Semana */}
-            <Card className="rounded-xl border shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <Briefcase className="w-4 h-4" />
-                  <span>Jobs Semana</span>
-                </div>
-                <p className="text-3xl font-bold text-foreground">
-                  {weekAppointments.length}
-                </p>
-                {tomorrowCount > 0 && (
-                  <p className="text-sm text-green-600 font-medium mt-0.5">
-                    +{tomorrowCount} amanhã
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Novos Leads */}
-            <Card className="rounded-xl border shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <Users className="w-4 h-4" />
-                  <span>Novos Leads</span>
-                </div>
-                <p className="text-3xl font-bold text-foreground">
-                  {funnelMetrics.cold_lead + funnelMetrics.warm_lead}
-                </p>
-                {newLeadsToday > 0 && (
-                  <p className="text-sm text-green-600 font-medium mt-0.5">
-                    +{newLeadsToday} hoje
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+          <div className="space-y-3 mb-8">
+            <SummaryCard
+              icon={<DollarSign className="w-4 h-4" />}
+              label="Faturas Abertas"
+              value={formatCurrency(moneyMetrics.estimatedValueOpen)}
+              sub={`+${moneyMetrics.activeLeadsCount} pendentes`}
+              subColor="text-[hsl(var(--state-success))]"
+            />
+            <SummaryCard
+              icon={<Briefcase className="w-4 h-4" />}
+              label="Jobs Semana"
+              value={String(weekAppointments.length)}
+              sub={tomorrowCount > 0 ? `+${tomorrowCount} amanhã` : undefined}
+              subColor="text-[hsl(var(--state-success))]"
+            />
+            <SummaryCard
+              icon={<Users className="w-4 h-4" />}
+              label="Novos Leads"
+              value={String(funnelMetrics.cold_lead + funnelMetrics.warm_lead)}
+              sub={newLeadsToday > 0 ? `+${newLeadsToday} hoje` : undefined}
+              subColor="text-[hsl(var(--state-success))]"
+            />
           </div>
         )}
 
-        {/* Tarefas Prioritárias */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-foreground">Tarefas Prioritárias</h2>
-            <Link to="/admin/leads" className="text-sm text-blue-600 font-medium hover:underline">
+        {/* Priority Tasks */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              Tarefas Prioritárias
+            </h2>
+            <Link to="/admin/leads" className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline">
               Ver todos
             </Link>
           </div>
 
           {isLoading ? (
             <div className="space-y-2">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12" />)}
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-11 rounded-lg" />)}
             </div>
           ) : priorityTasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              Nenhuma tarefa prioritária 🎉
-            </p>
+            <div className="text-center py-8 rounded-xl border border-dashed border-border">
+              <p className="text-sm text-muted-foreground">Nenhuma tarefa prioritária 🎉</p>
+            </div>
           ) : (
-            <div className="space-y-1">
+            <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
               {priorityTasks.map((task, idx) => (
                 <Link
                   key={idx}
                   to={task.link}
-                  className="flex items-center gap-3 py-3 px-1 hover:bg-muted/50 rounded-lg transition-colors group"
+                  className="flex items-center gap-3 px-4 py-3.5 hover:bg-secondary/60 transition-colors group"
                 >
-                  <span className={`w-2.5 h-2.5 rounded-full ${task.color} flex-shrink-0`} />
-                  <span className="flex-1 text-sm text-foreground truncate">{task.label}</span>
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor[task.color]}`} />
+                  <span className="flex-1 text-sm font-medium text-foreground truncate">
+                    {task.label}
+                  </span>
                   <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               ))}
@@ -246,57 +220,102 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* Agenda de Hoje */}
+        {/* Today's Agenda */}
         <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-foreground">Agenda de Hoje</h2>
-            <Link to="/admin/schedule" className="text-sm text-blue-600 font-medium hover:underline">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              Agenda de Hoje
+            </h2>
+            <Link to="/admin/schedule" className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline">
               Ver agenda
             </Link>
           </div>
 
           {appointments.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              Nenhum agendamento para hoje
-            </p>
+            <div className="text-center py-8 rounded-xl border border-dashed border-border">
+              <p className="text-sm text-muted-foreground">Nenhum agendamento para hoje</p>
+            </div>
           ) : (
             <div className="space-y-3">
-              {appointments.slice(0, 4).map((apt) => (
-                <Card key={apt.id} className="rounded-xl border shadow-sm">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-1">
-                      <h3 className="font-semibold text-sm text-foreground">
-                        {typeLabels[apt.appointment_type] || apt.appointment_type} - {apt.customer_name}
-                      </h3>
-                      <Badge
-                        className={`text-xs capitalize ${statusColors[apt.status] || "bg-gray-100 text-gray-700"}`}
-                        variant="secondary"
-                      >
-                        {apt.status === "confirmed" ? "Em Andamento" : apt.status === "scheduled" ? "Agendado" : apt.status}
-                      </Badge>
-                    </div>
-                    {apt.location && (
-                      <p className="text-xs text-muted-foreground mb-1.5">{apt.location}</p>
-                    )}
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>
-                          {apt.appointment_time.slice(0, 5)}
-                          {apt.duration_hours ? ` - ${format(
-                            new Date(`2000-01-01T${apt.appointment_time}`).getTime() + (apt.duration_hours * 60 * 60 * 1000),
-                            "HH:mm"
-                          )}` : ""}
-                        </span>
+              {appointments.slice(0, 4).map((apt) => {
+                const badge = statusBadge[apt.status] || statusBadge.pending;
+                const endTime = apt.duration_hours
+                  ? format(
+                      new Date(new Date(`2000-01-01T${apt.appointment_time}`).getTime() + apt.duration_hours * 3600000),
+                      "HH:mm"
+                    )
+                  : null;
+
+                return (
+                  <Card key={apt.id} className="rounded-xl overflow-hidden shadow-sm border-border">
+                    <CardContent className="p-0">
+                      <div className="flex">
+                        {/* Color strip */}
+                        <div className={`w-1 flex-shrink-0 ${
+                          apt.status === "confirmed" || apt.status === "in_progress"
+                            ? "bg-[hsl(var(--state-success))]"
+                            : "bg-[hsl(var(--state-neutral))]"
+                        }`} />
+                        <div className="flex-1 p-4">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <h3 className="font-semibold text-sm text-foreground leading-tight">
+                              {typeLabels[apt.appointment_type] || apt.appointment_type}
+                            </h3>
+                            <Badge variant="outline" className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${badge.className}`}>
+                              {badge.label}
+                            </Badge>
+                          </div>
+                          {apt.location && (
+                            <p className="text-xs text-muted-foreground mb-2">{apt.location}</p>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>{apt.appointment_time.slice(0, 5)}{endTime ? ` - ${endTime}` : ""}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </section>
       </div>
     </AdminLayout>
+  );
+}
+
+/* Extracted sub-component for the 3 summary cards */
+function SummaryCard({
+  icon,
+  label,
+  value,
+  sub,
+  subColor,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub?: string;
+  subColor?: string;
+}) {
+  return (
+    <Card className="rounded-xl shadow-sm border-border hover:shadow-md transition-shadow">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium uppercase tracking-wider mb-1.5">
+          {icon}
+          <span>{label}</span>
+        </div>
+        <p className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{value}</p>
+        {sub && (
+          <p className={`text-xs font-semibold mt-1 ${subColor || "text-muted-foreground"}`}>
+            {sub}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
