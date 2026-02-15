@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -19,7 +21,6 @@ interface AdminLayoutProps {
 export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) {
   const [defaultSidebarOpen, setDefaultSidebarOpen] = useState(true);
 
-  // Sidebar: aberta em desktop (>=1024px) e colapsada em mobile/tablet
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1024px)");
     const update = () => setDefaultSidebarOpen(mql.matches);
@@ -27,6 +28,20 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
     mql.addEventListener("change", update);
     return () => mql.removeEventListener("change", update);
   }, []);
+
+  // Lightweight notification count: leads without contact 24h + proposals without follow-up
+  const { data: notificationCount = 0 } = useQuery({
+    queryKey: ["header-notification-count"],
+    queryFn: async () => {
+      const h24Ago = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const [coldRes, proposalRes] = await Promise.all([
+        supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "cold_lead").lt("created_at", h24Ago),
+        supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "proposal_sent").eq("follow_up_actions", "[]"),
+      ]);
+      return (coldRes.count || 0) + (proposalRes.count || 0);
+    },
+    refetchInterval: 60_000,
+  });
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
@@ -58,6 +73,11 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
             <div className="flex items-center gap-2 flex-shrink-0">
               <button className="relative p-2 rounded-full hover:bg-secondary transition-colors">
                 <Bell className="w-5 h-5 text-muted-foreground" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[hsl(var(--state-blocked))] text-[10px] font-bold text-white px-1">
+                    {notificationCount > 9 ? "9+" : notificationCount}
+                  </span>
+                )}
               </button>
               <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="w-2 h-2 bg-[hsl(var(--state-success))] rounded-full animate-pulse"></div>
