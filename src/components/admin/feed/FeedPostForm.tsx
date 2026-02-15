@@ -251,10 +251,10 @@ export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Pasta</Label>
-              <Select value={folderId} onValueChange={setFolderId}>
+              <Select value={folderId || "none"} onValueChange={(v) => setFolderId(v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Nenhuma" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="none">Nenhuma</SelectItem>
                   {folders.map((f) => (
                     <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
                   ))}
