@@ -25,6 +25,7 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 import { NewJobDialog } from "./NewJobDialog";
+import { NewLeadDialog } from "./NewLeadDialog";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/admin/dashboard" },
@@ -50,12 +51,13 @@ export function MobileBottomNav() {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newJobOpen, setNewJobOpen] = useState(false);
+  const [newLeadOpen, setNewLeadOpen] = useState(false);
 
   const handleQuickAction = (action: string) => {
     setDrawerOpen(false);
     switch (action) {
       case "lead":
-        navigate("/admin/leads");
+        setNewLeadOpen(true);
         break;
       case "job":
         setNewJobOpen(true);
@@ -152,6 +154,7 @@ export function MobileBottomNav() {
       </Drawer>
 
       <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
+      <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
     </>
   );
 }
