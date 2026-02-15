@@ -129,16 +129,10 @@ export default function Dashboard() {
     <AdminLayout title="" breadcrumbs={[]}>
       <div className="max-w-2xl mx-auto px-1 sm:px-0 pb-10">
         {/* Header bar */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+        <div className="flex items-center justify-center mb-6">
+          <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground text-center">
             Week {weekNumber} &middot; {format(today, "MMM d")}
           </p>
-          <button className="relative p-2 -mr-2 rounded-full hover:bg-secondary transition-colors">
-            <Bell className="w-5 h-5 text-muted-foreground" />
-            {priorityTasks.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[hsl(var(--state-blocked))]" />
-            )}
-          </button>
         </div>
 
         {/* Greeting */}
