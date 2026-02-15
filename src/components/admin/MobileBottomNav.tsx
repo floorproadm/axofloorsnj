@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/drawer";
 import { NewJobDialog } from "./NewJobDialog";
 import { NewLeadDialog } from "./NewLeadDialog";
+import { NewEstimateDialog } from "./NewEstimateDialog";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/admin/dashboard" },
@@ -52,6 +53,7 @@ export function MobileBottomNav() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newJobOpen, setNewJobOpen] = useState(false);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [newEstimateOpen, setNewEstimateOpen] = useState(false);
 
   const handleQuickAction = (action: string) => {
     setDrawerOpen(false);
@@ -61,6 +63,9 @@ export function MobileBottomNav() {
         break;
       case "job":
         setNewJobOpen(true);
+        break;
+      case "estimate":
+        setNewEstimateOpen(true);
         break;
       case "photo":
         navigate("/admin/gallery");
@@ -155,6 +160,7 @@ export function MobileBottomNav() {
 
       <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
       <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
+      <NewEstimateDialog open={newEstimateOpen} onOpenChange={setNewEstimateOpen} />
     </>
   );
 }
