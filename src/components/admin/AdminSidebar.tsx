@@ -11,6 +11,8 @@ import {
   FolderOpen,
   Ruler,
   CalendarDays,
+  BarChart3,
+  FileText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,30 +29,32 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-// Grupo 1: Menu (visão geral)
+// Grupo 1: Menu (visão principal)
 const menuItems = [
-  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
-  { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
+  { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Jobs", url: "/admin/jobs", icon: Building },
+  { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
+  { title: "Performance", url: "/admin/performance", icon: BarChart3 },
 ];
 
-// Grupo 2: Ferramentas (operação do dia-a-dia)
+// Grupo 2: Tools (operação do dia-a-dia)
 const toolsItems = [
   { title: "Captação", url: "/admin/intake", icon: Inbox },
-  { title: "Pipeline de Vendas", url: "/admin/leads", icon: Users },
   { title: "Medições", url: "/admin/measurements", icon: Ruler },
-  { title: "Portfólio", url: "/admin/gallery", icon: Images },
+  { title: "Propostas", url: "/admin/leads", icon: FileText },
 ];
 
-// Grupo 3: Gestão (configuração e admin)
-const managementItems = [
-  { title: "Configurações", url: "/admin/settings", icon: Settings },
+// Grupo 3: Manage (gestão e configuração)
+const manageItems = [
+  { title: "Leads", url: "/admin/leads", icon: Users },
+  { title: "Portfólio", url: "/admin/gallery", icon: Images },
+  { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
 const navGroups = [
   { label: "Menu", items: menuItems },
-  { label: "Ferramentas", items: toolsItems },
-  { label: "Gestão", items: managementItems },
+  { label: "Tools", items: toolsItems },
+  { label: "Manage", items: manageItems },
 ];
 
 export function AdminSidebar() {
