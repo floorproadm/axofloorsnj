@@ -59,7 +59,7 @@ const categories = [
   "Commercial"
 ];
 
-export default function GalleryManager() {
+export default function GalleryManager({ embedded = false }: { embedded?: boolean }) {
   const [projects, setProjects] = useState<GalleryProject[]>([]);
   const [folders, setFolders] = useState<GalleryFolder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -394,18 +394,21 @@ export default function GalleryManager() {
   };
 
   if (isLoading) {
+    const loadingContent = (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Carregando dados da galeria...</p>
+      </div>
+    );
+    if (embedded) return loadingContent;
     return (
       <AdminLayout title="Gallery Manager" breadcrumbs={[{ label: "Gallery" }]}>
-        <div className="flex items-center justify-center py-20">
-          <p className="text-muted-foreground">Carregando dados da galeria...</p>
-        </div>
+        {loadingContent}
       </AdminLayout>
     );
   }
 
-  return (
-    <AdminLayout title="Gerenciador da Galeria" breadcrumbs={[{ label: "Galeria" }]}>
-      <div className="space-y-6 animate-fade-in">
+  const galleryContent = (
+    <div className="space-y-6 animate-fade-in">
 
         <Tabs defaultValue="manage" className="space-y-6">
           <div className="flex items-center justify-between">
@@ -940,7 +943,14 @@ export default function GalleryManager() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+    </div>
+  );
+
+  if (embedded) return galleryContent;
+
+  return (
+    <AdminLayout title="Gerenciador da Galeria" breadcrumbs={[{ label: "Galeria" }]}>
+      {galleryContent}
     </AdminLayout>
   );
 }
