@@ -10,6 +10,7 @@ import {
   Inbox,
   FolderOpen,
   Ruler,
+  CalendarDays,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ const toolsItems = [
   { title: "Pipeline de Vendas", url: "/admin/leads", icon: Users },
   { title: "Pipeline Operacional", url: "/admin/jobs", icon: Building },
   { title: "Medições", url: "/admin/measurements", icon: Ruler },
+  { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
   { title: "Portfólio", url: "/admin/gallery", icon: Images },
 ];
 
