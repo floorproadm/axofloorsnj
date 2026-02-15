@@ -1,136 +1,57 @@
 
-# Redesign do PipelineCard -- Operacional First
+
+# Pagina de Schedule - Estilo Roofr
 
 ## Resumo
 
-Refatorar o componente `PipelineCard` em `src/pages/admin/components/LinearPipeline.tsx` para um card compacto (~110px), de alta densidade, orientado a decisao rapida. Tambem ajustar a ordenacao dentro de cada coluna para priorizar urgencia.
+Criar uma pagina dedicada de **Schedule** no admin com tres modos de visualizacao inspirados no Roofr: **Day** (calendario diario com blocos de horario), **List** (lista vertical de compromissos) e **Week** (visao semanal). A pagina usara a tabela `appointments` que ja existe no banco de dados.
 
-**Escopo**: Apenas frontend/UI. Zero mudancas em banco de dados, triggers ou RPCs.
+---
 
-## Arquivo Modificado
+## O que sera construido
 
-`src/pages/admin/components/LinearPipeline.tsx`
+### 1. Nova pagina: `/admin/schedule`
 
-## Mudancas Detalhadas
+Uma pagina completa com:
 
-### 1. Imports
+- **Header com navegacao de semana**: Barra de dias (Dom-Sab) com o dia atual destacado, setas para navegar entre semanas
+- **Seletor de mes**: Dropdown no topo para pular para meses especificos
+- **3 modos de visualizacao** (tabs):
+  - **Day**: Grade de horarios (5AM-9PM) com blocos coloridos representando agendamentos
+  - **List**: Cards verticais mostrando endereco, cliente e horario (como na imagem 2)
+  - **Week**: Visao semanal com colunas por dia
+- **Contador de jobs**: Indicador "X/Y" mostrando quantos jobs estao agendados no dia
+- **Botao + (FAB)**: Para criar novo agendamento rapidamente
+- **Responsivo**: Funcional em 375px, 768px e desktop
 
-Remover: `Button`, `LeadSignalBadge`, `ChevronRight`, `Ban`, `format`
+### 2. Modal de criar/editar agendamento
 
-Adicionar: `AlertTriangle`
+- Campos: Cliente (autocomplete dos projetos existentes), Tipo, Data, Horario, Duracao, Localizacao, Notas
+- Possibilidade de vincular a um projeto existente (`project_id`)
 
-### 2. Novo mapeamento de servicos
+### 3. Sidebar e Rotas
 
-Adicionar constante `serviceLabels` para converter slugs em labels amigaveis:
+- Adicionar "Schedule" ao grupo **Ferramentas** na sidebar com icone de calendario
+- Registrar rota `/admin/schedule` no App.tsx com ProtectedRoute
 
-```typescript
-const serviceLabels: Record<string, string> = {
-  'new-installation': 'Installation',
-  'sanding': 'Sanding',
-  'refinishing': 'Refinishing',
-  'staining': 'Staining',
-  'repair': 'Repair',
-  'vinyl': 'Vinyl',
-  'baseboards': 'Baseboards',
-  'staircase': 'Staircase',
-};
-```
+---
 
-### 3. Helper: formatTimeInStage
+## Detalhes Tecnicos
 
-Funcao que calcula o tempo no stage e retorna texto + classe de cor:
+### Banco de dados
+- **Nenhuma migracao necessaria** - a tabela `appointments` ja existe com todos os campos: `customer_name`, `customer_phone`, `appointment_type`, `appointment_date`, `appointment_time`, `duration_hours`, `location`, `status`, `notes`, `project_id`
+- RLS ja configurada para admins
 
-```typescript
-function getTimeBadge(updatedAt: string) {
-  const hours = differenceInHours(new Date(), new Date(updatedAt));
-  if (hours < 24) return { text: `${hours}h`, className: 'bg-muted text-muted-foreground' };
-  if (hours < 48) return { text: `${Math.round(hours)}h`, className: 'bg-amber-100 text-amber-700' };
-  const days = Math.floor(hours / 24);
-  return { text: `${days}d+`, className: 'bg-red-100 text-red-700 font-semibold' };
-}
-```
+### Arquivos a criar
+- `src/pages/admin/Schedule.tsx` - Pagina principal com os 3 modos de visualizacao e toda a logica de CRUD
 
-### 4. Helper: getOperationalAlert
+### Arquivos a modificar
+- `src/components/admin/AdminSidebar.tsx` - Adicionar item "Schedule" com icone `CalendarDays` no grupo Ferramentas
+- `src/App.tsx` - Registrar rota `/admin/schedule` com ProtectedRoute e import do componente
 
-Retorna alerta operacional condicional baseado em NRA e dados do lead:
+### Dependencias
+- Nenhuma nova dependencia. Usaremos `date-fns` (ja instalado) para manipulacao de datas e o calendario do shadcn para selecao de data no formulario.
 
-```typescript
-function getOperationalAlert(lead, nra) {
-  if (nra?.severity === 'critical' || nra?.severity === 'blocked')
-    return { text: nra.label, type: 'critical' };
-  if (lead.follow_up_required)
-    return { text: 'Follow-up obrigatorio', type: 'warning' };
-  if (nra?.action && nra.action !== 'none')
-    return { text: nra.label, type: 'info' };
-  return null;
-}
-```
+### Cores dos blocos
+- Agendamentos usarao cores por tipo (medicao = verde, producao = azul, follow-up = amarelo) com borda lateral colorida no estilo Roofr.
 
-### 5. Novo PipelineCard -- Layout
-
-```text
-+-------------------------------------+
-| [72h]  EDUARDO OLIVEIRA      $6,300 |  <- Linha 1: TimeBadge + Nome + Valor
-| (phone) 555-123   (pin) Orlando [Site] | <- Linha 2: Contato rapido
-| [Installation] [Sanding] +1         |  <- Linha 3: Servicos (max 2 + overflow)
-| /!\ Follow-up obrigatorio           |  <- Alerta operacional (condicional)
-+-------------------------------------+
-```
-
-Estrutura JSX:
-
-- **Container**: `p-3 rounded-lg border bg-card cursor-pointer hover:shadow-md`, com ring condicional (blocked=vermelho, stale=amarelo)
-- **Linha 1**: flex justify-between, align-center
-  - TimeBadge (Badge compacta com cor semantica)
-  - Nome (font-semibold text-xs truncate, max-w limitado)
-  - Valor alinhado a direita (font-bold text-xs) ou "--" se nenhum
-- **Linha 2**: flex gap-2, text-[10px]
-  - Phone com icone, clicavel via `<a href="tel:...">`  com `e.stopPropagation()`
-  - Cidade com icone MapPin
-  - Badge fonte do lead (outline, text-[9px])
-- **Linha 3**: flex gap-1, mostrar ate 2 servicos como Badge secondary + "+N" se houver mais
-- **Alerta operacional** (condicional): barra fina com icone AlertTriangle, texto curto, cor semantica (amber para warning, red para critico)
-
-### 6. Ordenacao por Urgencia
-
-Alterar o sort dentro de `leadsByStage` de:
-
-```typescript
-// ANTES: apenas por updated_at DESC
-sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-```
-
-Para sort multi-criterio:
-
-```typescript
-// DEPOIS: urgencia primeiro, depois valor, depois criacao
-sort((a, b) => {
-  // 1. Tempo no stage DESC (mais antigo primeiro = mais urgente)
-  const timeA = new Date(a.updated_at).getTime();
-  const timeB = new Date(b.updated_at).getTime();
-  if (timeA !== timeB) return timeA - timeB; // oldest first
-  // 2. Valor potencial DESC
-  const valA = a.budget || 0;
-  const valB = b.budget || 0;
-  if (valA !== valB) return valB - valA;
-  // 3. created_at ASC
-  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-})
-```
-
-### 7. Summary Bar -- Traduzir para portugues
-
-Trocar "Total Deals" por "Total Leads" e "Total Value" por "Valor Total" para consistencia com AXO OS em portugues.
-
-## Resultado Visual Esperado
-
-```text
-+-------------------------------------+
-| 72h   EDUARDO OLIVEIRA       $6,300 |
-| tel (555) 123-4567  pin Orlando [Site]|
-| [Installation] [Sanding] +1         |
-| /!\ Follow-up obrigatorio           |
-+-------------------------------------+
-```
-
-Card com ~110px de altura, denso, sem elementos decorativos desnecessarios. Alertas operacionais aparecem apenas quando ha problema real. Ordenacao automatica prioriza leads mais antigos no stage (urgentes) e de maior valor.
