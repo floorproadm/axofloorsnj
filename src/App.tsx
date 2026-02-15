@@ -35,6 +35,7 @@ import AdminSettings from './pages/admin/Settings';
 import ProjectDetail from './pages/admin/ProjectDetail';
 import ProjectDocuments from './pages/admin/ProjectDocuments';
 import MeasurementsManager from './pages/admin/MeasurementsManager';
+import AdminSchedule from './pages/admin/Schedule';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 import Sales2026 from "./pages/Sales2026";
@@ -123,6 +124,11 @@ const App = () => {
             <Route path="/admin/measurements" element={
               <ProtectedRoute>
                 <MeasurementsManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/schedule" element={
+              <ProtectedRoute>
+                <AdminSchedule />
               </ProtectedRoute>
             } />
             
