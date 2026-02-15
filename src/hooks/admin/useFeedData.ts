@@ -43,11 +43,19 @@ export interface FeedFolder {
   updated_at: string;
 }
 
+export interface FeedComment {
+  id: string;
+  feed_post_id: string;
+  author_name: string;
+  content: string;
+  created_at: string;
+}
+
 export function useFeedPosts(search?: string) {
   return useQuery({
     queryKey: ["feed-posts", search],
     queryFn: async () => {
-      let query = (supabase as any)
+      let query = supabase
         .from("feed_posts")
         .select("*")
         .order("created_at", { ascending: false })
@@ -60,23 +68,65 @@ export function useFeedPosts(search?: string) {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Fetch images for all posts
-      const postIds = (data || []).map((p: any) => p.id);
-      let images: any[] = [];
+      const postIds = (data || []).map((p) => p.id);
+      let images: FeedPostImage[] = [];
       if (postIds.length > 0) {
-        const { data: imgData } = await (supabase as any)
+        const { data: imgData } = await supabase
           .from("feed_post_images")
           .select("*")
           .in("feed_post_id", postIds)
           .order("display_order", { ascending: true });
-        images = imgData || [];
+        images = (imgData || []) as FeedPostImage[];
       }
 
-      return (data || []).map((post: any) => ({
+      return (data || []).map((post) => ({
         ...post,
         tags: post.tags || [],
-        images: images.filter((img: any) => img.feed_post_id === post.id),
+        images: images.filter((img) => img.feed_post_id === post.id),
       })) as FeedPost[];
+    },
+  });
+}
+
+export function useFeedPost(postId: string | undefined) {
+  return useQuery({
+    queryKey: ["feed-post", postId],
+    enabled: !!postId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("feed_posts")
+        .select("*")
+        .eq("id", postId!)
+        .single();
+      if (error) throw error;
+
+      const { data: imgData } = await supabase
+        .from("feed_post_images")
+        .select("*")
+        .eq("feed_post_id", postId!)
+        .order("display_order", { ascending: true });
+
+      return {
+        ...data,
+        tags: data.tags || [],
+        images: (imgData || []) as FeedPostImage[],
+      } as FeedPost;
+    },
+  });
+}
+
+export function useFeedComments(postId: string | undefined) {
+  return useQuery({
+    queryKey: ["feed-comments", postId],
+    enabled: !!postId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("feed_comments")
+        .select("*")
+        .eq("feed_post_id", postId!)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data || []) as FeedComment[];
     },
   });
 }
@@ -85,12 +135,150 @@ export function useFeedFolders() {
   return useQuery({
     queryKey: ["feed-folders"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("feed_folders")
         .select("*")
         .order("display_order", { ascending: true });
       if (error) throw error;
       return (data || []) as FeedFolder[];
+    },
+  });
+}
+
+export function useCreateFeedPost() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (post: {
+      title: string;
+      description?: string;
+      post_type?: string;
+      location?: string;
+      category?: string;
+      tags?: string[];
+      visibility?: string;
+      status?: string;
+      folder_id?: string | null;
+      project_id?: string | null;
+    }) => {
+      const { data, error } = await supabase
+        .from("feed_posts")
+        .insert(post)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      toast({ title: "Post criado com sucesso" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erro ao criar post", description: err.message, variant: "destructive" });
+    },
+  });
+}
+
+export function useUpdateFeedPost() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<FeedPost> & { id: string }) => {
+      const { data, error } = await supabase
+        .from("feed_posts")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-post", data.id] });
+      toast({ title: "Post atualizado com sucesso" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erro ao atualizar post", description: err.message, variant: "destructive" });
+    },
+  });
+}
+
+export function useDeleteFeedPostImage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, postId }: { id: string; postId: string }) => {
+      const { error } = await supabase.from("feed_post_images").delete().eq("id", id);
+      if (error) throw error;
+      return postId;
+    },
+    onSuccess: (postId) => {
+      queryClient.invalidateQueries({ queryKey: ["feed-post", postId] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+    },
+  });
+}
+
+export function useUploadFeedImage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, file, order }: { postId: string; file: File; order: number }) => {
+      const ext = file.name.split(".").pop();
+      const path = `${postId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("feed-media")
+        .upload(path, file);
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("feed-media").getPublicUrl(path);
+
+      const { error: dbError } = await supabase.from("feed_post_images").insert({
+        feed_post_id: postId,
+        file_url: urlData.publicUrl,
+        file_type: file.type.startsWith("video") ? "video" : "image",
+        display_order: order,
+      });
+      if (dbError) throw dbError;
+
+      return urlData.publicUrl;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+    },
+  });
+}
+
+export function useAddFeedComment() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ postId, content, authorName }: { postId: string; content: string; authorName?: string }) => {
+      const { data, error } = await supabase
+        .from("feed_comments")
+        .insert({
+          feed_post_id: postId,
+          content,
+          author_name: authorName || "Admin",
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["feed-comments", data.feed_post_id] });
+      queryClient.invalidateQueries({ queryKey: ["feed-post", data.feed_post_id] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      toast({ title: "Comentário adicionado" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erro ao comentar", description: err.message, variant: "destructive" });
     },
   });
 }

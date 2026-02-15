@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, LayoutGrid } from "lucide-react";
+import { Search, LayoutGrid, Plus } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,9 @@ export default function CompanyFeed() {
           </div>
           <Button variant="outline" size="icon" className="flex-shrink-0">
             <LayoutGrid className="w-4 h-4" />
+          </Button>
+          <Button size="icon" onClick={() => navigate("/admin/feed/new/edit")} className="flex-shrink-0">
+            <Plus className="w-4 h-4" />
           </Button>
         </div>
 
