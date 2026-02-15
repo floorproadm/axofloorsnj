@@ -31,13 +31,13 @@ import { useToast } from "@/hooks/use-toast";
 const menuItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
+  { title: "Jobs", url: "/admin/jobs", icon: Building },
 ];
 
 // Grupo 2: Ferramentas (operação do dia-a-dia)
 const toolsItems = [
   { title: "Captação", url: "/admin/intake", icon: Inbox },
   { title: "Pipeline de Vendas", url: "/admin/leads", icon: Users },
-  { title: "Pipeline Operacional", url: "/admin/jobs", icon: Building },
   { title: "Medições", url: "/admin/measurements", icon: Ruler },
   { title: "Portfólio", url: "/admin/gallery", icon: Images },
 ];
