@@ -1,577 +1,301 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
-import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { format, getWeek, isToday, parseISO, startOfWeek, endOfWeek, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  AlertTriangle,
-  AlertCircle,
-  CheckCircle,
   DollarSign,
+  Briefcase,
   Users,
   Clock,
-  TrendingDown,
-  ArrowRight,
-  Briefcase,
-  Target,
-  Percent,
-  Activity,
-  Inbox
+  Bell,
+  ChevronRight,
+  CalendarDays,
+  MapPin
 } from "lucide-react";
-
-const STAGE_LABELS: Record<string, string> = {
-  cold_lead: "Cold Lead",
-  warm_lead: "Warm Lead",
-  estimate_requested: "Estimate Requested",
-  estimate_scheduled: "Estimate Scheduled",
-  in_draft: "In Draft",
-  proposal_sent: "Proposal Sent",
-  proposal_rejected: "Proposal Rejected",
-  in_production: "In Production",
-  completed: "Completed",
-  lost: "Lost"
-};
-
-const SOURCE_LABELS: Record<string, string> = {
-  contact: "Contato",
-  quiz: "Quiz",
-  "floor-diagnostic": "Diagnóstico",
-  builders_page: "Builders",
-  realtors_page: "Realtors",
-  lead_magnet: "Lead Magnet",
-  manual: "Manual"
-};
 
 export default function Dashboard() {
   const {
     isLoading,
-    error,
-    lastUpdated,
-    criticalAlerts,
     moneyMetrics,
     funnelMetrics,
-    marginHealth,
+    criticalAlerts,
     executionMetrics,
-    intakeMetrics
   } = useDashboardData();
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
+  // Fetch today's appointments
+  const today = new Date();
+  const todayStr = format(today, "yyyy-MM-dd");
+
+  const { data: appointments = [] } = useQuery({
+    queryKey: ["dashboard-appointments", todayStr],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("appointment_date", todayStr)
+        .order("appointment_time", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch this week's job count
+  const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
+  const tomorrow = addDays(today, 1);
+  const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
+
+  const { data: weekAppointments = [] } = useQuery({
+    queryKey: ["dashboard-week-appointments", format(weekStart, "yyyy-MM-dd")],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("appointment_date")
+        .gte("appointment_date", format(weekStart, "yyyy-MM-dd"))
+        .lte("appointment_date", format(weekEnd, "yyyy-MM-dd"));
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const tomorrowCount = weekAppointments.filter(a => a.appointment_date === tomorrowStr).length;
+
+  // New leads today count
+  const newLeadsToday = useMemo(() => {
+    return criticalAlerts.newLeadsNoContact24h.length;
+  }, [criticalAlerts]);
+
+  // Priority tasks from critical alerts
+  const priorityTasks = useMemo(() => {
+    const tasks: { label: string; time?: string; color: string; link: string }[] = [];
+
+    criticalAlerts.proposalWithoutFollowUp.slice(0, 2).forEach(l => {
+      tasks.push({
+        label: `Follow up - ${l.name}`,
+        color: "bg-red-500",
+        link: "/admin/leads?status=proposal_sent",
+      });
+    });
+
+    criticalAlerts.newLeadsNoContact24h.slice(0, 2).forEach(l => {
+      tasks.push({
+        label: `Resposta Lead - ${l.name}`,
+        color: "bg-amber-500",
+        link: "/admin/leads?status=cold_lead",
+      });
+    });
+
+    criticalAlerts.leadsStalled48h.slice(0, 1).forEach(l => {
+      tasks.push({
+        label: `Lead parado +48h - ${l.name}`,
+        color: "bg-red-500",
+        link: "/admin/leads",
+      });
+    });
+
+    return tasks.slice(0, 4);
+  }, [criticalAlerts]);
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
     }).format(value);
+
+  const weekNumber = getWeek(today);
+  const greeting = today.getHours() < 12 ? "Good morning" : today.getHours() < 18 ? "Good afternoon" : "Good evening";
+
+  const statusColors: Record<string, string> = {
+    confirmed: "bg-green-100 text-green-700",
+    scheduled: "bg-blue-100 text-blue-700",
+    in_progress: "bg-amber-100 text-amber-700",
+    pending: "bg-gray-100 text-gray-700",
   };
 
-  if (error) {
-    return (
-      <AdminLayout title="Dashboard Executivo" breadcrumbs={[{ label: "Dashboard" }]}>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-            <p className="text-lg font-medium text-destructive">Erro ao carregar dados</p>
-            <p className="text-sm text-muted-foreground">{error}</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const typeLabels: Record<string, string> = {
+    measurement: "Medição",
+    production: "Produção",
+    follow_up: "Follow-up",
+    inspection: "Inspeção",
+  };
 
   return (
-    <AdminLayout title="Dashboard Executivo" breadcrumbs={[{ label: "Dashboard" }]}>
-      <div className="space-y-6">
-        {/* TOP BAR: Hoje */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-card rounded-lg border">
-          <div className="flex items-center gap-3">
-            <div className="text-lg font-semibold text-navy">
-              {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span>Sistema Online</span>
-            </div>
-            <span>
-              Atualizado: {format(lastUpdated, "HH:mm")}
-            </span>
-          </div>
+    <AdminLayout title="" breadcrumbs={[]}>
+      <div className="max-w-lg mx-auto space-y-6 pb-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground font-medium">
+            Week {weekNumber} | {format(today, "MMM d")}
+          </span>
+          <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
+            <Bell className="w-5 h-5 text-muted-foreground" />
+            {priorityTasks.length > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+            )}
+          </button>
         </div>
 
-        {/* BLOCO 1: ALERTAS CRÍTICOS */}
-        <section>
-          <h2 className="text-lg font-semibold text-navy mb-3 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
-            Alertas Críticos
-          </h2>
-          
-          {isLoading ? (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-24" />
-              ))}
-            </div>
-          ) : criticalAlerts.hasNoCriticalIssues ? (
-            <Card className="border-green-200 bg-green-50/50">
-              <CardContent className="flex items-center gap-3 py-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-                <div>
-                  <p className="font-medium text-green-800">Nenhuma ação crítica hoje</p>
-                  <p className="text-sm text-green-600">Todas as operações estão em dia</p>
+        {/* Greeting */}
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{greeting}, Eduardo</h1>
+          <p className="text-muted-foreground text-sm">
+            You have {appointments.length} job{appointments.length !== 1 ? "s" : ""} scheduled for today
+          </p>
+        </div>
+
+        {/* Summary Cards */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-[88px] rounded-xl" />)}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Faturas Abertas */}
+            <Card className="rounded-xl border shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                  <DollarSign className="w-4 h-4" />
+                  <span>Faturas Abertas</span>
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {/* CRÍTICO: Proposals sem follow-up */}
-              {criticalAlerts.proposalWithoutFollowUp.length > 0 && (
-                <Link to="/admin/leads?status=proposal_sent" className="block">
-                  <Card className="border-red-300 bg-red-50/50 hover:bg-red-50 transition-colors cursor-pointer">
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <Badge variant="destructive" className="mb-1">CRÍTICO</Badge>
-                          <p className="font-medium text-red-800">
-                            {criticalAlerts.proposalWithoutFollowUp.length} orçamento(s) sem follow-up
-                          </p>
-                          <p className="text-sm text-red-600 truncate">
-                            Dinheiro travado: {formatCurrency(
-                              criticalAlerts.proposalWithoutFollowUp.reduce((s, l) => s + (l.budget || 0), 0)
-                            )}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-red-400" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )}
-
-
-
-              {/* CRÍTICO: Leads parados +48h */}
-              {criticalAlerts.leadsStalled48h.length > 0 && (
-                <Link to="/admin/leads" className="block">
-                  <Card className="border-red-300 bg-red-50/50 hover:bg-red-50 transition-colors cursor-pointer">
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <Clock className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <Badge variant="destructive" className="mb-1">CRÍTICO</Badge>
-                          <p className="font-medium text-red-800">
-                            {criticalAlerts.leadsStalled48h.length} lead(s) parado(s) +48h
-                          </p>
-                          <p className="text-sm text-red-600">
-                            Risco de perda iminente
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-red-400" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )}
-
-              {/* ATENÇÃO: Novos sem contato 24h */}
-              {criticalAlerts.newLeadsNoContact24h.length > 0 && (
-                <Link to="/admin/leads?status=cold_lead" className="block">
-                  <Card className="border-amber-300 bg-amber-50/50 hover:bg-amber-50 transition-colors cursor-pointer">
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <Badge className="bg-amber-100 text-amber-800 mb-1">ATENÇÃO</Badge>
-                          <p className="font-medium text-amber-800">
-                            {criticalAlerts.newLeadsNoContact24h.length} novo(s) sem contato
-                          </p>
-                          <p className="text-sm text-amber-600">
-                            Mais de 24h aguardando
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-amber-400" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )}
-
-              {/* ATENÇÃO: Gargalo no pipeline */}
-              {criticalAlerts.pipelineBottleneck && (
-                <Link to="/admin/leads" className="block">
-                  <Card className="border-amber-300 bg-amber-50/50 hover:bg-amber-50 transition-colors cursor-pointer">
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <Activity className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <Badge className="bg-amber-100 text-amber-800 mb-1">ATENÇÃO</Badge>
-                          <p className="font-medium text-amber-800">
-                            Gargalo no pipeline
-                          </p>
-                          <p className="text-sm text-amber-600">
-                            {criticalAlerts.pipelineBottleneck.count} em "{STAGE_LABELS[criticalAlerts.pipelineBottleneck.stage] || criticalAlerts.pipelineBottleneck.stage}"
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-amber-400" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* BLOCO 2: DINHEIRO NO PIPELINE */}
-        <section>
-          <h2 className="text-lg font-semibold text-navy mb-3 flex items-center gap-2">
-            <DollarSign className="w-5 h-5" />
-            Dinheiro no Pipeline
-          </h2>
-          
-          {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[1, 2, 3, 4].map(i => (
-                <Skeleton key={i} className="h-28" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Leads Ativos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-navy">{moneyMetrics.activeLeadsCount}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    Valor Estimado em Aberto
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-green-600">
-                    {formatCurrency(moneyMetrics.estimatedValueOpen)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className={moneyMetrics.blockedLeadsCount > 0 ? "border-red-200 bg-red-50/30" : ""}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4" />
-                    Dinheiro Travado
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-3xl font-bold ${moneyMetrics.blockedLeadsCount > 0 ? "text-red-600" : "text-navy"}`}>
-                    {formatCurrency(moneyMetrics.blockedLeadsValue)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {moneyMetrics.blockedLeadsCount} lead(s) bloqueado(s)
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Velocidade Média
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-navy">
-                    {moneyMetrics.avgVelocityDays} <span className="text-lg font-normal">dias</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Tempo médio no pipeline
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </section>
-
-        {/* BLOCO 3: FUNIL SIMPLES */}
-        <section>
-          <h2 className="text-lg font-semibold text-navy mb-3 flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Funil de Leads
-          </h2>
-          
-          {isLoading ? (
-            <Skeleton className="h-32" />
-          ) : (
-            <Card>
-              <CardContent className="py-4">
-                {/* Desktop: Horizontal */}
-                <div className="hidden md:flex items-center justify-between gap-2">
-                  {(["cold_lead", "warm_lead", "estimate_requested", "estimate_scheduled", "in_draft", "proposal_sent", "in_production", "completed"] as const).map((stage, idx, arr) => (
-                    <div key={stage} className="flex items-center flex-1">
-                      <div className="flex-1 text-center p-3 rounded-lg bg-muted/50">
-                        <p className="text-2xl font-bold text-navy">{funnelMetrics[stage]}</p>
-                        <p className="text-xs text-muted-foreground">{STAGE_LABELS[stage]}</p>
-                      </div>
-                      {idx < arr.length - 1 && (
-                        <ArrowRight className="w-5 h-5 text-muted-foreground mx-1 flex-shrink-0" />
-                      )}
-                    </div>
-                  ))}
-                  <div className="border-l-2 border-muted pl-4 ml-2">
-                    <div className="text-center p-3 rounded-lg bg-red-50">
-                      <p className="text-2xl font-bold text-red-600">{funnelMetrics.lost}</p>
-                      <p className="text-xs text-red-600">{STAGE_LABELS.lost}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mobile: Vertical */}
-                <div className="md:hidden space-y-2">
-                  {(["cold_lead", "warm_lead", "estimate_requested", "estimate_scheduled", "in_draft", "proposal_sent", "in_production", "completed", "lost"] as const).map((stage) => (
-                    <div 
-                      key={stage} 
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        stage === "lost" ? "bg-red-50" : "bg-muted/50"
-                      }`}
-                    >
-                      <span className={`text-sm ${stage === "lost" ? "text-red-600" : "text-muted-foreground"}`}>
-                        {STAGE_LABELS[stage]}
-                      </span>
-                      <span className={`text-xl font-bold ${stage === "lost" ? "text-red-600" : "text-navy"}`}>
-                        {funnelMetrics[stage]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Lost rate */}
-                <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <TrendingDown className="w-4 h-4" />
-                    <span>Taxa de perda (30 dias)</span>
-                  </div>
-                  <Badge variant={funnelMetrics.lostRate30d > 30 ? "destructive" : "secondary"}>
-                    {funnelMetrics.lostRate30d}%
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </section>
-
-        {/* BLOCO 4: SAÚDE DE MARGEM */}
-        <section>
-          <h2 className="text-lg font-semibold text-navy mb-3 flex items-center gap-2">
-            <Percent className="w-5 h-5" />
-            Saúde de Margem
-          </h2>
-          
-          {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-28" />
-              ))}
-            </div>
-          ) : !marginHealth.hasData ? (
-            <Card className="border-dashed">
-              <CardContent className="py-8 text-center">
-                <Percent className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground">Sem dados de margem suficientes ainda.</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Os dados aparecerão conforme projetos forem calculados.
+                <p className="text-3xl font-bold text-foreground">
+                  {formatCurrency(moneyMetrics.estimatedValueOpen)}
+                </p>
+                <p className="text-sm text-blue-600 font-medium mt-0.5">
+                  +{moneyMetrics.activeLeadsCount} pendentes
                 </p>
               </CardContent>
             </Card>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Margem Média (30 dias)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-3xl font-bold ${
-                    marginHealth.avgMargin30d !== null && marginHealth.avgMargin30d >= 30 
-                      ? "text-green-600" 
-                      : "text-amber-600"
-                  }`}>
-                    {marginHealth.avgMargin30d !== null ? `${marginHealth.avgMargin30d}%` : "—"}
-                  </p>
-                </CardContent>
-              </Card>
 
-              <Card className={marginHealth.jobsBelowMinMargin > 0 ? "border-red-200 bg-red-50/30" : ""}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Jobs Abaixo da Margem Mínima
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-3xl font-bold ${
-                    marginHealth.jobsBelowMinMargin > 0 ? "text-red-600" : "text-green-600"
-                  }`}>
-                    {marginHealth.jobsBelowMinMargin}
+            {/* Jobs Semana */}
+            <Card className="rounded-xl border shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                  <Briefcase className="w-4 h-4" />
+                  <span>Jobs Semana</span>
+                </div>
+                <p className="text-3xl font-bold text-foreground">
+                  {weekAppointments.length}
+                </p>
+                {tomorrowCount > 0 && (
+                  <p className="text-sm text-green-600 font-medium mt-0.5">
+                    +{tomorrowCount} amanhã
                   </p>
-                </CardContent>
-              </Card>
+                )}
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Lucro Estimado em Aberto
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-green-600">
-                    {formatCurrency(marginHealth.estimatedProfitOpen)}
+            {/* Novos Leads */}
+            <Card className="rounded-xl border shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                  <Users className="w-4 h-4" />
+                  <span>Novos Leads</span>
+                </div>
+                <p className="text-3xl font-bold text-foreground">
+                  {funnelMetrics.cold_lead + funnelMetrics.warm_lead}
+                </p>
+                {newLeadsToday > 0 && (
+                  <p className="text-sm text-green-600 font-medium mt-0.5">
+                    +{newLeadsToday} hoje
                   </p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </section>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-        {/* BLOCO 5: EXECUÇÃO (Jobs) */}
+        {/* Tarefas Prioritárias */}
         <section>
-          <h2 className="text-lg font-semibold text-navy mb-3 flex items-center gap-2">
-            <Briefcase className="w-5 h-5" />
-            Execução
-          </h2>
-          
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-foreground">Tarefas Prioritárias</h2>
+            <Link to="/admin/leads" className="text-sm text-blue-600 font-medium hover:underline">
+              Ver todos
+            </Link>
+          </div>
+
           {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-28" />
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12" />)}
+            </div>
+          ) : priorityTasks.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Nenhuma tarefa prioritária 🎉
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {priorityTasks.map((task, idx) => (
+                <Link
+                  key={idx}
+                  to={task.link}
+                  className="flex items-center gap-3 py-3 px-1 hover:bg-muted/50 rounded-lg transition-colors group"
+                >
+                  <span className={`w-2.5 h-2.5 rounded-full ${task.color} flex-shrink-0`} />
+                  <span className="flex-1 text-sm text-foreground truncate">{task.label}</span>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
               ))}
             </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Jobs em Produção
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-navy">{executionMetrics.jobsInProduction}</p>
-                </CardContent>
-              </Card>
-
-              <Card className={executionMetrics.jobsReadyToComplete > 0 ? "border-green-200 bg-green-50/30" : ""}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Prontos para Concluir
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-3xl font-bold ${executionMetrics.jobsReadyToComplete > 0 ? "text-green-600" : "text-navy"}`}>
-                    {executionMetrics.jobsReadyToComplete}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
           )}
         </section>
 
-        {/* BLOCO 6: CAPTAÇÃO (Intake) */}
+        {/* Agenda de Hoje */}
         <section>
-          <h2 className="text-lg font-semibold text-navy mb-3 flex items-center gap-2">
-            <Inbox className="w-5 h-5" />
-            Captação (30 dias)
-          </h2>
-          
-          {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-28" />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-foreground">Agenda de Hoje</h2>
+            <Link to="/admin/schedule" className="text-sm text-blue-600 font-medium hover:underline">
+              Ver agenda
+            </Link>
+          </div>
+
+          {appointments.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Nenhum agendamento para hoje
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {appointments.slice(0, 4).map((apt) => (
+                <Card key={apt.id} className="rounded-xl border shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-semibold text-sm text-foreground">
+                        {typeLabels[apt.appointment_type] || apt.appointment_type} - {apt.customer_name}
+                      </h3>
+                      <Badge
+                        className={`text-xs capitalize ${statusColors[apt.status] || "bg-gray-100 text-gray-700"}`}
+                        variant="secondary"
+                      >
+                        {apt.status === "confirmed" ? "Em Andamento" : apt.status === "scheduled" ? "Agendado" : apt.status}
+                      </Badge>
+                    </div>
+                    {apt.location && (
+                      <p className="text-xs text-muted-foreground mb-1.5">{apt.location}</p>
+                    )}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>
+                          {apt.appointment_time.slice(0, 5)}
+                          {apt.duration_hours ? ` - ${format(
+                            new Date(`2000-01-01T${apt.appointment_time}`).getTime() + (apt.duration_hours * 60 * 60 * 1000),
+                            "HH:mm"
+                          )}` : ""}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {/* Top 3 Sources by Volume */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Top Fontes (Volume)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {intakeMetrics.topSourcesByVolume.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Sem dados</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {intakeMetrics.topSourcesByVolume.map((s, idx) => (
-                        <div key={s.source} className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">
-                            {idx + 1}. {SOURCE_LABELS[s.source] || s.source}
-                          </span>
-                          <Badge variant="secondary">{s.count}</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Top Source by Conversion */}
-              <Card className={intakeMetrics.topSourceByConversion ? "border-green-200 bg-green-50/30" : ""}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Melhor Conversão
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {intakeMetrics.topSourceByConversion ? (
-                    <div>
-                      <p className="text-2xl font-bold text-green-600">
-                        {intakeMetrics.topSourceByConversion.rate}%
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {SOURCE_LABELS[intakeMetrics.topSourceByConversion.source] || intakeMetrics.topSourceByConversion.source}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Mín. 3 leads por fonte
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Manual Leads */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Leads Manuais
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-navy">{intakeMetrics.manualLeads30d}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Entrada manual nos últimos 30 dias</p>
-                </CardContent>
-              </Card>
-            </div>
           )}
         </section>
-
-        {/* Footer: Read-only notice */}
-        <div className="text-center text-xs text-muted-foreground pt-4 border-t">
-          Dashboard somente leitura • Dados: leads, projects, job_costs, company_settings
-        </div>
       </div>
     </AdminLayout>
   );
