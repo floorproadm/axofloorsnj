@@ -27,7 +27,7 @@ import ReferralProgram from "./pages/ReferralProgram";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import AdminDashboard from './pages/admin/Dashboard';
-import AdminGalleryManager from './pages/admin/GalleryManager';
+
 import CompanyFeed from './pages/admin/CompanyFeed';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import AdminJobsManager from './pages/admin/JobsManager';
@@ -88,11 +88,7 @@ const App = () => {
                 <AdminDashboard />
               </ProtectedRoute>
             } />
-            <Route path="/admin/gallery" element={
-              <ProtectedRoute>
-                <AdminGalleryManager />
-              </ProtectedRoute>
-            } />
+            {/* Gallery Manager is now inside /admin/settings */}
             <Route path="/admin/feed" element={
               <ProtectedRoute>
                 <CompanyFeed />
