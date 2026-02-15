@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
+import { Bell, UserPlus, FileText, AlertTriangle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -30,18 +32,30 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   }, []);
 
   // Lightweight notification count: leads without contact 24h + proposals without follow-up
-  const { data: notificationCount = 0 } = useQuery({
-    queryKey: ["header-notification-count"],
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["header-notifications"],
     queryFn: async () => {
       const h24Ago = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const [coldRes, proposalRes] = await Promise.all([
-        supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "cold_lead").lt("created_at", h24Ago),
-        supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "proposal_sent").eq("follow_up_actions", "[]"),
+      const h48Ago = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+      const [coldRes, proposalRes, stalledRes] = await Promise.all([
+        supabase.from("leads").select("id, name, created_at").eq("status", "cold_lead").lt("created_at", h24Ago).order("created_at", { ascending: false }).limit(5),
+        supabase.from("leads").select("id, name, updated_at").eq("status", "proposal_sent").eq("follow_up_actions", "[]").order("updated_at", { ascending: false }).limit(5),
+        supabase.from("leads").select("id, name, updated_at").in("status", ["warm_lead", "estimate_requested", "estimate_scheduled", "in_draft"]).lt("updated_at", h48Ago).order("updated_at", { ascending: false }).limit(3),
       ]);
-      return (coldRes.count || 0) + (proposalRes.count || 0);
+
+      const items: { id: string; name: string; type: "cold" | "proposal" | "stalled"; link: string }[] = [];
+
+      (coldRes.data || []).forEach(l => items.push({ id: l.id, name: l.name, type: "cold", link: "/admin/leads?status=cold_lead" }));
+      (proposalRes.data || []).forEach(l => items.push({ id: l.id, name: l.name, type: "proposal", link: "/admin/leads?status=proposal_sent" }));
+      (stalledRes.data || []).forEach(l => items.push({ id: l.id, name: l.name, type: "stalled", link: "/admin/leads" }));
+
+      return items;
     },
     refetchInterval: 60_000,
   });
+
+  const notificationCount = notifications.length;
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
@@ -71,14 +85,59 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
             {/* Right side */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button className="relative p-2 rounded-full hover:bg-secondary transition-colors">
-                <Bell className="w-5 h-5 text-muted-foreground" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[hsl(var(--state-blocked))] text-[10px] font-bold text-white px-1">
-                    {notificationCount > 9 ? "9+" : notificationCount}
-                  </span>
-                )}
-              </button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative p-2 rounded-full hover:bg-secondary transition-colors">
+                    <Bell className="w-5 h-5 text-muted-foreground" />
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[hsl(var(--state-blocked))] text-[10px] font-bold text-white px-1">
+                        {notificationCount > 9 ? "9+" : notificationCount}
+                      </span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 p-0 bg-card border border-border shadow-lg z-50">
+                  <div className="px-4 py-3 border-b border-border">
+                    <h3 className="text-sm font-bold text-foreground">Notificações</h3>
+                    <p className="text-[11px] text-muted-foreground">{notificationCount} pendente{notificationCount !== 1 ? "s" : ""}</p>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      Nenhuma notificação 🎉
+                    </div>
+                  ) : (
+                    <div className="max-h-72 overflow-y-auto divide-y divide-border">
+                      {notifications.map((n) => {
+                        const config = {
+                          cold: { icon: UserPlus, label: "Lead sem contato 24h", dotClass: "bg-[hsl(var(--state-risk))]" },
+                          proposal: { icon: FileText, label: "Proposta sem follow-up", dotClass: "bg-[hsl(var(--state-blocked))]" },
+                          stalled: { icon: AlertTriangle, label: "Parado +48h", dotClass: "bg-[hsl(var(--state-risk))]" },
+                        }[n.type];
+                        const Icon = config.icon;
+                        return (
+                          <Link
+                            key={`${n.type}-${n.id}`}
+                            to={n.link}
+                            className="flex items-start gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors"
+                          >
+                            <span className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${config.dotClass}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{n.name}</p>
+                              <p className="text-[11px] text-muted-foreground">{config.label}</p>
+                            </div>
+                            <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="px-4 py-2.5 border-t border-border">
+                    <Link to="/admin/leads" className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline">
+                      Ver todos os leads →
+                    </Link>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="w-2 h-2 bg-[hsl(var(--state-success))] rounded-full animate-pulse"></div>
                 Online
