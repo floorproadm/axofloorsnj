@@ -169,193 +169,150 @@ export default function JobsManager() {
   const { data: projects, isLoading, refetch } = useProjectsWithRelations();
   const { marginMinPercent } = useCompanySettings();
   const [selectedProject, setSelectedProject] = useState<ProjectWithRelations | null>(null);
+  const [activeFilter, setActiveFilter] = useState<"all" | ProjectStatus>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const grouped = useMemo(() => {
-    const g: Record<ProjectStatus, ProjectWithRelations[]> = {
-      pending: [],
-      in_production: [],
-      completed: [],
-    };
-    (projects || []).forEach((p) => {
-      const status = p.project_status as ProjectStatus;
-      if (g[status]) g[status].push(p);
-    });
-    return g;
-  }, [projects]);
+  const filteredProjects = useMemo(() => {
+    let list = projects || [];
+    if (activeFilter !== "all") {
+      list = list.filter((p) => p.project_status === activeFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.customer_name.toLowerCase().includes(q) ||
+          p.project_type.toLowerCase().includes(q) ||
+          p.address?.toLowerCase().includes(q) ||
+          p.city?.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [projects, activeFilter, searchQuery]);
 
-  const summaryStats = useMemo(() => {
-    const all = projects || [];
-    const active = all.filter((p) => p.project_status !== "completed");
-    const totalRevenue = active.reduce((s, p) => s + (p.job_costs?.estimated_revenue || 0), 0);
-    const lowMargin = active.filter((p) => {
-      const m = p.job_costs?.margin_percent;
-      return m !== null && m !== undefined && m < marginMinPercent;
-    }).length;
-    const noPhotos = all
-      .filter((p) => p.project_status === "in_production")
-      .filter((p) => {
-        const hasBefore = p.job_proof.some((pr) => pr.before_image_url);
-        const hasAfter = p.job_proof.some((pr) => pr.after_image_url);
-        return !hasBefore || !hasAfter;
-      }).length;
-
-    return { total: active.length, totalRevenue, lowMargin, noPhotos };
-  }, [projects, marginMinPercent]);
+  const filterTabs: { key: "all" | ProjectStatus; label: string }[] = [
+    { key: "all", label: "All Jobs" },
+    { key: "in_production", label: "In Progress" },
+    { key: "pending", label: "Scheduled" },
+    { key: "completed", label: "Completed" },
+  ];
 
   return (
-    <AdminLayout title="Pipeline Operacional" breadcrumbs={[{ label: "Jobs" }]}>
-      <div className="space-y-4 animate-fade-in">
-        {/* Summary Bar */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted border">
-            <Hammer className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-bold">{summaryStats.total}</span>
-            <span className="text-xs text-muted-foreground">ativos</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200">
-            <DollarSign className="w-4 h-4 text-emerald-600" />
-            <span className="text-sm font-bold text-emerald-700">
-              ${(summaryStats.totalRevenue / 1000).toFixed(summaryStats.totalRevenue >= 1000 ? 0 : 1)}k
-            </span>
-          </div>
-          {summaryStats.lowMargin > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-bold text-red-700">{summaryStats.lowMargin}</span>
-              <span className="text-xs text-red-600">margem baixa</span>
-            </div>
-          )}
-          {summaryStats.noPhotos > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
-              <Camera className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-bold text-amber-700">{summaryStats.noPhotos}</span>
-              <span className="text-xs text-amber-600">sem fotos</span>
-            </div>
-          )}
+    <AdminLayout title="Jobs" breadcrumbs={[{ label: "Jobs" }]}>
+      <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
+        {/* Search */}
+        <div className="relative">
+          <Input
+            placeholder="Search jobs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-11 rounded-xl border-border bg-card shadow-sm"
+          />
+          <svg
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" strokeLinecap="round" />
+          </svg>
         </div>
 
+        {/* Filter Tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {filterTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveFilter(tab.key)}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border",
+                activeFilter === tab.key
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-card text-muted-foreground border-border hover:bg-secondary"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Job Cards List */}
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-16">
+            <Hammer className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground font-medium">Nenhum job encontrado</p>
+          </div>
         ) : (
-          /* Kanban Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ACTIVE_STATUSES.map((status) => {
-              const config = STATUS_CONFIG[status];
-              const statusProjects = grouped[status];
+          <div className="space-y-3">
+            {filteredProjects.map((project) => {
+              const statusConf = STATUS_CONFIG[project.project_status as ProjectStatus] || STATUS_CONFIG.pending;
+              const revenue = project.job_costs?.estimated_revenue || 0;
+              const location = [project.address, project.city].filter(Boolean).join(", ");
+              const startDate = project.start_date
+                ? new Date(project.start_date)
+                : new Date(project.created_at);
 
               return (
-                <Card key={status} className={cn("border-2 overflow-hidden", config.border)}>
-                  <div className={cn("flex items-center justify-between px-4 py-3 border-b", config.bg)}>
-                    <div className="flex items-center gap-2">
-                      <span className={config.text}>{config.icon}</span>
-                      <span className={cn("font-semibold", config.text)}>{config.label}</span>
-                    </div>
-                    <Badge variant="outline" className={cn("font-bold text-xs", config.text)}>
-                      {statusProjects.length}
-                    </Badge>
-                  </div>
-
-                  <ScrollArea className="h-[420px]">
-                    <div className="p-2 space-y-2">
-                      {statusProjects.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground text-sm">
-                          Nenhum job
+                <Card
+                  key={project.id}
+                  onClick={() => setSelectedProject(project)}
+                  className="rounded-xl border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+                >
+                  <CardContent className="p-0">
+                    <div className="flex">
+                      {/* Left color strip */}
+                      <div className={cn("w-1 flex-shrink-0", statusConf.headerBg)} />
+                      <div className="flex-1 p-4 space-y-2">
+                        {/* Title row */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-sm text-foreground leading-tight truncate">
+                              {project.project_type}
+                            </h3>
+                            <p className="text-xs text-muted-foreground mt-0.5">{project.customer_name}</p>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] px-2 py-0.5 rounded-full font-semibold border flex-shrink-0",
+                              statusConf.bg, statusConf.text, statusConf.border
+                            )}
+                          >
+                            {statusConf.label}
+                          </Badge>
                         </div>
-                      ) : (
-                        statusProjects.map((project) => {
-                          const indicator = getProjectIndicator(project, marginMinPercent);
-                          const revenue = project.job_costs?.estimated_revenue || 0;
-                          const margin = project.job_costs?.margin_percent;
-                          const hasBefore = project.job_proof.some((p) => p.before_image_url);
-                          const hasAfter = project.job_proof.some((p) => p.after_image_url);
 
-                          return (
-                            <div
-                              key={project.id}
-                              onClick={() => setSelectedProject(project)}
-                              className={cn(
-                                "group p-3 rounded-lg border bg-card cursor-pointer transition-all duration-200",
-                                "hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5",
-                                indicator.severity === "error" && "ring-2 ring-red-200 border-red-300"
-                              )}
-                            >
-                              {/* Top row: Name + indicator */}
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="min-w-0 flex-1">
-                                  <p className="font-bold text-sm truncate">{project.customer_name}</p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-                                      {project.project_type}
-                                    </Badge>
-                                    <span className="text-[10px] text-muted-foreground">
-                                      {timeAgo(project.created_at)}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className={cn(
-                                  "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0",
-                                  indicator.severity === "ok" && "bg-emerald-100 text-emerald-700",
-                                  indicator.severity === "warning" && "bg-amber-100 text-amber-700",
-                                  indicator.severity === "error" && "bg-red-100 text-red-700",
-                                )}>
-                                  <div className={cn("w-1.5 h-1.5 rounded-full", indicator.color)} />
-                                  {indicator.label}
-                                </div>
-                              </div>
+                        {/* Location */}
+                        {location && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                            {location}
+                          </p>
+                        )}
 
-                              {/* Location */}
-                              {project.city && (
-                                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
-                                  <MapPin className="w-3 h-3 flex-shrink-0" />
-                                  {[project.city, project.zip_code].filter(Boolean).join(", ")}
-                                </p>
-                              )}
+                        {/* Date */}
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <CalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
+                          {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </p>
 
-                              {/* Financial row */}
-                              <div className="flex items-center justify-between pt-2 border-t border-dashed">
-                                <div className="flex items-center gap-2">
-                                  {revenue > 0 ? (
-                                    <span className="text-sm font-bold text-emerald-700">
-                                      {formatCurrency(revenue)}
-                                    </span>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground italic">Sem valor</span>
-                                  )}
-                                  {margin !== null && margin !== undefined && (
-                                    <Badge
-                                      variant="outline"
-                                      className={cn(
-                                        "text-[10px] px-1.5 py-0 h-4",
-                                        margin >= marginMinPercent
-                                          ? "border-emerald-300 text-emerald-700 bg-emerald-50"
-                                          : "border-red-300 text-red-700 bg-red-50"
-                                      )}
-                                    >
-                                      <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
-                                      {margin.toFixed(0)}%
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                {/* Quick status icons */}
-                                <div className="flex items-center gap-1">
-                                  <div className={cn(
-                                    "w-5 h-5 rounded flex items-center justify-center",
-                                    hasBefore && hasAfter ? "bg-emerald-100" : "bg-muted"
-                                  )}>
-                                    <Camera className={cn("w-3 h-3", hasBefore && hasAfter ? "text-emerald-600" : "text-muted-foreground")} />
-                                  </div>
-                                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
+                        {/* Footer: sqft + price */}
+                        <div className="flex items-center justify-between pt-2 border-t border-dashed border-border">
+                          <span className="text-xs text-muted-foreground">
+                            {project.square_footage ? `${project.square_footage.toLocaleString()} sqft` : "—"}
+                          </span>
+                          <span className="text-sm font-bold text-foreground">
+                            {revenue > 0 ? formatCurrency(revenue) : "—"}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </ScrollArea>
+                  </CardContent>
                 </Card>
               );
             })}

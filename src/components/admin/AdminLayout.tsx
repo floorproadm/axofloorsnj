@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 export interface BreadcrumbItem {
@@ -78,10 +79,13 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0">
+          <main className="flex-1 p-4 sm:p-6 pb-20 lg:pb-6 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0">
             {children}
           </main>
         </div>
+
+        {/* Mobile Bottom Nav */}
+        <MobileBottomNav />
       </div>
     </SidebarProvider>
   );
