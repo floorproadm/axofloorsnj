@@ -201,7 +201,7 @@ const Gallery = () => {
             tags: p.tags || [],
             images: images.filter((img) => img.feed_post_id === p.id),
           }))
-          .filter((p) => p.images.length > 0) // only show posts with images
+          // Show all public posts (with or without images)
       );
     } catch (err) {
       console.error("Error fetching public feed posts:", err);
@@ -341,12 +341,18 @@ const Gallery = () => {
                   }}
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <img
-                      src={post.images[0]?.file_url}
-                      alt={post.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
-                    />
+                    {post.images.length > 0 ? (
+                      <img
+                        src={post.images[0]?.file_url}
+                        alt={post.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <Image className="w-16 h-16 text-muted-foreground/40" />
+                      </div>
+                    )}
                     {post.images.length > 1 && (
                       <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
                         {post.images.length} photos
