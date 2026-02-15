@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Bell } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -54,7 +55,10 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button className="relative p-2 rounded-full hover:bg-secondary transition-colors">
+                <Bell className="w-5 h-5 text-muted-foreground" />
+              </button>
               <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="w-2 h-2 bg-[hsl(var(--state-success))] rounded-full animate-pulse"></div>
                 Online
