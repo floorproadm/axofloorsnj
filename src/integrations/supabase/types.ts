@@ -188,6 +188,181 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_comments: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          feed_post_id: string
+          id: string
+        }
+        Insert: {
+          author_name?: string
+          content: string
+          created_at?: string
+          feed_post_id: string
+          id?: string
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          feed_post_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comments_feed_post_id_fkey"
+            columns: ["feed_post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_folders: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          item_count: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          item_count?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          item_count?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      feed_post_images: {
+        Row: {
+          created_at: string
+          display_order: number
+          feed_post_id: string
+          file_type: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          feed_post_id: string
+          file_type?: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          feed_post_id?: string
+          file_type?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_post_images_feed_post_id_fkey"
+            columns: ["feed_post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_posts: {
+        Row: {
+          author_id: string | null
+          author_name: string
+          category: string | null
+          comments_count: number
+          created_at: string
+          description: string | null
+          folder_id: string | null
+          id: string
+          likes_count: number
+          location: string | null
+          post_type: string
+          project_id: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string
+          category?: string | null
+          comments_count?: number
+          created_at?: string
+          description?: string | null
+          folder_id?: string | null
+          id?: string
+          likes_count?: number
+          location?: string | null
+          post_type?: string
+          project_id?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string
+          category?: string | null
+          comments_count?: number
+          created_at?: string
+          description?: string | null
+          folder_id?: string | null
+          id?: string
+          likes_count?: number
+          location?: string | null
+          post_type?: string
+          project_id?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_posts_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "feed_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_posts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gallery_folders: {
         Row: {
           cover_image_url: string | null
