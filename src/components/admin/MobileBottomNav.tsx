@@ -79,11 +79,11 @@ export function MobileBottomNav() {
   return (
     <>
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-4px_20px_-4px_hsl(var(--navy-primary)/0.08)]">
-        <div className="flex items-end justify-around px-2 h-16 max-w-lg mx-auto">
+        <div className="flex items-center justify-around px-2 h-16 max-w-lg mx-auto">
           {navItems.map((item, idx) => {
             if (item.path === null) {
               return (
-                <div key={idx} className="flex flex-col items-center -mt-5">
+                <div key={idx} className="flex flex-col items-center relative -top-4">
                   <button
                     onClick={() => setDrawerOpen(true)}
                     className="w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
