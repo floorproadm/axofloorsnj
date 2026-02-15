@@ -129,11 +129,7 @@ export default function Dashboard() {
     <AdminLayout title="" breadcrumbs={[]}>
       <div className="max-w-2xl mx-auto px-1 sm:px-0 pb-10">
         {/* Header bar */}
-        <div className="flex items-center justify-center mb-6">
-          <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground text-center">
-            Week {weekNumber} &middot; {format(today, "MMM d")}
-          </p>
-        </div>
+        {/* Greeting */}
 
         {/* Greeting */}
         <div className="mb-8">
