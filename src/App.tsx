@@ -28,6 +28,7 @@ import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminGalleryManager from './pages/admin/GalleryManager';
+import CompanyFeed from './pages/admin/CompanyFeed';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import AdminJobsManager from './pages/admin/JobsManager';
 import AdminIntake from './pages/admin/Intake';
@@ -90,6 +91,11 @@ const App = () => {
             <Route path="/admin/gallery" element={
               <ProtectedRoute>
                 <AdminGalleryManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/feed" element={
+              <ProtectedRoute>
+                <CompanyFeed />
               </ProtectedRoute>
             } />
             <Route path="/admin/leads" element={

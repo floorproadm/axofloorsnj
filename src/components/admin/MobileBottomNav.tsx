@@ -32,7 +32,7 @@ const navItems = [
   { label: "Home", icon: Home, path: "/admin/dashboard" },
   { label: "Jobs", icon: Briefcase, path: "/admin/jobs" },
   { label: null, icon: Plus, path: null }, // FAB center
-  { label: "Feed", icon: Camera, path: "/admin/gallery" },
+  { label: "Feed", icon: Camera, path: "/admin/feed" },
   { label: "Stats", icon: BarChart3, path: "/admin/performance" },
 ];
 
@@ -68,7 +68,7 @@ export function MobileBottomNav() {
         setNewEstimateOpen(true);
         break;
       case "photo":
-        navigate("/admin/gallery");
+        navigate("/admin/feed");
         break;
       default:
         // placeholder for future actions

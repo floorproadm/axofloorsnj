@@ -47,7 +47,7 @@ const toolsItems = [
 // Grupo 3: Manage (gestão e configuração)
 const manageItems = [
   { title: "Leads", url: "/admin/leads", icon: Users },
-  { title: "Portfólio", url: "/admin/gallery", icon: Images },
+  { title: "Feed", url: "/admin/feed", icon: Images },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
