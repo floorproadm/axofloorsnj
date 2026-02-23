@@ -149,8 +149,8 @@ export function ProjectDocumentsManager({ projectId }: ProjectDocumentsManagerPr
       ) : documents.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <FileText className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhum documento encontrado</p>
-          <p className="text-xs mt-1">Use o botão Upload para adicionar arquivos</p>
+          <p className="text-sm">Nenhum documento registrado</p>
+          <p className="text-xs mt-1">Anexe contratos, medicoes ou propostas ao projeto</p>
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">

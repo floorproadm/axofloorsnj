@@ -298,7 +298,7 @@ function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit
       ))}
       {appointments.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm pointer-events-none">
-          Nenhum agendamento para este dia
+          Sem agendamentos. Dia livre ou falha no pipeline.
         </div>
       )}
     </div>
@@ -313,7 +313,7 @@ function ListView({ appointments, onEdit, date }: { appointments: Appointment[];
         {format(date, "EEEE, d 'de' MMMM", { locale: ptBR })} · {appointments.length} agendamento{appointments.length !== 1 ? "s" : ""}
       </div>
       {appointments.length === 0 && (
-        <div className="text-center py-16 text-muted-foreground text-sm">Nenhum agendamento</div>
+        <div className="text-center py-16 text-muted-foreground text-sm">Sem agendamentos nesta semana</div>
       )}
       {appointments.map(a => {
         const cfg = getTypeConfig(a.appointment_type);

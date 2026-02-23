@@ -58,7 +58,7 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Camera className="h-4 w-4" />
-          Prova de Trabalho (Job Proof)
+          JobProof — Obrigatorio antes de concluir
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -107,7 +107,7 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
             <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
               <Upload className="h-6 w-6 text-muted-foreground mb-2" />
               <span className="text-xs text-muted-foreground">
-                {isUploading ? 'Enviando...' : 'Clique para upload'}
+                {isUploading ? 'Enviando...' : 'Registrar foto Before'}
               </span>
               <input
                 type="file"
@@ -134,7 +134,7 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
             <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
               <Upload className="h-6 w-6 text-muted-foreground mb-2" />
               <span className="text-xs text-muted-foreground">
-                {isUploading ? 'Enviando...' : 'Clique para upload'}
+                {isUploading ? 'Enviando...' : 'Registrar foto After'}
               </span>
               <input
                 type="file"
