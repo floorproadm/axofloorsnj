@@ -1083,7 +1083,53 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      view_financial_metrics: {
+        Row: {
+          active_jobs: number | null
+          avg_margin_30d: number | null
+          completed_jobs: number | null
+          pipeline_value: number | null
+          total_profit: number | null
+          total_revenue: number | null
+        }
+        Relationships: []
+      }
+      view_pipeline_metrics: {
+        Row: {
+          avg_days_in_pipeline: number | null
+          last_30d: number | null
+          status: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
+      view_stage_aging: {
+        Row: {
+          action_overdue: boolean | null
+          days_in_pipeline: number | null
+          lead_id: string | null
+          name: string | null
+          next_action_date: string | null
+          status: string | null
+        }
+        Insert: {
+          action_overdue?: never
+          days_in_pipeline?: never
+          lead_id?: string | null
+          name?: string | null
+          next_action_date?: string | null
+          status?: string | null
+        }
+        Update: {
+          action_overdue?: never
+          days_in_pipeline?: never
+          lead_id?: string | null
+          name?: string | null
+          next_action_date?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_job_margin: {
@@ -1104,6 +1150,7 @@ export type Database = {
         Args: { p_lead_id: string; p_project_type: string }
         Returns: string
       }
+      get_dashboard_metrics: { Args: never; Returns: Json }
       get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
       get_leads_nra_batch: { Args: { p_lead_ids: string[] }; Returns: Json }
       has_role: {
