@@ -95,14 +95,17 @@ const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: st
 
 const ACTIVE_STATUSES: ProjectStatus[] = ["pending", "in_production", "completed"];
 
-function useProjectsWithRelations() {
+function useProjectsWithRelations(page = 0, pageSize = 50) {
   return useQuery({
-    queryKey: ["projects-with-relations"],
-    queryFn: async (): Promise<ProjectWithRelations[]> => {
-      const { data: projects, error } = await supabase
+    queryKey: ["projects-with-relations", page, pageSize],
+    queryFn: async (): Promise<{ items: ProjectWithRelations[]; totalCount: number }> => {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const { data: projects, error, count } = await supabase
         .from("projects")
-        .select("*")
-        .order("updated_at", { ascending: false });
+        .select("*", { count: "exact" })
+        .order("updated_at", { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
 
@@ -123,7 +126,7 @@ function useProjectsWithRelations() {
         proofMap.set(p.project_id, arr);
       });
 
-      return (projects || []).map((p: any) => ({
+      const items = (projects || []).map((p: any) => ({
         ...p,
         team_lead: p.team_lead || null,
         team_members: p.team_members || [],
@@ -131,6 +134,7 @@ function useProjectsWithRelations() {
         job_costs: costsMap.get(p.id) || null,
         job_proof: proofMap.get(p.id) || [],
       }));
+      return { items, totalCount: count ?? items.length };
     },
   });
 }
@@ -166,7 +170,12 @@ function timeAgo(dateString: string): string {
 }
 
 export default function JobsManager() {
-  const { data: projects, isLoading, refetch } = useProjectsWithRelations();
+  const [jobPage, setJobPage] = useState(0);
+  const PAGE_SIZE = 50;
+  const { data, isLoading, refetch } = useProjectsWithRelations(jobPage, PAGE_SIZE);
+  const projects = data?.items;
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const { marginMinPercent } = useCompanySettings();
   const [selectedProject, setSelectedProject] = useState<ProjectWithRelations | null>(null);
   const [activeFilter, setActiveFilter] = useState<"all" | ProjectStatus>("all");
@@ -316,6 +325,36 @@ export default function JobsManager() {
                 </Card>
               );
             })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-xs text-muted-foreground">
+              {totalCount} jobs total
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={jobPage === 0}
+                onClick={() => setJobPage(p => Math.max(0, p - 1))}
+              >
+                Anterior
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {jobPage + 1} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={jobPage >= totalPages - 1}
+                onClick={() => setJobPage(p => p + 1)}
+              >
+                Próximo
+              </Button>
+            </div>
           </div>
         )}
       </div>

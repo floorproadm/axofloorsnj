@@ -60,7 +60,8 @@ async function fetchLeads() {
   const { data, error } = await supabase
     .from('leads')
     .select(LEAD_COLUMNS)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(200);
   if (error) throw error;
   return (data || []).map(lead => ({
     ...lead,
