@@ -12,8 +12,8 @@ export function FeedFolderGrid({ folders, onFolderClick }: FeedFolderGridProps) 
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <FolderOpen className="w-12 h-12 text-muted-foreground/40 mb-3" />
-        <p className="text-sm text-muted-foreground">Nenhuma pasta criada ainda</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">Crie pastas para organizar o conteúdo do feed</p>
+        <p className="text-sm text-muted-foreground">Nenhuma pasta criada. Organize o feed por projeto ou tipo de servico.</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">Pastas alimentam o portfolio publico</p>
       </div>
     );
   }

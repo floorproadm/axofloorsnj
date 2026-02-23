@@ -554,8 +554,8 @@ export default function Intake() {
                   {sourceStats.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>Nenhum lead nos últimos 30 dias</p>
-                      <p className="text-sm">Adicione leads manualmente para começar</p>
+                      <p>Nenhum lead nos ultimos 30 dias</p>
+                      <p className="text-sm">Verifique campanhas, site ou adicione manualmente</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto -mx-6 px-6">

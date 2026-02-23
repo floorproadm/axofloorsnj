@@ -245,7 +245,7 @@ export default function JobsManager() {
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-16">
             <Hammer className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Nenhum job encontrado</p>
+            <p className="text-muted-foreground font-medium">Nenhum job em andamento. Sem execucao, nao ha faturamento.</p>
           </div>
         ) : (
           <div className="space-y-3">

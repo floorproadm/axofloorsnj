@@ -189,7 +189,7 @@ export default function Dashboard() {
             </div>
           ) : priorityTasks.length === 0 ? (
             <div className="text-center py-8 rounded-xl border border-dashed border-border">
-              <p className="text-sm text-muted-foreground">Nenhuma tarefa prioritária 🎉</p>
+              <p className="text-sm text-muted-foreground">Sem tarefas pendentes. Pipeline sob controle.</p>
             </div>
           ) : (
             <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
@@ -223,7 +223,7 @@ export default function Dashboard() {
 
           {appointments.length === 0 ? (
             <div className="text-center py-8 rounded-xl border border-dashed border-border">
-              <p className="text-sm text-muted-foreground">Nenhum agendamento para hoje</p>
+              <p className="text-sm text-muted-foreground">Sem jobs agendados. Dia livre ou falha no pipeline.</p>
             </div>
           ) : (
             <div className="space-y-3">

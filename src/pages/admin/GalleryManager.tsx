@@ -776,8 +776,8 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
                     <Image className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p>
                       {selectedFolder 
-                        ? 'Nenhum projeto nesta pasta ainda' 
-                        : 'Nenhum projeto criado ainda'
+                        ? 'Nenhum projeto nesta pasta. Adicione itens para alimentar o portfolio.' 
+                        : 'Nenhum projeto criado. Sem portfolio, sem prova social.'
                       }
                     </p>
                     <p className="text-sm">
