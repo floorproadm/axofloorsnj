@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Bell, UserPlus, FileText, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { useDashboardData } from "@/hooks/admin/useDashboardData";
 
 export interface BreadcrumbItem {
   label: string;
@@ -31,29 +30,16 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
     return () => mql.removeEventListener("change", update);
   }, []);
 
-  // Lightweight notification count: leads without contact 24h + proposals without follow-up
-  const { data: notifications = [] } = useQuery({
-    queryKey: ["header-notifications"],
-    queryFn: async () => {
-      const h24Ago = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const h48Ago = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  // Notifications from shared RPC — zero extra queries
+  const { criticalAlerts } = useDashboardData();
 
-      const [coldRes, proposalRes, stalledRes] = await Promise.all([
-        supabase.from("leads").select("id, name, created_at").eq("status", "cold_lead").lt("created_at", h24Ago).order("created_at", { ascending: false }).limit(5),
-        supabase.from("leads").select("id, name, updated_at").eq("status", "proposal_sent").eq("follow_up_actions", "[]").order("updated_at", { ascending: false }).limit(5),
-        supabase.from("leads").select("id, name, updated_at").in("status", ["warm_lead", "estimate_requested", "estimate_scheduled", "in_draft"]).lt("updated_at", h48Ago).order("updated_at", { ascending: false }).limit(3),
-      ]);
-
-      const items: { id: string; name: string; type: "cold" | "proposal" | "stalled"; link: string }[] = [];
-
-      (coldRes.data || []).forEach(l => items.push({ id: l.id, name: l.name, type: "cold", link: "/admin/leads?status=cold_lead" }));
-      (proposalRes.data || []).forEach(l => items.push({ id: l.id, name: l.name, type: "proposal", link: "/admin/leads?status=proposal_sent" }));
-      (stalledRes.data || []).forEach(l => items.push({ id: l.id, name: l.name, type: "stalled", link: "/admin/leads" }));
-
-      return items;
-    },
-    refetchInterval: 60_000,
-  });
+  const notifications = React.useMemo(() => {
+    const items: { id: string; name: string; type: "cold" | "proposal" | "stalled"; link: string }[] = [];
+    (criticalAlerts.newLeadsNoContact24h || []).forEach(l => items.push({ id: l.id, name: l.name, type: "cold", link: "/admin/leads?status=cold_lead" }));
+    (criticalAlerts.proposalWithoutFollowUp || []).forEach(l => items.push({ id: l.id, name: l.name, type: "proposal", link: "/admin/leads?status=proposal_sent" }));
+    (criticalAlerts.leadsStalled48h || []).forEach(l => items.push({ id: l.id, name: l.name, type: "stalled", link: "/admin/leads" }));
+    return items;
+  }, [criticalAlerts]);
 
   const notificationCount = notifications.length;
 
