@@ -61,19 +61,23 @@ export function useLeadNRABatch(leadIds: string[]) {
 
     setLoading(true);
 
-    Promise.all(
-      leadIds.map(id =>
-        supabase
-          .rpc('get_lead_nra', { p_lead_id: id })
-          .then(({ data }) => ({ id, nra: data as unknown as LeadNRA | null }))
-      )
-    ).then(results => {
-      const map: Record<string, LeadNRA> = {};
-      results.forEach(r => {
-        if (r.nra) map[r.id] = r.nra;
-      });
-      setNraMap(map);
-    }).finally(() => setLoading(false));
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .rpc('get_leads_nra_batch', { p_lead_ids: leadIds });
+        const map: Record<string, LeadNRA> = {};
+        if (!error && Array.isArray(data)) {
+          (data as unknown as Array<LeadNRA & { lead_id: string }>).forEach(r => {
+            if (r.lead_id) {
+              map[r.lead_id] = { action: r.action, label: r.label, severity: r.severity };
+            }
+          });
+        }
+        setNraMap(map);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [leadIds.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { nraMap, loading };

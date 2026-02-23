@@ -1105,6 +1105,7 @@ export type Database = {
         Returns: string
       }
       get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
+      get_leads_nra_batch: { Args: { p_lead_ids: string[] }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
