@@ -9,11 +9,17 @@ import { FeedPostCard } from "@/components/admin/feed/FeedPostCard";
 import { FeedFolderGrid } from "@/components/admin/feed/FeedFolderGrid";
 import { useFeedPosts, useFeedFolders } from "@/hooks/admin/useFeedData";
 
+const FEED_PAGE_SIZE = 20;
+
 export default function CompanyFeed() {
   const [search, setSearch] = useState("");
+  const [feedPage, setFeedPage] = useState(0);
   const navigate = useNavigate();
 
-  const { data: posts = [], isLoading: postsLoading } = useFeedPosts(search || undefined);
+  const { data: feedData, isLoading: postsLoading } = useFeedPosts(search || undefined, feedPage, FEED_PAGE_SIZE);
+  const posts = feedData?.posts ?? [];
+  const totalFeedCount = feedData?.totalCount ?? 0;
+  const totalFeedPages = Math.max(1, Math.ceil(totalFeedCount / FEED_PAGE_SIZE));
   const { data: folders = [], isLoading: foldersLoading } = useFeedFolders();
 
   return (
@@ -26,7 +32,7 @@ export default function CompanyFeed() {
             <Input
               placeholder="Search feed..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setFeedPage(0); }}
               className="pl-9"
             />
           </div>
@@ -58,13 +64,29 @@ export default function CompanyFeed() {
                 <p className="text-xs text-muted-foreground/70 mt-1">Posts aparecerão aqui conforme forem criados</p>
               </div>
             ) : (
-              posts.map((post) => (
-                <FeedPostCard
-                  key={post.id}
-                  post={post}
-                  onClick={() => navigate(`/admin/feed/${post.id}`)}
-                />
-              ))
+              <>
+                {posts.map((post) => (
+                  <FeedPostCard
+                    key={post.id}
+                    post={post}
+                    onClick={() => navigate(`/admin/feed/${post.id}`)}
+                  />
+                ))}
+                {totalFeedPages > 1 && (
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-xs text-muted-foreground">{totalFeedCount} posts</span>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" disabled={feedPage === 0} onClick={() => setFeedPage(p => p - 1)}>
+                        Anterior
+                      </Button>
+                      <span className="text-xs text-muted-foreground">{feedPage + 1} / {totalFeedPages}</span>
+                      <Button variant="outline" size="sm" disabled={feedPage >= totalFeedPages - 1} onClick={() => setFeedPage(p => p + 1)}>
+                        Próximo
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 

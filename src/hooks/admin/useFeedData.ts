@@ -51,21 +51,24 @@ export interface FeedComment {
   created_at: string;
 }
 
-export function useFeedPosts(search?: string) {
+export function useFeedPosts(search?: string, page = 0, pageSize = 20) {
   return useQuery({
-    queryKey: ["feed-posts", search],
+    queryKey: ["feed-posts", search, page, pageSize],
     queryFn: async () => {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
       let query = supabase
         .from("feed_posts")
-        .select("*")
+        .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
-        .limit(50);
+        .range(from, to);
 
       if (search) {
         query = query.or(`title.ilike.%${search}%,location.ilike.%${search}%,category.ilike.%${search}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       if (error) throw error;
 
       const postIds = (data || []).map((p) => p.id);
@@ -79,11 +82,13 @@ export function useFeedPosts(search?: string) {
         images = (imgData || []) as FeedPostImage[];
       }
 
-      return (data || []).map((post) => ({
+      const posts = (data || []).map((post) => ({
         ...post,
         tags: post.tags || [],
         images: images.filter((img) => img.feed_post_id === post.id),
       })) as FeedPost[];
+
+      return { posts, totalCount: count ?? posts.length };
     },
   });
 }
