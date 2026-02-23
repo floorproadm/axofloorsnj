@@ -17,6 +17,8 @@ interface FinancialMetric {
   total_profit: number;
   total_revenue: number;
   avg_margin_30d: number | null;
+  conversion_rate_30d: number | null;
+  avg_cycle_days: number | null;
 }
 
 interface AgingLead {
@@ -190,6 +192,17 @@ export function useDashboardData() {
       topSourcesByVolume: [],
       topSourceByConversion: null,
       manualLeads30d: 0,
+    },
+    performanceMetrics: {
+      totalRevenue: financial?.total_revenue ?? 0,
+      totalProfit: financial?.total_profit ?? 0,
+      avgMargin: financial?.avg_margin_30d ?? 0,
+      completedCount: financial?.completed_jobs ?? 0,
+      inProductionCount: financial?.active_jobs ?? 0,
+      totalLeads: pipeline.reduce((sum, s) => sum + s.total, 0),
+      recentLeadsCount: pipeline.reduce((sum, s) => sum + s.last_30d, 0),
+      conversionRate: financial?.conversion_rate_30d ?? 0,
+      avgCycleTime: financial?.avg_cycle_days ?? 0,
     },
     refetch,
   };
