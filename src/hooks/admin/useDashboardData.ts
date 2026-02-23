@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Lead {
@@ -39,17 +40,6 @@ interface JobProof {
 
 interface CompanySettings {
   default_margin_min_percent: number;
-}
-
-interface DashboardData {
-  leads: Lead[];
-  projects: Project[];
-  jobCosts: JobCost[];
-  jobProofs: JobProof[];
-  companySettings: CompanySettings | null;
-  lastUpdated: Date;
-  isLoading: boolean;
-  error: string | null;
 }
 
 interface CriticalAlerts {
@@ -102,62 +92,48 @@ interface IntakeMetrics {
   manualLeads30d: number;
 }
 
+const ACTIVE_STATUSES = ['cold_lead', 'warm_lead', 'estimate_requested', 'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected', 'in_production'];
+
+async function fetchDashboardData() {
+  const [leadsRes, projectsRes, jobCostsRes, jobProofsRes, settingsRes] = await Promise.all([
+    supabase.from('leads').select('id, name, status, budget, lead_source, follow_up_required, next_action_date, follow_up_actions, converted_to_project_id, created_at, updated_at'),
+    supabase.from('projects').select('id, project_status, customer_name, estimated_cost, created_at'),
+    supabase.from('job_costs').select('project_id, margin_percent, profit_amount, total_cost, estimated_revenue'),
+    supabase.from('job_proof').select('project_id, before_image_url, after_image_url'),
+    supabase.from('company_settings').select('default_margin_min_percent').limit(1).maybeSingle()
+  ]);
+
+  if (leadsRes.error) throw leadsRes.error;
+  if (projectsRes.error) throw projectsRes.error;
+  if (jobCostsRes.error) throw jobCostsRes.error;
+  if (jobProofsRes.error) throw jobProofsRes.error;
+
+  return {
+    leads: (leadsRes.data || []) as Lead[],
+    projects: (projectsRes.data || []) as Project[],
+    jobCosts: (jobCostsRes.data || []) as JobCost[],
+    jobProofs: (jobProofsRes.data || []) as JobProof[],
+    companySettings: settingsRes.data as CompanySettings | null,
+  };
+}
+
 /**
  * Hook for Executive Dashboard - READ ONLY
- * Fetches data from existing tables without any modifications
+ * Uses React Query for caching, dedup, and stale control
  */
 export function useDashboardData() {
-  const [data, setData] = useState<DashboardData>({
-    leads: [],
-    projects: [],
-    jobCosts: [],
-    jobProofs: [],
-    companySettings: null,
-    lastUpdated: new Date(),
-    isLoading: true,
-    error: null
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['dashboard-data'],
+    queryFn: fetchDashboardData,
+    refetchInterval: 60 * 1000,
+    staleTime: 30 * 1000,
   });
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [leadsRes, projectsRes, jobCostsRes, jobProofsRes, settingsRes] = await Promise.all([
-        supabase.from('leads').select('id, name, status, budget, lead_source, follow_up_required, next_action_date, follow_up_actions, converted_to_project_id, created_at, updated_at'),
-        supabase.from('projects').select('id, project_status, customer_name, estimated_cost, created_at'),
-        supabase.from('job_costs').select('project_id, margin_percent, profit_amount, total_cost, estimated_revenue'),
-        supabase.from('job_proof').select('project_id, before_image_url, after_image_url'),
-        supabase.from('company_settings').select('default_margin_min_percent').limit(1).maybeSingle()
-      ]);
-
-      if (leadsRes.error) throw leadsRes.error;
-      if (projectsRes.error) throw projectsRes.error;
-      if (jobCostsRes.error) throw jobCostsRes.error;
-      if (jobProofsRes.error) throw jobProofsRes.error;
-
-      setData({
-        leads: (leadsRes.data || []) as Lead[],
-        projects: (projectsRes.data || []) as Project[],
-        jobCosts: (jobCostsRes.data || []) as JobCost[],
-        jobProofs: (jobProofsRes.data || []) as JobProof[],
-        companySettings: settingsRes.data as CompanySettings | null,
-        lastUpdated: new Date(),
-        isLoading: false,
-        error: null
-      });
-    } catch (error) {
-      console.error('Dashboard fetch error:', error);
-      setData(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Erro ao carregar dados'
-      }));
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60 * 1000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, [fetchData]);
+  const leads = data?.leads ?? [];
+  const projects = data?.projects ?? [];
+  const jobCosts = data?.jobCosts ?? [];
+  const jobProofs = data?.jobProofs ?? [];
+  const companySettings = data?.companySettings ?? null;
 
   // Computed: Critical Alerts
   const criticalAlerts = useMemo((): CriticalAlerts => {
@@ -165,40 +141,32 @@ export function useDashboardData() {
     const h48Ago = new Date(now.getTime() - 48 * 60 * 60 * 1000);
     const h24Ago = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    // Leads in "proposal" without follow-up action recorded
-    const proposalWithoutFollowUp = data.leads.filter(l => {
+    const proposalWithoutFollowUp = leads.filter(l => {
       if (l.status !== 'proposal_sent') return false;
       const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
       return actions.length === 0;
     });
 
-    // Projects trying to complete but missing JobProof
-    const inProductionProjects = data.projects.filter(p => p.project_status === 'in_progress');
+    const inProductionProjects = projects.filter(p => p.project_status === 'in_progress');
     const jobsBlockedByProof = inProductionProjects.filter(p => {
-      const proof = data.jobProofs.find(jp => jp.project_id === p.id);
+      const proof = jobProofs.find(jp => jp.project_id === p.id);
       if (!proof) return true;
       return !proof.before_image_url || !proof.after_image_url;
     });
 
-    // Leads stalled > 48h (not updated in 48h, not completed/lost)
-    const activeStatuses = ['cold_lead', 'warm_lead', 'estimate_requested', 'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected', 'in_production'];
-    const leadsStalled48h = data.leads.filter(l => {
-      if (!activeStatuses.includes(l.status)) return false;
-      const updatedAt = new Date(l.updated_at);
-      return updatedAt < h48Ago;
+    const leadsStalled48h = leads.filter(l => {
+      if (!ACTIVE_STATUSES.includes(l.status)) return false;
+      return new Date(l.updated_at) < h48Ago;
     });
 
-    // New leads without contact in 24h
-    const newLeadsNoContact24h = data.leads.filter(l => {
+    const newLeadsNoContact24h = leads.filter(l => {
       if (l.status !== 'cold_lead') return false;
-      const createdAt = new Date(l.created_at);
-      return createdAt < h24Ago;
+      return new Date(l.created_at) < h24Ago;
     });
 
-    // Pipeline bottleneck detection
     const stageCounts: Record<string, number> = {};
-    data.leads.forEach(l => {
-      if (activeStatuses.includes(l.status)) {
+    leads.forEach(l => {
+      if (ACTIVE_STATUSES.includes(l.status)) {
         stageCounts[l.status] = (stageCounts[l.status] || 0) + 1;
       }
     });
@@ -220,26 +188,16 @@ export function useDashboardData() {
       newLeadsNoContact24h.length === 0 &&
       !pipelineBottleneck;
 
-    return {
-      proposalWithoutFollowUp,
-      jobsBlockedByProof,
-      leadsStalled48h,
-      newLeadsNoContact24h,
-      pipelineBottleneck,
-      hasNoCriticalIssues
-    };
-  }, [data.leads, data.projects, data.jobProofs]);
+    return { proposalWithoutFollowUp, jobsBlockedByProof, leadsStalled48h, newLeadsNoContact24h, pipelineBottleneck, hasNoCriticalIssues };
+  }, [leads, projects, jobProofs]);
 
   // Computed: Money Metrics
   const moneyMetrics = useMemo((): MoneyMetrics => {
-    const activeStatuses = ['cold_lead', 'warm_lead', 'estimate_requested', 'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected', 'in_production'];
-    const activeLeads = data.leads.filter(l => activeStatuses.includes(l.status));
-    
+    const activeLeads = leads.filter(l => ACTIVE_STATUSES.includes(l.status));
     const activeLeadsCount = activeLeads.length;
     const estimatedValueOpen = activeLeads.reduce((sum, l) => sum + (l.budget || 0), 0);
 
-    // Blocked leads = proposal without follow-up
-    const blockedLeads = data.leads.filter(l => {
+    const blockedLeads = leads.filter(l => {
       if (l.status !== 'proposal_sent') return false;
       const actions = Array.isArray(l.follow_up_actions) ? l.follow_up_actions : [];
       return actions.length === 0;
@@ -247,98 +205,66 @@ export function useDashboardData() {
     const blockedLeadsCount = blockedLeads.length;
     const blockedLeadsValue = blockedLeads.reduce((sum, l) => sum + (l.budget || 0), 0);
 
-    // Average velocity (days since created_at for active leads)
     let avgVelocityDays = 0;
     if (activeLeads.length > 0) {
       const now = new Date();
       const totalDays = activeLeads.reduce((sum, l) => {
-        const created = new Date(l.created_at);
-        const days = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
-        return sum + days;
+        return sum + (now.getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24);
       }, 0);
       avgVelocityDays = Math.round(totalDays / activeLeads.length);
     }
 
-    return {
-      activeLeadsCount,
-      estimatedValueOpen,
-      blockedLeadsCount,
-      blockedLeadsValue,
-      avgVelocityDays
-    };
-  }, [data.leads]);
+    return { activeLeadsCount, estimatedValueOpen, blockedLeadsCount, blockedLeadsValue, avgVelocityDays };
+  }, [leads]);
 
   // Computed: Funnel Metrics
   const funnelMetrics = useMemo((): FunnelMetrics => {
     const counts: FunnelMetrics = {
-      cold_lead: 0,
-      warm_lead: 0,
-      estimate_requested: 0,
-      estimate_scheduled: 0,
-      in_draft: 0,
-      proposal_sent: 0,
-      proposal_rejected: 0,
-      in_production: 0,
-      completed: 0,
-      lost: 0,
-      lostRate30d: 0
+      cold_lead: 0, warm_lead: 0, estimate_requested: 0, estimate_scheduled: 0,
+      in_draft: 0, proposal_sent: 0, proposal_rejected: 0, in_production: 0,
+      completed: 0, lost: 0, lostRate30d: 0
     };
 
-    // Map legacy statuses
     const statusMap: Record<string, keyof FunnelMetrics> = {
-      'new': 'cold_lead',
-      'new_lead': 'cold_lead',
-      'cold_lead': 'cold_lead',
-      'contacted': 'warm_lead',
-      'warm_lead': 'warm_lead',
+      'new': 'cold_lead', 'new_lead': 'cold_lead', 'cold_lead': 'cold_lead',
+      'contacted': 'warm_lead', 'warm_lead': 'warm_lead',
       'estimate_requested': 'estimate_requested',
-      'appt_scheduled': 'estimate_scheduled',
-      'estimate_scheduled': 'estimate_scheduled',
+      'appt_scheduled': 'estimate_scheduled', 'estimate_scheduled': 'estimate_scheduled',
       'in_draft': 'in_draft',
-      'qualified': 'proposal_sent',
-      'quoted': 'proposal_sent',
-      'proposal': 'proposal_sent',
-      'proposal_sent': 'proposal_sent',
+      'qualified': 'proposal_sent', 'quoted': 'proposal_sent', 'proposal': 'proposal_sent', 'proposal_sent': 'proposal_sent',
       'proposal_rejected': 'proposal_rejected',
-      'won': 'in_production',
-      'in_production': 'in_production',
-      'converted': 'completed',
-      'completed': 'completed',
+      'won': 'in_production', 'in_production': 'in_production',
+      'converted': 'completed', 'completed': 'completed',
       'lost': 'lost'
     };
 
-    data.leads.forEach(l => {
+    leads.forEach(l => {
       const mappedStatus = statusMap[l.status];
       if (mappedStatus && mappedStatus !== 'lostRate30d') {
         counts[mappedStatus]++;
       }
     });
 
-    // Calculate lost rate for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const leads30d = data.leads.filter(l => new Date(l.created_at) >= thirtyDaysAgo);
+    const leads30d = leads.filter(l => new Date(l.created_at) >= thirtyDaysAgo);
     const lost30d = leads30d.filter(l => l.status === 'lost').length;
     counts.lostRate30d = leads30d.length > 0 ? Math.round((lost30d / leads30d.length) * 100) : 0;
 
     return counts;
-  }, [data.leads]);
+  }, [leads]);
 
   // Computed: Margin Health
   const marginHealth = useMemo((): MarginHealth => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const minMargin = companySettings?.default_margin_min_percent ?? 30;
 
-    const minMargin = data.companySettings?.default_margin_min_percent ?? 30;
-
-    // Get recent job costs
-    const recentProjects = data.projects.filter(p => 
+    const recentProjects = projects.filter(p => 
       new Date(p.created_at) >= thirtyDaysAgo && p.project_status === 'completed'
     );
     const recentProjectIds = new Set(recentProjects.map(p => p.id));
-    
-    const recentJobCosts = data.jobCosts.filter(jc => 
+    const recentJobCosts = jobCosts.filter(jc => 
       recentProjectIds.has(jc.project_id) && jc.margin_percent !== null
     );
 
@@ -346,16 +272,15 @@ export function useDashboardData() {
       ? recentJobCosts.reduce((sum, jc) => sum + (jc.margin_percent || 0), 0) / recentJobCosts.length
       : null;
 
-    const jobsBelowMinMargin = data.jobCosts.filter(jc => 
+    const jobsBelowMinMargin = jobCosts.filter(jc => 
       jc.margin_percent !== null && jc.margin_percent < minMargin
     ).length;
 
-    // Active projects profit
-    const activeProjects = data.projects.filter(p => 
+    const activeProjects = projects.filter(p => 
       p.project_status === 'in_progress' || p.project_status === 'pending'
     );
     const activeProjectIds = new Set(activeProjects.map(p => p.id));
-    const estimatedProfitOpen = data.jobCosts
+    const estimatedProfitOpen = jobCosts
       .filter(jc => activeProjectIds.has(jc.project_id))
       .reduce((sum, jc) => sum + (jc.profit_amount || 0), 0);
 
@@ -363,100 +288,79 @@ export function useDashboardData() {
       avgMargin30d: avgMargin30d !== null ? Math.round(avgMargin30d * 10) / 10 : null,
       jobsBelowMinMargin,
       estimatedProfitOpen,
-      hasData: data.jobCosts.length > 0
+      hasData: jobCosts.length > 0
     };
-  }, [data.projects, data.jobCosts, data.companySettings]);
+  }, [projects, jobCosts, companySettings]);
 
   // Computed: Execution Metrics
   const executionMetrics = useMemo((): ExecutionMetrics => {
-    const inProductionProjects = data.projects.filter(p => p.project_status === 'in_progress');
+    const inProductionProjects = projects.filter(p => p.project_status === 'in_progress');
     
-    // Jobs with complete proof (ready to complete)
     const jobsReadyToComplete = inProductionProjects.filter(p => {
-      const proof = data.jobProofs.find(jp => jp.project_id === p.id);
+      const proof = jobProofs.find(jp => jp.project_id === p.id);
       return proof && proof.before_image_url && proof.after_image_url;
     }).length;
 
-    // Jobs blocked by missing proof
     const jobsBlockedByProof = inProductionProjects.filter(p => {
-      const proof = data.jobProofs.find(jp => jp.project_id === p.id);
+      const proof = jobProofs.find(jp => jp.project_id === p.id);
       if (!proof) return true;
       return !proof.before_image_url || !proof.after_image_url;
     }).length;
 
-    return {
-      jobsInProduction: inProductionProjects.length,
-      jobsReadyToComplete,
-      jobsBlockedByProof
-    };
-  }, [data.projects, data.jobProofs]);
+    return { jobsInProduction: inProductionProjects.length, jobsReadyToComplete, jobsBlockedByProof };
+  }, [projects, jobProofs]);
 
   // Computed: Intake Metrics
   const intakeMetrics = useMemo((): IntakeMetrics => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const leads30d = leads.filter(l => new Date(l.created_at) >= thirtyDaysAgo);
 
-    const leads30d = data.leads.filter(l => new Date(l.created_at) >= thirtyDaysAgo);
-
-    // Normalize sources
     const normalizeSource = (source: string): string => {
-      if (['contact_form', 'contact_page', 'contact_section'].includes(source)) {
-        return 'contact';
-      }
+      if (['contact_form', 'contact_page', 'contact_section'].includes(source)) return 'contact';
       return source;
     };
 
-    // Count by source
     const sourceCounts: Record<string, { total: number; converted: number }> = {};
     leads30d.forEach(l => {
       const src = normalizeSource(l.lead_source);
-      if (!sourceCounts[src]) {
-        sourceCounts[src] = { total: 0, converted: 0 };
-      }
+      if (!sourceCounts[src]) sourceCounts[src] = { total: 0, converted: 0 };
       sourceCounts[src].total++;
-      if (l.converted_to_project_id || l.status === 'completed') {
-        sourceCounts[src].converted++;
-      }
+      if (l.converted_to_project_id || l.status === 'completed') sourceCounts[src].converted++;
     });
 
-    // Top 3 by volume
     const topSourcesByVolume = Object.entries(sourceCounts)
       .map(([source, stats]) => ({ source, count: stats.total }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
 
-    // Top by conversion (min 3 leads to qualify)
     let topSourceByConversion: { source: string; rate: number } | null = null;
     const qualifiedSources = Object.entries(sourceCounts)
       .filter(([, stats]) => stats.total >= 3)
-      .map(([source, stats]) => ({
-        source,
-        rate: Math.round((stats.converted / stats.total) * 100)
-      }))
+      .map(([source, stats]) => ({ source, rate: Math.round((stats.converted / stats.total) * 100) }))
       .sort((a, b) => b.rate - a.rate);
-    
-    if (qualifiedSources.length > 0) {
-      topSourceByConversion = qualifiedSources[0];
-    }
+    if (qualifiedSources.length > 0) topSourceByConversion = qualifiedSources[0];
 
-    // Manual leads
     const manualLeads30d = leads30d.filter(l => normalizeSource(l.lead_source) === 'manual').length;
 
-    return {
-      topSourcesByVolume,
-      topSourceByConversion,
-      manualLeads30d
-    };
-  }, [data.leads]);
+    return { topSourcesByVolume, topSourceByConversion, manualLeads30d };
+  }, [leads]);
 
   return {
-    ...data,
+    leads,
+    projects,
+    jobCosts,
+    jobProofs,
+    companySettings,
+    lastUpdated: new Date(),
+    isLoading,
+    error: error ? (error instanceof Error ? error.message : 'Erro ao carregar dados') : null,
     criticalAlerts,
     moneyMetrics,
     funnelMetrics,
     marginHealth,
     executionMetrics,
     intakeMetrics,
-    refetch: fetchData
+    refetch
   };
 }

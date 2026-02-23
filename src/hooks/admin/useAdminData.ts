@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 interface FollowUpAction {
   date: string;
@@ -36,26 +36,6 @@ interface Lead {
   updated_at: string;
 }
 
-interface Project {
-  id: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string;
-  project_type: string;
-  project_status: string;
-  address?: string;
-  city?: string;
-  zip_code?: string;
-  square_footage?: number;
-  estimated_cost?: number;
-  actual_cost?: number;
-  start_date?: string;
-  completion_date?: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 interface AdminStats {
   totalLeads: number;
   newLeads: number;
@@ -72,40 +52,52 @@ interface AdminStats {
   averageProjectValue: number;
 }
 
-interface AdminDataState {
-  leads: Lead[];
-  projects: Project[];
-  stats: AdminStats;
-  isLoading: boolean;
-  error: string | null;
+const LEAD_COLUMNS = 'id, name, email, phone, lead_source, status, priority, services, budget, room_size, location, address, city, zip_code, message, assigned_to, follow_up_date, last_contacted_at, converted_to_project_id, notes, follow_up_required, next_action_date, follow_up_actions, created_at, updated_at';
+
+const PROJECT_COLUMNS = 'id, customer_name, customer_email, customer_phone, project_type, project_status, address, city, zip_code, square_footage, estimated_cost, actual_cost, start_date, completion_date, notes, created_at, updated_at';
+
+async function fetchLeads() {
+  const { data, error } = await supabase
+    .from('leads')
+    .select(LEAD_COLUMNS)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(lead => ({
+    ...lead,
+    services: Array.isArray(lead.services) ? lead.services as string[] : [],
+    follow_up_actions: Array.isArray(lead.follow_up_actions)
+      ? (lead.follow_up_actions as unknown as FollowUpAction[])
+      : []
+  })) as Lead[];
+}
+
+async function fetchProjects() {
+  const { data, error } = await supabase
+    .from('projects')
+    .select(PROJECT_COLUMNS)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
 }
 
 export function useAdminData() {
-  const { toast } = useToast();
-  const [state, setState] = useState<AdminDataState>({
-    leads: [],
-    projects: [],
-    stats: {
-      totalLeads: 0,
-      newLeads: 0,
-      contactedLeads: 0,
-      qualifiedLeads: 0,
-      convertedLeads: 0,
-      lostLeads: 0,
-      conversionRate: 0,
-      totalProjects: 0,
-      activeProjects: 0,
-      completedProjects: 0,
-      totalRevenue: 0,
-      monthlyRevenue: 0,
-      averageProjectValue: 0
-    },
-    isLoading: true,
-    error: null
+  const { data: leads = [], isLoading: leadsLoading, refetch: refetchLeads } = useQuery({
+    queryKey: ['admin-leads'],
+    queryFn: fetchLeads,
+    refetchInterval: 300_000,
+    staleTime: 60_000,
   });
 
-  const calculateStats = (leads: Lead[], projects: Project[]): AdminStats => {
-    // Leads Stats
+  const { data: projects = [], isLoading: projectsLoading, refetch: refetchProjects } = useQuery({
+    queryKey: ['admin-projects'],
+    queryFn: fetchProjects,
+    refetchInterval: 300_000,
+    staleTime: 60_000,
+  });
+
+  const isLoading = leadsLoading || projectsLoading;
+
+  const stats = useMemo((): AdminStats => {
     const totalLeads = leads.length;
     const newLeads = leads.filter(l => l.status === 'new').length;
     const contactedLeads = leads.filter(l => l.status === 'contacted').length;
@@ -114,128 +106,37 @@ export function useAdminData() {
     const lostLeads = leads.filter(l => l.status === 'lost').length;
     const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
-    // Projects Stats
     const totalProjects = projects.length;
     const activeProjects = projects.filter(p => p.project_status === 'in_progress' || p.project_status === 'pending').length;
     const completedProjects = projects.filter(p => p.project_status === 'completed').length;
-    
-    // Revenue Stats - Use actual_cost OR estimated_cost for completed projects
-    const completedProjectsWithCost = projects.filter(p => 
+
+    const completedProjectsWithCost = projects.filter(p =>
       p.project_status === 'completed' && (p.actual_cost || p.estimated_cost)
     );
-    
-    const totalRevenue = completedProjectsWithCost.reduce((sum, p) => 
+    const totalRevenue = completedProjectsWithCost.reduce((sum, p) =>
       sum + (p.actual_cost || p.estimated_cost || 0), 0
     );
-    
-    // Monthly revenue (last 30 days)
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const monthlyRevenue = completedProjectsWithCost
       .filter(p => p.completion_date && new Date(p.completion_date) >= thirtyDaysAgo)
       .reduce((sum, p) => sum + (p.actual_cost || p.estimated_cost || 0), 0);
-    
-    const averageProjectValue = completedProjectsWithCost.length > 0 
+
+    const averageProjectValue = completedProjectsWithCost.length > 0
       ? Math.round(totalRevenue / completedProjectsWithCost.length)
       : 0;
 
     return {
-      totalLeads,
-      newLeads,
-      contactedLeads,
-      qualifiedLeads,
-      convertedLeads,
-      lostLeads,
-      conversionRate,
-      totalProjects,
-      activeProjects,
-      completedProjects,
-      totalRevenue,
-      monthlyRevenue,
-      averageProjectValue
+      totalLeads, newLeads, contactedLeads, qualifiedLeads, convertedLeads, lostLeads, conversionRate,
+      totalProjects, activeProjects, completedProjects, totalRevenue, monthlyRevenue, averageProjectValue
     };
+  }, [leads, projects]);
+
+  const refreshData = () => {
+    refetchLeads();
+    refetchProjects();
   };
 
-  const fetchData = useCallback(async () => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      // Fetch leads
-      const { data: leadsData, error: leadsError } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (leadsError) throw leadsError;
-
-      // Process leads to ensure services and follow_up_actions are arrays
-      const processedLeads: Lead[] = (leadsData || []).map(lead => ({
-        ...lead,
-        services: Array.isArray(lead.services) ? lead.services as string[] : [],
-        follow_up_actions: Array.isArray(lead.follow_up_actions) 
-          ? (lead.follow_up_actions as unknown as FollowUpAction[]) 
-          : []
-      }));
-
-      // Fetch projects
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (projectsError) throw projectsError;
-
-      const processedProjects = projectsData || [];
-
-      // Use only real data - no sample data
-      const finalLeads = processedLeads;
-      const finalProjects = processedProjects;
-
-      // Calculate stats
-      const stats = calculateStats(finalLeads, finalProjects);
-
-      setState(prev => ({
-        ...prev,
-        leads: finalLeads,
-        projects: finalProjects,
-        stats,
-        isLoading: false,
-        error: null
-      }));
-
-    } catch (error) {
-      console.error('Error fetching admin data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage
-      }));
-
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Por favor, atualize a página e tente novamente.",
-        variant: "destructive"
-      });
-    }
-  }, [toast]);
-
-  const refreshData = useCallback(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Auto-refresh data every 5 minutes
-  useEffect(() => {
-    fetchData();
-    
-    const interval = setInterval(fetchData, 5 * 60 * 1000); // 5 minutes
-    
-    return () => clearInterval(interval);
-  }, [fetchData]);
-
-  return {
-    ...state,
-    refreshData
-  };
+  return { leads, projects, stats, isLoading, error: null, refreshData };
 }
