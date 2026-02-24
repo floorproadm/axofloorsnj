@@ -2,11 +2,15 @@ import { useState, useEffect } from "react";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Save, Loader2, Palette, Upload, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function BrandingSettings() {
   const { settings, isLoading, refetch } = useCompanySettings();
@@ -91,17 +95,30 @@ export default function BrandingSettings() {
     );
   }
 
+  const updatedAtRelative = settings?.updated_at
+    ? formatDistanceToNow(new Date(settings.updated_at), { addSuffix: true, locale: ptBR })
+    : null;
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Palette className="w-5 h-5 text-primary" />
-            Identidade Visual
-          </CardTitle>
-          <CardDescription>Logo, cores e nome fantasia da empresa.</CardDescription>
+      {/* Card 1: Identidade Visual */}
+      <Card className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Palette className="w-5 h-5 text-primary" />
+              Identidade Visual
+            </CardTitle>
+            {updatedAtRelative && (
+              <Badge variant="outline" className="gap-1 text-[10px] text-muted-foreground font-normal">
+                <Clock className="w-3 h-3" />
+                {updatedAtRelative}
+              </Badge>
+            )}
+          </div>
+          <CardDescription>Nome fantasia e logo da empresa.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 max-w-lg">
+        <CardContent className="pt-0 space-y-6 max-w-lg">
           {/* Trade Name */}
           <div className="space-y-2">
             <Label htmlFor="trade_name">Nome Fantasia</Label>
@@ -140,7 +157,19 @@ export default function BrandingSettings() {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
+      {/* Card 2: Paleta de Cores */}
+      <Card className="border-l-4 border-l-[hsl(var(--gold-warm))] shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Paintbrush className="w-5 h-5 text-[hsl(var(--gold-warm))]" />
+            Paleta de Cores
+          </CardTitle>
+          <CardDescription>Cores primária e secundária aplicadas no sistema.</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-6 max-w-lg">
           {/* Colors */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -174,22 +203,27 @@ export default function BrandingSettings() {
           {/* Preview */}
           <div className="space-y-2">
             <Label>Preview</Label>
-            <div className="flex items-center gap-3 p-4 rounded-lg border bg-muted/30">
+            <div className="flex items-center gap-3 p-4 rounded-lg border bg-[hsl(var(--navy-primary))] text-white">
               {logoUrl && <img src={logoUrl} alt="Preview" className="w-10 h-10 object-contain" />}
               <span className="font-bold text-lg" style={{ color: primaryColor }}>{tradeName || "AXO Floors"}</span>
               <div className="ml-auto flex gap-2">
-                <div className="w-8 h-8 rounded-full border" style={{ backgroundColor: primaryColor }} title="Primária" />
-                <div className="w-8 h-8 rounded-full border" style={{ backgroundColor: secondaryColor }} title="Secundária" />
+                <div className="w-8 h-8 rounded-full border border-white/20" style={{ backgroundColor: primaryColor }} title="Primária" />
+                <div className="w-8 h-8 rounded-full border border-white/20" style={{ backgroundColor: secondaryColor }} title="Secundária" />
               </div>
             </div>
           </div>
         </CardContent>
+        <Separator />
+        <CardFooter className="pt-4 flex items-center gap-4">
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            Salvar Branding
+          </Button>
+          {updatedAtRelative && (
+            <span className="text-xs text-muted-foreground">Atualizado {updatedAtRelative}</span>
+          )}
+        </CardFooter>
       </Card>
-
-      <Button onClick={handleSave} disabled={saving}>
-        {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-        Salvar Branding
-      </Button>
     </div>
   );
 }
