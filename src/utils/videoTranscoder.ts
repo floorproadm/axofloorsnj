@@ -14,26 +14,6 @@ export function needsTranscoding(file: File): boolean {
 }
 
 /**
- * Validates that a transcoded MP4 blob is actually playable by creating
- * a temporary video element and checking if it can load metadata.
- */
-async function validateMp4(blob: Blob, timeoutMs = 5000): Promise<boolean> {
-  return new Promise((resolve) => {
-    const url = URL.createObjectURL(blob);
-    const video = document.createElement("video");
-    const cleanup = () => {
-      video.src = "";
-      URL.revokeObjectURL(url);
-    };
-    const timer = setTimeout(() => { cleanup(); resolve(false); }, timeoutMs);
-    video.onloadedmetadata = () => { clearTimeout(timer); cleanup(); resolve(video.videoWidth > 0 && video.duration > 0); };
-    video.onerror = () => { clearTimeout(timer); cleanup(); resolve(false); };
-    video.preload = "metadata";
-    video.src = url;
-  });
-}
-
-/**
  * Returns true if the browser supports WebCodecs (needed for transcoding).
  */
 export function supportsWebCodecs(): boolean {
@@ -72,12 +52,6 @@ export async function transcodeToMp4(
 
   if (blob.size < 1024) {
     throw new Error(`Transcoding failed: Output file too small (${blob.size} bytes)`);
-  }
-
-  // Validate the output is actually a playable MP4
-  const isValid = await validateMp4(blob);
-  if (!isValid) {
-    throw new Error("Transcoding produced an unplayable MP4 file");
   }
 
   const newName = file.name.replace(/\.[^.]+$/, ".mp4");
