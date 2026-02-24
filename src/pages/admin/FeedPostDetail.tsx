@@ -69,7 +69,7 @@ export default function FeedPostDetail() {
     >
       <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
         {/* Top actions */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <Button variant="ghost" size="sm" onClick={() => navigate("/admin/feed")}>
             <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
           </Button>

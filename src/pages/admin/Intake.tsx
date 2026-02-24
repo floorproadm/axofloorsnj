@@ -385,7 +385,7 @@ export default function Intake() {
       title="Captação & Entrada de Leads" 
       breadcrumbs={[{ label: "Captação" }]}
     >
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in max-w-5xl mx-auto overflow-x-hidden">
         {/* Header with CTA */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

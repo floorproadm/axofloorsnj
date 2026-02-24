@@ -388,7 +388,7 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
       <Card>
         <CardContent className="p-4 space-y-3">
           <h3 className="text-sm font-semibold">Organização</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Pasta</Label>
               <Select value={folderId || "none"} onValueChange={(v) => setFolderId(v === "none" ? "" : v)}>

@@ -408,7 +408,7 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
   }
 
   const galleryContent = (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in overflow-x-hidden">
 
         <Tabs defaultValue="manage" className="space-y-6">
           <div className="flex items-center justify-between">
