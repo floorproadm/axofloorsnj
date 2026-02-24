@@ -321,6 +321,7 @@ export type Database = {
           location: string | null
           post_type: string
           project_id: string | null
+          share_token: string | null
           status: string
           tags: string[] | null
           title: string
@@ -340,6 +341,7 @@ export type Database = {
           location?: string | null
           post_type?: string
           project_id?: string | null
+          share_token?: string | null
           status?: string
           tags?: string[] | null
           title?: string
@@ -359,6 +361,7 @@ export type Database = {
           location?: string | null
           post_type?: string
           project_id?: string | null
+          share_token?: string | null
           status?: string
           tags?: string[] | null
           title?: string
