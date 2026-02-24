@@ -57,11 +57,11 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   const notificationCount = notifications.length;
 
   return (
-    <SidebarProvider defaultOpen={defaultSidebarOpen} className="h-dvh overflow-hidden">
-        <div className="flex w-full min-w-0 h-full overflow-hidden">
+    <SidebarProvider defaultOpen={defaultSidebarOpen}>
+        <div className="flex w-full min-w-0">
         <AdminSidebar />
         
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 h-dvh">
           {/* Enhanced Header */}
           <header className="h-14 flex-shrink-0 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 z-40 shadow-soft">
             <div className="flex items-center gap-3 flex-shrink-0">
