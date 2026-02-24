@@ -2,3 +2,6 @@ project_id = "dcfmrqrbsfxvqhihpamd"
 
 [functions.collaborator-upload]
 verify_jwt = false
+
+[functions.invite-team-member]
+verify_jwt = false
