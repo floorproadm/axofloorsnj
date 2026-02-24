@@ -32,7 +32,7 @@ export function MediaRenderer({
     const isMov = src.toLowerCase().includes(".mov");
     return (
       <div
-        className={`relative flex flex-col items-center justify-center gap-3 bg-muted text-muted-foreground ${className}`}
+        className={`relative flex flex-col items-center justify-center gap-3 bg-muted text-muted-foreground group ${className}`}
         onClick={onClick}
       >
         <AlertTriangle className="w-7 h-7 text-amber-500" />
@@ -41,9 +41,8 @@ export function MediaRenderer({
           <p className="text-xs">
             {isMov
               ? "Arquivos .MOV (iPhone) não são suportados pelo navegador. Delete este vídeo e re-envie em formato MP4."
-              : "Este formato de vídeo não é suportado ou o arquivo está corrompido."}
+              : "Este vídeo não pôde ser reproduzido. Pode ter sido gravado em formato incompatível (ex: HEVC/iPhone). Delete e re-envie o vídeo."}
           </p>
-          {/* Debug info hidden mostly but accessible if needed */}
           <p className="text-[10px] opacity-50 select-text hidden group-hover:block">
             {videoError === "true" ? "Error loading" : videoError}
           </p>
