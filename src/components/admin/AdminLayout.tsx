@@ -45,12 +45,12 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
-      <div className="h-dvh flex w-full bg-grey-light/30 min-w-0 overflow-hidden">
+        <div className="h-dvh flex w-full bg-grey-light/30 min-w-0 overflow-hidden">
         <AdminSidebar />
         
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           {/* Enhanced Header */}
-          <header className="h-14 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 shadow-soft">
+          <header className="h-14 flex-shrink-0 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 z-40 shadow-soft">
             <div className="flex items-center gap-3 flex-shrink-0">
               <SidebarTrigger className="h-8 w-8 hover:bg-primary/10 transition-admin flex-shrink-0" />
               {title && (
@@ -132,7 +132,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-4 sm:p-6 pb-20 lg:pb-6 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0">
+          <main className="flex-1 min-h-0 p-4 sm:p-6 pb-20 lg:pb-6 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0">
             {children}
           </main>
         </div>
