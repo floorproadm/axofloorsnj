@@ -7,13 +7,16 @@
 /* AXO Floors Design System - Premium flooring brand identity */
 
 @layer base {
-  /* Debug styles for troubleshooting */
+  html, body, #root {
+    height: 100%;
+  }
+
   html {
     scroll-behavior: smooth;
   }
   
   body {
-    min-width: 320px; /* Ensure minimum width */
+    min-width: 320px;
   }
   :root {
     /* AXO Floors Brand Colors - Melhor contraste */
