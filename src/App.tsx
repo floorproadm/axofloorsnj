@@ -46,6 +46,9 @@ import Sales2026 from "./pages/Sales2026";
 import FloorDiagnostic from "./pages/FloorDiagnostic";
 import NotFound from "./pages/NotFound";
 
+import CollaboratorLayout from "./components/collaborator/CollaboratorLayout";
+import CollaboratorDashboard from "./pages/collaborator/CollaboratorDashboard";
+import CollaboratorProjectDetail from "./pages/collaborator/CollaboratorProjectDetail";
 
 const queryClient = new QueryClient();
 
@@ -151,7 +154,16 @@ const App = () => {
                 <AdminPerformance />
               </ProtectedRoute>
             } />
-            
+            {/* Collaborator Portal */}
+            <Route path="/collaborator" element={
+              <ProtectedRoute requireAdmin={false}>
+                <CollaboratorLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<CollaboratorDashboard />} />
+              <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
