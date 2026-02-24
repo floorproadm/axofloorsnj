@@ -3,44 +3,64 @@ import { ArrowLeft } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { FeedPostForm } from "@/components/admin/feed/FeedPostForm";
-import { useFeedPost, useUpdateFeedPost, useCreateFeedPost } from "@/hooks/admin/useFeedData";
+import { useFeedPost, useUpdateFeedPost, useCreateFeedPost, useUploadFeedImage } from "@/hooks/admin/useFeedData";
 import type { FeedPost } from "@/hooks/admin/useFeedData";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function FeedPostEdit() {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const isNew = postId === "new";
-  const [createdId, setCreatedId] = useState<string | null>(null);
-  const actualId = createdId || (isNew ? undefined : postId);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const { data: post, isLoading } = useFeedPost(actualId);
+  const { data: post, isLoading } = useFeedPost(isNew ? undefined : postId);
   const updatePost = useUpdateFeedPost();
   const createPost = useCreateFeedPost();
+  const uploadImage = useUploadFeedImage();
 
-  // For new posts, create a draft immediately so images can be uploaded
-  useEffect(() => {
-    if (isNew && !createdId) {
-      createPost.mutate(
-        { title: "Novo Post", status: "draft", visibility: "internal" },
-        {
-          onSuccess: (data) => setCreatedId(data.id),
+  const handleSave = async (updates: Partial<FeedPost>, pendingFiles?: File[]) => {
+    if (isNew) {
+      setIsSaving(true);
+      try {
+        const created = await createPost.mutateAsync({
+          title: updates.title || "Novo Post",
+          description: updates.description || undefined,
+          post_type: updates.post_type || "photo",
+          location: updates.location || undefined,
+          category: updates.category || undefined,
+          tags: updates.tags || [],
+          visibility: updates.visibility || "internal",
+          status: updates.status || "draft",
+          folder_id: updates.folder_id || null,
+        });
+
+        // Upload pending images sequentially
+        if (pendingFiles && pendingFiles.length > 0) {
+          for (let i = 0; i < pendingFiles.length; i++) {
+            await uploadImage.mutateAsync({
+              postId: created.id,
+              file: pendingFiles[i],
+              order: i,
+            });
+          }
         }
+
+        navigate(`/admin/feed/${created.id}`);
+      } catch {
+        // toast already handled by mutation hooks
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      const id = postId!;
+      updatePost.mutate(
+        { id, ...updates },
+        { onSuccess: () => navigate(`/admin/feed/${id}`) }
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew]);
-
-  const handleSave = (updates: Partial<FeedPost>) => {
-    const id = actualId;
-    if (!id) return;
-    updatePost.mutate(
-      { id, ...updates },
-      { onSuccess: () => navigate(`/admin/feed/${id}`) }
-    );
   };
 
-  if ((!isNew && isLoading) || (isNew && !createdId)) {
+  if (!isNew && isLoading) {
     return (
       <AdminLayout title="Carregando..." breadcrumbs={[{ label: "Feed", href: "/admin/feed" }, { label: "Editar" }]}>
         <div className="py-16 text-center text-muted-foreground text-sm">Preparando...</div>
@@ -49,7 +69,7 @@ export default function FeedPostEdit() {
   }
 
   const defaultPost: FeedPost = {
-    id: createdId || "",
+    id: "",
     project_id: null,
     post_type: "photo",
     title: "",
@@ -84,7 +104,8 @@ export default function FeedPostEdit() {
         <FeedPostForm
           post={isNew ? defaultPost : post || defaultPost}
           onSave={handleSave}
-          isSaving={updatePost.isPending}
+          isSaving={isNew ? isSaving : updatePost.isPending}
+          isNew={isNew}
         />
       </div>
     </AdminLayout>
