@@ -578,34 +578,6 @@ const Gallery = () => {
               <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
             </Button>
           </div>
-          
-          {/* Inline Referral CTA */}
-          <div className="max-w-2xl mx-auto">
-            <Card className="border-2 border-gold/20 bg-gold/5">
-              <CardContent className="p-6 text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Gift className="w-5 h-5 text-gold" />
-                  <h3 className="text-lg font-heading font-semibold text-navy">
-                    Impressed by Our Work?
-                  </h3>
-                </div>
-                <p className="text-grey mb-4">
-                  Share your experience and earn 7-10% of every project you refer. 
-                  Help your friends get beautiful floors while you earn substantial income!
-                </p>
-                <Button 
-                  onClick={() => {
-                    console.log('[Referral CTA] Gallery inline section clicked');
-                    window.location.href = "/referral-program";
-                  }}
-                  className="gold-gradient text-black font-semibold"
-                >
-                  <Gift className="w-4 h-4 mr-2" />
-                  Start Referring & Earning
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
 
