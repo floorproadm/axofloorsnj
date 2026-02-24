@@ -1,70 +1,62 @@
 
 
-# Redesign Visual do /admin/settings
+# Adicionar Membro na Equipe (/admin/settings)
 
-## Problemas Visuais Atuais
+## Contexto
 
-1. **Sidebar de navegacao plana** — botoes sem separacao visual, sem indicador de secao ativa alem de cor
-2. **Cards sem hierarquia** — todos os cards tem o mesmo peso visual (mesmo tamanho de titulo, sem borda de acento)
-3. **Timestamp de "ultima alteracao" apenas no Geral** — Branding nao mostra, Team nao tem
-4. **Header da pagina generico** — titulo + descricao sem destaque visual, sem indicador de status
-5. **Sidebar navigation nao tem descricoes** — so icone + label, sem contexto do que cada secao faz
-6. **Botoes de salvar soltos** — fora dos cards, sem sticky behavior para forms longos
+Atualmente, a secao "Equipe" em /admin/settings e somente leitura. O admin nao tem como convidar novos membros pelo sistema. Como o Auth nao expoe signup publico (so login), precisamos de um fluxo de convite via admin.
 
-## Mudancas Propostas
+## Abordagem
 
-### 1. Settings.tsx — Sidebar com descricoes e separador visual
+Criar uma edge function `invite-team-member` que usa o Supabase Admin API (`supabase.auth.admin.inviteUserByEmail`) para enviar um convite por email. O admin preenche nome, email e role desejada num dialog. O backend cria o usuario, insere o profile e atribui a role.
 
-- Adicionar `description` curta a cada item da sidebar (ex: "Razao social e regras de negocio")
-- Adicionar uma borda left de 2px na secao ativa (estilo navigation rail)
-- Envolver sidebar em um Card com fundo `bg-muted/30` para separar visualmente do conteudo
-- No mobile, manter horizontal scroll mas com pills arredondadas
+## Mudancas
 
-### 2. Settings.tsx — Header com status badge
+### 1. Edge Function: `supabase/functions/invite-team-member/index.ts`
 
-- Adicionar um badge "Online" ou timestamp da ultima sincronizacao ao lado do titulo
-- Usar icone com acento dourado (`text-[hsl(var(--gold-warm))]`) no titulo para consistencia com o design system premium
+- Recebe `{ email, full_name, role }` via POST
+- Valida que o caller e admin (via JWT + `has_role`)
+- Usa `supabase.auth.admin.inviteUserByEmail(email, { data: { full_name } })`
+- Insere a role na tabela `user_roles` com o `user_id` retornado
+- Retorna sucesso ou erro
 
-### 3. GeneralSettings.tsx — Cards hierarquicos
+### 2. UI: `src/components/admin/settings/TeamSettings.tsx`
 
-- Card "Identidade": adicionar `border-l-4 border-primary` para destaque de primeiro nivel
-- Card "Regras de Negocio": adicionar `border-l-4 border-[hsl(var(--gold-warm))]` — cor diferente para dominio diferente
-- Mover botao "Salvar" para dentro de um `CardFooter` sticky, com divider acima
-- Timestamp "Ultima atualizacao" sempre visivel como badge discreto no header do card Identidade
+- Adicionar botao "Convidar Membro" no header do card (ao lado do badge de contagem)
+- Ao clicar, abre um Dialog com:
+  - Campo: Nome completo (obrigatorio)
+  - Campo: Email (obrigatorio)
+  - Select: Role (admin, moderator, user) — default "user"
+- Botao "Enviar Convite" que chama a edge function
+- Toast de sucesso/erro + refresh da lista
 
-### 4. BrandingSettings.tsx — Timestamp + hierarquia
+### 3. Seguranca
 
-- Adicionar timestamp de `updated_at` (ja disponivel via hook) abaixo do botao Salvar
-- Separar os campos em 2 cards: "Identidade Visual" (nome fantasia + logo) e "Paleta de Cores" (color pickers + preview)
-- Card de preview com fundo mais escuro para contraste real das cores
+- Edge function valida JWT e role admin server-side
+- Nenhuma mudanca de schema necessaria (profiles ja sao criados pelo trigger `handle_new_user`)
+- Roles sao inseridas via service_role_key na edge function, nao pelo cliente
 
-### 5. TeamSettings.tsx — Visual mais institucional
+## Fluxo
 
-- Adicionar header com contagem total e icone com acento
-- Separar membros admin dos demais com um `Separator` e label de grupo
-- Adicionar avatar placeholder com iniciais em vez de icone generico
-- Mostrar data de criacao no formato relativo ("ha 3 meses") com tooltip do absoluto
+1. Admin clica "Convidar Membro"
+2. Preenche nome, email e role
+3. Frontend chama edge function com auth token
+4. Edge function valida admin, cria usuario via invite, insere role
+5. Novo membro recebe email de convite para definir senha
+6. Ao aceitar, o trigger `handle_new_user` cria o profile automaticamente
+7. Lista de equipe atualiza
 
-### 6. Todos os componentes — Consistencia
+## Arquivos
 
-- Todos os cards ganham `shadow-sm hover:shadow-md transition-shadow` para feedback de elevacao
-- Todos os `CardTitle` com `text-base` (em vez de `text-lg` misturado com `text-2xl`)
-- Padding unificado: `CardHeader` com `pb-3`, `CardContent` com `pt-0`
-
-## Arquivos Modificados
-
-| Arquivo | Mudanca |
+| Arquivo | Acao |
 |---|---|
-| `src/pages/admin/Settings.tsx` | Sidebar com descricoes, borda ativa, card wrapper, header com badge |
-| `src/components/admin/settings/GeneralSettings.tsx` | Border-left nos cards, botao no CardFooter, timestamp badge |
-| `src/components/admin/settings/BrandingSettings.tsx` | Split em 2 cards, timestamp, fundo escuro no preview |
-| `src/components/admin/settings/TeamSettings.tsx` | Avatar com iniciais, separacao admin/outros, data relativa |
+| `supabase/functions/invite-team-member/index.ts` | Criar |
+| `src/components/admin/settings/TeamSettings.tsx` | Modificar — adicionar dialog de convite |
 
 ## Tecnico
 
-- Nenhuma mudanca de banco de dados
-- Nenhuma nova dependencia
-- Usa tokens CSS existentes (`--gold-warm`, `--state-success`, `--navy-primary`)
-- `formatDistanceToNow` de `date-fns` (ja instalado) para datas relativas
-- Zero impacto em logica de negocio — apenas visual
+- Usa `SUPABASE_SERVICE_ROLE_KEY` (ja configurado como secret)
+- Nenhuma migration de banco necessaria
+- `inviteUserByEmail` envia email automaticamente via Auth
+- Role "user" nao existe no enum `app_role` (apenas admin e moderator) — o select oferecera apenas as roles existentes, ou o membro sera adicionado sem role (colaborador basico)
 
