@@ -22,3 +22,28 @@ Adicionar uma secao no `.lovable/plan.md` documentando que:
 | `src/pages/admin/Settings.tsx` | Renomear label da aba de "Galeria Publica" para "Marketing Gallery" |
 | `.lovable/plan.md` | Adicionar secao de arquitetura documentando a separacao Gallery vs Media Engine |
 
+---
+
+# Arquitetura: Gallery vs Media Engine
+
+## Gallery System (Marketing)
+- **Tabelas:** `gallery_folders`, `gallery_projects`
+- **Bucket:** `gallery`
+- **UI:** `/admin/settings` → aba "Marketing Gallery"
+- **Propósito:** Curadoria manual de fotos para o site público (`/gallery`)
+- **Domínio:** Marketing — conteúdo selecionado para conversão de leads
+
+## Media Engine (Operacional)
+- **Tabela:** `media_files`
+- **Bucket:** `media`
+- **UI:** ProjectDetail, CompanyFeed, Portal Colaborador
+- **Propósito:** Infraestrutura de mídia operacional (fotos de progresso, before/after, documentação de campo)
+- **Domínio:** Operação — registro de trabalho, compliance, comunicação interna
+
+## Regra de Migração
+A unificação dos dois sistemas **NÃO deve ocorrer** até que:
+1. O Portal Cliente esteja ativo e necessite de fotos aprovadas
+2. Haja demanda real de usar fotos operacionais como marketing automaticamente
+3. O custo de manter dois sistemas supere o custo de migração
+
+Até lá, a separação é saudável e intencional.
