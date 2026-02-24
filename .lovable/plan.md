@@ -1,62 +1,24 @@
 
 
-# Feed: Funcionalidade de Deletar Post com Dupla Verificacao
+# Melhorias de Clareza: Galeria Marketing vs Media Engine
 
-## Contexto
+Duas alteracoes pequenas para documentar a separacao estrategica entre a Galeria Publica (marketing) e a Media Engine (operacional).
 
-O `/admin/feed` esta funcionando corretamente -- os posts estao carregando (5 posts confirmados via rede). O que falta e a funcionalidade de **deletar posts** com dupla confirmacao, seguindo o mesmo padrao ja usado no sistema para deletar leads e jobs.
+## Alteracao 1 — Renomear aba "Galeria Publica" para "Marketing Gallery"
 
-## Alteracoes
+No arquivo `src/pages/admin/Settings.tsx`, alterar o texto da aba e icone de "Galeria Publica" para "Marketing Gallery", deixando claro o dominio.
 
-### 1. Hook `useDeleteFeedPost` em `src/hooks/admin/useFeedData.ts`
+## Alteracao 2 — Documentar separacao no plan.md
 
-Adicionar uma nova mutation que:
-- Deleta primeiro os registros vinculados em `feed_post_images` e `feed_comments` (cleanup de orfaos)
-- Depois deleta o post em `feed_posts`
-- Invalida as queries do feed
-- Exibe toast de sucesso/erro
+Adicionar uma secao no `.lovable/plan.md` documentando que:
+- A Gallery (gallery_folders / gallery_projects) e um sistema isolado de marketing
+- A Media Engine (media_files) e infraestrutura operacional
+- A migracao so deve ocorrer quando o Portal Cliente estiver ativo e houver necessidade real de unificacao
 
-### 2. Botao de Deletar no `FeedPostCard` com menu dropdown
-
-No `src/components/admin/feed/FeedPostCard.tsx`:
-- Transformar o botao `MoreVertical` (que hoje nao faz nada) em um `DropdownMenu` funcional
-- Opcoes: "Editar" e "Deletar"
-- "Deletar" abre o dialogo de dupla confirmacao
-
-### 3. Botao de Deletar no `FeedPostDetail`
-
-No `src/pages/admin/FeedPostDetail.tsx`:
-- Adicionar botao "Deletar" ao lado do botao "Editar"
-- Mesmo fluxo de dupla confirmacao
-
-### 4. Componente de Dupla Verificacao
-
-Fluxo identico ao usado para leads e jobs:
-- **Passo 1**: AlertDialog com aviso "Esta acao e irreversivel. O post e todas as imagens/comentarios associados serao removidos permanentemente."
-- **Passo 2**: Segundo AlertDialog pedindo confirmacao absoluta: "Tem certeza? Essa acao nao pode ser desfeita."
-- Somente apos as duas confirmacoes a mutation e executada
-
-## Detalhes Tecnicos
-
-### Cleanup antes de deletar (ordem)
-
-```text
-1. DELETE FROM feed_post_images WHERE feed_post_id = postId
-2. DELETE FROM feed_comments WHERE feed_post_id = postId  
-3. DELETE FROM feed_posts WHERE id = postId
-```
-
-Isso evita registros orfaos, ja que nao ha CASCADE configurado nas foreign keys dessas tabelas.
-
-### Arquivos modificados
+## Arquivos modificados
 
 | Arquivo | Alteracao |
 |---|---|
-| `src/hooks/admin/useFeedData.ts` | Adicionar `useDeleteFeedPost` mutation |
-| `src/components/admin/feed/FeedPostCard.tsx` | DropdownMenu no MoreVertical com opcoes Editar/Deletar + dialogo dupla confirmacao |
-| `src/pages/admin/FeedPostDetail.tsx` | Botao Deletar + dialogo dupla confirmacao |
-
-### Nenhum arquivo novo necessario
-
-O componente de dupla confirmacao sera inline nos componentes existentes usando `AlertDialog` (ja disponivel no projeto).
+| `src/pages/admin/Settings.tsx` | Renomear label da aba de "Galeria Publica" para "Marketing Gallery" |
+| `.lovable/plan.md` | Adicionar secao de arquitetura documentando a separacao Gallery vs Media Engine |
 
