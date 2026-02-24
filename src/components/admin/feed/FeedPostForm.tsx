@@ -193,53 +193,41 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
     setPendingPreviews((prev) => [...prev, ...newPreviews]);
   };
 
-  const COMPATIBLE_VIDEO_TYPES = ["video/mp4", "video/webm", "video/ogg"];
-
   const handleFileSelect = async (files: FileList | null) => {
     if (!files) return;
     
     const processedFiles: File[] = [];
-    const incompatibleVideos: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const isVideo = file.type.startsWith("video/");
 
-      if (isVideo && !COMPATIBLE_VIDEO_TYPES.includes(file.type)) {
-        // Try transcoding, but do NOT fallback to original if it fails
-        if (needsTranscoding(file)) {
-          setTranscoding(true);
+      if (needsTranscoding(file)) {
+        setTranscoding(true);
+        setTranscodingProgress(0);
+        toast.info(`Convertendo ${file.name} para MP4...`);
+        try {
+          const converted = await Promise.race([
+            transcodeToMp4(file, (p) => setTranscodingProgress(p * 100)),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("timeout")), 60000)
+            ),
+          ]);
+          processedFiles.push(converted);
+          toast.success(`${file.name} convertido para MP4!`);
+        } catch (err) {
+          console.error("Transcoding failed, uploading original:", err);
+          toast.warning(
+            `Não foi possível converter ${file.name}. Enviando original — pode não reproduzir em todos os navegadores.`,
+            { duration: 6000 }
+          );
+          processedFiles.push(file);
+        } finally {
+          setTranscoding(false);
           setTranscodingProgress(0);
-          toast.info(`Convertendo ${file.name} para MP4...`);
-          try {
-            const converted = await Promise.race([
-              transcodeToMp4(file, (p) => setTranscodingProgress(p * 100)),
-              new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error("timeout")), 60000)
-              ),
-            ]);
-            processedFiles.push(converted);
-            toast.success(`${file.name} convertido para MP4!`);
-          } catch (err) {
-            console.error("Transcoding failed:", err);
-            incompatibleVideos.push(file.name);
-          } finally {
-            setTranscoding(false);
-            setTranscodingProgress(0);
-          }
-        } else {
-          incompatibleVideos.push(file.name);
         }
       } else {
         processedFiles.push(file);
       }
-    }
-
-    if (incompatibleVideos.length > 0) {
-      toast.error(
-        `Formato não suportado: ${incompatibleVideos.join(", ")}. Converta para MP4 antes de enviar.`,
-        { duration: 8000 }
-      );
     }
 
     if (processedFiles.length === 0) return;
@@ -414,7 +402,7 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/mp4,video/webm,video/ogg,.mp4,.webm"
+            accept="image/*,video/*"
             multiple
             className="hidden"
             onChange={(e) => handleFileSelect(e.target.files)}
