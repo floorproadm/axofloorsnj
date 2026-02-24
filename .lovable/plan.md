@@ -1,83 +1,62 @@
 
 
-# Ajuste de extensao + Hook useCollaboratorUpload
+# Feed: Funcionalidade de Deletar Post com Dupla Verificacao
 
-## 1. Correcao na Edge Function (extensao derivada do MIME)
+## Contexto
 
-Linha 118 atual:
-```text
-const ext = file.name.split(".").pop() || "jpg";
-```
+O `/admin/feed` esta funcionando corretamente -- os posts estao carregando (5 posts confirmados via rede). O que falta e a funcionalidade de **deletar posts** com dupla confirmacao, seguindo o mesmo padrao ja usado no sistema para deletar leads e jobs.
 
-Substituir por mapa controlado server-side:
-```text
-const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
-const ext = MIME_TO_EXT[file.type];
-```
+## Alteracoes
 
-Como o `file.type` ja passou pela whitelist `ALLOWED_MIME_TYPES`, o `ext` nunca sera `undefined`. Elimina confianca no nome do arquivo enviado pelo client.
+### 1. Hook `useDeleteFeedPost` em `src/hooks/admin/useFeedData.ts`
 
-## 2. Criar `src/hooks/useCollaboratorUpload.ts`
-
-Hook simples que:
-- Recebe `file`, `projectId`, `folderType` (opcional, default `job_progress`)
-- Constroi `FormData` com os campos esperados pela edge function
-- Chama a edge function via `fetch` usando URL construida com `VITE_SUPABASE_URL` + `/functions/v1/collaborator-upload`
-- Inclui `Authorization: Bearer ${session.access_token}` no header
-- Retorna o registro criado (`id`, `storage_path`, `created_at`)
-- Usa `useMutation` do TanStack Query para gerenciar estado (loading, error, success)
-- Invalida query `["media-files"]` no sucesso
+Adicionar uma nova mutation que:
+- Deleta primeiro os registros vinculados em `feed_post_images` e `feed_comments` (cleanup de orfaos)
+- Depois deleta o post em `feed_posts`
+- Invalida as queries do feed
 - Exibe toast de sucesso/erro
 
-**NAO usa** `supabase.storage` no client. Todo upload passa pela edge function.
+### 2. Botao de Deletar no `FeedPostCard` com menu dropdown
+
+No `src/components/admin/feed/FeedPostCard.tsx`:
+- Transformar o botao `MoreVertical` (que hoje nao faz nada) em um `DropdownMenu` funcional
+- Opcoes: "Editar" e "Deletar"
+- "Deletar" abre o dialogo de dupla confirmacao
+
+### 3. Botao de Deletar no `FeedPostDetail`
+
+No `src/pages/admin/FeedPostDetail.tsx`:
+- Adicionar botao "Deletar" ao lado do botao "Editar"
+- Mesmo fluxo de dupla confirmacao
+
+### 4. Componente de Dupla Verificacao
+
+Fluxo identico ao usado para leads e jobs:
+- **Passo 1**: AlertDialog com aviso "Esta acao e irreversivel. O post e todas as imagens/comentarios associados serao removidos permanentemente."
+- **Passo 2**: Segundo AlertDialog pedindo confirmacao absoluta: "Tem certeza? Essa acao nao pode ser desfeita."
+- Somente apos as duas confirmacoes a mutation e executada
+
+## Detalhes Tecnicos
+
+### Cleanup antes de deletar (ordem)
 
 ```text
-Interface de uso:
-const { mutateAsync: uploadPhoto, isPending } = useCollaboratorUpload();
-
-await uploadPhoto({
-  file: selectedFile,
-  projectId: "uuid-do-projeto",
-  folderType: "job_progress",
-});
+1. DELETE FROM feed_post_images WHERE feed_post_id = postId
+2. DELETE FROM feed_comments WHERE feed_post_id = postId  
+3. DELETE FROM feed_posts WHERE id = postId
 ```
 
-## 3. Criar `src/hooks/useCollaboratorProjects.ts`
+Isso evita registros orfaos, ja que nao ha CASCADE configurado nas foreign keys dessas tabelas.
 
-Hook que busca projetos do colaborador logado:
-- Consulta `project_members` filtrado por `user_id = auth.uid()`
-- Faz join com `projects` para trazer `customer_name`, `project_status`, `address`
-- Usa `useQuery` com queryKey `["collaborator-projects"]`
-- RLS ja garante que o colaborador so ve seus proprios memberships
-
-## Arquivos criados
-
-| Arquivo | Descricao |
-|---|---|
-| `src/hooks/useCollaboratorUpload.ts` | Mutation hook para upload via edge function |
-| `src/hooks/useCollaboratorProjects.ts` | Query hook para projetos do colaborador |
-
-## Arquivos modificados
+### Arquivos modificados
 
 | Arquivo | Alteracao |
 |---|---|
-| `supabase/functions/collaborator-upload/index.ts` | Linha 118: extensao derivada do MIME map em vez de `file.name` |
+| `src/hooks/admin/useFeedData.ts` | Adicionar `useDeleteFeedPost` mutation |
+| `src/components/admin/feed/FeedPostCard.tsx` | DropdownMenu no MoreVertical com opcoes Editar/Deletar + dialogo dupla confirmacao |
+| `src/pages/admin/FeedPostDetail.tsx` | Botao Deletar + dialogo dupla confirmacao |
 
-## O que NAO sera feito nesta etapa
+### Nenhum arquivo novo necessario
 
-- Componentes de UI (CollaboratorDashboard, ProjectDetail, PhotoUploadDrawer)
-- Redirect automatico no Auth
-- Bloqueios operacionais
-- Rotas novas no App.tsx
-
-## Sequencia pos-implementacao
-
-1. Deploy automatico da edge function corrigida
-2. Testar upload via tool com JWT valido + membership -> esperar 201
-3. Testar extensao no storage path (deve ser derivada do MIME, nao do filename)
-4. Proximo passo: criar UI do portal colaborador
+O componente de dupla confirmacao sera inline nos componentes existentes usando `AlertDialog` (ja disponivel no projeto).
 
