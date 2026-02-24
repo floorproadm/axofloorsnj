@@ -1,81 +1,83 @@
 
 
-# Edge Function: collaborator-upload (com verify_jwt = true)
+# Ajuste de extensao + Hook useCollaboratorUpload
 
-Correcao aplicada conforme sua revisao: **nao usar verify_jwt = false**. O Supabase valida o JWT automaticamente antes da funcao executar, eliminando superficie de ataque.
+## 1. Correcao na Edge Function (extensao derivada do MIME)
 
-## Arquivo Criado
-
-### `supabase/functions/collaborator-upload/index.ts`
-
-**Autenticacao:**
-- SEM `verify_jwt = false` no config.toml (mantemos o default `true`)
-- SEM `getClaims()` manual
-- Usa `supabase.auth.getUser()` para obter o usuario ja validado pelo gateway
-- Se `!user` retorna 401 (caso extremo)
-
-**Fluxo completo:**
-
+Linha 118 atual:
 ```text
-POST multipart/form-data
-  file, projectId, folderType, metadata(opcional)
-
-1. CORS preflight (OPTIONS -> 200)
-2. supabase.auth.getUser() -> userId (JWT ja validado pelo gateway)
-3. Validar inputs:
-   - file presente e <= 10MB
-   - file.type in [image/jpeg, image/png, image/webp]
-   - projectId formato UUID
-   - folderType in ['before_after', 'job_progress'] (default: job_progress)
-4. Service role client -> consultar project_members
-   - WHERE project_id = projectId AND user_id = userId
-   - Se nao membro -> 403
-5. Upload ao bucket 'media' via service role
-   - Path: projects/{projectId}/{folderType}/{timestamp}-{random}.{ext}
-6. Insert em media_files via service role:
-   - uploaded_by = userId
-   - uploaded_by_role = 'collaborator'
-   - source_type = 'collaborator'
-   - visibility = 'internal'
-   - folder_type = folderType
-7. Se insert falhar -> cleanup do arquivo no storage
-8. Retornar { id, storage_path, created_at } com status 201
+const ext = file.name.split(".").pop() || "jpg";
 ```
 
-**Codigos de erro:**
-- 401: JWT invalido (bloqueado pelo gateway) ou getUser() falhou
-- 403: Nao e membro do projeto
-- 400: Input invalido (arquivo ausente, grande demais, tipo invalido, projectId invalido)
-- 405: Metodo nao permitido (apenas POST e OPTIONS)
-- 500: Erro interno
+Substituir por mapa controlado server-side:
+```text
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+const ext = MIME_TO_EXT[file.type];
+```
 
-## Config
+Como o `file.type` ja passou pela whitelist `ALLOWED_MIME_TYPES`, o `ext` nunca sera `undefined`. Elimina confianca no nome do arquivo enviado pelo client.
 
-**NENHUMA alteracao em `supabase/config.toml`**. O default `verify_jwt = true` se aplica automaticamente. Isso significa que requisicoes sem JWT valido sao rejeitadas pelo gateway antes de chegar ao codigo.
+## 2. Criar `src/hooks/useCollaboratorUpload.ts`
 
-## Diferencas vs plano anterior
+Hook simples que:
+- Recebe `file`, `projectId`, `folderType` (opcional, default `job_progress`)
+- Constroi `FormData` com os campos esperados pela edge function
+- Chama a edge function via `fetch` usando URL construida com `VITE_SUPABASE_URL` + `/functions/v1/collaborator-upload`
+- Inclui `Authorization: Bearer ${session.access_token}` no header
+- Retorna o registro criado (`id`, `storage_path`, `created_at`)
+- Usa `useMutation` do TanStack Query para gerenciar estado (loading, error, success)
+- Invalida query `["media-files"]` no sucesso
+- Exibe toast de sucesso/erro
 
-| Aspecto | Antes | Agora |
-|---|---|---|
-| config.toml | verify_jwt = false | Sem alteracao (default true) |
-| Auth method | getClaims() manual | getUser() (JWT pre-validado) |
-| Superficie de ataque | Funcao exposta sem JWT | Gateway bloqueia antes |
-| Complexidade | Mais codigo de validacao | Mais simples e seguro |
+**NAO usa** `supabase.storage` no client. Todo upload passa pela edge function.
 
-## Seguranca mantida
+```text
+Interface de uso:
+const { mutateAsync: uploadPhoto, isPending } = useCollaboratorUpload();
 
-- Service role key usada APENAS server-side
-- Nenhuma storage policy nova
-- Membership validada antes de qualquer operacao
-- Whitelist de folder types e mime types
-- Limite de 10MB
-- Cleanup em caso de falha
+await uploadPhoto({
+  file: selectedFile,
+  projectId: "uuid-do-projeto",
+  folderType: "job_progress",
+});
+```
+
+## 3. Criar `src/hooks/useCollaboratorProjects.ts`
+
+Hook que busca projetos do colaborador logado:
+- Consulta `project_members` filtrado por `user_id = auth.uid()`
+- Faz join com `projects` para trazer `customer_name`, `project_status`, `address`
+- Usa `useQuery` com queryKey `["collaborator-projects"]`
+- RLS ja garante que o colaborador so ve seus proprios memberships
+
+## Arquivos criados
+
+| Arquivo | Descricao |
+|---|---|
+| `src/hooks/useCollaboratorUpload.ts` | Mutation hook para upload via edge function |
+| `src/hooks/useCollaboratorProjects.ts` | Query hook para projetos do colaborador |
+
+## Arquivos modificados
+
+| Arquivo | Alteracao |
+|---|---|
+| `supabase/functions/collaborator-upload/index.ts` | Linha 118: extensao derivada do MIME map em vez de `file.name` |
+
+## O que NAO sera feito nesta etapa
+
+- Componentes de UI (CollaboratorDashboard, ProjectDetail, PhotoUploadDrawer)
+- Redirect automatico no Auth
+- Bloqueios operacionais
+- Rotas novas no App.tsx
 
 ## Sequencia pos-implementacao
 
-1. Deploy automatico da edge function
-2. Testar via tool com JWT valido + membership -> esperar 201
-3. Testar com JWT valido + sem membership -> esperar 403
-4. Sem JWT -> gateway rejeita (nem chega ao codigo)
-5. Depois: criar hooks e UI do portal colaborador
+1. Deploy automatico da edge function corrigida
+2. Testar upload via tool com JWT valido + membership -> esperar 201
+3. Testar extensao no storage path (deve ser derivada do MIME, nao do filename)
+4. Proximo passo: criar UI do portal colaborador
 
