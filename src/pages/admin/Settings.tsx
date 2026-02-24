@@ -150,7 +150,7 @@ export default function Settings() {
             </TabsTrigger>
             <TabsTrigger value="gallery" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Images className="w-4 h-4 mr-2" />
-              Galeria Pública
+              Marketing Gallery
             </TabsTrigger>
           </TabsList>
 
