@@ -218,9 +218,10 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
         } catch (err) {
           console.error("Transcoding failed, uploading original:", err);
           toast.warning(
-            `Não foi possível converter ${file.name}. Enviando original — pode não reproduzir em todos os navegadores.`,
-            { duration: 6000 }
+            `Não foi possível converter ${file.name}. Enviando original — pode não reproduzir em todos os navegadores. Use o botão "Baixar original" para acessar o vídeo.`,
+            { duration: 8000 }
           );
+          // Keep original file WITH original extension so MediaRenderer can detect .mov
           processedFiles.push(file);
         } finally {
           setTranscoding(false);
