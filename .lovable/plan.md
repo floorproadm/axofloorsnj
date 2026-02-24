@@ -1,36 +1,60 @@
 
 
-# Filtros Avancados no Feed
+# Confirmacao antes de Criar Post
 
-## O que sera feito
+## Problema atual
 
-Transformar o botao de grid (LayoutGrid) em um botao de filtros que abre um painel lateral (Sheet) com opcoes de filtragem avancada para os posts do feed.
+Ao navegar para `/admin/feed/new/edit`, um rascunho e criado automaticamente no banco de dados via `useEffect`, mesmo que o usuario nao termine de preencher o formulario. Isso gera posts "lixo" no banco.
 
-## Filtros disponiveis
+## Solucao
 
-| Filtro | Tipo | Opcoes |
-|---|---|---|
-| Pasta | Select | Lista das pastas existentes |
-| Status | Select | Rascunho, Publicado |
-| Visibilidade | Select | Interno, Publico |
-| Categoria | Select | Categorias existentes nos posts |
-| Tipo de midia | Select | Foto, Video |
-| Periodo | Date picker | Data inicio / Data fim |
+Duas mudancas complementares:
 
-## Arquivos
+### 1. Remover criacao automatica de rascunho
 
-| Arquivo | Acao |
+O `useEffect` em `FeedPostEdit.tsx` que cria o draft imediatamente sera removido. Em vez disso, o post so sera criado quando o usuario clicar em "Salvar Post".
+
+### 2. Adicionar dialog de confirmacao no botao Salvar
+
+Ao clicar em "Salvar Post" em um post novo, um `AlertDialog` aparecera pedindo confirmacao antes de efetivamente criar o post.
+
+## Fluxo novo
+
+```text
+Usuario clica "+"
+    |
+Formulario vazio (sem nada salvo no banco)
+    |
+Preenche titulo, descricao, etc.
+    |
+Clica "Salvar Post"
+    |
+AlertDialog: "Confirmar criacao do post?"
+    |
+[Cancelar]  /  [Confirmar]
+                    |
+              Cria post no banco
+              Upload de imagens (se houver)
+              Redireciona para o post
+```
+
+## Impacto em imagens
+
+Como o post ainda nao existe no banco durante a edicao, o upload de imagens precisara ser feito localmente (guardar os arquivos em estado) e enviado ao banco apenas apos a confirmacao e criacao do post. As imagens serao armazenadas temporariamente em memoria como `File[]`.
+
+## Arquivos modificados
+
+| Arquivo | Mudanca |
 |---|---|
-| `src/components/admin/feed/FeedFiltersSheet.tsx` | Criar -- Sheet lateral com os filtros |
-| `src/pages/admin/CompanyFeed.tsx` | Modificar -- trocar icone do botao para Filter, adicionar state dos filtros, conectar ao Sheet e passar filtros para a query |
-| `src/hooks/admin/useFeedData.ts` | Modificar -- `useFeedPosts` aceitar parametros de filtro (folder_id, status, visibility, category, post_type, date range) |
+| `src/pages/admin/FeedPostEdit.tsx` | Remover `useEffect` de criacao automatica. Novo fluxo: criar post + upload de imagens no `handleSave`. |
+| `src/components/admin/feed/FeedPostForm.tsx` | Imagens guardadas como `File[]` localmente para novos posts. Botao Salvar abre AlertDialog de confirmacao quando `isNew`. |
 
-## Tecnico
+## Detalhes tecnicos
 
-- O botao LayoutGrid vira um botao com icone `SlidersHorizontal` (ou `Filter`)
-- Badge com contador de filtros ativos aparece no botao
-- O Sheet usa componentes existentes: Select, Calendar/DatePicker, Button
-- Os filtros sao aplicados como parametros `.eq()` e `.gte()/.lte()` na query do Supabase
-- Botao "Limpar filtros" dentro do Sheet
-- Nenhuma migration necessaria -- todos os campos ja existem na tabela `feed_posts`
+- `FeedPostForm` recebera nova prop `isNew: boolean`
+- Para posts novos, imagens ficam em estado local como `File[]` (sem upload imediato)
+- O `onSave` retornara tambem os arquivos pendentes
+- `FeedPostEdit.handleSave` para novos posts: primeiro `createPost.mutate`, depois faz upload das imagens em sequencia, e redireciona
+- AlertDialog usa componente `AlertDialog` ja existente no projeto
+- Para posts existentes (edicao), o fluxo permanece identico ao atual
 
