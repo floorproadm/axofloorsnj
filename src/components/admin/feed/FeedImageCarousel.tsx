@@ -31,7 +31,7 @@ export function FeedImageCarousel({ images }: FeedImageCarouselProps) {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 w-full max-w-full overflow-hidden">
       {/* Main image */}
       <div className="relative aspect-video bg-muted rounded-lg overflow-hidden group">
         <img

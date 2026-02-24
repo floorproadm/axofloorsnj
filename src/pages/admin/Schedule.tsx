@@ -367,7 +367,8 @@ function WeekView({
   onEdit: (a: Appointment) => void; onSelectDay: (d: Date) => void;
 }) {
   return (
-    <div className="grid grid-cols-7 gap-px bg-border/30 min-h-[400px]">
+    <div className="overflow-x-auto">
+    <div className="grid grid-cols-7 gap-px bg-border/30 min-h-[400px] min-w-[600px]">
       {weekDays.map(day => {
         const dateStr = format(day, "yyyy-MM-dd");
         const dayAppts = appointments.filter(a => a.appointment_date === dateStr);
@@ -410,6 +411,7 @@ function WeekView({
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
