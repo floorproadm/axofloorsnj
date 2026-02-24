@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, Share2, Download, MapPin, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { MessageSquare, Share2, Download, MapPin, MoreVertical, Edit, Trash2, Link, Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +38,33 @@ export function FeedPostCard({ post, onClick }: FeedPostCardProps) {
   const deleteMutation = useDeleteFeedPost();
   const [showStep1, setShowStep1] = useState(false);
   const [showStep2, setShowStep2] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSharing(true);
+    try {
+      let token = (post as any).share_token;
+      if (!token) {
+        token = crypto.randomUUID();
+        const { error } = await supabase
+          .from("feed_posts")
+          .update({ share_token: token } as any)
+          .eq("id", post.id);
+        if (error) throw error;
+      }
+      const url = `${window.location.origin}/shared/${token}`;
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success("Link copiado!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Erro ao gerar link");
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const handleConfirmStep1 = () => {
     setShowStep1(false);
@@ -119,8 +148,8 @@ export function FeedPostCard({ post, onClick }: FeedPostCardProps) {
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
-                <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleShare} disabled={sharing}>
+                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Share2 className="w-3.5 h-3.5 text-muted-foreground" />}
               </Button>
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
                 <Download className="w-3.5 h-3.5 text-muted-foreground" />

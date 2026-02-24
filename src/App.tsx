@@ -45,6 +45,7 @@ import Campaign from "./pages/Campaign";
 import Sales2026 from "./pages/Sales2026";
 import FloorDiagnostic from "./pages/FloorDiagnostic";
 import NotFound from "./pages/NotFound";
+import SharedPost from "./pages/SharedPost";
 
 import CollaboratorLayout from "./components/collaborator/CollaboratorLayout";
 import CollaboratorDashboard from "./pages/collaborator/CollaboratorDashboard";
@@ -82,6 +83,7 @@ const App = () => {
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
             <Route path="/sales2026" element={<Sales2026 />} />
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
+            <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={
               <ProtectedRoute>
