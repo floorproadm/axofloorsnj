@@ -97,7 +97,7 @@ export default function FeedPostEdit() {
         { label: isNew ? "Novo" : "Editar" },
       ]}
     >
-      <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
+      <div className="max-w-2xl mx-auto space-y-4 animate-fade-in pb-24">
         <Button variant="ghost" size="sm" onClick={() => navigate(isNew ? "/admin/feed" : `/admin/feed/${postId}`)}>
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
         </Button>
