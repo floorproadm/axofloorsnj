@@ -1,45 +1,49 @@
 
+# AXO OS — Contrato Arquitetural v5.5
 
-# Fase 5.5 — Execucao: Camadas Claras de Uso
+## Contrato de Visibilidade (Media Engine)
 
-## 1. Migration SQL
+| Nivel | Quem ve | Onde aplica |
+|---|---|---|
+| `internal` | Admin + futuros colaboradores | Default. Fotos de obra, progresso, documentos internos |
+| `client` | Admin + cliente vinculado ao projeto | Fotos aprovadas para compartilhar com cliente |
+| `public` | Qualquer usuario | Apenas midias com `is_marketing_asset=true` e `quality_checked=true` |
 
-Adicionar duas colunas e um indice parcial:
+## Dividas Arquiteturais Controladas
 
-```text
-ALTER TABLE public.media_files
-  ADD COLUMN is_marketing_asset boolean NOT NULL DEFAULT false;
+### 1. `visibility='client'` sem isolamento real
+- **Status**: ⚠️ Divida ativa
+- **Causa**: Nao existe tabela `project_members` ainda
+- **Efeito**: `client` equivale a `internal` ate implementacao do Portal do Colaborador/Cliente
+- **Resolucao planejada**: Fase 6 (Portal Colaborador) cria `project_members`
 
-CREATE INDEX idx_media_files_marketing
-  ON public.media_files(is_marketing_asset)
-  WHERE is_marketing_asset = true;
+### 2. `is_marketing_asset` sem enforcement
+- **Status**: ⚠️ Divida ativa
+- **Causa**: Qualquer admin pode marcar `true` sem quality gate
+- **Efeito**: Nao existe revisao obrigatoria nem trigger bloqueando publicacao
+- **Resolucao planejada**: Fase 8 (Quality Gate)
 
-ALTER TABLE public.projects
-  ADD COLUMN requires_progress_photos boolean NOT NULL DEFAULT true;
-```
+## Decisoes Estrategicas
 
-Zero risco: colunas com DEFAULT, sem impacto em queries existentes.
+1. **Galeria publica preservada**: `gallery_projects` + `gallery_folders` permanecem intactos. Migracao para `media_files` somente quando 80%+ das fotos publicas ja vierem do Media Engine
+2. **Media Engine = infra operacional**: Nao e sistema de galeria. E prova de execucao, evidencia de etapa, base para cliente e marketing
+3. **Ordem de construcao**: Operacao → Cliente → Marketing (nunca o contrario)
 
-## 2. Atualizar `.lovable/plan.md`
+## Diagnostico Atual
 
-Substituir conteudo atual pelo contrato arquitetural completo:
-
-- Contrato de visibilidade (internal / client / public)
-- Dividas arquiteturais documentadas:
-  - `visibility='client'` equivale a `internal` ate existir `project_members`
-  - `is_marketing_asset` sem enforcement ate Fase 8 (quality gate)
-- Decisao estrategica: Galeria publica preservada, Media Engine e infra operacional
-- Diagnostico de estado atual do sistema
-- Proximo passo recomendado: Portal do Colaborador
-
-## Arquivos Modificados
-
-| Arquivo | Acao |
+| Camada | Status |
 |---|---|
-| Migration SQL | ADD COLUMN `is_marketing_asset` + indice + ADD COLUMN `requires_progress_photos` |
-| `.lovable/plan.md` | Contrato de visibilidade e dividas arquiteturais |
+| Media infra | 🟢 Estruturada (`media_files` + bucket `media`) |
+| Separacao marketing | 🟢 Definida (`is_marketing_asset`) |
+| Galeria publica | 🟢 Estavel (sistema legado preservado) |
+| SLA operacional | 🟡 Preparado (`requires_progress_photos` flag) |
+| Portal colaborador | 🔴 Nao iniciado |
+| Portal cliente | 🔴 Nao iniciado |
 
-## Arquivos NAO Modificados
+## Proximo Passo Recomendado
 
-Nenhum arquivo frontend. `useMediaFiles.ts`, `Gallery.tsx`, `GalleryManager.tsx`, `useFeedData.ts`, `useJobProof.ts` permanecem intactos.
-
+**Portal do Colaborador (Fase 6)**
+- Criar `project_members` (project_id, user_id, role)
+- Telas mobile-first: agenda, upload de fotos, checklist
+- Resolve divida de `visibility='client'`
+- Alimenta Media Engine com fotos reais de campo
