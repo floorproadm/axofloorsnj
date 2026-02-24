@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, MessageSquare, Share2, Download, MapPin, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { MessageSquare, Share2, Download, MapPin, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -114,9 +114,6 @@ export function FeedPostCard({ post, onClick }: FeedPostCardProps) {
           {/* Footer */}
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-3 text-muted-foreground">
-              <span className="flex items-center gap-1 text-xs">
-                <Heart className="w-3.5 h-3.5" /> {post.likes_count}
-              </span>
               <span className="flex items-center gap-1 text-xs">
                 <MessageSquare className="w-3.5 h-3.5" /> {post.comments_count}
               </span>
