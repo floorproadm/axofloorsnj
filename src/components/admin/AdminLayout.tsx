@@ -148,7 +148,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 min-h-0 p-4 sm:p-6 pb-24 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0 h-0">
+          <main className="flex-1 min-h-0 p-4 sm:p-6 pb-24 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0">
             {children}
           </main>
         </div>
