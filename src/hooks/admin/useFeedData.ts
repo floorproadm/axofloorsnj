@@ -321,6 +321,30 @@ export function useDeleteFeedPost() {
   });
 }
 
+export function useCreateFeedFolder() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (folder: { name: string; description?: string }) => {
+      const { data, error } = await supabase
+        .from("feed_folders")
+        .insert(folder)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed-folders"] });
+      toast({ title: "Pasta criada com sucesso" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erro ao criar pasta", description: err.message, variant: "destructive" });
+    },
+  });
+}
+
 export function useAddFeedComment() {
   const queryClient = useQueryClient();
   const { toast } = useToast();

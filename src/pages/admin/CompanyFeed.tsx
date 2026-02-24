@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, LayoutGrid, Plus } from "lucide-react";
+import { Search, LayoutGrid, Plus, FolderPlus } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FeedPostCard } from "@/components/admin/feed/FeedPostCard";
 import { FeedFolderGrid } from "@/components/admin/feed/FeedFolderGrid";
+import { CreateFolderDialog } from "@/components/admin/feed/CreateFolderDialog";
 import { useFeedPosts, useFeedFolders } from "@/hooks/admin/useFeedData";
 
 const FEED_PAGE_SIZE = 20;
@@ -14,6 +15,7 @@ const FEED_PAGE_SIZE = 20;
 export default function CompanyFeed() {
   const [search, setSearch] = useState("");
   const [feedPage, setFeedPage] = useState(0);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data: feedData, isLoading: postsLoading } = useFeedPosts(search || undefined, feedPage, FEED_PAGE_SIZE);
@@ -91,11 +93,17 @@ export default function CompanyFeed() {
           </TabsContent>
 
           <TabsContent value="folders" className="mt-0">
+            <div className="flex justify-end mb-3">
+              <Button size="sm" variant="outline" onClick={() => setFolderDialogOpen(true)}>
+                <FolderPlus className="w-4 h-4 mr-1" /> Nova Pasta
+              </Button>
+            </div>
             {foldersLoading ? (
               <div className="py-16 text-center text-sm text-muted-foreground">Carregando pastas...</div>
             ) : (
               <FeedFolderGrid folders={folders} />
             )}
+            <CreateFolderDialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen} />
           </TabsContent>
         </Tabs>
       </div>
