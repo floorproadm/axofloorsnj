@@ -137,10 +137,6 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
                   </div>
                 </PopoverContent>
               </Popover>
-              <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-2 h-2 bg-[hsl(var(--state-success))] rounded-full animate-pulse"></div>
-                Online
-              </div>
               <button
                 onClick={handleLogout}
                 className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors text-muted-foreground"
