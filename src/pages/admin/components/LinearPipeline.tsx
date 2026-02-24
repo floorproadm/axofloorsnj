@@ -784,7 +784,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                   </div>
 
                   <div className="flex-1 border border-t-0 rounded-b-xl bg-muted/20">
-                    <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
+                    <div className="max-h-[60vh] overflow-y-auto">
                       <div className="p-1.5 space-y-1.5">
                         {stageLeads.length === 0 ? (
                           <div className="text-center py-16 text-muted-foreground/60 text-xs">
@@ -803,7 +803,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                           ))
                         )}
                       </div>
-                    </ScrollArea>
+                    </div>
                   </div>
                 </div>
               );
@@ -825,7 +825,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
             <span className="text-right">Tempo</span>
           </div>
           {/* Table Body */}
-          <ScrollArea className="h-[calc(100vh-320px)] min-h-[300px]">
+          <div className="max-h-[60vh] overflow-y-auto">
             <div className="space-y-1.5 px-0.5">
               {sortedLeads.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground/60 text-xs">
@@ -844,7 +844,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
                 ))
               )}
             </div>
-          </ScrollArea>
+          </div>
         </div>
       )}
 
