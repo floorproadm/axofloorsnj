@@ -70,12 +70,23 @@ export default function SharedPost() {
             <div className="space-y-3">
               {images.map((img: any) => (
                 <div key={img.id} className="rounded-lg overflow-hidden">
-                  <img
-                    src={img.file_url}
-                    alt=""
-                    className="w-full object-cover rounded-lg"
-                    loading="lazy"
-                  />
+                  {img.file_type === "video" ? (
+                    <video
+                      src={img.file_url}
+                      controls
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="w-full rounded-lg"
+                    />
+                  ) : (
+                    <img
+                      src={img.file_url}
+                      alt=""
+                      className="w-full object-cover rounded-lg"
+                      loading="lazy"
+                    />
+                  )}
                 </div>
               ))}
             </div>

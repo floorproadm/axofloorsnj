@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, Share2, Download, MapPin, MoreVertical, Edit, Trash2, Link, Check } from "lucide-react";
+import { MessageSquare, Share2, Download, MapPin, MoreVertical, Edit, Trash2, Link, Check, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -118,8 +118,19 @@ export function FeedPostCard({ post, onClick }: FeedPostCardProps) {
           {images.length > 0 ? (
             <div className={`grid gap-1.5 rounded-lg overflow-hidden ${images.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
               {images.slice(0, 4).map((img) => (
-                <div key={img.id} className="aspect-[4/3] bg-muted rounded-md overflow-hidden">
-                  <img src={img.file_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                <div key={img.id} className="aspect-[4/3] bg-muted rounded-md overflow-hidden relative">
+                  {img.file_type === "video" ? (
+                    <>
+                      <video src={img.file_url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-black/60 rounded-full p-1.5">
+                          <Play className="w-4 h-4 text-white fill-white" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <img src={img.file_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  )}
                 </div>
               ))}
             </div>

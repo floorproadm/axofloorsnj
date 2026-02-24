@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Upload, X, Plus, Loader2 } from "lucide-react";
+import { Upload, X, Plus, Loader2, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -300,7 +300,16 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
             {/* Existing server images (only for editing) */}
             {!isNew && images.map((img) => (
               <div key={img.id} className="relative aspect-square rounded-md overflow-hidden group">
-                <img src={img.file_url} alt="" className="w-full h-full object-cover" />
+                {img.file_type === "video" ? (
+                  <>
+                    <video src={img.file_url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                      <div className="bg-black/60 rounded-full p-1.5"><Play className="w-4 h-4 text-white fill-white" /></div>
+                    </div>
+                  </>
+                ) : (
+                  <img src={img.file_url} alt="" className="w-full h-full object-cover" />
+                )}
                 <button
                   onClick={() => handleRemoveImage(img)}
                   className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -309,18 +318,31 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
                 </button>
               </div>
             ))}
-            {/* Pending local images (for new posts) */}
-            {isNew && pendingPreviews.map((preview, idx) => (
-              <div key={idx} className="relative aspect-square rounded-md overflow-hidden group">
-                <img src={preview} alt="" className="w-full h-full object-cover" />
-                <button
-                  onClick={() => handleRemovePendingFile(idx)}
-                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+            {/* Pending local files (for new posts) */}
+            {isNew && pendingPreviews.map((preview, idx) => {
+              const file = pendingFiles[idx];
+              const isVideo = file?.type?.startsWith("video");
+              return (
+                <div key={idx} className="relative aspect-square rounded-md overflow-hidden group">
+                  {isVideo ? (
+                    <>
+                      <video src={preview} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                        <div className="bg-black/60 rounded-full p-1.5"><Play className="w-4 h-4 text-white fill-white" /></div>
+                      </div>
+                    </>
+                  ) : (
+                    <img src={preview} alt="" className="w-full h-full object-cover" />
+                  )}
+                  <button
+                    onClick={() => handleRemovePendingFile(idx)}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
