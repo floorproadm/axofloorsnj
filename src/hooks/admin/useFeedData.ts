@@ -51,9 +51,19 @@ export interface FeedComment {
   created_at: string;
 }
 
-export function useFeedPosts(search?: string, page = 0, pageSize = 20) {
+export interface FeedPostFilters {
+  folder_id?: string;
+  status?: string;
+  visibility?: string;
+  category?: string;
+  post_type?: string;
+  date_from?: Date;
+  date_to?: Date;
+}
+
+export function useFeedPosts(search?: string, page = 0, pageSize = 20, filters?: FeedPostFilters) {
   return useQuery({
-    queryKey: ["feed-posts", search, page, pageSize],
+    queryKey: ["feed-posts", search, page, pageSize, filters],
     queryFn: async () => {
       const from = page * pageSize;
       const to = from + pageSize - 1;
@@ -66,6 +76,18 @@ export function useFeedPosts(search?: string, page = 0, pageSize = 20) {
 
       if (search) {
         query = query.or(`title.ilike.%${search}%,location.ilike.%${search}%,category.ilike.%${search}%`);
+      }
+
+      if (filters?.folder_id) query = query.eq("folder_id", filters.folder_id);
+      if (filters?.status) query = query.eq("status", filters.status);
+      if (filters?.visibility) query = query.eq("visibility", filters.visibility);
+      if (filters?.category) query = query.eq("category", filters.category);
+      if (filters?.post_type) query = query.eq("post_type", filters.post_type);
+      if (filters?.date_from) query = query.gte("created_at", filters.date_from.toISOString());
+      if (filters?.date_to) {
+        const endOfDay = new Date(filters.date_to);
+        endOfDay.setHours(23, 59, 59, 999);
+        query = query.lte("created_at", endOfDay.toISOString());
       }
 
       const { data, error, count } = await query;

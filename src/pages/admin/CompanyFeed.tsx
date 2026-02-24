@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, LayoutGrid, Plus, FolderPlus } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, FolderPlus } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FeedPostCard } from "@/components/admin/feed/FeedPostCard";
 import { FeedFolderGrid } from "@/components/admin/feed/FeedFolderGrid";
 import { CreateFolderDialog } from "@/components/admin/feed/CreateFolderDialog";
+import { FeedFiltersSheet, FeedFilters, countActiveFilters } from "@/components/admin/feed/FeedFiltersSheet";
 import { useFeedPosts, useFeedFolders } from "@/hooks/admin/useFeedData";
 
 const FEED_PAGE_SIZE = 20;
@@ -16,18 +18,34 @@ export default function CompanyFeed() {
   const [search, setSearch] = useState("");
   const [feedPage, setFeedPage] = useState(0);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState<FeedFilters>({});
   const navigate = useNavigate();
 
-  const { data: feedData, isLoading: postsLoading } = useFeedPosts(search || undefined, feedPage, FEED_PAGE_SIZE);
+  const activeFilterCount = countActiveFilters(filters);
+
+  const { data: feedData, isLoading: postsLoading } = useFeedPosts(search || undefined, feedPage, FEED_PAGE_SIZE, filters);
   const posts = feedData?.posts ?? [];
   const totalFeedCount = feedData?.totalCount ?? 0;
   const totalFeedPages = Math.max(1, Math.ceil(totalFeedCount / FEED_PAGE_SIZE));
   const { data: folders = [], isLoading: foldersLoading } = useFeedFolders();
 
+  // Extract unique categories from posts for the filter dropdown
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    posts.forEach((p) => { if (p.category) cats.add(p.category); });
+    return Array.from(cats).sort();
+  }, [posts]);
+
+  const handleFiltersChange = (newFilters: FeedFilters) => {
+    setFilters(newFilters);
+    setFeedPage(0);
+  };
+
   return (
     <AdminLayout title="Company Feed" breadcrumbs={[{ label: "Feed" }]}>
       <div className="space-y-4 animate-fade-in max-w-2xl mx-auto">
-        {/* Search + grid toggle */}
+        {/* Search + filters + new */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -38,8 +56,18 @@ export default function CompanyFeed() {
               className="pl-9"
             />
           </div>
-          <Button variant="outline" size="icon" className="flex-shrink-0">
-            <LayoutGrid className="w-4 h-4" />
+          <Button
+            variant="outline"
+            size="icon"
+            className="flex-shrink-0 relative"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {activeFilterCount > 0 && (
+              <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[10px] leading-none flex items-center justify-center">
+                {activeFilterCount}
+              </Badge>
+            )}
           </Button>
           <Button size="icon" onClick={() => navigate("/admin/feed/new/edit")} className="flex-shrink-0">
             <Plus className="w-4 h-4" />
@@ -62,8 +90,16 @@ export default function CompanyFeed() {
               <div className="py-16 text-center text-sm text-muted-foreground">Carregando feed...</div>
             ) : posts.length === 0 ? (
               <div className="py-16 text-center">
-                <p className="text-sm text-muted-foreground">Nenhum post no feed ainda</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">Posts aparecerão aqui conforme forem criados</p>
+                <p className="text-sm text-muted-foreground">
+                  {activeFilterCount > 0 ? "Nenhum post encontrado com os filtros aplicados" : "Nenhum post no feed ainda"}
+                </p>
+                {activeFilterCount > 0 ? (
+                  <Button variant="link" size="sm" className="mt-1 text-xs" onClick={() => handleFiltersChange({})}>
+                    Limpar filtros
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground/70 mt-1">Posts aparecerão aqui conforme forem criados</p>
+                )}
               </div>
             ) : (
               <>
@@ -107,6 +143,15 @@ export default function CompanyFeed() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <FeedFiltersSheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        folders={folders}
+        categories={categories}
+      />
     </AdminLayout>
   );
 }
