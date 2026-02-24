@@ -33,6 +33,8 @@ export async function transcodeToMp4(
     throw new Error("WebCodecs not supported in this browser");
   }
 
+  console.log(`Starting transcoding for ${file.name} (${file.size} bytes)`);
+
   const result = await convertMedia({
     src: file,
     container: "mp4",
@@ -46,6 +48,12 @@ export async function transcodeToMp4(
   });
 
   const blob = await result.save();
+  console.log(`Transcoding finished. Result size: ${blob.size} bytes`);
+
+  if (blob.size < 1024) {
+    throw new Error(`Transcoding failed: Output file too small (${blob.size} bytes)`);
+  }
+
   const newName = file.name.replace(/\.[^.]+$/, ".mp4");
 
   return new File([blob], newName, { type: "video/mp4" });

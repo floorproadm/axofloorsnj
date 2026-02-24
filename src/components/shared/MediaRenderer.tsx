@@ -26,7 +26,7 @@ export function MediaRenderer({
   onClick,
 }: MediaRendererProps) {
   const isVideo = fileType === "video";
-  const [videoError, setVideoError] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   if (isVideo && videoError) {
     const isMov = src.toLowerCase().includes(".mov");
@@ -41,7 +41,11 @@ export function MediaRenderer({
           <p className="text-xs">
             {isMov
               ? "Arquivos .MOV (iPhone) não são suportados pelo navegador. Delete este vídeo e re-envie em formato MP4."
-              : "Este formato de vídeo não é suportado. Converta para MP4 e envie novamente."}
+              : "Este formato de vídeo não é suportado ou o arquivo está corrompido."}
+          </p>
+          {/* Debug info hidden mostly but accessible if needed */}
+          <p className="text-[10px] opacity-50 select-text hidden group-hover:block">
+            {videoError === "true" ? "Error loading" : videoError}
           </p>
         </div>
         <a
@@ -66,7 +70,10 @@ export function MediaRenderer({
           muted
           playsInline
           preload="metadata"
-          onError={() => setVideoError(true)}
+          onError={(e) => {
+            const err = e.currentTarget.error;
+            setVideoError(err ? `${err.code}: ${err.message}` : "true");
+          }}
         />
         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
           <div className="bg-black/60 rounded-full p-2">
@@ -87,7 +94,10 @@ export function MediaRenderer({
         playsInline
         preload="metadata"
         onClick={onClick}
-        onError={() => setVideoError(true)}
+        onError={(e) => {
+          const err = e.currentTarget.error;
+          setVideoError(err ? `${err.code}: ${err.message}` : "true");
+        }}
       />
     );
   }

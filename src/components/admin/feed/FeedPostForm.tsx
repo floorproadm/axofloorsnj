@@ -212,6 +212,7 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
               setTimeout(() => reject(new Error("timeout")), 60000)
             ),
           ]);
+          console.log(`Conversion success: ${file.name} -> ${converted.name} (${converted.size} bytes)`);
           processedFiles.push(converted);
           toast.success(`${file.name} convertido para MP4!`);
         } catch (err) {
