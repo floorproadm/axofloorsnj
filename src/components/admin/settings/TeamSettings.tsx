@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Loader2, Users, Shield, User } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface TeamMember {
   id: string;
@@ -14,6 +17,14 @@ interface TeamMember {
   created_at: string;
   roles: string[];
   project_count: number;
+}
+
+function getInitials(name: string | null, email: string | null): string {
+  if (name) {
+    return name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  }
+  if (email) return email[0].toUpperCase();
+  return "?";
 }
 
 export default function TeamSettings() {
@@ -27,28 +38,21 @@ export default function TeamSettings() {
   const fetchTeam = async () => {
     setLoading(true);
     try {
-      // Fetch profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, user_id, full_name, email, avatar_url, created_at");
-
       if (profilesError) throw profilesError;
 
-      // Fetch all roles
       const { data: roles, error: rolesError } = await supabase
         .from("user_roles")
         .select("user_id, role");
-
       if (rolesError) throw rolesError;
 
-      // Fetch project member counts
       const { data: memberCounts, error: membersError } = await supabase
         .from("project_members")
         .select("user_id");
-
       if (membersError) throw membersError;
 
-      // Build team members
       const countMap = new Map<string, number>();
       memberCounts?.forEach((m) => {
         countMap.set(m.user_id, (countMap.get(m.user_id) || 0) + 1);
@@ -101,61 +105,106 @@ export default function TeamSettings() {
     );
   }
 
+  const admins = members.filter((m) => m.roles.includes("admin"));
+  const others = members.filter((m) => !m.roles.includes("admin"));
+
+  const renderMember = (member: TeamMember) => {
+    const initials = getInitials(member.full_name, member.email);
+    const relativeDate = formatDistanceToNow(new Date(member.created_at), { addSuffix: true, locale: ptBR });
+    const absoluteDate = format(new Date(member.created_at), "dd/MM/yyyy");
+
+    return (
+      <div key={member.id} className="flex items-center gap-4 py-3">
+        {/* Avatar */}
+        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center overflow-hidden flex-shrink-0 text-sm font-semibold">
+          {member.avatar_url ? (
+            <img src={member.avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            initials
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm truncate">{member.full_name || "Sem nome"}</p>
+          <p className="text-xs text-muted-foreground truncate">{member.email || "—"}</p>
+        </div>
+
+        {/* Roles */}
+        <div className="flex gap-1 flex-shrink-0">
+          {member.roles.length > 0
+            ? member.roles.map((r) => <span key={r}>{getRoleBadge(r)}</span>)
+            : <Badge variant="outline">Sem role</Badge>
+          }
+        </div>
+
+        {/* Projects */}
+        <div className="text-right flex-shrink-0 w-20">
+          <p className="text-sm font-medium">{member.project_count}</p>
+          <p className="text-xs text-muted-foreground">projetos</p>
+        </div>
+
+        {/* Date */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-right flex-shrink-0 w-28 hidden sm:block">
+                <p className="text-xs text-muted-foreground">{relativeDate}</p>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{absoluteDate}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    );
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Users className="w-5 h-5 text-primary" />
-          Equipe ({members.length})
-        </CardTitle>
+    <Card className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="w-5 h-5 text-[hsl(var(--gold-warm))]" />
+            Equipe
+          </CardTitle>
+          <Badge variant="outline" className="text-xs font-normal">{members.length} membros</Badge>
+        </div>
         <CardDescription>
           Visão institucional dos usuários do sistema. Gerenciamento de roles é feito via backend.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         {members.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4">Nenhum usuário encontrado.</p>
         ) : (
-          <div className="divide-y">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-4 py-3">
-                {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {member.avatar_url ? (
-                    <img src={member.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-5 h-5 text-muted-foreground" />
-                  )}
+          <div>
+            {/* Admins */}
+            {admins.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Administradores</span>
+                  <Separator className="flex-1" />
                 </div>
+                <div className="divide-y">
+                  {admins.map(renderMember)}
+                </div>
+              </>
+            )}
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{member.full_name || "Sem nome"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{member.email || "—"}</p>
+            {/* Others */}
+            {others.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 mb-1 mt-4">
+                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Demais Membros</span>
+                  <Separator className="flex-1" />
                 </div>
-
-                {/* Roles */}
-                <div className="flex gap-1 flex-shrink-0">
-                  {member.roles.length > 0
-                    ? member.roles.map((r) => <span key={r}>{getRoleBadge(r)}</span>)
-                    : <Badge variant="outline">Sem role</Badge>
-                  }
+                <div className="divide-y">
+                  {others.map(renderMember)}
                 </div>
-
-                {/* Projects */}
-                <div className="text-right flex-shrink-0 w-20">
-                  <p className="text-sm font-medium">{member.project_count}</p>
-                  <p className="text-xs text-muted-foreground">projetos</p>
-                </div>
-
-                {/* Date */}
-                <div className="text-right flex-shrink-0 w-24 hidden sm:block">
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(member.created_at), "dd/MM/yyyy")}
-                  </p>
-                </div>
-              </div>
-            ))}
+              </>
+            )}
           </div>
         )}
       </CardContent>

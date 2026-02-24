@@ -1,6 +1,8 @@
 import { useState, lazy, Suspense } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Loader2, Settings as SettingsIcon, Palette, Users, Images } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const GeneralSettings = lazy(() => import("@/components/admin/settings/GeneralSettings"));
@@ -10,11 +12,11 @@ const GalleryManager = lazy(() => import("./GalleryManager"));
 
 type Section = "general" | "branding" | "team" | "gallery";
 
-const sections: { id: Section; label: string; icon: React.ElementType }[] = [
-  { id: "general", label: "Geral", icon: SettingsIcon },
-  { id: "branding", label: "Branding", icon: Palette },
-  { id: "team", label: "Equipe", icon: Users },
-  { id: "gallery", label: "Marketing Gallery", icon: Images },
+const sections: { id: Section; label: string; description: string; icon: React.ElementType }[] = [
+  { id: "general", label: "Geral", description: "Razão social e regras de negócio", icon: SettingsIcon },
+  { id: "branding", label: "Branding", description: "Logo, cores e identidade visual", icon: Palette },
+  { id: "team", label: "Equipe", description: "Usuários e permissões do sistema", icon: Users },
+  { id: "gallery", label: "Marketing Gallery", description: "Portfólio e assets visuais", icon: Images },
 ];
 
 const LoadingFallback = () => (
@@ -29,38 +31,52 @@ export default function Settings() {
   return (
     <AdminLayout title="Configurações">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <SettingsIcon className="w-6 h-6" />
-            Configurações da Empresa
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Centro de governança — parâmetros globais, branding e equipe.
-          </p>
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <SettingsIcon className="w-6 h-6 text-[hsl(var(--gold-warm))]" />
+              Centro de Governança
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Parâmetros globais, branding e equipe.
+            </p>
+          </div>
+          <Badge variant="outline" className="gap-1.5 text-xs border-[hsl(var(--state-success))]/30 text-[hsl(var(--state-success))]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--state-success))] animate-pulse" />
+            Online
+          </Badge>
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
-          <nav className="flex md:flex-col gap-1 md:w-52 flex-shrink-0 overflow-x-auto md:overflow-visible">
-            {sections.map((s) => {
-              const Icon = s.icon;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setActive(s.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
-                    active === s.id
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  {s.label}
-                </button>
-              );
-            })}
-          </nav>
+          <Card className="md:w-56 flex-shrink-0 bg-muted/30 border-border/50 p-2">
+            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+              {sections.map((s) => {
+                const Icon = s.icon;
+                const isActive = active === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setActive(s.id)}
+                    className={cn(
+                      "flex items-start gap-3 px-3 py-2.5 rounded-md text-sm transition-all whitespace-nowrap md:whitespace-normal text-left w-full",
+                      isActive
+                        ? "bg-background border-l-[3px] border-l-primary shadow-sm font-medium text-foreground"
+                        : "border-l-[3px] border-l-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn("w-4 h-4 mt-0.5 flex-shrink-0", isActive && "text-primary")} />
+                    <div className="hidden md:block min-w-0">
+                      <span className="block text-sm leading-tight">{s.label}</span>
+                      <span className="block text-[11px] text-muted-foreground font-normal leading-tight mt-0.5">{s.description}</span>
+                    </div>
+                    <span className="md:hidden">{s.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </Card>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
