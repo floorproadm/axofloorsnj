@@ -36,6 +36,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   };
 
   useEffect(() => {
+    console.log('[AdminLayout]', 'mounted');
     const mql = window.matchMedia("(min-width: 1024px)");
     const update = () => setDefaultSidebarOpen(mql.matches);
     update();
@@ -58,11 +59,13 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
-        <div className="flex w-full min-w-0 h-full overflow-hidden">
+      {/* Outer: flex row, h-screen, NO overflow-hidden here — SidebarProvider already constrains */}
+      <div className="flex w-full min-w-0 h-screen">
         <AdminSidebar />
-        
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-          {/* Enhanced Header */}
+
+        {/* Content column: flex-col with min-h-0 to allow shrinking */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+          {/* Fixed Header */}
           <header className="h-14 flex-shrink-0 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 z-40 shadow-soft">
             <div className="flex items-center gap-3 flex-shrink-0 min-w-0 flex-1">
               <SidebarTrigger className="h-8 w-8 hover:bg-primary/10 transition-admin flex-shrink-0" />
@@ -139,7 +142,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
               </Popover>
               <button
                 onClick={handleLogout}
-                className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors text-muted-foreground"
+                className="p-2 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors text-muted-foreground"
                 title="Sair do sistema"
               >
                 <LogOut className="w-4 h-4" />
@@ -147,8 +150,8 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
             </div>
           </header>
 
-          {/* Main Content */}
-          <main className="flex-1 min-h-0 p-4 sm:p-6 pb-24 overflow-y-auto overflow-x-hidden animate-fade-in max-w-full min-w-0">
+          {/* Main Content — ONLY scrollable element */}
+          <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 animate-fade-in max-w-full min-w-0">
             {children}
           </main>
         </div>
