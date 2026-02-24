@@ -1,51 +1,68 @@
 
+## Correcao Definitiva: Video .MOV com Transcoding Nativo do Navegador
 
-## Plano: Corrigir Suporte a Video no Feed
+### Problema
+O FFmpeg WASM (25MB de download, requer SharedArrayBuffer) falha silenciosamente e envia o .MOV original, que Chrome/Firefox nao conseguem reproduzir.
 
-### Problema Diagnosticado
-Os 2 videos deste post estao armazenados como `.MOV` (HEVC do iPhone). A transcodificacao client-side via ffmpeg.wasm **falhou silenciosamente** e o codigo de fallback enviou os arquivos originais `.MOV` sem conversao. Chrome e Firefox nao conseguem reproduzir HEVC/MOV, resultando no erro "Formato nao suportado".
+### Solucao: Substituir FFmpeg WASM por @remotion/webcodecs
 
-### Causa Raiz
-O ffmpeg.wasm e instavel no browser: requer ~25MB de download, SharedArrayBuffer, e frequentemente falha em mobile. O fallback atual envia o arquivo original quando a transcodificacao falha, criando exatamente o problema que deveria resolver.
+A biblioteca `@remotion/webcodecs` usa a **API WebCodecs nativa do navegador** para converter videos. Vantagens:
 
-### Solucao: Abordagem em 3 Partes
+- Zero download de WASM (usa decoders nativos do browser)
+- Acelerado por hardware (GPU)
+- Suporta .MOV como input, .MP4 (H.264 + AAC) como output
+- Muito mais rapido e confiavel que FFmpeg WASM
 
-#### Parte 1 - Bloquear uploads incompativeis (prevencao)
-- Modificar `FeedPostForm.tsx` para **rejeitar** arquivos `.MOV/.AVI/.WMV/.MKV` com mensagem clara pedindo formato MP4
-- Remover o fallback que envia o arquivo original quando a transcodificacao falha
-- Aceitar apenas: `video/mp4`, `video/webm`, `video/ogg` + todos os formatos de imagem
+### Mudancas
 
-#### Parte 2 - Manter transcodificacao como tentativa opcional
-- Manter o `videoTranscoder.ts` mas **nao enviar o arquivo original se falhar**
-- Se a transcodificacao funcionar (desktop com boa memoria), otimo - o video e convertido
-- Se falhar, mostrar erro claro: "Este formato de video nao e suportado. Por favor, converta para MP4 antes de enviar."
-- Adicionar timeout de 60 segundos para evitar travamento
+#### 1. Instalar dependencias
+- Adicionar `@remotion/webcodecs` e `@remotion/media-parser`
+- Remover `@ffmpeg/ffmpeg` e `@ffmpeg/util` (nao serao mais usados)
 
-#### Parte 3 - Corrigir os videos existentes
-- Criar uma funcao no `FeedPostDetail` e `FeedImageCarousel` que detecta `.MOV` na URL e oferece opcao de **re-upload em MP4**
-- Para os videos ja enviados em `.MOV`, manter o fallback de download mas melhorar a UX com instrucoes claras
+#### 2. Reescrever `src/utils/videoTranscoder.ts`
+- Substituir toda a logica FFmpeg por `convertMedia()` do `@remotion/webcodecs`
+- `needsTranscoding()` continua igual (detecta .mov, .avi, .wmv, .mkv)
+- `transcodeToMp4()` agora usa `convertMedia({ src: blob, container: 'mp4', videoCodec: 'h264', audioCodec: 'aac' })`
+- Adicionar verificacao de suporte: `typeof VideoEncoder !== 'undefined'`
+- Se o browser nao suportar WebCodecs, lanca erro (fallback para upload original com aviso)
 
-### Mudancas Tecnicas
+#### 3. Manter logica de upload em `FeedPostForm.tsx`
+- O fluxo de upload permanece o mesmo (tentar converter, se falhar envia original com aviso)
+- Timeout de 60 segundos permanece
+- Progress callback via `onProgress` do `convertMedia()`
 
-**`src/components/admin/feed/FeedPostForm.tsx`**:
-- `handleFileSelect`: Rejeitar formatos incompativeis em vez de tentar transcodificar e falhar silenciosamente
-- Mostrar toast de erro especifico com instrucao para converter para MP4
-- Adicionar timeout no transcoding para nao travar
+#### 4. Deletar o video .MOV quebrado restante
+- Deletar o registro `41e5e2d1-1f8f-4e31-bb31-efbfb9368e5d` da tabela `feed_post_images`
+- Tambem deletar o arquivo do storage
 
-**`src/utils/videoTranscoder.ts`**:
-- Adicionar timeout de 60s
-- Nao retornar fallback - lancar erro se falhar
+### Detalhes Tecnicos
 
-**`src/components/shared/MediaRenderer.tsx`**:
-- Melhorar fallback para videos `.MOV` com instrucoes mais claras
-- Adicionar botao "Re-enviar em MP4" quando em contexto admin
+Codigo principal do novo transcoder:
 
-**`src/components/admin/feed/FeedImageCarousel.tsx`**:
-- Melhorar UX do fallback de video com instrucoes de re-upload
+```text
+import { convertMedia } from "@remotion/webcodecs";
 
-### Resultado Esperado
-- Novos uploads: apenas formatos compativeis (MP4/WebM) sao aceitos
-- Tentativa de transcodificacao automatica, mas sem fallback silencioso
-- Videos existentes em `.MOV`: fallback com download + instrucoes claras
-- Zero videos "quebrados" no futuro
+export async function transcodeToMp4(file: File, onProgress?): Promise<File> {
+  const result = await convertMedia({
+    src: file,              // Blob/File input (.MOV)
+    container: "mp4",       // Output container
+    videoCodec: "h264",     // H.264 (universal)
+    audioCodec: "aac",      // AAC audio
+    onProgress: ({ percent }) => onProgress?.(percent / 100),
+  });
+  return new File([result], file.name.replace(/\.[^.]+$/, ".mp4"), { type: "video/mp4" });
+}
+```
 
+### Compatibilidade
+- Chrome 94+ (WebCodecs API)
+- Edge 94+
+- Firefox (suporte parcial, fallback para upload original)
+- Safari (suporte parcial, fallback para upload original)
+- O painel admin e usado principalmente de Chrome/Edge, onde funciona perfeitamente
+
+### Resultado
+- Upload de .MOV do iPhone funciona automaticamente
+- Conversao rapida usando GPU do dispositivo
+- Sem downloads pesados de WASM
+- Fallback seguro para browsers sem WebCodecs
