@@ -681,6 +681,7 @@ export type Database = {
           file_type: string
           folder_type: string
           id: string
+          is_marketing_asset: boolean
           metadata: Json
           project_id: string | null
           quality_checked: boolean
@@ -701,6 +702,7 @@ export type Database = {
           file_type?: string
           folder_type?: string
           id?: string
+          is_marketing_asset?: boolean
           metadata?: Json
           project_id?: string | null
           quality_checked?: boolean
@@ -721,6 +723,7 @@ export type Database = {
           file_type?: string
           folder_type?: string
           id?: string
+          is_marketing_asset?: boolean
           metadata?: Json
           project_id?: string | null
           quality_checked?: boolean
@@ -944,6 +947,7 @@ export type Database = {
           notes: string | null
           project_status: string
           project_type: string
+          requires_progress_photos: boolean
           square_footage: number | null
           start_date: string | null
           team_lead: string | null
@@ -967,6 +971,7 @@ export type Database = {
           notes?: string | null
           project_status?: string
           project_type: string
+          requires_progress_photos?: boolean
           square_footage?: number | null
           start_date?: string | null
           team_lead?: string | null
@@ -990,6 +995,7 @@ export type Database = {
           notes?: string | null
           project_status?: string
           project_type?: string
+          requires_progress_photos?: boolean
           square_footage?: number | null
           start_date?: string | null
           team_lead?: string | null
