@@ -171,7 +171,7 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
     setPendingPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const buildUpdates = (): Partial<FeedPost> => ({
+  const buildUpdates = (statusOverride?: string): Partial<FeedPost> => ({
     title,
     description: description || null,
     post_type: postType,
@@ -179,21 +179,29 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
     category: category || null,
     tags,
     visibility,
-    status,
+    status: statusOverride || status,
     folder_id: folderId || null,
   });
+
+  const handleDraftClick = () => {
+    if (isNew) {
+      onSave(buildUpdates("draft"), pendingFiles.length > 0 ? pendingFiles : undefined);
+    } else {
+      onSave(buildUpdates("draft"));
+    }
+  };
 
   const handleSaveClick = () => {
     if (isNew) {
       setShowConfirmDialog(true);
     } else {
-      onSave(buildUpdates());
+      onSave(buildUpdates("published"));
     }
   };
 
   const handleConfirmCreate = () => {
     setShowConfirmDialog(false);
-    onSave(buildUpdates(), pendingFiles.length > 0 ? pendingFiles : undefined);
+    onSave(buildUpdates("published"), pendingFiles.length > 0 ? pendingFiles : undefined);
   };
 
   return (
@@ -367,16 +375,6 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
               </Select>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Rascunho</SelectItem>
-                <SelectItem value="published">Publicado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </CardContent>
       </Card>
 
@@ -398,11 +396,17 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
         </CardContent>
       </Card>
 
-      {/* Save */}
-      <Button onClick={handleSaveClick} disabled={isSaving || !title.trim()} className="w-full">
-        {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-        Salvar Post
-      </Button>
+      {/* Save Actions */}
+      <div className="flex gap-3">
+        <Button variant="outline" onClick={handleDraftClick} disabled={isSaving || !title.trim()} className="flex-1">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+          Rascunho
+        </Button>
+        <Button onClick={handleSaveClick} disabled={isSaving || !title.trim()} className="flex-1">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+          Salvar Post
+        </Button>
+      </div>
 
       {/* Confirmation Dialog for new posts */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
