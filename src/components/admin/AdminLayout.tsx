@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Bell, UserPlus, FileText, AlertTriangle } from "lucide-react";
+import { Bell, UserPlus, FileText, AlertTriangle, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -7,6 +7,8 @@ import { AdminSidebar } from "./AdminSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export interface BreadcrumbItem {
   label: string;
@@ -21,6 +23,17 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) {
   const [defaultSidebarOpen, setDefaultSidebarOpen] = useState(true);
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({ title: "Logout realizado", description: "Você foi desconectado com sucesso." });
+    } catch {
+      toast({ title: "Erro ao fazer logout", variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1024px)");
@@ -128,6 +141,13 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
                 <div className="w-2 h-2 bg-[hsl(var(--state-success))] rounded-full animate-pulse"></div>
                 Online
               </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors text-muted-foreground"
+                title="Sair do sistema"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </header>
 
