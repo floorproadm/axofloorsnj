@@ -283,6 +283,44 @@ export function useUploadFeedImage() {
   });
 }
 
+export function useDeleteFeedPost() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      // 1. Delete images
+      const { error: imgErr } = await supabase
+        .from("feed_post_images")
+        .delete()
+        .eq("feed_post_id", postId);
+      if (imgErr) throw imgErr;
+
+      // 2. Delete comments
+      const { error: cmtErr } = await supabase
+        .from("feed_comments")
+        .delete()
+        .eq("feed_post_id", postId);
+      if (cmtErr) throw cmtErr;
+
+      // 3. Delete post
+      const { error: postErr } = await supabase
+        .from("feed_posts")
+        .delete()
+        .eq("id", postId);
+      if (postErr) throw postErr;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-folders"] });
+      toast({ title: "Post deletado com sucesso" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erro ao deletar post", description: err.message, variant: "destructive" });
+    },
+  });
+}
+
 export function useAddFeedComment() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
