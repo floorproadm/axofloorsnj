@@ -123,22 +123,22 @@ export default function FeedPostDetail() {
             {/* Metadata */}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="text-muted-foreground">Tipo</span>
+                <span className="text-muted-foreground block">Tipo</span>
                 <p className="font-medium capitalize">{post.post_type.replace("_", " ")}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">Categoria</span>
+                <span className="text-muted-foreground block">Categoria</span>
                 <p className="font-medium">{post.category || "—"}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">Status</span>
-                <Badge variant={post.status === "published" ? "default" : "secondary"} className="text-xs mt-0.5">
+                <span className="text-muted-foreground block mb-1">Status</span>
+                <Badge variant={post.status === "published" ? "default" : "secondary"} className="text-xs">
                   {post.status}
                 </Badge>
               </div>
               <div>
-                <span className="text-muted-foreground">Visibilidade</span>
-                <Badge variant={post.visibility === "public" ? "default" : "outline"} className="text-xs mt-0.5">
+                <span className="text-muted-foreground block mb-1">Visibilidade</span>
+                <Badge variant={post.visibility === "public" ? "default" : "outline"} className="text-xs">
                   {post.visibility}
                 </Badge>
               </div>
