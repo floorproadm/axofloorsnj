@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Upload, X, Plus, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,8 +65,20 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
   const [title, setTitle] = useState(post.title);
   const [description, setDescription] = useState(post.description || "");
   const [postType, setPostType] = useState(post.post_type);
-  const [location, setLocation] = useState(post.location || "");
+  const [projectId, setProjectId] = useState(post.project_id || "");
   const [category, setCategory] = useState(post.category || "");
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects-for-feed-select"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, customer_name, project_type, city")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
   const [tags, setTags] = useState<string[]>(post.tags || []);
   const [tagInput, setTagInput] = useState("");
   const [visibility, setVisibility] = useState(post.visibility);
@@ -161,7 +175,7 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
     title,
     description: description || null,
     post_type: postType,
-    location: location || null,
+    project_id: projectId || null,
     category: category || null,
     tags,
     visibility,
@@ -206,8 +220,18 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título do post" />
           </div>
           <div className="space-y-2">
-            <Label>Localização</Label>
-            <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ex: Newark, NJ" />
+            <Label>Projeto</Label>
+            <Select value={projectId || "none"} onValueChange={(v) => setProjectId(v === "none" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="Selecionar projeto..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.customer_name} - {p.project_type}{p.city ? ` (${p.city})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Categoria</Label>
