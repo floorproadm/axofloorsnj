@@ -1,1 +1,4 @@
 project_id = "dcfmrqrbsfxvqhihpamd"
+
+[functions.collaborator-upload]
+verify_jwt = false
