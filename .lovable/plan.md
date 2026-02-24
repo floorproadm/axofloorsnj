@@ -1,40 +1,36 @@
 
-
-# Substituir "Localização" por Seletor de Projeto
+# Botoes "Salvar" e "Rascunho" no formulario de post
 
 ## O que muda
 
-No card "Detalhes do Projeto" do formulario de post do feed, o campo "Localização" (texto livre) sera substituido por um **Select de Projetos**, permitindo vincular o post diretamente a um projeto existente no sistema.
+O botao unico "Salvar Post" sera substituido por dois botoes lado a lado:
 
-## Beneficios
+| Botao | Acao | Status salvo |
+|---|---|---|
+| **Rascunho** | Salva com `status: "draft"` | draft |
+| **Salvar** | Abre dialog de confirmacao (novo) ou salva direto (edicao) com `status: "published"` | published |
 
-- Vinculo real entre post e projeto (usando `project_id` que ja existe na tabela `feed_posts`)
-- Ao selecionar um projeto, o post herda automaticamente o nome do cliente e contexto
-- Dados estruturados em vez de texto livre
-
-## Fluxo
+## Layout
 
 ```text
-Card "Detalhes do Projeto"
-  ├─ Titulo (input - mantido)
-  ├─ Projeto (Select com lista de projetos) ← NOVO
-  └─ Categoria (Select - mantido)
+[  Rascunho  ]  [  Salvar Post  ]
+  (outline)       (primary/filled)
 ```
 
-O Select mostrara os projetos no formato: **"Nome do Cliente - Tipo (Cidade)"**
+- "Rascunho" usa variante `outline`
+- "Salvar Post" usa variante `default` (primary)
 
-## Arquivos modificados
+## Arquivo modificado
 
 | Arquivo | Mudanca |
 |---|---|
-| `src/components/admin/feed/FeedPostForm.tsx` | Remover campo "Localização", adicionar Select de projetos. Novo state `projectId`. Buscar projetos via query inline. Incluir `project_id` no `buildUpdates`. |
-| `src/hooks/admin/useFeedData.ts` | Garantir que `useCreateFeedPost` e `useUpdateFeedPost` passem `project_id` para o banco. |
+| `src/components/admin/feed/FeedPostForm.tsx` | Substituir botao unico por dois botoes. Adicionar funcao `handleDraftClick` que forca `status: "draft"` no `buildUpdates`. O botao "Salvar" forca `status: "published"`. Dialog de confirmacao aparece apenas no "Salvar" para posts novos. |
 
 ## Detalhes tecnicos
 
-- Busca de projetos via `supabase.from('projects').select('id, customer_name, project_type, city').order('created_at', { ascending: false })`
-- Select com opcao "Nenhum" para posts sem vinculo a projeto
-- O campo `location` do `feed_posts` deixa de ser preenchido pelo formulario (pode ser mantido no banco para compatibilidade)
-- O `project_id` ja existe na tabela `feed_posts`, entao nao precisa de migration
-- Nenhuma alteracao de banco necessaria
-
+- `buildUpdates` recebera um parametro opcional de status override: `buildUpdates(statusOverride?: string)`
+- Botao "Rascunho": chama `onSave(buildUpdates("draft"))` diretamente (sem dialog de confirmacao)
+- Botao "Salvar Post": para novos posts abre o AlertDialog com status "published"; para edicao salva direto com status "published"
+- `handleConfirmCreate` passa `buildUpdates("published")` ao `onSave`
+- Ambos os botoes ficam desabilitados quando `isSaving` ou titulo vazio
+- O Select de status no card "Organizacao" sera removido pois agora o status e controlado pelos botoes
