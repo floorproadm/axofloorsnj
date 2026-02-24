@@ -1,85 +1,70 @@
 
 
-# Evolucao do /admin/settings — Centro de Governanca
+# Redesign Visual do /admin/settings
 
-O Settings atual tem 2 abas (Geral + Marketing Gallery) com 4 campos operacionais. O backend ja esta maduro (multi-role, Media Engine, pipeline com gates), mas o Settings ainda parece MVP. Este plano transforma ele em centro de governanca da empresa.
+## Problemas Visuais Atuais
 
-## Fase 1 — Refatorar Layout (Base para crescer)
+1. **Sidebar de navegacao plana** — botoes sem separacao visual, sem indicador de secao ativa alem de cor
+2. **Cards sem hierarquia** — todos os cards tem o mesmo peso visual (mesmo tamanho de titulo, sem borda de acento)
+3. **Timestamp de "ultima alteracao" apenas no Geral** — Branding nao mostra, Team nao tem
+4. **Header da pagina generico** — titulo + descricao sem destaque visual, sem indicador de status
+5. **Sidebar navigation nao tem descricoes** — so icone + label, sem contexto do que cada secao faz
+6. **Botoes de salvar soltos** — fora dos cards, sem sticky behavior para forms longos
 
-Trocar as tabs horizontais por uma navegacao lateral (sidebar interna) dentro do Settings. Isso permite adicionar secoes sem poluir a interface.
+## Mudancas Propostas
 
-**Estrutura do novo layout:**
+### 1. Settings.tsx — Sidebar com descricoes e separador visual
 
-```text
-+------------------+--------------------------------+
-| Sidebar Settings |  Conteudo da Secao Ativa       |
-|                  |                                |
-| > Geral          |  [Card com campos]             |
-| > Branding       |                                |
-| > Equipe         |                                |
-| > Marketing      |                                |
-|   Gallery        |                                |
-+------------------+--------------------------------+
-```
+- Adicionar `description` curta a cada item da sidebar (ex: "Razao social e regras de negocio")
+- Adicionar uma borda left de 2px na secao ativa (estilo navigation rail)
+- Envolver sidebar em um Card com fundo `bg-muted/30` para separar visualmente do conteudo
+- No mobile, manter horizontal scroll mas com pills arredondadas
 
-**Arquivo:** `src/pages/admin/Settings.tsx`
-- Substituir `Tabs` por layout flex com sidebar de navegacao usando estado local
-- Cada secao sera um componente lazy-loaded
+### 2. Settings.tsx — Header com status badge
 
-**Novos arquivos:**
-- `src/components/admin/settings/GeneralSettings.tsx` — extrair CompanySettingsTab atual
-- `src/components/admin/settings/BrandingSettings.tsx` — nova secao
-- `src/components/admin/settings/TeamSettings.tsx` — nova secao
+- Adicionar um badge "Online" ou timestamp da ultima sincronizacao ao lado do titulo
+- Usar icone com acento dourado (`text-[hsl(var(--gold-warm))]`) no titulo para consistencia com o design system premium
 
-## Fase 2 — Secao Branding
+### 3. GeneralSettings.tsx — Cards hierarquicos
 
-Adicionar campos de identidade visual na tabela `company_settings`:
+- Card "Identidade": adicionar `border-l-4 border-primary` para destaque de primeiro nivel
+- Card "Regras de Negocio": adicionar `border-l-4 border-[hsl(var(--gold-warm))]` — cor diferente para dominio diferente
+- Mover botao "Salvar" para dentro de um `CardFooter` sticky, com divider acima
+- Timestamp "Ultima atualizacao" sempre visivel como badge discreto no header do card Identidade
 
-**Migracao SQL:**
-- `ALTER TABLE company_settings ADD COLUMN logo_url text`
-- `ALTER TABLE company_settings ADD COLUMN primary_color text DEFAULT '#d97706'`
-- `ALTER TABLE company_settings ADD COLUMN secondary_color text DEFAULT '#1e3a5f'`
-- `ALTER TABLE company_settings ADD COLUMN trade_name text DEFAULT 'AXO Floors'`
+### 4. BrandingSettings.tsx — Timestamp + hierarquia
 
-**UI:**
-- Upload de logo (usando bucket `media` existente com `is_marketing_asset = true`)
-- Color pickers para cor primaria e secundaria
-- Campo "Nome Fantasia" separado de company_name (razao social)
-- Preview em tempo real das cores escolhidas
+- Adicionar timestamp de `updated_at` (ja disponivel via hook) abaixo do botao Salvar
+- Separar os campos em 2 cards: "Identidade Visual" (nome fantasia + logo) e "Paleta de Cores" (color pickers + preview)
+- Card de preview com fundo mais escuro para contraste real das cores
 
-## Fase 3 — Secao Equipe
+### 5. TeamSettings.tsx — Visual mais institucional
 
-Visao institucional dos usuarios do sistema. Nao e CRUD de roles (isso seria perigoso no frontend), mas sim uma visao de leitura com acoes administrativas basicas.
+- Adicionar header com contagem total e icone com acento
+- Separar membros admin dos demais com um `Separator` e label de grupo
+- Adicionar avatar placeholder com iniciais em vez de icone generico
+- Mostrar data de criacao no formato relativo ("ha 3 meses") com tooltip do absoluto
 
-**UI:**
-- Tabela listando usuarios de `profiles` + `user_roles`
-- Colunas: Nome, Email, Role, Data de criacao
-- Badge de role (Admin, Collaborator)
-- Indicador de projetos ativos (count de `project_members`)
+### 6. Todos os componentes — Consistencia
 
-**Seguranca:** Somente leitura. Gerenciamento de roles continua via backend direto (RLS ja protege). Nenhuma tabela nova necessaria — usa `profiles` + `user_roles` + `project_members` existentes.
+- Todos os cards ganham `shadow-sm hover:shadow-md transition-shadow` para feedback de elevacao
+- Todos os `CardTitle` com `text-base` (em vez de `text-lg` misturado com `text-2xl`)
+- Padding unificado: `CardHeader` com `pb-3`, `CardContent` com `pt-0`
 
-## Fase 4 — Melhorias de UX na secao Geral
+## Arquivos Modificados
 
-- Adicionar timestamp "Ultima atualizacao: X" abaixo do botao Salvar (campo `updated_at` ja existe)
-- Adicionar icones aos campos para hierarquia visual
-- Agrupar campos em sub-secoes: "Identidade" (nome) e "Regras de Negocio" (margem, modelo, rate)
-
-## Resumo de Arquivos
-
-| Arquivo | Acao |
+| Arquivo | Mudanca |
 |---|---|
-| `src/pages/admin/Settings.tsx` | Refatorar: tabs -> sidebar vertical + lazy sections |
-| `src/components/admin/settings/GeneralSettings.tsx` | Novo: extrair CompanySettingsTab |
-| `src/components/admin/settings/BrandingSettings.tsx` | Novo: upload logo + cores + nome fantasia |
-| `src/components/admin/settings/TeamSettings.tsx` | Novo: lista de usuarios/roles (read-only) |
-| Migracao SQL | 4 colunas novas em `company_settings` |
-| `src/hooks/useCompanySettings.ts` | Atualizar: incluir novos campos no tipo e defaults |
+| `src/pages/admin/Settings.tsx` | Sidebar com descricoes, borda ativa, card wrapper, header com badge |
+| `src/components/admin/settings/GeneralSettings.tsx` | Border-left nos cards, botao no CardFooter, timestamp badge |
+| `src/components/admin/settings/BrandingSettings.tsx` | Split em 2 cards, timestamp, fundo escuro no preview |
+| `src/components/admin/settings/TeamSettings.tsx` | Avatar com iniciais, separacao admin/outros, data relativa |
 
-## O que NAO sera feito agora
+## Tecnico
 
-- Integracoes (Facebook, Notion) — aguardar demanda
-- Templates operacionais — aguardar portal cliente
-- Feature flags / billing — prematuro
-- CRUD de roles no frontend — risco de seguranca
+- Nenhuma mudanca de banco de dados
+- Nenhuma nova dependencia
+- Usa tokens CSS existentes (`--gold-warm`, `--state-success`, `--navy-primary`)
+- `formatDistanceToNow` de `date-fns` (ja instalado) para datas relativas
+- Zero impacto em logica de negocio — apenas visual
 
