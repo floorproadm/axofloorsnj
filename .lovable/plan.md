@@ -1,70 +1,81 @@
 
 
-# Fase 6 — Migration SQL Completa
+# Edge Function: collaborator-upload (com verify_jwt = true)
 
-A verificacao do banco confirmou que NENHUMA parte da Fase 6 foi executada ainda. A funcao `get_dashboard_metrics()` nao tem `v_missing_photos`, a tabela `project_members` nao existe, e a view `projects_missing_progress_photos` nao existe.
+Correcao aplicada conforme sua revisao: **nao usar verify_jwt = false**. O Supabase valida o JWT automaticamente antes da funcao executar, eliminando superficie de ataque.
 
-## O que sera executado em uma unica migration
+## Arquivo Criado
 
-### 1. Tabela `project_members`
+### `supabase/functions/collaborator-upload/index.ts`
+
+**Autenticacao:**
+- SEM `verify_jwt = false` no config.toml (mantemos o default `true`)
+- SEM `getClaims()` manual
+- Usa `supabase.auth.getUser()` para obter o usuario ja validado pelo gateway
+- Se `!user` retorna 401 (caso extremo)
+
+**Fluxo completo:**
 
 ```text
-CREATE TABLE public.project_members (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role text NOT NULL DEFAULT 'collaborator'
-    CHECK (role IN ('collaborator', 'manager', 'client')),
-  created_at timestamptz DEFAULT now(),
-  UNIQUE(project_id, user_id)
-);
+POST multipart/form-data
+  file, projectId, folderType, metadata(opcional)
 
-CREATE INDEX idx_project_members_user ON public.project_members(user_id);
-CREATE INDEX idx_project_members_project ON public.project_members(project_id);
+1. CORS preflight (OPTIONS -> 200)
+2. supabase.auth.getUser() -> userId (JWT ja validado pelo gateway)
+3. Validar inputs:
+   - file presente e <= 10MB
+   - file.type in [image/jpeg, image/png, image/webp]
+   - projectId formato UUID
+   - folderType in ['before_after', 'job_progress'] (default: job_progress)
+4. Service role client -> consultar project_members
+   - WHERE project_id = projectId AND user_id = userId
+   - Se nao membro -> 403
+5. Upload ao bucket 'media' via service role
+   - Path: projects/{projectId}/{folderType}/{timestamp}-{random}.{ext}
+6. Insert em media_files via service role:
+   - uploaded_by = userId
+   - uploaded_by_role = 'collaborator'
+   - source_type = 'collaborator'
+   - visibility = 'internal'
+   - folder_type = folderType
+7. Se insert falhar -> cleanup do arquivo no storage
+8. Retornar { id, storage_path, created_at } com status 201
 ```
 
-### 2. RLS para `project_members`
+**Codigos de erro:**
+- 401: JWT invalido (bloqueado pelo gateway) ou getUser() falhou
+- 403: Nao e membro do projeto
+- 400: Input invalido (arquivo ausente, grande demais, tipo invalido, projectId invalido)
+- 405: Metodo nao permitido (apenas POST e OPTIONS)
+- 500: Erro interno
 
-- `project_members_admin_all`: Admin controla tudo (RESTRICTIVE)
-- `project_members_own_read`: Usuario ve apenas seus proprios memberships (RESTRICTIVE)
+## Config
 
-### 3. RLS para `projects` (colaborador le seus projetos)
+**NENHUMA alteracao em `supabase/config.toml`**. O default `verify_jwt = true` se aplica automaticamente. Isso significa que requisicoes sem JWT valido sao rejeitadas pelo gateway antes de chegar ao codigo.
 
-- `projects_collaborator_read`: Colaborador ve apenas projetos onde e membro via `project_members` (RESTRICTIVE)
-- Nota: `projects_admin_all` ja existe e nao sera modificada
+## Diferencas vs plano anterior
 
-### 4. RLS para `media_files` (colaborador)
+| Aspecto | Antes | Agora |
+|---|---|---|
+| config.toml | verify_jwt = false | Sem alteracao (default true) |
+| Auth method | getClaims() manual | getUser() (JWT pre-validado) |
+| Superficie de ataque | Funcao exposta sem JWT | Gateway bloqueia antes |
+| Complexidade | Mais codigo de validacao | Mais simples e seguro |
 
-- `media_files_collaborator_read`: Colaborador le midia `internal`/`client` dos projetos onde e membro
-- `media_files_collaborator_insert`: Colaborador insere midia nos projetos onde e membro
+## Seguranca mantida
 
-### 5. View `projects_missing_progress_photos`
+- Service role key usada APENAS server-side
+- Nenhuma storage policy nova
+- Membership validada antes de qualquer operacao
+- Whitelist de folder types e mime types
+- Limite de 10MB
+- Cleanup em caso de falha
 
-Consulta projetos em producao que requerem fotos de progresso mas nao possuem nenhuma.
+## Sequencia pos-implementacao
 
-### 6. Atualizar `get_dashboard_metrics()`
-
-Adicionar:
-- Declaracao `v_missing_photos jsonb;` no bloco DECLARE
-- Bloco de consulta da view `projects_missing_progress_photos`
-- Campo `missingProgressPhotos` no retorno JSON
-
-### 7. Nenhuma storage policy nova
-
-Bucket `media` mantem policies atuais. Colaboradores farao upload via edge function (proxima etapa).
-
-## Impacto
-
-- Zero breaking change: apenas adicoes
-- Admin continua funcionando normalmente
-- Frontend atual nao e afetado (novo campo no JSON e ignorado ate ser consumido)
-- Seguranca mantida: todas as policies sao RESTRICTIVE
-
-## Sequencia pos-migration
-
-Apos a migration, os proximos passos serao:
-1. Edge function `collaborator-upload`
-2. Componentes frontend do portal
-3. Rotas e redirect no Auth
-4. Dashboard admin consumindo `missingProgressPhotos`
+1. Deploy automatico da edge function
+2. Testar via tool com JWT valido + membership -> esperar 201
+3. Testar com JWT valido + sem membership -> esperar 403
+4. Sem JWT -> gateway rejeita (nem chega ao codigo)
+5. Depois: criar hooks e UI do portal colaborador
 
