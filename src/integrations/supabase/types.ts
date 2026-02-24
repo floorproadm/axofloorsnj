@@ -673,6 +673,84 @@ export type Database = {
           },
         ]
       }
+      media_files: {
+        Row: {
+          created_at: string
+          display_order: number
+          feed_post_id: string | null
+          file_type: string
+          folder_type: string
+          id: string
+          metadata: Json
+          project_id: string | null
+          quality_checked: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_type: string
+          storage_path: string
+          thumbnail_path: string | null
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_role: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          feed_post_id?: string | null
+          file_type?: string
+          folder_type?: string
+          id?: string
+          metadata?: Json
+          project_id?: string | null
+          quality_checked?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_type?: string
+          storage_path: string
+          thumbnail_path?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_role?: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          feed_post_id?: string | null
+          file_type?: string
+          folder_type?: string
+          id?: string
+          metadata?: Json
+          project_id?: string | null
+          quality_checked?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_type?: string
+          storage_path?: string
+          thumbnail_path?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_role?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_files_feed_post_id_fkey"
+            columns: ["feed_post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
