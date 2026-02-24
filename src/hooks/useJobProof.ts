@@ -67,19 +67,46 @@ export const useJobProof = (projectId: string) => {
     
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${projectId}/${type}-${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('job-proof')
-        .upload(fileName, file);
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).slice(2, 8);
 
-      if (uploadError) {
-        throw uploadError;
+      // Upload to LEGACY bucket (job-proof)
+      const legacyFileName = `${projectId}/${type}-${timestamp}.${fileExt}`;
+      const { error: legacyUploadError } = await supabase.storage
+        .from('job-proof')
+        .upload(legacyFileName, file);
+
+      if (legacyUploadError) {
+        throw legacyUploadError;
       }
 
       const { data: { publicUrl } } = supabase.storage
         .from('job-proof')
-        .getPublicUrl(fileName);
+        .getPublicUrl(legacyFileName);
+
+      // DUAL-WRITE: Upload to NEW bucket (media)
+      const mediaPath = `projects/${projectId}/before_after/${timestamp}-${random}.${fileExt}`;
+      try {
+        await supabase.storage
+          .from('media')
+          .upload(mediaPath, file);
+
+        // Insert into media_files
+        await supabase
+          .from('media_files')
+          .insert({
+            project_id: projectId,
+            source_type: 'admin_upload',
+            visibility: 'internal',
+            folder_type: 'before_after',
+            file_type: 'image',
+            storage_path: mediaPath,
+            metadata: { phase: type },
+          });
+      } catch (dualWriteError) {
+        // Non-blocking: log but don't fail the operation
+        console.warn('Dual-write to media_files failed (non-blocking):', dualWriteError);
+      }
 
       return publicUrl;
     } catch (error) {

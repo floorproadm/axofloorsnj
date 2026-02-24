@@ -233,27 +233,52 @@ export function useUploadFeedImage() {
   return useMutation({
     mutationFn: async ({ postId, file, order }: { postId: string; file: File; order: number }) => {
       const ext = file.name.split(".").pop();
-      const path = `${postId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const legacyPath = `${postId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const fileType = file.type.startsWith("video") ? "video" : "image";
 
+      // LEGACY: upload to feed-media bucket
       const { error: uploadError } = await supabase.storage
         .from("feed-media")
-        .upload(path, file);
+        .upload(legacyPath, file);
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from("feed-media").getPublicUrl(path);
+      const { data: urlData } = supabase.storage.from("feed-media").getPublicUrl(legacyPath);
 
+      // LEGACY: insert into feed_post_images
       const { error: dbError } = await supabase.from("feed_post_images").insert({
         feed_post_id: postId,
         file_url: urlData.publicUrl,
-        file_type: file.type.startsWith("video") ? "video" : "image",
+        file_type: fileType,
         display_order: order,
       });
       if (dbError) throw dbError;
+
+      // DUAL-WRITE: upload to media bucket + media_files table
+      try {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).slice(2, 8);
+        const mediaPath = `feed/${postId}/${timestamp}-${random}.${ext}`;
+
+        await supabase.storage.from("media").upload(mediaPath, file);
+
+        await supabase.from("media_files").insert({
+          feed_post_id: postId,
+          source_type: "feed",
+          visibility: "internal",
+          folder_type: "job_progress",
+          file_type: fileType,
+          storage_path: mediaPath,
+          display_order: order,
+        });
+      } catch (dualWriteErr) {
+        console.warn("Dual-write to media_files failed (non-blocking):", dualWriteErr);
+      }
 
       return urlData.publicUrl;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["media-files"] });
     },
   });
 }
