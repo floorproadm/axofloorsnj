@@ -97,6 +97,7 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastAutoTitle = useRef<string>("");
   const { data: folders = [] } = useFeedFolders();
   const uploadImage = useUploadFeedImage();
   const deleteImage = useDeleteFeedPostImage();
@@ -110,6 +111,42 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
   };
 
   const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
+
+  const PROJECT_TYPE_TO_CATEGORY: Record<string, string> = {
+    sanding: "Refinishing",
+    refinishing: "Refinishing",
+    vinyl: "Vinyl",
+    staircase: "Staircase",
+    baseboards: "Baseboards",
+    installation: "Installation",
+    commercial: "Commercial",
+    residential: "Residential",
+  };
+
+  const generateTitleFromProject = (project: { customer_name: string; project_type: string; city?: string | null }) => {
+    let t = `${project.customer_name} - ${project.project_type}`;
+    if (project.city) t += ` (${project.city})`;
+    return t;
+  };
+
+  const handleProjectChange = (v: string) => {
+    const id = v === "none" ? "" : v;
+    setProjectId(id);
+    if (id) {
+      const proj = projects.find((p) => p.id === id);
+      if (proj) {
+        const autoTitle = generateTitleFromProject(proj);
+        if (!title.trim() || title === lastAutoTitle.current) {
+          setTitle(autoTitle);
+          lastAutoTitle.current = autoTitle;
+        }
+        const catMatch = PROJECT_TYPE_TO_CATEGORY[proj.project_type?.toLowerCase()];
+        if (catMatch && !category) {
+          setCategory(catMatch);
+        }
+      }
+    }
+  };
 
   // For existing posts: upload directly to server
   const handleFileUploadExisting = async (files: FileList | null) => {
@@ -229,7 +266,7 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
           </div>
           <div className="space-y-2">
             <Label>Projeto</Label>
-            <Select value={projectId || "none"} onValueChange={(v) => setProjectId(v === "none" ? "" : v)}>
+            <Select value={projectId || "none"} onValueChange={handleProjectChange}>
               <SelectTrigger><SelectValue placeholder="Selecionar projeto..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Nenhum</SelectItem>
