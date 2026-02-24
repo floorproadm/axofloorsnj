@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Upload, X, Plus, Loader2, Play } from "lucide-react";
+import { toast } from "sonner";
+import { needsTranscoding, transcodeToMp4 } from "@/utils/videoTranscoder";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +97,8 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
   const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [transcoding, setTranscoding] = useState(false);
+  const [transcodingProgress, setTranscodingProgress] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastAutoTitle = useRef<string>("");
@@ -189,11 +193,46 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
     setPendingPreviews((prev) => [...prev, ...newPreviews]);
   };
 
-  const handleFileSelect = (files: FileList | null) => {
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files) return;
+    
+    // Transcode .MOV and other incompatible formats
+    const processedFiles: File[] = [];
+    const filesToTranscode = Array.from(files).filter(needsTranscoding);
+    const readyFiles = Array.from(files).filter((f) => !needsTranscoding(f));
+    processedFiles.push(...readyFiles);
+
+    if (filesToTranscode.length > 0) {
+      setTranscoding(true);
+      setTranscodingProgress(0);
+      toast.info(`Convertendo ${filesToTranscode.length} vídeo(s) para MP4...`);
+      try {
+        for (let i = 0; i < filesToTranscode.length; i++) {
+          const converted = await transcodeToMp4(filesToTranscode[i], (p) => {
+            setTranscodingProgress(((i + p) / filesToTranscode.length) * 100);
+          });
+          processedFiles.push(converted);
+        }
+        toast.success("Vídeo(s) convertido(s) para MP4!");
+      } catch (err) {
+        console.error("Transcoding error:", err);
+        toast.error("Erro ao converter vídeo. Tente enviar em formato MP4.");
+        // Still add the original files as fallback
+        processedFiles.push(...filesToTranscode);
+      } finally {
+        setTranscoding(false);
+        setTranscodingProgress(0);
+      }
+    }
+
+    // Create a synthetic FileList-like object
+    const dt = new DataTransfer();
+    processedFiles.forEach((f) => dt.items.add(f));
+
     if (isNew) {
-      handleFileUploadNew(files);
+      handleFileUploadNew(dt.files);
     } else {
-      handleFileUploadExisting(files);
+      handleFileUploadExisting(dt.files);
     }
   };
 
@@ -345,37 +384,22 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
             })}
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
+              disabled={uploading || transcoding}
               className="aspect-square rounded-md border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
             >
-              {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
-              <span className="text-xs">{uploading ? "Enviando..." : "Upload"}</span>
+              {uploading || transcoding ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+              <span className="text-xs">
+                {transcoding ? `Convertendo ${Math.round(transcodingProgress)}%` : uploading ? "Enviando..." : "Upload"}
+              </span>
             </button>
           </div>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/mp4,video/webm,video/quicktime,video/*"
+            accept="image/*,video/*"
             multiple
             className="hidden"
-            onChange={(e) => {
-              const files = e.target.files;
-              if (files) {
-                // Warn about .MOV compatibility
-                const movFiles = Array.from(files).filter((f) =>
-                  f.name.toLowerCase().endsWith(".mov")
-                );
-                if (movFiles.length > 0) {
-                  import("sonner").then(({ toast }) => {
-                    toast.warning(
-                      "Vídeos .MOV podem não reproduzir em todos os navegadores. Para melhor compatibilidade, use o formato .MP4.",
-                      { duration: 6000 }
-                    );
-                  });
-                }
-              }
-              handleFileSelect(files);
-            }}
+            onChange={(e) => handleFileSelect(e.target.files)}
           />
         </CardContent>
       </Card>
