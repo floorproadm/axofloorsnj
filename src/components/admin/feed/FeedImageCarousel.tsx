@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MediaRenderer } from "@/components/shared/MediaRenderer";
 import type { FeedPostImage } from "@/hooks/admin/useFeedData";
 
 interface FeedImageCarouselProps {
@@ -34,8 +35,9 @@ export function FeedImageCarousel({ images }: FeedImageCarouselProps) {
     <div className="space-y-3 w-full max-w-full overflow-hidden">
       {/* Main image */}
       <div className="relative aspect-video bg-muted rounded-lg overflow-hidden group">
-        <img
+        <MediaRenderer
           src={images[current].file_url}
+          fileType={images[current].file_type}
           alt={`Image ${current + 1}`}
           className="w-full h-full object-cover"
         />
@@ -90,7 +92,7 @@ export function FeedImageCarousel({ images }: FeedImageCarouselProps) {
                 i === current ? "border-primary ring-1 ring-primary" : "border-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <img src={img.file_url} alt="" className="w-full h-full object-cover" />
+              <MediaRenderer src={img.file_url} fileType={img.file_type} className="w-full h-full object-cover" thumbnailMode={img.file_type === "video"} />
             </button>
           ))}
         </div>

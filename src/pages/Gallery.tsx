@@ -4,7 +4,7 @@ import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Eye, Image, ChevronLeft, ChevronRight, X, Gift, MapPin } from "lucide-react";
+import { ArrowRight, Star, Eye, Image, ChevronLeft, ChevronRight, X, Gift, MapPin, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +17,7 @@ interface PublicFeedPost {
   category: string | null;
   tags: string[];
   created_at: string;
-  images: { id: string; file_url: string; display_order: number }[];
+  images: { id: string; file_url: string; file_type?: string; display_order: number }[];
 }
 
 // Import before and after images
@@ -184,11 +184,11 @@ const Gallery = () => {
       if (error) throw error;
 
       const postIds = (posts || []).map((p) => p.id);
-      let images: { id: string; file_url: string; feed_post_id: string; display_order: number }[] = [];
+      let images: { id: string; file_url: string; file_type: string; feed_post_id: string; display_order: number }[] = [];
       if (postIds.length > 0) {
         const { data: imgData } = await supabase
           .from("feed_post_images")
-          .select("id, file_url, feed_post_id, display_order")
+          .select("id, file_url, file_type, feed_post_id, display_order")
           .in("feed_post_id", postIds)
           .order("display_order", { ascending: true });
         images = imgData || [];
@@ -342,12 +342,33 @@ const Gallery = () => {
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     {post.images.length > 0 ? (
-                      <img
-                        src={post.images[0]?.file_url}
-                        alt={post.title}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
-                      />
+                      (() => {
+                        const firstImg = post.images[0];
+                        const isVideo = firstImg?.file_type === "video";
+                        return isVideo ? (
+                          <>
+                            <video
+                              src={firstImg.file_url}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                              <div className="bg-black/60 rounded-full p-2">
+                                <Play className="w-6 h-6 text-white fill-white" />
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={firstImg?.file_url}
+                            alt={post.title}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
+                          />
+                        );
+                      })()
                     ) : (
                       <div className="w-full h-full bg-muted flex items-center justify-center">
                         <Image className="w-16 h-16 text-muted-foreground/40" />
@@ -436,11 +457,26 @@ const Gallery = () => {
             )}
 
             <div className="flex flex-col items-center justify-center w-full h-full" onClick={(e) => e.stopPropagation()}>
-              <img
-                src={selectedPost.images[postImageIndex]?.file_url}
-                alt={selectedPost.title}
-                className="max-w-full max-h-[75vh] object-contain rounded-lg"
-              />
+              {(() => {
+                const currentImg = selectedPost.images[postImageIndex];
+                const isVideo = currentImg?.file_type === "video";
+                return isVideo ? (
+                  <video
+                    src={currentImg.file_url}
+                    controls
+                    muted
+                    playsInline
+                    className="max-w-full max-h-[75vh] object-contain rounded-lg"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <img
+                    src={currentImg?.file_url}
+                    alt={selectedPost.title}
+                    className="max-w-full max-h-[75vh] object-contain rounded-lg"
+                  />
+                );
+              })()}
               <div className="mt-4 text-center text-white">
                 <h3 className="text-xl font-heading font-semibold">{selectedPost.title}</h3>
                 {selectedPost.description && (
