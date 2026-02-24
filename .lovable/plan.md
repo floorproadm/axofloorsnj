@@ -1,49 +1,85 @@
 
 
-# Melhorias de Clareza: Galeria Marketing vs Media Engine
+# Evolucao do /admin/settings — Centro de Governanca
 
-Duas alteracoes pequenas para documentar a separacao estrategica entre a Galeria Publica (marketing) e a Media Engine (operacional).
+O Settings atual tem 2 abas (Geral + Marketing Gallery) com 4 campos operacionais. O backend ja esta maduro (multi-role, Media Engine, pipeline com gates), mas o Settings ainda parece MVP. Este plano transforma ele em centro de governanca da empresa.
 
-## Alteracao 1 — Renomear aba "Galeria Publica" para "Marketing Gallery"
+## Fase 1 — Refatorar Layout (Base para crescer)
 
-No arquivo `src/pages/admin/Settings.tsx`, alterar o texto da aba e icone de "Galeria Publica" para "Marketing Gallery", deixando claro o dominio.
+Trocar as tabs horizontais por uma navegacao lateral (sidebar interna) dentro do Settings. Isso permite adicionar secoes sem poluir a interface.
 
-## Alteracao 2 — Documentar separacao no plan.md
+**Estrutura do novo layout:**
 
-Adicionar uma secao no `.lovable/plan.md` documentando que:
-- A Gallery (gallery_folders / gallery_projects) e um sistema isolado de marketing
-- A Media Engine (media_files) e infraestrutura operacional
-- A migracao so deve ocorrer quando o Portal Cliente estiver ativo e houver necessidade real de unificacao
+```text
++------------------+--------------------------------+
+| Sidebar Settings |  Conteudo da Secao Ativa       |
+|                  |                                |
+| > Geral          |  [Card com campos]             |
+| > Branding       |                                |
+| > Equipe         |                                |
+| > Marketing      |                                |
+|   Gallery        |                                |
++------------------+--------------------------------+
+```
 
-## Arquivos modificados
+**Arquivo:** `src/pages/admin/Settings.tsx`
+- Substituir `Tabs` por layout flex com sidebar de navegacao usando estado local
+- Cada secao sera um componente lazy-loaded
 
-| Arquivo | Alteracao |
+**Novos arquivos:**
+- `src/components/admin/settings/GeneralSettings.tsx` — extrair CompanySettingsTab atual
+- `src/components/admin/settings/BrandingSettings.tsx` — nova secao
+- `src/components/admin/settings/TeamSettings.tsx` — nova secao
+
+## Fase 2 — Secao Branding
+
+Adicionar campos de identidade visual na tabela `company_settings`:
+
+**Migracao SQL:**
+- `ALTER TABLE company_settings ADD COLUMN logo_url text`
+- `ALTER TABLE company_settings ADD COLUMN primary_color text DEFAULT '#d97706'`
+- `ALTER TABLE company_settings ADD COLUMN secondary_color text DEFAULT '#1e3a5f'`
+- `ALTER TABLE company_settings ADD COLUMN trade_name text DEFAULT 'AXO Floors'`
+
+**UI:**
+- Upload de logo (usando bucket `media` existente com `is_marketing_asset = true`)
+- Color pickers para cor primaria e secundaria
+- Campo "Nome Fantasia" separado de company_name (razao social)
+- Preview em tempo real das cores escolhidas
+
+## Fase 3 — Secao Equipe
+
+Visao institucional dos usuarios do sistema. Nao e CRUD de roles (isso seria perigoso no frontend), mas sim uma visao de leitura com acoes administrativas basicas.
+
+**UI:**
+- Tabela listando usuarios de `profiles` + `user_roles`
+- Colunas: Nome, Email, Role, Data de criacao
+- Badge de role (Admin, Collaborator)
+- Indicador de projetos ativos (count de `project_members`)
+
+**Seguranca:** Somente leitura. Gerenciamento de roles continua via backend direto (RLS ja protege). Nenhuma tabela nova necessaria — usa `profiles` + `user_roles` + `project_members` existentes.
+
+## Fase 4 — Melhorias de UX na secao Geral
+
+- Adicionar timestamp "Ultima atualizacao: X" abaixo do botao Salvar (campo `updated_at` ja existe)
+- Adicionar icones aos campos para hierarquia visual
+- Agrupar campos em sub-secoes: "Identidade" (nome) e "Regras de Negocio" (margem, modelo, rate)
+
+## Resumo de Arquivos
+
+| Arquivo | Acao |
 |---|---|
-| `src/pages/admin/Settings.tsx` | Renomear label da aba de "Galeria Publica" para "Marketing Gallery" |
-| `.lovable/plan.md` | Adicionar secao de arquitetura documentando a separacao Gallery vs Media Engine |
+| `src/pages/admin/Settings.tsx` | Refatorar: tabs -> sidebar vertical + lazy sections |
+| `src/components/admin/settings/GeneralSettings.tsx` | Novo: extrair CompanySettingsTab |
+| `src/components/admin/settings/BrandingSettings.tsx` | Novo: upload logo + cores + nome fantasia |
+| `src/components/admin/settings/TeamSettings.tsx` | Novo: lista de usuarios/roles (read-only) |
+| Migracao SQL | 4 colunas novas em `company_settings` |
+| `src/hooks/useCompanySettings.ts` | Atualizar: incluir novos campos no tipo e defaults |
 
----
+## O que NAO sera feito agora
 
-# Arquitetura: Gallery vs Media Engine
+- Integracoes (Facebook, Notion) — aguardar demanda
+- Templates operacionais — aguardar portal cliente
+- Feature flags / billing — prematuro
+- CRUD de roles no frontend — risco de seguranca
 
-## Gallery System (Marketing)
-- **Tabelas:** `gallery_folders`, `gallery_projects`
-- **Bucket:** `gallery`
-- **UI:** `/admin/settings` → aba "Marketing Gallery"
-- **Propósito:** Curadoria manual de fotos para o site público (`/gallery`)
-- **Domínio:** Marketing — conteúdo selecionado para conversão de leads
-
-## Media Engine (Operacional)
-- **Tabela:** `media_files`
-- **Bucket:** `media`
-- **UI:** ProjectDetail, CompanyFeed, Portal Colaborador
-- **Propósito:** Infraestrutura de mídia operacional (fotos de progresso, before/after, documentação de campo)
-- **Domínio:** Operação — registro de trabalho, compliance, comunicação interna
-
-## Regra de Migração
-A unificação dos dois sistemas **NÃO deve ocorrer** até que:
-1. O Portal Cliente esteja ativo e necessite de fotos aprovadas
-2. Haja demanda real de usar fotos operacionais como marketing automaticamente
-3. O custo de manter dois sistemas supere o custo de migração
-
-Até lá, a separação é saudável e intencional.
