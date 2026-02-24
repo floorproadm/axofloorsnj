@@ -44,8 +44,8 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   const notificationCount = notifications.length;
 
   return (
-    <SidebarProvider defaultOpen={defaultSidebarOpen}>
-        <div className="h-dvh flex w-full bg-grey-light/30 min-w-0 overflow-hidden">
+    <SidebarProvider defaultOpen={defaultSidebarOpen} className="!min-h-0 h-dvh overflow-hidden">
+        <div className="flex w-full min-w-0 h-full overflow-hidden">
         <AdminSidebar />
         
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
