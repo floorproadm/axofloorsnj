@@ -29,21 +29,29 @@ export function MediaRenderer({
   const [videoError, setVideoError] = useState(false);
 
   if (isVideo && videoError) {
+    const isMov = src.toLowerCase().includes(".mov");
     return (
       <div
-        className={`relative flex flex-col items-center justify-center gap-2 bg-muted text-muted-foreground ${className}`}
+        className={`relative flex flex-col items-center justify-center gap-3 bg-muted text-muted-foreground ${className}`}
         onClick={onClick}
       >
-        <AlertTriangle className="w-6 h-6 text-amber-500" />
-        <p className="text-xs text-center px-2">Formato não suportado pelo navegador</p>
+        <AlertTriangle className="w-7 h-7 text-amber-500" />
+        <div className="text-center px-4 space-y-1">
+          <p className="text-sm font-medium">Vídeo incompatível</p>
+          <p className="text-xs">
+            {isMov
+              ? "Arquivos .MOV (iPhone) não são suportados pelo navegador. Delete este vídeo e re-envie em formato MP4."
+              : "Este formato de vídeo não é suportado. Converta para MP4 e envie novamente."}
+          </p>
+        </div>
         <a
           href={src}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 text-xs text-primary hover:underline"
+          className="flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
           onClick={(e) => e.stopPropagation()}
         >
-          <Download className="w-3 h-3" /> Baixar vídeo
+          <Download className="w-3.5 h-3.5" /> Baixar original
         </a>
       </div>
     );
