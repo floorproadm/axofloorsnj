@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Loader2, Users, Shield, User } from "lucide-react";
+import { Loader2, Users, Shield, User, UserPlus } from "lucide-react";
+import InviteTeamMemberDialog from "./InviteTeamMemberDialog";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -30,6 +32,7 @@ function getInitials(name: string | null, email: string | null): string {
 export default function TeamSettings() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     fetchTeam();
@@ -169,7 +172,13 @@ export default function TeamSettings() {
             <Users className="w-5 h-5 text-[hsl(var(--gold-warm))]" />
             Equipe
           </CardTitle>
-          <Badge variant="outline" className="text-xs font-normal">{members.length} membros</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs font-normal">{members.length} membros</Badge>
+            <Button size="sm" variant="outline" onClick={() => setInviteOpen(true)} className="gap-1">
+              <UserPlus className="w-4 h-4" />
+              Convidar
+            </Button>
+          </div>
         </div>
         <CardDescription>
           Visão institucional dos usuários do sistema. Gerenciamento de roles é feito via backend.
@@ -208,6 +217,12 @@ export default function TeamSettings() {
           </div>
         )}
       </CardContent>
+
+      <InviteTeamMemberDialog
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        onSuccess={fetchTeam}
+      />
     </Card>
   );
 }
