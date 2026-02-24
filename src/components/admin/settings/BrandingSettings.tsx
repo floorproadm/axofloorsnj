@@ -20,15 +20,24 @@ export default function BrandingSettings() {
   const [tradeName, setTradeName] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#d97706");
   const [secondaryColor, setSecondaryColor] = useState("#1e3a5f");
-  const [logoUrl, setLogoUrl] = useState("");
+  const [logoPath, setLogoPath] = useState("");
+  const [logoDisplayUrl, setLogoDisplayUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+
+  const generateSignedUrl = async (path: string) => {
+    if (!path) { setLogoDisplayUrl(""); return; }
+    const { data, error } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60);
+    if (!error && data) setLogoDisplayUrl(data.signedUrl);
+  };
 
   useEffect(() => {
     if (!isLoading && settings) {
       setTradeName((settings as any).trade_name ?? "AXO Floors");
       setPrimaryColor((settings as any).primary_color ?? "#d97706");
       setSecondaryColor((settings as any).secondary_color ?? "#1e3a5f");
-      setLogoUrl((settings as any).logo_url ?? "");
+      const storedPath = (settings as any).logo_url ?? "";
+      setLogoPath(storedPath);
+      generateSignedUrl(storedPath);
     }
   }, [isLoading, settings]);
 
@@ -48,14 +57,19 @@ export default function BrandingSettings() {
       const { error: uploadError } = await supabase.storage.from("media").upload(fileName, file, { upsert: true });
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from("media").getPublicUrl(fileName);
-      setLogoUrl(urlData.publicUrl);
+      setLogoPath(fileName);
+      await generateSignedUrl(fileName);
       toast({ title: "Logo enviado" });
     } catch (err: any) {
       toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleClearLogo = () => {
+    setLogoPath("");
+    setLogoDisplayUrl("");
   };
 
   const handleSave = async () => {
@@ -72,7 +86,7 @@ export default function BrandingSettings() {
           trade_name: tradeName.trim(),
           primary_color: primaryColor,
           secondary_color: secondaryColor,
-          logo_url: logoUrl || null,
+          logo_url: logoPath || null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", settings.id);
@@ -119,22 +133,20 @@ export default function BrandingSettings() {
           <CardDescription>Nome fantasia e logo da empresa.</CardDescription>
         </CardHeader>
         <CardContent className="pt-0 space-y-6 max-w-lg">
-          {/* Trade Name */}
           <div className="space-y-2">
             <Label htmlFor="trade_name">Nome Fantasia</Label>
             <Input id="trade_name" value={tradeName} onChange={(e) => setTradeName(e.target.value)} placeholder="AXO Floors" />
             <p className="text-xs text-muted-foreground">Nome público exibido para clientes.</p>
           </div>
 
-          {/* Logo */}
           <div className="space-y-2">
             <Label>Logo da Empresa</Label>
             <div className="flex items-center gap-4">
-              {logoUrl ? (
+              {logoDisplayUrl ? (
                 <div className="relative w-20 h-20 rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
-                  <img src={logoUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
+                  <img src={logoDisplayUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
                   <button
-                    onClick={() => setLogoUrl("")}
+                    onClick={handleClearLogo}
                     className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
                   >
                     <X className="w-3 h-3" />
@@ -149,7 +161,7 @@ export default function BrandingSettings() {
                 <Button variant="outline" size="sm" disabled={uploading} asChild>
                   <label className="cursor-pointer">
                     {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                    {logoUrl ? "Trocar" : "Enviar"} Logo
+                    {logoDisplayUrl ? "Trocar" : "Enviar"} Logo
                     <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
                   </label>
                 </Button>
@@ -170,41 +182,27 @@ export default function BrandingSettings() {
           <CardDescription>Cores primária e secundária aplicadas no sistema.</CardDescription>
         </CardHeader>
         <CardContent className="pt-0 space-y-6 max-w-lg">
-          {/* Colors */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="primary_color">Cor Primária</Label>
               <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  id="primary_color"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="w-10 h-10 rounded border cursor-pointer"
-                />
+                <input type="color" id="primary_color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
                 <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono text-sm" />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="secondary_color">Cor Secundária</Label>
               <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  id="secondary_color"
-                  value={secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="w-10 h-10 rounded border cursor-pointer"
-                />
+                <input type="color" id="secondary_color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
                 <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono text-sm" />
               </div>
             </div>
           </div>
 
-          {/* Preview */}
           <div className="space-y-2">
             <Label>Preview</Label>
             <div className="flex items-center gap-3 p-4 rounded-lg border bg-[hsl(var(--navy-primary))] text-white">
-              {logoUrl && <img src={logoUrl} alt="Preview" className="w-10 h-10 object-contain" />}
+              {logoDisplayUrl && <img src={logoDisplayUrl} alt="Preview" className="w-10 h-10 object-contain" />}
               <span className="font-bold text-lg" style={{ color: primaryColor }}>{tradeName || "AXO Floors"}</span>
               <div className="ml-auto flex gap-2">
                 <div className="w-8 h-8 rounded-full border border-white/20" style={{ backgroundColor: primaryColor }} title="Primária" />
