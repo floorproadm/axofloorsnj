@@ -14,13 +14,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { FeedPost, FeedPostImage } from "@/hooks/admin/useFeedData";
 import { useFeedFolders, useUploadFeedImage, useDeleteFeedPostImage } from "@/hooks/admin/useFeedData";
 
 interface FeedPostFormProps {
   post: FeedPost;
-  onSave: (updates: Partial<FeedPost>) => void;
+  onSave: (updates: Partial<FeedPost>, pendingFiles?: File[]) => void;
   isSaving: boolean;
+  isNew?: boolean;
 }
 
 const POST_TYPES = [
@@ -48,7 +59,7 @@ const QUALITY_CHECKLIST = [
   "Categoria correta selecionada",
 ];
 
-export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
+export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPostFormProps) {
   const [title, setTitle] = useState(post.title);
   const [description, setDescription] = useState(post.description || "");
   const [postType, setPostType] = useState(post.post_type);
@@ -60,8 +71,16 @@ export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
   const [status, setStatus] = useState(post.status);
   const [folderId, setFolderId] = useState(post.folder_id || "");
   const [checklist, setChecklist] = useState<Record<string, boolean>>({});
+
+  // For existing posts: server images + upload directly
   const [images, setImages] = useState<FeedPostImage[]>(post.images || []);
   const [uploading, setUploading] = useState(false);
+
+  // For new posts: local files stored in memory
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
+
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: folders = [] } = useFeedFolders();
@@ -78,7 +97,8 @@ export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
 
   const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
 
-  const handleFileUpload = async (files: FileList | null) => {
+  // For existing posts: upload directly to server
+  const handleFileUploadExisting = async (files: FileList | null) => {
     if (!files || !post.id) return;
     setUploading(true);
     try {
@@ -105,23 +125,61 @@ export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
     }
   };
 
+  // For new posts: store files locally
+  const handleFileUploadNew = (files: FileList | null) => {
+    if (!files) return;
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      newFiles.push(files[i]);
+      newPreviews.push(URL.createObjectURL(files[i]));
+    }
+    setPendingFiles((prev) => [...prev, ...newFiles]);
+    setPendingPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const handleFileSelect = (files: FileList | null) => {
+    if (isNew) {
+      handleFileUploadNew(files);
+    } else {
+      handleFileUploadExisting(files);
+    }
+  };
+
   const handleRemoveImage = (img: FeedPostImage) => {
     deleteImage.mutate({ id: img.id, postId: post.id });
     setImages((prev) => prev.filter((i) => i.id !== img.id));
   };
 
-  const handleSave = () => {
-    onSave({
-      title,
-      description: description || null,
-      post_type: postType,
-      location: location || null,
-      category: category || null,
-      tags,
-      visibility,
-      status,
-      folder_id: folderId || null,
-    });
+  const handleRemovePendingFile = (index: number) => {
+    URL.revokeObjectURL(pendingPreviews[index]);
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+    setPendingPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const buildUpdates = (): Partial<FeedPost> => ({
+    title,
+    description: description || null,
+    post_type: postType,
+    location: location || null,
+    category: category || null,
+    tags,
+    visibility,
+    status,
+    folder_id: folderId || null,
+  });
+
+  const handleSaveClick = () => {
+    if (isNew) {
+      setShowConfirmDialog(true);
+    } else {
+      onSave(buildUpdates());
+    }
+  };
+
+  const handleConfirmCreate = () => {
+    setShowConfirmDialog(false);
+    onSave(buildUpdates(), pendingFiles.length > 0 ? pendingFiles : undefined);
   };
 
   return (
@@ -170,11 +228,24 @@ export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
         <CardContent className="p-4 space-y-3">
           <h3 className="text-sm font-semibold">Imagens</h3>
           <div className="grid grid-cols-3 gap-2">
-            {images.map((img) => (
+            {/* Existing server images (only for editing) */}
+            {!isNew && images.map((img) => (
               <div key={img.id} className="relative aspect-square rounded-md overflow-hidden group">
                 <img src={img.file_url} alt="" className="w-full h-full object-cover" />
                 <button
                   onClick={() => handleRemoveImage(img)}
+                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+            {/* Pending local images (for new posts) */}
+            {isNew && pendingPreviews.map((preview, idx) => (
+              <div key={idx} className="relative aspect-square rounded-md overflow-hidden group">
+                <img src={preview} alt="" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => handleRemovePendingFile(idx)}
                   className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="w-3 h-3" />
@@ -196,7 +267,7 @@ export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
             accept="image/*,video/*"
             multiple
             className="hidden"
-            onChange={(e) => handleFileUpload(e.target.files)}
+            onChange={(e) => handleFileSelect(e.target.files)}
           />
         </CardContent>
       </Card>
@@ -304,10 +375,28 @@ export function FeedPostForm({ post, onSave, isSaving }: FeedPostFormProps) {
       </Card>
 
       {/* Save */}
-      <Button onClick={handleSave} disabled={isSaving || !title.trim()} className="w-full">
+      <Button onClick={handleSaveClick} disabled={isSaving || !title.trim()} className="w-full">
         {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         Salvar Post
       </Button>
+
+      {/* Confirmation Dialog for new posts */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar criação do post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O post "{title || "Sem título"}" será criado
+              {pendingFiles.length > 0 ? ` com ${pendingFiles.length} imagem(ns)` : ""}.
+              Deseja continuar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCreate}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
