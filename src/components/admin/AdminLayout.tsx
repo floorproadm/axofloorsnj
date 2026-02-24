@@ -58,10 +58,10 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
-        <div className="flex w-full min-w-0">
+        <div className="flex w-full min-w-0 h-full overflow-hidden">
         <AdminSidebar />
         
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
           {/* Enhanced Header */}
           <header className="h-14 flex-shrink-0 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 z-40 shadow-soft">
             <div className="flex items-center gap-3 flex-shrink-0 min-w-0 flex-1">
