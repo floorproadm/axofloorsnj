@@ -1,47 +1,51 @@
 
-The system already supports video detection during upload, but several UI components need to be updated to correctly render `<video>` tags instead of only `<img>` tags. I will implement a unified media rendering approach across the Company Feed and the public Gallery.
 
-### Proposed Changes
+## Plano: Corrigir Suporte a Video no Feed
 
-#### 1. Update Media Rendering Components
-- **`FeedImageCarousel.tsx`**: Update to check `file_type` and render a `<video>` tag with controls, muted, and playsinline for video assets.
-- **`FeedPostCard.tsx`**: Update the thumbnail grid to show a "Play" icon overlay or a video preview when the asset is a video.
-- **`FeedPostForm.tsx`**: 
-    - Update the image preview grid to handle existing videos.
-    - Update the local preview logic for new uploads to distinguish between images and videos (using `file.type.startsWith('video')`).
+### Problema Diagnosticado
+Os 2 videos deste post estao armazenados como `.MOV` (HEVC do iPhone). A transcodificacao client-side via ffmpeg.wasm **falhou silenciosamente** e o codigo de fallback enviou os arquivos originais `.MOV` sem conversao. Chrome e Firefox nao conseguem reproduzir HEVC/MOV, resultando no erro "Formato nao suportado".
 
-#### 2. Update Public Gallery
-- **`Gallery.tsx`**: 
-    - Update the `PublicFeedPost` interface to include `file_type`.
-    - Update the Supabase query to fetch `file_type` for feed images.
-    - Update the post cards in the gallery to show a video indicator.
-    - Update the public lightbox to render videos correctly.
+### Causa Raiz
+O ffmpeg.wasm e instavel no browser: requer ~25MB de download, SharedArrayBuffer, e frequentemente falha em mobile. O fallback atual envia o arquivo original quando a transcodificacao falha, criando exatamente o problema que deveria resolver.
 
-#### 3. Update Shared Post View
-- **`SharedPost.tsx`**: Update the image list to render `<video>` tags for assets where `file_type === 'video'`.
+### Solucao: Abordagem em 3 Partes
 
-### Technical Details
-- Videos will be rendered using:
-  ```html
-  <video 
-    src={url} 
-    controls 
-    className="..." 
-    muted 
-    playsInline 
-    poster={thumbnailUrl} // Optional: we might not have a thumbnail yet, but browser will show first frame
-  />
-  ```
-- For previews and thumbnails where full controls aren't needed, I'll use a simpler video tag or an icon overlay to avoid performance overhead of multiple auto-playing videos.
+#### Parte 1 - Bloquear uploads incompativeis (prevencao)
+- Modificar `FeedPostForm.tsx` para **rejeitar** arquivos `.MOV/.AVI/.WMV/.MKV` com mensagem clara pedindo formato MP4
+- Remover o fallback que envia o arquivo original quando a transcodificacao falha
+- Aceitar apenas: `video/mp4`, `video/webm`, `video/ogg` + todos os formatos de imagem
 
-### Verification Plan
-- **Admin Side**:
-    1. Go to `/admin/feed/new`.
-    2. Upload a video file.
-    3. Verify that the preview shows a video or a video icon.
-    4. Save the post and verify it renders correctly in the Feed list and Detail view.
-- **Public Side**:
-    1. Set the post visibility to "public".
-    2. Go to the public Gallery page.
-    3. Verify the video post appears and plays correctly in the lightbox.
-    4. Share the post and verify the shared link renders the video.
+#### Parte 2 - Manter transcodificacao como tentativa opcional
+- Manter o `videoTranscoder.ts` mas **nao enviar o arquivo original se falhar**
+- Se a transcodificacao funcionar (desktop com boa memoria), otimo - o video e convertido
+- Se falhar, mostrar erro claro: "Este formato de video nao e suportado. Por favor, converta para MP4 antes de enviar."
+- Adicionar timeout de 60 segundos para evitar travamento
+
+#### Parte 3 - Corrigir os videos existentes
+- Criar uma funcao no `FeedPostDetail` e `FeedImageCarousel` que detecta `.MOV` na URL e oferece opcao de **re-upload em MP4**
+- Para os videos ja enviados em `.MOV`, manter o fallback de download mas melhorar a UX com instrucoes claras
+
+### Mudancas Tecnicas
+
+**`src/components/admin/feed/FeedPostForm.tsx`**:
+- `handleFileSelect`: Rejeitar formatos incompativeis em vez de tentar transcodificar e falhar silenciosamente
+- Mostrar toast de erro especifico com instrucao para converter para MP4
+- Adicionar timeout no transcoding para nao travar
+
+**`src/utils/videoTranscoder.ts`**:
+- Adicionar timeout de 60s
+- Nao retornar fallback - lancar erro se falhar
+
+**`src/components/shared/MediaRenderer.tsx`**:
+- Melhorar fallback para videos `.MOV` com instrucoes mais claras
+- Adicionar botao "Re-enviar em MP4" quando em contexto admin
+
+**`src/components/admin/feed/FeedImageCarousel.tsx`**:
+- Melhorar UX do fallback de video com instrucoes de re-upload
+
+### Resultado Esperado
+- Novos uploads: apenas formatos compativeis (MP4/WebM) sao aceitos
+- Tentativa de transcodificacao automatica, mas sem fallback silencioso
+- Videos existentes em `.MOV`: fallback com download + instrucoes claras
+- Zero videos "quebrados" no futuro
+
