@@ -355,10 +355,27 @@ export function FeedPostForm({ post, onSave, isSaving, isNew = false }: FeedPost
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/*"
+            accept="image/*,video/mp4,video/webm,video/quicktime,video/*"
             multiple
             className="hidden"
-            onChange={(e) => handleFileSelect(e.target.files)}
+            onChange={(e) => {
+              const files = e.target.files;
+              if (files) {
+                // Warn about .MOV compatibility
+                const movFiles = Array.from(files).filter((f) =>
+                  f.name.toLowerCase().endsWith(".mov")
+                );
+                if (movFiles.length > 0) {
+                  import("sonner").then(({ toast }) => {
+                    toast.warning(
+                      "Vídeos .MOV podem não reproduzir em todos os navegadores. Para melhor compatibilidade, use o formato .MP4.",
+                      { duration: 6000 }
+                    );
+                  });
+                }
+              }
+              handleFileSelect(files);
+            }}
           />
         </CardContent>
       </Card>
