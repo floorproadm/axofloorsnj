@@ -146,13 +146,13 @@ export default function Dashboard() {
 
         {/* Metric Cards — horizontal scroll on mobile */}
         {isLoading ? (
-          <div className="flex gap-3 mb-8 overflow-x-auto pb-1 scrollbar-hide">
+            <div className="grid grid-cols-3 gap-3 mb-8">
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-[88px] min-w-[160px] flex-1 rounded-xl" />
             ))}
           </div>
         ) : (
-          <div className="flex gap-3 mb-8 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="grid grid-cols-3 gap-3 mb-8">
             <MetricCard
               icon={<DollarSign className="w-4 h-4" />}
               label="Pipeline"
