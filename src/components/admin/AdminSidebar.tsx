@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -28,6 +29,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Grupo 1: Menu (visão principal)
 const menuItems = [
@@ -62,6 +64,23 @@ export function AdminSidebar() {
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
   const { toast } = useToast();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchLogo() {
+      const { data } = await supabase
+        .from("company_settings")
+        .select("logo_url")
+        .limit(1)
+        .maybeSingle();
+      const path = (data as any)?.logo_url;
+      if (path) {
+        const { data: signed } = await supabase.storage.from("media").createSignedUrl(path, 3600);
+        if (signed) setLogoUrl(signed.signedUrl);
+      }
+    }
+    fetchLogo();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -78,9 +97,13 @@ export function AdminSidebar() {
         {/* Brand */}
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-              <span className="text-white font-bold text-lg">A</span>
-            </div>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-xl object-contain flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <span className="text-white font-bold text-lg">A</span>
+              </div>
+            )}
             {!collapsed && (
               <div className="animate-fade-in">
                 <h2 className="font-bold text-navy text-lg">AXO OS</h2>
