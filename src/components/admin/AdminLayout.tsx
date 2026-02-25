@@ -9,6 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface BreadcrumbItem {
   label: string;
@@ -25,13 +26,14 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
   const [defaultSidebarOpen, setDefaultSidebarOpen] = useState(true);
   const { signOut } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleLogout = async () => {
     try {
       await signOut();
-      toast({ title: "Logout realizado", description: "Você foi desconectado com sucesso." });
+      toast({ title: t("auth.logoutRealizado"), description: t("auth.logoutDesc") });
     } catch {
-      toast({ title: "Erro ao fazer logout", variant: "destructive" });
+      toast({ title: t("auth.erroLogout"), variant: "destructive" });
     }
   };
 
@@ -44,7 +46,6 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
     return () => mql.removeEventListener("change", update);
   }, []);
 
-  // Notifications from shared RPC — zero extra queries
   const { criticalAlerts } = useDashboardData();
 
   const notifications = React.useMemo(() => {
@@ -59,13 +60,10 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
-      {/* Outer: flex row, h-screen, NO overflow-hidden here — SidebarProvider already constrains */}
       <div className="flex w-full min-w-0 h-screen">
         <AdminSidebar />
 
-        {/* Content column: flex-col with min-h-0 to allow shrinking */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
-          {/* Fixed Header */}
           <header className="h-14 flex-shrink-0 border-b bg-card/80 backdrop-blur-sm grid grid-cols-3 items-center px-4 sm:px-6 z-40 shadow-soft">
             <div className="flex items-center gap-3 min-w-0">
               <SidebarTrigger className="h-8 w-8 hover:bg-primary/10 transition-admin flex-shrink-0" />
@@ -100,20 +98,22 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0 bg-card border border-border shadow-lg z-50">
                   <div className="px-4 py-3 border-b border-border">
-                    <h3 className="text-sm font-bold text-foreground">Notificações</h3>
-                    <p className="text-[11px] text-muted-foreground">{notificationCount} pendente{notificationCount !== 1 ? "s" : ""}</p>
+                    <h3 className="text-sm font-bold text-foreground">{t("layout.notificacoes")}</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      {notificationCount} {notificationCount !== 1 ? t("layout.pendentes") : t("layout.pendente")}
+                    </p>
                   </div>
                   {notifications.length === 0 ? (
                     <div className="py-8 text-center text-sm text-muted-foreground">
-                      Nenhuma notificação 🎉
+                      {t("layout.nenhumaNotificacao")}
                     </div>
                   ) : (
                     <div className="max-h-72 overflow-y-auto divide-y divide-border">
                       {notifications.map((n) => {
                         const config = {
-                          cold: { icon: UserPlus, label: "Lead sem contato 24h", dotClass: "bg-[hsl(var(--state-risk))]" },
-                          proposal: { icon: FileText, label: "Proposta sem follow-up", dotClass: "bg-[hsl(var(--state-blocked))]" },
-                          stalled: { icon: AlertTriangle, label: "Parado +48h", dotClass: "bg-[hsl(var(--state-risk))]" },
+                          cold: { icon: UserPlus, label: t("layout.leadSemContato24h"), dotClass: "bg-[hsl(var(--state-risk))]" },
+                          proposal: { icon: FileText, label: t("layout.propostaSemFollowUp"), dotClass: "bg-[hsl(var(--state-blocked))]" },
+                          stalled: { icon: AlertTriangle, label: t("layout.parado48h"), dotClass: "bg-[hsl(var(--state-risk))]" },
                         }[n.type];
                         const Icon = config.icon;
                         return (
@@ -135,7 +135,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
                   )}
                   <div className="px-4 py-2.5 border-t border-border">
                     <Link to="/admin/leads" className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline">
-                      Ver todos os leads →
+                      {t("layout.verTodosLeads")}
                     </Link>
                   </div>
                 </PopoverContent>
@@ -143,20 +143,18 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
               <button
                 onClick={handleLogout}
                 className="p-2 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors text-muted-foreground"
-                title="Sair do sistema"
+                title={t("layout.sairDoSistema")}
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           </header>
 
-          {/* Main Content — ONLY scrollable element */}
           <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 animate-fade-in max-w-full min-w-0">
             {children}
           </main>
         </div>
 
-        {/* Mobile Bottom Nav */}
         <MobileBottomNav />
       </div>
     </SidebarProvider>

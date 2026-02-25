@@ -27,25 +27,7 @@ import {
 import { NewJobDialog } from "./NewJobDialog";
 import { NewLeadDialog } from "./NewLeadDialog";
 import { NewEstimateDialog } from "./NewEstimateDialog";
-
-const navItems = [
-  { label: "Home", icon: Home, path: "/admin/dashboard" },
-  { label: "Jobs", icon: Briefcase, path: "/admin/jobs" },
-  { label: null, icon: Plus, path: null }, // FAB center
-  { label: "Feed", icon: Camera, path: "/admin/feed" },
-  { label: "Stats", icon: BarChart3, path: "/admin/performance" },
-];
-
-const quickActions = [
-  { label: "Nova Tarefa", icon: ClipboardList, action: "task" },
-  { label: "Novo Job", icon: HardHat, action: "job" },
-  { label: "Novo Lead", icon: UserPlus, action: "lead" },
-  { label: "Novo Orçamento", icon: FileText, action: "estimate" },
-  { label: "Nova Ordem", icon: ShoppingCart, action: "order" },
-  { label: "Nova Despesa", icon: Receipt, action: "expense" },
-  { label: "Nova Fatura", icon: FileSpreadsheet, action: "invoice" },
-  { label: "Nova Foto", icon: ImagePlus, action: "photo" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -54,6 +36,27 @@ export function MobileBottomNav() {
   const [newJobOpen, setNewJobOpen] = useState(false);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [newEstimateOpen, setNewEstimateOpen] = useState(false);
+  const { t } = useLanguage();
+
+  // Universal words stay in English
+  const navItems = [
+    { label: "Home", icon: Home, path: "/admin/dashboard" },
+    { label: "Jobs", icon: Briefcase, path: "/admin/jobs" },
+    { label: null, icon: Plus, path: null },
+    { label: "Feed", icon: Camera, path: "/admin/feed" },
+    { label: "Stats", icon: BarChart3, path: "/admin/performance" },
+  ];
+
+  const quickActions = [
+    { label: t("mobile.novaTarefa"), icon: ClipboardList, action: "task" },
+    { label: t("mobile.novoJob"), icon: HardHat, action: "job" },
+    { label: t("mobile.novoLead"), icon: UserPlus, action: "lead" },
+    { label: t("mobile.novoOrcamento"), icon: FileText, action: "estimate" },
+    { label: t("mobile.novaOrdem"), icon: ShoppingCart, action: "order" },
+    { label: t("mobile.novaDespesa"), icon: Receipt, action: "expense" },
+    { label: t("mobile.novaFatura"), icon: FileSpreadsheet, action: "invoice" },
+    { label: t("mobile.novaFoto"), icon: ImagePlus, action: "photo" },
+  ];
 
   const handleQuickAction = (action: string) => {
     setDrawerOpen(false);
@@ -71,7 +74,6 @@ export function MobileBottomNav() {
         navigate("/admin/feed");
         break;
       default:
-        // placeholder for future actions
         break;
     }
   };
@@ -87,7 +89,7 @@ export function MobileBottomNav() {
                   <button
                     onClick={() => setDrawerOpen(true)}
                     className="w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-                    aria-label="Criar novo"
+                    aria-label={t("mobile.criarNovo")}
                   >
                     <Plus className="w-6 h-6" />
                   </button>
@@ -127,11 +129,10 @@ export function MobileBottomNav() {
         <div className="h-[env(safe-area-inset-bottom)]" />
       </nav>
 
-      {/* Quick Actions Drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
         <DrawerContent className="max-h-[85vh]">
           <DrawerHeader className="flex items-center justify-between pb-2">
-            <DrawerTitle className="text-lg font-semibold">Criar</DrawerTitle>
+            <DrawerTitle className="text-lg font-semibold">{t("mobile.criar")}</DrawerTitle>
             <DrawerClose asChild>
               <button className="p-1 rounded-full hover:bg-muted transition-colors">
                 <X className="w-5 h-5 text-muted-foreground" />

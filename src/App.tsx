@@ -9,6 +9,7 @@ import ScrollToTop from "@/components/shared/ScrollToTop";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import SecurityHeaders from "@/components/SecurityHeaders";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import HardwoodFlooring from "./pages/HardwoodFlooring";
 import SandingRefinish from "./pages/SandingRefinish";
@@ -57,6 +58,7 @@ const App = () => {
   return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <LanguageProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -170,6 +172,7 @@ const App = () => {
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+      </LanguageProvider>
     </AuthProvider>
   </QueryClientProvider>
   );

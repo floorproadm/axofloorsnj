@@ -11,12 +11,14 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, Loader2, Building2, TrendingUp, Clock } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { LaborPricingModel } from "@/hooks/useCompanySettings";
 
 export default function GeneralSettings() {
   const { settings, isLoading, refetch, companyName, marginMinPercent, laborPricingModel, laborRate } = useCompanySettings();
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   const [saving, setSaving] = useState(false);
 
   const [formName, setFormName] = useState("");
@@ -38,11 +40,11 @@ export default function GeneralSettings() {
     const rateNum = parseFloat(formRate);
 
     if (isNaN(marginNum) || marginNum < 0 || marginNum > 100) {
-      toast({ title: "Erro", description: "Margem deve ser entre 0 e 100%", variant: "destructive" });
+      toast({ title: t("general.erro"), description: t("general.margemErro"), variant: "destructive" });
       return;
     }
     if (isNaN(rateNum) || rateNum < 0) {
-      toast({ title: "Erro", description: "Labor rate inválido", variant: "destructive" });
+      toast({ title: t("general.erro"), description: t("general.laborRateErro"), variant: "destructive" });
       return;
     }
 
@@ -70,10 +72,10 @@ export default function GeneralSettings() {
       }
 
       await refetch();
-      toast({ title: "✓ Salvo", description: "Configurações atualizadas com sucesso." });
+      toast({ title: t("general.salvo"), description: t("general.salvoDesc") });
     } catch (err: any) {
       console.error("Settings save error:", err);
-      toast({ title: "Erro ao salvar", description: err.message || "Tente novamente", variant: "destructive" });
+      toast({ title: t("general.erroSalvar"), description: err.message || t("general.tenteNovamente"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -87,22 +89,23 @@ export default function GeneralSettings() {
     );
   }
 
+  const dateLocale = language === "en" ? enUS : ptBR;
   const updatedAtRelative = settings?.updated_at
-    ? formatDistanceToNow(new Date(settings.updated_at), { addSuffix: true, locale: ptBR })
+    ? formatDistanceToNow(new Date(settings.updated_at), { addSuffix: true, locale: dateLocale })
     : null;
   const updatedAtAbsolute = settings?.updated_at
-    ? format(new Date(settings.updated_at), "dd/MM/yyyy 'às' HH:mm")
+    ? format(new Date(settings.updated_at), language === "en" ? "MM/dd/yyyy 'at' HH:mm" : "dd/MM/yyyy 'às' HH:mm")
     : null;
 
   return (
     <div className="space-y-6">
-      {/* Identidade */}
+      {/* Identity */}
       <Card className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
               <Building2 className="w-5 h-5 text-primary" />
-              Identidade
+              {t("general.identidade")}
             </CardTitle>
             {updatedAtRelative && (
               <Badge variant="outline" className="gap-1 text-[10px] text-muted-foreground font-normal" title={updatedAtAbsolute ?? ""}>
@@ -115,43 +118,43 @@ export default function GeneralSettings() {
         <CardContent className="pt-0">
           <div className="space-y-4 max-w-lg">
             <div className="space-y-2">
-              <Label htmlFor="company_name">Razão Social</Label>
+              <Label htmlFor="company_name">{t("general.razaoSocial")}</Label>
               <Input id="company_name" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="AXO Floors LLC" />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Regras de Negócio */}
+      {/* Business Rules */}
       <Card className="border-l-4 border-l-[hsl(var(--gold-warm))] shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <TrendingUp className="w-5 h-5 text-[hsl(var(--gold-warm))]" />
-            Regras de Negócio
+            {t("general.regrasNegocio")}
           </CardTitle>
           <CardDescription>
-            Triggers e RPCs consultam estes valores antes de permitir transições no pipeline.
+            {t("general.regrasDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid gap-4 max-w-lg">
             <div className="space-y-2">
-              <Label htmlFor="margin">Margem Mínima Obrigatória (%)</Label>
+              <Label htmlFor="margin">{t("general.margemMinima")}</Label>
               <Input id="margin" type="number" min={0} max={100} step={1} value={formMargin} onChange={(e) => setFormMargin(e.target.value)} />
-              <p className="text-xs text-muted-foreground">Nenhum projeto avança para Proposta com margem abaixo deste valor.</p>
+              <p className="text-xs text-muted-foreground">{t("general.margemDesc")}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pricing_model">Modelo de Precificação</Label>
+              <Label htmlFor="pricing_model">{t("general.modeloPrecificacao")}</Label>
               <Select value={formModel} onValueChange={(v) => setFormModel(v as LaborPricingModel)}>
                 <SelectTrigger id="pricing_model"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sqft">Por Sq Ft</SelectItem>
-                  <SelectItem value="daily">Diária</SelectItem>
+                  <SelectItem value="sqft">{t("general.porSqFt")}</SelectItem>
+                  <SelectItem value="daily">{t("general.diaria")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="labor_rate">Labor Rate Padrão ({formModel === "sqft" ? "$/sq ft" : "$/dia"})</Label>
+              <Label htmlFor="labor_rate">{t("general.laborRatePadrao")} ({formModel === "sqft" ? "$/sq ft" : "$/dia"})</Label>
               <Input id="labor_rate" type="number" min={0} step={0.25} value={formRate} onChange={(e) => setFormRate(e.target.value)} />
             </div>
           </div>
@@ -160,11 +163,11 @@ export default function GeneralSettings() {
         <CardFooter className="pt-4 flex items-center gap-4">
           <Button onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Salvar Configurações
+            {t("general.salvarConfiguracoes")}
           </Button>
           {updatedAtAbsolute && (
             <span className="text-xs text-muted-foreground">
-              Última atualização: {updatedAtAbsolute}
+              {t("general.ultimaAtualizacao")}: {updatedAtAbsolute}
             </span>
           )}
         </CardFooter>

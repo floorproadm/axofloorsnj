@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfWeek, endOfWeek, addDays } from "date-fns";
 import { DollarSign, Briefcase, Users } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { MetricCard } from "@/components/admin/dashboard/MetricCard";
 import { PriorityTasksList } from "@/components/admin/dashboard/PriorityTasksList";
@@ -15,6 +16,7 @@ import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
 export default function Dashboard() {
   const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts } =
     useDashboardData();
+  const { t } = useLanguage();
 
   const today = new Date();
   const todayStr = format(today, "yyyy-MM-dd");
@@ -80,7 +82,7 @@ export default function Dashboard() {
 
     criticalAlerts.newLeadsNoContact24h.slice(0, 2).forEach((l) => {
       tasks.push({
-        label: `Resposta Lead – ${l.name}`,
+        label: `${t("dashboard.respostaLead")} – ${l.name}`,
         color: "risk",
         link: "/admin/leads?status=cold_lead",
         type: "new_lead",
@@ -89,7 +91,7 @@ export default function Dashboard() {
 
     criticalAlerts.leadsStalled48h.slice(0, 1).forEach((l) => {
       tasks.push({
-        label: `Lead parado +48h – ${l.name}`,
+        label: `${t("dashboard.leadParado48h")} – ${l.name}`,
         color: "blocked",
         link: "/admin/leads",
         type: "stalled",
@@ -97,7 +99,7 @@ export default function Dashboard() {
     });
 
     return tasks.slice(0, 5);
-  }, [criticalAlerts]);
+  }, [criticalAlerts, t]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", {
@@ -106,12 +108,12 @@ export default function Dashboard() {
       minimumFractionDigits: 0,
     }).format(value);
 
-  const greeting =
-    today.getHours() < 12
-      ? "Good morning"
-      : today.getHours() < 18
-        ? "Good afternoon"
-        : "Good evening";
+  const greeting = (() => {
+    const h = today.getHours();
+    if (h < 12) return t("dashboard.goodMorning");
+    if (h < 18) return t("dashboard.goodAfternoon");
+    return t("dashboard.goodEvening");
+  })();
 
   return (
     <AdminLayout title="" breadcrumbs={[]}>
@@ -127,24 +129,23 @@ export default function Dashboard() {
                 <span className="font-semibold text-foreground">
                   {appointments.length}
                 </span>{" "}
-                job{appointments.length !== 1 ? "s" : ""} hoje
+                {t("dashboard.jobsHoje")}
               </>
             ) : (
-              "Sem jobs agendados para hoje"
+              t("dashboard.semJobsHoje")
             )}
             {totalUrgent > 0 && (
               <>
                 {" · "}
                 <span className="font-semibold text-[hsl(var(--state-risk))]">
-                  {totalUrgent} ação{totalUrgent !== 1 ? "ões" : ""} pendente
-                  {totalUrgent !== 1 ? "s" : ""}
+                  {totalUrgent} {totalUrgent !== 1 ? t("dashboard.acoesPendentes") : t("dashboard.acaoPendente")}
                 </span>
               </>
             )}
           </p>
         </div>
 
-        {/* Metric Cards — horizontal scroll on mobile */}
+        {/* Metric Cards */}
         {isLoading ? (
           <div className="flex gap-3 mb-8 overflow-x-auto pb-1 scrollbar-hide">
             {[1, 2, 3].map((i) => (
@@ -159,7 +160,7 @@ export default function Dashboard() {
               value={formatCurrency(moneyMetrics.estimatedValueOpen)}
               sub={
                 moneyMetrics.activeLeadsCount > 0
-                  ? `${moneyMetrics.activeLeadsCount} leads ativos`
+                  ? `${moneyMetrics.activeLeadsCount} ${t("dashboard.leadsAtivos")}`
                   : undefined
               }
               subColor="text-[hsl(var(--state-success))]"
@@ -168,11 +169,11 @@ export default function Dashboard() {
             />
             <MetricCard
               icon={<Briefcase className="w-4 h-4" />}
-              label="Semana"
+              label={t("dashboard.semana")}
               value={String(weekAppointments.length)}
               sub={
                 tomorrowCount > 0
-                  ? `+${tomorrowCount} amanhã`
+                  ? `+${tomorrowCount} ${t("dashboard.amanha")}`
                   : undefined
               }
               subColor="text-[hsl(var(--state-success))]"
@@ -184,7 +185,7 @@ export default function Dashboard() {
               value={String(funnelMetrics.cold_lead + funnelMetrics.warm_lead)}
               sub={
                 newLeadsToday > 0
-                  ? `${newLeadsToday} sem contato`
+                  ? `${newLeadsToday} ${t("dashboard.semContato")}`
                   : undefined
               }
               subColor="text-[hsl(var(--state-risk))]"
@@ -198,7 +199,7 @@ export default function Dashboard() {
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Ações Urgentes
+              {t("dashboard.acoesUrgentes")}
               {totalUrgent > 0 && (
                 <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[hsl(var(--state-blocked))] text-white text-[10px] font-bold align-middle">
                   {totalUrgent}
@@ -209,7 +210,7 @@ export default function Dashboard() {
               to="/admin/leads"
               className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline"
             >
-              Ver todos
+              {t("dashboard.verTodos")}
             </Link>
           </div>
           <PriorityTasksList tasks={priorityTasks} isLoading={isLoading} />
@@ -219,13 +220,13 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Agenda de Hoje
+              {t("dashboard.agendaDeHoje")}
             </h2>
             <Link
               to="/admin/schedule"
               className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline"
             >
-              Ver agenda
+              {t("dashboard.verAgenda")}
             </Link>
           </div>
           <AgendaSection appointments={appointments} />
