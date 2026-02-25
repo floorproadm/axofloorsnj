@@ -43,7 +43,7 @@ import AdminSchedule from './pages/admin/Schedule';
 import AdminPerformance from './pages/admin/Performance';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
-import Sales2026 from "./pages/Sales2026";
+
 import FloorDiagnostic from "./pages/FloorDiagnostic";
 import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
@@ -83,7 +83,7 @@ const App = () => {
             <Route path="/builders" element={<Builders />} />
             <Route path="/realtors" element={<Realtors />} />
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
-            <Route path="/sales2026" element={<Sales2026 />} />
+            
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/auth" element={<Auth />} />
