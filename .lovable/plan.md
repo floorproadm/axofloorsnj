@@ -1,10 +1,20 @@
 
 
-## Aumentar o Logo do Sidebar
+## Remover pagina /sales2026 do sistema
 
-Mudanca simples: aumentar o logo de `w-10 h-10` (40px) para `w-14 h-14` (56px) no sidebar.
+Todo o conteudo ja foi extraido acima em formato Markdown pronto para colar no Obsidian. Agora vamos limpar os arquivos do projeto.
 
-### Arquivo: `src/components/admin/AdminSidebar.tsx`
-- Linha 101: Trocar `w-10 h-10` por `w-14 h-14` na tag `<img>` do logo
-- Linha 103: Trocar `w-10 h-10` por `w-14 h-14` no fallback (div com letra "A") para manter consistencia
+### Arquivos a deletar
+1. `src/pages/Sales2026.tsx` - Pagina principal
+2. `src/components/sales/salesStepsData.ts` - Dados dos 10 steps
+3. `src/components/sales/SalesStepPanel.tsx` - Componente do painel lateral
+
+### Arquivo a editar
+4. `src/App.tsx`:
+   - Remover o import `Sales2026`
+   - Remover a rota `<Route path="/sales2026" element={<Sales2026 />} />`
+
+### Resultado
+- A rota `/sales2026` deixara de existir
+- Nenhum outro componente do sistema referencia esses arquivos, entao nao ha impacto colateral
 
