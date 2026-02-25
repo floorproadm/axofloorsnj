@@ -66,8 +66,8 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
         {/* Content column: flex-col with min-h-0 to allow shrinking */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
           {/* Fixed Header */}
-          <header className="h-14 flex-shrink-0 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 z-40 shadow-soft">
-            <div className="flex items-center gap-3 flex-shrink-0 min-w-0 flex-1">
+          <header className="h-14 flex-shrink-0 border-b bg-card/80 backdrop-blur-sm grid grid-cols-3 items-center px-4 sm:px-6 z-40 shadow-soft">
+            <div className="flex items-center gap-3 min-w-0">
               <SidebarTrigger className="h-8 w-8 hover:bg-primary/10 transition-admin flex-shrink-0" />
               {title && (
                 <h1 className="text-lg font-semibold text-foreground truncate hidden sm:block">{title}</h1>
@@ -75,7 +75,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
             </div>
 
             {/* Center - Week info */}
-            <div className="hidden md:flex flex-shrink-0">
+            <div className="flex justify-center">
               <p className="text-[11px] font-semibold tracking-widest uppercase text-muted-foreground whitespace-nowrap">
                 {(() => {
                   const now = new Date();
@@ -86,7 +86,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 justify-end">
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="relative p-2 rounded-full hover:bg-secondary transition-colors">
