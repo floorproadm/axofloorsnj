@@ -98,9 +98,9 @@ export function AdminSidebar() {
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-xl object-contain flex-shrink-0" />
+              <img src={logoUrl} alt="Logo" className="w-14 h-14 rounded-xl object-contain flex-shrink-0" />
             ) : (
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                 <span className="text-white font-bold text-lg">A</span>
               </div>
             )}
