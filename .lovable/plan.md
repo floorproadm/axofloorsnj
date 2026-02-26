@@ -1,36 +1,29 @@
 
+# Implementar Filtro Controlled por `?status=` no Pipeline
 
-# Seed Estrategico AXO V1 - Correcoes e Execucao
+## Alteracoes
 
-## Problemas encontrados no SQL original
+### 1. `src/pages/admin/LeadsManager.tsx`
+- Importar `useSearchParams` de `react-router-dom` e `normalizeStatus` + `PIPELINE_STAGES` de `useLeadPipeline`
+- Ler `searchParams.get('status')`, normalizar via `normalizeStatus()`
+- Validar se o status normalizado existe em `SALES_STAGES` do LinearPipeline (passando lista ou verificando inline)
+- Passar `statusFilter` (controlled, nao "initial") e `onClearFilter` callback para `LinearPipeline`
+- `onClearFilter` faz `searchParams.delete('status')` + `setSearchParams(searchParams, { replace: true })`
 
-O seed tem 2 erros que impediriam a execucao:
+### 2. `src/pages/admin/components/LinearPipeline.tsx`
+- Adicionar props opcionais na interface: `statusFilter?: string` e `onClearFilter?: () => void`
+- Board view: todas as colunas continuam visiveis; coluna do `statusFilter` recebe destaque (ring/border); demais ficam com `opacity-50`
+- List view: `sortedLeads` filtrado por `statusFilter` quando presente
+- Chip de filtro ativo no topo (ao lado do view toggle): mostra `"Filtro: {STAGE_LABELS[status]}"` com botao X que chama `onClearFilter`
+- Status invalido/undefined = sem filtro, comportamento normal
 
-1. **`job_costs`**: coluna `revenue` nao existe. O nome correto e `estimated_revenue`.
-2. **`leads`**: coluna `phone` e NOT NULL sem default, mas o seed nao inclui `phone`.
+## Comportamento esperado
+- `/admin/leads?status=proposal_sent` -- destaca coluna proposal_sent, lista filtra
+- `/admin/leads?status=foo` -- normalizeStatus retorna `cold_lead`, mas se nao bater com SALES_STAGES validos, ignora (nenhum filtro)
+- Clicar X no chip -- URL vira `/admin/leads`, filtro limpo
+- Navegar de volta do browser -- URL muda, `useSearchParams` reage, filtro atualiza automaticamente (controlled)
 
-## Plano
-
-### 1. Corrigir e executar o seed SQL
-
-Ajustes necessarios:
-- `job_costs`: trocar `revenue` por `estimated_revenue`
-- `leads`: adicionar coluna `phone` no INSERT com valores ficticios (ex: `'(732) 555-0001'`)
-
-### 2. Validar com queries de verificacao
-
-Apos o seed, rodar as queries de check:
-- `SELECT * FROM leads_followup_overdue`
-- `SELECT * FROM leads_estimate_scheduled_stale`
-- `SELECT * FROM projects_missing_progress_photos`
-- `SELECT get_dashboard_metrics()->'recentFieldUploads'`
-- `SELECT get_dashboard_metrics()->'slaBreaches'`
-
-### Arquivos modificados
-
-Nenhum arquivo de codigo sera alterado. Apenas dados serao inseridos no banco via migration tool (INSERT).
-
-### Cleanup
-
-O script de cleanup original funciona sem alteracoes, pois filtra por prefixo `SEED_AXO_V1__`.
-
+## Nao sera alterado
+- Nenhum RPC ou query backend
+- Nenhuma estrutura de dados
+- Nenhum comportamento existente sem filtro
