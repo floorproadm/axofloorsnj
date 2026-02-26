@@ -34,6 +34,26 @@ interface AlertLead {
   name: string;
 }
 
+interface SlaBreachItem {
+  id: string;
+  name: string;
+  next_action_date?: string;
+  days_stale?: number;
+}
+
+interface SlaBreaches {
+  followupOverdue: { count: number; items: SlaBreachItem[] };
+  estimateStale: { count: number; items: SlaBreachItem[] };
+}
+
+interface RecentFieldUpload {
+  project_id: string;
+  customer_name: string;
+  storage_path: string;
+  folder_type: string;
+  created_at: string;
+}
+
 interface DashboardRPCResponse {
   pipeline: PipelineMetric[];
   financial: FinancialMetric;
@@ -47,6 +67,8 @@ interface DashboardRPCResponse {
     newLeadsNoContact24h: AlertLead[];
     leadsStalled48h: AlertLead[];
   };
+  slaBreaches: SlaBreaches;
+  recentFieldUploads: RecentFieldUpload[];
 }
 
 // ---------- Public interfaces (unchanged from before) ----------
@@ -106,6 +128,8 @@ export function useDashboardData() {
   const financial = data?.financial;
   const alerts = data?.alerts;
   const money = data?.money;
+  const slaBreaches = data?.slaBreaches ?? { followupOverdue: { count: 0, items: [] }, estimateStale: { count: 0, items: [] } };
+  const recentFieldUploads = data?.recentFieldUploads ?? [];
 
   // Build funnelMetrics from pipeline array
   const funnelMetrics: FunnelMetrics = {
@@ -204,6 +228,8 @@ export function useDashboardData() {
       conversionRate: financial?.conversion_rate_30d ?? 0,
       avgCycleTime: financial?.avg_cycle_days ?? 0,
     },
+    slaBreaches,
+    recentFieldUploads,
     refetch,
   };
 }

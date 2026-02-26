@@ -145,7 +145,7 @@ const ContactForm = () => {
           email: formData.email || null,
           phone: formData.phone,
           lead_source: 'contact',
-          status: 'new',
+          status: 'cold_lead',
           priority: formData.priority,
           services: formData.services,
           budget: formData.budget ? parseInt(formData.budget) : null,
@@ -171,7 +171,7 @@ const ContactForm = () => {
             city: formData.city,
             zip_code: formData.zip_code,
             priority: formData.priority || 'medium',
-            status: 'new',
+            status: 'cold_lead',
             message: formData.message,
             notes: `Contact form submission - Services: ${formData.services.join(', ')}`
           }

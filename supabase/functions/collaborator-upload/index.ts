@@ -159,6 +159,23 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Failed to save file record" }, 500);
     }
 
+    // Log to audit_log (best-effort)
+    try {
+      await serviceClient.from("audit_log").insert({
+        user_id: userId,
+        user_role: "collaborator",
+        operation_type: "COLLABORATOR_UPLOAD",
+        table_accessed: "media_files",
+        data_classification: JSON.stringify({
+          project_id: projectId,
+          storage_path: storagePath,
+          folder_type: folderType,
+        }),
+      });
+    } catch (auditErr) {
+      console.warn("Audit log insert failed (non-blocking):", auditErr);
+    }
+
     return jsonResponse(record as Record<string, unknown>, 201);
   } catch (err) {
     console.error("Unexpected error:", err);

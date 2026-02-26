@@ -49,7 +49,7 @@ const ContactSection = () => {
         email: formData.email,
         phone: formData.phone || '',
         lead_source: 'contact',
-        status: 'new',
+        status: 'cold_lead',
         priority: 'medium',
         city: null,
         room_size: 'contact_form',
@@ -75,7 +75,7 @@ const ContactSection = () => {
             source: 'contact',
             services: formData.service ? [formData.service] : ['general_inquiry'],
             priority: 'medium',
-            status: 'new',
+            status: 'cold_lead',
             message: formData.message,
             notes: `Contact section submission - Service: ${formData.service || 'General Inquiry'}`
           }
