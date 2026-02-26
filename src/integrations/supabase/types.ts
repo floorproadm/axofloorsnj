@@ -1415,6 +1415,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      run_sla_engine: { Args: never; Returns: Json }
       transition_lead_status: {
         Args: { p_lead_id: string; p_new_status: string }
         Returns: Json
