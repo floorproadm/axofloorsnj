@@ -66,6 +66,8 @@ type Lead = {
 interface LinearPipelineProps {
   leads: Lead[];
   onRefresh: () => void;
+  statusFilter?: PipelineStage;
+  onClearFilter?: () => void;
 }
 
 type ViewMode = 'board' | 'list';
