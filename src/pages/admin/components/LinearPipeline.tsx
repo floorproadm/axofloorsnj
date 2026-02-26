@@ -38,7 +38,7 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2
+  Loader2, X
 } from "lucide-react";
 import { differenceInHours, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -547,7 +547,7 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
    MAIN PIPELINE COMPONENT
    ════════════════════════════════════════════════════════════ */
 
-export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
+export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
