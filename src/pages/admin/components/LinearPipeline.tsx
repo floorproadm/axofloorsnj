@@ -38,7 +38,7 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2
+  Loader2, X
 } from "lucide-react";
 import { differenceInHours, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -66,6 +66,8 @@ type Lead = {
 interface LinearPipelineProps {
   leads: Lead[];
   onRefresh: () => void;
+  statusFilter?: PipelineStage;
+  onClearFilter?: () => void;
 }
 
 type ViewMode = 'board' | 'list';
@@ -545,7 +547,7 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
    MAIN PIPELINE COMPONENT
    ════════════════════════════════════════════════════════════ */
 
-export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
+export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }: LinearPipelineProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
@@ -594,9 +596,12 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
     return grouped;
   }, [salesLeads]);
 
-  // Flat sorted list for list view
+  // Flat sorted list for list view (filtered when statusFilter is active)
   const sortedLeads = useMemo(() => {
-    return [...salesLeads].sort((a, b) => {
+    const base = statusFilter
+      ? salesLeads.filter(l => normalizeStatus(l.status) === statusFilter)
+      : salesLeads;
+    return [...base].sort((a, b) => {
       const timeA = new Date(a.updated_at).getTime();
       const timeB = new Date(b.updated_at).getTime();
       if (timeA !== timeB) return timeA - timeB;
@@ -605,7 +610,7 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
       if (valA !== valB) return valB - valA;
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
-  }, [salesLeads]);
+  }, [salesLeads, statusFilter]);
 
   const stageStats = useMemo(() => {
     const stats: Record<string, { count: number; value: number; stale: number; blocked: number }> = {};
@@ -750,6 +755,26 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
         </div>
       </div>
 
+      {/* Active Filter Chip */}
+      {statusFilter && (
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium",
+            STAGE_CONFIG[statusFilter]?.bgColor,
+            STAGE_CONFIG[statusFilter]?.textColor
+          )}>
+            Filtro: {STAGE_LABELS[statusFilter]}
+            <button
+              onClick={onClearFilter}
+              className="ml-1 rounded-full hover:bg-black/10 p-0.5 transition-colors"
+              aria-label="Limpar filtro"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </Badge>
+        </div>
+      )}
+
       {/* Board View */}
       {viewMode === 'board' && (
         <div className="overflow-x-auto pb-2 -mx-1 px-1">
@@ -762,11 +787,15 @@ export function LinearPipeline({ leads, onRefresh }: LinearPipelineProps) {
               return (
                 <div
                   key={stage}
-                  className="w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col"
+                  className={cn(
+                    "w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col transition-opacity duration-200",
+                    statusFilter && statusFilter !== stage && "opacity-40"
+                  )}
                 >
                   <div className={cn(
                     "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
-                    config.bgColor
+                    config.bgColor,
+                    statusFilter === stage && "ring-2 ring-offset-1 ring-primary"
                   )}>
                     <span className={cn("font-semibold text-xs truncate", config.textColor)}>
                       {STAGE_LABELS[stage]}
