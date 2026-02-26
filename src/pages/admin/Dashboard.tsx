@@ -14,7 +14,7 @@ import { PriorityTasksList } from "@/components/admin/dashboard/PriorityTasksLis
 import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
 
 export default function Dashboard() {
-  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads } =
+  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions } =
     useDashboardData();
   const { t } = useLanguage();
 
@@ -68,8 +68,18 @@ export default function Dashboard() {
       label: string;
       color: "blocked" | "risk" | "success";
       link: string;
-      type: "follow_up" | "new_lead" | "stalled" | "field_upload" | "sla_followup" | "sla_estimate";
+      type: "follow_up" | "new_lead" | "stalled" | "field_upload" | "sla_followup" | "sla_estimate" | "sla_auto_escalation";
     }[] = [];
+
+    // System auto-escalations (24h)
+    if (recentSystemActions.length > 0) {
+      tasks.push({
+        label: `${recentSystemActions.length} escalações automáticas (24h)`,
+        color: "risk",
+        link: "/admin/leads",
+        type: "sla_auto_escalation",
+      });
+    }
 
     // SLA breaches first (highest priority)
     if (slaBreaches.followupOverdue.count > 0) {
@@ -128,7 +138,7 @@ export default function Dashboard() {
     });
 
     return tasks.slice(0, 7);
-  }, [criticalAlerts, slaBreaches, recentFieldUploads, t]);
+  }, [criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, t]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", {
