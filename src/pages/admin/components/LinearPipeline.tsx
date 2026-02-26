@@ -794,7 +794,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                 >
                   <div className={cn(
                     "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
-                    config.bgColor
+                    config.bgColor,
+                    statusFilter === stage && "ring-2 ring-offset-1 ring-primary"
                   )}>
                     <span className={cn("font-semibold text-xs truncate", config.textColor)}>
                       {STAGE_LABELS[stage]}
