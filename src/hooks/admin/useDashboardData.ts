@@ -54,6 +54,17 @@ interface RecentFieldUpload {
   created_at: string;
 }
 
+interface SystemAction {
+  operation_type: string;
+  created_at: string;
+  data: {
+    lead_id: string;
+    old_priority: string;
+    new_priority: string;
+    reason: string;
+  };
+}
+
 interface DashboardRPCResponse {
   pipeline: PipelineMetric[];
   financial: FinancialMetric;
@@ -69,6 +80,7 @@ interface DashboardRPCResponse {
   };
   slaBreaches: SlaBreaches;
   recentFieldUploads: RecentFieldUpload[];
+  recentSystemActions: SystemAction[];
 }
 
 // ---------- Public interfaces (unchanged from before) ----------
@@ -130,6 +142,7 @@ export function useDashboardData() {
   const money = data?.money;
   const slaBreaches = data?.slaBreaches ?? { followupOverdue: { count: 0, items: [] }, estimateStale: { count: 0, items: [] } };
   const recentFieldUploads = data?.recentFieldUploads ?? [];
+  const recentSystemActions = data?.recentSystemActions ?? [];
 
   // Build funnelMetrics from pipeline array
   const funnelMetrics: FunnelMetrics = {
@@ -230,6 +243,7 @@ export function useDashboardData() {
     },
     slaBreaches,
     recentFieldUploads,
+    recentSystemActions,
     refetch,
   };
 }
