@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, AlertTriangle, Clock, MessageSquare } from "lucide-react";
+import { ChevronRight, AlertTriangle, Clock, MessageSquare, Camera, PhoneOff, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PriorityTask {
   label: string;
   color: "blocked" | "risk" | "success";
   link: string;
-  type: "follow_up" | "new_lead" | "stalled";
+  type: "follow_up" | "new_lead" | "stalled" | "field_upload" | "sla_followup" | "sla_estimate";
 }
 
 interface PriorityTasksListProps {
@@ -25,6 +25,9 @@ const typeIcon = {
   follow_up: MessageSquare,
   new_lead: Clock,
   stalled: AlertTriangle,
+  field_upload: Camera,
+  sla_followup: PhoneOff,
+  sla_estimate: Timer,
 };
 
 export function PriorityTasksList({ tasks, isLoading }: PriorityTasksListProps) {

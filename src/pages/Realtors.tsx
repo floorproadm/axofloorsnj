@@ -123,7 +123,7 @@ const Realtors = () => {
           email: formData.email,
           phone: formData.phone,
           lead_source: 'realtors_page',
-          status: 'new',
+          status: 'cold_lead',
           priority: 'high',
           services: ['partnership'],
           message: `Brokerage: ${formData.brokerageName}\nAverage Listings: ${formData.averageListings}\nMarket Area: ${formData.marketArea}\n\nMessage: ${formData.message}`

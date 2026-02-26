@@ -34,7 +34,7 @@ export const useLeadCapture = () => {
         email: sanitizeInput(leadData.email),
         phone: "000-000-0000", // Placeholder since we don't collect phone for lead magnets
         lead_source: leadData.source,
-        status: 'new',
+        status: 'cold_lead',
         priority: 'high',
         services: leadData.category ? [leadData.category] : ['lead_magnet'],
         notes: leadData.downloadTitle ? `Downloaded: ${leadData.downloadTitle}` : 'Lead magnet download'

@@ -14,7 +14,7 @@ import { PriorityTasksList } from "@/components/admin/dashboard/PriorityTasksLis
 import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
 
 export default function Dashboard() {
-  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts } =
+  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads } =
     useDashboardData();
   const { t } = useLanguage();
 
@@ -68,8 +68,37 @@ export default function Dashboard() {
       label: string;
       color: "blocked" | "risk" | "success";
       link: string;
-      type: "follow_up" | "new_lead" | "stalled";
+      type: "follow_up" | "new_lead" | "stalled" | "field_upload" | "sla_followup" | "sla_estimate";
     }[] = [];
+
+    // SLA breaches first (highest priority)
+    if (slaBreaches.followupOverdue.count > 0) {
+      tasks.push({
+        label: `${slaBreaches.followupOverdue.count} follow-ups atrasados`,
+        color: "blocked",
+        link: "/admin/leads?status=proposal_sent",
+        type: "sla_followup",
+      });
+    }
+
+    if (slaBreaches.estimateStale.count > 0) {
+      tasks.push({
+        label: `${slaBreaches.estimateStale.count} estimates parados > 3 dias`,
+        color: "risk",
+        link: "/admin/leads?status=estimate_scheduled",
+        type: "sla_estimate",
+      });
+    }
+
+    // Field uploads
+    if (recentFieldUploads.length > 0) {
+      tasks.push({
+        label: `${recentFieldUploads.length} uploads recentes do campo`,
+        color: "success",
+        link: "/admin/jobs",
+        type: "field_upload",
+      });
+    }
 
     criticalAlerts.proposalWithoutFollowUp.slice(0, 2).forEach((l) => {
       tasks.push({
@@ -98,8 +127,8 @@ export default function Dashboard() {
       });
     });
 
-    return tasks.slice(0, 5);
-  }, [criticalAlerts, t]);
+    return tasks.slice(0, 7);
+  }, [criticalAlerts, slaBreaches, recentFieldUploads, t]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", {

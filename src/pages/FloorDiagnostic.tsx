@@ -168,7 +168,7 @@ const FloorDiagnostic = () => {
         phone: sanitizeInput(formData.phone),
         address: sanitizeInput(formData.address),
         lead_source: 'floor-diagnostic',
-        status: qualification.qualified ? 'qualified' : 'disqualified',
+        status: 'cold_lead',
         priority: qualification.qualified ? 'high' : 'low',
         notes: `
           DIAGNOSTIC APPLICATION

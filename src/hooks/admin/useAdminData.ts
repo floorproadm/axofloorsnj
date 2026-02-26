@@ -100,10 +100,10 @@ export function useAdminData() {
 
   const stats = useMemo((): AdminStats => {
     const totalLeads = leads.length;
-    const newLeads = leads.filter(l => l.status === 'new').length;
-    const contactedLeads = leads.filter(l => l.status === 'contacted').length;
-    const qualifiedLeads = leads.filter(l => l.status === 'qualified').length;
-    const convertedLeads = leads.filter(l => l.status === 'converted').length;
+    const newLeads = leads.filter(l => l.status === 'cold_lead').length;
+    const contactedLeads = leads.filter(l => l.status === 'warm_lead').length;
+    const qualifiedLeads = leads.filter(l => l.status === 'estimate_requested').length;
+    const convertedLeads = leads.filter(l => l.status === 'in_production').length;
     const lostLeads = leads.filter(l => l.status === 'lost').length;
     const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 

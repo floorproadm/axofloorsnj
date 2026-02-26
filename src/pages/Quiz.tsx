@@ -212,7 +212,7 @@ const Quiz = () => {
         phone: sanitizeInput(formData.phone),
         city: sanitizeInput(formData.city),
         lead_source: 'quiz',
-        status: 'new',
+        status: 'cold_lead',
         priority: 'high',
         room_size: sanitizeInput(formData.squareFootage) || '0',
         services: [sanitizeInput(formData.serviceType) || 'unknown'],
@@ -250,7 +250,7 @@ const Quiz = () => {
             room_size: quizData.room_size,
             city: quizData.city,
             priority: quizData.priority,
-            status: 'new',
+            status: 'cold_lead',
             notes: `Quiz submission - Service: ${formData.serviceType}, Square Footage: ${formData.squareFootage || 'Not specified'}, Timeline: ${formData.timeline || 'Not specified'}, Wood Type: ${formData.woodType || 'Not specified'}, Condition: ${formData.currentCondition || 'Not specified'}, Color Change: ${formData.colorChange || 'Not specified'}`
           }
         });

@@ -109,7 +109,7 @@ const Builders = () => {
           email: formData.email,
           phone: formData.phone,
           lead_source: 'builders_page',
-          status: 'new',
+          status: 'cold_lead',
           priority: 'high',
           services: ['partnership'],
           message: `Company: ${formData.companyName}\nProject Volume: ${formData.projectVolume}\nCurrent Partner: ${formData.currentFlooringPartner}\n\nMessage: ${formData.message}`

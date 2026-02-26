@@ -600,6 +600,7 @@ export type Database = {
           room_size: string | null
           services: Json | null
           status: string
+          status_changed_at: string | null
           updated_at: string
           zip_code: string | null
         }
@@ -628,6 +629,7 @@ export type Database = {
           room_size?: string | null
           services?: Json | null
           status?: string
+          status_changed_at?: string | null
           updated_at?: string
           zip_code?: string | null
         }
@@ -656,6 +658,7 @@ export type Database = {
           room_size?: string | null
           services?: Json | null
           status?: string
+          status_changed_at?: string | null
           updated_at?: string
           zip_code?: string | null
         }
@@ -1284,6 +1287,42 @@ export type Database = {
       }
     }
     Views: {
+      leads_estimate_scheduled_stale: {
+        Row: {
+          days_stale: number | null
+          id: string | null
+          name: string | null
+        }
+        Insert: {
+          days_stale?: never
+          id?: string | null
+          name?: string | null
+        }
+        Update: {
+          days_stale?: never
+          id?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
+      leads_followup_overdue: {
+        Row: {
+          id: string | null
+          name: string | null
+          next_action_date: string | null
+        }
+        Insert: {
+          id?: string | null
+          name?: string | null
+          next_action_date?: string | null
+        }
+        Update: {
+          id?: string | null
+          name?: string | null
+          next_action_date?: string | null
+        }
+        Relationships: []
+      }
       projects_missing_progress_photos: {
         Row: {
           customer_name: string | null

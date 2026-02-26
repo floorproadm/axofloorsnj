@@ -75,7 +75,7 @@ export const LeadMagnetGate = ({
         email: sanitizeInput(email),
         phone: "000-000-0000", // Placeholder since we don't collect phone for lead magnets
         lead_source: 'lead_magnet',
-        status: 'new',
+        status: 'cold_lead',
         priority: 'high',
         services: [category],
         notes: `Downloaded: ${title}`

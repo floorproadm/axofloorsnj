@@ -39,6 +39,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { format } from "date-fns";
+import { STAGE_LABELS, STAGE_CONFIG, normalizeStatus } from "@/hooks/useLeadPipeline";
 
 interface Lead {
   id: string;
@@ -196,7 +197,7 @@ export default function Intake() {
     }, null as SourceStats | null);
 
     const stuckInProposal = leads.filter(l => 
-      l.status === 'proposal' && !l.converted_to_project_id
+      l.status === 'proposal_sent' && !l.converted_to_project_id
     );
     const stuckBySource = new Map<string, number>();
     stuckInProposal.forEach(l => {
@@ -233,7 +234,7 @@ export default function Intake() {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const recentLeads = leads.filter(l => new Date(l.created_at) >= sevenDaysAgo);
     const recentWithAppointment = recentLeads.filter(l => 
-      l.status !== 'new_lead' && l.status !== 'lost'
+      l.status !== 'cold_lead' && l.status !== 'lost'
     );
 
     if (recentLeads.length > 0 && recentWithAppointment.length === 0) {
@@ -245,7 +246,7 @@ export default function Intake() {
 
     // Check if quiz leads are stuck
     const quizLeads = leads.filter(l => l.lead_source === 'quiz');
-    const quizStuck = quizLeads.filter(l => l.status === 'new_lead' || l.status === 'appt_scheduled');
+    const quizStuck = quizLeads.filter(l => l.status === 'cold_lead' || l.status === 'estimate_scheduled');
     if (quizLeads.length >= 3 && quizStuck.length / quizLeads.length > 0.5) {
       result.push({
         type: 'warning',
@@ -305,7 +306,7 @@ export default function Intake() {
         budget: formData.budget ? parseFloat(formData.budget) : null,
         notes: formData.notes.trim() || null,
         lead_source: 'manual',
-        status: 'new_lead'
+        status: 'cold_lead'
       });
 
       if (error) throw error;
@@ -368,16 +369,10 @@ export default function Intake() {
   }, [selectedSource, sourceStats]);
 
   const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; variant: string }> = {
-      'new_lead': { label: 'Novo', variant: 'bg-blue-100 text-blue-800' },
-      'appt_scheduled': { label: 'Visita', variant: 'bg-purple-100 text-purple-800' },
-      'proposal': { label: 'Orçamento', variant: 'bg-amber-100 text-amber-800' },
-      'in_production': { label: 'Em Execução', variant: 'bg-cyan-100 text-cyan-800' },
-      'completed': { label: 'Finalizado', variant: 'bg-green-100 text-green-800' },
-      'lost': { label: 'Perdido', variant: 'bg-red-100 text-red-800' },
-    };
-    const config = statusConfig[status] || { label: status, variant: 'bg-gray-100 text-gray-800' };
-    return <Badge className={`${config.variant} text-xs`}>{config.label}</Badge>;
+    const normalized = normalizeStatus(status);
+    const label = STAGE_LABELS[normalized] || status;
+    const config = STAGE_CONFIG[normalized];
+    return <Badge className={`${config?.bgColor || 'bg-gray-100'} ${config?.textColor || 'text-gray-800'} text-xs`}>{label}</Badge>;
   };
 
   return (

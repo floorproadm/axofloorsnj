@@ -85,7 +85,7 @@ const Contact = () => {
         phone: sanitizeInput(formData.phone),
         city: formData.city.trim() ? sanitizeInput(formData.city) : null,
         lead_source: 'contact',
-        status: 'new',
+        status: 'cold_lead',
         priority: 'medium',
         services: formData.service ? [formData.service] : [],
         message: `Timeline: ${formData.timeline || 'Not specified'}`
