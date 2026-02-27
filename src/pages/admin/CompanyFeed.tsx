@@ -189,19 +189,54 @@ export default function CompanyFeed() {
           </TabsContent>
 
           <TabsContent value="folders" className="mt-0">
-            {!projectId && (
-              <div className="flex justify-end mb-3">
-                <Button size="sm" variant="outline" onClick={() => setFolderDialogOpen(true)}>
-                  <FolderPlus className="w-4 h-4 mr-1" /> Nova Pasta
-                </Button>
-              </div>
-            )}
-            {foldersLoading ? (
-              <div className="py-16 text-center text-sm text-muted-foreground">Carregando pastas...</div>
+            {projectId ? (
+              // Project mode: show media_files folder_types
+              <>
+                {projectFoldersLoading ? (
+                  <div className="py-16 text-center text-sm text-muted-foreground">Carregando pastas...</div>
+                ) : projectFolders.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <FolderOpen className="w-12 h-12 text-muted-foreground/40 mb-3" />
+                    <p className="text-sm text-muted-foreground">Nenhuma mídia enviada para este projeto</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    {projectFolders.map(({ type, count }) => {
+                      const meta = FOLDER_TYPE_LABELS[type] || { label: type, icon: FolderOpen };
+                      const Icon = meta.icon;
+                      return (
+                        <Card key={type} className="border-border/60">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Icon className="w-5 h-5 text-primary" />
+                              </div>
+                              <span className="text-xs text-muted-foreground font-medium">{count} arquivos</span>
+                            </div>
+                            <h3 className="font-semibold text-sm text-foreground truncate">{meta.label}</h3>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             ) : (
-              <FeedFolderGrid folders={folders} />
+              // Global mode: show feed_folders
+              <>
+                <div className="flex justify-end mb-3">
+                  <Button size="sm" variant="outline" onClick={() => setFolderDialogOpen(true)}>
+                    <FolderPlus className="w-4 h-4 mr-1" /> Nova Pasta
+                  </Button>
+                </div>
+                {foldersLoading ? (
+                  <div className="py-16 text-center text-sm text-muted-foreground">Carregando pastas...</div>
+                ) : (
+                  <FeedFolderGrid folders={folders} />
+                )}
+                <CreateFolderDialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen} />
+              </>
             )}
-            <CreateFolderDialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen} />
           </TabsContent>
         </Tabs>
       </div>
