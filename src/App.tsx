@@ -41,6 +41,8 @@ import ProjectDocuments from './pages/admin/ProjectDocuments';
 import MeasurementsManager from './pages/admin/MeasurementsManager';
 import AdminSchedule from './pages/admin/Schedule';
 import AdminPerformance from './pages/admin/Performance';
+import AdminCatalog from './pages/admin/Catalog';
+import AdminHelp from './pages/admin/Help';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 
@@ -156,6 +158,16 @@ const App = () => {
             <Route path="/admin/performance" element={
               <ProtectedRoute>
                 <AdminPerformance />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/catalog" element={
+              <ProtectedRoute>
+                <AdminCatalog />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/help" element={
+              <ProtectedRoute>
+                <AdminHelp />
               </ProtectedRoute>
             } />
             {/* Collaborator Portal */}
