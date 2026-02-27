@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -28,6 +27,7 @@ import {
   MessageSquare,
   Users,
   TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import {
   Partner,
@@ -44,6 +44,13 @@ const statusColors: Record<string, string> = {
   prospect: "bg-blue-500/10 text-blue-700 border-blue-200",
   inactive: "bg-amber-500/10 text-amber-700 border-amber-200",
   churned: "bg-red-500/10 text-red-700 border-red-200",
+};
+
+const avatarColors: Record<string, string> = {
+  builder: "bg-blue-500/15 text-blue-700",
+  realtor: "bg-purple-500/15 text-purple-700",
+  gc: "bg-orange-500/15 text-orange-700",
+  designer: "bg-pink-500/15 text-pink-700",
 };
 
 interface Props {
@@ -64,7 +71,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
     .slice(0, 2)
     .toUpperCase();
 
-  // Fetch referred leads
   const { data: referredLeads = [] } = useQuery({
     queryKey: ["partner-leads", partner.id],
     queryFn: async () => {
@@ -127,12 +133,29 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
     (!partner.last_contacted_at ||
       !isAfter(new Date(partner.last_contacted_at), subDays(new Date(), 30)));
 
+  const conversionRate =
+    partner.total_referrals > 0
+      ? Math.round((partner.total_converted / partner.total_referrals) * 100)
+      : 0;
+
   return (
     <div className="flex flex-col h-full">
+      {/* At Risk Banner */}
+      {isAtRisk && (
+        <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-200 text-amber-700 text-xs font-medium flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          Partner em risco — sem contato há mais de 30 dias
+        </div>
+      )}
+
       {/* Header */}
       <div className="p-5 border-b border-border/50">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary flex-shrink-0">
+          <div
+            className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
+              avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
+            }`}
+          >
             {initials}
           </div>
           <div className="flex-1 min-w-0">
@@ -163,11 +186,10 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               <Badge variant="secondary" className="text-[10px]">
                 {PARTNER_TYPES[partner.partner_type] || partner.partner_type}
               </Badge>
-              {isAtRisk && (
-                <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 text-[10px]">
-                  Em Risco
-                </Badge>
-              )}
+              <Badge variant="secondary" className="text-[10px]">
+                <MapPin className="w-3 h-3 mr-0.5" />
+                {SERVICE_ZONES[partner.service_zone] || partner.service_zone}
+              </Badge>
             </div>
           </div>
           {onClose && (
@@ -179,52 +201,76 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
             </button>
           )}
         </div>
-
-        {/* Contact links */}
-        <div className="flex items-center gap-4 mt-3 text-sm">
-          {partner.phone && (
-            <a
-              href={`tel:${partner.phone}`}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              {partner.phone}
-            </a>
-          )}
-          {partner.email && (
-            <a
-              href={`mailto:${partner.email}`}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5" />
-              {partner.email}
-            </a>
-          )}
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5" />
-            {SERVICE_ZONES[partner.service_zone] || partner.service_zone}
-          </span>
-        </div>
       </div>
 
-      {/* Stats row */}
+      {/* Quick Action Bar */}
+      <div className="grid grid-cols-3 gap-2 p-4 border-b border-border/50">
+        {partner.phone ? (
+          <a
+            href={`tel:${partner.phone}`}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 transition-colors"
+          >
+            <Phone className="w-5 h-5" />
+            <span className="text-xs font-medium">Ligar</span>
+          </a>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
+            <Phone className="w-5 h-5" />
+            <span className="text-xs font-medium">Ligar</span>
+          </div>
+        )}
+        {partner.phone ? (
+          <a
+            href={`sms:${partner.phone}`}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 transition-colors"
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-xs font-medium">Mensagem</span>
+          </a>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-xs font-medium">Mensagem</span>
+          </div>
+        )}
+        {partner.email ? (
+          <a
+            href={`mailto:${partner.email}`}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 transition-colors"
+          >
+            <Mail className="w-5 h-5" />
+            <span className="text-xs font-medium">Email</span>
+          </a>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
+            <Mail className="w-5 h-5" />
+            <span className="text-xs font-medium">Email</span>
+          </div>
+        )}
+      </div>
+
+      {/* Stats Row */}
       <div className="grid grid-cols-3 gap-3 p-4 border-b border-border/50">
-        <div className="text-center">
-          <p className="text-2xl font-bold text-foreground">{partner.total_referrals}</p>
-          <p className="text-xs text-muted-foreground">Indicações</p>
+        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-blue-500/10 border border-blue-200/50">
+          <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          <div>
+            <p className="text-lg font-bold text-foreground leading-none">{partner.total_referrals}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Indicações</p>
+          </div>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-foreground">{partner.total_converted}</p>
-          <p className="text-xs text-muted-foreground">Convertidos</p>
+        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-200/50">
+          <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+          <div>
+            <p className="text-lg font-bold text-foreground leading-none">{partner.total_converted}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Convertidos</p>
+          </div>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-foreground">
-            {partner.total_referrals > 0
-              ? Math.round((partner.total_converted / partner.total_referrals) * 100)
-              : 0}
-            %
-          </p>
-          <p className="text-xs text-muted-foreground">Conversão</p>
+        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-amber-500/10 border border-amber-200/50">
+          <BarChart3 className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <div>
+            <p className="text-lg font-bold text-foreground leading-none">{conversionRate}%</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Conversão</p>
+          </div>
         </div>
       </div>
 
@@ -257,44 +303,48 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               />
             ) : (
               <div className="space-y-4 pt-3">
-                {/* Dates */}
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Último contato:</span>
-                    <span className="font-medium">
-                      {partner.last_contacted_at
+                {/* Info Cards Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <InfoCard
+                    icon={<Calendar className="w-3.5 h-3.5" />}
+                    label="Último Contato"
+                    value={
+                      partner.last_contacted_at
                         ? format(new Date(partner.last_contacted_at), "dd/MM/yyyy")
-                        : "Nunca"}
-                    </span>
-                  </div>
-                  {partner.next_action_date && (
-                    <div className="flex items-center gap-2">
-                      <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Próxima ação:</span>
-                      <span className="font-medium">
-                        {format(new Date(partner.next_action_date), "dd/MM/yyyy")}
-                      </span>
-                      {partner.next_action_note && (
-                        <span className="text-muted-foreground">
-                          — {partner.next_action_note}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Criado em:</span>
-                    <span className="font-medium">
-                      {format(new Date(partner.created_at), "dd/MM/yyyy")}
-                    </span>
-                  </div>
+                        : "Nunca"
+                    }
+                    alert={isAtRisk}
+                  />
+                  <InfoCard
+                    icon={<ArrowUpRight className="w-3.5 h-3.5" />}
+                    label="Próxima Ação"
+                    value={
+                      partner.next_action_date
+                        ? format(new Date(partner.next_action_date), "dd/MM/yyyy")
+                        : "—"
+                    }
+                    subtitle={partner.next_action_note || undefined}
+                  />
+                  <InfoCard
+                    icon={<MapPin className="w-3.5 h-3.5" />}
+                    label="Service Zone"
+                    value={SERVICE_ZONES[partner.service_zone] || partner.service_zone}
+                  />
+                  <InfoCard
+                    icon={<Building className="w-3.5 h-3.5" />}
+                    label="Tipo"
+                    value={PARTNER_TYPES[partner.partner_type] || partner.partner_type}
+                  />
+                  <InfoCard
+                    icon={<Calendar className="w-3.5 h-3.5" />}
+                    label="Criado em"
+                    value={format(new Date(partner.created_at), "dd/MM/yyyy")}
+                    className="col-span-2"
+                  />
                 </div>
 
-                <Separator />
-
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-1">
                   <Button onClick={startEdit} variant="outline" className="flex-1">
                     <Pencil className="w-4 h-4 mr-1" /> Editar
                   </Button>
@@ -363,6 +413,38 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           </TabsContent>
         </ScrollArea>
       </Tabs>
+    </div>
+  );
+}
+
+/* ---------- Info Card ---------- */
+function InfoCard({
+  icon,
+  label,
+  value,
+  subtitle,
+  alert,
+  className,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  subtitle?: string;
+  alert?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={`bg-muted/30 rounded-lg p-3 border border-border/30 ${className || ""}`}>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+        {icon}
+        {label}
+      </div>
+      <p className={`text-sm font-semibold ${alert ? "text-amber-600" : "text-foreground"}`}>
+        {value}
+      </p>
+      {subtitle && (
+        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{subtitle}</p>
+      )}
     </div>
   );
 }
