@@ -63,6 +63,24 @@ export default function CompanyFeed() {
   const totalFeedPages = Math.max(1, Math.ceil(totalFeedCount / FEED_PAGE_SIZE));
   const { data: folders = [], isLoading: foldersLoading } = useFeedFolders();
 
+  // Fetch project media folder counts when in project context
+  const { data: projectFolders = [], isLoading: projectFoldersLoading } = useQuery({
+    queryKey: ["project-media-folders", projectId],
+    enabled: !!projectId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("media_files")
+        .select("folder_type")
+        .eq("project_id", projectId!);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data || []).forEach((row) => {
+        counts[row.folder_type] = (counts[row.folder_type] || 0) + 1;
+      });
+      return Object.entries(counts).map(([type, count]) => ({ type, count }));
+    },
+  });
+
   // Extract unique categories from posts for the filter dropdown
   const categories = useMemo(() => {
     const cats = new Set<string>();
