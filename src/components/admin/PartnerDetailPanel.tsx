@@ -219,7 +219,12 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 <MapPin className="w-3 h-3 mr-0.5" />
                 {SERVICE_ZONES[partner.service_zone] || partner.service_zone}
               </Badge>
-            </div>
+              {partnerProjects.length > 0 && (
+                <Badge variant="secondary" className="text-[10px]">
+                  <Briefcase className="w-3 h-3 mr-0.5" />
+                  {partnerProjects.length} Projeto{partnerProjects.length !== 1 ? "s" : ""}
+                </Badge>
+              )}
           </div>
           {onClose && (
             <button
@@ -307,6 +312,15 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       <Tabs defaultValue="geral" className="flex-1 flex flex-col min-h-0">
         <TabsList className="mx-4 mt-3 w-auto justify-start">
           <TabsTrigger value="geral">Geral</TabsTrigger>
+          <TabsTrigger value="projetos" className="gap-1.5">
+            <Briefcase className="w-3.5 h-3.5" />
+            Projetos
+            {partnerProjects.length > 0 && (
+              <span className="ml-1 bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {partnerProjects.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="indicacoes" className="gap-1.5">
             <Users className="w-3.5 h-3.5" />
             Indicações
