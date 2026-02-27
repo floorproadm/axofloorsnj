@@ -1,165 +1,112 @@
 
-# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
 
-## PARTE 1: Limpeza Total de Status Legados
+# Partner Hub — Nivel MaidPad + Notion MVP
 
-### 1A. `src/hooks/admin/useAdminData.ts`
-Substituir filtros de stats (linhas 101-108):
-- `'new'` -> `'cold_lead'`
-- `'contacted'` -> `'warm_lead'`
-- `'qualified'` -> `'estimate_requested'`
-- `'converted'` -> `'in_production'`
-- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
+Baseado nas duas referencias enviadas, o Partner Hub precisa de duas melhorias principais:
 
-### 1B. `src/pages/admin/Intake.tsx`
-- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
-- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
-- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
-- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
-- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
+## 1. Nova Tab "Jobs" (estilo MaidPad)
 
-### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
-- `src/pages/Contact.tsx` (linha 88)
-- `src/pages/Builders.tsx` (linha 112)
-- `src/pages/Realtors.tsx` (linha 126)
-- `src/pages/Quiz.tsx` (linhas 215, 253)
-- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
-- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
-- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
-- `src/hooks/useLeadCapture.ts` (linha 37)
-- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
+A referencia do MaidPad mostra uma tab "Jobs" com lista de jobs associados ao cliente, separados em "Next Jobs" e "Last Jobs". No nosso caso, vamos adicionar uma tab **"Projetos"** no `PartnerDetailPanel` que mostra os projetos vinculados ao partner.
+
+**Como funciona a vinculacao:**
+- Partner -> leads (via `referred_by_partner_id`) -> projects (via `converted_to_project_id`)
+- A query busca leads do partner que foram convertidos em projetos, e depois carrega os dados dos projetos
+
+**Layout da tab:**
+- Secao "Projetos Ativos" — projetos com status != completed/cancelled
+- Secao "Projetos Concluidos" — projetos finalizados
+- Cada item mostra: endereco, tipo de projeto, status badge, datas (inicio/conclusao), valor estimado
+- Total de receita no rodape (soma de `estimated_cost`)
+- Empty state se nenhum projeto vinculado
+
+## 2. Historico de Financas (estilo Notion MVP)
+
+A segunda imagem mostra o Notion com uma tabela "Historico de Financas" rica com colunas: Projects, Week, Start Date, End Date, Job Notes, Measurements, Project Media, Total Value.
+
+Vamos integrar isso como um **resumo financeiro compacto** dentro da tab "Projetos":
+- Tabela com colunas: Projeto (endereco), Data, Tipo, Notas, Valor
+- Total no rodape da tabela
+- Usa os dados dos projetos vinculados ao partner via leads convertidos
+
+## 3. Mais Tabs como MaidPad
+
+O MaidPad tem: Overview, Addresses, Jobs, Chat, Estimates, Contracts, Automations. Vamos adicionar tabs relevantes ao nosso contexto:
+
+- **Geral** (ja existe) — overview do partner
+- **Projetos** (nova) — jobs vinculados + historico financeiro
+- **Indicacoes** (ja existe) — leads referidos
+- **Notas** (ja existe) — notas do relacionamento
+
+## 4. Relations Count no Header
+
+Como o Notion mostra "Relations: 15 Service / Project", vamos adicionar no header do partner um badge com contagem de projetos vinculados.
 
 ---
 
-## PARTE 2: Collaborator Upload -> Admin Dashboard
+## Detalhes Tecnicos
 
-### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
-Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
+### Query para Projetos Vinculados ao Partner
+
 ```typescript
-await serviceClient.from("audit_log").insert({
-  user_id: userId,
-  user_role: "collaborator",
-  operation_type: "COLLABORATOR_UPLOAD",
-  table_accessed: "media_files",
-  data_classification: JSON.stringify({
-    project_id: projectId,
-    storage_path: storagePath,
-    folder_type: folderType,
-  }),
-});
+// 1. Buscar leads convertidos do partner
+const { data: leads } = await supabase
+  .from("leads")
+  .select("converted_to_project_id")
+  .eq("referred_by_partner_id", partner.id)
+  .not("converted_to_project_id", "is", null);
+
+// 2. Buscar projetos pelos IDs
+const projectIds = leads.map(l => l.converted_to_project_id);
+const { data: projects } = await supabase
+  .from("projects")
+  .select("id, customer_name, address, city, project_type, project_status, start_date, completion_date, estimated_cost, notes")
+  .in("id", projectIds)
+  .order("start_date", { ascending: false });
 ```
 
-### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
-Adicionar bloco `recentFieldUploads` ao retorno:
-- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
-- JOIN com `projects` para pegar `customer_name`
-- Limite 10, ordenado por `created_at DESC`
+### Tabela de Historico (estilo Notion)
 
-### 2C. `src/hooks/admin/useDashboardData.ts`
-- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
-- Expor `recentFieldUploads` no retorno do hook
-- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
+Usando os componentes Table do shadcn ja instalados:
+- Colunas: Projeto (endereco + cidade), Tipo, Data Inicio, Data Conclusao, Notas (truncado), Valor
+- Linha de total no rodape com soma de `estimated_cost`
+- Responsivo: no mobile, esconde colunas menos importantes
 
-### 2D. `src/pages/admin/Dashboard.tsx`
-- Incluir uploads recentes e SLA breaches no array `priorityTasks`
-- Novo type `'field_upload'` com link `/admin/jobs`
+### Arquivos a Modificar
 
-### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
-- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
-- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
+1. **`src/components/admin/PartnerDetailPanel.tsx`**
+   - Adicionar tab "Projetos" com query de projetos vinculados
+   - Adicionar tabela de historico financeiro dentro da tab
+   - Adicionar badge de projetos no header
+   - Separar projetos em "Ativos" e "Concluidos"
 
----
+### Arquivos SEM alteracao
+- `src/hooks/admin/usePartnersData.ts`
+- `src/components/admin/PartnerListItem.tsx`
+- `src/pages/admin/Partners.tsx`
+- Database schema (nenhuma migracao necessaria — dados ja existem via FK)
 
-## PARTE 3: SLA V0 - Tempo Como Variavel Real
+### Fluxo Visual da Tab "Projetos"
 
-### 3A. Migration SQL (unica, junto com 2B)
-```sql
--- 1. Nova coluna
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
-
--- 2. Backfill
-UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
-WHERE status_changed_at IS NULL;
-
--- 3. Trigger
-CREATE OR REPLACE FUNCTION set_status_changed_at()
-RETURNS trigger AS $$
-BEGIN
-  IF OLD.status IS DISTINCT FROM NEW.status THEN
-    NEW.status_changed_at := now();
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
-CREATE TRIGGER trg_set_status_changed_at
-  BEFORE UPDATE ON leads FOR EACH ROW
-  EXECUTE FUNCTION set_status_changed_at();
-
--- 4. View: follow-up overdue
-CREATE OR REPLACE VIEW leads_followup_overdue AS
-SELECT id, name, next_action_date
-FROM leads
-WHERE status = 'proposal_sent'
-  AND next_action_date IS NOT NULL
-  AND next_action_date < current_date;
-
--- 5. View: estimate stale (>3 dias)
-CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
-SELECT id, name,
-  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
-FROM leads
-WHERE status = 'estimate_scheduled'
-  AND converted_to_project_id IS NULL
-  AND status_changed_at < now() - interval '3 days';
-
--- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
+```text
++----------------------------------------+
+| [Geral] [Projetos (3)] [Indicacoes] [Notas] |
++----------------------------------------+
+|                                        |
+|  Projetos Ativos                       |
+|  +----------------------------------+  |
+|  | 123 Main St, Newark  | S&F      |  |
+|  | Jan 15 - Em andamento| $4,100   |  |
+|  +----------------------------------+  |
+|  | 456 Oak Ave, Milford | Staircase|  |
+|  | Jan 20 - Em andamento| $2,100   |  |
+|  +----------------------------------+  |
+|                                        |
+|  Projetos Concluidos                   |
+|  +----------------------------------+  |
+|  | 789 Elm St, Sparta   | S&F      |  |
+|  | Dec 01 - Dec 15      | $1,900   |  |
+|  +----------------------------------+  |
+|                                        |
+|  Total Receita: $8,100                 |
++----------------------------------------+
 ```
-
-### 3B. Dashboard Integration
-SLA breaches aparecem como tasks no `priorityTasks`:
-- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
-- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
-
----
-
-## Checklist de Validacao
-
-**SQL pos-deploy:**
-```sql
-SELECT column_name FROM information_schema.columns
-WHERE table_name = 'leads' AND column_name = 'status_changed_at';
-
-SELECT * FROM leads_followup_overdue LIMIT 5;
-SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
-```
-
-**Network (DevTools):**
-- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
-
-**Grep final:**
-- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
-
----
-
-## Arquivos Modificados (resumo)
-
-| Arquivo | Tipo |
-|---|---|
-| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
-| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
-| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
-| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
-| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
-| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
-| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
-| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
-| `src/pages/admin/Dashboard.tsx` | Novos task types |
-| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |
