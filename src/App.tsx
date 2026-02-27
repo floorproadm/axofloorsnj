@@ -43,6 +43,7 @@ import AdminSchedule from './pages/admin/Schedule';
 import AdminPerformance from './pages/admin/Performance';
 import AdminCatalog from './pages/admin/Catalog';
 import AdminHelp from './pages/admin/Help';
+import AdminPartners from './pages/admin/Partners';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 
@@ -168,6 +169,11 @@ const App = () => {
             <Route path="/admin/help" element={
               <ProtectedRoute>
                 <AdminHelp />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/partners" element={
+              <ProtectedRoute>
+                <AdminPartners />
               </ProtectedRoute>
             } />
             {/* Collaborator Portal */}

@@ -27,6 +27,7 @@ import {
 import { NewJobDialog } from "./NewJobDialog";
 import { NewLeadDialog } from "./NewLeadDialog";
 import { NewEstimateDialog } from "./NewEstimateDialog";
+import { NewPartnerDialog } from "./NewPartnerDialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export function MobileBottomNav() {
@@ -36,6 +37,7 @@ export function MobileBottomNav() {
   const [newJobOpen, setNewJobOpen] = useState(false);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [newEstimateOpen, setNewEstimateOpen] = useState(false);
+  const [newPartnerOpen, setNewPartnerOpen] = useState(false);
   const { t } = useLanguage();
 
   // Universal words stay in English
@@ -56,6 +58,7 @@ export function MobileBottomNav() {
     { label: t("mobile.novaDespesa"), icon: Receipt, action: "expense" },
     { label: t("mobile.novaFatura"), icon: FileSpreadsheet, action: "invoice" },
     { label: t("mobile.novaFoto"), icon: ImagePlus, action: "photo" },
+    { label: "Novo Partner", icon: UserPlus, action: "partner" },
   ];
 
   const handleQuickAction = (action: string) => {
@@ -72,6 +75,9 @@ export function MobileBottomNav() {
         break;
       case "photo":
         navigate("/admin/feed");
+        break;
+      case "partner":
+        setNewPartnerOpen(true);
         break;
       default:
         break;
@@ -162,6 +168,7 @@ export function MobileBottomNav() {
       <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
       <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
       <NewEstimateDialog open={newEstimateOpen} onOpenChange={setNewEstimateOpen} />
+      <NewPartnerDialog open={newPartnerOpen} onOpenChange={setNewPartnerOpen} />
     </>
   );
 }
