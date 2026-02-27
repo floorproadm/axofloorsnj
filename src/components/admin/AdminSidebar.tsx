@@ -15,6 +15,7 @@ import {
   FileText,
   BookOpen,
   HelpCircle,
+  Handshake,
 } from "lucide-react";
 import {
   Sidebar,
@@ -72,6 +73,7 @@ export function AdminSidebar() {
 
   const manageItems = [
     { title: "Leads", url: "/admin/leads", icon: Users },
+    { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Feed", url: "/admin/feed", icon: Images },
   ];
