@@ -226,6 +226,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 </Badge>
               )}
             </div>
+          </div>
           {onClose && (
             <button
               onClick={onClose}
@@ -446,6 +447,11 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* Projetos Tab */}
+          <TabsContent value="projetos" className="px-4 pb-4 mt-0">
+            <PartnerProjectsTab projects={partnerProjects} />
           </TabsContent>
 
           {/* Notas Tab */}
