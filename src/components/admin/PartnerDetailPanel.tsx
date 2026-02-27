@@ -14,6 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Building,
   Phone,
   Mail,
@@ -28,6 +37,7 @@ import {
   Users,
   TrendingUp,
   BarChart3,
+  Briefcase,
 } from "lucide-react";
 import {
   Partner,
