@@ -570,7 +570,7 @@ function KanbanCard({
 }
 
 // ═══════════════════════════════════════════════════════════
-// JOB CONTROL MODAL — Redesigned with sectioned layout
+// JOB CONTROL MODAL V2 — Dual-Mode Operacional/Executivo
 // ═══════════════════════════════════════════════════════════
 
 interface JobControlModalProps {
@@ -578,6 +578,44 @@ interface JobControlModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRefresh: () => void;
+}
+
+// ── Next Recommended Action logic ──
+function getNextAction(
+  project: ProjectWithRelations,
+  hasCosts: boolean,
+  marginOk: boolean,
+  proofComplete: boolean,
+  marginMinPercent: number,
+  currentMargin: number
+): { label: string; severity: "critical" | "warning" | "ok"; action: "costs" | "proof" | "team" | "none" } {
+  if (!hasCosts) return { label: "Preencher custos do projeto", severity: "critical", action: "costs" };
+  if (!marginOk) return { label: `Margem ${currentMargin.toFixed(0)}% abaixo de ${marginMinPercent}% — ajuste custos`, severity: "critical", action: "costs" };
+  if (!project.team_lead) return { label: "Definir team lead", severity: "warning", action: "team" };
+  if (!proofComplete) return { label: "Adicionar fotos before/after", severity: "warning", action: "proof" };
+  const daysSinceUpdate = Math.floor((Date.now() - new Date(project.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+  if (daysSinceUpdate > 4) return { label: `Job parado há ${daysSinceUpdate} dias`, severity: "warning", action: "none" };
+  return { label: "Tudo em dia ✓", severity: "ok", action: "none" };
+}
+
+// ── Risk Score ──
+function getRiskScore(
+  project: ProjectWithRelations,
+  hasCosts: boolean,
+  marginOk: boolean,
+  proofComplete: boolean
+): { score: number; level: "healthy" | "attention" | "risk"; label: string; color: string } {
+  let score = 0;
+  if (!hasCosts) score++;
+  if (!marginOk) score++;
+  if (!project.team_lead) score++;
+  if (!proofComplete) score++;
+  const daysSinceUpdate = Math.floor((Date.now() - new Date(project.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+  if (daysSinceUpdate > 3) score++;
+
+  if (score <= 1) return { score, level: "healthy", label: "Saudável", color: "bg-emerald-100 text-emerald-700 border-emerald-300" };
+  if (score <= 3) return { score, level: "attention", label: "Atenção", color: "bg-amber-100 text-amber-700 border-amber-300" };
+  return { score, level: "risk", label: "Em risco", color: "bg-red-100 text-red-700 border-red-300" };
 }
 
 function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModalProps) {
@@ -596,6 +634,30 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const [workSchedule, setWorkSchedule] = useState(project.work_schedule || '8:00 AM - 5:00 PM');
   const [newMember, setNewMember] = useState('');
   const [isSavingTeam, setIsSavingTeam] = useState(false);
+  const [modalViewMode, setModalViewMode] = useState<"operational" | "executive">("operational");
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsChangingStatus(true);
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ project_status: newStatus })
+        .eq('id', project.id);
+      if (error) throw error;
+      toast.success(`Status alterado para ${STATUS_CONFIG[newStatus as ProjectStatus]?.label || newStatus}`);
+      onRefresh();
+    } catch (err: any) {
+      const msg = err?.message || 'Erro ao alterar status';
+      if (msg.includes('JobProof')) {
+        toast.error('Bloqueado: adicione fotos before/after antes de completar');
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      setIsChangingStatus(false);
+    }
+  };
 
   const handleDeleteProject = async () => {
     setIsDeleting(true);
@@ -652,14 +714,32 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   };
 
   const currentMargin = jobCost?.margin_percent ?? 0;
-  const marginOk = jobCost && currentMargin >= marginMinPercent && (jobCost.estimated_revenue ?? 0) > 0;
-  const hasCosts = jobCost && (jobCost.labor_cost > 0 || jobCost.material_cost > 0);
+  const marginOk = !!(jobCost && currentMargin >= marginMinPercent && (jobCost.estimated_revenue ?? 0) > 0);
+  const hasCosts = !!(jobCost && (jobCost.labor_cost > 0 || jobCost.material_cost > 0));
 
   const hasBefore = project.job_proof.some((p) => p.before_image_url);
   const hasAfter = project.job_proof.some((p) => p.after_image_url);
   const proofComplete = hasBefore && hasAfter;
+  const hasMeasurements = (project.square_footage ?? 0) > 0;
+  const hasTeam = !!project.team_lead;
 
   const statusConfig = STATUS_CONFIG[project.project_status as ProjectStatus] || STATUS_CONFIG.pending;
+
+  // Progress checklist
+  const checklistItems = [
+    { label: "Medições", ok: hasMeasurements },
+    { label: "Custos", ok: hasCosts },
+    { label: "Margem", ok: marginOk },
+    { label: "Time", ok: hasTeam },
+    { label: "Fotos", ok: proofComplete },
+  ];
+  const progressPercent = Math.round((checklistItems.filter(i => i.ok).length / checklistItems.length) * 100);
+
+  // NRA
+  const nra = getNextAction(project, hasCosts, marginOk, proofComplete, marginMinPercent, currentMargin);
+
+  // Risk
+  const risk = getRiskScore(project, hasCosts, marginOk, proofComplete);
 
   const handleCostSaved = () => {
     refetchCost();
@@ -671,17 +751,71 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const addressFull = [project.address, project.city, project.zip_code].filter(Boolean).join(", ");
+  const mapsUrl = addressFull ? `https://maps.google.com/?q=${encodeURIComponent(addressFull)}` : null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[calc(100vw-16px)] sm:max-w-2xl max-h-[90vh] overflow-hidden p-0">
-        {/* Status Banner */}
+        {/* ═══ HEADER ═══ */}
         <div className={cn("px-4 sm:px-6 py-4 text-white", statusConfig.headerBg)}>
           <DialogHeader className="pb-0">
-            <div className="flex items-center gap-2 text-white/80 text-xs mb-1">
-              {statusConfig.icon}
-              <span className="font-medium">{statusConfig.label}</span>
-              <span className="mx-1">•</span>
-              <span>Criado {timeAgo(project.created_at)} atrás</span>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {/* Status Dropdown */}
+                <Select
+                  value={project.project_status}
+                  onValueChange={handleStatusChange}
+                  disabled={isChangingStatus}
+                >
+                  <SelectTrigger className="h-7 w-auto min-w-[120px] bg-white/20 border-white/30 text-white text-xs font-medium hover:bg-white/30 [&>svg]:text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACTIVE_STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        <span className="flex items-center gap-2">
+                          {STATUS_CONFIG[s].icon}
+                          {STATUS_CONFIG[s].label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <span className="text-white/60 text-xs">•</span>
+                <span className="text-white/80 text-xs truncate">Criado {timeAgo(project.created_at)} atrás</span>
+
+                {/* Risk Badge */}
+                <Badge className={cn("text-[10px] px-2 py-0.5 border font-semibold ml-auto", risk.color)}>
+                  <Shield className="w-3 h-3 mr-1" />
+                  {risk.label}
+                </Badge>
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-white/15 rounded-md ml-3 flex-shrink-0">
+                <button
+                  onClick={() => setModalViewMode("operational")}
+                  className={cn(
+                    "p-1.5 rounded-md transition-colors",
+                    modalViewMode === "operational" ? "bg-white/30 text-white" : "text-white/60 hover:text-white"
+                  )}
+                  title="Operacional"
+                >
+                  <Wrench className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setModalViewMode("executive")}
+                  className={cn(
+                    "p-1.5 rounded-md transition-colors",
+                    modalViewMode === "executive" ? "bg-white/30 text-white" : "text-white/60 hover:text-white"
+                  )}
+                  title="Executivo"
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
             <DialogTitle className="text-xl font-bold text-white truncate pr-8">
               {project.customer_name}
@@ -692,7 +826,70 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
         <ScrollArea className="max-h-[calc(90vh-140px)]">
           <div className="p-4 sm:p-6 space-y-4">
 
-            {/* ── Customer Info + Contact Actions ── */}
+            {/* ═══ NRA — Next Recommended Action (sempre visível) ═══ */}
+            <div className={cn(
+              "rounded-xl border p-3 flex items-center gap-3",
+              nra.severity === "critical" ? "bg-red-50 border-red-200" :
+              nra.severity === "warning" ? "bg-amber-50 border-amber-200" :
+              "bg-emerald-50 border-emerald-200"
+            )}>
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                nra.severity === "critical" ? "bg-red-100" :
+                nra.severity === "warning" ? "bg-amber-100" :
+                "bg-emerald-100"
+              )}>
+                {nra.severity === "ok" ? (
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                ) : (
+                  <AlertTriangle className={cn("w-4 h-4", nra.severity === "critical" ? "text-red-600" : "text-amber-600")} />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Próxima Ação</p>
+                <p className="text-sm font-semibold truncate">{nra.label}</p>
+              </div>
+              {nra.action !== "none" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-shrink-0 h-8 text-xs"
+                  onClick={() => {
+                    if (nra.action === "costs") setShowBlock("costs");
+                    else if (nra.action === "proof") setShowBlock("proof");
+                    else if (nra.action === "team") setIsEditingTeam(true);
+                  }}
+                >
+                  Fazer
+                  <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              )}
+            </div>
+
+            {/* ═══ PROGRESS CHECKLIST (sempre visível) ═══ */}
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progresso do Job</h3>
+                <span className="text-sm font-bold">{progressPercent}%</span>
+              </div>
+              <Progress value={progressPercent} className="h-2.5 mb-3" />
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                {checklistItems.map((item) => (
+                  <div key={item.label} className="flex items-center gap-1.5">
+                    {item.ok ? (
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    ) : (
+                      <X className="w-3.5 h-3.5 text-red-400" />
+                    )}
+                    <span className={cn("text-xs font-medium", item.ok ? "text-foreground" : "text-muted-foreground")}>
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ═══ CLIENT + ADDRESS (sempre visível) ═══ */}
             <div className="rounded-xl border bg-card p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</h3>
@@ -737,41 +934,28 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                     <span className="text-sm truncate">{project.customer_email}</span>
                   </div>
                 )}
-                {project.address && (
+                {addressFull && (
                   <div className="flex items-center gap-2.5">
                     <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm">
-                      {[project.address, project.city, project.zip_code].filter(Boolean).join(", ")}
-                    </span>
+                    {mapsUrl ? (
+                      <a
+                        href={mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline flex items-center gap-1"
+                      >
+                        {addressFull}
+                        <Navigation className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span className="text-sm">{addressFull}</span>
+                    )}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* ── Project Details (Roofr-style) ── */}
-            <div className="rounded-xl border bg-card p-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Detalhes do Projeto</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Área</p>
-                  <p className="text-sm font-bold">{project.square_footage ? `${project.square_footage} sqft` : '—'}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Tipo de Serviço</p>
-                  <p className="text-sm font-bold">{project.project_type}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Início</p>
-                  <p className="text-sm font-bold">{formatDate(project.start_date)}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Est. Conclusão</p>
-                  <p className="text-sm font-bold">{formatDate(project.completion_date)}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Team Section (Roofr-style) ── */}
+            {/* ═══ TEAM SECTION (sempre visível) ═══ */}
             <div className="rounded-xl border bg-card p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Time</h3>
@@ -863,54 +1047,11 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               )}
             </div>
 
-            {/* ── Quick Actions ── */}
+            {/* ═══ QUICK ACTIONS — Fotos always visible, full grid in executive ═══ */}
             <div className="rounded-xl border bg-card p-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações Rápidas</h3>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                <Button
-                  variant={showBlock === "costs" ? "default" : "outline"}
-                  size="sm"
-                  className="h-auto py-2.5 flex-col gap-1"
-                  onClick={() => setShowBlock(showBlock === "costs" ? null : "costs")}
-                >
-                  <Calculator className="w-4 h-4" />
-                  <span className="text-[11px]">Custos</span>
-                  {hasCosts ? (
-                    <CheckCircle className="w-3 h-3 text-emerald-500" />
-                  ) : (
-                    <AlertTriangle className="w-3 h-3 text-amber-500" />
-                  )}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-auto py-2.5 flex-col gap-1 cursor-default"
-                  disabled
-                >
-                  <DollarSign className="w-4 h-4" />
-                  <span className="text-[11px]">Margem</span>
-                  <span className={cn("text-[11px] font-bold", marginOk ? "text-emerald-600" : "text-red-600")}>
-                    {currentMargin.toFixed(0)}%
-                  </span>
-                </Button>
-
-                <Button
-                  variant={showBlock === "proposal" ? "default" : "outline"}
-                  size="sm"
-                  className="h-auto py-2.5 flex-col gap-1"
-                  onClick={() => setShowBlock(showBlock === "proposal" ? null : "proposal")}
-                  disabled={!marginOk}
-                >
-                  <FileText className="w-4 h-4" />
-                  <span className="text-[11px]">Proposta</span>
-                  {!marginOk ? (
-                    <Ban className="w-3 h-3 text-red-400" />
-                  ) : (
-                    <ChevronRight className="w-3 h-3" />
-                  )}
-                </Button>
-
+              <div className={cn("grid gap-2", modalViewMode === "executive" ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-3")}>
+                {/* Photos — always */}
                 <Button
                   variant={showBlock === "proof" ? "default" : "outline"}
                   size="sm"
@@ -926,6 +1067,23 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                   )}
                 </Button>
 
+                {/* Costs — always */}
+                <Button
+                  variant={showBlock === "costs" ? "default" : "outline"}
+                  size="sm"
+                  className="h-auto py-2.5 flex-col gap-1"
+                  onClick={() => setShowBlock(showBlock === "costs" ? null : "costs")}
+                >
+                  <Calculator className="w-4 h-4" />
+                  <span className="text-[11px]">Custos</span>
+                  {hasCosts ? (
+                    <CheckCircle className="w-3 h-3 text-emerald-500" />
+                  ) : (
+                    <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  )}
+                </Button>
+
+                {/* Measurements — always */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -940,61 +1098,57 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                   <ChevronRight className="w-3 h-3 text-muted-foreground" />
                 </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-auto py-2.5 flex-col gap-1"
-                  onClick={() => {
-                    onClose();
-                    navigate(`/admin/jobs/${project.id}/documents`);
-                  }}
-                >
-                  <FolderOpen className="w-4 h-4" />
-                  <span className="text-[11px]">Docs</span>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                </Button>
+                {/* Executive-only actions */}
+                {modalViewMode === "executive" && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-auto py-2.5 flex-col gap-1 cursor-default"
+                      disabled
+                    >
+                      <DollarSign className="w-4 h-4" />
+                      <span className="text-[11px]">Margem</span>
+                      <span className={cn("text-[11px] font-bold", marginOk ? "text-emerald-600" : "text-red-600")}>
+                        {currentMargin.toFixed(0)}%
+                      </span>
+                    </Button>
+
+                    <Button
+                      variant={showBlock === "proposal" ? "default" : "outline"}
+                      size="sm"
+                      className="h-auto py-2.5 flex-col gap-1"
+                      onClick={() => setShowBlock(showBlock === "proposal" ? null : "proposal")}
+                      disabled={!marginOk}
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span className="text-[11px]">Proposta</span>
+                      {!marginOk ? (
+                        <Ban className="w-3 h-3 text-red-400" />
+                      ) : (
+                        <ChevronRight className="w-3 h-3" />
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-auto py-2.5 flex-col gap-1"
+                      onClick={() => {
+                        onClose();
+                        navigate(`/admin/jobs/${project.id}/documents`);
+                      }}
+                    >
+                      <FolderOpen className="w-4 h-4" />
+                      <span className="text-[11px]">Docs</span>
+                      <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* ── Financial Summary (Always Visible) ── */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className={cn(
-                "rounded-xl border-2 p-3.5",
-                marginOk ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50"
-              )}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  {marginOk ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <AlertTriangle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span className="text-xs font-semibold text-muted-foreground uppercase">Margem</span>
-                </div>
-                <p className={cn("text-2xl font-bold", marginOk ? "text-emerald-700" : "text-red-700")}>
-                  {currentMargin.toFixed(1)}%
-                </p>
-                <p className={cn("text-xs mt-0.5", marginOk ? "text-emerald-600" : "text-red-600")}>
-                  {marginOk
-                    ? `Lucro: ${formatCurrency(jobCost?.profit_amount ?? 0)}`
-                    : `Mínimo: ${marginMinPercent}%`}
-                </p>
-              </div>
-
-              <div className="rounded-xl border-2 border-border p-3.5 bg-card">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <DollarSign className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs font-semibold text-muted-foreground uppercase">Revenue</span>
-                </div>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(jobCost?.estimated_revenue ?? 0)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Custo: {formatCurrency(jobCost?.total_cost ?? 0)}
-                </p>
-              </div>
-            </div>
-
-            {/* ── Expandable Blocks ── */}
+            {/* ═══ Expandable Blocks ═══ */}
             {showBlock === "costs" && (
               <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 animate-fade-in">
                 <h3 className="font-bold text-amber-800 text-sm mb-3 flex items-center gap-2">
@@ -1025,8 +1179,74 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               </div>
             )}
 
-            {/* ── Notes & Comments Section ── */}
-            <ProjectNotesSection projectId={project.id} initialNotes={project.notes} onRefresh={onRefresh} />
+            {/* ═══ EXECUTIVE-ONLY SECTIONS ═══ */}
+            {modalViewMode === "executive" && (
+              <>
+                {/* Financial Summary */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className={cn(
+                    "rounded-xl border-2 p-3.5",
+                    marginOk ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50"
+                  )}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      {marginOk ? (
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-red-600" />
+                      )}
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Margem</span>
+                    </div>
+                    <p className={cn("text-2xl font-bold", marginOk ? "text-emerald-700" : "text-red-700")}>
+                      {currentMargin.toFixed(1)}%
+                    </p>
+                    <p className={cn("text-xs mt-0.5", marginOk ? "text-emerald-600" : "text-red-600")}>
+                      {marginOk
+                        ? `Lucro: ${formatCurrency(jobCost?.profit_amount ?? 0)}`
+                        : `Mínimo: ${marginMinPercent}%`}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border-2 border-border p-3.5 bg-card">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <DollarSign className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Revenue</span>
+                    </div>
+                    <p className="text-2xl font-bold">
+                      {formatCurrency(jobCost?.estimated_revenue ?? 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Custo: {formatCurrency(jobCost?.total_cost ?? 0)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Project Details */}
+                <div className="rounded-xl border bg-card p-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Detalhes do Projeto</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Área</p>
+                      <p className="text-sm font-bold">{project.square_footage ? `${project.square_footage} sqft` : '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Tipo de Serviço</p>
+                      <p className="text-sm font-bold">{project.project_type}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Início</p>
+                      <p className="text-sm font-bold">{formatDate(project.start_date)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Est. Conclusão</p>
+                      <p className="text-sm font-bold">{formatDate(project.completion_date)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes & Comments Section */}
+                <ProjectNotesSection projectId={project.id} initialNotes={project.notes} onRefresh={onRefresh} />
+              </>
+            )}
 
           </div>
         </ScrollArea>
