@@ -87,6 +87,17 @@ export default function Partners() {
       <div className="flex h-[calc(100vh-8rem)] gap-0 overflow-hidden rounded-xl border border-border/50 bg-card">
         {/* Left Column - List */}
         <div className="flex flex-col w-full md:w-[340px] md:border-r border-border/50 flex-shrink-0">
+          {/* Mini Stats */}
+          <div className="px-3 pt-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
+            <span><strong className="text-foreground">{miniStats.active}</strong> ativos</span>
+            <span className="text-border">|</span>
+            <span className={miniStats.atRisk > 0 ? "text-amber-600" : ""}>
+              <strong className={miniStats.atRisk > 0 ? "text-amber-600" : "text-foreground"}>{miniStats.atRisk}</strong> em risco
+            </span>
+            <span className="text-border">|</span>
+            <span><strong className="text-foreground">{miniStats.totalReferrals}</strong> indicações</span>
+          </div>
+
           {/* Search & Filters */}
           <div className="p-3 space-y-2 border-b border-border/50">
             <div className="relative">
