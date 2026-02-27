@@ -23,7 +23,7 @@ import {
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
   Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
   CalendarDays, TrendingUp, Eye, MessageSquare, Hash, Ruler,
-  Send, ImagePlus, X, StickyNote
+  Send, ImagePlus, X, StickyNote, LayoutGrid, List, Users, ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
