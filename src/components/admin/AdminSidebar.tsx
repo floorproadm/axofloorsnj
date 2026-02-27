@@ -9,11 +9,12 @@ import {
   LogOut,
   Home,
   Inbox,
-  FolderOpen,
   Ruler,
   CalendarDays,
   BarChart3,
   FileText,
+  BookOpen,
+  HelpCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -56,12 +57,10 @@ export function AdminSidebar() {
     fetchLogo();
   }, []);
 
-  // Items use universal English words where appropriate
-  const menuItems = [
+  const overviewItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Jobs", url: "/admin/jobs", icon: Building },
     { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
-    { title: "Performance", url: "/admin/performance", icon: BarChart3 },
   ];
 
   const toolsItems = [
@@ -73,13 +72,20 @@ export function AdminSidebar() {
   const manageItems = [
     { title: "Leads", url: "/admin/leads", icon: Users },
     { title: "Feed", url: "/admin/feed", icon: Images },
+    { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
+  ];
+
+  const supportItems = [
+    { title: "Performance", url: "/admin/performance", icon: BarChart3 },
     { title: "Settings", url: "/admin/settings", icon: Settings },
+    { title: t("sidebar.ajuda"), url: "/admin/help", icon: HelpCircle },
   ];
 
   const navGroups = [
-    { label: t("sidebar.menu"), items: menuItems },
+    { label: t("sidebar.overview"), items: overviewItems },
     { label: t("sidebar.tools"), items: toolsItems },
     { label: t("sidebar.manage"), items: manageItems },
+    { label: t("sidebar.support"), items: supportItems },
   ];
 
   const handleLogout = async () => {

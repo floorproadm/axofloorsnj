@@ -12,9 +12,12 @@ const UNIVERSAL_WORDS = [
 
 const translations = {
   // Sidebar
-  "sidebar.menu": { pt: "Menu", en: "Menu" },
+  "sidebar.overview": { pt: "Overview", en: "Overview" },
   "sidebar.tools": { pt: "Ferramentas", en: "Tools" },
   "sidebar.manage": { pt: "Gerenciar", en: "Manage" },
+  "sidebar.support": { pt: "Suporte", en: "Support" },
+  "sidebar.catalogo": { pt: "Catálogo", en: "Catalog" },
+  "sidebar.ajuda": { pt: "Ajuda", en: "Help" },
   "sidebar.captacao": { pt: "Captação", en: "Intake" },
   "sidebar.medicoes": { pt: "Medições", en: "Measurements" },
   "sidebar.propostas": { pt: "Propostas", en: "Proposals" },
