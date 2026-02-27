@@ -23,7 +23,7 @@ import {
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
   Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
   CalendarDays, TrendingUp, Eye, MessageSquare, Hash, Ruler,
-  Send, ImagePlus, X, StickyNote
+  Send, ImagePlus, X, StickyNote, LayoutGrid, List, Users, ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
@@ -180,6 +180,7 @@ export default function JobsManager() {
   const [selectedProject, setSelectedProject] = useState<ProjectWithRelations | null>(null);
   const [activeFilter, setActiveFilter] = useState<"all" | ProjectStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"board" | "list">("board");
 
   const filteredProjects = useMemo(() => {
     let list = projects || [];
@@ -199,6 +200,24 @@ export default function JobsManager() {
     return list;
   }, [projects, activeFilter, searchQuery]);
 
+  const projectsByStatus = useMemo(() => {
+    const map: Record<ProjectStatus, ProjectWithRelations[]> = {
+      pending: [],
+      in_production: [],
+      completed: [],
+    };
+    filteredProjects.forEach((p) => {
+      const s = p.project_status as ProjectStatus;
+      if (map[s]) map[s].push(p);
+      else map.pending.push(p);
+    });
+    return map;
+  }, [filteredProjects]);
+
+  const totalValue = useMemo(() => {
+    return filteredProjects.reduce((sum, p) => sum + (p.job_costs?.estimated_revenue || 0), 0);
+  }, [filteredProjects]);
+
   const filterTabs: { key: "all" | ProjectStatus; label: string }[] = [
     { key: "all", label: "All Jobs" },
     { key: "in_production", label: "In Progress" },
@@ -208,9 +227,51 @@ export default function JobsManager() {
 
   return (
     <AdminLayout title="Jobs" breadcrumbs={[{ label: "Jobs" }]}>
-      <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
+      <div className="space-y-4 animate-fade-in">
+        {/* Summary Bar */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <Hammer className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{filteredProjects.length} Deals</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{formatCurrency(totalValue)}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode("board")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  viewMode === "board"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Board
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  viewMode === "list"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <List className="w-3.5 h-3.5" />
+                List
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Search */}
-        <div className="relative">
+        <div className="relative max-w-md">
           <Input
             placeholder="Search jobs..."
             value={searchQuery}
@@ -246,7 +307,6 @@ export default function JobsManager() {
           ))}
         </div>
 
-        {/* Job Cards List */}
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -254,10 +314,68 @@ export default function JobsManager() {
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-16">
             <Hammer className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Nenhum job em andamento. Sem execucao, nao ha faturamento.</p>
+            <p className="text-muted-foreground font-medium">Nenhum job encontrado.</p>
+          </div>
+        ) : viewMode === "board" ? (
+          /* ═══════════ KANBAN BOARD VIEW ═══════════ */
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory md:snap-none">
+            {ACTIVE_STATUSES.map((status) => {
+              const conf = STATUS_CONFIG[status];
+              const items = projectsByStatus[status];
+              const colRevenue = items.reduce((s, p) => s + (p.job_costs?.estimated_revenue || 0), 0);
+              const isHighlighted = activeFilter === "all" || activeFilter === status;
+
+              return (
+                <div
+                  key={status}
+                  className={cn(
+                    "flex-shrink-0 w-[85vw] md:w-80 flex flex-col rounded-xl border border-border bg-card overflow-hidden snap-center transition-opacity",
+                    !isHighlighted && "opacity-40"
+                  )}
+                >
+                  {/* Column Header */}
+                  <div className={cn("px-4 py-3 text-white flex items-center justify-between", conf.headerBg)}>
+                    <div className="flex items-center gap-2">
+                      {conf.icon}
+                      <span className="font-semibold text-sm">{conf.label}</span>
+                    </div>
+                    <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {items.length}
+                    </span>
+                  </div>
+
+                  {/* Column Cards */}
+                  <ScrollArea className="flex-1 max-h-[65vh]">
+                    <div className="p-2 space-y-2">
+                      {items.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground text-xs">
+                          Nenhum job
+                        </div>
+                      ) : (
+                        items.map((project) => (
+                          <KanbanCard
+                            key={project.id}
+                            project={project}
+                            minMargin={marginMinPercent}
+                            onClick={() => setSelectedProject(project)}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+
+                  {/* Column Footer */}
+                  <div className="px-4 py-2.5 border-t border-border bg-muted/30 flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground font-medium">Total Revenue</span>
+                    <span className="text-sm font-bold text-foreground">{formatCurrency(colRevenue)}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className="space-y-3">
+          /* ═══════════ LIST VIEW (existing) ═══════════ */
+          <div className="max-w-2xl mx-auto space-y-3">
             {filteredProjects.map((project) => {
               const statusConf = STATUS_CONFIG[project.project_status as ProjectStatus] || STATUS_CONFIG.pending;
               const revenue = project.job_costs?.estimated_revenue || 0;
@@ -274,10 +392,8 @@ export default function JobsManager() {
                 >
                   <CardContent className="p-0">
                     <div className="flex">
-                      {/* Left color strip */}
                       <div className={cn("w-1 flex-shrink-0", statusConf.headerBg)} />
                       <div className="flex-1 p-4 space-y-2">
-                        {/* Title row */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <h3 className="font-bold text-sm text-foreground leading-tight truncate">
@@ -295,22 +411,16 @@ export default function JobsManager() {
                             {statusConf.label}
                           </Badge>
                         </div>
-
-                        {/* Location */}
                         {location && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                             {location}
                           </p>
                         )}
-
-                        {/* Date */}
                         <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                           <CalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
                           {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
-
-                        {/* Footer: sqft + price */}
                         <div className="flex items-center justify-between pt-2 border-t border-dashed border-border">
                           <span className="text-xs text-muted-foreground">
                             {project.square_footage ? `${project.square_footage.toLocaleString()} sqft` : "—"}
@@ -328,9 +438,9 @@ export default function JobsManager() {
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-2">
+        {/* Pagination (list mode) */}
+        {viewMode === "list" && totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2 max-w-2xl mx-auto">
             <span className="text-xs text-muted-foreground">
               {totalCount} jobs total
             </span>
@@ -369,6 +479,90 @@ export default function JobsManager() {
         />
       )}
     </AdminLayout>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// KANBAN CARD — DripJobs-inspired card for board view
+// ═══════════════════════════════════════════════════════════
+
+function KanbanCard({
+  project,
+  minMargin,
+  onClick,
+}: {
+  project: ProjectWithRelations;
+  minMargin: number;
+  onClick: () => void;
+}) {
+  const indicator = getProjectIndicator(project, minMargin);
+  const costs = project.job_costs;
+  const revenue = costs?.estimated_revenue || 0;
+  const totalCost = costs?.total_cost || 0;
+
+  const startDate = project.start_date ? new Date(project.start_date) : null;
+  const endDate = project.completion_date ? new Date(project.completion_date) : null;
+  const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return (
+    <div
+      onClick={onClick}
+      className="bg-background rounded-lg border border-border p-3 space-y-2.5 cursor-pointer hover:shadow-md transition-shadow"
+    >
+      {/* Project type + indicator */}
+      <div className="flex items-start justify-between gap-1">
+        <h4 className="text-sm font-bold text-foreground leading-tight truncate flex-1">
+          {project.project_type}
+        </h4>
+        {indicator.severity !== "ok" && (
+          <span className={cn("w-2 h-2 rounded-full flex-shrink-0 mt-1.5", indicator.color)} title={indicator.label} />
+        )}
+      </div>
+
+      {/* Customer */}
+      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+        <User className="w-3 h-3 flex-shrink-0" />
+        {project.customer_name}
+      </p>
+
+      {/* Financial preview */}
+      {revenue > 0 && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {formatCurrency(totalCost)} of {formatCurrency(revenue)}
+          </span>
+          {costs?.margin_percent !== null && costs?.margin_percent !== undefined && (
+            <Badge variant="outline" className={cn(
+              "text-[10px] px-1.5 py-0 rounded-full font-semibold",
+              costs.margin_percent < minMargin
+                ? "border-destructive/50 text-destructive"
+                : "border-emerald-300 text-emerald-700"
+            )}>
+              {costs.margin_percent.toFixed(0)}%
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Dates */}
+      {(startDate || endDate) && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <CalendarDays className="w-3 h-3 flex-shrink-0" />
+          {startDate ? fmtDate(startDate) : "—"} — {endDate ? fmtDate(endDate) : "—"}
+        </p>
+      )}
+
+      {/* Team lead */}
+      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+        <Users className="w-3 h-3 flex-shrink-0" />
+        {project.team_lead || "No Crew Assigned"}
+      </p>
+
+      {/* Updated ago */}
+      <p className="text-[10px] text-muted-foreground/60 text-right">
+        Updated {timeAgo(project.updated_at)} ago
+      </p>
+    </div>
   );
 }
 
