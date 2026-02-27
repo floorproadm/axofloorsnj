@@ -17,7 +17,7 @@ import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { JobCostEditor } from "@/components/admin/JobCostEditor";
 import { JobMarginDisplay } from "@/components/admin/JobMarginDisplay";
 import { ProposalGenerator } from "@/components/admin/ProposalGenerator";
-import { JobProofUploader } from "@/components/admin/JobProofUploader";
+
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import {
@@ -625,7 +625,7 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [showBlock, setShowBlock] = useState<"costs" | "proposal" | "proof" | null>(null);
+  const [showBlock, setShowBlock] = useState<"costs" | "proposal" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteStep, setDeleteStep] = useState<0 | 1>(0);
   const [isEditingTeam, setIsEditingTeam] = useState(false);
@@ -856,7 +856,10 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                   className="flex-shrink-0 h-8 text-xs"
                   onClick={() => {
                     if (nra.action === "costs") setShowBlock("costs");
-                    else if (nra.action === "proof") setShowBlock("proof");
+                    else if (nra.action === "proof") {
+                      onClose();
+                      navigate(`/admin/feed?project=${project.id}`);
+                    }
                     else if (nra.action === "team") setIsEditingTeam(true);
                   }}
                 >
@@ -1053,10 +1056,13 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               <div className={cn("grid gap-2", modalViewMode === "executive" ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-3")}>
                 {/* Photos — always */}
                 <Button
-                  variant={showBlock === "proof" ? "default" : "outline"}
+                  variant="outline"
                   size="sm"
                   className="h-auto py-2.5 flex-col gap-1"
-                  onClick={() => setShowBlock(showBlock === "proof" ? null : "proof")}
+                  onClick={() => {
+                    onClose();
+                    navigate(`/admin/feed?project=${project.id}`);
+                  }}
                 >
                   <Camera className="w-4 h-4" />
                   <span className="text-[11px]">Fotos</span>
@@ -1169,15 +1175,6 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               </div>
             )}
 
-            {showBlock === "proof" && (
-              <div className="rounded-xl border-2 border-violet-300 bg-violet-50 p-4 animate-fade-in">
-                <h3 className="font-bold text-violet-700 text-sm mb-3 flex items-center gap-2">
-                  <Camera className="w-4 h-4" />
-                  Prova de Trabalho
-                </h3>
-                <JobProofUploader projectId={project.id} />
-              </div>
-            )}
 
             {/* ═══ EXECUTIVE-ONLY SECTIONS ═══ */}
             {modalViewMode === "executive" && (

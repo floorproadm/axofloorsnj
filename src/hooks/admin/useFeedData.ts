@@ -59,6 +59,7 @@ export interface FeedPostFilters {
   post_type?: string;
   date_from?: Date;
   date_to?: Date;
+  project_id?: string;
 }
 
 export function useFeedPosts(search?: string, page = 0, pageSize = 20, filters?: FeedPostFilters) {
@@ -78,6 +79,7 @@ export function useFeedPosts(search?: string, page = 0, pageSize = 20, filters?:
         query = query.or(`title.ilike.%${search}%,location.ilike.%${search}%,category.ilike.%${search}%`);
       }
 
+      if (filters?.project_id) query = query.eq("project_id", filters.project_id);
       if (filters?.folder_id) query = query.eq("folder_id", filters.folder_id);
       if (filters?.status) query = query.eq("status", filters.status);
       if (filters?.visibility) query = query.eq("visibility", filters.visibility);
