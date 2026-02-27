@@ -1,165 +1,138 @@
 
-# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
 
-## PARTE 1: Limpeza Total de Status Legados
+# Partner Hub — Entidade Separada no AXO OS
 
-### 1A. `src/hooks/admin/useAdminData.ts`
-Substituir filtros de stats (linhas 101-108):
-- `'new'` -> `'cold_lead'`
-- `'contacted'` -> `'warm_lead'`
-- `'qualified'` -> `'estimate_requested'`
-- `'converted'` -> `'in_production'`
-- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
+## Problema Atual
+Builders e Realtors entram pelo site como leads comuns e se misturam no Pipeline de Vendas com clientes finais. Nao existe gestao de relacionamento com parceiros, rastreio de indicacoes, nem visibilidade de performance por parceiro.
 
-### 1B. `src/pages/admin/Intake.tsx`
-- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
-- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
-- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
-- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
-- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
+## Visao (baseada no flowchart)
 
-### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
-- `src/pages/Contact.tsx` (linha 88)
-- `src/pages/Builders.tsx` (linha 112)
-- `src/pages/Realtors.tsx` (linha 126)
-- `src/pages/Quiz.tsx` (linhas 215, 253)
-- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
-- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
-- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
-- `src/hooks/useLeadCapture.ts` (linha 37)
-- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
+```text
+Partner Hub (Admin)
+  |-- Cadastro rapido de Partner
+  |-- BD de Partners (nome, empresa, zona, tipo)
+  |-- Segmentacao por Service Zone
+  |-- Gestao de relacionamento (status, ultimo contato, proxima acao)
+  |-- Revisao mensal (Top Parceiros, Em Risco, Por Regiao)
+  |
+  |-- Partner indicou job?
+       |-- Sim --> Criar Lead no CRM linkado ao Partner
+       |-- Lead qualificado? --> Site Visit --> Proposal --> Project
+       |-- Job Completed --> Referral Program --> Loop
+```
 
----
+## Solucao
 
-## PARTE 2: Collaborator Upload -> Admin Dashboard
+### 1. Nova tabela `partners`
 
-### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
-Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
+Campos:
+- `id` (uuid, PK)
+- `company_name` (text, NOT NULL) — nome da empresa
+- `contact_name` (text, NOT NULL) — nome do contato principal
+- `email` (text)
+- `phone` (text)
+- `partner_type` (text, default 'builder') — builder, realtor, gc, designer
+- `service_zone` (text, default 'core') — core, north_ring, outer, ny
+- `status` (text, default 'active') — active, inactive, prospect, churned
+- `last_contacted_at` (timestamptz)
+- `next_action_date` (date)
+- `next_action_note` (text)
+- `total_referrals` (integer, default 0)
+- `total_converted` (integer, default 0)
+- `notes` (text)
+- `created_at`, `updated_at` (timestamptz)
+
+RLS: admin full access, authenticated read.
+
+### 2. Vincular leads a partners
+
+Adicionar coluna `referred_by_partner_id` (uuid, nullable) na tabela `leads`. Quando um partner indica um job, o lead criado fica linkado ao partner.
+
+### 3. Nova pagina `/admin/partners`
+
+**Layout**: AdminLayout com titulo "Parceiros"
+
+**Blocos**:
+- **Stats Bar**: Total Partners, Indicacoes este mes, Taxa de conversao, Partners em risco (sem contato 30d+)
+- **Filtros**: Por tipo (Builder/Realtor/GC), por zona, por status
+- **Lista/Grid de Partners**: Cards ou tabela com nome, empresa, zona, status, ultimo contato, total indicacoes
+- **Quick Actions**: Novo Partner, Registrar Indicacao (cria lead linkado), Registrar Contato
+
+**Modais**:
+- `NewPartnerDialog` — formulario de cadastro rapido
+- `PartnerDetailModal` — detalhes, historico de indicacoes, timeline de contatos, acoes
+
+### 4. Sidebar
+
+Adicionar "Partners" no grupo MANAGE, com icone `Handshake`:
+```text
+MANAGE
+  Leads
+  Partners  <-- novo
+  Catalog
+  Feed
+```
+
+### 5. Rota
+
+Adicionar `/admin/partners` no App.tsx com ProtectedRoute.
+
+## Arquivos a criar
+- `supabase/migrations/` — tabela partners + coluna referred_by_partner_id em leads
+- `src/pages/admin/Partners.tsx` — pagina principal
+- `src/components/admin/NewPartnerDialog.tsx` — modal de cadastro
+- `src/components/admin/PartnerDetailModal.tsx` — modal de detalhes
+- `src/hooks/admin/usePartnersData.ts` — hook de dados
+
+## Arquivos a modificar
+- `src/App.tsx` — nova rota
+- `src/components/admin/AdminSidebar.tsx` — item no grupo MANAGE
+- `src/components/admin/MobileBottomNav.tsx` — quick action "Novo Partner"
+- `src/components/admin/NewLeadDialog.tsx` — campo opcional "Indicado por Partner" (select)
+
+## O que NAO muda
+- Pipeline de Vendas permanece focado em leads/clientes
+- Tabela `leads` continua como esta (apenas ganha coluna de referencia)
+- Paginas publicas `/builders` e `/realtors` continuam funcionando normalmente
+
+## Fase 1 (este PR)
+- Tabela + pagina + CRUD basico + sidebar
+- Vinculo lead <-> partner
+
+## Fase 2 (futuro)
+- Dashboard de performance por partner
+- Comissoes e referral tracking automatico
+- Views mensais (Top Parceiros, Em Risco)
+- Integracao com Notion para sync
+
+## Detalhes Tecnicos
+
+### Service Zones
 ```typescript
-await serviceClient.from("audit_log").insert({
-  user_id: userId,
-  user_role: "collaborator",
-  operation_type: "COLLABORATOR_UPLOAD",
-  table_accessed: "media_files",
-  data_classification: JSON.stringify({
-    project_id: projectId,
-    storage_path: storagePath,
-    folder_type: folderType,
-  }),
-});
+const SERVICE_ZONES = {
+  core: "Core (Central NJ)",
+  north_ring: "North Ring",
+  outer: "Outer NJ",
+  ny: "New York",
+};
 ```
 
-### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
-Adicionar bloco `recentFieldUploads` ao retorno:
-- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
-- JOIN com `projects` para pegar `customer_name`
-- Limite 10, ordenado por `created_at DESC`
-
-### 2C. `src/hooks/admin/useDashboardData.ts`
-- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
-- Expor `recentFieldUploads` no retorno do hook
-- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
-
-### 2D. `src/pages/admin/Dashboard.tsx`
-- Incluir uploads recentes e SLA breaches no array `priorityTasks`
-- Novo type `'field_upload'` com link `/admin/jobs`
-
-### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
-- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
-- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
-
----
-
-## PARTE 3: SLA V0 - Tempo Como Variavel Real
-
-### 3A. Migration SQL (unica, junto com 2B)
-```sql
--- 1. Nova coluna
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
-
--- 2. Backfill
-UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
-WHERE status_changed_at IS NULL;
-
--- 3. Trigger
-CREATE OR REPLACE FUNCTION set_status_changed_at()
-RETURNS trigger AS $$
-BEGIN
-  IF OLD.status IS DISTINCT FROM NEW.status THEN
-    NEW.status_changed_at := now();
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
-CREATE TRIGGER trg_set_status_changed_at
-  BEFORE UPDATE ON leads FOR EACH ROW
-  EXECUTE FUNCTION set_status_changed_at();
-
--- 4. View: follow-up overdue
-CREATE OR REPLACE VIEW leads_followup_overdue AS
-SELECT id, name, next_action_date
-FROM leads
-WHERE status = 'proposal_sent'
-  AND next_action_date IS NOT NULL
-  AND next_action_date < current_date;
-
--- 5. View: estimate stale (>3 dias)
-CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
-SELECT id, name,
-  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
-FROM leads
-WHERE status = 'estimate_scheduled'
-  AND converted_to_project_id IS NULL
-  AND status_changed_at < now() - interval '3 days';
-
--- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
+### Partner Types
+```typescript
+const PARTNER_TYPES = {
+  builder: "Builder",
+  realtor: "Realtor",
+  gc: "General Contractor",
+  designer: "Designer",
+};
 ```
 
-### 3B. Dashboard Integration
-SLA breaches aparecem como tasks no `priorityTasks`:
-- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
-- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
-
----
-
-## Checklist de Validacao
-
-**SQL pos-deploy:**
-```sql
-SELECT column_name FROM information_schema.columns
-WHERE table_name = 'leads' AND column_name = 'status_changed_at';
-
-SELECT * FROM leads_followup_overdue LIMIT 5;
-SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
+### Partner Statuses
+```typescript
+const PARTNER_STATUSES = {
+  prospect: "Prospect",
+  active: "Ativo",
+  inactive: "Inativo",
+  churned: "Perdido",
+};
 ```
-
-**Network (DevTools):**
-- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
-
-**Grep final:**
-- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
-
----
-
-## Arquivos Modificados (resumo)
-
-| Arquivo | Tipo |
-|---|---|
-| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
-| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
-| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
-| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
-| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
-| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
-| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
-| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
-| `src/pages/admin/Dashboard.tsx` | Novos task types |
-| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |
