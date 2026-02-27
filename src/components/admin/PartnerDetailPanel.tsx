@@ -225,7 +225,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                   {partnerProjects.length} Projeto{partnerProjects.length !== 1 ? "s" : ""}
                 </Badge>
               )}
-          </div>
+            </div>
           {onClose && (
             <button
               onClick={onClose}
