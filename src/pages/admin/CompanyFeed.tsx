@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, Plus, FolderPlus, ArrowLeft } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, FolderPlus, ArrowLeft, FolderOpen, Camera, CheckCircle, ImageIcon } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { FeedPostCard } from "@/components/admin/feed/FeedPostCard";
 import { FeedFolderGrid } from "@/components/admin/feed/FeedFolderGrid";
 import { CreateFolderDialog } from "@/components/admin/feed/CreateFolderDialog";
@@ -13,6 +14,13 @@ import { FeedFiltersSheet, FeedFilters, countActiveFilters } from "@/components/
 import { useFeedPosts, useFeedFolders } from "@/hooks/admin/useFeedData";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+const FOLDER_TYPE_LABELS: Record<string, { label: string; icon: typeof Camera }> = {
+  job_proof_before: { label: "Fotos Antes", icon: Camera },
+  job_proof_after: { label: "Fotos Depois", icon: ImageIcon },
+  quality_control: { label: "Controle de Qualidade", icon: CheckCircle },
+  job_progress: { label: "Progresso do Job", icon: FolderOpen },
+};
 
 const FEED_PAGE_SIZE = 20;
 
@@ -54,6 +62,24 @@ export default function CompanyFeed() {
   const totalFeedCount = feedData?.totalCount ?? 0;
   const totalFeedPages = Math.max(1, Math.ceil(totalFeedCount / FEED_PAGE_SIZE));
   const { data: folders = [], isLoading: foldersLoading } = useFeedFolders();
+
+  // Fetch project media folder counts when in project context
+  const { data: projectFolders = [], isLoading: projectFoldersLoading } = useQuery({
+    queryKey: ["project-media-folders", projectId],
+    enabled: !!projectId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("media_files")
+        .select("folder_type")
+        .eq("project_id", projectId!);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data || []).forEach((row) => {
+        counts[row.folder_type] = (counts[row.folder_type] || 0) + 1;
+      });
+      return Object.entries(counts).map(([type, count]) => ({ type, count }));
+    },
+  });
 
   // Extract unique categories from posts for the filter dropdown
   const categories = useMemo(() => {
@@ -181,19 +207,54 @@ export default function CompanyFeed() {
           </TabsContent>
 
           <TabsContent value="folders" className="mt-0">
-            {!projectId && (
-              <div className="flex justify-end mb-3">
-                <Button size="sm" variant="outline" onClick={() => setFolderDialogOpen(true)}>
-                  <FolderPlus className="w-4 h-4 mr-1" /> Nova Pasta
-                </Button>
-              </div>
-            )}
-            {foldersLoading ? (
-              <div className="py-16 text-center text-sm text-muted-foreground">Carregando pastas...</div>
+            {projectId ? (
+              // Project mode: show media_files folder_types
+              <>
+                {projectFoldersLoading ? (
+                  <div className="py-16 text-center text-sm text-muted-foreground">Carregando pastas...</div>
+                ) : projectFolders.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <FolderOpen className="w-12 h-12 text-muted-foreground/40 mb-3" />
+                    <p className="text-sm text-muted-foreground">Nenhuma mídia enviada para este projeto</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    {projectFolders.map(({ type, count }) => {
+                      const meta = FOLDER_TYPE_LABELS[type] || { label: type, icon: FolderOpen };
+                      const Icon = meta.icon;
+                      return (
+                        <Card key={type} className="border-border/60">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Icon className="w-5 h-5 text-primary" />
+                              </div>
+                              <span className="text-xs text-muted-foreground font-medium">{count} arquivos</span>
+                            </div>
+                            <h3 className="font-semibold text-sm text-foreground truncate">{meta.label}</h3>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             ) : (
-              <FeedFolderGrid folders={folders} />
+              // Global mode: show feed_folders
+              <>
+                <div className="flex justify-end mb-3">
+                  <Button size="sm" variant="outline" onClick={() => setFolderDialogOpen(true)}>
+                    <FolderPlus className="w-4 h-4 mr-1" /> Nova Pasta
+                  </Button>
+                </div>
+                {foldersLoading ? (
+                  <div className="py-16 text-center text-sm text-muted-foreground">Carregando pastas...</div>
+                ) : (
+                  <FeedFolderGrid folders={folders} />
+                )}
+                <CreateFolderDialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen} />
+              </>
             )}
-            <CreateFolderDialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen} />
           </TabsContent>
         </Tabs>
       </div>
