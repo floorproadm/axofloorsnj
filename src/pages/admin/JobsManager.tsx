@@ -18,12 +18,15 @@ import { JobCostEditor } from "@/components/admin/JobCostEditor";
 import { JobMarginDisplay } from "@/components/admin/JobMarginDisplay";
 import { ProposalGenerator } from "@/components/admin/ProposalGenerator";
 import { JobProofUploader } from "@/components/admin/JobProofUploader";
+import { Progress } from "@/components/ui/progress";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import {
   Hammer, CheckCircle, Clock, DollarSign, MapPin,
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
   Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
   CalendarDays, TrendingUp, Eye, MessageSquare, Hash, Ruler,
-  Send, ImagePlus, X, StickyNote, LayoutGrid, List, Users, ExternalLink
+  Send, ImagePlus, X, StickyNote, LayoutGrid, List, Users, ExternalLink,
+  Wrench, BarChart3, Shield, Navigation
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
