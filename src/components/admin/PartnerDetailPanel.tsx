@@ -498,6 +498,149 @@ function InfoCard({
   );
 }
 
+/* ---------- Partner Projects Tab ---------- */
+type ProjectRow = {
+  id: string;
+  customer_name: string;
+  address: string | null;
+  city: string | null;
+  project_type: string;
+  project_status: string;
+  start_date: string | null;
+  completion_date: string | null;
+  estimated_cost: number | null;
+  notes: string | null;
+};
+
+const projectStatusColors: Record<string, string> = {
+  pending: "bg-blue-500/10 text-blue-700 border-blue-200",
+  in_progress: "bg-amber-500/10 text-amber-700 border-amber-200",
+  completed: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
+  cancelled: "bg-red-500/10 text-red-700 border-red-200",
+};
+
+function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
+  const activeProjects = projects.filter(
+    (p) => p.project_status !== "completed" && p.project_status !== "cancelled"
+  );
+  const completedProjects = projects.filter(
+    (p) => p.project_status === "completed"
+  );
+  const totalRevenue = projects.reduce(
+    (sum, p) => sum + (p.estimated_cost || 0),
+    0
+  );
+
+  if (projects.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground pt-3">
+        <Briefcase className="w-10 h-10 mx-auto mb-2 opacity-30" />
+        <p className="text-sm">Nenhum projeto vinculado</p>
+        <p className="text-xs mt-1">Projetos aparecem quando leads indicados são convertidos</p>
+      </div>
+    );
+  }
+
+  const renderProjectCard = (project: ProjectRow) => (
+    <div
+      key={project.id}
+      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground truncate">
+          {project.address || project.customer_name}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {project.city && `${project.city} · `}
+          {project.project_type}
+          {project.start_date && ` · ${format(new Date(project.start_date), "dd/MM/yy")}`}
+          {project.completion_date && ` – ${format(new Date(project.completion_date), "dd/MM/yy")}`}
+        </p>
+      </div>
+      <div className="text-right flex-shrink-0 ml-3">
+        <Badge variant="outline" className={`text-[10px] ${projectStatusColors[project.project_status] || ""}`}>
+          {project.project_status}
+        </Badge>
+        {project.estimated_cost != null && project.estimated_cost > 0 && (
+          <p className="text-xs font-semibold text-foreground mt-1">
+            ${project.estimated_cost.toLocaleString()}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="pt-3 space-y-4">
+      {activeProjects.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Projetos Ativos
+          </h4>
+          {activeProjects.map(renderProjectCard)}
+        </div>
+      )}
+
+      {completedProjects.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Projetos Concluídos
+          </h4>
+          {completedProjects.map(renderProjectCard)}
+        </div>
+      )}
+
+      {/* Financial Summary Table */}
+      <div className="space-y-2">
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Histórico Financeiro
+        </h4>
+        <div className="rounded-lg border border-border/50 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="text-xs h-9">Projeto</TableHead>
+                <TableHead className="text-xs h-9 hidden sm:table-cell">Tipo</TableHead>
+                <TableHead className="text-xs h-9 hidden sm:table-cell">Data</TableHead>
+                <TableHead className="text-xs h-9 text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projects.map((p) => (
+                <TableRow key={p.id}>
+                  <TableCell className="text-xs py-2 font-medium">
+                    {p.address || p.customer_name}
+                    {p.city && <span className="text-muted-foreground ml-1">· {p.city}</span>}
+                  </TableCell>
+                  <TableCell className="text-xs py-2 hidden sm:table-cell text-muted-foreground">
+                    {p.project_type}
+                  </TableCell>
+                  <TableCell className="text-xs py-2 hidden sm:table-cell text-muted-foreground">
+                    {p.start_date ? format(new Date(p.start_date), "dd/MM/yy") : "—"}
+                  </TableCell>
+                  <TableCell className="text-xs py-2 text-right font-semibold">
+                    {p.estimated_cost ? `$${p.estimated_cost.toLocaleString()}` : "—"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={3} className="text-xs font-semibold">
+                  Total Receita
+                </TableCell>
+                <TableCell className="text-xs text-right font-bold text-foreground">
+                  ${totalRevenue.toLocaleString()}
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Edit Form ---------- */
 function EditForm({
   editValues,
