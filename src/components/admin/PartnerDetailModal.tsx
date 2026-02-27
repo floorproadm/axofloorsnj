@@ -59,7 +59,13 @@ export function PartnerDetailModal({ partner, open, onOpenChange }: Props) {
 
   const startEdit = () => {
     setEditValues({
+      company_name: partner.company_name,
+      contact_name: partner.contact_name,
+      phone: partner.phone || "",
+      email: partner.email || "",
       status: partner.status,
+      partner_type: partner.partner_type,
+      service_zone: partner.service_zone,
       next_action_date: partner.next_action_date,
       next_action_note: partner.next_action_note || "",
       notes: partner.notes || "",
@@ -176,17 +182,63 @@ export function PartnerDetailModal({ partner, open, onOpenChange }: Props) {
           {/* Notes / Edit */}
           {editing ? (
             <div className="space-y-3">
-              <Select
-                value={editValues.status}
-                onValueChange={(v) => setEditValues((p) => ({ ...p, status: v }))}
-              >
-                <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PARTNER_STATUSES).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                value={editValues.company_name || ""}
+                onChange={(e) => setEditValues((p) => ({ ...p, company_name: e.target.value }))}
+                placeholder="Nome da empresa"
+              />
+              <Input
+                value={editValues.contact_name || ""}
+                onChange={(e) => setEditValues((p) => ({ ...p, contact_name: e.target.value }))}
+                placeholder="Nome do contato"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  value={editValues.phone || ""}
+                  onChange={(e) => setEditValues((p) => ({ ...p, phone: e.target.value }))}
+                  placeholder="Telefone"
+                />
+                <Input
+                  value={editValues.email || ""}
+                  onChange={(e) => setEditValues((p) => ({ ...p, email: e.target.value }))}
+                  placeholder="Email"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Select
+                  value={editValues.status}
+                  onValueChange={(v) => setEditValues((p) => ({ ...p, status: v }))}
+                >
+                  <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(PARTNER_STATUSES).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={editValues.partner_type}
+                  onValueChange={(v) => setEditValues((p) => ({ ...p, partner_type: v }))}
+                >
+                  <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(PARTNER_TYPES).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={editValues.service_zone}
+                  onValueChange={(v) => setEditValues((p) => ({ ...p, service_zone: v }))}
+                >
+                  <SelectTrigger><SelectValue placeholder="Zona" /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SERVICE_ZONES).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Input
                 type="date"
                 value={editValues.next_action_date || ""}
