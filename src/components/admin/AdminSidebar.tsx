@@ -57,9 +57,10 @@ export function AdminSidebar() {
     fetchLogo();
   }, []);
 
-  const overviewItems = [
+  const topItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Jobs", url: "/admin/jobs", icon: Building },
+    { title: "Performance", url: "/admin/performance", icon: BarChart3 },
     { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
   ];
 
@@ -71,21 +72,18 @@ export function AdminSidebar() {
 
   const manageItems = [
     { title: "Leads", url: "/admin/leads", icon: Users },
-    { title: "Feed", url: "/admin/feed", icon: Images },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
+    { title: "Feed", url: "/admin/feed", icon: Images },
   ];
 
-  const supportItems = [
-    { title: "Performance", url: "/admin/performance", icon: BarChart3 },
-    { title: "Settings", url: "/admin/settings", icon: Settings },
-    { title: t("sidebar.ajuda"), url: "/admin/help", icon: HelpCircle },
-  ];
-
-  const navGroups = [
-    { label: t("sidebar.overview"), items: overviewItems },
+  const labeledGroups = [
     { label: t("sidebar.tools"), items: toolsItems },
     { label: t("sidebar.manage"), items: manageItems },
-    { label: t("sidebar.support"), items: supportItems },
+  ];
+
+  const footerNavItems = [
+    { title: t("sidebar.ajuda"), url: "/admin/help", icon: HelpCircle },
+    { title: "Settings", url: "/admin/settings", icon: Settings },
   ];
 
   const handleLogout = async () => {
