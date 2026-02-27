@@ -14,6 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Building,
   Phone,
   Mail,
@@ -28,6 +37,7 @@ import {
   Users,
   TrendingUp,
   BarChart3,
+  Briefcase,
 } from "lucide-react";
 import {
   Partner,
@@ -76,12 +86,31 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, name, phone, status, created_at")
+        .select("id, name, phone, status, created_at, converted_to_project_id")
         .eq("referred_by_partner_id", partner.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
+  });
+
+  const convertedProjectIds = referredLeads
+    .map((l) => l.converted_to_project_id)
+    .filter(Boolean) as string[];
+
+  const { data: partnerProjects = [] } = useQuery({
+    queryKey: ["partner-projects", partner.id, convertedProjectIds],
+    queryFn: async () => {
+      if (convertedProjectIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, customer_name, address, city, project_type, project_status, start_date, completion_date, estimated_cost, notes")
+        .in("id", convertedProjectIds)
+        .order("start_date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: convertedProjectIds.length > 0,
   });
 
   const startEdit = () => {
@@ -190,6 +219,12 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 <MapPin className="w-3 h-3 mr-0.5" />
                 {SERVICE_ZONES[partner.service_zone] || partner.service_zone}
               </Badge>
+              {partnerProjects.length > 0 && (
+                <Badge variant="secondary" className="text-[10px]">
+                  <Briefcase className="w-3 h-3 mr-0.5" />
+                  {partnerProjects.length} Projeto{partnerProjects.length !== 1 ? "s" : ""}
+                </Badge>
+              )}
             </div>
           </div>
           {onClose && (
@@ -278,6 +313,15 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       <Tabs defaultValue="geral" className="flex-1 flex flex-col min-h-0">
         <TabsList className="mx-4 mt-3 w-auto justify-start">
           <TabsTrigger value="geral">Geral</TabsTrigger>
+          <TabsTrigger value="projetos" className="gap-1.5">
+            <Briefcase className="w-3.5 h-3.5" />
+            Projetos
+            {partnerProjects.length > 0 && (
+              <span className="ml-1 bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {partnerProjects.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="indicacoes" className="gap-1.5">
             <Users className="w-3.5 h-3.5" />
             Indicações
@@ -405,6 +449,11 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
             </div>
           </TabsContent>
 
+          {/* Projetos Tab */}
+          <TabsContent value="projetos" className="px-4 pb-4 mt-0">
+            <PartnerProjectsTab projects={partnerProjects} />
+          </TabsContent>
+
           {/* Notas Tab */}
           <TabsContent value="notas" className="px-4 pb-4 mt-0">
             <div className="pt-3">
@@ -445,6 +494,149 @@ function InfoCard({
       {subtitle && (
         <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{subtitle}</p>
       )}
+    </div>
+  );
+}
+
+/* ---------- Partner Projects Tab ---------- */
+type ProjectRow = {
+  id: string;
+  customer_name: string;
+  address: string | null;
+  city: string | null;
+  project_type: string;
+  project_status: string;
+  start_date: string | null;
+  completion_date: string | null;
+  estimated_cost: number | null;
+  notes: string | null;
+};
+
+const projectStatusColors: Record<string, string> = {
+  pending: "bg-blue-500/10 text-blue-700 border-blue-200",
+  in_progress: "bg-amber-500/10 text-amber-700 border-amber-200",
+  completed: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
+  cancelled: "bg-red-500/10 text-red-700 border-red-200",
+};
+
+function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
+  const activeProjects = projects.filter(
+    (p) => p.project_status !== "completed" && p.project_status !== "cancelled"
+  );
+  const completedProjects = projects.filter(
+    (p) => p.project_status === "completed"
+  );
+  const totalRevenue = projects.reduce(
+    (sum, p) => sum + (p.estimated_cost || 0),
+    0
+  );
+
+  if (projects.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground pt-3">
+        <Briefcase className="w-10 h-10 mx-auto mb-2 opacity-30" />
+        <p className="text-sm">Nenhum projeto vinculado</p>
+        <p className="text-xs mt-1">Projetos aparecem quando leads indicados são convertidos</p>
+      </div>
+    );
+  }
+
+  const renderProjectCard = (project: ProjectRow) => (
+    <div
+      key={project.id}
+      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground truncate">
+          {project.address || project.customer_name}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {project.city && `${project.city} · `}
+          {project.project_type}
+          {project.start_date && ` · ${format(new Date(project.start_date), "dd/MM/yy")}`}
+          {project.completion_date && ` – ${format(new Date(project.completion_date), "dd/MM/yy")}`}
+        </p>
+      </div>
+      <div className="text-right flex-shrink-0 ml-3">
+        <Badge variant="outline" className={`text-[10px] ${projectStatusColors[project.project_status] || ""}`}>
+          {project.project_status}
+        </Badge>
+        {project.estimated_cost != null && project.estimated_cost > 0 && (
+          <p className="text-xs font-semibold text-foreground mt-1">
+            ${project.estimated_cost.toLocaleString()}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="pt-3 space-y-4">
+      {activeProjects.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Projetos Ativos
+          </h4>
+          {activeProjects.map(renderProjectCard)}
+        </div>
+      )}
+
+      {completedProjects.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Projetos Concluídos
+          </h4>
+          {completedProjects.map(renderProjectCard)}
+        </div>
+      )}
+
+      {/* Financial Summary Table */}
+      <div className="space-y-2">
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Histórico Financeiro
+        </h4>
+        <div className="rounded-lg border border-border/50 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="text-xs h-9">Projeto</TableHead>
+                <TableHead className="text-xs h-9 hidden sm:table-cell">Tipo</TableHead>
+                <TableHead className="text-xs h-9 hidden sm:table-cell">Data</TableHead>
+                <TableHead className="text-xs h-9 text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projects.map((p) => (
+                <TableRow key={p.id}>
+                  <TableCell className="text-xs py-2 font-medium">
+                    {p.address || p.customer_name}
+                    {p.city && <span className="text-muted-foreground ml-1">· {p.city}</span>}
+                  </TableCell>
+                  <TableCell className="text-xs py-2 hidden sm:table-cell text-muted-foreground">
+                    {p.project_type}
+                  </TableCell>
+                  <TableCell className="text-xs py-2 hidden sm:table-cell text-muted-foreground">
+                    {p.start_date ? format(new Date(p.start_date), "dd/MM/yy") : "—"}
+                  </TableCell>
+                  <TableCell className="text-xs py-2 text-right font-semibold">
+                    {p.estimated_cost ? `$${p.estimated_cost.toLocaleString()}` : "—"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={3} className="text-xs font-semibold">
+                  Total Receita
+                </TableCell>
+                <TableCell className="text-xs text-right font-bold text-foreground">
+                  ${totalRevenue.toLocaleString()}
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 }
