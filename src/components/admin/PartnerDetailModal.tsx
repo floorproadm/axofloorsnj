@@ -59,7 +59,13 @@ export function PartnerDetailModal({ partner, open, onOpenChange }: Props) {
 
   const startEdit = () => {
     setEditValues({
+      company_name: partner.company_name,
+      contact_name: partner.contact_name,
+      phone: partner.phone || "",
+      email: partner.email || "",
       status: partner.status,
+      partner_type: partner.partner_type,
+      service_zone: partner.service_zone,
       next_action_date: partner.next_action_date,
       next_action_note: partner.next_action_note || "",
       notes: partner.notes || "",
