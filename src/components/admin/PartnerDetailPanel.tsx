@@ -86,12 +86,31 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, name, phone, status, created_at")
+        .select("id, name, phone, status, created_at, converted_to_project_id")
         .eq("referred_by_partner_id", partner.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
+  });
+
+  const convertedProjectIds = referredLeads
+    .map((l) => l.converted_to_project_id)
+    .filter(Boolean) as string[];
+
+  const { data: partnerProjects = [] } = useQuery({
+    queryKey: ["partner-projects", partner.id, convertedProjectIds],
+    queryFn: async () => {
+      if (convertedProjectIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, customer_name, address, city, project_type, project_status, start_date, completion_date, estimated_cost, notes")
+        .in("id", convertedProjectIds)
+        .order("start_date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: convertedProjectIds.length > 0,
   });
 
   const startEdit = () => {
