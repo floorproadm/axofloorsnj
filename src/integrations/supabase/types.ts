@@ -597,6 +597,7 @@ export type Database = {
           notes: string | null
           phone: string
           priority: string
+          referred_by_partner_id: string | null
           room_size: string | null
           services: Json | null
           status: string
@@ -626,6 +627,7 @@ export type Database = {
           notes?: string | null
           phone: string
           priority?: string
+          referred_by_partner_id?: string | null
           room_size?: string | null
           services?: Json | null
           status?: string
@@ -655,6 +657,7 @@ export type Database = {
           notes?: string | null
           phone?: string
           priority?: string
+          referred_by_partner_id?: string | null
           room_size?: string | null
           services?: Json | null
           status?: string
@@ -668,6 +671,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_referred_by_partner_id_fkey"
+            columns: ["referred_by_partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
             referencedColumns: ["id"]
           },
         ]
@@ -806,6 +816,63 @@ export type Database = {
             referencedColumns: ["project_id"]
           },
         ]
+      }
+      partners: {
+        Row: {
+          company_name: string
+          contact_name: string
+          created_at: string
+          email: string | null
+          id: string
+          last_contacted_at: string | null
+          next_action_date: string | null
+          next_action_note: string | null
+          notes: string | null
+          partner_type: string
+          phone: string | null
+          service_zone: string
+          status: string
+          total_converted: number
+          total_referrals: number
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          contact_name: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          next_action_date?: string | null
+          next_action_note?: string | null
+          notes?: string | null
+          partner_type?: string
+          phone?: string | null
+          service_zone?: string
+          status?: string
+          total_converted?: number
+          total_referrals?: number
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          next_action_date?: string | null
+          next_action_note?: string | null
+          notes?: string | null
+          partner_type?: string
+          phone?: string | null
+          service_zone?: string
+          status?: string
+          total_converted?: number
+          total_referrals?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
