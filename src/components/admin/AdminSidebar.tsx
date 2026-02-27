@@ -117,8 +117,36 @@ export function AdminSidebar() {
           </div>
         </div>
 
-        {/* Navigation Groups */}
-        {navGroups.map((group) => (
+        {/* Top Items (no group label) */}
+        <SidebarGroup className="px-2">
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-0.5">
+              {topItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end={item.url === "/admin/dashboard"}
+                      className={({ isActive }) => `
+                        relative rounded-lg transition-all duration-150
+                        ${isActive
+                          ? "bg-primary/10 text-primary font-medium border border-primary/20 shadow-sm"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        }
+                      `}
+                    >
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Labeled Groups (Tools, Manage) */}
+        {labeledGroups.map((group) => (
           <SidebarGroup key={group.label} className="px-2">
             <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
               {!collapsed && group.label}
@@ -130,7 +158,6 @@ export function AdminSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
-                        end={item.url === "/admin/dashboard"}
                         className={({ isActive }) => `
                           relative rounded-lg transition-all duration-150
                           ${isActive
@@ -150,8 +177,35 @@ export function AdminSidebar() {
           </SidebarGroup>
         ))}
 
-        {/* Quick Action: Ver Site */}
+        {/* Footer Nav (Help, Settings) */}
         <SidebarGroup className="px-2 mt-auto">
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-0.5">
+              {footerNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) => `
+                        relative rounded-lg transition-all duration-150
+                        ${isActive
+                          ? "bg-primary/10 text-primary font-medium border border-primary/20 shadow-sm"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        }
+                      `}
+                    >
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Ver Site */}
+        <SidebarGroup className="px-2">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
