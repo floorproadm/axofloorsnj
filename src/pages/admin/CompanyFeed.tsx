@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, Plus, FolderPlus, ArrowLeft } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, FolderPlus, ArrowLeft, FolderOpen, Camera, CheckCircle, ImageIcon } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { FeedPostCard } from "@/components/admin/feed/FeedPostCard";
 import { FeedFolderGrid } from "@/components/admin/feed/FeedFolderGrid";
 import { CreateFolderDialog } from "@/components/admin/feed/CreateFolderDialog";
@@ -13,6 +14,13 @@ import { FeedFiltersSheet, FeedFilters, countActiveFilters } from "@/components/
 import { useFeedPosts, useFeedFolders } from "@/hooks/admin/useFeedData";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+const FOLDER_TYPE_LABELS: Record<string, { label: string; icon: typeof Camera }> = {
+  job_proof_before: { label: "Fotos Antes", icon: Camera },
+  job_proof_after: { label: "Fotos Depois", icon: ImageIcon },
+  quality_control: { label: "Controle de Qualidade", icon: CheckCircle },
+  job_progress: { label: "Progresso do Job", icon: FolderOpen },
+};
 
 const FEED_PAGE_SIZE = 20;
 
