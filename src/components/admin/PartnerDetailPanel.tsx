@@ -311,28 +311,46 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
 
       {/* Tabs */}
       <Tabs defaultValue="geral" className="flex-1 flex flex-col min-h-0">
-        <TabsList className="mx-4 mt-3 w-auto justify-start">
-          <TabsTrigger value="geral">Geral</TabsTrigger>
-          <TabsTrigger value="projetos" className="gap-1.5">
-            <Briefcase className="w-3.5 h-3.5" />
-            Projetos
-            {partnerProjects.length > 0 && (
-              <span className="ml-1 bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {partnerProjects.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="indicacoes" className="gap-1.5">
-            <Users className="w-3.5 h-3.5" />
-            Indicações
-            {referredLeads.length > 0 && (
-              <span className="ml-1 bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {referredLeads.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="notas">Notas</TabsTrigger>
-        </TabsList>
+        <div className="px-4 pt-3 pb-0 border-b border-border/40">
+          <TabsList className="w-full h-auto bg-transparent p-0 gap-0 justify-start rounded-none">
+            <TabsTrigger
+              value="geral"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
+            >
+              Geral
+            </TabsTrigger>
+            <TabsTrigger
+              value="projetos"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
+            >
+              <Briefcase className="w-3.5 h-3.5" />
+              Projetos
+              {partnerProjects.length > 0 && (
+                <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
+                  {partnerProjects.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="indicacoes"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Indicações
+              {referredLeads.length > 0 && (
+                <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
+                  {referredLeads.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="notas"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
+            >
+              Notas
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <ScrollArea className="flex-1">
           {/* Geral Tab */}
