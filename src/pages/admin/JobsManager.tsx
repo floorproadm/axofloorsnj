@@ -759,12 +759,11 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[calc(100vw-16px)] sm:max-w-2xl max-h-[90vh] overflow-hidden p-0">
-        {/* ═══ HEADER ═══ */}
-        <div className={cn("px-4 sm:px-6 py-4 text-white", statusConfig.headerBg)}>
-          <DialogHeader className="pb-0">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
+        <DialogContent className="w-[calc(100vw-16px)] sm:max-w-2xl max-h-[90vh] overflow-hidden p-0 [&>button:last-child]:text-white [&>button:last-child]:opacity-90 [&>button:last-child]:hover:opacity-100 [&>button:last-child]:z-10">
+          {/* ═══ HEADER ═══ */}
+          <div className={cn("px-4 sm:px-6 py-4 text-white", statusConfig.headerBg)}>
+            <DialogHeader className="pb-0">
+              <div className="flex items-center gap-2 mb-1 pr-10">
                 {/* Status Dropdown */}
                 <Select
                   value={project.project_status}
@@ -795,36 +794,41 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                   {risk.label}
                 </Badge>
               </div>
+              <DialogTitle className="text-xl font-bold text-white truncate pr-10">
+                {project.customer_name}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
 
-              {/* View Mode Toggle */}
-              <div className="flex items-center bg-white/15 rounded-md ml-3 flex-shrink-0">
-                <button
-                  onClick={() => setModalViewMode("operational")}
-                  className={cn(
-                    "p-1.5 rounded-md transition-colors",
-                    modalViewMode === "operational" ? "bg-white/30 text-white" : "text-white/60 hover:text-white"
-                  )}
-                  title="Operacional"
-                >
-                  <Wrench className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => setModalViewMode("executive")}
-                  className={cn(
-                    "p-1.5 rounded-md transition-colors",
-                    modalViewMode === "executive" ? "bg-white/30 text-white" : "text-white/60 hover:text-white"
-                  )}
-                  title="Executivo"
-                >
-                  <BarChart3 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+          {/* View Mode Toggle — below header */}
+          <div className="flex items-center justify-end gap-1 px-4 sm:px-6 pt-3">
+            <div className="flex items-center bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setModalViewMode("operational")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  modalViewMode === "operational"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                Operacional
+              </button>
+              <button
+                onClick={() => setModalViewMode("executive")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  modalViewMode === "executive"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                Executivo
+              </button>
             </div>
-            <DialogTitle className="text-xl font-bold text-white truncate pr-8">
-              {project.customer_name}
-            </DialogTitle>
-          </DialogHeader>
-        </div>
+          </div>
 
         <ScrollArea className="max-h-[calc(90vh-140px)]">
           <div className="p-4 sm:p-6 space-y-4">
