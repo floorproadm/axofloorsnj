@@ -32,18 +32,20 @@ import { Loader2, Users } from "lucide-react";
 
 const newJobSchema = z.object({
   address: z.string().trim().max(300, "Máximo 300 caracteres").optional(),
-  customer_name: z
-    .string()
-    .trim()
-    .min(1, "Nome é obrigatório")
-    .max(200, "Máximo 200 caracteres"),
-  customer_phone: z
-    .string()
-    .trim()
-    .min(1, "Telefone é obrigatório")
-    .max(30, "Máximo 30 caracteres"),
+  customer_name: z.string().trim().max(200, "Máximo 200 caracteres").optional().default(""),
+  customer_phone: z.string().trim().max(30, "Máximo 30 caracteres").optional().default(""),
   project_types: z.array(z.string()).min(1, "Selecione ao menos um serviço"),
   referred_by_partner_id: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const hasPartner = data.referred_by_partner_id && data.referred_by_partner_id !== "" && data.referred_by_partner_id !== "none";
+  if (!hasPartner) {
+    if (!data.customer_name || data.customer_name.length === 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome é obrigatório sem parceiro", path: ["customer_name"] });
+    }
+    if (!data.customer_phone || data.customer_phone.length === 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone é obrigatório sem parceiro", path: ["customer_phone"] });
+    }
+  }
 });
 
 type NewJobFormValues = z.infer<typeof newJobSchema>;
@@ -70,6 +72,8 @@ interface NewJobDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const NONE_PARTNER = "none";
 
 export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
   const navigate = useNavigate();
@@ -105,12 +109,12 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
       const { data, error } = await supabase
         .from("projects")
         .insert({
-          customer_name: values.customer_name,
+          customer_name: values.customer_name || "TBD (via parceiro)",
           customer_email: "",
-          customer_phone: values.customer_phone,
+          customer_phone: values.customer_phone || "",
           project_type: values.project_types.join(", "),
           address: values.address || null,
-          referred_by_partner_id: values.referred_by_partner_id || null,
+          referred_by_partner_id: (values.referred_by_partner_id && values.referred_by_partner_id !== NONE_PARTNER) ? values.referred_by_partner_id : null,
         })
         .select("id")
         .single();
@@ -175,33 +179,45 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="customer_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {(() => {
+              const partnerId = form.watch("referred_by_partner_id");
+              const hasPartner = partnerId && partnerId !== "" && partnerId !== NONE_PARTNER;
+              return (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="customer_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Customer name {hasPartner && <span className="text-xs text-muted-foreground font-normal">(opcional via parceiro)</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder={hasPartner ? "Pode adicionar depois" : "Full name"} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="customer_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="(000) 000-0000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <FormField
+                    control={form.control}
+                    name="customer_phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Customer phone {hasPartner && <span className="text-xs text-muted-foreground font-normal">(opcional via parceiro)</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder={hasPartner ? "Pode adicionar depois" : "(000) 000-0000"} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              );
+            })()}
 
             <FormField
               control={form.control}
