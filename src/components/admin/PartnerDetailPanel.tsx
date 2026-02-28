@@ -647,9 +647,9 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
   );
 
   return (
-    <div className="pt-3 space-y-4">
+    <div className="pt-3 space-y-6">
       {activeProjects.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Projetos Ativos
           </h4>
