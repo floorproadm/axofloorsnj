@@ -51,7 +51,7 @@ const newJobSchema = z.object({
 type NewJobFormValues = z.infer<typeof newJobSchema>;
 
 const PROJECT_TYPES = [
-  "Sanding & Refinishing",
+  "Sanding & Finish",
   "Refinishing Only",
   "New Installation",
   "Repair",
