@@ -1,99 +1,165 @@
 
+# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
 
-## Payments & Invoices -- Nova Pagina Admin
+## PARTE 1: Limpeza Total de Status Legados
 
-### Objetivo
-Criar uma pagina dedicada `/admin/payments` para gerenciar faturas (invoices) e pagamentos de projetos, centralizada no admin do FloorPro OS.
+### 1A. `src/hooks/admin/useAdminData.ts`
+Substituir filtros de stats (linhas 101-108):
+- `'new'` -> `'cold_lead'`
+- `'contacted'` -> `'warm_lead'`
+- `'qualified'` -> `'estimate_requested'`
+- `'converted'` -> `'in_production'`
+- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
 
-### Nova Tabela: `invoices`
+### 1B. `src/pages/admin/Intake.tsx`
+- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
+- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
+- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
+- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
+- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
 
-| Coluna | Tipo | Default | Notas |
-|---|---|---|---|
-| id | uuid | gen_random_uuid() | PK |
-| project_id | uuid | NOT NULL | FK -> projects |
-| customer_id | uuid | NULL | FK -> customers |
-| invoice_number | text | NOT NULL | Auto-gerado (INV-YYYY-001) |
-| status | text | 'draft' | draft, sent, paid, overdue, cancelled |
-| amount | numeric | 0 | Valor total da fatura |
-| tax_amount | numeric | 0 | Impostos |
-| discount_amount | numeric | 0 | Desconto |
-| total_amount | numeric | GENERATED (amount + tax - discount) | Valor final |
-| due_date | date | NOT NULL | Data de vencimento |
-| paid_at | timestamptz | NULL | Data do pagamento |
-| payment_method | text | NULL | cash, check, zelle, credit_card, bank_transfer |
-| notes | text | NULL | Observacoes internas |
-| created_at | timestamptz | now() | |
-| updated_at | timestamptz | now() | |
+### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
+- `src/pages/Contact.tsx` (linha 88)
+- `src/pages/Builders.tsx` (linha 112)
+- `src/pages/Realtors.tsx` (linha 126)
+- `src/pages/Quiz.tsx` (linhas 215, 253)
+- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
+- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
+- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
+- `src/hooks/useLeadCapture.ts` (linha 37)
+- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
 
-**RLS**: admin_all + authenticated_read (mesmo padrao das demais tabelas).
+---
 
-### Nova Tabela: `invoice_items`
+## PARTE 2: Collaborator Upload -> Admin Dashboard
 
-| Coluna | Tipo | Default | Notas |
-|---|---|---|---|
-| id | uuid | gen_random_uuid() | PK |
-| invoice_id | uuid | NOT NULL | FK -> invoices |
-| description | text | NOT NULL | Descricao do item |
-| quantity | numeric | 1 | |
-| unit_price | numeric | 0 | |
-| amount | numeric | GENERATED (quantity * unit_price) | |
-| created_at | timestamptz | now() | |
-
-**RLS**: admin_all + authenticated_read.
-
-### Arquivos a Criar
-
-1. **`src/pages/admin/Payments.tsx`** -- Pagina principal com:
-   - Stats cards no topo: Total Faturado, Recebido, Pendente, Vencido
-   - Tabela de faturas com filtros por status (All, Draft, Sent, Paid, Overdue)
-   - Botao "Nova Fatura" que abre dialog
-   - Click em row abre sheet com detalhes
-
-2. **`src/hooks/useInvoices.ts`** -- Hook com:
-   - `useInvoices()` -- lista todas as faturas com join em projects/customers
-   - `useInvoice(id)` -- fatura individual
-   - `createInvoice` mutation
-   - `updateInvoice` mutation
-   - `updateInvoiceStatus` mutation
-   - `deleteInvoice` mutation
-
-3. **`src/components/admin/payments/InvoiceDetailsSheet.tsx`** -- Sheet lateral com:
-   - Resumo da fatura (numero, cliente, projeto, valor)
-   - Lista de itens da fatura
-   - Botoes de acao: Marcar como Pago, Enviar, Cancelar
-   - Historico de status
-
-4. **`src/components/admin/payments/NewInvoiceDialog.tsx`** -- Dialog para criar fatura:
-   - Select de projeto (puxa customer automaticamente)
-   - Itens da fatura com adicionar/remover linhas
-   - Data de vencimento
-   - Campo de notas
-
-### Arquivos a Modificar
-
-5. **`src/App.tsx`** -- Adicionar rota `/admin/payments` protegida
-6. **`src/components/admin/AdminSidebar.tsx`** -- Adicionar item "Payments" no grupo principal (topItems), com icone `DollarSign`
-7. **`src/contexts/LanguageContext.tsx`** -- Adicionar traducoes para labels da pagina
-
-### Fluxo Principal
-
-```text
-Criar Fatura -> Selecionar Projeto -> Adicionar Itens -> Salvar (Draft)
-   -> Enviar (Sent) -> Cliente Paga -> Marcar como Pago (Paid)
-   -> Se venceu -> Status muda para Overdue
+### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
+Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
+```typescript
+await serviceClient.from("audit_log").insert({
+  user_id: userId,
+  user_role: "collaborator",
+  operation_type: "COLLABORATOR_UPLOAD",
+  table_accessed: "media_files",
+  data_classification: JSON.stringify({
+    project_id: projectId,
+    storage_path: storagePath,
+    folder_type: folderType,
+  }),
+});
 ```
 
-### Integracao com Modulos Existentes
+### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
+Adicionar bloco `recentFieldUploads` ao retorno:
+- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
+- JOIN com `projects` para pegar `customer_name`
+- Limite 10, ordenado por `created_at DESC`
 
-- Puxa dados de `projects` e `customers` para auto-preencher
-- Pode usar itens do `service_catalog` como sugestao ao adicionar linhas
-- Stats cards seguem o mesmo padrao visual do Performance (`StatsCardsGrid`)
-- Tabela usa `DataTable` existente com filtros e paginacao
+### 2C. `src/hooks/admin/useDashboardData.ts`
+- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
+- Expor `recentFieldUploads` no retorno do hook
+- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
 
-### Detalhes Tecnicos
+### 2D. `src/pages/admin/Dashboard.tsx`
+- Incluir uploads recentes e SLA breaches no array `priorityTasks`
+- Novo type `'field_upload'` com link `/admin/jobs`
 
-- Migracao SQL cria as 2 tabelas + RLS policies + trigger para updated_at
-- `total_amount` como GENERATED ALWAYS para consistencia (mesmo padrao de job_costs)
-- Invoice number gerado no frontend com formato `INV-YYYY-NNN`
-- Nenhuma dependencia nova necessaria
+### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
+- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
+- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
 
+---
+
+## PARTE 3: SLA V0 - Tempo Como Variavel Real
+
+### 3A. Migration SQL (unica, junto com 2B)
+```sql
+-- 1. Nova coluna
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
+
+-- 2. Backfill
+UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
+WHERE status_changed_at IS NULL;
+
+-- 3. Trigger
+CREATE OR REPLACE FUNCTION set_status_changed_at()
+RETURNS trigger AS $$
+BEGIN
+  IF OLD.status IS DISTINCT FROM NEW.status THEN
+    NEW.status_changed_at := now();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
+CREATE TRIGGER trg_set_status_changed_at
+  BEFORE UPDATE ON leads FOR EACH ROW
+  EXECUTE FUNCTION set_status_changed_at();
+
+-- 4. View: follow-up overdue
+CREATE OR REPLACE VIEW leads_followup_overdue AS
+SELECT id, name, next_action_date
+FROM leads
+WHERE status = 'proposal_sent'
+  AND next_action_date IS NOT NULL
+  AND next_action_date < current_date;
+
+-- 5. View: estimate stale (>3 dias)
+CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
+SELECT id, name,
+  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
+FROM leads
+WHERE status = 'estimate_scheduled'
+  AND converted_to_project_id IS NULL
+  AND status_changed_at < now() - interval '3 days';
+
+-- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
+```
+
+### 3B. Dashboard Integration
+SLA breaches aparecem como tasks no `priorityTasks`:
+- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
+- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
+
+---
+
+## Checklist de Validacao
+
+**SQL pos-deploy:**
+```sql
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'leads' AND column_name = 'status_changed_at';
+
+SELECT * FROM leads_followup_overdue LIMIT 5;
+SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
+```
+
+**Network (DevTools):**
+- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
+
+**Grep final:**
+- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
+
+---
+
+## Arquivos Modificados (resumo)
+
+| Arquivo | Tipo |
+|---|---|
+| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
+| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
+| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
+| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
+| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
+| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
+| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
+| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
+| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
+| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
+| `src/pages/admin/Dashboard.tsx` | Novos task types |
+| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |
