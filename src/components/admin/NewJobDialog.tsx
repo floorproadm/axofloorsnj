@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
 
 const newJobSchema = z.object({
   address: z.string().trim().max(300, "Máximo 300 caracteres").optional(),
@@ -43,6 +43,7 @@ const newJobSchema = z.object({
     .min(1, "Telefone é obrigatório")
     .max(30, "Máximo 30 caracteres"),
   project_type: z.string().min(1, "Selecione o tipo de projeto"),
+  referred_by_partner_id: z.string().optional(),
 });
 
 type NewJobFormValues = z.infer<typeof newJobSchema>;
@@ -58,6 +59,13 @@ const PROJECT_TYPES = [
   "Other",
 ];
 
+interface Partner {
+  id: string;
+  company_name: string;
+  contact_name: string;
+  partner_type: string;
+}
+
 interface NewJobDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -66,6 +74,7 @@ interface NewJobDialogProps {
 export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [partners, setPartners] = useState<Partner[]>([]);
 
   const form = useForm<NewJobFormValues>({
     resolver: zodResolver(newJobSchema),
@@ -74,8 +83,21 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
       customer_name: "",
       customer_phone: "",
       project_type: "",
+      referred_by_partner_id: "",
     },
   });
+
+  useEffect(() => {
+    if (!open) return;
+    supabase
+      .from("partners")
+      .select("id, company_name, contact_name, partner_type")
+      .eq("status", "active")
+      .order("company_name")
+      .then(({ data }) => {
+        if (data) setPartners(data);
+      });
+  }, [open]);
 
   const onSubmit = async (values: NewJobFormValues) => {
     setLoading(true);
@@ -88,11 +110,26 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
           customer_phone: values.customer_phone,
           project_type: values.project_type,
           address: values.address || null,
+          referred_by_partner_id: values.referred_by_partner_id || null,
         })
         .select("id")
         .single();
 
       if (error) throw error;
+
+      // If partner selected, increment their total_referrals
+      if (values.referred_by_partner_id) {
+        const partner = partners.find(p => p.id === values.referred_by_partner_id);
+        if (partner) {
+          await supabase
+            .from("partners")
+            .update({ 
+              total_referrals: (partner as any).total_referrals + 1 || 1,
+              last_contacted_at: new Date().toISOString()
+            })
+            .eq("id", values.referred_by_partner_id);
+        }
+      }
 
       toast({
         title: "Job criado!",
@@ -182,6 +219,36 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
                       {PROJECT_TYPES.map((t) => (
                         <SelectItem key={t} value={t}>
                           {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="referred_by_partner_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5" />
+                    Parceiro (indicação)
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Nenhum parceiro" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum parceiro</SelectItem>
+                      {partners.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.company_name} — {p.contact_name}
+                          <span className="ml-1 text-muted-foreground text-xs">({p.partner_type})</span>
                         </SelectItem>
                       ))}
                     </SelectContent>

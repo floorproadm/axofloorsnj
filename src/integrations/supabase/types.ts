@@ -1165,6 +1165,7 @@ export type Database = {
           notes: string | null
           project_status: string
           project_type: string
+          referred_by_partner_id: string | null
           requires_progress_photos: boolean
           square_footage: number | null
           start_date: string | null
@@ -1189,6 +1190,7 @@ export type Database = {
           notes?: string | null
           project_status?: string
           project_type: string
+          referred_by_partner_id?: string | null
           requires_progress_photos?: boolean
           square_footage?: number | null
           start_date?: string | null
@@ -1213,6 +1215,7 @@ export type Database = {
           notes?: string | null
           project_status?: string
           project_type?: string
+          referred_by_partner_id?: string | null
           requires_progress_photos?: boolean
           square_footage?: number | null
           start_date?: string | null
@@ -1228,6 +1231,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_referred_by_partner_id_fkey"
+            columns: ["referred_by_partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
             referencedColumns: ["id"]
           },
         ]
