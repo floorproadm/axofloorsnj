@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, subDays, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -590,6 +591,7 @@ const projectStatusColors: Record<string, string> = {
 };
 
 function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
+  const navigate = useNavigate();
   const activeProjects = projects.filter(
     (p) => p.project_status !== "completed" && p.project_status !== "cancelled"
   );
@@ -614,10 +616,11 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
   const renderProjectCard = (project: ProjectRow) => (
     <div
       key={project.id}
-      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30"
+      onClick={() => navigate(`/admin/projects/${project.id}`)}
+      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30 cursor-pointer hover:bg-muted/60 hover:border-primary/30 transition-colors group"
     >
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground truncate">
+        <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
           {project.address || project.customer_name}
         </p>
         <p className="text-xs text-muted-foreground">
@@ -627,15 +630,18 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
           {project.completion_date && ` – ${format(new Date(project.completion_date), "dd/MM/yy")}`}
         </p>
       </div>
-      <div className="text-right flex-shrink-0 ml-3">
-        <Badge variant="outline" className={`text-[10px] ${projectStatusColors[project.project_status] || ""}`}>
-          {project.project_status}
-        </Badge>
-        {project.estimated_cost != null && project.estimated_cost > 0 && (
-          <p className="text-xs font-semibold text-foreground mt-1">
-            ${project.estimated_cost.toLocaleString()}
-          </p>
-        )}
+      <div className="text-right flex-shrink-0 ml-3 flex items-center gap-2">
+        <div>
+          <Badge variant="outline" className={`text-[10px] ${projectStatusColors[project.project_status] || ""}`}>
+            {project.project_status}
+          </Badge>
+          {project.estimated_cost != null && project.estimated_cost > 0 && (
+            <p className="text-xs font-semibold text-foreground mt-1">
+              ${project.estimated_cost.toLocaleString()}
+            </p>
+          )}
+        </div>
+        <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     </div>
   );
