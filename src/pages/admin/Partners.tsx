@@ -20,7 +20,6 @@ import {
   Partner,
   PARTNER_TYPES,
   PARTNER_STATUSES,
-  SERVICE_ZONES,
 } from "@/hooks/admin/usePartnersData";
 import { NewPartnerDialog } from "@/components/admin/NewPartnerDialog";
 import { PartnerListItem } from "@/components/admin/PartnerListItem";

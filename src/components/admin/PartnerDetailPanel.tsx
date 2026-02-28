@@ -47,7 +47,6 @@ import {
   usePartnersData,
   PARTNER_TYPES,
   PARTNER_STATUSES,
-  SERVICE_ZONES,
 } from "@/hooks/admin/usePartnersData";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
