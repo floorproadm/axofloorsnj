@@ -1061,23 +1061,19 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
             <div className="rounded-xl border bg-card p-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações Rápidas</h3>
               <div className={cn("grid gap-2", modalViewMode === "executive" ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-3")}>
-                {/* Photos — always */}
+                {/* Measurements — always */}
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-auto py-2.5 flex-col gap-1"
                   onClick={() => {
                     onClose();
-                    navigate(`/admin/feed?project=${project.id}`);
+                    navigate(`/admin/measurements?project=${project.id}`);
                   }}
                 >
-                  <Camera className="w-4 h-4" />
-                  <span className="text-[11px]">Fotos</span>
-                  {proofComplete ? (
-                    <CheckCircle className="w-3 h-3 text-emerald-500" />
-                  ) : (
-                    <AlertTriangle className="w-3 h-3 text-amber-500" />
-                  )}
+                  <Ruler className="w-4 h-4" />
+                  <span className="text-[11px]">Medições</span>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
                 </Button>
 
                 {/* Costs — always */}
@@ -1096,19 +1092,23 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                   )}
                 </Button>
 
-                {/* Measurements — always */}
+                {/* Photos — always */}
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-auto py-2.5 flex-col gap-1"
                   onClick={() => {
                     onClose();
-                    navigate(`/admin/measurements?project=${project.id}`);
+                    navigate(`/admin/feed?project=${project.id}`);
                   }}
                 >
-                  <Ruler className="w-4 h-4" />
-                  <span className="text-[11px]">Medições</span>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                  <Camera className="w-4 h-4" />
+                  <span className="text-[11px]">Fotos</span>
+                  {proofComplete ? (
+                    <CheckCircle className="w-3 h-3 text-emerald-500" />
+                  ) : (
+                    <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  )}
                 </Button>
 
                 {/* Executive-only actions */}
