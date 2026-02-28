@@ -304,6 +304,16 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           <span className="text-[10px] font-medium">Indicação</span>
         </button>
       </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-3 gap-3 p-3 border-b border-border/50">
+        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-blue-500/10 border border-blue-200/50">
+          <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          <div>
+            <p className="text-lg font-bold text-foreground leading-none">{partner.total_referrals}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Indicações</p>
+          </div>
+        </div>
         <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-200/50">
           <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <div>
