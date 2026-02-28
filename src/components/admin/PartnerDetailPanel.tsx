@@ -26,7 +26,6 @@ import {
   Building,
   Phone,
   Mail,
-  MapPin,
   Calendar,
   ArrowUpRight,
   Loader2,
