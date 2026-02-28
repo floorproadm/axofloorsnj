@@ -107,6 +107,24 @@ const translations = {
   "auth.logoutDesc": { pt: "Você foi desconectado com sucesso.", en: "You have been signed out successfully." },
   "auth.erroLogout": { pt: "Erro ao fazer logout", en: "Error signing out" },
   "auth.tenteNovamente": { pt: "Tente novamente.", en: "Please try again." },
+
+  // Mission Control
+  "mission.alertasSistema": { pt: "Alertas do Sistema", en: "System Alerts" },
+  "mission.tarefas": { pt: "Tarefas", en: "Tasks" },
+  "mission.novaTarefa": { pt: "+ Tarefa", en: "+ Task" },
+  "mission.semTarefas": { pt: "Sem tarefas pendentes", en: "No pending tasks" },
+  "mission.todasConcluidas": { pt: "Tudo em dia!", en: "All caught up!" },
+  "mission.verConcluidas": { pt: "Ver concluídas", en: "Show completed" },
+  "mission.ocultarConcluidas": { pt: "Ocultar concluídas", en: "Hide completed" },
+  "mission.tudoSobControle": { pt: "Tudo sob controle", en: "Everything under control" },
+  "mission.semPendencias": { pt: "Sem alertas ou tarefas pendentes", en: "No alerts or pending tasks" },
+  "mission.tituloPlaceholder": { pt: "Título da tarefa...", en: "Task title..." },
+  "mission.descricaoPlaceholder": { pt: "Descrição (opcional)", en: "Description (optional)" },
+  "mission.atribuir": { pt: "Responsável", en: "Assignee" },
+  "mission.semResponsavel": { pt: "Sem responsável", en: "Unassigned" },
+  "mission.prazo": { pt: "Definir prazo", en: "Set due date" },
+  "mission.criar": { pt: "Criar Tarefa", en: "Create Task" },
+  "mission.missionControl": { pt: "Mission Control", en: "Mission Control" },
 } as const;
 
 type TranslationKey = keyof typeof translations;

@@ -10,7 +10,7 @@ import { DollarSign, Briefcase, Users } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 import { MetricCard } from "@/components/admin/dashboard/MetricCard";
-import { PriorityTasksList } from "@/components/admin/dashboard/PriorityTasksList";
+import { MissionControl } from "@/components/admin/dashboard/MissionControl";
 import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
 
 export default function Dashboard() {
