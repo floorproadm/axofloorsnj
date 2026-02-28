@@ -491,6 +491,9 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           </TabsContent>
         </ScrollArea>
       </Tabs>
+
+      <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
+      <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
     </div>
   );
 }
