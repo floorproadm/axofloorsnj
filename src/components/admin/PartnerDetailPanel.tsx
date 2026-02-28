@@ -27,6 +27,7 @@ import {
   Phone,
   Mail,
   Calendar,
+  Cake,
   ArrowUpRight,
   Loader2,
   Trash2,
@@ -129,6 +130,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       next_action_date: partner.next_action_date,
       next_action_note: partner.next_action_note || "",
       notes: partner.notes || "",
+      birthday: partner.birthday,
     });
     setEditing(true);
   };
@@ -391,6 +393,25 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                     icon={<Building className="w-3.5 h-3.5" />}
                     label="Tipo"
                     value={PARTNER_TYPES[partner.partner_type] || partner.partner_type}
+                  />
+                  <InfoCard
+                    icon={<Cake className="w-3.5 h-3.5" />}
+                    label="Aniversário"
+                    value={
+                      partner.birthday
+                        ? format(new Date(partner.birthday + "T12:00:00"), "dd/MM")
+                        : "—"
+                    }
+                    alert={
+                      partner.birthday
+                        ? (() => {
+                            const today = new Date();
+                            const bday = new Date(today.getFullYear(), new Date(partner.birthday + "T12:00:00").getMonth(), new Date(partner.birthday + "T12:00:00").getDate());
+                            const diff = Math.ceil((bday.getTime() - today.getTime()) / 86400000);
+                            return diff >= 0 && diff <= 7;
+                          })()
+                        : false
+                    }
                   />
                   <InfoCard
                     icon={<Calendar className="w-3.5 h-3.5" />}
@@ -748,6 +769,16 @@ function EditForm({
         onChange={(e) => setEditValues((p) => ({ ...p, next_action_note: e.target.value }))}
         placeholder="Nota da próxima ação"
       />
+      <div>
+        <label className="text-xs text-muted-foreground mb-1 block">Aniversário</label>
+        <Input
+          type="date"
+          value={editValues.birthday || ""}
+          onChange={(e) =>
+            setEditValues((p) => ({ ...p, birthday: e.target.value || null }))
+          }
+        />
+      </div>
       <div className="flex gap-2">
         <Button onClick={onSave} disabled={saving} className="flex-1">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}

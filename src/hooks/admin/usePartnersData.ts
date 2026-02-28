@@ -17,6 +17,7 @@ export interface Partner {
   total_referrals: number;
   total_converted: number;
   notes: string | null;
+  birthday: string | null;
   created_at: string;
   updated_at: string;
 }

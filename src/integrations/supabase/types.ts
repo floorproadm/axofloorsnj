@@ -819,6 +819,7 @@ export type Database = {
       }
       partners: {
         Row: {
+          birthday: string | null
           company_name: string
           contact_name: string
           created_at: string
@@ -837,6 +838,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          birthday?: string | null
           company_name: string
           contact_name: string
           created_at?: string
@@ -855,6 +857,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          birthday?: string | null
           company_name?: string
           contact_name?: string
           created_at?: string
