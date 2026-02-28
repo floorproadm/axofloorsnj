@@ -16,6 +16,7 @@ import {
   BookOpen,
   HelpCircle,
   Handshake,
+  DollarSign,
 } from "lucide-react";
 import {
   Sidebar,
