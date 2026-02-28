@@ -128,7 +128,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       email: partner.email || "",
       status: partner.status,
       partner_type: partner.partner_type,
-      service_zone: partner.service_zone,
       next_action_date: partner.next_action_date,
       next_action_note: partner.next_action_note || "",
       notes: partner.notes || "",
@@ -221,10 +220,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               </Badge>
               <Badge variant="secondary" className="text-[10px]">
                 {PARTNER_TYPES[partner.partner_type] || partner.partner_type}
-              </Badge>
-              <Badge variant="secondary" className="text-[10px]">
-                <MapPin className="w-3 h-3 mr-0.5" />
-                {SERVICE_ZONES[partner.service_zone] || partner.service_zone}
               </Badge>
               {partnerProjects.length > 0 && (
                 <Badge variant="secondary" className="text-[10px]">
@@ -393,11 +388,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                         : "—"
                     }
                     subtitle={partner.next_action_note || undefined}
-                  />
-                  <InfoCard
-                    icon={<MapPin className="w-3.5 h-3.5" />}
-                    label="Service Zone"
-                    value={SERVICE_ZONES[partner.service_zone] || partner.service_zone}
                   />
                   <InfoCard
                     icon={<Building className="w-3.5 h-3.5" />}
@@ -742,17 +732,6 @@ function EditForm({
           <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
           <SelectContent>
             {Object.entries(PARTNER_TYPES).map(([k, v]) => (
-              <SelectItem key={k} value={k}>{v}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={editValues.service_zone}
-          onValueChange={(v) => setEditValues((p) => ({ ...p, service_zone: v }))}
-        >
-          <SelectTrigger><SelectValue placeholder="Zona" /></SelectTrigger>
-          <SelectContent>
-            {Object.entries(SERVICE_ZONES).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v}</SelectItem>
             ))}
           </SelectContent>
