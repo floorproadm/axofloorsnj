@@ -475,6 +475,41 @@ export type Database = {
           },
         ]
       }
+      job_cost_items: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          id: string
+          job_cost_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          job_cost_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          job_cost_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_cost_items_job_cost_id_fkey"
+            columns: ["job_cost_id"]
+            isOneToOne: false
+            referencedRelation: "job_costs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_costs: {
         Row: {
           additional_costs: number
