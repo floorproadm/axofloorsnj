@@ -29,7 +29,7 @@ import {
   Mail,
   Calendar,
   Cake,
-  ArrowUpRight,
+  ArrowLeft,
   Loader2,
   Trash2,
   Pencil,
