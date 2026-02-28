@@ -107,12 +107,12 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
       const { data, error } = await supabase
         .from("projects")
         .insert({
-          customer_name: values.customer_name,
+          customer_name: values.customer_name || "TBD (via parceiro)",
           customer_email: "",
-          customer_phone: values.customer_phone,
+          customer_phone: values.customer_phone || "",
           project_type: values.project_types.join(", "),
           address: values.address || null,
-          referred_by_partner_id: values.referred_by_partner_id || null,
+          referred_by_partner_id: (values.referred_by_partner_id && values.referred_by_partner_id !== NONE_PARTNER) ? values.referred_by_partner_id : null,
         })
         .select("id")
         .single();
@@ -177,32 +177,45 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="customer_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {(() => {
+              const partnerId = form.watch("referred_by_partner_id");
+              const hasPartner = partnerId && partnerId !== "" && partnerId !== NONE_PARTNER;
+              return (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="customer_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Customer name {hasPartner && <span className="text-xs text-muted-foreground font-normal">(opcional via parceiro)</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder={hasPartner ? "Pode adicionar depois" : "Full name"} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="customer_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="(000) 000-0000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+                  <FormField
+                    control={form.control}
+                    name="customer_phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Customer phone {hasPartner && <span className="text-xs text-muted-foreground font-normal">(opcional via parceiro)</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder={hasPartner ? "Pode adicionar depois" : "(000) 000-0000"} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              );
+            })()}
             />
 
             <FormField
