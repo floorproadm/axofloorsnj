@@ -78,6 +78,8 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Partner>>({});
+  const [newJobOpen, setNewJobOpen] = useState(false);
+  const [newLeadOpen, setNewLeadOpen] = useState(false);
 
   const initials = partner.contact_name
     .split(" ")
