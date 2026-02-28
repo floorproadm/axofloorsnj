@@ -63,7 +63,6 @@ export function NewTaskDialog({ onSubmit, isPending }: NewTaskDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]">
-          <Plus className="w-3.5 h-3.5" />
           {t("mission.novaTarefa")}
         </Button>
       </DialogTrigger>
