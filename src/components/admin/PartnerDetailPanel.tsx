@@ -259,14 +259,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               )}
             </div>
           </div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="p-1 rounded hover:bg-muted text-muted-foreground md:hidden"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
         </div>
       </div>
 
