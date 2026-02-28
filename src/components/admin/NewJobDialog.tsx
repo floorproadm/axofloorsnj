@@ -216,7 +216,6 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
                 </>
               );
             })()}
-            />
 
             <FormField
               control={form.control}
