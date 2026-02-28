@@ -107,16 +107,33 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
   const { data: partnerProjects = [] } = useQuery({
     queryKey: ["partner-projects", partner.id, convertedProjectIds],
     queryFn: async () => {
-      if (convertedProjectIds.length === 0) return [];
-      const { data, error } = await supabase
+      // Fetch projects linked via referred_by_partner_id (direct jobs)
+      const { data: directProjects, error: err1 } = await supabase
         .from("projects")
         .select("id, customer_name, address, city, project_type, project_status, start_date, completion_date, estimated_cost, notes")
-        .in("id", convertedProjectIds)
+        .eq("referred_by_partner_id", partner.id)
         .order("start_date", { ascending: false });
-      if (error) throw error;
-      return data;
+      if (err1) throw err1;
+
+      // Fetch projects linked via lead conversion
+      let convertedProjects: typeof directProjects = [];
+      if (convertedProjectIds.length > 0) {
+        const { data, error: err2 } = await supabase
+          .from("projects")
+          .select("id, customer_name, address, city, project_type, project_status, start_date, completion_date, estimated_cost, notes")
+          .in("id", convertedProjectIds)
+          .order("start_date", { ascending: false });
+        if (err2) throw err2;
+        convertedProjects = data || [];
+      }
+
+      // Merge and deduplicate by id
+      const merged = new Map<string, (typeof directProjects)[0]>();
+      for (const p of [...(directProjects || []), ...convertedProjects]) {
+        merged.set(p.id, p);
+      }
+      return Array.from(merged.values());
     },
-    enabled: convertedProjectIds.length > 0,
   });
 
   const startEdit = () => {
