@@ -349,6 +349,10 @@ function MeasurementDetailView({
               <div className="flex gap-4">
                 {m.total_sqft > 0 && <span>{m.total_sqft.toLocaleString()} sqft</span>}
                 {m.total_linear_ft > 0 && <span>{m.total_linear_ft.toLocaleString()} linear ft</span>}
+                {m.areas && (() => {
+                  const stairs = m.areas.filter(a => a.area_type === 'staircase').reduce((s, a) => s + Number(a.area_sqft || 0), 0);
+                  return stairs > 0 ? <span>{stairs} degraus</span> : null;
+                })()}
               </div>
             </div>
           </>
@@ -527,7 +531,14 @@ function EditMeasurementView({
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-foreground">Áreas</h3>
-          <span className="text-sm text-muted-foreground">Total: {totalSqft.toLocaleString()} sqft</span>
+          <span className="text-sm text-muted-foreground">
+            Total: {[
+              totalSqft > 0 && `${totalSqft.toLocaleString()} sqft`,
+              areas.filter(a => a.area_type === 'baseboard' || a.area_type === 'handrail').reduce((s, a) => s + Number(a.linear_ft || 0), 0) > 0 &&
+                `${areas.filter(a => a.area_type === 'baseboard' || a.area_type === 'handrail').reduce((s, a) => s + Number(a.linear_ft || 0), 0)} linear ft`,
+              totalStairs > 0 && `${totalStairs} degraus`,
+            ].filter(Boolean).join(' · ') || '—'}
+          </span>
         </div>
 
         <div className="space-y-3">
@@ -563,12 +574,14 @@ function EditMeasurementView({
                   className="w-20 h-8 text-sm"
                 />
                 <span className="text-xs text-muted-foreground">{getAreaUnit(area.area_type)}</span>
-                <Input
-                  value={area.dimensions || ''}
-                  onChange={(e) => updateArea(idx, 'dimensions', e.target.value)}
-                  placeholder="20' x 20'"
-                  className="flex-1 h-8 text-sm"
-                />
+                {area.area_type !== 'staircase' && (
+                  <Input
+                    value={area.dimensions || ''}
+                    onChange={(e) => updateArea(idx, 'dimensions', e.target.value)}
+                    placeholder="20' x 20'"
+                    className="flex-1 h-8 text-sm"
+                  />
+                )}
               </div>
               {(area.area_type === 'baseboard' || area.area_type === 'handrail') && (
                 <div className="flex gap-2 items-center">
