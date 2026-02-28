@@ -51,6 +51,7 @@ interface ProjectWithRelations {
   team_lead: string | null;
   team_members: string[] | null;
   work_schedule: string | null;
+  referred_by_partner_id: string | null;
   created_at: string;
   updated_at: string;
   job_costs: {
@@ -67,6 +68,7 @@ interface ProjectWithRelations {
     before_image_url: string | null;
     after_image_url: string | null;
   }[];
+  partner_name: string | null;
 }
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: string; border: string; icon: React.ReactNode; headerBg: string }> = {
@@ -114,9 +116,15 @@ function useProjectsWithRelations(page = 0, pageSize = 50) {
 
       const projectIds = (projects || []).map((p) => p.id);
 
-      const [costsRes, proofRes] = await Promise.all([
+      // Collect unique partner IDs
+      const partnerIds = [...new Set((projects || []).map(p => p.referred_by_partner_id).filter(Boolean))] as string[];
+
+      const [costsRes, proofRes, partnersRes] = await Promise.all([
         supabase.from("job_costs").select("*").in("project_id", projectIds),
         supabase.from("job_proof").select("id, project_id, before_image_url, after_image_url").in("project_id", projectIds),
+        partnerIds.length > 0
+          ? supabase.from("partners").select("id, company_name, contact_name").in("id", partnerIds)
+          : Promise.resolve({ data: [] }),
       ]);
 
       const costsMap = new Map<string, any>();
@@ -129,6 +137,9 @@ function useProjectsWithRelations(page = 0, pageSize = 50) {
         proofMap.set(p.project_id, arr);
       });
 
+      const partnerMap = new Map<string, string>();
+      (partnersRes.data || []).forEach((p: any) => partnerMap.set(p.id, p.contact_name || p.company_name));
+
       const items = (projects || []).map((p: any) => ({
         ...p,
         team_lead: p.team_lead || null,
@@ -136,6 +147,7 @@ function useProjectsWithRelations(page = 0, pageSize = 50) {
         work_schedule: p.work_schedule || '8:00 AM - 5:00 PM',
         job_costs: costsMap.get(p.id) || null,
         job_proof: proofMap.get(p.id) || [],
+        partner_name: p.referred_by_partner_id ? (partnerMap.get(p.referred_by_partner_id) || null) : null,
       }));
       return { items, totalCount: count ?? items.length };
     },
