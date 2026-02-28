@@ -35,6 +35,7 @@ export const PARTNER_TYPES: Record<string, string> = {
   realtor: "Realtor",
   gc: "General Contractor",
   designer: "Designer",
+  flooring_contractor: "Flooring Contractor",
 };
 
 export const PARTNER_STATUSES: Record<string, string> = {
