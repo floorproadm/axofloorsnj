@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, AlertTriangle, Clock, MessageSquare, Camera, PhoneOff, Timer, Zap, CheckCircle2, Circle, Loader2, Trash2 } from "lucide-react";
+import {
+  ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
+  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, Plus
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Task, useTasks } from "@/hooks/useTasks";
 import { NewTaskDialog } from "./NewTaskDialog";
 import { format, isPast, isToday } from "date-fns";
 
-// ---------- System Alerts (same data as before) ----------
+// ---------- System Alerts ----------
 
 interface SystemAlert {
   label: string;
   color: "blocked" | "risk" | "success";
   link: string;
-  type: "follow_up" | "new_lead" | "stalled" | "field_upload" | "sla_followup" | "sla_estimate" | "sla_auto_escalation";
+  type: string;
 }
 
 const dotColor = {
@@ -32,19 +35,13 @@ const typeIcon: Record<string, React.ElementType> = {
   sla_auto_escalation: Zap,
 };
 
-// ---------- Priority config ----------
+// ---------- Priority ----------
 
-const priorityConfig: Record<string, { dot: string; label: string }> = {
-  urgent: { dot: "bg-[hsl(var(--state-blocked))]", label: "Urgent" },
-  high: { dot: "bg-[hsl(var(--state-risk))]", label: "High" },
-  medium: { dot: "bg-muted-foreground/40", label: "Medium" },
-  low: { dot: "bg-muted-foreground/20", label: "Low" },
-};
-
-const statusIcon: Record<string, React.ElementType> = {
-  pending: Circle,
-  in_progress: Loader2,
-  done: CheckCircle2,
+const priorityDot: Record<string, string> = {
+  urgent: "bg-[hsl(var(--state-blocked))]",
+  high: "bg-[hsl(var(--state-risk))]",
+  medium: "bg-muted-foreground/40",
+  low: "bg-muted-foreground/20",
 };
 
 // ---------- Component ----------
@@ -61,115 +58,97 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
   const pendingTasks = tasks.filter((t) => t.status !== "done");
   const doneTasks = tasks.filter((t) => t.status === "done");
+  const isLoading = isLoadingAlerts || isLoadingTasks;
 
   const toggleStatus = (task: Task) => {
-    const nextStatus = task.status === "pending" ? "in_progress" : task.status === "in_progress" ? "done" : "pending";
-    updateTask.mutate({ id: task.id, status: nextStatus });
+    const next = task.status === "pending" ? "in_progress" : task.status === "in_progress" ? "done" : "pending";
+    updateTask.mutate({ id: task.id, status: next });
   };
 
+  const hasAlerts = systemAlerts.length > 0;
+  const hasTasks = pendingTasks.length > 0;
+  const isEmpty = !hasAlerts && !hasTasks && !isLoading;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-1.5">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-12 bg-muted/50 animate-pulse rounded-lg" />
+        ))}
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="text-center py-8 rounded-xl border border-dashed border-border bg-card/50">
+        <div className="w-10 h-10 rounded-full bg-[hsl(var(--state-success-bg))] flex items-center justify-center mx-auto mb-2">
+          <span className="text-[hsl(var(--state-success))] text-lg">✓</span>
+        </div>
+        <p className="text-sm font-medium text-foreground">{t("mission.tudoSobControle")}</p>
+        <p className="text-xs text-muted-foreground mt-1">{t("mission.semPendencias")}</p>
+        <div className="mt-4">
+          <NewTaskDialog onSubmit={(data) => createTask.mutate(data)} isPending={createTask.isPending} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      {/* System Alerts */}
-      {(isLoadingAlerts || systemAlerts.length > 0) && (
-        <div>
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-            {t("mission.alertasSistema")}
-          </h3>
-          {isLoadingAlerts ? (
-            <div className="space-y-1">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-11 bg-muted/50 animate-pulse rounded-lg" />
-              ))}
-            </div>
-          ) : (
-            <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
-              {systemAlerts.map((alert, idx) => {
-                const Icon = typeIcon[alert.type];
-                return (
-                  <Link
-                    key={idx}
-                    to={alert.link}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group"
-                  >
-                    <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
-                    {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
-                    <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+    <div className="space-y-5">
+      {/* Unified list: alerts first, then tasks */}
+      <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+        {/* System Alerts */}
+        {systemAlerts.map((alert, idx) => {
+          const Icon = typeIcon[alert.type];
+          return (
+            <Link
+              key={`alert-${idx}`}
+              to={alert.link}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group"
+            >
+              <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
+              {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
+              <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+            </Link>
+          );
+        })}
 
-      {/* Manual Tasks */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            {t("mission.tarefas")}
-            {pendingTasks.length > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[hsl(var(--state-risk))] text-white text-[10px] font-bold align-middle">
-                {pendingTasks.length}
-              </span>
-            )}
-          </h3>
-          <NewTaskDialog
-            onSubmit={(data) => createTask.mutate(data)}
-            isPending={createTask.isPending}
-          />
-        </div>
-
-        {isLoadingTasks ? (
-          <div className="space-y-1">
-            {[1, 2].map((i) => (
-              <div key={i} className="h-11 bg-muted/50 animate-pulse rounded-lg" />
-            ))}
-          </div>
-        ) : pendingTasks.length === 0 && !showCompleted ? (
-          <div className="text-center py-6 rounded-xl border border-dashed border-border bg-card/50">
-            <div className="w-10 h-10 rounded-full bg-[hsl(var(--state-success-bg))] flex items-center justify-center mx-auto mb-2">
-              <span className="text-[hsl(var(--state-success))] text-lg">✓</span>
-            </div>
-            <p className="text-sm font-medium text-foreground">{t("mission.semTarefas")}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{t("mission.todasConcluidas")}</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
-            {pendingTasks.map((task) => (
-              <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} />
-            ))}
+        {/* Separator label between alerts and tasks */}
+        {hasAlerts && hasTasks && (
+          <div className="px-4 py-1.5 bg-muted/30">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              {t("mission.tarefas")}
+            </span>
           </div>
         )}
 
-        {/* Toggle completed */}
-        {(doneTasks.length > 0 || showCompleted) && (
+        {/* Manual Tasks */}
+        {pendingTasks.map((task) => (
+          <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} />
+        ))}
+      </div>
+
+      {/* Footer: + Task button + completed toggle */}
+      <div className="flex items-center justify-between">
+        <NewTaskDialog onSubmit={(data) => createTask.mutate(data)} isPending={createTask.isPending} />
+        {doneTasks.length > 0 && (
           <button
             onClick={() => setShowCompleted(!showCompleted)}
-            className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            {showCompleted
-              ? t("mission.ocultarConcluidas")
-              : `${t("mission.verConcluidas")} (${doneTasks.length})`}
+            {showCompleted ? t("mission.ocultarConcluidas") : `${t("mission.verConcluidas")} (${doneTasks.length})`}
           </button>
-        )}
-        {showCompleted && doneTasks.length > 0 && (
-          <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card mt-2 opacity-60">
-            {doneTasks.map((task) => (
-              <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} />
-            ))}
-          </div>
         )}
       </div>
 
-      {/* Empty state: no alerts AND no tasks */}
-      {systemAlerts.length === 0 && pendingTasks.length === 0 && !isLoadingAlerts && !isLoadingTasks && (
-        <div className="text-center py-6 rounded-xl border border-dashed border-border bg-card/50">
-          <div className="w-10 h-10 rounded-full bg-[hsl(var(--state-success-bg))] flex items-center justify-center mx-auto mb-2">
-            <span className="text-[hsl(var(--state-success))] text-lg">✓</span>
-          </div>
-          <p className="text-sm font-medium text-foreground">{t("mission.tudoSobControle")}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{t("mission.semPendencias")}</p>
+      {/* Completed tasks */}
+      {showCompleted && doneTasks.length > 0 && (
+        <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card opacity-50">
+          {doneTasks.map((task) => (
+            <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} />
+          ))}
         </div>
       )}
     </div>
@@ -178,33 +157,26 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
 // ---------- Task Row ----------
 
-function TaskRow({
-  task,
-  onToggle,
-  onDelete,
-}: {
-  task: Task;
-  onToggle: (task: Task) => void;
-  onDelete: (id: string) => void;
-}) {
-  const cfg = priorityConfig[task.priority] ?? priorityConfig.medium;
-  const StatusIcon = statusIcon[task.status] ?? Circle;
+function TaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: (t: Task) => void; onDelete: (id: string) => void }) {
+  const dot = priorityDot[task.priority] ?? priorityDot.medium;
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && task.status !== "done";
+  const isDone = task.status === "done";
+  const isInProgress = task.status === "in_progress";
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group">
-      <button onClick={() => onToggle(task)} className="flex-shrink-0 focus:outline-none">
-        <StatusIcon
-          className={cn(
-            "w-4 h-4 transition-colors",
-            task.status === "done" ? "text-[hsl(var(--state-success))]" : 
-            task.status === "in_progress" ? "text-[hsl(var(--state-risk))] animate-spin" : "text-muted-foreground"
-          )}
-        />
+      <button onClick={() => onToggle(task)} className="flex-shrink-0 focus:outline-none" title="Toggle status">
+        {isDone ? (
+          <CheckCircle2 className="w-4 h-4 text-[hsl(var(--state-success))]" />
+        ) : isInProgress ? (
+          <PlayCircle className="w-4 h-4 text-[hsl(var(--gold-warm))]" />
+        ) : (
+          <Circle className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+        )}
       </button>
-      <span className={cn("w-2 h-2 rounded-full flex-shrink-0", cfg.dot)} />
+      <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dot)} />
       <div className="flex-1 min-w-0">
-        <span className={cn("text-sm font-medium text-foreground truncate block", task.status === "done" && "line-through opacity-60")}>
+        <span className={cn("text-sm font-medium text-foreground truncate block", isDone && "line-through opacity-50")}>
           {task.title}
         </span>
         {(task.assignee_name || task.due_date) && (
@@ -223,6 +195,7 @@ function TaskRow({
       <button
         onClick={() => onDelete(task.id)}
         className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+        title="Delete"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>
