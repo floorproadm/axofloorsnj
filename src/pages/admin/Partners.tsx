@@ -175,14 +175,7 @@ export default function Partners() {
                 key={selectedPartner.id}
                 partner={selectedPartner}
               />
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Handshake className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                  <p className="text-sm">Selecione um partner</p>
-                </div>
-              </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
