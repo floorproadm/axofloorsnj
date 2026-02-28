@@ -67,12 +67,7 @@ export default function Partners() {
     [partners, selectedId]
   );
 
-  // Auto-select first partner on desktop when none selected
-  useEffect(() => {
-    if (!isMobile && !selectedId && filtered.length > 0) {
-      setSelectedId(filtered[0].id);
-    }
-  }, [isMobile, filtered, selectedId]);
+  // No auto-select: detail panel only opens on click
 
   // Clear selection if partner was deleted
   useEffect(() => {
