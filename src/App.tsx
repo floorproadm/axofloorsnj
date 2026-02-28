@@ -177,6 +177,11 @@ const App = () => {
                 <AdminPartners />
               </ProtectedRoute>
             } />
+            <Route path="/admin/payments" element={
+              <ProtectedRoute>
+                <AdminPayments />
+              </ProtectedRoute>
+            } />
             {/* Collaborator Portal */}
             <Route path="/collaborator" element={
               <ProtectedRoute requireAdmin={false}>
