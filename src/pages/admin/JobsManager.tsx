@@ -51,6 +51,7 @@ interface ProjectWithRelations {
   team_lead: string | null;
   team_members: string[] | null;
   work_schedule: string | null;
+  referred_by_partner_id: string | null;
   created_at: string;
   updated_at: string;
   job_costs: {
@@ -67,6 +68,7 @@ interface ProjectWithRelations {
     before_image_url: string | null;
     after_image_url: string | null;
   }[];
+  partner_name: string | null;
 }
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: string; border: string; icon: React.ReactNode; headerBg: string }> = {
@@ -114,9 +116,15 @@ function useProjectsWithRelations(page = 0, pageSize = 50) {
 
       const projectIds = (projects || []).map((p) => p.id);
 
-      const [costsRes, proofRes] = await Promise.all([
+      // Collect unique partner IDs
+      const partnerIds = [...new Set((projects || []).map(p => p.referred_by_partner_id).filter(Boolean))] as string[];
+
+      const [costsRes, proofRes, partnersRes] = await Promise.all([
         supabase.from("job_costs").select("*").in("project_id", projectIds),
         supabase.from("job_proof").select("id, project_id, before_image_url, after_image_url").in("project_id", projectIds),
+        partnerIds.length > 0
+          ? supabase.from("partners").select("id, company_name, contact_name").in("id", partnerIds)
+          : Promise.resolve({ data: [] }),
       ]);
 
       const costsMap = new Map<string, any>();
@@ -129,6 +137,9 @@ function useProjectsWithRelations(page = 0, pageSize = 50) {
         proofMap.set(p.project_id, arr);
       });
 
+      const partnerMap = new Map<string, string>();
+      (partnersRes.data || []).forEach((p: any) => partnerMap.set(p.id, p.contact_name || p.company_name));
+
       const items = (projects || []).map((p: any) => ({
         ...p,
         team_lead: p.team_lead || null,
@@ -136,6 +147,7 @@ function useProjectsWithRelations(page = 0, pageSize = 50) {
         work_schedule: p.work_schedule || '8:00 AM - 5:00 PM',
         job_costs: costsMap.get(p.id) || null,
         job_proof: proofMap.get(p.id) || [],
+        partner_name: p.referred_by_partner_id ? (partnerMap.get(p.referred_by_partner_id) || null) : null,
       }));
       return { items, totalCount: count ?? items.length };
     },
@@ -510,50 +522,41 @@ function KanbanCard({
   return (
     <div
       onClick={onClick}
-      className="bg-background rounded-lg border border-border p-3 space-y-2.5 cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-background rounded-lg border border-border p-3.5 space-y-2 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
     >
-      {/* Project type + indicator */}
-      <div className="flex items-start justify-between gap-1">
-        <h4 className="text-sm font-bold text-foreground leading-tight truncate flex-1">
+      {/* Project type */}
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2 flex-1">
           {project.project_type}
         </h4>
         {indicator.severity !== "ok" && (
-          <span className={cn("w-2 h-2 rounded-full flex-shrink-0 mt-1.5", indicator.color)} title={indicator.label} />
+          <Badge variant="outline" className={cn(
+            "text-[10px] px-1.5 py-0 rounded-full font-medium flex-shrink-0 whitespace-nowrap",
+            indicator.severity === "error"
+              ? "border-destructive/40 text-destructive bg-destructive/5"
+              : "border-amber-400/50 text-amber-600 bg-amber-50"
+          )}>
+            {indicator.label}
+          </Badge>
         )}
       </div>
 
-      {/* Customer */}
-      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-        <User className="w-3 h-3 flex-shrink-0" />
-        {project.customer_name}
-      </p>
-
-      {/* Financial preview */}
-      {revenue > 0 && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            {formatCurrency(totalCost)} of {formatCurrency(revenue)}
-          </span>
-          {costs?.margin_percent !== null && costs?.margin_percent !== undefined && (
-            <Badge variant="outline" className={cn(
-              "text-[10px] px-1.5 py-0 rounded-full font-semibold",
-              costs.margin_percent < minMargin
-                ? "border-destructive/50 text-destructive"
-                : "border-emerald-300 text-emerald-700"
-            )}>
-              {costs.margin_percent.toFixed(0)}%
-            </Badge>
-          )}
-        </div>
-      )}
-
-      {/* Dates */}
-      {(startDate || endDate) && (
+      {/* Customer + Partner */}
+      <div className="space-y-1">
         <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <CalendarDays className="w-3 h-3 flex-shrink-0" />
-          {startDate ? fmtDate(startDate) : "—"} — {endDate ? fmtDate(endDate) : "—"}
+          <User className="w-3 h-3 flex-shrink-0" />
+          {project.customer_name}
+          {project.partner_name && (
+            <span className="text-muted-foreground/60">(via parceiro)</span>
+          )}
         </p>
-      )}
+        {project.partner_name && (
+          <p className="text-xs text-primary/80 flex items-center gap-1.5 font-medium">
+            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            {project.partner_name}
+          </p>
+        )}
+      </div>
 
       {/* Team lead */}
       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
@@ -562,7 +565,7 @@ function KanbanCard({
       </p>
 
       {/* Updated ago */}
-      <p className="text-[10px] text-muted-foreground/60 text-right">
+      <p className="text-[10px] text-muted-foreground/50 text-right">
         Updated {timeAgo(project.updated_at)} ago
       </p>
     </div>
