@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, subDays, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -590,6 +591,7 @@ const projectStatusColors: Record<string, string> = {
 };
 
 function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
+  const navigate = useNavigate();
   const activeProjects = projects.filter(
     (p) => p.project_status !== "completed" && p.project_status !== "cancelled"
   );
