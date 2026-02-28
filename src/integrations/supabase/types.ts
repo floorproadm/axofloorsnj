@@ -1379,6 +1379,54 @@ export type Database = {
         }
         Relationships: []
       }
+      service_catalog: {
+        Row: {
+          base_price: number
+          category: string | null
+          created_at: string
+          default_finish: string | null
+          default_material: string | null
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          item_type: string
+          name: string
+          price_unit: string
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          category?: string | null
+          created_at?: string
+          default_finish?: string | null
+          default_material?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          item_type?: string
+          name: string
+          price_unit?: string
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          category?: string | null
+          created_at?: string
+          default_finish?: string | null
+          default_material?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          item_type?: string
+          name?: string
+          price_unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
