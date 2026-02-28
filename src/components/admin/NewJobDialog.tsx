@@ -42,7 +42,7 @@ const newJobSchema = z.object({
     .trim()
     .min(1, "Telefone é obrigatório")
     .max(30, "Máximo 30 caracteres"),
-  project_type: z.string().min(1, "Selecione o tipo de projeto"),
+  project_types: z.array(z.string()).min(1, "Selecione ao menos um serviço"),
   referred_by_partner_id: z.string().optional(),
 });
 
@@ -82,7 +82,7 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
       address: "",
       customer_name: "",
       customer_phone: "",
-      project_type: "",
+      project_types: [],
       referred_by_partner_id: "",
     },
   });
@@ -108,7 +108,7 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
           customer_name: values.customer_name,
           customer_email: "",
           customer_phone: values.customer_phone,
-          project_type: values.project_type,
+          project_type: values.project_types.join(", "),
           address: values.address || null,
           referred_by_partner_id: values.referred_by_partner_id || null,
         })
@@ -205,24 +205,37 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
 
             <FormField
               control={form.control}
-              name="project_type"
-              render={({ field }) => (
+              name="project_types"
+              render={() => (
                 <FormItem>
-                  <FormLabel>Project type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PROJECT_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Serviços</FormLabel>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    {PROJECT_TYPES.map((t) => (
+                      <FormField
+                        key={t}
+                        control={form.control}
+                        name="project_types"
+                        render={({ field }) => (
+                          <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                            <input
+                              type="checkbox"
+                              className="accent-primary h-4 w-4 rounded"
+                              checked={field.value?.includes(t)}
+                              onChange={(e) => {
+                                const current = field.value ?? [];
+                                field.onChange(
+                                  e.target.checked
+                                    ? [...current, t]
+                                    : current.filter((v: string) => v !== t)
+                                );
+                              }}
+                            />
+                            {t}
+                          </label>
+                        )}
+                      />
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
