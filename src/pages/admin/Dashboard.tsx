@@ -234,11 +234,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Priority Tasks */}
+        {/* Mission Control */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              {t("dashboard.acoesUrgentes")}
+              {t("mission.missionControl")}
               {totalUrgent > 0 && (
                 <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[hsl(var(--state-blocked))] text-white text-[10px] font-bold align-middle">
                   {totalUrgent}
@@ -252,7 +252,7 @@ export default function Dashboard() {
               {t("dashboard.verTodos")}
             </Link>
           </div>
-          <PriorityTasksList tasks={priorityTasks} isLoading={isLoading} />
+          <MissionControl systemAlerts={priorityTasks} isLoadingAlerts={isLoading} />
         </section>
 
         {/* Today's Agenda */}
