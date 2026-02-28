@@ -658,7 +658,7 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
       )}
 
       {completedProjects.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Projetos Concluídos
           </h4>
@@ -667,7 +667,7 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
       )}
 
       {/* Financial Summary Table */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Histórico Financeiro
         </h4>
