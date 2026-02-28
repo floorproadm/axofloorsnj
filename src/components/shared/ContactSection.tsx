@@ -183,7 +183,7 @@ const ContactSection = () => {
                       </SelectTrigger>
                       <SelectContent className="bg-card border-accent/20">
                         <SelectItem value="hardwood_flooring">Hardwood Flooring</SelectItem>
-                        <SelectItem value="sanding_refinishing">Sanding & Refinishing</SelectItem>
+                        <SelectItem value="sanding_refinishing">Sanding & Finish</SelectItem>
                         <SelectItem value="vinyl_plank">Vinyl Plank Flooring</SelectItem>
                         <SelectItem value="staircase">Staircase Services</SelectItem>
                         <SelectItem value="baseboards">Baseboards</SelectItem>

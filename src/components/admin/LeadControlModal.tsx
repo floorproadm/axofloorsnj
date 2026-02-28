@@ -60,7 +60,7 @@ interface LeadControlModalProps {
 }
 
 const PROJECT_TYPES = [
-  'Sanding & Refinishing',
+  'Sanding & Finish',
   'Hardwood Installation',
   'Vinyl Plank Installation',
   'Staircase Refinishing',

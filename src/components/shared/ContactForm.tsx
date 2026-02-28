@@ -39,7 +39,7 @@ const ContactForm = () => {
 
   const serviceOptions = [
     'Hardwood Flooring Installation',
-    'Sanding & Refinishing',
+    'Sanding & Finish',
     'Vinyl Plank Flooring',
     'Staircase Refinishing',
     'Baseboards Installation',

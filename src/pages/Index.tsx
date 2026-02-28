@@ -48,7 +48,7 @@ const Index = () => {
     };
   }, [isMobile]);
   const services = [{
-    title: "Sanding & Refinishing",
+    title: "Sanding & Finish",
     description: "Restore your floors to their original beauty with professional refinishing services.",
     href: "/sanding-and-refinish",
     features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
