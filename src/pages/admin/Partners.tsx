@@ -176,11 +176,6 @@ export default function Partners() {
                 partner={selectedPartner}
               />
             ) : null}
-                  <Handshake className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                  <p className="text-sm">Selecione um partner</p>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
