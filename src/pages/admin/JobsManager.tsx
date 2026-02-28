@@ -522,50 +522,41 @@ function KanbanCard({
   return (
     <div
       onClick={onClick}
-      className="bg-background rounded-lg border border-border p-3 space-y-2.5 cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-background rounded-lg border border-border p-3.5 space-y-2 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
     >
-      {/* Project type + indicator */}
-      <div className="flex items-start justify-between gap-1">
-        <h4 className="text-sm font-bold text-foreground leading-tight truncate flex-1">
+      {/* Project type */}
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2 flex-1">
           {project.project_type}
         </h4>
         {indicator.severity !== "ok" && (
-          <span className={cn("w-2 h-2 rounded-full flex-shrink-0 mt-1.5", indicator.color)} title={indicator.label} />
+          <Badge variant="outline" className={cn(
+            "text-[10px] px-1.5 py-0 rounded-full font-medium flex-shrink-0 whitespace-nowrap",
+            indicator.severity === "error"
+              ? "border-destructive/40 text-destructive bg-destructive/5"
+              : "border-amber-400/50 text-amber-600 bg-amber-50"
+          )}>
+            {indicator.label}
+          </Badge>
         )}
       </div>
 
-      {/* Customer */}
-      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-        <User className="w-3 h-3 flex-shrink-0" />
-        {project.customer_name}
-      </p>
-
-      {/* Financial preview */}
-      {revenue > 0 && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            {formatCurrency(totalCost)} of {formatCurrency(revenue)}
-          </span>
-          {costs?.margin_percent !== null && costs?.margin_percent !== undefined && (
-            <Badge variant="outline" className={cn(
-              "text-[10px] px-1.5 py-0 rounded-full font-semibold",
-              costs.margin_percent < minMargin
-                ? "border-destructive/50 text-destructive"
-                : "border-emerald-300 text-emerald-700"
-            )}>
-              {costs.margin_percent.toFixed(0)}%
-            </Badge>
-          )}
-        </div>
-      )}
-
-      {/* Dates */}
-      {(startDate || endDate) && (
+      {/* Customer + Partner */}
+      <div className="space-y-1">
         <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <CalendarDays className="w-3 h-3 flex-shrink-0" />
-          {startDate ? fmtDate(startDate) : "—"} — {endDate ? fmtDate(endDate) : "—"}
+          <User className="w-3 h-3 flex-shrink-0" />
+          {project.customer_name}
+          {project.partner_name && (
+            <span className="text-muted-foreground/60">(via parceiro)</span>
+          )}
         </p>
-      )}
+        {project.partner_name && (
+          <p className="text-xs text-primary/80 flex items-center gap-1.5 font-medium">
+            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            {project.partner_name}
+          </p>
+        )}
+      </div>
 
       {/* Team lead */}
       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
@@ -574,7 +565,7 @@ function KanbanCard({
       </p>
 
       {/* Updated ago */}
-      <p className="text-[10px] text-muted-foreground/60 text-right">
+      <p className="text-[10px] text-muted-foreground/50 text-right">
         Updated {timeAgo(project.updated_at)} ago
       </p>
     </div>
