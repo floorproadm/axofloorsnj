@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { usePartnersData, PARTNER_TYPES, SERVICE_ZONES } from "@/hooks/admin/usePartnersData";
+import { usePartnersData, PARTNER_TYPES } from "@/hooks/admin/usePartnersData";
 
 const schema = z.object({
   company_name: z.string().trim().min(1, "Nome da empresa é obrigatório").max(200),
@@ -35,7 +35,6 @@ const schema = z.object({
   email: z.string().trim().email("Email inválido").max(255).optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
   partner_type: z.string().min(1, "Selecione o tipo"),
-  service_zone: z.string().min(1, "Selecione a zona"),
   notes: z.string().trim().max(2000).optional(),
 });
 
@@ -58,7 +57,6 @@ export function NewPartnerDialog({ open, onOpenChange }: Props) {
       email: "",
       phone: "",
       partner_type: "builder",
-      service_zone: "core",
       notes: "",
     },
   });
@@ -72,7 +70,6 @@ export function NewPartnerDialog({ open, onOpenChange }: Props) {
         email: values.email || null,
         phone: values.phone || null,
         partner_type: values.partner_type,
-        service_zone: values.service_zone,
         notes: values.notes || null,
         status: "active",
         last_contacted_at: null,
@@ -124,36 +121,20 @@ export function NewPartnerDialog({ open, onOpenChange }: Props) {
                 </FormItem>
               )} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField control={form.control} name="partner_type" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      {Object.entries(PARTNER_TYPES).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="service_zone" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Zona</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      {Object.entries(SERVICE_ZONES).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
+            <FormField control={form.control} name="partner_type" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    {Object.entries(PARTNER_TYPES).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
             <FormField control={form.control} name="notes" render={({ field }) => (
               <FormItem>
                 <FormLabel>Notas (opcional)</FormLabel>
