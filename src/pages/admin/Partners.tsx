@@ -76,127 +76,110 @@ export default function Partners() {
     }
   }, [partners, selectedId]);
 
+  // If a partner is selected, show full-screen detail
+  if (selectedPartner) {
+    return (
+      <AdminLayout title="Partners">
+        <div className="h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
+          <PartnerDetailPanel
+            key={selectedPartner.id}
+            partner={selectedPartner}
+            onClose={() => setSelectedId(null)}
+          />
+        </div>
+        <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} />
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout title="Partners">
-      <div className="flex h-[calc(100vh-8rem)] gap-0 overflow-hidden rounded-xl border border-border/50 bg-card">
-        {/* Left Column - List */}
-        <div className="flex flex-col w-full md:w-[340px] md:border-r border-border/50 flex-shrink-0">
-          {/* Mini Stats */}
-          <div className="px-3 pt-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
-            <span><strong className="text-foreground">{miniStats.active}</strong> ativos</span>
-            <span className="text-border">|</span>
-            <span className={miniStats.atRisk > 0 ? "text-amber-600" : ""}>
-              <strong className={miniStats.atRisk > 0 ? "text-amber-600" : "text-foreground"}>{miniStats.atRisk}</strong> em risco
-            </span>
-            <span className="text-border">|</span>
-            <span><strong className="text-foreground">{miniStats.totalReferrals}</strong> indicações</span>
-          </div>
-
-          {/* Search & Filters */}
-          <div className="p-3 space-y-2 border-b border-border/50">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar partner..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-8 text-xs flex-1">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos Tipos</SelectItem>
-                  {Object.entries(PARTNER_TYPES).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 text-xs flex-1">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {Object.entries(PARTNER_STATUSES).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={() => setNewOpen(true)}
-              className="w-full h-9 gap-2"
-              size="sm"
-            >
-              <Plus className="w-4 h-4" /> Novo Partner
-            </Button>
-          </div>
-
-          {/* Partner List */}
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
-                ))
-              ) : filtered.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Handshake className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm font-medium">Nenhum partner</p>
-                </div>
-              ) : (
-                filtered.map((p) => (
-                  <PartnerListItem
-                    key={p.id}
-                    partner={p}
-                    isSelected={selectedId === p.id}
-                    onSelect={() => setSelectedId(p.id)}
-                  />
-                ))
-              )}
-            </div>
-          </ScrollArea>
-
-          {/* Count */}
-          <div className="px-3 py-2 border-t border-border/50 text-xs text-muted-foreground">
-            {filtered.length} de {partners.length} partners
-          </div>
+      <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
+        {/* Mini Stats */}
+        <div className="px-3 pt-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
+          <span><strong className="text-foreground">{miniStats.active}</strong> ativos</span>
+          <span className="text-border">|</span>
+          <span className={miniStats.atRisk > 0 ? "text-amber-600" : ""}>
+            <strong className={miniStats.atRisk > 0 ? "text-amber-600" : "text-foreground"}>{miniStats.atRisk}</strong> em risco
+          </span>
+          <span className="text-border">|</span>
+          <span><strong className="text-foreground">{miniStats.totalReferrals}</strong> indicações</span>
         </div>
 
-        {/* Right Column - Detail (desktop) */}
-        {!isMobile && (
-          <div className="flex-1 min-w-0 hidden md:flex flex-col">
-            {selectedPartner ? (
-              <PartnerDetailPanel
-                key={selectedPartner.id}
-                partner={selectedPartner}
-              />
-            ) : null}
+        {/* Search & Filters */}
+        <div className="p-3 space-y-2 border-b border-border/50">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar partner..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9"
+            />
           </div>
-        )}
-      </div>
+          <div className="flex gap-2">
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="h-8 text-xs flex-1">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos Tipos</SelectItem>
+                {Object.entries(PARTNER_TYPES).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-8 text-xs flex-1">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {Object.entries(PARTNER_STATUSES).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={() => setNewOpen(true)}
+            className="w-full h-9 gap-2"
+            size="sm"
+          >
+            <Plus className="w-4 h-4" /> Novo Partner
+          </Button>
+        </div>
 
-      {/* Mobile Drawer */}
-      {isMobile && (
-        <Drawer
-          open={!!selectedPartner}
-          onOpenChange={(open) => !open && setSelectedId(null)}
-        >
-          <DrawerContent className="h-[90vh]">
-            {selectedPartner && (
-              <PartnerDetailPanel
-                key={selectedPartner.id}
-                partner={selectedPartner}
-                onClose={() => setSelectedId(null)}
-              />
+        {/* Partner List */}
+        <ScrollArea className="flex-1">
+          <div className="p-2 space-y-1">
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+              ))
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Handshake className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm font-medium">Nenhum partner</p>
+              </div>
+            ) : (
+              filtered.map((p) => (
+                <PartnerListItem
+                  key={p.id}
+                  partner={p}
+                  isSelected={false}
+                  onSelect={() => setSelectedId(p.id)}
+                />
+              ))
             )}
-          </DrawerContent>
-        </Drawer>
-      )}
+          </div>
+        </ScrollArea>
+
+        {/* Count */}
+        <div className="px-3 py-2 border-t border-border/50 text-xs text-muted-foreground">
+          {filtered.length} de {partners.length} partners
+        </div>
+      </div>
 
       <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} />
     </AdminLayout>
