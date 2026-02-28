@@ -246,60 +246,64 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       </div>
 
       {/* Quick Action Bar */}
-      <div className="grid grid-cols-3 gap-2 p-4 border-b border-border/50">
+      <div className="grid grid-cols-5 gap-1.5 p-3 border-b border-border/50">
         {partner.phone ? (
           <a
             href={`tel:${partner.phone}`}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 transition-colors"
+            className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 transition-colors"
           >
-            <Phone className="w-5 h-5" />
-            <span className="text-xs font-medium">Ligar</span>
+            <Phone className="w-4 h-4" />
+            <span className="text-[10px] font-medium">Ligar</span>
           </a>
         ) : (
-          <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
-            <Phone className="w-5 h-5" />
-            <span className="text-xs font-medium">Ligar</span>
+          <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
+            <Phone className="w-4 h-4" />
+            <span className="text-[10px] font-medium">Ligar</span>
           </div>
         )}
         {partner.phone ? (
           <a
             href={`sms:${partner.phone}`}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 transition-colors"
+            className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 transition-colors"
           >
-            <MessageSquare className="w-5 h-5" />
-            <span className="text-xs font-medium">Mensagem</span>
+            <MessageSquare className="w-4 h-4" />
+            <span className="text-[10px] font-medium">SMS</span>
           </a>
         ) : (
-          <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
-            <MessageSquare className="w-5 h-5" />
-            <span className="text-xs font-medium">Mensagem</span>
+          <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
+            <MessageSquare className="w-4 h-4" />
+            <span className="text-[10px] font-medium">SMS</span>
           </div>
         )}
         {partner.email ? (
           <a
             href={`mailto:${partner.email}`}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 transition-colors"
+            className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 transition-colors"
           >
-            <Mail className="w-5 h-5" />
-            <span className="text-xs font-medium">Email</span>
+            <Mail className="w-4 h-4" />
+            <span className="text-[10px] font-medium">Email</span>
           </a>
         ) : (
-          <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
-            <Mail className="w-5 h-5" />
-            <span className="text-xs font-medium">Email</span>
+          <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-muted/50 text-muted-foreground/50 cursor-not-allowed">
+            <Mail className="w-4 h-4" />
+            <span className="text-[10px] font-medium">Email</span>
           </div>
         )}
+        <button
+          onClick={() => setNewJobOpen(true)}
+          className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+        >
+          <Hammer className="w-4 h-4" />
+          <span className="text-[10px] font-medium">Novo Job</span>
+        </button>
+        <button
+          onClick={() => setNewLeadOpen(true)}
+          className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-purple-500/10 text-purple-700 hover:bg-purple-500/20 transition-colors"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span className="text-[10px] font-medium">Indicação</span>
+        </button>
       </div>
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-3 p-4 border-b border-border/50">
-        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-blue-500/10 border border-blue-200/50">
-          <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
-          <div>
-            <p className="text-lg font-bold text-foreground leading-none">{partner.total_referrals}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Indicações</p>
-          </div>
-        </div>
         <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-200/50">
           <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <div>
