@@ -38,6 +38,9 @@ import {
   TrendingUp,
   BarChart3,
   Briefcase,
+  Plus,
+  UserPlus,
+  Hammer,
 } from "lucide-react";
 import {
   Partner,
@@ -46,8 +49,10 @@ import {
   PARTNER_STATUSES,
   SERVICE_ZONES,
 } from "@/hooks/admin/usePartnersData";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { NewJobDialog } from "@/components/admin/NewJobDialog";
+import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
 
 const statusColors: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
