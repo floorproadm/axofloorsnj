@@ -1,165 +1,105 @@
 
-# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
 
-## PARTE 1: Limpeza Total de Status Legados
+# Performance Page Redesign + Itemized Job Costs
 
-### 1A. `src/hooks/admin/useAdminData.ts`
-Substituir filtros de stats (linhas 101-108):
-- `'new'` -> `'cold_lead'`
-- `'contacted'` -> `'warm_lead'`
-- `'qualified'` -> `'estimate_requested'`
-- `'converted'` -> `'in_production'`
-- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
+## Overview
 
-### 1B. `src/pages/admin/Intake.tsx`
-- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
-- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
-- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
-- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
-- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
+Redesign the `/admin/performance` page to match the reference design, adding a revenue trend chart, a project performance list, and a drill-down flow into individual job cost details with itemized cost editing.
 
-### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
-- `src/pages/Contact.tsx` (linha 88)
-- `src/pages/Builders.tsx` (linha 112)
-- `src/pages/Realtors.tsx` (linha 126)
-- `src/pages/Quiz.tsx` (linhas 215, 253)
-- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
-- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
-- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
-- `src/hooks/useLeadCapture.ts` (linha 37)
-- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
+## What's Missing Today
+
+The current `job_costs` table only stores 3 aggregate values (labor_cost, material_cost, additional_costs). The reference images show **itemized line items** within categories (e.g., "White Oak Hardwood $2800", "Underlayment $600" under Materials). This requires a new database table.
 
 ---
 
-## PARTE 2: Collaborator Upload -> Admin Dashboard
+## Phase 1: Database -- New `job_cost_items` Table
 
-### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
-Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
-```typescript
-await serviceClient.from("audit_log").insert({
-  user_id: userId,
-  user_role: "collaborator",
-  operation_type: "COLLABORATOR_UPLOAD",
-  table_accessed: "media_files",
-  data_classification: JSON.stringify({
-    project_id: projectId,
-    storage_path: storagePath,
-    folder_type: folderType,
-  }),
-});
+Create a table to store individual cost line items per job:
+
+```text
+job_cost_items
+--------------
+id              uuid (PK)
+job_cost_id     uuid (FK -> job_costs.id)
+category        text ('materials' | 'labor' | 'overhead' | 'other')
+description     text (e.g. "White Oak Hardwood")
+amount          numeric (e.g. 2800)
+created_at      timestamptz
 ```
 
-### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
-Adicionar bloco `recentFieldUploads` ao retorno:
-- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
-- JOIN com `projects` para pegar `customer_name`
-- Limite 10, ordenado por `created_at DESC`
+- RLS policies matching existing `job_costs` patterns
+- A trigger to auto-sum items back into `job_costs` aggregate columns (labor_cost, material_cost, additional_costs) to maintain backward compatibility with existing margin calculations
 
-### 2C. `src/hooks/admin/useDashboardData.ts`
-- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
-- Expor `recentFieldUploads` no retorno do hook
-- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
+## Phase 2: Performance Page Redesign
 
-### 2D. `src/pages/admin/Dashboard.tsx`
-- Incluir uploads recentes e SLA breaches no array `priorityTasks`
-- Novo type `'field_upload'` com link `/admin/jobs`
+Restructure `src/pages/admin/Performance.tsx` with 3 sections:
 
-### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
-- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
-- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
+**Section 1 -- Stats Cards (2x2 grid)**
+- Weekly Revenue (with % trend)
+- Total Jobs (with +/- trend)
+- New Leads (with +/- trend)
+- Avg. Job Value (with % trend)
 
----
+Uses the existing `StatsCard` component with trend badges. Period selector ("Last 30 Days") in the header.
 
-## PARTE 3: SLA V0 - Tempo Como Variavel Real
+**Section 2 -- Revenue Trend Chart**
+- Line chart using Recharts (already installed)
+- Monthly revenue data aggregated from completed projects
+- Uses the existing `ChartContainer` / `ChartTooltip` components
 
-### 3A. Migration SQL (unica, junto com 2B)
-```sql
--- 1. Nova coluna
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
+**Section 3 -- Project Performance List**
+- List of recent projects showing: name, client, status badge, revenue, and margin %
+- Each row is clickable, opening a **Job Cost Details** dialog
 
--- 2. Backfill
-UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
-WHERE status_changed_at IS NULL;
+## Phase 3: Job Cost Details Dialog
 
--- 3. Trigger
-CREATE OR REPLACE FUNCTION set_status_changed_at()
-RETURNS trigger AS $$
-BEGIN
-  IF OLD.status IS DISTINCT FROM NEW.status THEN
-    NEW.status_changed_at := now();
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+A modal/sheet that shows when clicking a project in the performance list:
 
-DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
-CREATE TRIGGER trg_set_status_changed_at
-  BEFORE UPDATE ON leads FOR EACH ROW
-  EXECUTE FUNCTION set_status_changed_at();
+**Header**: Project name, client, status badge
 
--- 4. View: follow-up overdue
-CREATE OR REPLACE VIEW leads_followup_overdue AS
-SELECT id, name, next_action_date
-FROM leads
-WHERE status = 'proposal_sent'
-  AND next_action_date IS NOT NULL
-  AND next_action_date < current_date;
+**Financial Summary Card**:
+- Revenue (right-aligned)
+- Total Costs (red, negative)
+- Profit + margin % (green/red based on health)
 
--- 5. View: estimate stale (>3 dias)
-CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
-SELECT id, name,
-  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
-FROM leads
-WHERE status = 'estimate_scheduled'
-  AND converted_to_project_id IS NULL
-  AND status_changed_at < now() - interval '3 days';
+**Cost Breakdown Card**:
+- Line items per category with totals
+- Stacked horizontal bar showing category proportions (Materials %, Labor %, Overhead %, Other %)
+- Legend with percentages
 
--- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
-```
+**Footer**: "Edit Cost Details" button
 
-### 3B. Dashboard Integration
-SLA breaches aparecem como tasks no `priorityTasks`:
-- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
-- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
+## Phase 4: Itemized Cost Editor
+
+A view/dialog for editing individual cost items per category:
+
+- 4 sections: Materials, Labor, Overhead, Other Costs
+- Each section has "+ Add Item" button
+- Each item row: description input + amount input + remove button
+- Category subtotals auto-calculated
+- Grand total at the bottom
+- "Save Changes" persists to `job_cost_items` table and triggers aggregate recalculation
 
 ---
 
-## Checklist de Validacao
+## Technical Details
 
-**SQL pos-deploy:**
-```sql
-SELECT column_name FROM information_schema.columns
-WHERE table_name = 'leads' AND column_name = 'status_changed_at';
+### Files to Create
+- `supabase/migrations/xxx_job_cost_items.sql` -- new table + trigger
+- `src/hooks/useJobCostItems.ts` -- CRUD hook for line items
+- `src/components/admin/performance/PerformanceStatsCards.tsx` -- top cards with trends
+- `src/components/admin/performance/RevenueTrendChart.tsx` -- line chart
+- `src/components/admin/performance/ProjectPerformanceList.tsx` -- project list
+- `src/components/admin/performance/JobCostDetailsSheet.tsx` -- detail modal
+- `src/components/admin/performance/ItemizedCostEditor.tsx` -- line item editor
 
-SELECT * FROM leads_followup_overdue LIMIT 5;
-SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
-```
+### Files to Modify
+- `src/pages/admin/Performance.tsx` -- complete restructure
+- `src/hooks/admin/useDashboardData.ts` -- may need monthly revenue breakdown query
 
-**Network (DevTools):**
-- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
+### Data Flow
+- Stats cards and chart: sourced from existing `useDashboardData` + a new query for monthly aggregation
+- Project list: query `projects` joined with `job_costs`
+- Cost details: query `job_cost_items` grouped by category
+- Saving items: upsert to `job_cost_items`, trigger recalculates `job_costs` aggregates
 
-**Grep final:**
-- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
-
----
-
-## Arquivos Modificados (resumo)
-
-| Arquivo | Tipo |
-|---|---|
-| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
-| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
-| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
-| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
-| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
-| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
-| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
-| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
-| `src/pages/admin/Dashboard.tsx` | Novos task types |
-| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |
