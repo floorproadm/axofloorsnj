@@ -60,7 +60,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
-      <div className="flex w-full min-w-0 h-screen">
+      <div className="flex w-full min-w-0 h-screen overflow-hidden">
         <AdminSidebar />
 
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
