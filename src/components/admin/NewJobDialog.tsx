@@ -73,6 +73,8 @@ interface NewJobDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const NONE_PARTNER = "none";
+
 export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
