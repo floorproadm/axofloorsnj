@@ -41,7 +41,7 @@ export function useServiceCatalog(itemType?: CatalogItemType) {
 
       const { data, error } = await q;
       if (error) throw error;
-      return (data || []) as CatalogItem[];
+      return (data || []) as unknown as CatalogItem[];
     },
   });
 }
@@ -56,7 +56,7 @@ export function useCreateCatalogItem() {
         .select()
         .single();
       if (error) throw error;
-      return data as CatalogItem;
+      return data as unknown as CatalogItem;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
@@ -73,7 +73,7 @@ export function useUpdateCatalogItem() {
         .select()
         .single();
       if (error) throw error;
-      return data as CatalogItem;
+      return data as unknown as CatalogItem;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
