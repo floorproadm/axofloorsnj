@@ -33,12 +33,14 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 const AREA_TYPES = [
-  { value: 'floor', label: 'Piso (sqft)' },
-  { value: 'staircase', label: 'Escada (sqft)' },
-  { value: 'baseboard', label: 'Rodapé (linear ft)' },
-  { value: 'handrail', label: 'Corrimão (linear ft)' },
-  { value: 'other', label: 'Outro' },
+  { value: 'floor', label: 'Piso (sqft)', unit: 'sqft' },
+  { value: 'staircase', label: 'Escada (qty)', unit: 'degraus' },
+  { value: 'baseboard', label: 'Rodapé (linear ft)', unit: 'linear ft' },
+  { value: 'handrail', label: 'Corrimão (linear ft)', unit: 'linear ft' },
+  { value: 'other', label: 'Outro', unit: 'sqft' },
 ];
+
+const getAreaUnit = (areaType: string) => AREA_TYPES.find(t => t.value === areaType)?.unit || 'sqft';
 
 export default function MeasurementsManager() {
   const [searchParams] = useSearchParams();
@@ -337,7 +339,7 @@ function MeasurementDetailView({
                   <span className="font-semibold text-primary">
                     {a.area_type === 'baseboard' || a.area_type === 'handrail'
                       ? `${a.linear_ft} linear ft`
-                      : `${a.area_sqft} sqft`}
+                      : `${a.area_sqft} ${getAreaUnit(a.area_type)}`}
                   </span>
                 </div>
               ))}
@@ -449,7 +451,11 @@ function EditMeasurementView({
   };
 
   const totalSqft = areas
-    .filter((a) => !['baseboard', 'handrail'].includes(a.area_type))
+    .filter((a) => !['baseboard', 'handrail', 'staircase'].includes(a.area_type))
+    .reduce((sum, a) => sum + Number(a.area_sqft || 0), 0);
+
+  const totalStairs = areas
+    .filter((a) => a.area_type === 'staircase')
     .reduce((sum, a) => sum + Number(a.area_sqft || 0), 0);
 
   const handleSave = async () => {
@@ -556,7 +562,7 @@ function EditMeasurementView({
                   placeholder="0"
                   className="w-20 h-8 text-sm"
                 />
-                <span className="text-xs text-muted-foreground">sqft</span>
+                <span className="text-xs text-muted-foreground">{getAreaUnit(area.area_type)}</span>
                 <Input
                   value={area.dimensions || ''}
                   onChange={(e) => updateArea(idx, 'dimensions', e.target.value)}
