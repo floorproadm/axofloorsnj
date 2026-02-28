@@ -194,6 +194,17 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Back Button */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="flex items-center gap-1.5 px-4 pt-3 pb-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar
+        </button>
+      )}
+
       {/* At Risk Banner */}
       {isAtRisk && (
         <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-200 text-amber-700 text-xs font-medium flex items-center gap-2">
