@@ -42,7 +42,7 @@ const newJobSchema = z.object({
     .trim()
     .min(1, "Telefone é obrigatório")
     .max(30, "Máximo 30 caracteres"),
-  project_type: z.string().min(1, "Selecione o tipo de projeto"),
+  project_types: z.array(z.string()).min(1, "Selecione ao menos um serviço"),
   referred_by_partner_id: z.string().optional(),
 });
 
