@@ -40,7 +40,7 @@ export default function CollaboratorSchedule() {
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-sm font-heading font-semibold text-foreground">
-          Semana de {format(adjustedStart, "MMM d")}
+          Week {getISOWeek(adjustedStart)}
         </h1>
         <Button variant="ghost" size="icon" onClick={() => setWeekOffset((o) => o + 1)}>
           <ChevronRight className="h-5 w-5" />
