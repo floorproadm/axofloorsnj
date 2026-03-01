@@ -32,7 +32,7 @@ export default function CollaboratorChat() {
   // Auto-select first project
   useEffect(() => {
     if (projects.length > 0 && !selectedProjectId) {
-      setSelectedProjectId(projects[0].id);
+      setSelectedProjectId(projects[0].project_id);
     }
   }, [projects, selectedProjectId]);
 
@@ -122,11 +122,11 @@ export default function CollaboratorChat() {
       <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-hide">
         {projects.map((p) => (
           <button
-            key={p.id}
-            onClick={() => setSelectedProjectId(p.id)}
+            key={p.project_id}
+            onClick={() => setSelectedProjectId(p.project_id)}
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-colors shrink-0",
-              selectedProjectId === p.id
+              selectedProjectId === p.project_id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-card text-foreground border-border hover:bg-accent"
             )}
