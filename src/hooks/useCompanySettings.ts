@@ -9,6 +9,7 @@ export interface CompanySettings {
   default_margin_min_percent: number;
   labor_pricing_model: LaborPricingModel;
   default_labor_rate: number;
+  logo_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -19,6 +20,7 @@ const DEFAULT_SETTINGS: Omit<CompanySettings, 'id' | 'created_at' | 'updated_at'
   default_margin_min_percent: 30,
   labor_pricing_model: 'sqft',
   default_labor_rate: 3.50,
+  logo_url: null,
 };
 
 /**
@@ -72,6 +74,7 @@ export function useCompanySettings() {
     marginMinPercent: settings?.default_margin_min_percent ?? DEFAULT_SETTINGS.default_margin_min_percent,
     laborPricingModel: settings?.labor_pricing_model ?? DEFAULT_SETTINGS.labor_pricing_model,
     laborRate: settings?.default_labor_rate ?? DEFAULT_SETTINGS.default_labor_rate,
+    logoUrl: settings?.logo_url ?? null,
   };
 }
 
@@ -109,5 +112,6 @@ export async function getCompanySettingsWithDefaults(): Promise<Omit<CompanySett
     default_margin_min_percent: settings.default_margin_min_percent,
     labor_pricing_model: settings.labor_pricing_model,
     default_labor_rate: settings.default_labor_rate,
+    logo_url: settings.logo_url,
   };
 }
