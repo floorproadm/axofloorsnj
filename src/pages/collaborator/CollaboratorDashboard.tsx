@@ -153,8 +153,13 @@ export default function CollaboratorDashboard() {
     <div className="space-y-4">
       {/* Greeting */}
       <div>
-        <h1 className="text-xl font-heading font-bold text-foreground">
-          Bom dia 👋
+      <h1 className="text-xl font-heading font-bold text-foreground">
+          {(() => {
+            const nycHour = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" })).getHours();
+            if (nycHour < 12) return "Bom dia ☀️";
+            if (nycHour < 18) return "Boa tarde 👋";
+            return "Boa noite 🌙";
+          })()}
         </h1>
         <p className="text-sm text-muted-foreground">
           {format(new Date(), "EEEE, MMMM d")}
