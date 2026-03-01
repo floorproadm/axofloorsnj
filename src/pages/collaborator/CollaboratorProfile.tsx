@@ -186,14 +186,14 @@ export default function CollaboratorProfile() {
         </Card>
         <Card>
           <CardContent className="p-4 flex flex-col items-center gap-1">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <CheckCircle2 className="h-5 w-5 text-primary" />
             <span className="text-2xl font-bold text-foreground">{completedTasks}</span>
             <span className="text-xs text-muted-foreground text-center">Tarefas feitas</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 flex flex-col items-center gap-1">
-            <Camera className="h-5 w-5 text-blue-600" />
+            <Camera className="h-5 w-5 text-primary" />
             <span className="text-2xl font-bold text-foreground">{uploadsCount}</span>
             <span className="text-xs text-muted-foreground text-center">Fotos enviadas</span>
           </CardContent>
