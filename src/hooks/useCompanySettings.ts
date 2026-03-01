@@ -31,6 +31,7 @@ export function useCompanySettings() {
   const [settings, setSettings] = useState<CompanySettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [logoSignedUrl, setLogoSignedUrl] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
     setIsLoading(true);
@@ -47,10 +48,20 @@ export function useCompanySettings() {
 
       if (data) {
         console.log('[AdminSettings] Loaded', data);
-        setSettings(data as unknown as CompanySettings);
+        const s = data as unknown as CompanySettings;
+        setSettings(s);
+        // Generate signed URL for logo
+        if (s.logo_url) {
+          supabase.storage.from('media').createSignedUrl(s.logo_url, 60 * 60)
+            .then(({ data: urlData }) => {
+              if (urlData) setLogoSignedUrl(urlData.signedUrl);
+            });
+        } else {
+          setLogoSignedUrl(null);
+        }
       } else {
-        // No settings found - use defaults
         setSettings(null);
+        setLogoSignedUrl(null);
       }
     } catch (err) {
       console.error('Failed to fetch company settings:', err);
@@ -74,7 +85,7 @@ export function useCompanySettings() {
     marginMinPercent: settings?.default_margin_min_percent ?? DEFAULT_SETTINGS.default_margin_min_percent,
     laborPricingModel: settings?.labor_pricing_model ?? DEFAULT_SETTINGS.labor_pricing_model,
     laborRate: settings?.default_labor_rate ?? DEFAULT_SETTINGS.default_labor_rate,
-    logoUrl: settings?.logo_url ?? null,
+    logoUrl: logoSignedUrl,
   };
 }
 
