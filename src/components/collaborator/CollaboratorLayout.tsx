@@ -23,6 +23,32 @@ export default function CollaboratorLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Unread chat messages count
+  const { data: unreadChatCount = 0 } = useQuery({
+    queryKey: ["unread-chat-count", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      // Get collaborator's projects
+      const { data: memberships } = await supabase
+        .from("project_members")
+        .select("project_id")
+        .eq("user_id", user.id);
+      if (!memberships || memberships.length === 0) return 0;
+      const projectIds = memberships.map((m) => m.project_id);
+      
+      const { count, error } = await supabase
+        .from("chat_messages")
+        .select("*", { count: "exact", head: true })
+        .in("project_id", projectIds)
+        .eq("read", false)
+        .neq("sender_id", user.id);
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000, // poll every 30s
+  });
+
   // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
