@@ -170,18 +170,26 @@ export default function CollaboratorLayout() {
         <div className="flex items-center justify-around max-w-2xl mx-auto h-16">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.path, item.exact);
+            const badge = item.label === "Chat" ? unreadChatCount : 0;
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors min-w-[60px]",
+                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors min-w-[60px] relative",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+                <div className="relative">
+                  <item.icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+                  {badge > 0 && (
+                    <span className="absolute -top-1.5 -right-2 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] font-medium">{item.label}</span>
               </button>
             );
