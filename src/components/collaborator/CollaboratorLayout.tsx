@@ -1,5 +1,4 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Home, CalendarDays, FolderOpen, User, HardHat } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,7 +12,6 @@ const NAV_ITEMS = [
 
 export default function CollaboratorLayout() {
   const { user, loading } = useAuth();
-  const { logoUrl, companyName } = useCompanySettings();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -39,15 +37,7 @@ export default function CollaboratorLayout() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-card px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={companyName}
-              className="h-6 w-6 object-contain rounded"
-            />
-          ) : (
-            <HardHat className="h-5 w-5 text-primary" />
-          )}
+          <HardHat className="h-5 w-5 text-primary" />
           <span className="font-heading font-semibold text-foreground">
             AXO Field
           </span>
