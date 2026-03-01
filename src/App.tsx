@@ -56,6 +56,9 @@ import SharedPost from "./pages/SharedPost";
 import CollaboratorLayout from "./components/collaborator/CollaboratorLayout";
 import CollaboratorDashboard from "./pages/collaborator/CollaboratorDashboard";
 import CollaboratorProjectDetail from "./pages/collaborator/CollaboratorProjectDetail";
+import CollaboratorSchedule from "./pages/collaborator/CollaboratorSchedule";
+import CollaboratorDocs from "./pages/collaborator/CollaboratorDocs";
+import CollaboratorProfile from "./pages/collaborator/CollaboratorProfile";
 
 const queryClient = new QueryClient();
 
@@ -195,6 +198,9 @@ const App = () => {
               </ProtectedRoute>
             }>
               <Route index element={<CollaboratorDashboard />} />
+              <Route path="schedule" element={<CollaboratorSchedule />} />
+              <Route path="docs" element={<CollaboratorDocs />} />
+              <Route path="profile" element={<CollaboratorProfile />} />
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
 
