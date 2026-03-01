@@ -10,6 +10,7 @@ import { JobCostEditor } from '@/components/admin/JobCostEditor';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { JobProofUploader } from '@/components/admin/JobProofUploader';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
+import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
 import {
   Loader2,
   ArrowLeft,
@@ -19,6 +20,7 @@ import {
   MapPin,
   Calendar,
   Briefcase,
+  MessageCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -101,6 +103,10 @@ export default function ProjectDetail() {
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
             <TabsTrigger value="proof">Job Proof</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="chat" className="gap-1">
+              <MessageCircle className="h-3.5 w-3.5" />
+              Chat
+            </TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
@@ -174,6 +180,21 @@ export default function ProjectDetail() {
               </CardHeader>
               <CardContent>
                 <ProjectDocumentsManager projectId={project.id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* CHAT */}
+          <TabsContent value="chat">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  Chat com Equipe
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ProjectChatPanel projectId={project.id} />
               </CardContent>
             </Card>
           </TabsContent>
