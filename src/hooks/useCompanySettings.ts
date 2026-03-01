@@ -48,10 +48,20 @@ export function useCompanySettings() {
 
       if (data) {
         console.log('[AdminSettings] Loaded', data);
-        setSettings(data as unknown as CompanySettings);
+        const s = data as unknown as CompanySettings;
+        setSettings(s);
+        // Generate signed URL for logo
+        if (s.logo_url) {
+          supabase.storage.from('media').createSignedUrl(s.logo_url, 60 * 60)
+            .then(({ data: urlData }) => {
+              if (urlData) setLogoSignedUrl(urlData.signedUrl);
+            });
+        } else {
+          setLogoSignedUrl(null);
+        }
       } else {
-        // No settings found - use defaults
         setSettings(null);
+        setLogoSignedUrl(null);
       }
     } catch (err) {
       console.error('Failed to fetch company settings:', err);
