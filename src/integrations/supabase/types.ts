@@ -123,6 +123,89 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_drips: {
+        Row: {
+          channel: string
+          created_at: string
+          delay_days: number
+          delay_hours: number
+          display_order: number
+          id: string
+          is_active: boolean
+          message_template: string
+          sequence_id: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          delay_days?: number
+          delay_hours?: number
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          message_template?: string
+          sequence_id: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          delay_days?: number
+          delay_hours?: number
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          message_template?: string
+          sequence_id?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_drips_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "automation_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_sequences: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          pipeline_type: string
+          stage_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          pipeline_type?: string
+          stage_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          pipeline_type?: string
+          stage_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_settings: {
         Row: {
           company_name: string
