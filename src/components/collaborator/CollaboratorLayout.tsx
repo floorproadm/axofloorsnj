@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Loader2, Home, CalendarDays, FolderOpen, User, HardHat } from "lucide-react";
+import { Loader2, Home, CalendarDays, FolderOpen, User, HardHat, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
