@@ -114,7 +114,7 @@ export function SequenceDetail({
 
       {/* Drips List */}
       {!collapsed && (
-        <div className="px-3 pb-3 space-y-1.5">
+        <div className="px-3 pb-3 space-y-2.5">
           {/* Timeline connector */}
           <div className="relative pl-5">
             {sequenceDrips.map((drip, i) => (
@@ -135,7 +135,7 @@ export function SequenceDetail({
                     drip.is_active ? "bg-primary" : "bg-muted-foreground/30"
                   )} />
                 </div>
-                <div className="ml-6 mb-1.5">
+                <div className="ml-6 mb-2.5">
                   <DripEditor
                     drip={drip}
                     onUpdate={onUpdateDrip}

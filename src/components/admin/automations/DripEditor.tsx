@@ -131,7 +131,7 @@ export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
 
   return (
     <div className={cn(
-      "rounded-lg p-2.5 group transition-all duration-150 cursor-pointer",
+      "rounded-lg p-3.5 group transition-all duration-150 cursor-pointer",
       drip.is_active
         ? "bg-card/80 hover:bg-card border border-border/30 hover:border-border/60"
         : "bg-muted/20 border border-border/20 opacity-50"
@@ -141,7 +141,7 @@ export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           {/* Top row: channel + timing */}
-          <div className="flex items-center gap-1.5 mb-1">
+          <div className="flex items-center gap-2 mb-1.5">
             <Badge variant="outline" className={cn("text-xs px-2 py-0.5 gap-1", channelInfo.badgeClass)}>
               <ChannelIcon className="w-3 h-3" />
               {channelInfo.label}
