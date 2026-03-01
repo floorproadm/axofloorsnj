@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
+import { JobChecklist } from "@/components/admin/JobChecklist";
 import { toast } from "sonner";
 
 type ProjectStatus = "pending" | "in_production" | "completed";
