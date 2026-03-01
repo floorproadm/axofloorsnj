@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronLeft, ChevronRight, MapPin, Clock } from "lucide-react";
-import { format, startOfWeek, addDays, addWeeks, isSameDay } from "date-fns";
+import { format, startOfWeek, addDays, addWeeks, isSameDay, getISOWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +40,7 @@ export default function CollaboratorSchedule() {
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-sm font-heading font-semibold text-foreground">
-          Semana de {format(adjustedStart, "MMM d")}
+          Week {getISOWeek(adjustedStart)}
         </h1>
         <Button variant="ghost" size="icon" onClick={() => setWeekOffset((o) => o + 1)}>
           <ChevronRight className="h-5 w-5" />
