@@ -20,8 +20,8 @@ export default function CollaboratorSchedule() {
   const { data: appointments = [], isLoading } = useCollaboratorSchedule(weekOffset);
   const navigate = useNavigate();
 
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const adjustedStart = addDays(weekStart, weekOffset * 7);
+  const adjustedDate = addWeeks(new Date(), weekOffset);
+  const adjustedStart = startOfWeek(adjustedDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 6 }, (_, i) => addDays(adjustedStart, i));
 
   if (isLoading) {
