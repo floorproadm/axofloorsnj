@@ -59,6 +59,7 @@ import CollaboratorProjectDetail from "./pages/collaborator/CollaboratorProjectD
 import CollaboratorSchedule from "./pages/collaborator/CollaboratorSchedule";
 import CollaboratorDocs from "./pages/collaborator/CollaboratorDocs";
 import CollaboratorProfile from "./pages/collaborator/CollaboratorProfile";
+import CollaboratorChat from "./pages/collaborator/CollaboratorChat";
 
 const queryClient = new QueryClient();
 
@@ -200,6 +201,7 @@ const App = () => {
               <Route index element={<CollaboratorDashboard />} />
               <Route path="schedule" element={<CollaboratorSchedule />} />
               <Route path="docs" element={<CollaboratorDocs />} />
+              <Route path="chat" element={<CollaboratorChat />} />
               <Route path="profile" element={<CollaboratorProfile />} />
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
