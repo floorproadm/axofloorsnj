@@ -1,5 +1,6 @@
 import { useCollaboratorSchedule } from "@/hooks/useCollaboratorSchedule";
 import { useCollaboratorProjects } from "@/hooks/useCollaboratorProjects";
+import { useMaterialRequests } from "@/hooks/useMaterialRequests";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,13 +9,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2,
+  Package, Plus, X
+} from "lucide-react";
 import { format, startOfWeek, addDays, isToday, isSameDay } from "date-fns";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { convertHeicToJpeg } from "@/utils/heicConverter";
 import { useCollaboratorUpload } from "@/hooks/useCollaboratorUpload";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function CollaboratorDashboard() {
   const { user } = useAuth();
@@ -22,9 +29,17 @@ export default function CollaboratorDashboard() {
   const queryClient = useQueryClient();
   const { data: appointments = [], isLoading: loadingSchedule } = useCollaboratorSchedule(0);
   const { data: projects = [] } = useCollaboratorProjects();
+  const { data: materialRequests = [], createRequest } = useMaterialRequests();
   const upload = useCollaboratorUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadProjectId, setUploadProjectId] = useState<string | null>(null);
+  const [showMaterialForm, setShowMaterialForm] = useState(false);
+  const [materialForm, setMaterialForm] = useState({
+    item_name: "",
+    quantity: "1",
+    unit: "unit",
+    notes: "",
+  });
 
   // Week strip data
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -38,20 +53,25 @@ export default function CollaboratorDashboard() {
   const todayProject = todayAppointments[0];
   const todayProjectId = todayProject?.project_id;
 
-  // Tasks for today's project
+  // Tasks for today's project + assigned to user
   const { data: tasks = [] } = useQuery({
-    queryKey: ["collaborator-tasks", todayProjectId],
+    queryKey: ["collaborator-tasks", todayProjectId, user?.id],
     queryFn: async () => {
-      if (!todayProjectId) return [];
-      const { data, error } = await supabase
+      if (!user?.id) return [];
+      
+      // Get tasks assigned to user OR related to today's project
+      let query = supabase
         .from("tasks")
-        .select("id, title, status")
-        .eq("related_project_id", todayProjectId)
+        .select("id, title, status, due_date, priority")
+        .eq("assigned_to", user.id)
+        .in("status", ["pending", "in_progress", "done"])
         .order("created_at", { ascending: true });
+
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
-    enabled: !!todayProjectId,
+    enabled: !!user?.id,
   });
 
   const toggleTask = useMutation({
@@ -69,6 +89,7 @@ export default function CollaboratorDashboard() {
   });
 
   const completedTasks = tasks.filter((t) => t.status === "done").length;
+  const pendingTasks = tasks.filter((t) => t.status !== "done");
   const progressPercent = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   // Count jobs per day for week strip
@@ -96,6 +117,29 @@ export default function CollaboratorDashboard() {
       setTimeout(() => fileInputRef.current?.click(), 100);
     }
   };
+
+  const handleSubmitMaterial = () => {
+    if (!materialForm.item_name.trim()) return;
+    createRequest.mutate(
+      {
+        project_id: todayProjectId || null,
+        item_name: materialForm.item_name.trim(),
+        quantity: Number(materialForm.quantity) || 1,
+        unit: materialForm.unit,
+        notes: materialForm.notes || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Material solicitado!");
+          setMaterialForm({ item_name: "", quantity: "1", unit: "unit", notes: "" });
+          setShowMaterialForm(false);
+        },
+      }
+    );
+  };
+
+  // Recent material requests (last 5)
+  const recentRequests = materialRequests.slice(0, 5);
 
   if (loadingSchedule) {
     return (
@@ -195,14 +239,20 @@ export default function CollaboratorDashboard() {
       )}
 
       {/* Today's Tasks */}
-      {todayProjectId && tasks.length > 0 && (
+      {tasks.length > 0 && (
         <Card>
           <CardContent className="p-4 space-y-3">
-            <h3 className="font-heading font-semibold text-sm text-foreground">
-              Tarefas do Dia
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-semibold text-sm text-foreground">
+                Minhas Tarefas
+              </h3>
+              <span className="text-[10px] text-muted-foreground">
+                {completedTasks}/{tasks.length} concluídas
+              </span>
+            </div>
             <div className="space-y-2">
-              {tasks.map((task) => {
+              {/* Pending first, then done */}
+              {[...pendingTasks, ...tasks.filter((t) => t.status === "done")].map((task) => {
                 const isDone = task.status === "done";
                 return (
                   <label
@@ -215,14 +265,24 @@ export default function CollaboratorDashboard() {
                         toggleTask.mutate({ id: task.id, done: !!checked })
                       }
                     />
-                    <span
-                      className={cn(
-                        "text-sm",
-                        isDone && "line-through text-muted-foreground"
+                    <div className="flex-1 min-w-0">
+                      <span
+                        className={cn(
+                          "text-sm block",
+                          isDone && "line-through text-muted-foreground"
+                        )}
+                      >
+                        {task.title}
+                      </span>
+                      {task.due_date && !isDone && (
+                        <span className="text-[10px] text-muted-foreground">
+                          Vence: {format(new Date(task.due_date + "T00:00:00"), "MMM d")}
+                        </span>
                       )}
-                    >
-                      {task.title}
-                    </span>
+                    </div>
+                    {task.priority === "urgent" && !isDone && (
+                      <Badge variant="destructive" className="text-[9px] px-1.5">!</Badge>
+                    )}
                   </label>
                 );
               })}
@@ -230,6 +290,111 @@ export default function CollaboratorDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Material Requests */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
+              <Package className="h-4 w-4" />
+              Materiais
+            </h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setShowMaterialForm(!showMaterialForm)}
+            >
+              {showMaterialForm ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+              {showMaterialForm ? "Cancelar" : "Solicitar"}
+            </Button>
+          </div>
+
+          {/* Form */}
+          {showMaterialForm && (
+            <div className="space-y-2 p-3 rounded-lg bg-muted/50 border border-border">
+              <Input
+                placeholder="Nome do material (ex: Stain Dark Walnut)"
+                value={materialForm.item_name}
+                onChange={(e) => setMaterialForm((f) => ({ ...f, item_name: e.target.value }))}
+                className="h-9 text-sm"
+              />
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Qtd"
+                  value={materialForm.quantity}
+                  onChange={(e) => setMaterialForm((f) => ({ ...f, quantity: e.target.value }))}
+                  className="h-9 text-sm w-20"
+                />
+                <Select
+                  value={materialForm.unit}
+                  onValueChange={(v) => setMaterialForm((f) => ({ ...f, unit: v }))}
+                >
+                  <SelectTrigger className="h-9 text-sm flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unit">Unidade</SelectItem>
+                    <SelectItem value="gallon">Galão</SelectItem>
+                    <SelectItem value="box">Caixa</SelectItem>
+                    <SelectItem value="sqft">Sq Ft</SelectItem>
+                    <SelectItem value="roll">Rolo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Input
+                placeholder="Notas (opcional)"
+                value={materialForm.notes}
+                onChange={(e) => setMaterialForm((f) => ({ ...f, notes: e.target.value }))}
+                className="h-9 text-sm"
+              />
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={handleSubmitMaterial}
+                disabled={!materialForm.item_name.trim() || createRequest.isPending}
+              >
+                {createRequest.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Enviar Solicitação"
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Recent requests */}
+          {recentRequests.length > 0 ? (
+            <div className="space-y-1.5">
+              {recentRequests.map((req) => (
+                <div key={req.id} className="flex items-center justify-between py-1.5 text-xs">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="text-foreground truncate">
+                      {req.quantity} {req.unit} — {req.item_name}
+                    </span>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[9px] px-1.5 shrink-0",
+                      req.status === "approved" && "text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
+                      req.status === "pending" && "text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
+                      req.status === "rejected" && "text-destructive border-destructive/30"
+                    )}
+                  >
+                    {req.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          ) : !showMaterialForm && (
+            <p className="text-xs text-muted-foreground text-center py-2">
+              Nenhuma solicitação recente
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       {todayProjectId && (
