@@ -3,6 +3,8 @@ import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Home, CalendarDays, MessageCircle, User, HardHat, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useState, useRef, useEffect } from "react";
 
