@@ -142,23 +142,23 @@ export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
         <div className="flex-1 min-w-0">
           {/* Top row: channel + timing */}
           <div className="flex items-center gap-1.5 mb-1">
-            <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0 gap-0.5", channelInfo.badgeClass)}>
-              <ChannelIcon className="w-2.5 h-2.5" />
+            <Badge variant="outline" className={cn("text-xs px-2 py-0.5 gap-1", channelInfo.badgeClass)}>
+              <ChannelIcon className="w-3 h-3" />
               {channelInfo.label}
             </Badge>
-            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-              <Clock className="w-2.5 h-2.5" />
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Clock className="w-3 h-3" />
               {formatDelay(drip.delay_days, drip.delay_hours)}
             </span>
           </div>
 
           {/* Subject */}
           {drip.subject && (
-            <p className="text-[11px] font-medium text-foreground mb-0.5 truncate">{drip.subject}</p>
+            <p className="text-sm font-medium text-foreground mb-0.5 truncate">{drip.subject}</p>
           )}
 
           {/* Message preview */}
-          <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed">
+          <p className="text-sm text-muted-foreground line-clamp-1 leading-relaxed">
             {drip.message_template || "Empty template — click to edit"}
           </p>
         </div>

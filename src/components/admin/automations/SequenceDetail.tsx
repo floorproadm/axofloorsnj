@@ -81,8 +81,8 @@ export function SequenceDetail({
             </button>
           )}
 
-          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-border/50 text-muted-foreground shrink-0">
-            <ListOrdered className="w-2.5 h-2.5 mr-0.5" />
+          <Badge variant="outline" className="text-xs px-2 py-0.5 border-border/50 text-muted-foreground shrink-0">
+            <ListOrdered className="w-3 h-3 mr-0.5" />
             {activeDrips}/{sequenceDrips.length}
           </Badge>
         </div>
