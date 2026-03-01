@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Loader2, Home, CalendarDays, FolderOpen, User, HardHat } from "lucide-react";
+import { Loader2, Home, CalendarDays, FolderOpen, User, HardHat, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -42,6 +42,11 @@ export default function CollaboratorLayout() {
             AXO Field
           </span>
         </div>
+        <button className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <Bell className="h-5 w-5" />
+          {/* Notification dot — uncomment when notifications are wired */}
+          {/* <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" /> */}
+        </button>
       </header>
 
       {/* Content */}
