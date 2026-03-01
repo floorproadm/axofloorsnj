@@ -1162,6 +1162,9 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
               </div>
             </div>
 
+            {/* ═══ Job Checklist ═══ */}
+            <JobChecklist projectId={project.id} />
+
             {/* ═══ Expandable Blocks ═══ */}
             {showBlock === "costs" && (
               <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 animate-fade-in">
