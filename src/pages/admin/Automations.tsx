@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AdminLayout from "@/components/admin/AdminLayout";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StageFlowList } from "@/components/admin/automations/StageFlowList";
 import { useAutomationFlows } from "@/hooks/useAutomationFlows";

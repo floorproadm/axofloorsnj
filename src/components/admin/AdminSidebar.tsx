@@ -17,6 +17,7 @@ import {
   HelpCircle,
   Handshake,
   DollarSign,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -78,6 +79,7 @@ export function AdminSidebar() {
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Feed", url: "/admin/feed", icon: Images },
+    { title: "Automations", url: "/admin/automations", icon: Zap },
   ];
 
   const labeledGroups = [

@@ -45,6 +45,7 @@ import AdminCatalog from './pages/admin/Catalog';
 import AdminHelp from './pages/admin/Help';
 import AdminPartners from './pages/admin/Partners';
 import AdminPayments from './pages/admin/Payments';
+import AdminAutomations from './pages/admin/Automations';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 
