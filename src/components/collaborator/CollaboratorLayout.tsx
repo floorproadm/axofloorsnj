@@ -3,6 +3,8 @@ import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Home, CalendarDays, MessageCircle, User, HardHat, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useState, useRef, useEffect } from "react";
 
@@ -20,6 +22,32 @@ export default function CollaboratorLayout() {
   const { data: notifications = [], unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Unread chat messages count
+  const { data: unreadChatCount = 0 } = useQuery({
+    queryKey: ["unread-chat-count", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      // Get collaborator's projects
+      const { data: memberships } = await supabase
+        .from("project_members")
+        .select("project_id")
+        .eq("user_id", user.id);
+      if (!memberships || memberships.length === 0) return 0;
+      const projectIds = memberships.map((m) => m.project_id);
+      
+      const { count, error } = await supabase
+        .from("chat_messages")
+        .select("*", { count: "exact", head: true })
+        .in("project_id", projectIds)
+        .eq("read", false)
+        .neq("sender_id", user.id);
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000, // poll every 30s
+  });
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -142,18 +170,26 @@ export default function CollaboratorLayout() {
         <div className="flex items-center justify-around max-w-2xl mx-auto h-16">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.path, item.exact);
+            const badge = item.label === "Chat" ? unreadChatCount : 0;
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors min-w-[60px]",
+                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors min-w-[60px] relative",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+                <div className="relative">
+                  <item.icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+                  {badge > 0 && (
+                    <span className="absolute -top-1.5 -right-2 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] font-medium">{item.label}</span>
               </button>
             );
