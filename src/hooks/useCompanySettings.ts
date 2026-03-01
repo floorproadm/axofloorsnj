@@ -85,7 +85,7 @@ export function useCompanySettings() {
     marginMinPercent: settings?.default_margin_min_percent ?? DEFAULT_SETTINGS.default_margin_min_percent,
     laborPricingModel: settings?.labor_pricing_model ?? DEFAULT_SETTINGS.labor_pricing_model,
     laborRate: settings?.default_labor_rate ?? DEFAULT_SETTINGS.default_labor_rate,
-    logoUrl: settings?.logo_url ?? null,
+    logoUrl: logoSignedUrl,
   };
 }
 
