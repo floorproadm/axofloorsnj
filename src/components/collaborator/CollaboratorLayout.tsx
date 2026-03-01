@@ -36,12 +36,12 @@ export default function CollaboratorLayout() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-card px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <button onClick={() => navigate("/collaborator")} className="flex items-center gap-2">
           <HardHat className="h-5 w-5 text-primary" />
           <span className="font-heading font-semibold text-foreground">
             AXO Field
           </span>
-        </div>
+        </button>
         <button className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <Bell className="h-5 w-5" />
           {/* Notification dot — uncomment when notifications are wired */}
