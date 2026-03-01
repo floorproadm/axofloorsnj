@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronLeft, ChevronRight, MapPin, Clock } from "lucide-react";
-import { format, startOfWeek, addDays, isSameDay } from "date-fns";
+import { format, startOfWeek, addDays, addWeeks, isSameDay } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +20,8 @@ export default function CollaboratorSchedule() {
   const { data: appointments = [], isLoading } = useCollaboratorSchedule(weekOffset);
   const navigate = useNavigate();
 
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const adjustedStart = addDays(weekStart, weekOffset * 7);
+  const adjustedDate = addWeeks(new Date(), weekOffset);
+  const adjustedStart = startOfWeek(adjustedDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 6 }, (_, i) => addDays(adjustedStart, i));
 
   if (isLoading) {
