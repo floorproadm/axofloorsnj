@@ -206,6 +206,51 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          project_id: string | null
+          read: boolean
+          sender_id: string
+          sender_name: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          read?: boolean
+          sender_id: string
+          sender_name?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          read?: boolean
+          sender_id?: string
+          sender_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       company_settings: {
         Row: {
           company_name: string
@@ -914,6 +959,66 @@ export type Database = {
           },
         ]
       }
+      material_requests: {
+        Row: {
+          created_at: string
+          id: string
+          item_name: string
+          notes: string | null
+          project_id: string | null
+          quantity: number
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_name: string
+          notes?: string | null
+          project_id?: string | null
+          quantity?: number
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_name?: string
+          notes?: string | null
+          project_id?: string | null
+          quantity?: number
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       measurement_areas: {
         Row: {
           area_sqft: number
@@ -1048,6 +1153,39 @@ export type Database = {
             referencedColumns: ["project_id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       partners: {
         Row: {
