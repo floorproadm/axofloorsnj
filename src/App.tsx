@@ -45,6 +45,7 @@ import AdminCatalog from './pages/admin/Catalog';
 import AdminHelp from './pages/admin/Help';
 import AdminPartners from './pages/admin/Partners';
 import AdminPayments from './pages/admin/Payments';
+import AdminAutomations from './pages/admin/Automations';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 
@@ -180,6 +181,11 @@ const App = () => {
             <Route path="/admin/payments" element={
               <ProtectedRoute>
                 <AdminPayments />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/automations" element={
+              <ProtectedRoute>
+                <AdminAutomations />
               </ProtectedRoute>
             } />
             {/* Collaborator Portal */}
