@@ -74,7 +74,7 @@ export function PartnerControlModal({ partner, open, onOpenChange, onViewDetails
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm p-0 gap-0">
-        <DialogHeader className="p-4 pb-3 pr-10 border-b border-border/50">
+        <DialogHeader className="p-4 pb-3 pr-10 border-b border-border/50 text-left">
           <div className="flex items-center gap-3">
             {partner.photo_url ? (
               <img src={partner.photo_url} alt="" className="w-11 h-11 rounded-full object-cover shrink-0" />
