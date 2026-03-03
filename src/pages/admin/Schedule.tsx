@@ -503,6 +503,7 @@ function AppointmentModal({
   saving: boolean;
   templateDefaults?: { type: string; duration: number; time: string } | null;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     customer_name: "",
     customer_phone: "",
@@ -520,6 +521,7 @@ function AppointmentModal({
   const handleOpenChange = (v: boolean) => {
     if (v) {
       if (appointment) {
+        setIsEditing(false); // view mode for existing
         setForm({
           customer_name: appointment.customer_name,
           customer_phone: appointment.customer_phone,
@@ -532,6 +534,7 @@ function AppointmentModal({
           project_id: appointment.project_id,
         });
       } else {
+        setIsEditing(true); // edit mode for new
         setForm({
           customer_name: "", customer_phone: "",
           appointment_type: templateDefaults?.type || "measurement",
@@ -566,110 +569,165 @@ function AppointmentModal({
     });
   };
 
+  const typeCfg = getTypeConfig(form.appointment_type);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{appointment ? "Editar Agendamento" : "Novo Agendamento"}</DialogTitle>
+          <DialogTitle>{!appointment ? "Novo Agendamento" : isEditing ? "Editar Agendamento" : "Detalhes do Agendamento"}</DialogTitle>
           <DialogDescription>
-            {appointment ? "Atualize os dados do agendamento." : "Preencha os dados para criar um novo agendamento."}
+            {!appointment ? "Preencha os dados para criar um novo agendamento." : isEditing ? "Atualize os dados do agendamento." : "Visualize as informações do agendamento."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Link to project */}
-          <div>
-            <Label className="text-xs">Vincular a Projeto</Label>
-            <Select value={form.project_id || ""} onValueChange={linkProject}>
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Selecione um projeto (opcional)" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map(p => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.customer_name} {p.address ? `- ${p.address}` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs">Cliente *</Label>
-              <Input value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))} className="h-9" />
+        {/* ── VIEW MODE ── */}
+        {appointment && !isEditing ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full", typeCfg.bg, typeCfg.text)}>
+                {typeCfg.label}
+              </span>
+              <span className="text-xs text-muted-foreground capitalize">{appointment.status}</span>
             </div>
-            <div>
-              <Label className="text-xs">Telefone *</Label>
-              <Input value={form.customer_phone} onChange={e => setForm(f => ({ ...f, customer_phone: e.target.value }))} className="h-9" />
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5">
+                <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{form.customer_name}</p>
+                  <p className="text-xs text-muted-foreground">{form.customer_phone}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <CalendarIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <p className="text-sm text-foreground">
+                  {format(parseISO(form.appointment_date), "dd/MM/yyyy")} às {form.appointment_time}
+                  <span className="text-muted-foreground ml-1">· {form.duration_hours}h</span>
+                </p>
+              </div>
+
+              {form.location && (
+                <div className="flex items-center gap-2.5">
+                  <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-sm text-foreground">{form.location}</p>
+                </div>
+              )}
+
+              {form.notes && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Notas</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{form.notes}</p>
+                </div>
+              )}
             </div>
-          </div>
 
-          <div>
-            <Label className="text-xs">Tipo</Label>
-            <Select value={form.appointment_type} onValueChange={v => setForm(f => ({ ...f, appointment_type: v }))}>
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {APPOINTMENT_TYPES.map(t => (
-                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <DialogFooter className="flex-row gap-2 justify-end sm:justify-end pt-2">
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-1.5">
+                <Edit2 className="w-3.5 h-3.5" /> Editar
+              </Button>
+            </DialogFooter>
           </div>
+        ) : (
+          /* ── EDIT / CREATE MODE ── */
+          <>
+            <div className="space-y-4">
+              {/* Link to project */}
+              <div>
+                <Label className="text-xs">Vincular a Projeto</Label>
+                <Select value={form.project_id || ""} onValueChange={linkProject}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Selecione um projeto (opcional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map(p => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.customer_name} {p.address ? `- ${p.address}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <Label className="text-xs">Data</Label>
-              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full h-9 text-xs justify-start">
-                    <CalendarIcon className="w-3 h-3 mr-1" />
-                    {format(parseISO(form.appointment_date), "dd/MM")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={parseISO(form.appointment_date)}
-                    onSelect={(d) => { if (d) { setForm(f => ({ ...f, appointment_date: format(d, "yyyy-MM-dd") })); setDatePickerOpen(false); } }}
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Cliente *</Label>
+                  <Input value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))} className="h-9" />
+                </div>
+                <div>
+                  <Label className="text-xs">Telefone *</Label>
+                  <Input value={form.customer_phone} onChange={e => setForm(f => ({ ...f, customer_phone: e.target.value }))} className="h-9" />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">Tipo</Label>
+                <Select value={form.appointment_type} onValueChange={v => setForm(f => ({ ...f, appointment_type: v }))}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {APPOINTMENT_TYPES.map(t => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs">Data</Label>
+                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full h-9 text-xs justify-start">
+                        <CalendarIcon className="w-3 h-3 mr-1" />
+                        {format(parseISO(form.appointment_date), "dd/MM")}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={parseISO(form.appointment_date)}
+                        onSelect={(d) => { if (d) { setForm(f => ({ ...f, appointment_date: format(d, "yyyy-MM-dd") })); setDatePickerOpen(false); } }}
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <Label className="text-xs">Horário</Label>
+                  <Input type="time" value={form.appointment_time} onChange={e => setForm(f => ({ ...f, appointment_time: e.target.value }))} className="h-9" />
+                </div>
+                <div>
+                  <Label className="text-xs">Duração (h)</Label>
+                  <Input type="number" min={0.5} step={0.5} value={form.duration_hours} onChange={e => setForm(f => ({ ...f, duration_hours: Number(e.target.value) }))} className="h-9" />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">Local</Label>
+                <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Endereço" className="h-9" />
+              </div>
+
+              <div>
+                <Label className="text-xs">Notas</Label>
+                <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
+              </div>
             </div>
-            <div>
-              <Label className="text-xs">Horário</Label>
-              <Input type="time" value={form.appointment_time} onChange={e => setForm(f => ({ ...f, appointment_time: e.target.value }))} className="h-9" />
-            </div>
-            <div>
-              <Label className="text-xs">Duração (h)</Label>
-              <Input type="number" min={0.5} step={0.5} value={form.duration_hours} onChange={e => setForm(f => ({ ...f, duration_hours: Number(e.target.value) }))} className="h-9" />
-            </div>
-          </div>
 
-          <div>
-            <Label className="text-xs">Local</Label>
-            <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Endereço" className="h-9" />
-          </div>
-
-          <div>
-            <Label className="text-xs">Notas</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
-          </div>
-        </div>
-
-        <DialogFooter className="flex-row gap-2 justify-between sm:justify-between">
-          {appointment && (
-            <Button variant="destructive" size="sm" onClick={() => onDelete(appointment.id)} className="gap-1">
-              <Trash2 className="w-3.5 h-3.5" /> Remover
-            </Button>
-          )}
-          <Button onClick={handleSubmit} disabled={saving || !form.customer_name || !form.customer_phone} size="sm" className="ml-auto">
-            {saving ? "Salvando..." : appointment ? "Atualizar" : "Criar"}
-          </Button>
-        </DialogFooter>
+            <DialogFooter className="flex-row gap-2 justify-between sm:justify-between">
+              {appointment && (
+                <Button variant="destructive" size="sm" onClick={() => onDelete(appointment.id)} className="gap-1">
+                  <Trash2 className="w-3.5 h-3.5" /> Remover
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={saving || !form.customer_name || !form.customer_phone} size="sm" className="ml-auto">
+                {saving ? "Salvando..." : appointment ? "Atualizar" : "Criar"}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
