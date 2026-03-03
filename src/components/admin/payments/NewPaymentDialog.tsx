@@ -38,7 +38,7 @@ const METHODS = [
 export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "received" }: Props) {
   const isIncome = defaultCategory === "received";
   const [projects, setProjects] = useState<Project[]>([]);
-  const [category, setCategory] = useState(defaultCategory);
+  const [category, setCategory] = useState<string>(defaultCategory);
   const [projectId, setProjectId] = useState("");
   const [amount, setAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
