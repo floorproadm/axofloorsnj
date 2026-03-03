@@ -101,33 +101,43 @@ const Builders = () => {
     setIsSubmitting(true);
 
     try {
-      // Save to Supabase leads table
+      // Save to partners table as B2B prospect
       const { error } = await supabase
-        .from('leads')
+        .from('partners')
         .insert([{
-          name: formData.contactName,
+          contact_name: formData.contactName,
+          company_name: formData.companyName,
           email: formData.email,
           phone: formData.phone,
-          lead_source: 'builders_page',
-          status: 'cold_lead',
-          priority: 'high',
-          services: ['partnership'],
-          message: `Company: ${formData.companyName}\nProject Volume: ${formData.projectVolume}\nCurrent Partner: ${formData.currentFlooringPartner}\n\nMessage: ${formData.message}`
-        }]);
+          partner_type: 'builder',
+          status: 'prospect',
+          service_zone: 'core',
+          lead_source_tag: 'builders_page',
+          notes: `Project Volume: ${formData.projectVolume}\nCurrent Partner: ${formData.currentFlooringPartner}\n\nMessage: ${formData.message}`,
+        } as any]);
 
       if (error) {
-        console.error('Error saving builder lead:', error);
+        console.error('Error saving builder partner:', error);
         throw error;
       }
 
-      // Also store in localStorage as backup
-      const builderLead = {
-        ...formData,
-        source: 'builders_page',
-        type: 'builder_partnership',
-        created_at: new Date().toISOString()
-      };
-      localStorage.setItem('builderLead', JSON.stringify(builderLead));
+      // Notify admins
+      const { data: admins } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+
+      if (admins && admins.length > 0) {
+        await supabase.from('notifications').insert(
+          admins.map((a: any) => ({
+            user_id: a.user_id,
+            title: `Novo parceiro B2B: ${formData.companyName}`,
+            body: `${formData.contactName} via Builders Page`,
+            type: 'partner',
+            link: '/admin/partners',
+          }))
+        );
+      }
 
       toast({
         title: "Partnership Inquiry Received!",

@@ -19,6 +19,7 @@ export interface Partner {
   notes: string | null;
   birthday: string | null;
   photo_url: string | null;
+  lead_source_tag: string | null;
   created_at: string;
   updated_at: string;
 }

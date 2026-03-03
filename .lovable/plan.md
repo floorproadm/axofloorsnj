@@ -1,102 +1,165 @@
 
+# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
 
-# Partner Pipeline com Mecanismo de Avanço + B2B Auto-Routing
+## PARTE 1: Limpeza Total de Status Legados
 
-## Resumo
-Duas funcionalidades interligadas:
-1. **Partner Board com avanço de status** (similar ao Lead Pipeline) -- cards clicaveis que abrem um modal de controle para avançar parceiros pelos estágios prospect -> contacted -> meeting_scheduled -> trial_first_job
-2. **Leads B2B auto-routing** -- leads vindos de `builders_page` e `realtors_page` criam automaticamente um Partner como PROSPECT ao invés de ir para /admin/leads como cold_lead
+### 1A. `src/hooks/admin/useAdminData.ts`
+Substituir filtros de stats (linhas 101-108):
+- `'new'` -> `'cold_lead'`
+- `'contacted'` -> `'warm_lead'`
+- `'qualified'` -> `'estimate_requested'`
+- `'converted'` -> `'in_production'`
+- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
+
+### 1B. `src/pages/admin/Intake.tsx`
+- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
+- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
+- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
+- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
+- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
+
+### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
+- `src/pages/Contact.tsx` (linha 88)
+- `src/pages/Builders.tsx` (linha 112)
+- `src/pages/Realtors.tsx` (linha 126)
+- `src/pages/Quiz.tsx` (linhas 215, 253)
+- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
+- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
+- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
+- `src/hooks/useLeadCapture.ts` (linha 37)
+- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
 
 ---
 
-## Parte 1: Partner Control Modal (Board com avanço)
+## PARTE 2: Collaborator Upload -> Admin Dashboard
 
-### Conceito
-Ao clicar num card do Partner Board, ao invés de ir direto para o PartnerDetailPanel, abre um modal compacto (estilo LeadControlModal) que mostra:
-- Nome, empresa, tipo, status atual
-- NRA do parceiro (Next Required Action): ex. "Fazer primeiro contato", "Agendar reunião", "Enviar proposta de parceria"
-- Botao de avanço para o proximo estagio
-- Info de contato (telefone, email)
-- Botao "Ver Detalhes" que leva ao PartnerDetailPanel completo
-
-### Estágios e NRA do Partner
-```text
-prospect       -> "Fazer primeiro contato"     -> contacted
-contacted      -> "Agendar reunião"            -> meeting_scheduled
-meeting_scheduled -> "Registrar trial/1o job"  -> trial_first_job
-trial_first_job -> (avança manualmente para active via PartnerDetailPanel)
+### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
+Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
+```typescript
+await serviceClient.from("audit_log").insert({
+  user_id: userId,
+  user_role: "collaborator",
+  operation_type: "COLLABORATOR_UPLOAD",
+  table_accessed: "media_files",
+  data_classification: JSON.stringify({
+    project_id: projectId,
+    storage_path: storagePath,
+    folder_type: folderType,
+  }),
+});
 ```
 
-### Arquivos novos
-- `src/components/admin/PartnerControlModal.tsx` -- modal de controle compacto
-- `src/hooks/usePartnerPipeline.ts` -- hook com logica de transicoes validas e funcao de avanço
+### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
+Adicionar bloco `recentFieldUploads` ao retorno:
+- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
+- JOIN com `projects` para pegar `customer_name`
+- Limite 10, ordenado por `created_at DESC`
 
-### Arquivos modificados
-- `src/pages/admin/Partners.tsx` -- ao clicar no board, abre PartnerControlModal ao inves de ir direto pro detail
-- `src/hooks/admin/usePartnersData.ts` -- adicionar campo `lead_source_tag` ao interface (novo campo DB)
+### 2C. `src/hooks/admin/useDashboardData.ts`
+- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
+- Expor `recentFieldUploads` no retorno do hook
+- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
 
-### Detalhes tecnicos
-- O hook `usePartnerPipeline` define transicoes validas: prospect->contacted->meeting_scheduled->trial_first_job
-- O avanço é feito via `updatePartner` + `last_contacted_at` atualizado automaticamente
-- O modal exibe o NRA baseado no status atual (logica local, sem RPC)
-- Botao "Ver Detalhes" fecha o modal e abre o PartnerDetailPanel existente
+### 2D. `src/pages/admin/Dashboard.tsx`
+- Incluir uploads recentes e SLA breaches no array `priorityTasks`
+- Novo type `'field_upload'` com link `/admin/jobs`
+
+### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
+- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
+- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
 
 ---
 
-## Parte 2: B2B Lead Auto-Routing para Partners
+## PARTE 3: SLA V0 - Tempo Como Variavel Real
 
-### Conceito
-Leads vindos de `builders_page` e `realtors_page` nao devem ir para a tabela `leads` como `cold_lead`. Em vez disso, criam automaticamente um registro na tabela `partners` com:
-- Status: `prospect`
-- Tipo: `builder` (se builders_page) ou `realtor` (se realtors_page)
-- Tag de origem visivel (novo campo `lead_source_tag`)
-
-### Migração SQL
+### 3A. Migration SQL (unica, junto com 2B)
 ```sql
-ALTER TABLE public.partners 
-  ADD COLUMN lead_source_tag text DEFAULT NULL;
+-- 1. Nova coluna
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
+
+-- 2. Backfill
+UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
+WHERE status_changed_at IS NULL;
+
+-- 3. Trigger
+CREATE OR REPLACE FUNCTION set_status_changed_at()
+RETURNS trigger AS $$
+BEGIN
+  IF OLD.status IS DISTINCT FROM NEW.status THEN
+    NEW.status_changed_at := now();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
+CREATE TRIGGER trg_set_status_changed_at
+  BEFORE UPDATE ON leads FOR EACH ROW
+  EXECUTE FUNCTION set_status_changed_at();
+
+-- 4. View: follow-up overdue
+CREATE OR REPLACE VIEW leads_followup_overdue AS
+SELECT id, name, next_action_date
+FROM leads
+WHERE status = 'proposal_sent'
+  AND next_action_date IS NOT NULL
+  AND next_action_date < current_date;
+
+-- 5. View: estimate stale (>3 dias)
+CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
+SELECT id, name,
+  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
+FROM leads
+WHERE status = 'estimate_scheduled'
+  AND converted_to_project_id IS NULL
+  AND status_changed_at < now() - interval '3 days';
+
+-- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
 ```
-Esse campo armazena a origem (ex: `builders_page`, `realtors_page`) para KPI e para a tag visual.
 
-### Arquivos modificados
-- `src/pages/Builders.tsx` -- ao invés de inserir em `leads`, insere em `partners` com status `prospect`, tipo `builder`, e `lead_source_tag: 'builders_page'`
-- `src/pages/Realtors.tsx` -- mesmo, com tipo `realtor` e `lead_source_tag: 'realtors_page'`
-- `src/components/admin/PartnerPipelineBoard.tsx` -- exibir tag de origem no card quando `lead_source_tag` existir
-- `src/hooks/admin/usePartnersData.ts` -- adicionar `lead_source_tag` ao interface Partner
-
-### Notificação
-- Ao criar o partner via B2B page, inserir uma notificacao na tabela `notifications` para o admin, com link para `/admin/partners`
-- Buscar o user_id do admin via `user_roles` table
+### 3B. Dashboard Integration
+SLA breaches aparecem como tasks no `priorityTasks`:
+- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
+- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
 
 ---
 
-## Parte 3: Detalhes de implementacao
+## Checklist de Validacao
 
-### PartnerControlModal (novo componente)
-- Dialog com ScrollArea
-- Header: avatar/iniciais + nome + empresa + badge de status
-- NRA Card: acao necessaria destacada (verde/emerald, similar ao LeadControlModal)
-- Info grid: telefone, email, tipo, criado em
-- Se tiver `lead_source_tag`: badge com origem (ex: "via Builders Page")
-- Footer: botao "Avançar" (primary) + "Ver Detalhes" (secondary) + "Deletar" (ghost)
-- Ao avançar: atualiza status + last_contacted_at, invalida queries, fecha modal
+**SQL pos-deploy:**
+```sql
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'leads' AND column_name = 'status_changed_at';
 
-### usePartnerPipeline (novo hook)
-- Define `PARTNER_VALID_TRANSITIONS` e `PARTNER_NRA` por estagio
-- Funcao `advancePartnerStatus(partnerId, currentStatus)` que calcula proximo estagio e executa update
-- Nao precisa de RPC no banco -- usa update direto ja que nao tem gates complexos como o lead pipeline
+SELECT * FROM leads_followup_overdue LIMIT 5;
+SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
+```
 
-### Fluxo do Board
-1. Usuario clica no card -> abre PartnerControlModal
-2. Modal mostra NRA e botao de avanço
-3. Ao avançar, partner move para proximo estagio
-4. Modal fecha e board atualiza
-5. Se quiser ver detalhes completos: botao "Ver Detalhes" abre PartnerDetailPanel
+**Network (DevTools):**
+- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
 
-### Fluxo B2B
-1. Builder/Realtor preenche formulario na landing page
-2. Frontend insere em `partners` (nao em `leads`) com status=prospect
-3. Frontend insere notificacao para admin
-4. Admin ve notificacao e vai para /admin/partners
-5. No board, ve o novo prospect com tag de origem
+**Grep final:**
+- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
 
+---
+
+## Arquivos Modificados (resumo)
+
+| Arquivo | Tipo |
+|---|---|
+| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
+| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
+| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
+| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
+| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
+| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
+| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
+| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
+| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
+| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
+| `src/pages/admin/Dashboard.tsx` | Novos task types |
+| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |
