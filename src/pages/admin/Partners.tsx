@@ -21,6 +21,7 @@ import { NewPartnerDialog } from "@/components/admin/NewPartnerDialog";
 import { PartnerListItem } from "@/components/admin/PartnerListItem";
 import { PartnerDetailPanel } from "@/components/admin/PartnerDetailPanel";
 import { PartnerPipelineBoard } from "@/components/admin/PartnerPipelineBoard";
+import { PartnerControlModal } from "@/components/admin/PartnerControlModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
