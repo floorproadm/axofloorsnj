@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import { CheckCircle, XCircle, Trash2 } from "lucide-react";
 import { Payment, useUpdatePaymentStatus, useDeletePayment } from "@/hooks/usePayments";
 import { format } from "date-fns";
@@ -28,6 +30,8 @@ interface Props {
 export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
   const updateStatus = useUpdatePaymentStatus();
   const deletePayment = useDeletePayment();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   if (!payment) return null;
 
@@ -36,13 +40,23 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
 
   const handleConfirm = () => updateStatus.mutate({ id: payment.id, status: "confirmed" });
   const handleCancel = () => updateStatus.mutate({ id: payment.id, status: "cancelled" });
-  const handleDelete = () => deletePayment.mutate(payment.id, { onSuccess: () => onOpenChange(false) });
+  const handleDelete = () => {
+    if (deleteConfirmText === "DELETE") {
+      deletePayment.mutate(payment.id, {
+        onSuccess: () => {
+          setShowDeleteConfirm(false);
+          setDeleteConfirmText("");
+          onOpenChange(false);
+        },
+      });
+    }
+  };
 
   const fmt = (v: number) =>
     `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={(o) => { if (!o) { setShowDeleteConfirm(false); setDeleteConfirmText(""); } onOpenChange(o); }}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -117,10 +131,47 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
             </div>
           )}
 
-          {payment.status !== "confirmed" && (
-            <Button className="w-full" variant="destructive" onClick={handleDelete}>
-              <Trash2 className="w-4 h-4 mr-2" /> Delete Payment
-            </Button>
+          {payment.status !== "confirmed" && !showDeleteConfirm && (
+            <button
+              className="w-full text-xs text-muted-foreground hover:text-destructive transition-colors py-2"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="w-3 h-3 inline mr-1" /> Delete this payment
+            </button>
+          )}
+
+          {showDeleteConfirm && (
+            <div className="space-y-2 rounded-lg border border-destructive/30 p-3">
+              <p className="text-xs text-destructive font-medium">
+                Type <span className="font-bold">DELETE</span> to confirm permanent removal
+              </p>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                className="text-sm"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="flex-1"
+                  disabled={deleteConfirmText !== "DELETE"}
+                  onClick={handleDelete}
+                >
+                  Confirm Delete
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </SheetContent>
