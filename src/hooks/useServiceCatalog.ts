@@ -16,6 +16,7 @@ export interface CatalogItem {
   price_unit: PriceUnit;
   is_active: boolean;
   display_order: number;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -91,4 +92,44 @@ export function useDeleteCatalogItem() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
+}
+
+/** Upload a catalog image and return the storage path */
+export async function uploadCatalogImage(itemId: string, file: File): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `catalog/${itemId}/${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage.from("media").upload(path, file, {
+    cacheControl: "3600",
+    upsert: false,
+  });
+  if (error) throw error;
+  return path;
+}
+
+/** Delete a catalog image from storage */
+export async function deleteCatalogImage(storagePath: string): Promise<void> {
+  const { error } = await supabase.storage.from("media").remove([storagePath]);
+  if (error) throw error;
+}
+
+/** Get signed URLs for an array of storage paths */
+export async function getCatalogSignedUrls(
+  paths: string[]
+): Promise<Record<string, string>> {
+  if (paths.length === 0) return {};
+
+  const { data, error } = await supabase.storage
+    .from("media")
+    .createSignedUrls(paths, 3600);
+
+  if (error) throw error;
+
+  const map: Record<string, string> = {};
+  data?.forEach((item) => {
+    if (item.signedUrl && !item.error) {
+      map[item.path ?? ""] = item.signedUrl;
+    }
+  });
+  return map;
 }
