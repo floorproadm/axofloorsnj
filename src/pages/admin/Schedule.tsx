@@ -746,8 +746,56 @@ function AppointmentModal({
               </div>
 
               <div>
-                <Label className="text-xs">Notas</Label>
-                <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
+                <Label className="text-xs">Equipe Designada</Label>
+                <Popover open={teamPickerOpen} onOpenChange={setTeamPickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full h-auto min-h-9 justify-start text-left font-normal">
+                      {form.assigned_to.length === 0 ? (
+                        <span className="text-muted-foreground text-xs">Selecionar membros (serão notificados)</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {form.assigned_to.map(uid => {
+                            const member = teamMembers.find(m => m.user_id === uid);
+                            return (
+                              <Badge key={uid} variant="secondary" className="text-xs">
+                                {member?.full_name || member?.email || "Membro"}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2" align="start">
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                      {teamMembers.length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-2">Nenhum membro encontrado</p>
+                      )}
+                      {teamMembers.map(member => (
+                        <label
+                          key={member.user_id}
+                          className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/60 cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={form.assigned_to.includes(member.user_id!)}
+                            onCheckedChange={(checked) => {
+                              setForm(f => ({
+                                ...f,
+                                assigned_to: checked
+                                  ? [...f.assigned_to, member.user_id!]
+                                  : f.assigned_to.filter(id => id !== member.user_id),
+                              }));
+                            }}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{member.full_name || "Sem nome"}</p>
+                            {member.email && <p className="text-[10px] text-muted-foreground truncate">{member.email}</p>}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
