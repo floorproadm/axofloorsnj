@@ -282,10 +282,10 @@ export default function Catalog() {
             await deleteCatalogImage(editingItem.image_url).catch(() => {});
           }
           const path = await uploadCatalogImage(editingItem.id, pendingFile);
-          const formWithImage = { ...form, image_url: path };
+          const formWithImage = { ...formToSave, image_url: path };
           savedItem = await updateMutation.mutateAsync({ id: editingItem.id, ...formWithImage });
         } else {
-          const updates = { ...form };
+          const updates = { ...formToSave };
           if (removeExistingImage) updates.image_url = null;
           savedItem = await updateMutation.mutateAsync({ id: editingItem.id, ...updates });
         }
@@ -293,7 +293,7 @@ export default function Catalog() {
         toast.success(pt ? "Item atualizado" : "Item updated");
       } else {
         // Create item first, then upload image
-        savedItem = await createMutation.mutateAsync(form);
+        savedItem = await createMutation.mutateAsync(formToSave);
 
         if (pendingFile) {
           const path = await uploadCatalogImage(savedItem.id, pendingFile);
