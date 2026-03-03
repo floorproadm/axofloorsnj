@@ -75,6 +75,7 @@ export default function Payments() {
   const [paymentDefaultCategory, setPaymentDefaultCategory] = useState<"received" | "labor" | "material" | "other">("received");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [plPreviewOpen, setPLPreviewOpen] = useState(false);
 
   /* ── Period range ── */
   const periodRange = useMemo(() => getPeriodRange(anchor, periodType), [anchor, periodType]);
