@@ -1201,6 +1201,7 @@ export type Database = {
           notes: string | null
           partner_type: string
           phone: string | null
+          photo_url: string | null
           service_zone: string
           status: string
           total_converted: number
@@ -1220,6 +1221,7 @@ export type Database = {
           notes?: string | null
           partner_type?: string
           phone?: string | null
+          photo_url?: string | null
           service_zone?: string
           status?: string
           total_converted?: number
@@ -1239,6 +1241,7 @@ export type Database = {
           notes?: string | null
           partner_type?: string
           phone?: string | null
+          photo_url?: string | null
           service_zone?: string
           status?: string
           total_converted?: number
