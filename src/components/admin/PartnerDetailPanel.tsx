@@ -190,7 +190,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Remover este partner permanentemente?")) return;
     await deletePartner.mutateAsync(partner.id);
     onClose?.();
   };
