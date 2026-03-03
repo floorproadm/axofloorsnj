@@ -215,12 +215,12 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
           </DropdownMenuContent>
         </DropdownMenu>
         <NewTaskDialog
-          open={taskDialogOpen}
-          onOpenChange={setTaskDialogOpen}
+          externalOpen={taskDialogOpen}
+          onExternalOpenChange={setTaskDialogOpen}
           onSubmit={(task) => createTask.mutate(task)}
           isPending={createTask.isPending}
           relatedPartnerId={partnerId}
-          triggerButton={<span className="hidden" />}
+          hideTrigger
         />
         </div>
       </div>
