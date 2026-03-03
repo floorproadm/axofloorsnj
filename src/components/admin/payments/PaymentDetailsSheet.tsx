@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, XCircle, Pencil } from "lucide-react";
-import { Payment, useUpdatePaymentStatus, useUpdatePayment } from "@/hooks/usePayments";
+import { CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react";
+import { Payment, useUpdatePaymentStatus, useUpdatePayment, useDeletePayment } from "@/hooks/usePayments";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
