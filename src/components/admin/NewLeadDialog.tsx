@@ -142,7 +142,7 @@ export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLe
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-bold">
-            Novo Lead
+            {referredByPartnerId ? "Nova Indicação" : "Novo Lead"}
           </DialogTitle>
         </DialogHeader>
 
