@@ -278,6 +278,9 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
                   </div>
                 </div>
               )}
+            </div>
+          ) : (
+            /* ── VIEW MODE ── */
             <>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
