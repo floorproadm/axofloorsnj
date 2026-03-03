@@ -378,7 +378,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           </div>
         </div>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-w-0">
           {/* Geral Tab */}
           <TabsContent value="geral" className="px-4 pb-4 mt-0">
             {editing ? (
