@@ -887,7 +887,7 @@ function NotesEditor({ partner }: { partner: Partner }) {
         onChange={(e) => setNotes(e.target.value)}
         onFocus={() => setFocused(true)}
         placeholder="Adicionar notas sobre este parceiro..."
-        rows={6}
+        rows={3}
         className="resize-none"
       />
       {showButton && (
