@@ -37,7 +37,14 @@ const APPOINTMENT_TYPES = [
   { value: "other", label: "Outro", color: "bg-gray-500", border: "border-l-gray-500", bg: "bg-gray-50", text: "text-gray-700" },
 ];
 
-const HOURS = Array.from({ length: 17 }, (_, i) => i + 5); // 5AM to 9PM
+const SCHEDULE_TEMPLATES = [
+  { label: "Medição Residencial", type: "measurement", duration_hours: 1, default_time: "09:00", icon: Ruler, description: "Visita padrão de medição · 1h" },
+  { label: "Produção (Dia Inteiro)", type: "production", duration_hours: 8, default_time: "07:00", icon: Wrench, description: "Dia completo de produção · 8h" },
+  { label: "Follow-up Rápido", type: "follow_up", duration_hours: 0.5, default_time: "14:00", icon: PhoneCall, description: "Ligação ou visita curta · 30min" },
+  { label: "Entrega e Inspeção", type: "delivery", duration_hours: 2, default_time: "10:00", icon: PackageCheck, description: "Entrega final + checklist · 2h" },
+];
+
+
 
 function getTypeConfig(type: string) {
   return APPOINTMENT_TYPES.find(t => t.value === type) || APPOINTMENT_TYPES[4];
