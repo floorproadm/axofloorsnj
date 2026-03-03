@@ -1,55 +1,165 @@
 
+# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
 
-# Partner Detail: Tabs Condicionais + Tasks no Tab Notas
+## PARTE 1: Limpeza Total de Status Legados
 
-## Resumo
-1. Apenas partners do tipo **builder** com status **active** ou **inactive** (e que tenham projetos vinculados) mostram a page completa (Geral, Projetos, Indicações, Notas).
-2. Todos os outros tipos/statuses mostram apenas **Geral** e **Notas**.
-3. No tab **Notas**, adicionar um botão **"Nova Tarefa"** que cria tasks vinculadas ao partner -- essas tasks aparecem automaticamente no **Mission Control** (Home).
+### 1A. `src/hooks/admin/useAdminData.ts`
+Substituir filtros de stats (linhas 101-108):
+- `'new'` -> `'cold_lead'`
+- `'contacted'` -> `'warm_lead'`
+- `'qualified'` -> `'estimate_requested'`
+- `'converted'` -> `'in_production'`
+- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
 
-## Mudanças no banco de dados
+### 1B. `src/pages/admin/Intake.tsx`
+- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
+- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
+- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
+- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
+- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
 
-### Migration: Adicionar `related_partner_id` na tabela `tasks`
-```sql
-ALTER TABLE public.tasks
-  ADD COLUMN related_partner_id uuid REFERENCES public.partners(id) ON DELETE SET NULL;
+### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
+- `src/pages/Contact.tsx` (linha 88)
+- `src/pages/Builders.tsx` (linha 112)
+- `src/pages/Realtors.tsx` (linha 126)
+- `src/pages/Quiz.tsx` (linhas 215, 253)
+- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
+- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
+- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
+- `src/hooks/useLeadCapture.ts` (linha 37)
+- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
+
+---
+
+## PARTE 2: Collaborator Upload -> Admin Dashboard
+
+### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
+Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
+```typescript
+await serviceClient.from("audit_log").insert({
+  user_id: userId,
+  user_role: "collaborator",
+  operation_type: "COLLABORATOR_UPLOAD",
+  table_accessed: "media_files",
+  data_classification: JSON.stringify({
+    project_id: projectId,
+    storage_path: storagePath,
+    folder_type: folderType,
+  }),
+});
 ```
-Isso permite vincular tasks a partners, assim como ja existe `related_project_id` e `related_lead_id`.
 
-## Arquivos modificados
+### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
+Adicionar bloco `recentFieldUploads` ao retorno:
+- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
+- JOIN com `projects` para pegar `customer_name`
+- Limite 10, ordenado por `created_at DESC`
 
-### 1. `src/components/admin/PartnerDetailPanel.tsx`
-- Adicionar logica condicional para mostrar tabs:
-  - Se `partner.partner_type === 'builder'` E (`partner.status === 'active'` OU `partner.status === 'inactive'`) E tem projetos vinculados: mostrar todas as 4 tabs (Geral, Projetos, Indicações, Notas)
-  - Caso contrario: mostrar apenas Geral e Notas
-- No tab **Notas**, alem do `NotesEditor` existente, adicionar:
-  - Seção "Tarefas" com lista de tasks vinculadas ao partner (`related_partner_id`)
-  - Botão "Nova Tarefa" reutilizando o padrão do `NewTaskDialog` existente, passando `related_partner_id`
-  - Lista de tasks com toggle de status (pending/in_progress/done) identica ao Mission Control
+### 2C. `src/hooks/admin/useDashboardData.ts`
+- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
+- Expor `recentFieldUploads` no retorno do hook
+- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
 
-### 2. `src/hooks/useTasks.ts`
-- Adicionar `related_partner_id` ao interface `Task` e `CreateTaskInput`
-- Passar `related_partner_id` no `createTask` mutation
+### 2D. `src/pages/admin/Dashboard.tsx`
+- Incluir uploads recentes e SLA breaches no array `priorityTasks`
+- Novo type `'field_upload'` com link `/admin/jobs`
 
-### 3. `src/components/admin/dashboard/NewTaskDialog.tsx`
-- Aceitar prop opcional `related_partner_id` para pre-vincular a task ao partner
-- Passar esse valor no `onSubmit`
+### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
+- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
+- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
 
-### 4. `src/components/admin/dashboard/MissionControl.tsx`
-- Nenhuma mudança necessaria -- ja exibe todas as tasks da tabela. Tasks criadas com `related_partner_id` aparecem automaticamente no Mission Control.
+---
 
-## Sugestao aceita: Contexto no Mission Control
-Para melhorar a visibilidade, nas tasks que tiverem `related_partner_id`, mostrar o nome do partner como subtexto na `TaskRow` do Mission Control (igual ja faz com `assignee_name` e `due_date`). Isso requer um JOIN extra no `useTasks` para buscar o partner name.
+## PARTE 3: SLA V0 - Tempo Como Variavel Real
 
-## Fluxo do usuario
-1. Abre partner detail de qualquer tipo (ex: Realtor) -- ve apenas Geral e Notas
-2. Abre partner detail de um Builder ativo com projetos -- ve Geral, Projetos, Indicações, Notas
-3. No tab Notas, clica "Nova Tarefa" -- abre dialog com titulo, prioridade, responsavel, prazo
-4. Task criada aparece na lista dentro do tab Notas E no Mission Control do Dashboard
+### 3A. Migration SQL (unica, junto com 2B)
+```sql
+-- 1. Nova coluna
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
 
-## Criterio de aceite
-- Tabs condicionais funcionando corretamente por tipo + status
-- Tasks vinculadas ao partner criadas e listadas no tab Notas
-- Tasks aparecem no Mission Control automaticamente
-- Coluna `related_partner_id` adicionada ao banco
+-- 2. Backfill
+UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
+WHERE status_changed_at IS NULL;
 
+-- 3. Trigger
+CREATE OR REPLACE FUNCTION set_status_changed_at()
+RETURNS trigger AS $$
+BEGIN
+  IF OLD.status IS DISTINCT FROM NEW.status THEN
+    NEW.status_changed_at := now();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
+CREATE TRIGGER trg_set_status_changed_at
+  BEFORE UPDATE ON leads FOR EACH ROW
+  EXECUTE FUNCTION set_status_changed_at();
+
+-- 4. View: follow-up overdue
+CREATE OR REPLACE VIEW leads_followup_overdue AS
+SELECT id, name, next_action_date
+FROM leads
+WHERE status = 'proposal_sent'
+  AND next_action_date IS NOT NULL
+  AND next_action_date < current_date;
+
+-- 5. View: estimate stale (>3 dias)
+CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
+SELECT id, name,
+  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
+FROM leads
+WHERE status = 'estimate_scheduled'
+  AND converted_to_project_id IS NULL
+  AND status_changed_at < now() - interval '3 days';
+
+-- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
+```
+
+### 3B. Dashboard Integration
+SLA breaches aparecem como tasks no `priorityTasks`:
+- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
+- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
+
+---
+
+## Checklist de Validacao
+
+**SQL pos-deploy:**
+```sql
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'leads' AND column_name = 'status_changed_at';
+
+SELECT * FROM leads_followup_overdue LIMIT 5;
+SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
+```
+
+**Network (DevTools):**
+- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
+
+**Grep final:**
+- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
+
+---
+
+## Arquivos Modificados (resumo)
+
+| Arquivo | Tipo |
+|---|---|
+| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
+| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
+| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
+| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
+| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
+| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
+| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
+| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
+| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
+| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
+| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
+| `src/pages/admin/Dashboard.tsx` | Novos task types |
+| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |

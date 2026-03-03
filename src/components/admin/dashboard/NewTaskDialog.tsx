@@ -20,11 +20,13 @@ interface NewTaskDialogProps {
     priority?: string;
     assigned_to?: string | null;
     due_date?: string | null;
+    related_partner_id?: string | null;
   }) => void;
   isPending?: boolean;
+  relatedPartnerId?: string | null;
 }
 
-export function NewTaskDialog({ onSubmit, isPending }: NewTaskDialogProps) {
+export function NewTaskDialog({ onSubmit, isPending, relatedPartnerId }: NewTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -50,6 +52,7 @@ export function NewTaskDialog({ onSubmit, isPending }: NewTaskDialogProps) {
       priority,
       assigned_to: assignedTo,
       due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
+      related_partner_id: relatedPartnerId ?? null,
     });
     setTitle("");
     setDescription("");
