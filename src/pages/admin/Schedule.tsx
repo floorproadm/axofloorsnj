@@ -144,7 +144,8 @@ export default function Schedule() {
     <AdminLayout title="Schedule">
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 py-3 space-y-3">
+        <div className="border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 py-3 space-y-3 md:space-y-4">
+          {/* Title row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-foreground">Schedule</h1>
@@ -172,60 +173,63 @@ export default function Schedule() {
             </Button>
           </div>
 
-          {/* Week navigation */}
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(d => subWeeks(d, 1))}>
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex flex-1 gap-0.5">
-              {weekDays.map(day => {
-                const dateStr = format(day, "yyyy-MM-dd");
-                const count = dayCountMap[dateStr] || 0;
-                const selected = isSameDay(day, currentDate);
-                const today = isToday(day);
-                return (
-                  <button
-                    key={dateStr}
-                    onClick={() => setCurrentDate(day)}
-                    className={cn(
-                      "flex-1 rounded-lg py-1.5 text-center transition-all relative",
-                      selected
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : today
-                        ? "bg-primary/10 text-primary"
-                        : "hover:bg-muted/60 text-muted-foreground"
-                    )}
-                  >
-                    <div className="text-[10px] uppercase font-medium">
-                      <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
-                      <span className="hidden sm:inline">{format(day, "EEE", { locale: ptBR })}</span>
-                    </div>
-                    <div className="text-lg font-bold leading-tight">{format(day, "d")}</div>
-                    {count > 0 && (
-                      <div className={cn(
-                        "text-[9px] font-semibold",
-                        selected ? "text-primary-foreground/80" : "text-primary"
-                      )}>
-                        {count} job{count > 1 ? "s" : ""}
+          {/* Week nav + view tabs — stacked on mobile, inline on md+ */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            {/* Week navigation */}
+            <div className="flex items-center gap-1 md:flex-1 md:max-w-xl">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCurrentDate(d => subWeeks(d, 1))}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex flex-1 gap-0.5">
+                {weekDays.map(day => {
+                  const dateStr = format(day, "yyyy-MM-dd");
+                  const count = dayCountMap[dateStr] || 0;
+                  const selected = isSameDay(day, currentDate);
+                  const today = isToday(day);
+                  return (
+                    <button
+                      key={dateStr}
+                      onClick={() => setCurrentDate(day)}
+                      className={cn(
+                        "flex-1 rounded-lg py-1.5 text-center transition-all relative",
+                        selected
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : today
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-muted/60 text-muted-foreground"
+                      )}
+                    >
+                      <div className="text-[10px] md:text-xs uppercase font-medium">
+                        <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
+                        <span className="hidden sm:inline">{format(day, "EEE", { locale: ptBR })}</span>
                       </div>
-                    )}
-                  </button>
-                );
-              })}
+                      <div className="text-lg font-bold leading-tight">{format(day, "d")}</div>
+                      {count > 0 && (
+                        <div className={cn(
+                          "text-[9px] md:text-[10px] font-semibold",
+                          selected ? "text-primary-foreground/80" : "text-primary"
+                        )}>
+                          {count} job{count > 1 ? "s" : ""}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCurrentDate(d => addWeeks(d, 1))}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(d => addWeeks(d, 1))}>
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
 
-          {/* View mode tabs */}
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
-            <TabsList className="h-8">
-              <TabsTrigger value="day" className="text-xs px-4">Day</TabsTrigger>
-              <TabsTrigger value="list" className="text-xs px-4">List</TabsTrigger>
-              <TabsTrigger value="week" className="text-xs px-4">Week</TabsTrigger>
-            </TabsList>
-          </Tabs>
+            {/* View mode tabs */}
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+              <TabsList className="h-8">
+                <TabsTrigger value="day" className="text-xs px-4">Day</TabsTrigger>
+                <TabsTrigger value="list" className="text-xs px-4">List</TabsTrigger>
+                <TabsTrigger value="week" className="text-xs px-4">Week</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
 
         {/* Content */}
