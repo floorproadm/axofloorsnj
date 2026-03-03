@@ -129,15 +129,15 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
       {/* Footer: completed toggle */}
       {doneTasks.length > 0 && (
-      <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end">
           <button
             onClick={() => setShowCompleted(!showCompleted)}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {showCompleted ? t("mission.ocultarConcluidas") : `${t("mission.verConcluidas")} (${doneTasks.length})`}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Completed tasks */}
       {showCompleted && doneTasks.length > 0 && (
