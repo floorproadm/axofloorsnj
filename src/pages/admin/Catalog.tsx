@@ -255,6 +255,16 @@ export default function Catalog() {
       toast.error(pt ? "Nome é obrigatório" : "Name is required");
       return;
     }
+
+    // Resolve final category with subcategory suffix
+    const baseCategory = customCategoryMode ? customCategoryValue.trim() : form.category;
+    const finalCategory = baseCategory
+      ? subcategory === "add-on"
+        ? `${baseCategory} - Add-ons`
+        : baseCategory
+      : null;
+    const formToSave = { ...form, category: finalCategory };
+
     try {
       let savedItem: CatalogItem;
 
