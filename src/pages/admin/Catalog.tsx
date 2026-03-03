@@ -432,11 +432,22 @@ export default function Catalog() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{pt ? "Categoria" : "Category"}</Label>
-                <Input
-                  value={form.category || ""}
-                  onChange={(e) => setForm((f) => ({ ...f, category: e.target.value || null }))}
-                  placeholder="Hardwood, Tile..."
-                />
+                <Select value={form.category || ""} onValueChange={(v) => setForm((f) => ({ ...f, category: v || null }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={pt ? "Selecione..." : "Select..."} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Hardwood">Hardwood</SelectItem>
+                    <SelectItem value="Vinyl">Vinyl</SelectItem>
+                    <SelectItem value="Tile">Tile</SelectItem>
+                    <SelectItem value="Laminate">Laminate</SelectItem>
+                    <SelectItem value="Staircase">Staircase</SelectItem>
+                    <SelectItem value="Baseboard">Baseboard</SelectItem>
+                    <SelectItem value="Stain">Stain</SelectItem>
+                    <SelectItem value="Finish">Finish</SelectItem>
+                    <SelectItem value="Other">{pt ? "Outro" : "Other"}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>{pt ? "Preço Base" : "Base Price"}</Label>
