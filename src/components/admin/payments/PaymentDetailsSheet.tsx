@@ -140,7 +140,7 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
     `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => { if (!o) setIsEditing(false); onOpenChange(o); }}>
+    <Sheet open={open} onOpenChange={(o) => { if (!o) { setIsEditing(false); setShowDeleteConfirm(false); setDeleteConfirmText(""); } onOpenChange(o); }}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
