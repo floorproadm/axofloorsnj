@@ -14,8 +14,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
+import {
   ChevronLeft, ChevronRight, Plus, Clock, MapPin, Phone, User,
-  CalendarIcon, Trash2, Edit2
+  CalendarIcon, Trash2, Edit2, Copy, Ruler, Wrench, PhoneCall, PackageCheck
 } from "lucide-react";
 import {
   format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays,
@@ -34,7 +37,16 @@ const APPOINTMENT_TYPES = [
   { value: "other", label: "Outro", color: "bg-gray-500", border: "border-l-gray-500", bg: "bg-gray-50", text: "text-gray-700" },
 ];
 
+const SCHEDULE_TEMPLATES = [
+  { label: "Medição Residencial", type: "measurement", duration_hours: 1, default_time: "09:00", icon: Ruler, description: "Visita padrão de medição · 1h" },
+  { label: "Produção (Dia Inteiro)", type: "production", duration_hours: 8, default_time: "07:00", icon: Wrench, description: "Dia completo de produção · 8h" },
+  { label: "Follow-up Rápido", type: "follow_up", duration_hours: 0.5, default_time: "14:00", icon: PhoneCall, description: "Ligação ou visita curta · 30min" },
+  { label: "Entrega e Inspeção", type: "delivery", duration_hours: 2, default_time: "10:00", icon: PackageCheck, description: "Entrega final + checklist · 2h" },
+];
+
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 5); // 5AM to 9PM
+
+
 
 function getTypeConfig(type: string) {
   return APPOINTMENT_TYPES.find(t => t.value === type) || APPOINTMENT_TYPES[4];
@@ -56,6 +68,8 @@ export default function Schedule() {
   const [viewMode, setViewMode] = useState<"day" | "list" | "week">("day");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [templateDefaults, setTemplateDefaults] = useState<{ type: string; duration: number; time: string } | null>(null);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
@@ -137,8 +151,14 @@ export default function Schedule() {
     },
   });
 
-  const openNew = () => { setEditingAppointment(null); setModalOpen(true); };
-  const openEdit = (a: Appointment) => { setEditingAppointment(a); setModalOpen(true); };
+  const openNew = () => { setEditingAppointment(null); setTemplateDefaults(null); setModalOpen(true); };
+  const openEdit = (a: Appointment) => { setEditingAppointment(a); setTemplateDefaults(null); setModalOpen(true); };
+  const openFromTemplate = (tpl: typeof SCHEDULE_TEMPLATES[number]) => {
+    setEditingAppointment(null);
+    setTemplateDefaults({ type: tpl.type, duration: tpl.duration_hours, time: tpl.default_time });
+    setTemplateDialogOpen(false);
+    setModalOpen(true);
+  };
 
   return (
     <AdminLayout title="Schedule">
@@ -168,9 +188,21 @@ export default function Schedule() {
                 </SelectContent>
               </Select>
             </div>
-            <Button size="sm" onClick={openNew} className="w-full sm:w-auto gap-1.5">
-              <Plus className="w-4 h-4" /> Novo
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="w-full sm:w-auto gap-1.5">
+                  <Plus className="w-4 h-4" /> Novo
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={openNew} className="gap-2">
+                  <CalendarIcon className="w-4 h-4" /> Novo Agendamento
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTemplateDialogOpen(true)} className="gap-2">
+                  <Copy className="w-4 h-4" /> Usar Template
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Week navigation */}
@@ -258,7 +290,41 @@ export default function Schedule() {
         onSave={(data) => saveMutation.mutate(data)}
         onDelete={(id) => deleteMutation.mutate(id)}
         saving={saveMutation.isPending}
+        templateDefaults={templateDefaults}
       />
+
+      {/* Template Picker Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Escolher Template</DialogTitle>
+            <DialogDescription>Selecione um modelo para pré-preencher o agendamento.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            {SCHEDULE_TEMPLATES.map(tpl => {
+              const cfg = getTypeConfig(tpl.type);
+              const Icon = tpl.icon;
+              return (
+                <button
+                  key={tpl.type}
+                  onClick={() => openFromTemplate(tpl)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg border border-border/50 p-3 text-left transition-colors hover:bg-muted/60"
+                  )}
+                >
+                  <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", cfg.bg)}>
+                    <Icon className={cn("w-4 h-4", cfg.text)} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-foreground">{tpl.label}</div>
+                    <div className="text-xs text-muted-foreground">{tpl.description}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
@@ -425,7 +491,7 @@ function WeekView({
 
 // ─── Appointment Modal ──────────────────────────────────────
 function AppointmentModal({
-  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving
+  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving, templateDefaults
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -435,6 +501,7 @@ function AppointmentModal({
   onSave: (data: any) => void;
   onDelete: (id: string) => void;
   saving: boolean;
+  templateDefaults?: { type: string; duration: number; time: string } | null;
 }) {
   const [form, setForm] = useState({
     customer_name: "",
@@ -466,9 +533,12 @@ function AppointmentModal({
         });
       } else {
         setForm({
-          customer_name: "", customer_phone: "", appointment_type: "measurement",
-          appointment_date: format(currentDate, "yyyy-MM-dd"), appointment_time: "09:00",
-          duration_hours: 1, location: "", notes: "", project_id: null,
+          customer_name: "", customer_phone: "",
+          appointment_type: templateDefaults?.type || "measurement",
+          appointment_date: format(currentDate, "yyyy-MM-dd"),
+          appointment_time: templateDefaults?.time || "09:00",
+          duration_hours: templateDefaults?.duration || 1,
+          location: "", notes: "", project_id: null,
         });
       }
     }
