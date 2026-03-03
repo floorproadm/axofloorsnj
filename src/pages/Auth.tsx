@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import axoLogoOfficial from '@/assets/axo-logo-official.png';
+import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -316,6 +317,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <AdminPWAHead />
       <div className="w-full max-w-md">
         <div className="mb-6">
           <Link 
