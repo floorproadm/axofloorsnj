@@ -392,11 +392,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                   )}
                   <TabsTrigger value="notas" className={tabTriggerClass}>
                     Notas
-                    {partnerTasks.filter((t) => t.status !== "done").length > 0 && (
-                      <span className="ml-1 text-[10px] font-bold text-muted-foreground">
-                        {partnerTasks.filter((t) => t.status !== "done").length}
-                      </span>
-                    )}
                   </TabsTrigger>
                 </TabsList>
               </div>
