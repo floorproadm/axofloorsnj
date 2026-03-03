@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle, Loader2, Trash2, ListTodo, CalendarClock } from "lucide-react";
+import { CheckCircle, Loader2, Trash2, ListTodo, CalendarClock, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NewTaskDialog } from "@/components/admin/dashboard/NewTaskDialog";
