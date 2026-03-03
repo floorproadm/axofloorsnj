@@ -491,7 +491,7 @@ function WeekView({
 
 // ─── Appointment Modal ──────────────────────────────────────
 function AppointmentModal({
-  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving
+  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving, templateDefaults
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -501,6 +501,7 @@ function AppointmentModal({
   onSave: (data: any) => void;
   onDelete: (id: string) => void;
   saving: boolean;
+  templateDefaults?: { type: string; duration: number; time: string } | null;
 }) {
   const [form, setForm] = useState({
     customer_name: "",
