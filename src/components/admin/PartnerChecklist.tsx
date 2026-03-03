@@ -199,15 +199,29 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
           )}
         </h3>
         <div className="flex items-center gap-1">
-          <NewTaskDialog
-            onSubmit={(task) => createTask.mutate(task)}
-            isPending={createTask.isPending}
-            relatedPartnerId={partnerId}
-          />
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]" onClick={() => setEventDialogOpen(true)}>
-            <CalendarClock className="w-3.5 h-3.5" /> Evento
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1">
+              <Plus className="w-3.5 h-3.5" /> Novo
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={() => setTaskDialogOpen(true)} className="gap-2 cursor-pointer">
+              <ListTodo className="w-3.5 h-3.5" /> Tarefa
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setEventDialogOpen(true)} className="gap-2 cursor-pointer">
+              <CalendarClock className="w-3.5 h-3.5" /> Evento
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <NewTaskDialog
+          open={taskDialogOpen}
+          onOpenChange={setTaskDialogOpen}
+          onSubmit={(task) => createTask.mutate(task)}
+          isPending={createTask.isPending}
+          relatedPartnerId={partnerId}
+          triggerButton={<span className="hidden" />}
+        />
       </div>
 
       {isLoading ? (
