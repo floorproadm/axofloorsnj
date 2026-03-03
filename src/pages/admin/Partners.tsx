@@ -10,11 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Drawer,
-  DrawerContent,
-} from "@/components/ui/drawer";
-import { Handshake, Plus, Search } from "lucide-react";
+import { Handshake, Plus, Search, List, LayoutGrid } from "lucide-react";
 import {
   usePartnersData,
   Partner,
@@ -24,6 +20,7 @@ import {
 import { NewPartnerDialog } from "@/components/admin/NewPartnerDialog";
 import { PartnerListItem } from "@/components/admin/PartnerListItem";
 import { PartnerDetailPanel } from "@/components/admin/PartnerDetailPanel";
+import { PartnerPipelineBoard } from "@/components/admin/PartnerPipelineBoard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
