@@ -90,8 +90,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
   const [editValues, setEditValues] = useState<Partial<Partner>>({});
   const [newJobOpen, setNewJobOpen] = useState(false);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
-
-  const initials = partner.contact_name
+  const { tasks: allTasks, createTask, updateTask, deleteTask, isLoading: isLoadingTasks } = useTasks(true);
     .split(" ")
     .map((w) => w[0])
     .join("")
