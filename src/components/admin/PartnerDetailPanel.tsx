@@ -190,7 +190,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Remover este partner permanentemente?")) return;
     await deletePartner.mutateAsync(partner.id);
     onClose?.();
   };
@@ -422,6 +421,8 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                     onSave={handleSave}
                     onCancel={() => setEditing(false)}
                     saving={saving}
+                    onDelete={handleDelete}
+                    partnerName={partner.contact_name}
                   />
                 ) : (
                   <div className="space-y-4 pt-3">
@@ -486,9 +487,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4 mr-1" />}
                         Registrar Contato
                       </Button>
-                      <Button onClick={handleDelete} variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      
                     </div>
                   </div>
                 )}
@@ -743,13 +742,19 @@ function EditForm({
   onSave,
   onCancel,
   saving,
+  onDelete,
+  partnerName,
 }: {
   editValues: Partial<Partner>;
   setEditValues: React.Dispatch<React.SetStateAction<Partial<Partner>>>;
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
+  onDelete: () => void;
+  partnerName: string;
 }) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   return (
     <div className="space-y-3 pt-3">
       <Input
@@ -864,6 +869,51 @@ function EditForm({
         <Button variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
+      </div>
+
+      {/* Delete with double verification */}
+      <div className="pt-3 border-t border-border/50">
+        {!showDeleteConfirm ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-destructive hover:bg-destructive/10 gap-1.5"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Remover Partner
+          </Button>
+        ) : (
+          <div className="space-y-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+            <p className="text-xs text-destructive font-medium">
+              Digite <strong>"{partnerName}"</strong> para confirmar a exclusão:
+            </p>
+            <Input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder={partnerName}
+              className="h-8 text-sm"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex-1"
+                disabled={deleteConfirmText !== partnerName}
+                onClick={onDelete}
+              >
+                Confirmar Exclusão
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
