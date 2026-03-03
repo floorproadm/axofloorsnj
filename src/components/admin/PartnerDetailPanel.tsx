@@ -279,6 +279,19 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
         </div>
       </div>
 
+      {/* NRA - Próxima Ação Recomendada */}
+      {PARTNER_NRA[partner.status] && (
+        <div className="mx-4 mt-3 mb-1 p-3 rounded-lg bg-emerald-500/10 border border-emerald-200/50">
+          <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">
+            Próxima Ação
+          </p>
+          <p className="text-sm font-semibold text-emerald-800 flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5" />
+            {PARTNER_NRA[partner.status].label}
+          </p>
+        </div>
+      )}
+
       {/* Quick Action Bar */}
       <div className="grid grid-cols-3 gap-2 p-4 border-b border-border/50">
         {partner.phone ? (
