@@ -8,6 +8,7 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { useAuth } from "@/contexts/AuthContext";
+import { AdminPWAHead } from "./AdminPWAHead";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -60,6 +61,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
+      <AdminPWAHead />
       <div className="flex w-full min-w-0 h-screen overflow-hidden">
         <AdminSidebar />
 
