@@ -1839,6 +1839,7 @@ export type Database = {
           id: string
           priority: string
           related_lead_id: string | null
+          related_partner_id: string | null
           related_project_id: string | null
           status: string
           title: string
@@ -1854,6 +1855,7 @@ export type Database = {
           id?: string
           priority?: string
           related_lead_id?: string | null
+          related_partner_id?: string | null
           related_project_id?: string | null
           status?: string
           title: string
@@ -1869,6 +1871,7 @@ export type Database = {
           id?: string
           priority?: string
           related_lead_id?: string | null
+          related_partner_id?: string | null
           related_project_id?: string | null
           status?: string
           title?: string
@@ -1902,6 +1905,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "view_stage_aging"
             referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "tasks_related_partner_id_fkey"
+            columns: ["related_partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tasks_related_project_id_fkey"
