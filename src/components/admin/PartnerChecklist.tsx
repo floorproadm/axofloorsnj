@@ -55,6 +55,7 @@ const EVENT_TYPES = [
 export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
   const queryClient = useQueryClient();
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
 
   // Event form state
   const [eventName, setEventName] = useState("");
