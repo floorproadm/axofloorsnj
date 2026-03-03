@@ -216,7 +216,7 @@ export default function Partners() {
         )}
       </div>
 
-      <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} />
+      <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} defaultStatus={viewMode === "board" ? "prospect" : "active"} />
       <PartnerControlModal
         partner={controlModalPartner}
         open={!!controlModalId}
