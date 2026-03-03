@@ -17,10 +17,10 @@ interface Project {
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultCategory?: "received" | "labor" | "material" | "other";
 }
 
-const CATEGORIES = [
-  { value: "received", label: "Received from Client" },
+const EXPENSE_CATEGORIES = [
   { value: "labor", label: "Labor" },
   { value: "material", label: "Material" },
   { value: "other", label: "Other" },
@@ -35,16 +35,16 @@ const METHODS = [
   { value: "bank_transfer", label: "Bank Transfer" },
 ];
 
-export function NewPaymentDialog({ open, onOpenChange }: Props) {
+export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "received" }: Props) {
+  const isIncome = defaultCategory === "received";
   const [projects, setProjects] = useState<Project[]>([]);
-  const [category, setCategory] = useState("received");
+  const [category, setCategory] = useState<string>(defaultCategory);
   const [projectId, setProjectId] = useState("");
   const [amount, setAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState("pending");
   const createPayment = useCreatePayment();
 
   useEffect(() => {
@@ -55,17 +55,16 @@ export function NewPaymentDialog({ open, onOpenChange }: Props) {
         .order("created_at", { ascending: false })
         .then(({ data }) => setProjects(data || []));
       setPaymentDate(new Date().toISOString().split("T")[0]);
+      setCategory(defaultCategory);
     }
-  }, [open]);
+  }, [open, defaultCategory]);
 
   const resetForm = () => {
-    setCategory("received");
     setProjectId("");
     setAmount("");
     setPaymentMethod("");
     setDescription("");
     setNotes("");
-    setStatus("pending");
   };
 
   const handleSubmit = () => {
@@ -73,11 +72,11 @@ export function NewPaymentDialog({ open, onOpenChange }: Props) {
     createPayment.mutate(
       {
         project_id: projectId || null,
-        category,
+        category: isIncome ? "received" : category,
         amount: Number(amount),
         payment_date: paymentDate,
         payment_method: paymentMethod || null,
-        status,
+        status: "pending",
         description: description || null,
         notes: notes || null,
       },
@@ -94,36 +93,44 @@ export function NewPaymentDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Payment</DialogTitle>
+          <DialogTitle>{isIncome ? "Record Income" : "Record Expense"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          {/* Big Amount Input */}
+          <div className="text-center py-4">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Amount</Label>
+            <div className="flex items-center justify-center gap-1 mt-2">
+              <span className="text-3xl font-light text-muted-foreground">$</span>
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="text-3xl font-bold border-none shadow-none text-center w-48 h-auto p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus-visible:ring-0"
+              />
+            </div>
+          </div>
+
+          {/* Expense Category */}
+          {!isIncome && (
             <div>
               <Label>Category</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => (
+                  {EXPENSE_CATEGORIES.map((c) => (
                     <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          )}
 
           <div>
-            <Label>Project (optional)</Label>
+            <Label>Project {!isIncome && "(optional)"}</Label>
             <Select value={projectId} onValueChange={setProjectId}>
               <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
               <SelectContent>
@@ -138,50 +145,40 @@ export function NewPaymentDialog({ open, onOpenChange }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Amount ($)</Label>
-              <Input
-                type="number"
-                min={0}
-                step={0.01}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-              />
-            </div>
-            <div>
               <Label>Date</Label>
               <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
             </div>
+            {isIncome && (
+              <div>
+                <Label>Payment Method</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger><SelectValue placeholder="Method..." /></SelectTrigger>
+                  <SelectContent>
+                    {METHODS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div>
-            <Label>Payment Method</Label>
-            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-              <SelectTrigger><SelectValue placeholder="Select method..." /></SelectTrigger>
-              <SelectContent>
-                {METHODS.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Description</Label>
+            <Label>Description (optional)</Label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. 50% deposit, labor week 1..."
+              placeholder={isIncome ? "e.g. 50% deposit..." : "e.g. Sanding crew week 1..."}
             />
           </div>
 
           <div>
-            <Label>Notes</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Internal notes..." />
+            <Label>Notes (optional)</Label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Internal notes..." rows={2} />
           </div>
 
           <Button className="w-full" onClick={handleSubmit} disabled={createPayment.isPending || !amount}>
-            {createPayment.isPending ? "Saving..." : "Record Payment"}
+            {createPayment.isPending ? "Saving..." : isIncome ? "Record Income" : "Record Expense"}
           </Button>
         </div>
       </DialogContent>
