@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
   Select,
   SelectContent,
@@ -378,7 +378,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           </div>
         </div>
 
-        <ScrollArea className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-y-auto">
           {/* Geral Tab */}
           <TabsContent value="geral" className="px-4 pb-4 mt-0">
             {editing ? (
@@ -534,7 +534,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               <NotesEditor partner={partner} />
             </div>
           </TabsContent>
-        </ScrollArea>
+        </div>
       </Tabs>
 
       <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
@@ -636,9 +636,9 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
           {project.completion_date && ` – ${format(new Date(project.completion_date), "dd/MM/yy")}`}
         </p>
       </div>
-      <div className="text-right flex-shrink-0 ml-3 flex items-center gap-2 max-w-[40%]">
+      <div className="text-right flex-shrink-0 ml-2 flex items-center gap-1.5 max-w-[40%] min-w-0">
         <div className="min-w-0">
-          <Badge variant="outline" className={`text-[10px] truncate max-w-full ${projectStatusColors[project.project_status] || ""}`}>
+          <Badge variant="outline" className={`text-[10px] truncate max-w-[96px] sm:max-w-none ${projectStatusColors[project.project_status] || ""}`}>
             {project.project_status}
           </Badge>
           {project.estimated_cost != null && project.estimated_cost > 0 && (
@@ -647,7 +647,7 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
             </p>
           )}
         </div>
-        <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        <ArrowUpRight className="hidden sm:block w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     </div>
   );
