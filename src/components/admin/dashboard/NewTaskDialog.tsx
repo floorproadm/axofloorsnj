@@ -24,10 +24,15 @@ interface NewTaskDialogProps {
   }) => void;
   isPending?: boolean;
   relatedPartnerId?: string | null;
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
-export function NewTaskDialog({ onSubmit, isPending, relatedPartnerId }: NewTaskDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewTaskDialog({ onSubmit, isPending, relatedPartnerId, externalOpen, onExternalOpenChange, hideTrigger }: NewTaskDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onExternalOpenChange || setInternalOpen;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
