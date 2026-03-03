@@ -165,6 +165,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       next_action_note: partner.next_action_note || "",
       notes: partner.notes || "",
       birthday: partner.birthday,
+      photo_url: partner.photo_url,
     });
     setEditing(true);
   };
