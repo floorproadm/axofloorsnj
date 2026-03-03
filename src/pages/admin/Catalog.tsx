@@ -59,6 +59,7 @@ const PREDEFINED_SERVICE_CATEGORIES = [
 ];
 
 const PREDEFINED_MATERIAL_CATEGORIES = [
+  "Flooring Sales",
   "Hardwood",
   "Vinyl",
   "Laminate",
