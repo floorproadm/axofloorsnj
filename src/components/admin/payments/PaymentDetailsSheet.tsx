@@ -55,7 +55,10 @@ interface Props {
 export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
   const updateStatus = useUpdatePaymentStatus();
   const updatePayment = useUpdatePayment();
+  const deletePayment = useDeletePayment();
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
 
   // Edit form state
