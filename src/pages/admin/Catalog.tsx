@@ -133,12 +133,23 @@ export default function Catalog() {
     items.forEach((i) => {
       if (i.category) map.set(i.category, (map.get(i.category) || 0) + 1);
     });
+    const categoryOrder: Record<string, number> = {
+      "Installation": 1,
+      "Refinishing": 2,
+      "Stairs": 3,
+      "Repair": 4,
+    };
     return Array.from(map.entries()).sort((a, b) => {
       const aIsAddon = a[0].endsWith("- Add-ons");
       const bIsAddon = b[0].endsWith("- Add-ons");
       if (aIsAddon && !bIsAddon) return 1;
       if (!aIsAddon && bIsAddon) return -1;
-      return a[0].localeCompare(b[0]);
+      if (aIsAddon && bIsAddon) {
+        const aBase = a[0].replace(" - Add-ons", "");
+        const bBase = b[0].replace(" - Add-ons", "");
+        return (categoryOrder[aBase] ?? 99) - (categoryOrder[bBase] ?? 99);
+      }
+      return (categoryOrder[a[0]] ?? 99) - (categoryOrder[b[0]] ?? 99);
     });
   }, [items]);
 
