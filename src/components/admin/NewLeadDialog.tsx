@@ -79,9 +79,10 @@ const SOURCE_LABELS: Record<string, string> = {
 interface NewLeadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  referredByPartnerId?: string;
 }
 
-export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
+export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLeadDialogProps) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<NewLeadFormValues>({
@@ -90,7 +91,7 @@ export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
       name: "",
       phone: "",
       email: "",
-      lead_source: "",
+      lead_source: referredByPartnerId ? "referral" : "",
       message: "",
     },
   });
@@ -104,6 +105,10 @@ export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
         email: values.email || null,
         lead_source: values.lead_source,
         message: values.message || null,
+        ...(referredByPartnerId ? {
+          referred_by_partner_id: referredByPartnerId,
+          status: "warm_lead",
+        } : {}),
       });
 
       if (error) throw error;

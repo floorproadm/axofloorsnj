@@ -577,7 +577,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       })()}
 
       <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
-      <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
+      <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} referredByPartnerId={partner.id} />
     </div>
   );
 }
