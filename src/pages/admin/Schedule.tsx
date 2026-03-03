@@ -151,8 +151,14 @@ export default function Schedule() {
     },
   });
 
-  const openNew = () => { setEditingAppointment(null); setModalOpen(true); };
-  const openEdit = (a: Appointment) => { setEditingAppointment(a); setModalOpen(true); };
+  const openNew = () => { setEditingAppointment(null); setTemplateDefaults(null); setModalOpen(true); };
+  const openEdit = (a: Appointment) => { setEditingAppointment(a); setTemplateDefaults(null); setModalOpen(true); };
+  const openFromTemplate = (tpl: typeof SCHEDULE_TEMPLATES[number]) => {
+    setEditingAppointment(null);
+    setTemplateDefaults({ type: tpl.type, duration: tpl.duration_hours, time: tpl.default_time });
+    setTemplateDialogOpen(false);
+    setModalOpen(true);
+  };
 
   return (
     <AdminLayout title="Schedule">
