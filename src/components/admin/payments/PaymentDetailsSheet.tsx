@@ -96,6 +96,18 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
 
   const discardEditing = () => {
     setIsEditing(false);
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText("");
+  };
+
+  const handleDelete = () => {
+    if (!payment) return;
+    deletePayment.mutate(payment.id, {
+      onSuccess: () => {
+        setIsEditing(false);
+        onOpenChange(false);
+      },
+    });
   };
 
   const handleSave = () => {
