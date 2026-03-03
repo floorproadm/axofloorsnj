@@ -149,42 +149,7 @@ export default function Payments() {
     setPaymentDialogOpen(true);
   };
 
-  /* ── P&L Download ── */
-  const handleDownloadPL = useCallback(() => {
-    const confirmed = periodPayments.filter((p) => p.status === "confirmed");
-    const income = confirmed.filter((p) => p.category === "received").reduce((s, p) => s + Number(p.amount), 0);
-    const laborExp = confirmed.filter((p) => p.category === "labor").reduce((s, p) => s + Number(p.amount), 0);
-    const materialExp = confirmed.filter((p) => p.category === "material").reduce((s, p) => s + Number(p.amount), 0);
-    const otherExp = confirmed.filter((p) => p.category === "other").reduce((s, p) => s + Number(p.amount), 0);
-    const totalExp = laborExp + materialExp + otherExp;
-
-    const lines = [
-      `P&L Report — ${periodRange.label}`,
-      `Generated: ${format(new Date(), "yyyy-MM-dd HH:mm")}`,
-      "",
-      "SUMMARY",
-      `Total Income,$${income.toFixed(2)}`,
-      `Total Expenses,$${totalExp.toFixed(2)}`,
-      `  Labor,$${laborExp.toFixed(2)}`,
-      `  Material,$${materialExp.toFixed(2)}`,
-      `  Other,$${otherExp.toFixed(2)}`,
-      `Net Balance,$${(income - totalExp).toFixed(2)}`,
-      "",
-      "TRANSACTIONS",
-      "Date,Description,Category,Amount,Status",
-      ...periodPayments.map((p) =>
-        `${p.payment_date},"${p.description || ""}",${p.category},$${Number(p.amount).toFixed(2)},${p.status}`
-      ),
-    ];
-
-    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `PL_${periodRange.label.replace(/\s/g, "_")}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [periodPayments, periodRange]);
+  /* ── P&L Download removed – now handled by PLPreviewDialog ── */
 
   return (
     <AdminLayout title="Payments & Invoices">
