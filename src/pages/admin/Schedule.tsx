@@ -197,7 +197,8 @@ export default function Schedule() {
                     )}
                   >
                     <div className="text-[10px] uppercase font-medium">
-                      {format(day, "EEE", { locale: ptBR })}
+                      <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
+                      <span className="hidden sm:inline">{format(day, "EEE", { locale: ptBR })}</span>
                     </div>
                     <div className="text-lg font-bold leading-tight">{format(day, "d")}</div>
                     {count > 0 && (
