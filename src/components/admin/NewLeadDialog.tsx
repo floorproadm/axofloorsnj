@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -79,10 +80,12 @@ const SOURCE_LABELS: Record<string, string> = {
 interface NewLeadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  referredByPartnerId?: string;
 }
 
-export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
+export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLeadDialogProps) {
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<NewLeadFormValues>({
     resolver: zodResolver(newLeadSchema),
@@ -90,7 +93,7 @@ export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
       name: "",
       phone: "",
       email: "",
-      lead_source: "",
+      lead_source: referredByPartnerId ? "referral" : "",
       message: "",
     },
   });
@@ -104,6 +107,10 @@ export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
         email: values.email || null,
         lead_source: values.lead_source,
         message: values.message || null,
+        ...(referredByPartnerId ? {
+          referred_by_partner_id: referredByPartnerId,
+          status: "warm_lead",
+        } : {}),
       });
 
       if (error) throw error;
@@ -114,6 +121,10 @@ export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
       });
 
       form.reset();
+      if (referredByPartnerId) {
+        queryClient.invalidateQueries({ queryKey: ["partner-leads", referredByPartnerId] });
+        queryClient.invalidateQueries({ queryKey: ["partners"] });
+      }
       onOpenChange(false);
     } catch (err: any) {
       toast({
@@ -131,7 +142,7 @@ export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-bold">
-            Novo Lead
+            {referredByPartnerId ? "Nova Indicação" : "Novo Lead"}
           </DialogTitle>
         </DialogHeader>
 
@@ -179,30 +190,39 @@ export function NewLeadDialog({ open, onOpenChange }: NewLeadDialogProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="lead_source"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fonte</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a fonte" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {LEAD_SOURCES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {SOURCE_LABELS[s] || s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {referredByPartnerId ? (
+              <div className="space-y-1.5">
+                <FormLabel>Fonte</FormLabel>
+                <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-input bg-muted/50 text-sm text-muted-foreground">
+                  Indicação (parceiro)
+                </div>
+              </div>
+            ) : (
+              <FormField
+                control={form.control}
+                name="lead_source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fonte</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a fonte" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {LEAD_SOURCES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {SOURCE_LABELS[s] || s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
