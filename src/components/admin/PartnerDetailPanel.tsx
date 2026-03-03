@@ -351,8 +351,9 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       {/* Tabs */}
       {(() => {
         const showFullTabs =
-          partner.partner_type === "builder" &&
-          (partner.status === "active" || partner.status === "inactive") &&
+          partner.status === "trial_first_job" ||
+          partner.status === "active" ||
+          partner.status === "inactive" ||
           partnerProjects.length > 0;
 
         const tabTriggerClass = "shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground";
