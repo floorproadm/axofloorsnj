@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
-  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, Plus
+  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Task, useTasks } from "@/hooks/useTasks";
-import { NewTaskDialog } from "./NewTaskDialog";
+
 import { format, isPast, isToday } from "date-fns";
 
 // ---------- System Alerts ----------
