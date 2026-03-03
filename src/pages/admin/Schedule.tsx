@@ -145,7 +145,7 @@ export default function Schedule() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 py-3 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-foreground">Schedule</h1>
               <Select
@@ -167,7 +167,7 @@ export default function Schedule() {
                 </SelectContent>
               </Select>
             </div>
-            <Button size="sm" onClick={openNew} className="gap-1.5">
+            <Button size="sm" onClick={openNew} className="w-full sm:w-auto gap-1.5">
               <Plus className="w-4 h-4" /> Novo
             </Button>
           </div>
