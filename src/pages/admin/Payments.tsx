@@ -12,19 +12,20 @@ import {
   AlertTriangle,
   FileText,
   Receipt,
-  ClipboardList,
-  Send,
-  XCircle,
-  CalendarClock,
+  Wallet,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  TrendingUp,
 } from "lucide-react";
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
-import { useEstimatesList, type EstimateListItem } from "@/hooks/useEstimatesList";
+import { usePayments, type Payment } from "@/hooks/usePayments";
 import { NewInvoiceDialog } from "@/components/admin/payments/NewInvoiceDialog";
 import { InvoiceDetailsSheet } from "@/components/admin/payments/InvoiceDetailsSheet";
-import { EstimateDetailsSheet } from "@/components/admin/payments/EstimateDetailsSheet";
+import { NewPaymentDialog } from "@/components/admin/payments/NewPaymentDialog";
+import { PaymentDetailsSheet } from "@/components/admin/payments/PaymentDetailsSheet";
 import { format } from "date-fns";
 
-type ActiveTab = "invoices" | "estimates";
+type ActiveTab = "payments" | "invoices";
 
 /* ── Invoice status config ── */
 const invoiceStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -35,14 +36,18 @@ const invoiceStatusConfig: Record<string, { label: string; variant: "default" | 
   cancelled: { label: "Cancelled", variant: "secondary" },
 };
 
-/* ── Estimate status config ── */
-const estimateStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  draft: { label: "Draft", variant: "secondary" },
-  sent: { label: "Sent", variant: "default" },
-  viewed: { label: "Viewed", variant: "default" },
-  accepted: { label: "Accepted", variant: "outline" },
-  rejected: { label: "Rejected", variant: "destructive" },
-  expired: { label: "Expired", variant: "secondary" },
+/* ── Payment category config ── */
+const paymentCategoryConfig: Record<string, { label: string; color: string }> = {
+  received: { label: "Received", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
+  labor: { label: "Labor", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+  material: { label: "Material", color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" },
+  other: { label: "Other", color: "bg-muted text-muted-foreground" },
+};
+
+const paymentStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  pending: { label: "Pending", variant: "secondary" },
+  confirmed: { label: "Confirmed", variant: "outline" },
+  cancelled: { label: "Cancelled", variant: "destructive" },
 };
 
 const fmt = (v: number) =>
@@ -50,14 +55,29 @@ const fmt = (v: number) =>
 
 export default function Payments() {
   const { data: invoices = [], isLoading: invoicesLoading } = useInvoices();
-  const { data: estimates = [], isLoading: estimatesLoading } = useEstimatesList();
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments();
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>("invoices");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("payments");
   const [invoiceFilter, setInvoiceFilter] = useState("all");
-  const [estimateFilter, setEstimateFilter] = useState("all");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [selectedEstimate, setSelectedEstimate] = useState<EstimateListItem | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+
+  /* ── Payment stats ── */
+  const paymentStats = useMemo(() => {
+    const received = payments
+      .filter((p) => p.category === "received" && p.status !== "cancelled")
+      .reduce((s, p) => s + Number(p.amount || 0), 0);
+    const paidOut = payments
+      .filter((p) => p.category !== "received" && p.status !== "cancelled")
+      .reduce((s, p) => s + Number(p.amount || 0), 0);
+    const pending = payments
+      .filter((p) => p.status === "pending")
+      .reduce((s, p) => s + Number(p.amount || 0), 0);
+    return { received, paidOut, pending, net: received - paidOut };
+  }, [payments]);
 
   /* ── Invoice stats ── */
   const invoiceStats = useMemo(() => {
@@ -68,46 +88,36 @@ export default function Payments() {
     return { totalBilled, received, pending, overdue };
   }, [invoices]);
 
-  /* ── Estimate stats ── */
-  const estimateStats = useMemo(() => {
-    const total = estimates.length;
-    const accepted = estimates.filter((e) => e.status === "accepted").length;
-    const pendingSent = estimates.filter((e) => e.status === "sent" || e.status === "viewed").length;
-    const expired = estimates.filter((e) => {
-      if (e.status === "accepted") return false;
-      return new Date(e.valid_until) < new Date();
-    }).length;
-    return { total, accepted, pendingSent, expired };
-  }, [estimates]);
-
   /* ── Filtered lists ── */
   const filteredInvoices = useMemo(() => {
     if (invoiceFilter === "all") return invoices;
     return invoices.filter((i) => i.status === invoiceFilter);
   }, [invoices, invoiceFilter]);
 
-  const filteredEstimates = useMemo(() => {
-    if (estimateFilter === "all") return estimates;
-    if (estimateFilter === "expired") {
-      return estimates.filter((e) => e.status !== "accepted" && new Date(e.valid_until) < new Date());
-    }
-    return estimates.filter((e) => e.status === estimateFilter);
-  }, [estimates, estimateFilter]);
+  const filteredPayments = useMemo(() => {
+    if (paymentFilter === "all") return payments;
+    return payments.filter((p) => p.category === paymentFilter || p.status === paymentFilter);
+  }, [payments, paymentFilter]);
 
-  const isLoading = activeTab === "invoices" ? invoicesLoading : estimatesLoading;
+  const isLoading = activeTab === "payments" ? paymentsLoading : invoicesLoading;
 
   return (
-    <AdminLayout title="Financial Hub">
+    <AdminLayout title="Payments & Invoices">
       <div className="space-y-4">
-        {/* ── Main Tabs (Catalog pattern) ── */}
+        {/* ── Main Tabs ── */}
         <Tabs
           value={activeTab}
-          onValueChange={(v) => {
-            setActiveTab(v as ActiveTab);
-          }}
+          onValueChange={(v) => setActiveTab(v as ActiveTab)}
         >
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+              <TabsTrigger
+                value="payments"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <Wallet className="w-4 h-4 mr-1.5" />
+                Payments
+              </TabsTrigger>
               <TabsTrigger
                 value="invoices"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
@@ -115,31 +125,30 @@ export default function Payments() {
                 <Receipt className="w-4 h-4 mr-1.5" />
                 Invoices
               </TabsTrigger>
-              <TabsTrigger
-                value="estimates"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
-              >
-                <ClipboardList className="w-4 h-4 mr-1.5" />
-                Estimates
-              </TabsTrigger>
             </TabsList>
 
-            {activeTab === "invoices" && (
-              <Button size="sm" onClick={() => setDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-1" /> Nova Fatura
-              </Button>
-            )}
+            <Button
+              size="sm"
+              onClick={() =>
+                activeTab === "payments"
+                  ? setPaymentDialogOpen(true)
+                  : setInvoiceDialogOpen(true)
+              }
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              {activeTab === "payments" ? "New Payment" : "New Invoice"}
+            </Button>
           </div>
         </Tabs>
 
         {/* ── Stats Cards ── */}
-        {activeTab === "invoices" ? (
+        {activeTab === "payments" ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Total Faturado", value: fmt(invoiceStats.totalBilled), icon: FileText, color: "text-foreground" },
-              { label: "Recebido", value: fmt(invoiceStats.received), icon: CheckCircle, color: "text-green-600" },
-              { label: "Pendente", value: fmt(invoiceStats.pending), icon: Clock, color: "text-amber-600" },
-              { label: "Vencido", value: fmt(invoiceStats.overdue), icon: AlertTriangle, color: "text-destructive" },
+              { label: "Total Received", value: fmt(paymentStats.received), icon: ArrowDownCircle, color: "text-green-600" },
+              { label: "Total Paid Out", value: fmt(paymentStats.paidOut), icon: ArrowUpCircle, color: "text-foreground" },
+              { label: "Pending", value: fmt(paymentStats.pending), icon: Clock, color: "text-amber-600" },
+              { label: "Net Balance", value: fmt(paymentStats.net), icon: TrendingUp, color: paymentStats.net >= 0 ? "text-green-600" : "text-destructive" },
             ].map((s) => (
               <Card key={s.label}>
                 <CardContent className="p-4">
@@ -159,10 +168,10 @@ export default function Payments() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Total Estimates", value: String(estimateStats.total), icon: ClipboardList, color: "text-foreground" },
-              { label: "Accepted", value: String(estimateStats.accepted), icon: CheckCircle, color: "text-green-600" },
-              { label: "Pending", value: String(estimateStats.pendingSent), icon: Send, color: "text-amber-600" },
-              { label: "Expired", value: String(estimateStats.expired), icon: CalendarClock, color: "text-destructive" },
+              { label: "Total Billed", value: fmt(invoiceStats.totalBilled), icon: FileText, color: "text-foreground" },
+              { label: "Received", value: fmt(invoiceStats.received), icon: CheckCircle, color: "text-green-600" },
+              { label: "Pending", value: fmt(invoiceStats.pending), icon: Clock, color: "text-amber-600" },
+              { label: "Overdue", value: fmt(invoiceStats.overdue), icon: AlertTriangle, color: "text-destructive" },
             ].map((s) => (
               <Card key={s.label}>
                 <CardContent className="p-4">
@@ -182,67 +191,74 @@ export default function Payments() {
         )}
 
         {/* ── Sub-filters ── */}
-        {activeTab === "invoices" ? (
+        {activeTab === "payments" ? (
+          <Tabs value={paymentFilter} onValueChange={setPaymentFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All ({payments.length})</TabsTrigger>
+              <TabsTrigger value="received">Received</TabsTrigger>
+              <TabsTrigger value="labor">Labor</TabsTrigger>
+              <TabsTrigger value="material">Material</TabsTrigger>
+              <TabsTrigger value="other">Other</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        ) : (
           <Tabs value={invoiceFilter} onValueChange={setInvoiceFilter}>
             <TabsList>
-              <TabsTrigger value="all">Todas ({invoices.length})</TabsTrigger>
+              <TabsTrigger value="all">All ({invoices.length})</TabsTrigger>
               <TabsTrigger value="draft">Draft</TabsTrigger>
               <TabsTrigger value="sent">Sent</TabsTrigger>
               <TabsTrigger value="paid">Paid</TabsTrigger>
               <TabsTrigger value="overdue">Overdue</TabsTrigger>
             </TabsList>
           </Tabs>
-        ) : (
-          <Tabs value={estimateFilter} onValueChange={setEstimateFilter}>
-            <TabsList>
-              <TabsTrigger value="all">Todas ({estimates.length})</TabsTrigger>
-              <TabsTrigger value="draft">Draft</TabsTrigger>
-              <TabsTrigger value="sent">Sent</TabsTrigger>
-              <TabsTrigger value="accepted">Accepted</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected</TabsTrigger>
-              <TabsTrigger value="expired">Expired</TabsTrigger>
-            </TabsList>
-          </Tabs>
         )}
 
         {/* ── List ── */}
         {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-        ) : activeTab === "invoices" ? (
-          filteredInvoices.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">Loading...</div>
+        ) : activeTab === "payments" ? (
+          filteredPayments.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <DollarSign className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground">Nenhuma fatura encontrada</p>
-                <Button variant="outline" className="mt-4" onClick={() => setDialogOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" /> Criar primeira fatura
+                <Wallet className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground">No payments found</p>
+                <Button variant="outline" className="mt-4" onClick={() => setPaymentDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" /> Record first payment
                 </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-2">
-              {filteredInvoices.map((inv) => {
-                const sc = invoiceStatusConfig[inv.status] || invoiceStatusConfig.draft;
+              {filteredPayments.map((pay) => {
+                const cat = paymentCategoryConfig[pay.category] || paymentCategoryConfig.other;
+                const sc = paymentStatusConfig[pay.status] || paymentStatusConfig.pending;
                 return (
                   <Card
-                    key={inv.id}
+                    key={pay.id}
                     className="cursor-pointer hover:border-primary/30 transition-colors"
-                    onClick={() => setSelectedInvoice(inv)}
+                    onClick={() => setSelectedPayment(pay)}
                   >
                     <CardContent className="p-4 flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-foreground">{inv.invoice_number}</p>
+                        <p className="font-medium text-foreground">
+                          {pay.description || cat.label}
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          {inv.projects?.customer_name || "—"} · {inv.projects?.project_type || ""}
+                          {pay.projects?.customer_name || "No project"} · {format(new Date(pay.payment_date), "MMM dd")}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4 text-right">
+                      <div className="flex items-center gap-3 text-right">
                         <div>
-                          <p className="font-bold text-foreground">{fmt(Number(inv.total_amount || 0))}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Vence {format(new Date(inv.due_date), "MMM dd")}
+                          <p className={`font-bold ${pay.category === "received" ? "text-green-600" : "text-foreground"}`}>
+                            {pay.category === "received" ? "+" : "-"}{fmt(Number(pay.amount))}
                           </p>
+                          {pay.payment_method && (
+                            <p className="text-xs text-muted-foreground capitalize">{pay.payment_method.replace("_", " ")}</p>
+                          )}
                         </div>
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${cat.color}`}>
+                          {cat.label}
+                        </span>
                         <Badge variant={sc.variant}>{sc.label}</Badge>
                       </div>
                     </CardContent>
@@ -251,49 +267,38 @@ export default function Payments() {
               })}
             </div>
           )
-        ) : filteredEstimates.length === 0 ? (
+        ) : filteredInvoices.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <ClipboardList className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">Nenhum estimate encontrado</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Estimates são criados a partir do fluxo de projeto
-              </p>
+              <DollarSign className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+              <p className="text-muted-foreground">No invoices found</p>
+              <Button variant="outline" className="mt-4" onClick={() => setInvoiceDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" /> Create first invoice
+              </Button>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
-            {filteredEstimates.map((est) => {
-              const isExpired = new Date(est.valid_until) < new Date() && est.status !== "accepted";
-              const sc = isExpired
-                ? { label: "Expired", variant: "destructive" as const }
-                : estimateStatusConfig[est.status] || estimateStatusConfig.draft;
-
-              // Show the selected tier price if accepted, otherwise show the range
-              const priceDisplay = est.selected_tier
-                ? fmt(est[`${est.selected_tier}_price` as keyof EstimateListItem] as number)
-                : `${fmt(est.good_price)} – ${fmt(est.best_price)}`;
-
+            {filteredInvoices.map((inv) => {
+              const sc = invoiceStatusConfig[inv.status] || invoiceStatusConfig.draft;
               return (
                 <Card
-                  key={est.id}
+                  key={inv.id}
                   className="cursor-pointer hover:border-primary/30 transition-colors"
-                  onClick={() => setSelectedEstimate(est)}
+                  onClick={() => setSelectedInvoice(inv)}
                 >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">{est.proposal_number}</p>
+                      <p className="font-medium text-foreground">{inv.invoice_number}</p>
                       <p className="text-sm text-muted-foreground">
-                        {est.customers?.full_name || est.projects?.customer_name || "—"} · {est.projects?.project_type || ""}
+                        {inv.projects?.customer_name || "—"} · {inv.projects?.project_type || ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-4 text-right">
                       <div>
-                        <p className="font-bold text-foreground">{priceDisplay}</p>
+                        <p className="font-bold text-foreground">{fmt(Number(inv.total_amount || 0))}</p>
                         <p className="text-xs text-muted-foreground">
-                          {est.selected_tier
-                            ? `Tier: ${est.selected_tier.charAt(0).toUpperCase() + est.selected_tier.slice(1)}`
-                            : `Válido até ${format(new Date(est.valid_until), "MMM dd")}`}
+                          Due {format(new Date(inv.due_date), "MMM dd")}
                         </p>
                       </div>
                       <Badge variant={sc.variant}>{sc.label}</Badge>
@@ -306,16 +311,17 @@ export default function Payments() {
         )}
       </div>
 
-      <NewInvoiceDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <NewPaymentDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen} />
+      <NewInvoiceDialog open={invoiceDialogOpen} onOpenChange={setInvoiceDialogOpen} />
       <InvoiceDetailsSheet
         invoice={selectedInvoice}
         open={!!selectedInvoice}
         onOpenChange={(open) => !open && setSelectedInvoice(null)}
       />
-      <EstimateDetailsSheet
-        estimate={selectedEstimate}
-        open={!!selectedEstimate}
-        onOpenChange={(open) => !open && setSelectedEstimate(null)}
+      <PaymentDetailsSheet
+        payment={selectedPayment}
+        open={!!selectedPayment}
+        onOpenChange={(open) => !open && setSelectedPayment(null)}
       />
     </AdminLayout>
   );

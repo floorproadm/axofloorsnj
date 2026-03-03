@@ -1247,6 +1247,66 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          category: string
+          collaborator_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string | null
+          project_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          collaborator_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          collaborator_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
