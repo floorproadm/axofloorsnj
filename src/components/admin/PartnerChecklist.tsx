@@ -284,7 +284,8 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
                 return (
                   <div
                     key={ev.id}
-                    className="flex items-center gap-2.5 group rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
+                    className="flex items-center gap-2.5 group rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50 cursor-pointer"
+                    onClick={() => navigate("/admin/schedule")}
                   >
                     <CalendarClock className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                     <span className="text-sm flex-1 min-w-0 truncate">
