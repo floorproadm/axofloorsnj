@@ -91,6 +91,13 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
   const [newJobOpen, setNewJobOpen] = useState(false);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const { tasks: allTasks, createTask, updateTask, deleteTask, isLoading: isLoadingTasks } = useTasks(true);
+
+  const partnerTasks = useMemo(
+    () => allTasks.filter((t) => t.related_partner_id === partner.id),
+    [allTasks, partner.id]
+  );
+
+  const initials = partner.contact_name
     .split(" ")
     .map((w) => w[0])
     .join("")
