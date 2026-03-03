@@ -1196,6 +1196,7 @@ export type Database = {
           email: string | null
           id: string
           last_contacted_at: string | null
+          lead_source_tag: string | null
           next_action_date: string | null
           next_action_note: string | null
           notes: string | null
@@ -1216,6 +1217,7 @@ export type Database = {
           email?: string | null
           id?: string
           last_contacted_at?: string | null
+          lead_source_tag?: string | null
           next_action_date?: string | null
           next_action_note?: string | null
           notes?: string | null
@@ -1236,6 +1238,7 @@ export type Database = {
           email?: string | null
           id?: string
           last_contacted_at?: string | null
+          lead_source_tag?: string | null
           next_action_date?: string | null
           next_action_note?: string | null
           notes?: string | null

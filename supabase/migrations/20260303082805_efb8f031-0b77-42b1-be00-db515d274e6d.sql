@@ -1,0 +1,1 @@
+ALTER TABLE public.partners ADD COLUMN lead_source_tag text DEFAULT NULL;
