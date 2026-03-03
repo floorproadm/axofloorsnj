@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -439,6 +439,12 @@ export default function Payments() {
         payment={selectedPayment}
         open={!!selectedPayment}
         onOpenChange={(open) => !open && setSelectedPayment(null)}
+      />
+      <PLPreviewDialog
+        open={plPreviewOpen}
+        onOpenChange={setPLPreviewOpen}
+        payments={periodPayments}
+        periodLabel={periodRange.label}
       />
     </AdminLayout>
   );
