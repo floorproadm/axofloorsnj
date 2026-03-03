@@ -32,7 +32,16 @@ export default function Partners() {
   const [statusFilter, setStatusFilter] = useState("active");
   const [newOpen, setNewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "board">("list");
+const [viewMode, setViewMode] = useState<"list" | "board">("list");
+
+  const handleViewMode = (mode: "list" | "board") => {
+    setViewMode(mode);
+    if (mode === "board") {
+      setStatusFilter("all");
+    } else {
+      setStatusFilter("active");
+    }
+  };
 
   const filtered = useMemo(() => {
     return partners.filter((p) => {
@@ -104,13 +113,13 @@ export default function Partners() {
           <span><strong className="text-foreground">{miniStats.totalReferrals}</strong> indicações</span>
           <div className="ml-auto flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
             <button
-              onClick={() => setViewMode("list")}
+              onClick={() => handleViewMode("list")}
               className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               <List className="w-3.5 h-3.5" />
             </button>
             <button
-              onClick={() => setViewMode("board")}
+              onClick={() => handleViewMode("board")}
               className={`p-1.5 rounded-md transition-colors ${viewMode === "board" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
