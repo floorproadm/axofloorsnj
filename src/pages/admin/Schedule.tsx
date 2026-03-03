@@ -549,6 +549,7 @@ function AppointmentModal({
           location: appointment.location || "",
           notes: appointment.notes || "",
           project_id: appointment.project_id,
+          assigned_to: (appointment as any).assigned_to || [],
         });
       } else {
         setIsEditing(true); // edit mode for new
