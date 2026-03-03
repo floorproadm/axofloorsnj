@@ -346,6 +346,7 @@ export default function Catalog() {
       toast.error(e.message || "Error");
     }
     setDeleteTarget(null);
+    setDeleteConfirmText("");
   }
 
   async function toggleActive(item: CatalogItem) {
