@@ -47,8 +47,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign, ImagePlus, X } from "lucide-react";
+import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign, ImagePlus, X, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
+
+const PREDEFINED_CATEGORIES = [
+  "Installation",
+  "Refinishing",
+  "Stairs",
+  "Repair",
+  "Flooring Sales",
+];
+
+type SubcategoryType = "core" | "add-on";
 
 const PRICE_UNITS: { value: PriceUnit; label: string }[] = [
   { value: "sqft", label: "per sqft" },
@@ -91,10 +101,16 @@ export default function Catalog() {
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Category state
+  const [customCategoryMode, setCustomCategoryMode] = useState(false);
+  const [customCategoryValue, setCustomCategoryValue] = useState("");
+  const [subcategory, setSubcategory] = useState<SubcategoryType>("core");
+
   // Signed URLs cache
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const { data: items = [], isLoading } = useServiceCatalog(activeTab);
+  const { data: allItems = [] } = useServiceCatalog(); // all items for extracting categories
   const createMutation = useCreateCatalogItem();
   const updateMutation = useUpdateCatalogItem();
   const deleteMutation = useDeleteCatalogItem();
@@ -119,6 +135,20 @@ export default function Catalog() {
     });
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [items]);
+
+  // Merged category options for the Select (predefined + any custom from DB)
+  const allCategoryOptions = useMemo(() => {
+    const dbCategories = new Set<string>();
+    allItems.forEach((i) => {
+      if (i.category) {
+        // Extract base category (strip " - Add-ons" suffix if present)
+        const base = i.category.replace(/ - Add-ons$/, "");
+        dbCategories.add(base);
+      }
+    });
+    const merged = new Set([...PREDEFINED_CATEGORIES, ...dbCategories]);
+    return Array.from(merged).sort();
+  }, [allItems]);
 
   // Filtered items
   const filtered = useMemo(() => {
@@ -148,16 +178,25 @@ export default function Catalog() {
     setEditingItem(null);
     setForm({ ...EMPTY_FORM, item_type: activeTab });
     resetImageState();
+    setCustomCategoryMode(false);
+    setCustomCategoryValue("");
+    setSubcategory("core");
     setDialogOpen(true);
   }
 
   function openEdit(item: CatalogItem) {
     setEditingItem(item);
+    // Parse subcategory from stored category
+    const isAddon = item.category?.endsWith(" - Add-ons") || false;
+    const baseCategory = item.category?.replace(/ - Add-ons$/, "") || null;
+    setSubcategory(isAddon ? "add-on" : "core");
+    setCustomCategoryMode(false);
+    setCustomCategoryValue("");
     setForm({
       item_type: item.item_type,
       name: item.name,
       description: item.description,
-      category: item.category,
+      category: baseCategory,
       default_material: item.default_material,
       default_finish: item.default_finish,
       base_price: item.base_price,
@@ -216,6 +255,16 @@ export default function Catalog() {
       toast.error(pt ? "Nome é obrigatório" : "Name is required");
       return;
     }
+
+    // Resolve final category with subcategory suffix
+    const baseCategory = customCategoryMode ? customCategoryValue.trim() : form.category;
+    const finalCategory = baseCategory
+      ? subcategory === "add-on"
+        ? `${baseCategory} - Add-ons`
+        : baseCategory
+      : null;
+    const formToSave = { ...form, category: finalCategory };
+
     try {
       let savedItem: CatalogItem;
 
@@ -233,10 +282,10 @@ export default function Catalog() {
             await deleteCatalogImage(editingItem.image_url).catch(() => {});
           }
           const path = await uploadCatalogImage(editingItem.id, pendingFile);
-          const formWithImage = { ...form, image_url: path };
+          const formWithImage = { ...formToSave, image_url: path };
           savedItem = await updateMutation.mutateAsync({ id: editingItem.id, ...formWithImage });
         } else {
-          const updates = { ...form };
+          const updates = { ...formToSave };
           if (removeExistingImage) updates.image_url = null;
           savedItem = await updateMutation.mutateAsync({ id: editingItem.id, ...updates });
         }
@@ -244,7 +293,7 @@ export default function Catalog() {
         toast.success(pt ? "Item atualizado" : "Item updated");
       } else {
         // Create item first, then upload image
-        savedItem = await createMutation.mutateAsync(form);
+        savedItem = await createMutation.mutateAsync(formToSave);
 
         if (pendingFile) {
           const path = await uploadCatalogImage(savedItem.id, pendingFile);
@@ -432,23 +481,71 @@ export default function Catalog() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{pt ? "Categoria" : "Category"}</Label>
-                <Select value={form.category || ""} onValueChange={(v) => setForm((f) => ({ ...f, category: v || null }))}>
+                {customCategoryMode ? (
+                  <div className="flex gap-1.5">
+                    <Input
+                      value={customCategoryValue}
+                      onChange={(e) => setCustomCategoryValue(e.target.value)}
+                      placeholder={pt ? "Nova categoria..." : "New category..."}
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-10 w-10"
+                      onClick={() => {
+                        setCustomCategoryMode(false);
+                        setCustomCategoryValue("");
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Select
+                    value={form.category || ""}
+                    onValueChange={(v) => {
+                      if (v === "__new__") {
+                        setCustomCategoryMode(true);
+                        setCustomCategoryValue("");
+                        setForm((f) => ({ ...f, category: null }));
+                      } else {
+                        setForm((f) => ({ ...f, category: v || null }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={pt ? "Selecione..." : "Select..."} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allCategoryOptions.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                      <SelectItem value="__new__">
+                        <span className="flex items-center gap-1.5 text-primary">
+                          <PlusCircle className="w-3.5 h-3.5" />
+                          {pt ? "Nova categoria..." : "Add new..."}
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>{pt ? "Subcategoria" : "Subcategory"}</Label>
+                <Select value={subcategory} onValueChange={(v) => setSubcategory(v as SubcategoryType)}>
                   <SelectTrigger>
-                    <SelectValue placeholder={pt ? "Selecione..." : "Select..."} />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Hardwood">Hardwood</SelectItem>
-                    <SelectItem value="Vinyl">Vinyl</SelectItem>
-                    <SelectItem value="Tile">Tile</SelectItem>
-                    <SelectItem value="Laminate">Laminate</SelectItem>
-                    <SelectItem value="Staircase">Staircase</SelectItem>
-                    <SelectItem value="Baseboard">Baseboard</SelectItem>
-                    <SelectItem value="Stain">Stain</SelectItem>
-                    <SelectItem value="Finish">Finish</SelectItem>
-                    <SelectItem value="Other">{pt ? "Outro" : "Other"}</SelectItem>
+                    <SelectItem value="core">Core</SelectItem>
+                    <SelectItem value="add-on">Add-on</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{pt ? "Preço Base" : "Base Price"}</Label>
                 <div className="relative">
@@ -463,25 +560,24 @@ export default function Catalog() {
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{pt ? "Unidade de Preço" : "Price Unit"}</Label>
-              <Select
-                value={form.price_unit}
-                onValueChange={(v) => setForm((f) => ({ ...f, price_unit: v as PriceUnit }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRICE_UNITS.map((u) => (
-                    <SelectItem key={u.value} value={u.value}>
-                      {u.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1.5">
+                <Label>{pt ? "Unidade de Preço" : "Price Unit"}</Label>
+                <Select
+                  value={form.price_unit}
+                  onValueChange={(v) => setForm((f) => ({ ...f, price_unit: v as PriceUnit }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRICE_UNITS.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {form.item_type === "service" && (
