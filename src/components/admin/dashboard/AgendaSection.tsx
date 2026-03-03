@@ -79,9 +79,9 @@ export function AgendaSection({ appointments }: AgendaSectionProps) {
           apt.status === "confirmed" || apt.status === "in_progress";
 
         return (
+          <Link to="/admin/schedule" key={apt.id}>
           <Card
-            key={apt.id}
-            className="rounded-xl overflow-hidden shadow-sm border-border"
+            className="rounded-xl overflow-hidden shadow-sm border-border hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
           >
             <CardContent className="p-0">
               <div className="flex">
@@ -129,6 +129,7 @@ export function AgendaSection({ appointments }: AgendaSectionProps) {
               </div>
             </CardContent>
           </Card>
+          </Link>
         );
       })}
 
