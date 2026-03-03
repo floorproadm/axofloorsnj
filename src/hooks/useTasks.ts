@@ -10,6 +10,7 @@ export interface Task {
   assigned_to: string | null;
   related_project_id: string | null;
   related_lead_id: string | null;
+  related_partner_id: string | null;
   due_date: string | null;
   created_by: string;
   completed_at: string | null;
@@ -17,6 +18,7 @@ export interface Task {
   updated_at: string;
   // joined
   assignee_name?: string | null;
+  partner_name?: string | null;
 }
 
 interface CreateTaskInput {
@@ -26,6 +28,7 @@ interface CreateTaskInput {
   assigned_to?: string | null;
   related_project_id?: string | null;
   related_lead_id?: string | null;
+  related_partner_id?: string | null;
   due_date?: string | null;
 }
 
