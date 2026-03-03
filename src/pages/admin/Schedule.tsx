@@ -370,8 +370,8 @@ function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit
         </div>
       ))}
       {appointments.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm pointer-events-none">
-          Sem agendamentos. Dia livre ou falha no pipeline.
+        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm pointer-events-none px-4 text-center">
+          Nenhum agendamento para hoje
         </div>
       )}
     </div>
