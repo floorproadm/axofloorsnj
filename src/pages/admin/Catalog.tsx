@@ -546,6 +546,7 @@ export default function Catalog() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
                 <Label>{pt ? "Preço Base" : "Base Price"}</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
