@@ -178,16 +178,25 @@ export default function Catalog() {
     setEditingItem(null);
     setForm({ ...EMPTY_FORM, item_type: activeTab });
     resetImageState();
+    setCustomCategoryMode(false);
+    setCustomCategoryValue("");
+    setSubcategory("core");
     setDialogOpen(true);
   }
 
   function openEdit(item: CatalogItem) {
     setEditingItem(item);
+    // Parse subcategory from stored category
+    const isAddon = item.category?.endsWith(" - Add-ons") || false;
+    const baseCategory = item.category?.replace(/ - Add-ons$/, "") || null;
+    setSubcategory(isAddon ? "add-on" : "core");
+    setCustomCategoryMode(false);
+    setCustomCategoryValue("");
     setForm({
       item_type: item.item_type,
       name: item.name,
       description: item.description,
-      category: item.category,
+      category: baseCategory,
       default_material: item.default_material,
       default_finish: item.default_finish,
       base_price: item.base_price,
