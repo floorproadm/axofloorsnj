@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -84,6 +85,7 @@ interface NewLeadDialogProps {
 
 export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLeadDialogProps) {
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<NewLeadFormValues>({
     resolver: zodResolver(newLeadSchema),
@@ -119,6 +121,10 @@ export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLe
       });
 
       form.reset();
+      if (referredByPartnerId) {
+        queryClient.invalidateQueries({ queryKey: ["partner-leads", referredByPartnerId] });
+        queryClient.invalidateQueries({ queryKey: ["partners"] });
+      }
       onOpenChange(false);
     } catch (err: any) {
       toast({
