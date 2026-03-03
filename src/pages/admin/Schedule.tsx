@@ -14,8 +14,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
+import {
   ChevronLeft, ChevronRight, Plus, Clock, MapPin, Phone, User,
-  CalendarIcon, Trash2, Edit2
+  CalendarIcon, Trash2, Edit2, Copy, Ruler, Wrench, PhoneCall, PackageCheck
 } from "lucide-react";
 import {
   format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays,
