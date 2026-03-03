@@ -1727,6 +1727,7 @@ export type Database = {
           description: string | null
           display_order: number
           id: string
+          image_url: string | null
           is_active: boolean
           item_type: string
           name: string
@@ -1742,6 +1743,7 @@ export type Database = {
           description?: string | null
           display_order?: number
           id?: string
+          image_url?: string | null
           is_active?: boolean
           item_type?: string
           name: string
@@ -1757,6 +1759,7 @@ export type Database = {
           description?: string | null
           display_order?: number
           id?: string
+          image_url?: string | null
           is_active?: boolean
           item_type?: string
           name?: string

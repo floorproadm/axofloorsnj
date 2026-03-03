@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -6,11 +6,15 @@ import {
   useCreateCatalogItem,
   useUpdateCatalogItem,
   useDeleteCatalogItem,
+  uploadCatalogImage,
+  deleteCatalogImage,
+  getCatalogSignedUrls,
   type CatalogItem,
   type CatalogItemType,
   type CatalogItemInsert,
   type PriceUnit,
 } from "@/hooks/useServiceCatalog";
+import { convertHeicToJpeg, isHeicFile } from "@/utils/heicConverter";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +23,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign } from "lucide-react";
+import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign, ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 
 const PRICE_UNITS: { value: PriceUnit; label: string }[] = [
@@ -65,7 +68,10 @@ const EMPTY_FORM: CatalogItemInsert = {
   price_unit: "sqft",
   is_active: true,
   display_order: 0,
+  image_url: null,
 };
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function Catalog() {
   const { language } = useLanguage();
@@ -79,10 +85,31 @@ export default function Catalog() {
   const [form, setForm] = useState<CatalogItemInsert>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
 
+  // Image upload state
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [removeExistingImage, setRemoveExistingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Signed URLs cache
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
   const { data: items = [], isLoading } = useServiceCatalog(activeTab);
   const createMutation = useCreateCatalogItem();
   const updateMutation = useUpdateCatalogItem();
   const deleteMutation = useDeleteCatalogItem();
+
+  // Generate signed URLs when items change
+  useEffect(() => {
+    const paths = items.filter((i) => i.image_url).map((i) => i.image_url!);
+    if (paths.length === 0) {
+      setSignedUrls({});
+      return;
+    }
+    getCatalogSignedUrls(paths)
+      .then(setSignedUrls)
+      .catch(() => setSignedUrls({}));
+  }, [items]);
 
   // Derive categories from items
   const categories = useMemo(() => {
@@ -111,9 +138,16 @@ export default function Catalog() {
     return list;
   }, [items, search, selectedCategory]);
 
+  function resetImageState() {
+    setPendingFile(null);
+    setPreviewUrl(null);
+    setRemoveExistingImage(false);
+  }
+
   function openCreate() {
     setEditingItem(null);
     setForm({ ...EMPTY_FORM, item_type: activeTab });
+    resetImageState();
     setDialogOpen(true);
   }
 
@@ -130,8 +164,51 @@ export default function Catalog() {
       price_unit: item.price_unit,
       is_active: item.is_active,
       display_order: item.display_order,
+      image_url: item.image_url,
     });
+    resetImageState();
+    // Show existing image preview via signed URL
+    if (item.image_url && signedUrls[item.image_url]) {
+      setPreviewUrl(signedUrls[item.image_url]);
+    }
     setDialogOpen(true);
+  }
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(pt ? "Arquivo muito grande (máx 5MB)" : "File too large (max 5MB)");
+      return;
+    }
+
+    let processedFile = file;
+    if (isHeicFile(file)) {
+      try {
+        processedFile = await convertHeicToJpeg(file);
+      } catch {
+        toast.error(pt ? "Erro ao converter HEIC" : "Error converting HEIC");
+        return;
+      }
+    }
+
+    setPendingFile(processedFile);
+    setRemoveExistingImage(false);
+    const url = URL.createObjectURL(processedFile);
+    setPreviewUrl(url);
+
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [pt]);
+
+  function handleRemoveImage() {
+    setPendingFile(null);
+    if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    if (editingItem?.image_url) {
+      setRemoveExistingImage(true);
+    }
   }
 
   async function handleSave() {
@@ -140,13 +217,44 @@ export default function Catalog() {
       return;
     }
     try {
+      let savedItem: CatalogItem;
+
       if (editingItem) {
-        await updateMutation.mutateAsync({ id: editingItem.id, ...form });
+        // Handle image removal
+        if (removeExistingImage && editingItem.image_url) {
+          await deleteCatalogImage(editingItem.image_url).catch(() => {});
+          await updateMutation.mutateAsync({ id: editingItem.id, image_url: null });
+        }
+
+        // Handle new image upload
+        if (pendingFile) {
+          // Delete old image first
+          if (editingItem.image_url) {
+            await deleteCatalogImage(editingItem.image_url).catch(() => {});
+          }
+          const path = await uploadCatalogImage(editingItem.id, pendingFile);
+          const formWithImage = { ...form, image_url: path };
+          savedItem = await updateMutation.mutateAsync({ id: editingItem.id, ...formWithImage });
+        } else {
+          const updates = { ...form };
+          if (removeExistingImage) updates.image_url = null;
+          savedItem = await updateMutation.mutateAsync({ id: editingItem.id, ...updates });
+        }
+
         toast.success(pt ? "Item atualizado" : "Item updated");
       } else {
-        await createMutation.mutateAsync(form);
+        // Create item first, then upload image
+        savedItem = await createMutation.mutateAsync(form);
+
+        if (pendingFile) {
+          const path = await uploadCatalogImage(savedItem.id, pendingFile);
+          await updateMutation.mutateAsync({ id: savedItem.id, image_url: path });
+        }
+
         toast.success(pt ? "Item criado" : "Item created");
       }
+
+      resetImageState();
       setDialogOpen(false);
     } catch (e: any) {
       toast.error(e.message || "Error");
@@ -156,6 +264,10 @@ export default function Catalog() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
+      // Delete image from storage if exists
+      if (deleteTarget.image_url) {
+        await deleteCatalogImage(deleteTarget.image_url).catch(() => {});
+      }
       await deleteMutation.mutateAsync(deleteTarget.id);
       toast.success(pt ? "Item removido" : "Item deleted");
     } catch (e: any) {
@@ -177,7 +289,6 @@ export default function Catalog() {
   return (
     <AdminLayout title={pt ? "Catálogo" : "Catalog"}>
       <div className="space-y-4">
-        {/* Tabs */}
         <Tabs
           value={activeTab}
           onValueChange={(v) => {
@@ -210,7 +321,6 @@ export default function Catalog() {
             </Button>
           </div>
 
-          {/* Search + Category chips */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -244,26 +354,11 @@ export default function Catalog() {
             )}
           </div>
 
-          {/* Content for both tabs (same layout) */}
           <TabsContent value="service" className="mt-0 pt-2">
-            <ItemGrid
-              items={filtered}
-              isLoading={isLoading}
-              pt={pt}
-              onEdit={openEdit}
-              onDelete={setDeleteTarget}
-              onToggle={toggleActive}
-            />
+            <ItemGrid items={filtered} isLoading={isLoading} pt={pt} signedUrls={signedUrls} onEdit={openEdit} onDelete={setDeleteTarget} onToggle={toggleActive} />
           </TabsContent>
           <TabsContent value="material" className="mt-0 pt-2">
-            <ItemGrid
-              items={filtered}
-              isLoading={isLoading}
-              pt={pt}
-              onEdit={openEdit}
-              onDelete={setDeleteTarget}
-              onToggle={toggleActive}
-            />
+            <ItemGrid items={filtered} isLoading={isLoading} pt={pt} signedUrls={signedUrls} onEdit={openEdit} onDelete={setDeleteTarget} onToggle={toggleActive} />
           </TabsContent>
         </Tabs>
       </div>
@@ -273,9 +368,7 @@ export default function Catalog() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingItem
-                ? pt ? "Editar Item" : "Edit Item"
-                : pt ? "Novo Item" : "New Item"}
+              {editingItem ? (pt ? "Editar Item" : "Edit Item") : (pt ? "Novo Item" : "New Item")}
             </DialogTitle>
             <DialogDescription>
               {pt ? "Preencha os dados do item do catálogo." : "Fill in the catalog item details."}
@@ -283,6 +376,41 @@ export default function Catalog() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            {/* Image upload area */}
+            <div className="space-y-1.5">
+              <Label>{pt ? "Foto" : "Photo"}</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              {previewUrl && !removeExistingImage ? (
+                <div className="relative rounded-lg overflow-hidden border border-border">
+                  <img src={previewUrl} alt="Preview" className="w-full h-32 object-cover" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-24 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  <ImagePlus className="w-6 h-6" />
+                  <span className="text-xs">{pt ? "Clique para adicionar foto" : "Click to add photo"}</span>
+                </button>
+              )}
+            </div>
+
             <div className="space-y-1.5">
               <Label>{pt ? "Nome" : "Name"} *</Label>
               <Input
@@ -312,18 +440,16 @@ export default function Catalog() {
               </div>
               <div className="space-y-1.5">
                 <Label>{pt ? "Preço Base" : "Base Price"}</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={form.base_price}
-                      onChange={(e) => setForm((f) => ({ ...f, base_price: parseFloat(e.target.value) || 0 }))}
-                      className="pl-7"
-                    />
-                  </div>
+                <div className="relative">
+                  <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={form.base_price}
+                    onChange={(e) => setForm((f) => ({ ...f, base_price: parseFloat(e.target.value) || 0 }))}
+                    className="pl-7"
+                  />
                 </div>
               </div>
             </div>
@@ -374,9 +500,7 @@ export default function Catalog() {
               {pt ? "Cancelar" : "Cancel"}
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving
-                ? pt ? "Salvando..." : "Saving..."
-                : pt ? "Salvar" : "Save"}
+              {saving ? (pt ? "Salvando..." : "Saving...") : (pt ? "Salvar" : "Save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -411,6 +535,7 @@ function ItemGrid({
   items,
   isLoading,
   pt,
+  signedUrls,
   onEdit,
   onDelete,
   onToggle,
@@ -418,6 +543,7 @@ function ItemGrid({
   items: CatalogItem[];
   isLoading: boolean;
   pt: boolean;
+  signedUrls: Record<string, string>;
   onEdit: (i: CatalogItem) => void;
   onDelete: (i: CatalogItem) => void;
   onToggle: (i: CatalogItem) => void;
@@ -426,7 +552,7 @@ function ItemGrid({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="h-32 animate-pulse bg-muted/40" />
+          <Card key={i} className="h-40 animate-pulse bg-muted/40" />
         ))}
       </div>
     );
@@ -445,61 +571,79 @@ function ItemGrid({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      {items.map((item) => (
-        <Card
-          key={item.id}
-          className={`p-4 flex flex-col gap-2 transition-opacity ${!item.is_active ? "opacity-50" : ""}`}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-sm truncate text-foreground">{item.name}</h3>
-              {item.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{item.description}</p>
-              )}
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(item)}>
-                  <Pencil className="w-3.5 h-3.5 mr-2" />
-                  {pt ? "Editar" : "Edit"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onToggle(item)}>
-                  {item.is_active
-                    ? pt ? "Desativar" : "Deactivate"
-                    : pt ? "Ativar" : "Activate"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(item)} className="text-destructive focus:text-destructive">
-                  <Trash2 className="w-3.5 h-3.5 mr-2" />
-                  {pt ? "Remover" : "Delete"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+      {items.map((item) => {
+        const imgUrl = item.image_url ? signedUrls[item.image_url] : null;
+        return (
+          <Card
+            key={item.id}
+            className={`overflow-hidden flex flex-col transition-opacity ${!item.is_active ? "opacity-50" : ""}`}
+          >
+            {/* Thumbnail */}
+            {imgUrl ? (
+              <div className="w-full h-28 bg-muted">
+                <img src={imgUrl} alt={item.name} className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-full h-20 bg-muted/30 flex items-center justify-center">
+                {item.item_type === "service" ? (
+                  <Wrench className="w-8 h-8 text-muted-foreground/30" />
+                ) : (
+                  <Package className="w-8 h-8 text-muted-foreground/30" />
+                )}
+              </div>
+            )}
 
-          <div className="flex items-center gap-2 flex-wrap mt-auto">
-            {item.category && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                {item.category}
-              </Badge>
-            )}
-            {item.base_price > 0 && (
-              <span className="text-xs font-medium text-primary">
-                ${item.base_price.toFixed(2)}/{item.price_unit}
-              </span>
-            )}
-            {!item.is_active && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground">
-                {pt ? "Inativo" : "Inactive"}
-              </Badge>
-            )}
-          </div>
-        </Card>
-      ))}
+            <div className="p-4 flex flex-col gap-2 flex-1">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-sm truncate text-foreground">{item.name}</h3>
+                  {item.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{item.description}</p>
+                  )}
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onEdit(item)}>
+                      <Pencil className="w-3.5 h-3.5 mr-2" />
+                      {pt ? "Editar" : "Edit"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onToggle(item)}>
+                      {item.is_active ? (pt ? "Desativar" : "Deactivate") : (pt ? "Ativar" : "Activate")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onDelete(item)} className="text-destructive focus:text-destructive">
+                      <Trash2 className="w-3.5 h-3.5 mr-2" />
+                      {pt ? "Remover" : "Delete"}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap mt-auto">
+                {item.category && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    {item.category}
+                  </Badge>
+                )}
+                {item.base_price > 0 && (
+                  <span className="text-xs font-medium text-primary">
+                    ${item.base_price.toFixed(2)}/{item.price_unit}
+                  </span>
+                )}
+                {!item.is_active && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground">
+                    {pt ? "Inativo" : "Inactive"}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </Card>
+        );
+      })}
     </div>
   );
 }
