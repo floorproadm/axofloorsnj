@@ -174,13 +174,13 @@ export default function Schedule() {
           </div>
 
           {/* Week navigation */}
-          <div className="mx-auto w-full max-w-5xl">
-            <div className="grid grid-cols-[32px,1fr,32px] items-center gap-2 md:gap-3">
+          <div className="w-full overflow-hidden">
+            <div className="grid grid-cols-[32px,1fr,32px] items-center gap-1">
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCurrentDate(d => subWeeks(d, 1))}>
                 <ChevronLeft className="w-4 h-4" />
               </Button>
 
-              <div className="grid grid-cols-7 gap-1 md:gap-2">
+              <div className="grid grid-cols-7 gap-0.5 md:gap-1 min-w-0">
                 {weekDays.map(day => {
                   const dateStr = format(day, "yyyy-MM-dd");
                   const count = dayCountMap[dateStr] || 0;
@@ -191,7 +191,7 @@ export default function Schedule() {
                       key={dateStr}
                       onClick={() => setCurrentDate(day)}
                       className={cn(
-                        "rounded-lg py-1.5 md:py-2 text-center transition-all relative",
+                        "rounded-lg py-1.5 md:py-2 text-center transition-all relative min-w-0",
                         selected
                           ? "bg-primary text-primary-foreground shadow-sm"
                           : today
@@ -199,10 +199,8 @@ export default function Schedule() {
                           : "hover:bg-muted/60 text-muted-foreground"
                       )}
                     >
-                      <div className="text-[10px] md:text-xs uppercase font-medium leading-none mb-0.5">
-                        <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
-                        <span className="hidden sm:inline lg:hidden">{format(day, "EEE", { locale: ptBR })}</span>
-                        <span className="hidden lg:inline">{format(day, "EEEEEE", { locale: ptBR })}</span>
+                      <div className="text-[10px] md:text-xs uppercase font-medium leading-none mb-0.5 truncate px-0.5">
+                        {format(day, "EEEEE", { locale: ptBR })}
                       </div>
                       <div className="text-lg md:text-xl font-bold leading-tight">{format(day, "d")}</div>
                       {count > 0 && (
@@ -224,13 +222,13 @@ export default function Schedule() {
             </div>
           </div>
 
-          {/* View mode tabs */}
+          {/* View mode tabs — centered */}
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
-            <div className="mx-auto w-full max-w-5xl">
-              <TabsList className="h-9 w-full sm:w-auto">
-                <TabsTrigger value="day" className="text-sm px-4 flex-1 sm:flex-none">Day</TabsTrigger>
-                <TabsTrigger value="list" className="text-sm px-4 flex-1 sm:flex-none">List</TabsTrigger>
-                <TabsTrigger value="week" className="text-sm px-4 flex-1 sm:flex-none">Week</TabsTrigger>
+            <div className="flex justify-center">
+              <TabsList className="h-9">
+                <TabsTrigger value="day" className="text-sm px-5">Day</TabsTrigger>
+                <TabsTrigger value="list" className="text-sm px-5">List</TabsTrigger>
+                <TabsTrigger value="week" className="text-sm px-5">Week</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>
