@@ -576,7 +576,8 @@ function ItemGrid({
         return (
           <Card
             key={item.id}
-            className={`overflow-hidden flex flex-col transition-opacity ${!item.is_active ? "opacity-50" : ""}`}
+            className={`overflow-hidden flex flex-col transition-opacity cursor-pointer hover:ring-2 hover:ring-primary/30 ${!item.is_active ? "opacity-50" : ""}`}
+            onClick={() => onEdit(item)}
           >
             {/* Thumbnail */}
             {imgUrl ? (
