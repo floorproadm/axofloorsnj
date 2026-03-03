@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   Hammer,
   Package,
   MoreHorizontal,
+  Download,
 } from "lucide-react";
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
 import { usePayments, type Payment } from "@/hooks/usePayments";
@@ -24,9 +25,10 @@ import { InvoiceDetailsSheet } from "@/components/admin/payments/InvoiceDetailsS
 import { NewPaymentDialog } from "@/components/admin/payments/NewPaymentDialog";
 import { PaymentDetailsSheet } from "@/components/admin/payments/PaymentDetailsSheet";
 import { PaymentActionSheet } from "@/components/admin/payments/PaymentActionSheet";
-import { MonthSelector } from "@/components/admin/payments/MonthSelector";
+import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import { MonthlyOverview } from "@/components/admin/payments/MonthlyOverview";
-import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { FinancialOverviewChart } from "@/components/admin/payments/FinancialOverviewChart";
+import { format, isWithinInterval } from "date-fns";
 
 type ActiveTab = "payments" | "invoices";
 
@@ -38,7 +40,7 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   other: MoreHorizontal,
 };
 
-/* ── Invoice status config ── */
+/* ── Status configs ── */
 const invoiceStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   draft: { label: "Draft", variant: "secondary" },
   sent: { label: "Sent", variant: "default" },
@@ -62,7 +64,8 @@ export default function Payments() {
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("payments");
   const [invoiceFilter, setInvoiceFilter] = useState("all");
-  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
+  const [periodType, setPeriodType] = useState<PeriodType>("month");
+  const [anchor, setAnchor] = useState(() => new Date());
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
@@ -72,49 +75,50 @@ export default function Payments() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
-  /* ── Monthly filtered payments ── */
-  const monthlyPayments = useMemo(() => {
-    const start = startOfMonth(currentMonth);
-    const end = endOfMonth(currentMonth);
+  /* ── Period range ── */
+  const periodRange = useMemo(() => getPeriodRange(anchor, periodType), [anchor, periodType]);
+
+  /* ── Filtered payments by period ── */
+  const periodPayments = useMemo(() => {
     return payments.filter((p) => {
       const d = new Date(p.payment_date);
-      return isWithinInterval(d, { start, end });
+      return isWithinInterval(d, { start: periodRange.start, end: periodRange.end });
     });
-  }, [payments, currentMonth]);
+  }, [payments, periodRange]);
 
   /* ── KPI values ── */
   const kpis = useMemo(() => {
-    const totalIn = monthlyPayments
+    const totalIn = periodPayments
       .filter((p) => p.category === "received" && p.status === "confirmed")
       .reduce((s, p) => s + Number(p.amount), 0);
-    const totalOut = monthlyPayments
+    const totalOut = periodPayments
       .filter((p) => p.category !== "received" && p.status === "confirmed")
       .reduce((s, p) => s + Number(p.amount), 0);
-    const pending = monthlyPayments
+    const pending = periodPayments
       .filter((p) => p.status === "pending")
       .reduce((s, p) => s + Number(p.amount), 0);
     return { totalIn, totalOut, pending, net: totalIn - totalOut };
-  }, [monthlyPayments]);
+  }, [periodPayments]);
 
   /* ── Category counts ── */
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: monthlyPayments.length };
-    monthlyPayments.forEach((p) => {
+    const counts: Record<string, number> = { all: periodPayments.length };
+    periodPayments.forEach((p) => {
       counts[p.category] = (counts[p.category] || 0) + 1;
     });
     return counts;
-  }, [monthlyPayments]);
+  }, [periodPayments]);
 
   /* ── Category-filtered list ── */
-  const filteredMonthlyPayments = useMemo(() => {
-    if (!categoryFilter) return monthlyPayments;
-    return monthlyPayments.filter((p) => p.category === categoryFilter);
-  }, [monthlyPayments, categoryFilter]);
+  const filteredPeriodPayments = useMemo(() => {
+    if (!categoryFilter) return periodPayments;
+    return periodPayments.filter((p) => p.category === categoryFilter);
+  }, [periodPayments, categoryFilter]);
 
   /* ── Group by day ── */
   const groupedPayments = useMemo(() => {
     const groups: Record<string, Payment[]> = {};
-    filteredMonthlyPayments.forEach((p) => {
+    filteredPeriodPayments.forEach((p) => {
       const key = p.payment_date;
       if (!groups[key]) groups[key] = [];
       groups[key].push(p);
@@ -122,7 +126,7 @@ export default function Payments() {
     return Object.entries(groups)
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([date, items]) => ({ date, items }));
-  }, [filteredMonthlyPayments]);
+  }, [filteredPeriodPayments]);
 
   /* ── Invoice stats ── */
   const invoiceStats = useMemo(() => {
@@ -143,11 +147,42 @@ export default function Payments() {
     setPaymentDialogOpen(true);
   };
 
-  const handleCategoryClick = (cat: string) => {
-    setCategoryFilter((prev) => (prev === cat ? null : cat));
-  };
+  /* ── P&L Download ── */
+  const handleDownloadPL = useCallback(() => {
+    const confirmed = periodPayments.filter((p) => p.status === "confirmed");
+    const income = confirmed.filter((p) => p.category === "received").reduce((s, p) => s + Number(p.amount), 0);
+    const laborExp = confirmed.filter((p) => p.category === "labor").reduce((s, p) => s + Number(p.amount), 0);
+    const materialExp = confirmed.filter((p) => p.category === "material").reduce((s, p) => s + Number(p.amount), 0);
+    const otherExp = confirmed.filter((p) => p.category === "other").reduce((s, p) => s + Number(p.amount), 0);
+    const totalExp = laborExp + materialExp + otherExp;
 
-  const isLoading = activeTab === "payments" ? paymentsLoading : invoicesLoading;
+    const lines = [
+      `P&L Report — ${periodRange.label}`,
+      `Generated: ${format(new Date(), "yyyy-MM-dd HH:mm")}`,
+      "",
+      "SUMMARY",
+      `Total Income,$${income.toFixed(2)}`,
+      `Total Expenses,$${totalExp.toFixed(2)}`,
+      `  Labor,$${laborExp.toFixed(2)}`,
+      `  Material,$${materialExp.toFixed(2)}`,
+      `  Other,$${otherExp.toFixed(2)}`,
+      `Net Balance,$${(income - totalExp).toFixed(2)}`,
+      "",
+      "TRANSACTIONS",
+      "Date,Description,Category,Amount,Status",
+      ...periodPayments.map((p) =>
+        `${p.payment_date},"${p.description || ""}",${p.category},$${Number(p.amount).toFixed(2)},${p.status}`
+      ),
+    ];
+
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `PL_${periodRange.label.replace(/\s/g, "_")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [periodPayments, periodRange]);
 
   return (
     <AdminLayout title="Payments & Invoices">
@@ -189,8 +224,27 @@ export default function Payments() {
         {/* ── PAYMENTS TAB ── */}
         {activeTab === "payments" ? (
           <>
-            <MonthSelector currentMonth={currentMonth} onChange={setCurrentMonth} />
-            
+            {/* Period Selector + Download */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <PeriodSelector
+                  periodType={periodType}
+                  onPeriodTypeChange={setPeriodType}
+                  anchor={anchor}
+                  onAnchorChange={setAnchor}
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 mt-1"
+                onClick={handleDownloadPL}
+                title="Download P&L"
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+            </div>
+
             {paymentsLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : (
@@ -219,9 +273,12 @@ export default function Payments() {
                   ))}
                 </div>
 
+                {/* Financial Overview Chart */}
+                <FinancialOverviewChart payments={payments} periodType={periodType} anchor={anchor} />
+
                 <MonthlyOverview
-                  payments={monthlyPayments}
-                  onCategoryClick={handleCategoryClick}
+                  payments={periodPayments}
+                  onCategoryClick={(cat) => setCategoryFilter((prev) => (prev === cat ? null : cat))}
                   activeCategory={categoryFilter || undefined}
                 />
 
@@ -257,7 +314,7 @@ export default function Payments() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Wallet className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                      <p className="text-muted-foreground">No payments this month</p>
+                      <p className="text-muted-foreground">No payments this period</p>
                       <Button variant="outline" className="mt-4" onClick={() => setActionSheetOpen(true)}>
                         <Plus className="w-4 h-4 mr-2" /> Record first payment
                       </Button>
@@ -313,7 +370,7 @@ export default function Payments() {
             )}
           </>
         ) : (
-          /* ── INVOICES TAB (unchanged logic) ── */
+          /* ── INVOICES TAB ── */
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
