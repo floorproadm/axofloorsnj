@@ -43,9 +43,10 @@ type FormValues = z.infer<typeof schema>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultStatus?: string;
 }
 
-export function NewPartnerDialog({ open, onOpenChange }: Props) {
+export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active" }: Props) {
   const { createPartner } = usePartnersData();
   const [loading, setLoading] = useState(false);
 
@@ -71,7 +72,7 @@ export function NewPartnerDialog({ open, onOpenChange }: Props) {
         phone: values.phone || null,
         partner_type: values.partner_type,
         notes: values.notes || null,
-        status: "active",
+        status: defaultStatus,
         last_contacted_at: null,
         next_action_date: null,
         next_action_note: null,
