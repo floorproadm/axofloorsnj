@@ -127,11 +127,17 @@ export default function Catalog() {
       .catch(() => setSignedUrls({}));
   }, [items]);
 
-  // Derive categories from items
+  // Derive display categories from items (merge all "X - Add-ons" into one "Add-ons")
   const categories = useMemo(() => {
     const map = new Map<string, number>();
+    let addonsCount = 0;
     items.forEach((i) => {
-      if (i.category) map.set(i.category, (map.get(i.category) || 0) + 1);
+      if (!i.category) return;
+      if (i.category.endsWith("- Add-ons")) {
+        addonsCount++;
+      } else {
+        map.set(i.category, (map.get(i.category) || 0) + 1);
+      }
     });
     const categoryOrder: Record<string, number> = {
       "Installation": 1,
@@ -139,18 +145,13 @@ export default function Catalog() {
       "Stairs": 3,
       "Repair": 4,
     };
-    return Array.from(map.entries()).sort((a, b) => {
-      const aIsAddon = a[0].endsWith("- Add-ons");
-      const bIsAddon = b[0].endsWith("- Add-ons");
-      if (aIsAddon && !bIsAddon) return 1;
-      if (!aIsAddon && bIsAddon) return -1;
-      if (aIsAddon && bIsAddon) {
-        const aBase = a[0].replace(" - Add-ons", "");
-        const bBase = b[0].replace(" - Add-ons", "");
-        return (categoryOrder[aBase] ?? 99) - (categoryOrder[bBase] ?? 99);
-      }
-      return (categoryOrder[a[0]] ?? 99) - (categoryOrder[b[0]] ?? 99);
-    });
+    const sorted: [string, number][] = Array.from(map.entries()).sort((a, b) =>
+      (categoryOrder[a[0]] ?? 99) - (categoryOrder[b[0]] ?? 99)
+    );
+    if (addonsCount > 0) {
+      sorted.push(["Add-ons", addonsCount]);
+    }
+    return sorted;
   }, [items]);
 
   // Merged category options for the Select (predefined + any custom from DB)
@@ -180,7 +181,11 @@ export default function Catalog() {
       );
     }
     if (selectedCategory) {
-      list = list.filter((i) => i.category === selectedCategory);
+      if (selectedCategory === "Add-ons") {
+        list = list.filter((i) => i.category?.endsWith("- Add-ons"));
+      } else {
+        list = list.filter((i) => i.category === selectedCategory);
+      }
     }
     return list;
   }, [items, search, selectedCategory]);
