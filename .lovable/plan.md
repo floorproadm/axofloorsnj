@@ -1,165 +1,144 @@
 
-# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
+# Payments & Invoices -- Redesign Completo
 
-## PARTE 1: Limpeza Total de Status Legados
+## Visao Geral
 
-### 1A. `src/hooks/admin/useAdminData.ts`
-Substituir filtros de stats (linhas 101-108):
-- `'new'` -> `'cold_lead'`
-- `'contacted'` -> `'warm_lead'`
-- `'qualified'` -> `'estimate_requested'`
-- `'converted'` -> `'in_production'`
-- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
+Transformar a pagina `/admin/payments` de volta para **"Payments & Invoices"** com dual-tab real, onde cada aba tem uma funcao de negocio distinta:
 
-### 1B. `src/pages/admin/Intake.tsx`
-- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
-- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
-- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
-- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
-- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
+- **Payments**: Controle de fluxo de caixa -- dinheiro recebido de clientes e pagamentos feitos (labor, materiais). Inspirado no PayControl (KPIs de pending/paid, entradas por dia/semana).
+- **Invoices**: Faturas formais enviadas ao cliente -- depositos (30-50% upfront) + saldo final. Inspirado no QuickQuote (lista de invoices com status tracking, search, filtros).
 
-### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
-- `src/pages/Contact.tsx` (linha 88)
-- `src/pages/Builders.tsx` (linha 112)
-- `src/pages/Realtors.tsx` (linha 126)
-- `src/pages/Quiz.tsx` (linhas 215, 253)
-- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
-- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
-- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
-- `src/hooks/useLeadCapture.ts` (linha 37)
-- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
+**Estimates saem desta pagina** e serao movidos para `/admin/intake` como ferramenta do pipeline de vendas (tarefa separada futura).
 
----
+## Estrutura Visual
 
-## PARTE 2: Collaborator Upload -> Admin Dashboard
-
-### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
-Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
-```typescript
-await serviceClient.from("audit_log").insert({
-  user_id: userId,
-  user_role: "collaborator",
-  operation_type: "COLLABORATOR_UPLOAD",
-  table_accessed: "media_files",
-  data_classification: JSON.stringify({
-    project_id: projectId,
-    storage_path: storagePath,
-    folder_type: folderType,
-  }),
-});
+```text
++----------------------------------------------+
+|  Payments & Invoices                         |
++----------------------------------------------+
+|  [ Payments ]  [ Invoices ]         [+ Novo] |
++----------------------------------------------+
+|  Stats Cards (contextuais por aba)           |
++----------------------------------------------+
+|  Sub-filtros por status/tipo                 |
++----------------------------------------------+
+|  Lista de registros                          |
++----------------------------------------------+
 ```
 
-### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
-Adicionar bloco `recentFieldUploads` ao retorno:
-- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
-- JOIN com `projects` para pegar `customer_name`
-- Limite 10, ordenado por `created_at DESC`
+## Tab 1: Payments
 
-### 2C. `src/hooks/admin/useDashboardData.ts`
-- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
-- Expor `recentFieldUploads` no retorno do hook
-- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
+Inspirado no PayControl -- rastrear dinheiro entrando e saindo.
 
-### 2D. `src/pages/admin/Dashboard.tsx`
-- Incluir uploads recentes e SLA breaches no array `priorityTasks`
-- Novo type `'field_upload'` com link `/admin/jobs`
+### Stats Cards
+- **Total Received**: Soma de pagamentos recebidos de clientes
+- **Total Paid Out**: Soma de pagamentos feitos (labor + material)
+- **Pending**: Pagamentos aguardando confirmacao
+- **Net Balance**: Received - Paid Out
 
-### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
-- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
-- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
+### Categorias de Payment
+- **Received from Client**: Pagamentos recebidos (depositos, parcelas, saldo final)
+- **Labor**: Pagamentos para a crew (integravel com /collaborator no futuro)
+- **Material**: Pagamentos de fornecedores/materiais
+- **Other**: Despesas diversas
 
----
+### Sub-filtros
+- All, Received, Labor, Material, Other
+- Status: All, Pending, Confirmed, Cancelled
 
-## PARTE 3: SLA V0 - Tempo Como Variavel Real
+### Lista
+Cards com: descricao, projeto vinculado, valor, categoria (badge colorido), data, status
 
-### 3A. Migration SQL (unica, junto com 2B)
+### Dialogo "New Payment"
+- Tipo (Received / Labor / Material / Other)
+- Projeto vinculado (select)
+- Valor
+- Data
+- Metodo de pagamento (Cash, Check, Zelle, Venmo, Card)
+- Descricao/Notas
+- Status (Pending / Confirmed)
+
+## Tab 2: Invoices (mantém o que já existe)
+
+Inspirado no QuickQuote -- faturas formais para clientes.
+
+- Mantém toda a funcionalidade atual de invoices (lista, stats, filtros, NewInvoiceDialog, InvoiceDetailsSheet)
+- Stats: Total Billed, Received, Pending, Overdue
+- Filtros: All, Draft, Sent, Paid, Overdue
+- Sem mudancas funcionais
+
+## Detalhes Tecnicos
+
+### 1. Nova tabela `payments` (migration SQL)
+
 ```sql
--- 1. Nova coluna
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
+CREATE TABLE public.payments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid REFERENCES public.projects(id),
+  category text NOT NULL DEFAULT 'received',
+  -- received | labor | material | other
+  amount numeric NOT NULL DEFAULT 0,
+  payment_date date NOT NULL DEFAULT CURRENT_DATE,
+  payment_method text,
+  -- cash | check | zelle | venmo | card | bank_transfer
+  status text NOT NULL DEFAULT 'pending',
+  -- pending | confirmed | cancelled
+  description text,
+  notes text,
+  collaborator_id uuid,
+  -- para pagamentos de labor (futuro link com collaborator)
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 
--- 2. Backfill
-UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
-WHERE status_changed_at IS NULL;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
--- 3. Trigger
-CREATE OR REPLACE FUNCTION set_status_changed_at()
-RETURNS trigger AS $$
-BEGIN
-  IF OLD.status IS DISTINCT FROM NEW.status THEN
-    NEW.status_changed_at := now();
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+CREATE POLICY payments_admin_all ON public.payments
+  FOR ALL TO authenticated
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));
 
-DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
-CREATE TRIGGER trg_set_status_changed_at
-  BEFORE UPDATE ON leads FOR EACH ROW
-  EXECUTE FUNCTION set_status_changed_at();
-
--- 4. View: follow-up overdue
-CREATE OR REPLACE VIEW leads_followup_overdue AS
-SELECT id, name, next_action_date
-FROM leads
-WHERE status = 'proposal_sent'
-  AND next_action_date IS NOT NULL
-  AND next_action_date < current_date;
-
--- 5. View: estimate stale (>3 dias)
-CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
-SELECT id, name,
-  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
-FROM leads
-WHERE status = 'estimate_scheduled'
-  AND converted_to_project_id IS NULL
-  AND status_changed_at < now() - interval '3 days';
-
--- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
+CREATE POLICY payments_authenticated_read ON public.payments
+  FOR SELECT TO authenticated
+  USING (auth.uid() IS NOT NULL);
 ```
 
-### 3B. Dashboard Integration
-SLA breaches aparecem como tasks no `priorityTasks`:
-- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
-- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
+### 2. Novo hook `usePayments` (src/hooks/usePayments.ts)
+- `usePayments()`: Lista todos os payments com join em projects
+- `useCreatePayment()`: Insere novo payment
+- `useUpdatePaymentStatus()`: Atualiza status
+- `useDeletePayment()`: Remove payment
 
----
+### 3. Novo componente `NewPaymentDialog` (src/components/admin/payments/NewPaymentDialog.tsx)
+- Formulario para criar novo payment
+- Select de categoria, projeto, metodo, valor, data, descricao
 
-## Checklist de Validacao
+### 4. Novo componente `PaymentDetailsSheet` (src/components/admin/payments/PaymentDetailsSheet.tsx)
+- Sheet lateral com detalhes do payment
+- Acoes: confirmar, cancelar, deletar
 
-**SQL pos-deploy:**
-```sql
-SELECT column_name FROM information_schema.columns
-WHERE table_name = 'leads' AND column_name = 'status_changed_at';
+### 5. Pagina refatorada `Payments.tsx`
+- Titulo volta para "Payments & Invoices"
+- Tab principal: Payments | Invoices
+- Remove toda referencia a Estimates (sera movido para Intake futuramente)
+- Tab Payments: stats + filtros + lista + NewPaymentDialog + PaymentDetailsSheet
+- Tab Invoices: mantém exatamente como esta hoje
 
-SELECT * FROM leads_followup_overdue LIMIT 5;
-SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
-```
+### 6. Remover `useEstimatesList.ts` e `EstimateDetailsSheet.tsx`
+- Esses arquivos foram criados na edit anterior para a aba Estimates
+- Serao removidos desta pagina (a funcionalidade de estimates sera reintegrada em `/admin/intake` em uma tarefa futura)
 
-**Network (DevTools):**
-- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
+## Arquivos Envolvidos
 
-**Grep final:**
-- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
+1. **Migration SQL**: Nova tabela `payments` com RLS
+2. **Novo**: `src/hooks/usePayments.ts`
+3. **Novo**: `src/components/admin/payments/NewPaymentDialog.tsx`
+4. **Novo**: `src/components/admin/payments/PaymentDetailsSheet.tsx`
+5. **Editado**: `src/pages/admin/Payments.tsx` (refatoracao completa)
+6. **Removido da pagina**: Referencias a EstimateDetailsSheet e useEstimatesList (arquivos mantidos para uso futuro em Intake)
 
----
+## Preparacao para Futuro
 
-## Arquivos Modificados (resumo)
-
-| Arquivo | Tipo |
-|---|---|
-| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
-| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
-| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
-| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
-| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
-| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
-| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
-| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
-| `src/pages/admin/Dashboard.tsx` | Novos task types |
-| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |
+- Campo `collaborator_id` na tabela payments prepara integracao com portal do colaborador (PayControl integrado)
+- A categoria `labor` permite no futuro que colaboradores vejam seus pagamentos no `/collaborator`
+- Estrutura de API pronta para quando o PayControl for absorvido pelo FloorPRO
