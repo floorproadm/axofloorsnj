@@ -204,7 +204,7 @@ export default function Payments() {
                 variant="ghost"
                 size="icon"
                 className="absolute right-0 top-0 h-8 w-8"
-                onClick={handleDownloadPL}
+                onClick={() => setPLPreviewOpen(true)}
                 title="Download P&L"
               >
                 <Download className="w-4 h-4" />
