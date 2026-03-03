@@ -68,6 +68,8 @@ export default function Schedule() {
   const [viewMode, setViewMode] = useState<"day" | "list" | "week">("day");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [templateDefaults, setTemplateDefaults] = useState<{ type: string; duration: number; time: string } | null>(null);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
