@@ -290,10 +290,10 @@ export default function Catalog() {
       return;
     }
 
-    // Resolve final category with subcategory suffix
+    // Resolve final category with subcategory suffix (only for services)
     const baseCategory = customCategoryMode ? customCategoryValue.trim() : form.category;
     const finalCategory = baseCategory
-      ? subcategory === "add-on"
+      ? (activeTab === "service" && subcategory === "add-on")
         ? `${baseCategory} - Add-ons`
         : baseCategory
       : null;
