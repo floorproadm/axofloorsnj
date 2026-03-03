@@ -136,6 +136,20 @@ export default function Catalog() {
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [items]);
 
+  // Merged category options for the Select (predefined + any custom from DB)
+  const allCategoryOptions = useMemo(() => {
+    const dbCategories = new Set<string>();
+    allItems.forEach((i) => {
+      if (i.category) {
+        // Extract base category (strip " - Add-ons" suffix if present)
+        const base = i.category.replace(/ - Add-ons$/, "");
+        dbCategories.add(base);
+      }
+    });
+    const merged = new Set([...PREDEFINED_CATEGORIES, ...dbCategories]);
+    return Array.from(merged).sort();
+  }, [allItems]);
+
   // Filtered items
   const filtered = useMemo(() => {
     let list = items;
