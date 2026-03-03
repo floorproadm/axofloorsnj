@@ -279,8 +279,8 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
         </div>
       </div>
 
-      {/* NRA - Próxima Ação Recomendada */}
-      {PARTNER_NRA[partner.status] && (
+      {/* NRA - Próxima Ação Recomendada (hidden for active/inactive partners) */}
+      {PARTNER_NRA[partner.status] && !["active", "inactive"].includes(partner.status) && (
         <div className="mx-4 mt-3 mb-1 p-3 rounded-lg bg-emerald-500/10 border border-emerald-200/50">
           <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">
             Próxima Ação
