@@ -225,24 +225,24 @@ export default function Payments() {
         {activeTab === "payments" ? (
           <>
             {/* Period Selector + Download */}
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1">
-                <PeriodSelector
-                  periodType={periodType}
-                  onPeriodTypeChange={setPeriodType}
-                  anchor={anchor}
-                  onAnchorChange={setAnchor}
-                />
+            <div className="space-y-2">
+              <PeriodSelector
+                periodType={periodType}
+                onPeriodTypeChange={setPeriodType}
+                anchor={anchor}
+                onAnchorChange={setAnchor}
+              />
+              <div className="flex justify-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-muted-foreground gap-1.5"
+                  onClick={handleDownloadPL}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download P&L
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 mt-1"
-                onClick={handleDownloadPL}
-                title="Download P&L"
-              >
-                <Download className="w-4 h-4" />
-              </Button>
             </div>
 
             {paymentsLoading ? (
