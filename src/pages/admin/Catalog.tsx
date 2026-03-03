@@ -184,7 +184,7 @@ export default function Catalog() {
       if (selectedCategory === "Add-ons") {
         list = list.filter((i) => i.category?.endsWith("- Add-ons"));
       } else {
-        list = list.filter((i) => i.category === selectedCategory);
+        list = list.filter((i) => i.category === selectedCategory || i.category === `${selectedCategory} - Add-ons`);
       }
     }
     return list;
