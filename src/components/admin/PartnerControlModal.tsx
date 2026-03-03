@@ -91,7 +91,7 @@ export function PartnerControlModal({ partner, open, onOpenChange, onViewDetails
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+          <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
             <Badge variant="secondary" className="text-[10px]">
               {PARTNER_STATUSES[partner.status] || partner.status}
             </Badge>
