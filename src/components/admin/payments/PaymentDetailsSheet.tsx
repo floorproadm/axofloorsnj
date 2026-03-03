@@ -238,9 +238,46 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
                   Discard
                 </Button>
               </div>
-            </div>
-          ) : (
-            /* ── VIEW MODE ── */
+
+              <Separator />
+
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full text-center text-xs text-destructive hover:underline py-1"
+                >
+                  <Trash2 className="w-3 h-3 inline mr-1" />
+                  Delete this payment
+                </button>
+              ) : (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 space-y-3">
+                  <p className="text-sm text-destructive font-medium">This action is permanent. Type DELETE to confirm.</p>
+                  <Input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="Type DELETE"
+                    className="text-center"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1"
+                      variant="destructive"
+                      disabled={deleteConfirmText !== "DELETE" || deletePayment.isPending}
+                      onClick={handleDelete}
+                    >
+                      {deletePayment.isPending ? "Deleting..." : "Delete Permanently"}
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      variant="outline"
+                      onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
             <>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
