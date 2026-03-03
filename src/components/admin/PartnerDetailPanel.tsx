@@ -47,6 +47,7 @@ import {
   Circle,
   PlayCircle,
   ClipboardList,
+  Save,
 } from "lucide-react";
 import {
   Partner,
@@ -59,7 +60,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
 import { useTasks, Task } from "@/hooks/useTasks";
-import { NewTaskDialog } from "@/components/admin/dashboard/NewTaskDialog";
+
 
 const statusColors: Record<string, string> = {
   prospect: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
@@ -328,30 +329,32 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
         )}
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-3 p-3 border-b border-border/50">
-        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-blue-500/10 border border-blue-200/50">
-          <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
-          <div>
-            <p className="text-lg font-bold text-foreground leading-none">{partner.total_referrals}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Indicações</p>
+      {/* Stats Row — hidden during pipeline stages */}
+      {!['prospect', 'contacted', 'meeting_scheduled'].includes(partner.status) && (
+        <div className="grid grid-cols-3 gap-3 p-3 border-b border-border/50">
+          <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-blue-500/10 border border-blue-200/50">
+            <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <div>
+              <p className="text-lg font-bold text-foreground leading-none">{partner.total_referrals}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Indicações</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-200/50">
+            <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <div>
+              <p className="text-lg font-bold text-foreground leading-none">{partner.total_converted}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Convertidos</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-amber-500/10 border border-amber-200/50">
+            <BarChart3 className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="text-lg font-bold text-foreground leading-none">{conversionRate}%</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Conversão</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-200/50">
-          <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-          <div>
-            <p className="text-lg font-bold text-foreground leading-none">{partner.total_converted}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Convertidos</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-amber-500/10 border border-amber-200/50">
-          <BarChart3 className="w-4 h-4 text-amber-600 flex-shrink-0" />
-          <div>
-            <p className="text-lg font-bold text-foreground leading-none">{conversionRate}%</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Conversão</p>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Tabs */}
       {(() => {
@@ -534,41 +537,41 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 <div className="pt-3 space-y-5">
                   <NotesEditor partner={partner} />
 
-                  {/* Tasks Section */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                        <ClipboardList className="w-3.5 h-3.5" />
-                        Tarefas
-                      </h4>
-                      <NewTaskDialog
-                        onSubmit={(data) => createTask.mutate({ ...data, related_partner_id: partner.id })}
-                        isPending={createTask.isPending}
-                        relatedPartnerId={partner.id}
-                      />
-                    </div>
+                   {/* Tasks Section */}
+                   <div className="space-y-3">
+                     <div className="flex items-center justify-between">
+                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                         <ClipboardList className="w-3.5 h-3.5" />
+                         Tarefas
+                       </h4>
+                       {partnerTasks.filter((t) => t.status !== "done").length > 0 && (
+                         <span className="text-[10px] text-muted-foreground font-medium">
+                           {partnerTasks.filter((t) => t.status === "done").length}/{partnerTasks.length} concluídas
+                         </span>
+                       )}
+                     </div>
 
-                    {partnerTasks.length === 0 ? (
-                      <div className="text-center py-6 text-muted-foreground">
-                        <ClipboardList className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">Nenhuma tarefa vinculada</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
-                        {partnerTasks.map((task) => (
-                          <PartnerTaskRow
-                            key={task.id}
-                            task={task}
-                            onToggle={() => {
-                              const next = task.status === "pending" ? "in_progress" : task.status === "in_progress" ? "done" : "pending";
-                              updateTask.mutate({ id: task.id, status: next });
-                            }}
-                            onDelete={() => deleteTask.mutate(task.id)}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                     {partnerTasks.length > 0 && (
+                       <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+                         {partnerTasks.map((task) => (
+                           <PartnerTaskRow
+                             key={task.id}
+                             task={task}
+                             onToggle={() => {
+                               const next = task.status === "pending" ? "in_progress" : task.status === "in_progress" ? "done" : "pending";
+                               updateTask.mutate({ id: task.id, status: next });
+                             }}
+                             onDelete={() => deleteTask.mutate(task.id)}
+                           />
+                         ))}
+                       </div>
+                     )}
+
+                     <InlineTaskInput
+                       onAdd={(title) => createTask.mutate({ title, related_partner_id: partner.id, priority: "medium" })}
+                       isPending={createTask.isPending}
+                     />
+                   </div>
                 </div>
               </TabsContent>
             </div>
@@ -900,19 +903,48 @@ function NotesEditor({ partner }: { partner: Partner }) {
   const { updatePartner } = usePartnersData();
   const [notes, setNotes] = useState(partner.notes || "");
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const hasChanges = notes !== (partner.notes || "");
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await updatePartner.mutateAsync({ id: partner.id, notes });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <MessageSquare className="w-3.5 h-3.5" />
+          Notas
+        </h4>
+        {(hasChanges || saved) && (
+          <button
+            onClick={handleSave}
+            disabled={saving || saved}
+            className={`p-1.5 rounded-md transition-all ${
+              saved
+                ? "text-emerald-600 bg-emerald-500/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+            title="Salvar notas"
+          >
+            {saving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : saved ? (
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+          </button>
+        )}
+      </div>
       <Textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
@@ -920,12 +952,33 @@ function NotesEditor({ partner }: { partner: Partner }) {
         rows={6}
         className="resize-none"
       />
-      {hasChanges && (
-        <Button onClick={handleSave} disabled={saving} size="sm">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar Notas"}
-        </Button>
-      )}
     </div>
+  );
+}
+
+/* ---------- Inline Task Input ---------- */
+function InlineTaskInput({ onAdd, isPending }: { onAdd: (title: string) => void; isPending: boolean }) {
+  const [value, setValue] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    onAdd(trimmed);
+    setValue("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex items-center gap-2">
+      <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+      <Input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Adicionar tarefa..."
+        className="h-8 text-sm border-0 bg-transparent shadow-none focus-visible:ring-0 px-0"
+        disabled={isPending}
+      />
+    </form>
   );
 }
 
