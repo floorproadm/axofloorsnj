@@ -165,7 +165,7 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
                     value={editAmount}
                     onChange={(e) => setEditAmount(e.target.value)}
                     placeholder="0.00"
-                    className="text-3xl md:text-4xl font-bold border-none shadow-none text-center w-48 md:w-56 h-auto p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus-visible:ring-0"
+                    className="text-3xl md:text-[2rem] font-bold border-none shadow-none text-center w-48 md:w-52 h-auto p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus-visible:ring-0"
                   />
                 </div>
               </div>
