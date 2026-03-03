@@ -61,6 +61,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
+      <AdminPWAHead />
       <div className="flex w-full min-w-0 h-screen overflow-hidden">
         <AdminSidebar />
 
