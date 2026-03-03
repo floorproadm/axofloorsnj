@@ -188,9 +188,21 @@ export default function Schedule() {
                 </SelectContent>
               </Select>
             </div>
-            <Button size="sm" onClick={openNew} className="w-full sm:w-auto gap-1.5">
-              <Plus className="w-4 h-4" /> Novo
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="w-full sm:w-auto gap-1.5">
+                  <Plus className="w-4 h-4" /> Novo
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={openNew} className="gap-2">
+                  <CalendarIcon className="w-4 h-4" /> Novo Agendamento
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTemplateDialogOpen(true)} className="gap-2">
+                  <Copy className="w-4 h-4" /> Usar Template
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Week navigation */}
