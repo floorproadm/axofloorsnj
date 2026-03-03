@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
-  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, Plus
+  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Task, useTasks } from "@/hooks/useTasks";
-import { NewTaskDialog } from "./NewTaskDialog";
+
 import { format, isPast, isToday } from "date-fns";
 
 // ---------- System Alerts ----------
@@ -81,16 +81,13 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
   if (isEmpty) {
     return (
-      <div className="text-center py-8 rounded-xl border border-dashed border-border bg-card/50">
+      <Link to="/admin/leads" className="block text-center py-8 rounded-xl border border-dashed border-border bg-card/50 hover:bg-secondary/40 transition-colors cursor-pointer">
         <div className="w-10 h-10 rounded-full bg-[hsl(var(--state-success-bg))] flex items-center justify-center mx-auto mb-2">
           <span className="text-[hsl(var(--state-success))] text-lg">✓</span>
         </div>
         <p className="text-sm font-medium text-foreground">{t("mission.tudoSobControle")}</p>
         <p className="text-xs text-muted-foreground mt-1">{t("mission.semPendencias")}</p>
-        <div className="mt-4">
-          <NewTaskDialog onSubmit={(data) => createTask.mutate(data)} isPending={createTask.isPending} />
-        </div>
-      </div>
+      </Link>
     );
   }
 
@@ -130,18 +127,17 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
         ))}
       </div>
 
-      {/* Footer: + Task button + completed toggle */}
-      <div className="flex items-center justify-between">
-        <NewTaskDialog onSubmit={(data) => createTask.mutate(data)} isPending={createTask.isPending} />
-        {doneTasks.length > 0 && (
+      {/* Footer: completed toggle */}
+      {doneTasks.length > 0 && (
+        <div className="flex items-center justify-end">
           <button
             onClick={() => setShowCompleted(!showCompleted)}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {showCompleted ? t("mission.ocultarConcluidas") : `${t("mission.verConcluidas")} (${doneTasks.length})`}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Completed tasks */}
       {showCompleted && doneTasks.length > 0 && (
