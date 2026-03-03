@@ -55,6 +55,8 @@ import {
   PARTNER_TYPES,
   PARTNER_STATUSES,
 } from "@/hooks/admin/usePartnersData";
+import { PARTNER_NRA, PARTNER_VALID_TRANSITIONS } from "@/hooks/usePartnerPipeline";
+import { Zap } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
