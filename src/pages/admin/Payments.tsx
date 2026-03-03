@@ -28,6 +28,7 @@ import { PaymentActionSheet } from "@/components/admin/payments/PaymentActionShe
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import { MonthlyOverview } from "@/components/admin/payments/MonthlyOverview";
 import { FinancialOverviewChart } from "@/components/admin/payments/FinancialOverviewChart";
+import { PLPreviewDialog } from "@/components/admin/payments/PLPreviewDialog";
 import { format, isWithinInterval } from "date-fns";
 
 type ActiveTab = "payments" | "invoices";
