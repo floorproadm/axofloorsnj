@@ -33,7 +33,8 @@ export default function Partners() {
   const [statusFilter, setStatusFilter] = useState("active");
   const [newOpen, setNewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-const [viewMode, setViewMode] = useState<"list" | "board">("list");
+  const [controlModalId, setControlModalId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
 
   const handleViewMode = (mode: "list" | "board") => {
     setViewMode(mode);
@@ -73,6 +74,10 @@ const [viewMode, setViewMode] = useState<"list" | "board">("list");
   const selectedPartner = useMemo(
     () => partners.find((p) => p.id === selectedId) || null,
     [partners, selectedId]
+  );
+  const controlModalPartner = useMemo(
+    () => partners.find((p) => p.id === controlModalId) || null,
+    [partners, controlModalId]
   );
 
   // No auto-select: detail panel only opens on click
@@ -178,7 +183,7 @@ const [viewMode, setViewMode] = useState<"list" | "board">("list");
         {viewMode === "board" ? (
           <PartnerPipelineBoard
             partners={filtered}
-            onSelectPartner={(id) => setSelectedId(id)}
+            onSelectPartner={(id) => setControlModalId(id)}
             onNewPartner={() => setNewOpen(true)}
           />
         ) : (
@@ -214,6 +219,12 @@ const [viewMode, setViewMode] = useState<"list" | "board">("list");
       </div>
 
       <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} />
+      <PartnerControlModal
+        partner={controlModalPartner}
+        open={!!controlModalId}
+        onOpenChange={(open) => { if (!open) setControlModalId(null); }}
+        onViewDetails={(id) => { setControlModalId(null); setSelectedId(id); }}
+      />
     </AdminLayout>
   );
 }
