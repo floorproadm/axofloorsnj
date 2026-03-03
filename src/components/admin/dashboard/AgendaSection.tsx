@@ -131,6 +131,7 @@ export function AgendaSection({ appointments }: AgendaSectionProps) {
           </Card>
           </Link>
         );
+      })}
 
       {appointments.length > 4 && (
         <Link
