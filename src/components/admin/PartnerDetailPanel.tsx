@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { format, subDays, isAfter } from "date-fns";
+import { format, subDays, isAfter, isPast, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +43,10 @@ import {
   Plus,
   UserPlus,
   Hammer,
+  CheckCircle2,
+  Circle,
+  PlayCircle,
+  ClipboardList,
 } from "lucide-react";
 import {
   Partner,
@@ -54,6 +58,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
+import { useTasks, Task } from "@/hooks/useTasks";
+import { NewTaskDialog } from "@/components/admin/dashboard/NewTaskDialog";
 
 const statusColors: Record<string, string> = {
   prospect: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
