@@ -503,6 +503,7 @@ function AppointmentModal({
   saving: boolean;
   templateDefaults?: { type: string; duration: number; time: string } | null;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     customer_name: "",
     customer_phone: "",
