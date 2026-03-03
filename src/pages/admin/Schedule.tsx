@@ -560,6 +560,7 @@ function AppointmentModal({
           appointment_time: templateDefaults?.time || "09:00",
           duration_hours: templateDefaults?.duration || 1,
           location: "", notes: "", project_id: null,
+          assigned_to: [],
         });
       }
     }
