@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, XCircle, Pencil } from "lucide-react";
-import { Payment, useUpdatePaymentStatus, useUpdatePayment } from "@/hooks/usePayments";
+import { CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react";
+import { Payment, useUpdatePaymentStatus, useUpdatePayment, useDeletePayment } from "@/hooks/usePayments";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
@@ -55,7 +55,10 @@ interface Props {
 export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
   const updateStatus = useUpdatePaymentStatus();
   const updatePayment = useUpdatePayment();
+  const deletePayment = useDeletePayment();
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
 
   // Edit form state
@@ -93,6 +96,18 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
 
   const discardEditing = () => {
     setIsEditing(false);
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText("");
+  };
+
+  const handleDelete = () => {
+    if (!payment) return;
+    deletePayment.mutate(payment.id, {
+      onSuccess: () => {
+        setIsEditing(false);
+        onOpenChange(false);
+      },
+    });
   };
 
   const handleSave = () => {
@@ -125,7 +140,7 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
     `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => { if (!o) setIsEditing(false); onOpenChange(o); }}>
+    <Sheet open={open} onOpenChange={(o) => { if (!o) { setIsEditing(false); setShowDeleteConfirm(false); setDeleteConfirmText(""); } onOpenChange(o); }}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -223,6 +238,46 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
                   Discard
                 </Button>
               </div>
+
+              <Separator />
+
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full text-center text-xs text-destructive hover:underline py-1"
+                >
+                  <Trash2 className="w-3 h-3 inline mr-1" />
+                  Delete this payment
+                </button>
+              ) : (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 space-y-3">
+                  <p className="text-sm text-destructive font-medium">This action is permanent. Type DELETE to confirm.</p>
+                  <Input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="Type DELETE"
+                    className="text-center"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1"
+                      variant="destructive"
+                      disabled={deleteConfirmText !== "DELETE" || deletePayment.isPending}
+                      onClick={handleDelete}
+                    >
+                      {deletePayment.isPending ? "Deleting..." : "Delete Permanently"}
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      variant="outline"
+                      onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             /* ── VIEW MODE ── */
