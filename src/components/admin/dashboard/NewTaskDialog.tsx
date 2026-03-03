@@ -69,11 +69,13 @@ export function NewTaskDialog({ onSubmit, isPending, relatedPartnerId, externalO
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]">
-          {t("mission.novaTarefa")}
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]">
+            {t("mission.novaTarefa")}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("mission.novaTarefa")}</DialogTitle>
