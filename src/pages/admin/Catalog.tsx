@@ -382,7 +382,7 @@ export default function Catalog() {
             setSearch("");
           }}
         >
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
               <TabsTrigger
                 value="service"
@@ -400,7 +400,7 @@ export default function Catalog() {
               </TabsTrigger>
             </TabsList>
 
-            <Button size="sm" onClick={openCreate}>
+            <Button className="w-full sm:w-auto" size="sm" onClick={openCreate}>
               <Plus className="w-4 h-4 mr-1" />
               {activeTab === "service"
                 ? (pt ? "Novo Serviço" : "New Service")
