@@ -76,6 +76,37 @@ export function useCreatePayment() {
   });
 }
 
+export interface UpdatePaymentInput {
+  id: string;
+  project_id?: string | null;
+  category?: string;
+  amount?: number;
+  payment_date?: string;
+  payment_method?: string | null;
+  status?: string;
+  description?: string | null;
+  notes?: string | null;
+}
+
+export function useUpdatePayment() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...fields }: UpdatePaymentInput) => {
+      const { error } = await supabase.from("payments").update(fields).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      toast({ title: "Payment updated" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+}
+
 export function useUpdatePaymentStatus() {
   const qc = useQueryClient();
   const { toast } = useToast();
