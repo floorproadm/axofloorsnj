@@ -196,7 +196,7 @@ export default function Payments() {
             ) : (
               <>
                 {/* KPI Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
                     { label: "Total In", value: fmt(kpis.totalIn), icon: CheckCircle, color: "text-green-600" },
                     { label: "Total Out", value: fmt(kpis.totalOut), icon: AlertTriangle, color: "text-foreground" },
