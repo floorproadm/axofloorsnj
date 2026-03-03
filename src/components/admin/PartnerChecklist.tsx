@@ -222,6 +222,7 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
           relatedPartnerId={partnerId}
           triggerButton={<span className="hidden" />}
         />
+        </div>
       </div>
 
       {isLoading ? (
