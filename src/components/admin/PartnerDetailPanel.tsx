@@ -886,3 +886,57 @@ function NotesEditor({ partner }: { partner: Partner }) {
     </div>
   );
 }
+
+/* ---------- Partner Task Row ---------- */
+const priorityDot: Record<string, string> = {
+  urgent: "bg-destructive",
+  high: "bg-amber-500",
+  medium: "bg-muted-foreground/40",
+  low: "bg-muted-foreground/20",
+};
+
+function PartnerTaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: () => void; onDelete: () => void }) {
+  const dot = priorityDot[task.priority] ?? priorityDot.medium;
+  const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && task.status !== "done";
+  const isDone = task.status === "done";
+  const isInProgress = task.status === "in_progress";
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group">
+      <button onClick={onToggle} className="flex-shrink-0 focus:outline-none" title="Toggle status">
+        {isDone ? (
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        ) : isInProgress ? (
+          <PlayCircle className="w-4 h-4 text-primary" />
+        ) : (
+          <Circle className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+        )}
+      </button>
+      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
+      <div className="flex-1 min-w-0">
+        <span className={`text-sm font-medium text-foreground truncate block ${isDone ? "line-through opacity-50" : ""}`}>
+          {task.title}
+        </span>
+        {(task.assignee_name || task.due_date) && (
+          <div className="flex items-center gap-2 mt-0.5">
+            {task.assignee_name && (
+              <span className="text-[10px] text-muted-foreground">{task.assignee_name}</span>
+            )}
+            {task.due_date && (
+              <span className={`text-[10px] ${isOverdue ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+                {format(new Date(task.due_date), "dd/MM")}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+      <button
+        onClick={onDelete}
+        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+        title="Excluir"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
