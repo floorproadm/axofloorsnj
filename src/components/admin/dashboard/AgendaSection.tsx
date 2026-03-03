@@ -52,12 +52,12 @@ const typeLabels: Record<string, string> = {
 export function AgendaSection({ appointments }: AgendaSectionProps) {
   if (appointments.length === 0) {
     return (
-      <div className="text-center py-6 rounded-xl border border-dashed border-border bg-card/50">
+      <Link to="/admin/schedule" className="block text-center py-6 rounded-xl border border-dashed border-border bg-card/50 hover:bg-secondary/40 transition-colors cursor-pointer">
         <p className="text-sm font-medium text-foreground">Dia livre</p>
         <p className="text-xs text-muted-foreground mt-0.5">
           Sem jobs agendados para hoje
         </p>
-      </div>
+      </Link>
     );
   }
 
