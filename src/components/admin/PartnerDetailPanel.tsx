@@ -904,13 +904,16 @@ function NotesEditor({ partner }: { partner: Partner }) {
   const [notes, setNotes] = useState(partner.notes || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [focused, setFocused] = useState(false);
   const hasChanges = notes !== (partner.notes || "");
+  const showButton = focused || hasChanges;
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await updatePartner.mutateAsync({ id: partner.id, notes });
       setSaved(true);
+      setFocused(false);
       setTimeout(() => setSaved(false), 2000);
     } finally {
       setSaving(false);
@@ -926,31 +929,34 @@ function NotesEditor({ partner }: { partner: Partner }) {
       <Textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
+        onFocus={() => setFocused(true)}
         placeholder="Adicionar notas sobre este parceiro..."
         rows={6}
         className="resize-none"
       />
-      <Button
-        onClick={handleSave}
-        disabled={saving || !hasChanges}
-        size="sm"
-        className="w-full gap-1.5"
-        variant={saved ? "secondary" : "default"}
-      >
-        {saving ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-        ) : saved ? (
-          <>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            Salvo
-          </>
-        ) : (
-          <>
-            <Save className="w-3.5 h-3.5" />
-            Salvar Nota
-          </>
-        )}
-      </Button>
+      {showButton && (
+        <Button
+          onClick={handleSave}
+          disabled={saving || !hasChanges}
+          size="sm"
+          className="w-full gap-1.5"
+          variant={saved ? "secondary" : "default"}
+        >
+          {saving ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : saved ? (
+            <>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              Salvo
+            </>
+          ) : (
+            <>
+              <Save className="w-3.5 h-3.5" />
+              Salvar Nota
+            </>
+          )}
+        </Button>
+      )}
     </div>
   );
 }
