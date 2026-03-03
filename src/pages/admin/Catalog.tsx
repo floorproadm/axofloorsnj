@@ -401,7 +401,9 @@ export default function Catalog() {
 
             <Button size="sm" onClick={openCreate}>
               <Plus className="w-4 h-4 mr-1" />
-              {pt ? "Adicionar" : "Add"}
+              {activeTab === "service"
+                ? (pt ? "Novo Serviço" : "New Service")
+                : (pt ? "Novo Material" : "New Material")}
             </Button>
           </div>
 
