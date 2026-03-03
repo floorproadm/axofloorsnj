@@ -179,8 +179,13 @@ function TaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: (t: Task)
         <span className={cn("text-sm font-medium text-foreground truncate block", isDone && "line-through opacity-50")}>
           {task.title}
         </span>
-        {(task.assignee_name || task.due_date) && (
+        {(task.assignee_name || task.due_date || task.partner_name) && (
           <div className="flex items-center gap-2 mt-0.5">
+            {task.partner_name && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                🤝 {task.partner_name}
+              </span>
+            )}
             {task.assignee_name && (
               <span className="text-[10px] text-muted-foreground">{task.assignee_name}</span>
             )}
