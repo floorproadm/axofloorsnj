@@ -25,6 +25,8 @@ import {
   isSameDay, isToday, parseISO, setMonth, setYear, getMonth, getYear
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 type Appointment = Tables<"appointments">;
