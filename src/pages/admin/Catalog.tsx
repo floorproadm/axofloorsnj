@@ -560,25 +560,24 @@ export default function Catalog() {
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{pt ? "Unidade de Preço" : "Price Unit"}</Label>
-              <Select
-                value={form.price_unit}
-                onValueChange={(v) => setForm((f) => ({ ...f, price_unit: v as PriceUnit }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRICE_UNITS.map((u) => (
-                    <SelectItem key={u.value} value={u.value}>
-                      {u.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1.5">
+                <Label>{pt ? "Unidade de Preço" : "Price Unit"}</Label>
+                <Select
+                  value={form.price_unit}
+                  onValueChange={(v) => setForm((f) => ({ ...f, price_unit: v as PriceUnit }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRICE_UNITS.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {form.item_type === "service" && (
