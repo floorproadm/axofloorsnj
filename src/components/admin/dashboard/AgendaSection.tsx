@@ -130,7 +130,7 @@ export function AgendaSection({ appointments }: AgendaSectionProps) {
             </CardContent>
           </Card>
           </Link>
-      })}
+        );
 
       {appointments.length > 4 && (
         <Link
