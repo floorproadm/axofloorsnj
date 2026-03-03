@@ -56,8 +56,11 @@ import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
 
 const statusColors: Record<string, string> = {
+  prospect: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
+  contacted: "bg-blue-500/10 text-blue-700 border-blue-200",
+  meeting_scheduled: "bg-orange-500/10 text-orange-700 border-orange-200",
+  trial_first_job: "bg-yellow-500/10 text-yellow-700 border-yellow-200",
   active: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
-  prospect: "bg-blue-500/10 text-blue-700 border-blue-200",
   inactive: "bg-amber-500/10 text-amber-700 border-amber-200",
   churned: "bg-red-500/10 text-red-700 border-red-200",
 };

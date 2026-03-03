@@ -10,11 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Drawer,
-  DrawerContent,
-} from "@/components/ui/drawer";
-import { Handshake, Plus, Search } from "lucide-react";
+import { Handshake, Plus, Search, List, LayoutGrid } from "lucide-react";
 import {
   usePartnersData,
   Partner,
@@ -24,6 +20,7 @@ import {
 import { NewPartnerDialog } from "@/components/admin/NewPartnerDialog";
 import { PartnerListItem } from "@/components/admin/PartnerListItem";
 import { PartnerDetailPanel } from "@/components/admin/PartnerDetailPanel";
+import { PartnerPipelineBoard } from "@/components/admin/PartnerPipelineBoard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -35,6 +32,7 @@ export default function Partners() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [newOpen, setNewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
 
   const filtered = useMemo(() => {
     return partners.filter((p) => {
@@ -95,7 +93,7 @@ export default function Partners() {
   return (
     <AdminLayout title="Partners">
       <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
-        {/* Mini Stats */}
+        {/* Mini Stats + View Toggle */}
         <div className="px-3 pt-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
           <span><strong className="text-foreground">{miniStats.active}</strong> ativos</span>
           <span className="text-border">|</span>
@@ -104,6 +102,20 @@ export default function Partners() {
           </span>
           <span className="text-border">|</span>
           <span><strong className="text-foreground">{miniStats.totalReferrals}</strong> indicações</span>
+          <div className="ml-auto flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <List className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setViewMode("board")}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "board" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Search & Filters */}
@@ -141,44 +153,54 @@ export default function Partners() {
               </SelectContent>
             </Select>
           </div>
-          <Button
-            onClick={() => setNewOpen(true)}
-            className="w-full h-9 gap-2"
-            size="sm"
-          >
-            <Plus className="w-4 h-4" /> Novo Partner
-          </Button>
+          {viewMode === "list" && (
+            <Button
+              onClick={() => setNewOpen(true)}
+              className="w-full h-9 gap-2"
+              size="sm"
+            >
+              <Plus className="w-4 h-4" /> Novo Partner
+            </Button>
+          )}
         </div>
 
-        {/* Partner List */}
-        <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-lg" />
-              ))
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Handshake className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm font-medium">Nenhum partner</p>
+        {/* Content: List or Board */}
+        {viewMode === "board" ? (
+          <PartnerPipelineBoard
+            partners={filtered}
+            onSelectPartner={(id) => setSelectedId(id)}
+            onNewPartner={() => setNewOpen(true)}
+          />
+        ) : (
+          <>
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                  ))
+                ) : filtered.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Handshake className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm font-medium">Nenhum partner</p>
+                  </div>
+                ) : (
+                  filtered.map((p) => (
+                    <PartnerListItem
+                      key={p.id}
+                      partner={p}
+                      isSelected={false}
+                      onSelect={() => setSelectedId(p.id)}
+                    />
+                  ))
+                )}
               </div>
-            ) : (
-              filtered.map((p) => (
-                <PartnerListItem
-                  key={p.id}
-                  partner={p}
-                  isSelected={false}
-                  onSelect={() => setSelectedId(p.id)}
-                />
-              ))
-            )}
-          </div>
-        </ScrollArea>
-
-        {/* Count */}
-        <div className="px-3 py-2 border-t border-border/50 text-xs text-muted-foreground">
-          {filtered.length} de {partners.length} partners
-        </div>
+            </ScrollArea>
+            <div className="px-3 py-2 border-t border-border/50 text-xs text-muted-foreground">
+              {filtered.length} de {partners.length} partners
+            </div>
+          </>
+        )}
       </div>
 
       <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} />

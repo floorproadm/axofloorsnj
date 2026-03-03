@@ -41,9 +41,30 @@ export const PARTNER_TYPES: Record<string, string> = {
 
 export const PARTNER_STATUSES: Record<string, string> = {
   prospect: "Prospect",
-  active: "Ativo",
-  inactive: "Inativo",
+  contacted: "Contacted",
+  meeting_scheduled: "Meeting Scheduled",
+  trial_first_job: "Trial / First Job",
+  active: "Active",
+  inactive: "Inactive",
   churned: "Perdido",
+};
+
+export const PARTNER_PIPELINE_STAGES = [
+  "prospect",
+  "contacted",
+  "meeting_scheduled",
+  "trial_first_job",
+  "active",
+  "inactive",
+] as const;
+
+export const PARTNER_STAGE_CONFIG: Record<string, { color: string; dot: string; bg: string }> = {
+  prospect: { color: "text-emerald-700", dot: "bg-emerald-500", bg: "bg-emerald-500/10" },
+  contacted: { color: "text-blue-700", dot: "bg-blue-500", bg: "bg-blue-500/10" },
+  meeting_scheduled: { color: "text-orange-700", dot: "bg-orange-500", bg: "bg-orange-500/10" },
+  trial_first_job: { color: "text-yellow-700", dot: "bg-yellow-500", bg: "bg-yellow-500/10" },
+  active: { color: "text-emerald-700", dot: "bg-emerald-500", bg: "bg-emerald-500/10" },
+  inactive: { color: "text-red-700", dot: "bg-red-500", bg: "bg-red-500/10" },
 };
 
 export function usePartnersData() {
