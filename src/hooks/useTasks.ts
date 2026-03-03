@@ -64,6 +64,7 @@ export function useTasks(showCompleted = false) {
       // Fetch assignee names
       const tasks = (data ?? []) as unknown as Task[];
       const assigneeIds = [...new Set(tasks.map((t) => t.assigned_to).filter(Boolean))] as string[];
+      const partnerIds = [...new Set(tasks.map((t) => t.related_partner_id).filter(Boolean))] as string[];
 
       if (assigneeIds.length > 0) {
         const { data: profiles } = await supabase
@@ -74,6 +75,18 @@ export function useTasks(showCompleted = false) {
         const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.full_name]));
         tasks.forEach((t) => {
           if (t.assigned_to) t.assignee_name = nameMap.get(t.assigned_to) ?? null;
+        });
+      }
+
+      if (partnerIds.length > 0) {
+        const { data: partners } = await supabase
+          .from("partners")
+          .select("id, company_name")
+          .in("id", partnerIds);
+
+        const partnerMap = new Map((partners ?? []).map((p) => [p.id, p.company_name]));
+        tasks.forEach((t) => {
+          if (t.related_partner_id) t.partner_name = partnerMap.get(t.related_partner_id) ?? null;
         });
       }
 
@@ -93,6 +106,7 @@ export function useTasks(showCompleted = false) {
           assigned_to: input.assigned_to ?? null,
           related_project_id: input.related_project_id ?? null,
           related_lead_id: input.related_lead_id ?? null,
+          related_partner_id: input.related_partner_id ?? null,
           due_date: input.due_date ?? null,
         } as any)
         .select()
