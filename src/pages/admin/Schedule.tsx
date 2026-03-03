@@ -290,7 +290,41 @@ export default function Schedule() {
         onSave={(data) => saveMutation.mutate(data)}
         onDelete={(id) => deleteMutation.mutate(id)}
         saving={saveMutation.isPending}
+        templateDefaults={templateDefaults}
       />
+
+      {/* Template Picker Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Escolher Template</DialogTitle>
+            <DialogDescription>Selecione um modelo para pré-preencher o agendamento.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            {SCHEDULE_TEMPLATES.map(tpl => {
+              const cfg = getTypeConfig(tpl.type);
+              const Icon = tpl.icon;
+              return (
+                <button
+                  key={tpl.type}
+                  onClick={() => openFromTemplate(tpl)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg border border-border/50 p-3 text-left transition-colors hover:bg-muted/60"
+                  )}
+                >
+                  <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", cfg.bg)}>
+                    <Icon className={cn("w-4 h-4", cfg.text)} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-foreground">{tpl.label}</div>
+                    <div className="text-xs text-muted-foreground">{tpl.description}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
