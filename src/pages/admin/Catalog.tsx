@@ -101,10 +101,16 @@ export default function Catalog() {
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Category state
+  const [customCategoryMode, setCustomCategoryMode] = useState(false);
+  const [customCategoryValue, setCustomCategoryValue] = useState("");
+  const [subcategory, setSubcategory] = useState<SubcategoryType>("core");
+
   // Signed URLs cache
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const { data: items = [], isLoading } = useServiceCatalog(activeTab);
+  const { data: allItems = [] } = useServiceCatalog(); // all items for extracting categories
   const createMutation = useCreateCatalogItem();
   const updateMutation = useUpdateCatalogItem();
   const deleteMutation = useDeleteCatalogItem();
