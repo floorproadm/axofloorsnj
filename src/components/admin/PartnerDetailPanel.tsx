@@ -518,7 +518,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               <Button
                 onClick={() => setNewJobOpen(true)}
                 size="sm"
-                className="w-full gap-2 rounded-lg"
+                className="w-full gap-2 rounded-xl"
               >
                 <Hammer className="w-4 h-4" /> Novo Job
               </Button>
