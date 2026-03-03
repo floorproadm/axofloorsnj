@@ -32,6 +32,7 @@ export default function Partners() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [newOpen, setNewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
 
   const filtered = useMemo(() => {
     return partners.filter((p) => {
