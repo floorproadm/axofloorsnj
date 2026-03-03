@@ -349,208 +349,226 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="geral" className="flex-1 flex flex-col min-h-0 min-w-0">
-        <div className="px-4 pt-3 pb-0 border-b border-border/40">
-          <div className="overflow-x-auto">
-            <TabsList className="w-max min-w-full h-auto bg-transparent p-0 gap-0 justify-start rounded-none">
-              <TabsTrigger
-                value="geral"
-                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
-              >
-                Geral
-              </TabsTrigger>
-              <TabsTrigger
-                value="projetos"
-                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
-              >
-                <Briefcase className="w-3.5 h-3.5" />
-                Projetos
-                {partnerProjects.length > 0 && (
-                  <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
-                    {partnerProjects.length}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger
-                value="indicacoes"
-                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
-              >
-                <Users className="w-3.5 h-3.5" />
-                Indicações
-                {referredLeads.length > 0 && (
-                  <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
-                    {referredLeads.length}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger
-                value="notas"
-                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
-              >
-                Notas
-              </TabsTrigger>
-            </TabsList>
-          </div>
-        </div>
+      {(() => {
+        const showFullTabs =
+          partner.partner_type === "builder" &&
+          (partner.status === "active" || partner.status === "inactive") &&
+          partnerProjects.length > 0;
 
-        <div className="flex-1 min-w-0 overflow-y-auto">
-          {/* Geral Tab */}
-          <TabsContent value="geral" className="px-4 pb-4 mt-0">
-            {editing ? (
-              <EditForm
-                editValues={editValues}
-                setEditValues={setEditValues}
-                onSave={handleSave}
-                onCancel={() => setEditing(false)}
-                saving={saving}
-              />
-            ) : (
-              <div className="space-y-4 pt-3">
-                {/* Info Cards Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <InfoCard
-                    icon={<Calendar className="w-3.5 h-3.5" />}
-                    label="Último Contato"
-                    value={
-                      partner.last_contacted_at
-                        ? format(new Date(partner.last_contacted_at), "dd/MM/yyyy")
-                        : "Nunca"
-                    }
-                    alert={isAtRisk}
-                  />
-                  <InfoCard
-                    icon={<ArrowUpRight className="w-3.5 h-3.5" />}
-                    label="Próxima Ação"
-                    value={
-                      partner.next_action_date
-                        ? format(new Date(partner.next_action_date), "dd/MM/yyyy")
-                        : "—"
-                    }
-                    subtitle={partner.next_action_note || undefined}
-                  />
-                  <InfoCard
-                    icon={<Building className="w-3.5 h-3.5" />}
-                    label="Tipo"
-                    value={PARTNER_TYPES[partner.partner_type] || partner.partner_type}
-                  />
-                  <InfoCard
-                    icon={<Cake className="w-3.5 h-3.5" />}
-                    label="Aniversário"
-                    value={
-                      partner.birthday
-                        ? format(new Date(partner.birthday + "T12:00:00"), "dd/MM")
-                        : "—"
-                    }
-                    alert={
-                      partner.birthday
-                        ? (() => {
-                            const today = new Date();
-                            const bday = new Date(today.getFullYear(), new Date(partner.birthday + "T12:00:00").getMonth(), new Date(partner.birthday + "T12:00:00").getDate());
-                            const diff = Math.ceil((bday.getTime() - today.getTime()) / 86400000);
-                            return diff >= 0 && diff <= 7;
-                          })()
-                        : false
-                    }
-                  />
-                  <InfoCard
-                    icon={<Calendar className="w-3.5 h-3.5" />}
-                    label="Criado em"
-                    value={format(new Date(partner.created_at), "dd/MM/yyyy")}
-                    className="col-span-2"
-                  />
-                </div>
+        const tabTriggerClass = "shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground";
 
-                {/* Actions */}
-                <div className="flex gap-2 pt-1">
-                  <Button onClick={startEdit} variant="outline" className="flex-1">
-                    <Pencil className="w-4 h-4 mr-1" /> Editar
-                  </Button>
-                  <Button
-                    onClick={handleLogContact}
-                    disabled={saving}
-                    variant="secondary"
-                  >
-                    {saving ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <MessageSquare className="w-4 h-4 mr-1" />
+        return (
+          <Tabs defaultValue="geral" className="flex-1 flex flex-col min-h-0 min-w-0">
+            <div className="px-4 pt-3 pb-0 border-b border-border/40">
+              <div className="overflow-x-auto">
+                <TabsList className="w-max min-w-full h-auto bg-transparent p-0 gap-0 justify-start rounded-none">
+                  <TabsTrigger value="geral" className={tabTriggerClass}>
+                    Geral
+                  </TabsTrigger>
+                  {showFullTabs && (
+                    <>
+                      <TabsTrigger value="projetos" className={`${tabTriggerClass} gap-1.5`}>
+                        <Briefcase className="w-3.5 h-3.5" />
+                        Projetos
+                        {partnerProjects.length > 0 && (
+                          <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
+                            {partnerProjects.length}
+                          </span>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger value="indicacoes" className={`${tabTriggerClass} gap-1.5`}>
+                        <Users className="w-3.5 h-3.5" />
+                        Indicações
+                        {referredLeads.length > 0 && (
+                          <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
+                            {referredLeads.length}
+                          </span>
+                        )}
+                      </TabsTrigger>
+                    </>
+                  )}
+                  <TabsTrigger value="notas" className={tabTriggerClass}>
+                    Notas
+                    {partnerTasks.filter((t) => t.status !== "done").length > 0 && (
+                      <span className="ml-1 text-[10px] font-bold text-muted-foreground">
+                        {partnerTasks.filter((t) => t.status !== "done").length}
+                      </span>
                     )}
-                    Registrar Contato
-                  </Button>
-                  <Button
-                    onClick={handleDelete}
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                  </TabsTrigger>
+                </TabsList>
               </div>
-            )}
-          </TabsContent>
+            </div>
 
-          {/* Indicações Tab */}
-          <TabsContent value="indicacoes" className="px-4 pb-4 mt-0">
-            <div className="pt-3 space-y-3">
-              <Button
-                onClick={() => setNewLeadOpen(true)}
-                size="sm"
-                className="w-full gap-2"
-              >
-                <UserPlus className="w-4 h-4" /> Nova Indicação
-              </Button>
-              {referredLeads.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">Nenhuma indicação registrada</p>
-                </div>
-              ) : (
-                referredLeads.map((lead) => (
-                  <div
-                    key={lead.id}
-                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{lead.name}</p>
-                      <p className="text-xs text-muted-foreground">{lead.phone}</p>
+            <div className="flex-1 min-w-0 overflow-y-auto">
+              {/* Geral Tab */}
+              <TabsContent value="geral" className="px-4 pb-4 mt-0">
+                {editing ? (
+                  <EditForm
+                    editValues={editValues}
+                    setEditValues={setEditValues}
+                    onSave={handleSave}
+                    onCancel={() => setEditing(false)}
+                    saving={saving}
+                  />
+                ) : (
+                  <div className="space-y-4 pt-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <InfoCard
+                        icon={<Calendar className="w-3.5 h-3.5" />}
+                        label="Último Contato"
+                        value={
+                          partner.last_contacted_at
+                            ? format(new Date(partner.last_contacted_at), "dd/MM/yyyy")
+                            : "Nunca"
+                        }
+                        alert={isAtRisk}
+                      />
+                      <InfoCard
+                        icon={<ArrowUpRight className="w-3.5 h-3.5" />}
+                        label="Próxima Ação"
+                        value={
+                          partner.next_action_date
+                            ? format(new Date(partner.next_action_date), "dd/MM/yyyy")
+                            : "—"
+                        }
+                        subtitle={partner.next_action_note || undefined}
+                      />
+                      <InfoCard
+                        icon={<Building className="w-3.5 h-3.5" />}
+                        label="Tipo"
+                        value={PARTNER_TYPES[partner.partner_type] || partner.partner_type}
+                      />
+                      <InfoCard
+                        icon={<Cake className="w-3.5 h-3.5" />}
+                        label="Aniversário"
+                        value={
+                          partner.birthday
+                            ? format(new Date(partner.birthday + "T12:00:00"), "dd/MM")
+                            : "—"
+                        }
+                        alert={
+                          partner.birthday
+                            ? (() => {
+                                const today = new Date();
+                                const bday = new Date(today.getFullYear(), new Date(partner.birthday + "T12:00:00").getMonth(), new Date(partner.birthday + "T12:00:00").getDate());
+                                const diff = Math.ceil((bday.getTime() - today.getTime()) / 86400000);
+                                return diff >= 0 && diff <= 7;
+                              })()
+                            : false
+                        }
+                      />
+                      <InfoCard
+                        icon={<Calendar className="w-3.5 h-3.5" />}
+                        label="Criado em"
+                        value={format(new Date(partner.created_at), "dd/MM/yyyy")}
+                        className="col-span-2"
+                      />
                     </div>
-                    <div className="text-right">
-                      <Badge variant="outline" className="text-[10px]">
-                        {lead.status}
-                      </Badge>
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        {format(new Date(lead.created_at), "dd/MM/yy")}
-                      </p>
+
+                    <div className="flex gap-2 pt-1">
+                      <Button onClick={startEdit} variant="outline" className="flex-1">
+                        <Pencil className="w-4 h-4 mr-1" /> Editar
+                      </Button>
+                      <Button onClick={handleLogContact} disabled={saving} variant="secondary">
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4 mr-1" />}
+                        Registrar Contato
+                      </Button>
+                      <Button onClick={handleDelete} variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                ))
+                )}
+              </TabsContent>
+
+              {/* Indicações Tab */}
+              {showFullTabs && (
+                <TabsContent value="indicacoes" className="px-4 pb-4 mt-0">
+                  <div className="pt-3 space-y-3">
+                    <Button onClick={() => setNewLeadOpen(true)} size="sm" className="w-full gap-2">
+                      <UserPlus className="w-4 h-4" /> Nova Indicação
+                    </Button>
+                    {referredLeads.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">Nenhuma indicação registrada</p>
+                      </div>
+                    ) : (
+                      referredLeads.map((lead) => (
+                        <div key={lead.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{lead.name}</p>
+                            <p className="text-xs text-muted-foreground">{lead.phone}</p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="outline" className="text-[10px]">{lead.status}</Badge>
+                            <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(lead.created_at), "dd/MM/yy")}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
               )}
-            </div>
-          </TabsContent>
 
-          {/* Projetos Tab */}
-          <TabsContent value="projetos" className="px-4 pb-4 mt-0 w-full min-w-0 overflow-x-hidden">
-            <div className="pt-3 space-y-3 w-full min-w-0">
-              <Button
-                onClick={() => setNewJobOpen(true)}
-                size="sm"
-                className="w-full gap-2"
-              >
-                <Hammer className="w-4 h-4" /> Novo Job
-              </Button>
-              <PartnerProjectsTab projects={partnerProjects} />
-            </div>
-          </TabsContent>
+              {/* Projetos Tab */}
+              {showFullTabs && (
+                <TabsContent value="projetos" className="px-4 pb-4 mt-0 w-full min-w-0 overflow-x-hidden">
+                  <div className="pt-3 space-y-3 w-full min-w-0">
+                    <Button onClick={() => setNewJobOpen(true)} size="sm" className="w-full gap-2">
+                      <Hammer className="w-4 h-4" /> Novo Job
+                    </Button>
+                    <PartnerProjectsTab projects={partnerProjects} />
+                  </div>
+                </TabsContent>
+              )}
 
-          {/* Notas Tab */}
-          <TabsContent value="notas" className="px-4 pb-4 mt-0">
-            <div className="pt-3">
-              <NotesEditor partner={partner} />
+              {/* Notas Tab */}
+              <TabsContent value="notas" className="px-4 pb-4 mt-0">
+                <div className="pt-3 space-y-5">
+                  <NotesEditor partner={partner} />
+
+                  {/* Tasks Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <ClipboardList className="w-3.5 h-3.5" />
+                        Tarefas
+                      </h4>
+                      <NewTaskDialog
+                        onSubmit={(data) => createTask.mutate({ ...data, related_partner_id: partner.id })}
+                        isPending={createTask.isPending}
+                        relatedPartnerId={partner.id}
+                      />
+                    </div>
+
+                    {partnerTasks.length === 0 ? (
+                      <div className="text-center py-6 text-muted-foreground">
+                        <ClipboardList className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">Nenhuma tarefa vinculada</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+                        {partnerTasks.map((task) => (
+                          <PartnerTaskRow
+                            key={task.id}
+                            task={task}
+                            onToggle={() => {
+                              const next = task.status === "pending" ? "in_progress" : task.status === "in_progress" ? "done" : "pending";
+                              updateTask.mutate({ id: task.id, status: next });
+                            }}
+                            onDelete={() => deleteTask.mutate(task.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
             </div>
-          </TabsContent>
-        </div>
-      </Tabs>
+          </Tabs>
+        );
+      })()}
 
       <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
       <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
