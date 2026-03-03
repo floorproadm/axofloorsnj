@@ -55,7 +55,6 @@ const PREDEFINED_SERVICE_CATEGORIES = [
   "Refinishing",
   "Stairs",
   "Repair",
-  "Flooring Sales",
 ];
 
 const PREDEFINED_MATERIAL_CATEGORIES = [
