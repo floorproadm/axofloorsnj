@@ -133,7 +133,13 @@ export default function Catalog() {
     items.forEach((i) => {
       if (i.category) map.set(i.category, (map.get(i.category) || 0) + 1);
     });
-    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    return Array.from(map.entries()).sort((a, b) => {
+      const aIsAddon = a[0].endsWith("- Add-ons");
+      const bIsAddon = b[0].endsWith("- Add-ons");
+      if (aIsAddon && !bIsAddon) return 1;
+      if (!aIsAddon && bIsAddon) return -1;
+      return a[0].localeCompare(b[0]);
+    });
   }, [items]);
 
   // Merged category options for the Select (predefined + any custom from DB)
