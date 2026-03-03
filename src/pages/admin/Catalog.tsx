@@ -586,26 +586,6 @@ export default function Catalog() {
               </div>
             </div>
 
-            {form.item_type === "service" && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>{pt ? "Material Padrão" : "Default Material"}</Label>
-                  <Input
-                    value={form.default_material || ""}
-                    onChange={(e) => setForm((f) => ({ ...f, default_material: e.target.value || null }))}
-                    placeholder="Red Oak"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>{pt ? "Acabamento Padrão" : "Default Finish"}</Label>
-                  <Input
-                    value={form.default_finish || ""}
-                    onChange={(e) => setForm((f) => ({ ...f, default_finish: e.target.value || null }))}
-                    placeholder="Satin"
-                  />
-                </div>
-              </div>
-            )}
           </div>
 
           <DialogFooter>
