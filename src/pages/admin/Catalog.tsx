@@ -481,24 +481,71 @@ export default function Catalog() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{pt ? "Categoria" : "Category"}</Label>
-                <Select value={form.category || ""} onValueChange={(v) => setForm((f) => ({ ...f, category: v || null }))}>
+                {customCategoryMode ? (
+                  <div className="flex gap-1.5">
+                    <Input
+                      value={customCategoryValue}
+                      onChange={(e) => setCustomCategoryValue(e.target.value)}
+                      placeholder={pt ? "Nova categoria..." : "New category..."}
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-10 w-10"
+                      onClick={() => {
+                        setCustomCategoryMode(false);
+                        setCustomCategoryValue("");
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Select
+                    value={form.category || ""}
+                    onValueChange={(v) => {
+                      if (v === "__new__") {
+                        setCustomCategoryMode(true);
+                        setCustomCategoryValue("");
+                        setForm((f) => ({ ...f, category: null }));
+                      } else {
+                        setForm((f) => ({ ...f, category: v || null }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={pt ? "Selecione..." : "Select..."} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allCategoryOptions.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                      <SelectItem value="__new__">
+                        <span className="flex items-center gap-1.5 text-primary">
+                          <PlusCircle className="w-3.5 h-3.5" />
+                          {pt ? "Nova categoria..." : "Add new..."}
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>{pt ? "Subcategoria" : "Subcategory"}</Label>
+                <Select value={subcategory} onValueChange={(v) => setSubcategory(v as SubcategoryType)}>
                   <SelectTrigger>
-                    <SelectValue placeholder={pt ? "Selecione..." : "Select..."} />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Hardwood">Hardwood</SelectItem>
-                    <SelectItem value="Vinyl">Vinyl</SelectItem>
-                    <SelectItem value="Tile">Tile</SelectItem>
-                    <SelectItem value="Laminate">Laminate</SelectItem>
-                    <SelectItem value="Staircase">Staircase</SelectItem>
-                    <SelectItem value="Baseboard">Baseboard</SelectItem>
-                    <SelectItem value="Stain">Stain</SelectItem>
-                    <SelectItem value="Finish">Finish</SelectItem>
-                    <SelectItem value="Other">{pt ? "Outro" : "Other"}</SelectItem>
+                    <SelectItem value="core">Core</SelectItem>
+                    <SelectItem value="add-on">Add-on</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+            </div>
+            <div className="grid grid-cols-2 gap-3">
                 <Label>{pt ? "Preço Base" : "Base Price"}</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
