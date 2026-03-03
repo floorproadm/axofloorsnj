@@ -634,6 +634,22 @@ function AppointmentModal({
                 </div>
               )}
 
+              {form.assigned_to.length > 0 && (
+                <div className="flex items-start gap-2.5">
+                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <div className="flex flex-wrap gap-1">
+                    {form.assigned_to.map(uid => {
+                      const member = teamMembers.find(m => m.user_id === uid);
+                      return (
+                        <Badge key={uid} variant="secondary" className="text-xs">
+                          {member?.full_name || member?.email || "Membro"}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {form.notes && (
                 <div className="rounded-lg bg-muted/50 p-3">
                   <p className="text-xs font-medium text-muted-foreground mb-1">Notas</p>
