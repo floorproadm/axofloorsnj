@@ -533,9 +533,12 @@ function AppointmentModal({
         });
       } else {
         setForm({
-          customer_name: "", customer_phone: "", appointment_type: "measurement",
-          appointment_date: format(currentDate, "yyyy-MM-dd"), appointment_time: "09:00",
-          duration_hours: 1, location: "", notes: "", project_id: null,
+          customer_name: "", customer_phone: "",
+          appointment_type: templateDefaults?.type || "measurement",
+          appointment_date: format(currentDate, "yyyy-MM-dd"),
+          appointment_time: templateDefaults?.time || "09:00",
+          duration_hours: templateDefaults?.duration || 1,
+          location: "", notes: "", project_id: null,
         });
       }
     }
