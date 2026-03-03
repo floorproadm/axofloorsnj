@@ -189,7 +189,7 @@ export default function Payments() {
       <div className="space-y-4">
         {/* ── Main Tabs ── */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
               <TabsTrigger
                 value="payments"
@@ -208,6 +208,7 @@ export default function Payments() {
             </TabsList>
 
             <Button
+              className="w-full sm:w-auto"
               size="sm"
               onClick={() =>
                 activeTab === "payments"
