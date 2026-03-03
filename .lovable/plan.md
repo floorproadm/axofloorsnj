@@ -1,49 +1,51 @@
 
 
-# Sincronizacao do Catalogo de Servicos
+# Fotos no Catalogo de Servicos e Materiais
 
-## Objetivo
-Atualizar o `service_catalog` com os itens identificados nos dois documentos (CSV do Square e lista do Notion) que ainda nao existem no sistema.
+## O que muda
+Cada item do catalogo (servico ou material) podera ter uma foto ilustrativa. A imagem aparece no card do item e pode ser adicionada/alterada no dialog de criacao/edicao.
 
-## Itens a Adicionar (Servicos)
+## Implementacao
 
-### Categoria: Installation (novos)
-1. **Laminate Flooring Installation** - $7.00/sqft (preco do CSV)
-2. **Vinyl Flooring Installation** - $0.00/sqft (sem preco definido no CSV)
-3. **Tile Installation** - $0.00/sqft (presente no Notion)
-4. **Subfloor Installation** - $0.00/sqft (presente no Notion)
-5. **Custom Flooring** - $0.00/sqft (presente no CSV)
+### 1. Schema: adicionar coluna `image_url`
+Uma migration para adicionar `image_url text` a tabela `service_catalog`. Campo opcional, nullable.
 
-### Categoria: Refinishing (novos)
-6. **Floor Leveling** - $0.00/sqft (prep work, do CSV)
+```text
+ALTER TABLE service_catalog ADD COLUMN image_url text;
+```
 
-### Categoria: Stairs (novos)
-7. **Handrail Installation** - $0.00/linear_ft (CSV + Notion: "Stair Railings Installation")
-8. **Baluster/Spindle Replacement** - $0.00/unit (CSV: "Spindles Replacement", Notion: "Balusters Installation")
+### 2. Upload de imagem
+Reutilizar o bucket `media` (ja existente, privado) com path `catalog/{item_id}/{filename}`. O upload sera feito direto pelo Supabase Storage SDK no frontend, sem edge function.
 
-### Categoria: Repair (nova categoria)
-9. **General Floor Repair** - $0.00/sqft (CSV: "Floor Repair" -- Board Replacement e Pet Damage ja cobrem parcialmente, mas este e o item generico)
+Criar politica de storage para admins fazerem upload no path `catalog/`:
+```text
+INSERT policy: has_role(auth.uid(), 'admin') AND bucket_id = 'media' AND path LIKE 'catalog/%'
+```
 
-### Tipo: Material (Sales -- novos)
-10. **Wood Flooring** - $0.00/sqft
-11. **Vinyl Flooring** - $0.00/sqft
-12. **Laminate Flooring** - $0.00/sqft
-13. **Luxury Vinyl Tile (LVT)** - $0.00/sqft
+### 3. Hook `useServiceCatalog`
+- Adicionar `image_url` ao tipo `CatalogItem`
+- O upload sera um passo separado: primeiro faz upload no storage, pega a URL publica/signed, depois salva no campo `image_url` via update
 
-## Implementacao Tecnica
+### 4. UI do Dialog (Catalog.tsx)
+- Adicionar area de upload de foto acima do campo "Nome"
+- Preview da imagem existente com botao de remover
+- Aceitar formatos: JPG, PNG, WebP (com conversao HEIC via utilitario existente)
+- Limite: 5MB por imagem
 
-### Passo 1: Migration SQL
-Inserir os 13 novos itens na tabela `service_catalog` usando um unico INSERT com valores derivados dos documentos. Precos zerados serao preenchidos pelo admin depois -- o importante e ter os itens catalogados.
+### 5. UI do Card (ItemGrid)
+- Exibir thumbnail da imagem no topo do card (aspect-ratio 16:9, object-cover)
+- Fallback com icone quando nao ha foto
+- Gerar signed URL para exibicao (bucket `media` e privado)
 
-### Passo 2: Nenhuma mudanca de schema
-A tabela `service_catalog` ja suporta todos os campos necessarios (`item_type`, `category`, `base_price`, `price_unit`, etc). Nenhuma alteracao de estrutura.
+### Detalhes tecnicos
+- Signed URLs serao geradas em batch ao carregar a lista, com cache local via `useState`
+- Upload usa `supabase.storage.from('media').upload(path, file)`
+- Conversao HEIC reutiliza `convertHeicToJpeg` de `src/utils/heicConverter.ts`
+- O campo `image_url` armazena o storage_path (ex: `catalog/uuid/foto.jpg`), nao a URL completa
+- Nenhuma mudanca em RLS da tabela `service_catalog` (ja tem admin_all)
 
-### Passo 3: Nenhuma mudanca de UI
-A pagina `/admin/catalog` ja renderiza dinamicamente por categorias. Os novos itens aparecerao automaticamente nos chips de filtro.
-
-## Resultado Final
-- Catalogo passa de **14 para 27 itens**
-- **5 categorias de servico**: Refinishing, Installation, Stairs, Add-ons, Repair
-- **1 categoria de material**: Flooring Sales (Wood, Vinyl, Laminate, LVT)
-- Alinhamento completo com Square export e Notion
+### Arquivos modificados
+1. **Nova migration SQL** -- adiciona coluna `image_url`
+2. **`src/hooks/useServiceCatalog.ts`** -- atualiza tipos e inclui helper de upload
+3. **`src/pages/admin/Catalog.tsx`** -- upload no dialog + thumbnail no card
 
