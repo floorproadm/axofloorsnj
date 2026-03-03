@@ -191,23 +191,16 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
             </span>
           )}
         </h3>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]">
-              <Plus className="w-3.5 h-3.5" /> Novo
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <NewTaskDialog
-              onSubmit={(task) => createTask.mutate(task)}
-              isPending={createTask.isPending}
-              relatedPartnerId={partnerId}
-            />
-            <DropdownMenuItem onClick={() => setEventDialogOpen(true)} className="gap-2">
-              <CalendarClock className="w-4 h-4" /> Evento
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-1">
+          <NewTaskDialog
+            onSubmit={(task) => createTask.mutate(task)}
+            isPending={createTask.isPending}
+            relatedPartnerId={partnerId}
+          />
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]" onClick={() => setEventDialogOpen(true)}>
+            <CalendarClock className="w-3.5 h-3.5" /> Evento
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
