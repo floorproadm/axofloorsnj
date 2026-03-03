@@ -19,6 +19,7 @@ export type Database = {
           appointment_date: string
           appointment_time: string
           appointment_type: string
+          assigned_to: string[] | null
           created_at: string
           customer_id: string | null
           customer_name: string
@@ -36,6 +37,7 @@ export type Database = {
           appointment_date: string
           appointment_time: string
           appointment_type: string
+          assigned_to?: string[] | null
           created_at?: string
           customer_id?: string | null
           customer_name: string
@@ -53,6 +55,7 @@ export type Database = {
           appointment_date?: string
           appointment_time?: string
           appointment_type?: string
+          assigned_to?: string[] | null
           created_at?: string
           customer_id?: string | null
           customer_name?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.appointments ADD COLUMN assigned_to uuid[] DEFAULT '{}'::uuid[];
