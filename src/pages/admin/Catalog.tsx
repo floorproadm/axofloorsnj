@@ -47,7 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign, ImagePlus, X } from "lucide-react";
+import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign, ImagePlus, X, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const PRICE_UNITS: { value: PriceUnit; label: string }[] = [
