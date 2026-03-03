@@ -6,6 +6,12 @@ import { CheckCircle, Loader2, Trash2, ListTodo, CalendarClock, Plus } from "luc
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NewTaskDialog } from "@/components/admin/dashboard/NewTaskDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
