@@ -193,7 +193,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       : 0;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-w-0">
       {/* Back Button */}
       {onClose && (
         <button
