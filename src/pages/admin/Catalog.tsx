@@ -59,6 +59,7 @@ const PREDEFINED_SERVICE_CATEGORIES = [
 ];
 
 const PREDEFINED_MATERIAL_CATEGORIES = [
+  "Flooring Sales",
   "Hardwood",
   "Vinyl",
   "Laminate",
@@ -176,8 +177,9 @@ export default function Catalog() {
         dbCategories.add(base);
       }
     });
-    const merged = new Set([...predefined, ...dbCategories]);
-    return Array.from(merged).sort();
+    // Keep predefined order, then append any custom DB categories sorted
+    const extra = Array.from(dbCategories).filter((c) => !predefined.includes(c)).sort();
+    return [...predefined, ...extra];
   }, [allItems, activeTab]);
 
   // Filtered items
