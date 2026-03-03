@@ -190,30 +190,39 @@ export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLe
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="lead_source"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fonte</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a fonte" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {LEAD_SOURCES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {SOURCE_LABELS[s] || s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {referredByPartnerId ? (
+              <div className="space-y-1.5">
+                <FormLabel>Fonte</FormLabel>
+                <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-input bg-muted/50 text-sm text-muted-foreground">
+                  Indicação (parceiro)
+                </div>
+              </div>
+            ) : (
+              <FormField
+                control={form.control}
+                name="lead_source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fonte</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a fonte" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {LEAD_SOURCES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {SOURCE_LABELS[s] || s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
