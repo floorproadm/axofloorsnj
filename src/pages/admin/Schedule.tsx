@@ -521,6 +521,7 @@ function AppointmentModal({
   const handleOpenChange = (v: boolean) => {
     if (v) {
       if (appointment) {
+        setIsEditing(false); // view mode for existing
         setForm({
           customer_name: appointment.customer_name,
           customer_phone: appointment.customer_phone,
@@ -533,6 +534,7 @@ function AppointmentModal({
           project_id: appointment.project_id,
         });
       } else {
+        setIsEditing(true); // edit mode for new
         setForm({
           customer_name: "", customer_phone: "",
           appointment_type: templateDefaults?.type || "measurement",
