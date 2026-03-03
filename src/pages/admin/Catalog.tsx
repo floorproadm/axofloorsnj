@@ -94,6 +94,7 @@ export default function Catalog() {
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
   const [form, setForm] = useState<CatalogItemInsert>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   // Image upload state
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -616,20 +617,37 @@ export default function Catalog() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) { setDeleteTarget(null); setDeleteConfirmText(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{pt ? "Remover item?" : "Delete item?"}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {pt
-                ? `"${deleteTarget?.name}" será removido permanentemente.`
-                : `"${deleteTarget?.name}" will be permanently deleted.`}
+            <AlertDialogDescription className="space-y-3">
+              <span>
+                {pt
+                  ? `"${deleteTarget?.name}" será removido permanentemente. Esta ação não pode ser desfeita.`
+                  : `"${deleteTarget?.name}" will be permanently deleted. This action cannot be undone.`}
+              </span>
+              <span className="block text-sm font-medium text-foreground mt-2">
+                {pt
+                  ? `Digite "${deleteTarget?.name}" para confirmar:`
+                  : `Type "${deleteTarget?.name}" to confirm:`}
+              </span>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={deleteTarget?.name || ""}
+                className="mt-1"
+              />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{pt ? "Cancelar" : "Cancel"}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {pt ? "Remover" : "Delete"}
+            <AlertDialogCancel onClick={() => setDeleteConfirmText("")}>{pt ? "Cancelar" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteConfirmText !== deleteTarget?.name}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {pt ? "Remover permanentemente" : "Delete permanently"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
