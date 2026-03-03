@@ -50,6 +50,16 @@ import {
 import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign, ImagePlus, X, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
+const PREDEFINED_CATEGORIES = [
+  "Installation",
+  "Refinishing",
+  "Stairs",
+  "Repair",
+  "Flooring Sales",
+];
+
+type SubcategoryType = "core" | "add-on";
+
 const PRICE_UNITS: { value: PriceUnit; label: string }[] = [
   { value: "sqft", label: "per sqft" },
   { value: "unit", label: "per unit" },
