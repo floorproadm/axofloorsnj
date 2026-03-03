@@ -165,6 +165,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       next_action_note: partner.next_action_note || "",
       notes: partner.notes || "",
       birthday: partner.birthday,
+      photo_url: partner.photo_url,
     });
     setEditing(true);
   };
@@ -231,13 +232,17 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       {/* Header */}
       <div className="p-5 border-b border-border/50">
         <div className="flex items-start gap-4">
-          <div
-            className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
-              avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
-            }`}
-          >
-            {initials}
-          </div>
+          {partner.photo_url ? (
+            <img src={partner.photo_url} alt={partner.contact_name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+          ) : (
+            <div
+              className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
+                avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
+              }`}
+            >
+              {initials}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-xl font-bold text-foreground truncate">
@@ -841,6 +846,42 @@ function EditForm({
             setEditValues((p) => ({ ...p, birthday: e.target.value || null }))
           }
         />
+      </div>
+      <div>
+        <label className="text-xs text-muted-foreground mb-1 block">Foto (opcional)</label>
+        <div className="flex items-center gap-3">
+          {editValues.photo_url ? (
+            <img src={editValues.photo_url} alt="Preview" className="w-10 h-10 rounded-full object-cover" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">N/A</div>
+          )}
+          <div className="flex-1">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const { supabase } = await import("@/integrations/supabase/client");
+                const ext = file.name.split(".").pop();
+                const path = `partners/${Date.now()}.${ext}`;
+                const { error } = await supabase.storage.from("media").upload(path, file);
+                if (error) return;
+                const { data: urlData } = supabase.storage.from("media").getPublicUrl(path);
+                setEditValues((p) => ({ ...p, photo_url: urlData.publicUrl }));
+              }}
+            />
+          </div>
+          {editValues.photo_url && (
+            <button
+              type="button"
+              onClick={() => setEditValues((p) => ({ ...p, photo_url: null }))}
+              className="text-xs text-destructive hover:underline"
+            >
+              Remover
+            </button>
+          )}
+        </div>
       </div>
       <div className="flex gap-2">
         <Button onClick={onSave} disabled={saving} className="flex-1">

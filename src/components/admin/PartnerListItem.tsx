@@ -62,14 +62,18 @@ export function PartnerListItem({ partner, isSelected, onSelect }: Props) {
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <div
-          className={cn(
-            "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold",
-            avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
-          )}
-        >
-          {initials}
-        </div>
+        {partner.photo_url ? (
+          <img src={partner.photo_url} alt={partner.contact_name} className="w-10 h-10 rounded-full object-cover" />
+        ) : (
+          <div
+            className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold",
+              avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
+            )}
+          >
+            {initials}
+          </div>
+        )}
         <span
           className={cn(
             "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card",
