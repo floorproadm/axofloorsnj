@@ -947,7 +947,7 @@ function NotesEditor({ partner }: { partner: Partner }) {
         ) : (
           <>
             <Save className="w-3.5 h-3.5" />
-            Salvar Notas
+            Salvar Nota
           </>
         )}
       </Button>
