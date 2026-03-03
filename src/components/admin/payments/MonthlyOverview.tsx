@@ -41,7 +41,10 @@ export function MonthlyOverview({ payments, onCategoryClick, activeCategory }: P
   return (
     <div className="space-y-3">
       {/* Income Card */}
-      <Card>
+      <Card
+        className={`cursor-pointer transition-colors ${activeCategory === "received" ? "border-green-500/50" : "hover:border-primary/30"}`}
+        onClick={() => onCategoryClick?.("received")}
+      >
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2">
             <ArrowDownCircle className="w-4 h-4 text-green-500" />

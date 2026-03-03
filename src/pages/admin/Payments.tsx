@@ -82,6 +82,29 @@ export default function Payments() {
     });
   }, [payments, currentMonth]);
 
+  /* ── KPI values ── */
+  const kpis = useMemo(() => {
+    const totalIn = monthlyPayments
+      .filter((p) => p.category === "received" && p.status === "confirmed")
+      .reduce((s, p) => s + Number(p.amount), 0);
+    const totalOut = monthlyPayments
+      .filter((p) => p.category !== "received" && p.status === "confirmed")
+      .reduce((s, p) => s + Number(p.amount), 0);
+    const pending = monthlyPayments
+      .filter((p) => p.status === "pending")
+      .reduce((s, p) => s + Number(p.amount), 0);
+    return { totalIn, totalOut, pending, net: totalIn - totalOut };
+  }, [monthlyPayments]);
+
+  /* ── Category counts ── */
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: monthlyPayments.length };
+    monthlyPayments.forEach((p) => {
+      counts[p.category] = (counts[p.category] || 0) + 1;
+    });
+    return counts;
+  }, [monthlyPayments]);
+
   /* ── Category-filtered list ── */
   const filteredMonthlyPayments = useMemo(() => {
     if (!categoryFilter) return monthlyPayments;
@@ -172,26 +195,62 @@ export default function Payments() {
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : (
               <>
+                {/* KPI Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: "Total In", value: fmt(kpis.totalIn), icon: CheckCircle, color: "text-green-600" },
+                    { label: "Total Out", value: fmt(kpis.totalOut), icon: AlertTriangle, color: "text-foreground" },
+                    { label: "Pending", value: fmt(kpis.pending), icon: Clock, color: "text-amber-600" },
+                    { label: "Net Balance", value: `${kpis.net >= 0 ? "+" : ""}${fmt(kpis.net)}`, icon: DollarSign, color: kpis.net >= 0 ? "text-green-600" : "text-destructive" },
+                  ].map((s) => (
+                    <Card key={s.label}>
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded-lg bg-muted ${s.color}`}>
+                            <s.icon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase">{s.label}</p>
+                            <p className={`text-sm font-bold ${s.color}`}>{s.value}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
                 <MonthlyOverview
                   payments={monthlyPayments}
                   onCategoryClick={handleCategoryClick}
                   activeCategory={categoryFilter || undefined}
                 />
 
-                {/* Active filter indicator */}
-                {categoryFilter && (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="gap-1">
-                      Filtering: {categoryFilter}
+                {/* Category Filter Pills */}
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {[
+                    { key: null, label: "All" },
+                    { key: "received", label: "Received" },
+                    { key: "labor", label: "Labor" },
+                    { key: "material", label: "Material" },
+                    { key: "other", label: "Other" },
+                  ].map((cat) => {
+                    const count = cat.key ? (categoryCounts[cat.key] || 0) : categoryCounts.all || 0;
+                    const isActive = categoryFilter === cat.key;
+                    return (
                       <button
-                        onClick={() => setCategoryFilter(null)}
-                        className="ml-1 hover:text-foreground"
+                        key={cat.label}
+                        onClick={() => setCategoryFilter(cat.key)}
+                        className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          isActive
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground hover:bg-accent"
+                        }`}
                       >
-                        ×
+                        {cat.label} ({count})
                       </button>
-                    </Badge>
-                  </div>
-                )}
+                    );
+                  })}
+                </div>
 
                 {/* Transaction list grouped by day */}
                 {groupedPayments.length === 0 ? (
