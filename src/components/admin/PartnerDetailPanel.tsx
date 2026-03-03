@@ -193,7 +193,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       : 0;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-w-0">
       {/* Back Button */}
       {onClose && (
         <button
@@ -334,49 +334,51 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="geral" className="flex-1 flex flex-col min-h-0">
+      <Tabs defaultValue="geral" className="flex-1 flex flex-col min-h-0 min-w-0">
         <div className="px-4 pt-3 pb-0 border-b border-border/40">
-          <TabsList className="w-full h-auto bg-transparent p-0 gap-0 justify-start rounded-none">
-            <TabsTrigger
-              value="geral"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
-            >
-              Geral
-            </TabsTrigger>
-            <TabsTrigger
-              value="projetos"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              Projetos
-              {partnerProjects.length > 0 && (
-                <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
-                  {partnerProjects.length}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="indicacoes"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
-            >
-              <Users className="w-3.5 h-3.5" />
-              Indicações
-              {referredLeads.length > 0 && (
-                <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
-                  {referredLeads.length}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="notas"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
-            >
-              Notas
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="w-max min-w-full h-auto bg-transparent p-0 gap-0 justify-start rounded-none">
+              <TabsTrigger
+                value="geral"
+                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
+              >
+                Geral
+              </TabsTrigger>
+              <TabsTrigger
+                value="projetos"
+                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                Projetos
+                {partnerProjects.length > 0 && (
+                  <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
+                    {partnerProjects.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="indicacoes"
+                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm gap-1.5 transition-colors hover:text-foreground"
+              >
+                <Users className="w-3.5 h-3.5" />
+                Indicações
+                {referredLeads.length > 0 && (
+                  <span className="ml-0.5 text-[10px] font-bold text-muted-foreground">
+                    {referredLeads.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="notas"
+                className="shrink-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:font-semibold text-muted-foreground px-4 py-2.5 text-sm transition-colors hover:text-foreground"
+              >
+                Notas
+              </TabsTrigger>
+            </TabsList>
+          </div>
         </div>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-w-0">
           {/* Geral Tab */}
           <TabsContent value="geral" className="px-4 pb-4 mt-0">
             {editing ? (
