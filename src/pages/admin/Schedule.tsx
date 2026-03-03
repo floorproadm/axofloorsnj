@@ -44,6 +44,8 @@ const SCHEDULE_TEMPLATES = [
   { label: "Entrega e Inspeção", type: "delivery", duration_hours: 2, default_time: "10:00", icon: PackageCheck, description: "Entrega final + checklist · 2h" },
 ];
 
+const HOURS = Array.from({ length: 17 }, (_, i) => i + 5); // 5AM to 9PM
+
 
 
 function getTypeConfig(type: string) {
