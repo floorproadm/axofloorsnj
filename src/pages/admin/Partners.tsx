@@ -168,15 +168,13 @@ export default function Partners() {
               </SelectContent>
             </Select>
           </div>
-          {viewMode === "list" && (
-            <Button
+          <Button
               onClick={() => setNewOpen(true)}
               className="w-full h-9 gap-2"
               size="sm"
             >
               <Plus className="w-4 h-4" /> Novo Partner
             </Button>
-          )}
         </div>
 
         {/* Content: List or Board */}

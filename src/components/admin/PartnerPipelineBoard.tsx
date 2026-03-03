@@ -66,17 +66,6 @@ export function PartnerPipelineBoard({ partners, onSelectPartner, onNewPartner }
                 {stagePartners.map((p) => (
                   <PartnerCard key={p.id} partner={p} onClick={() => onSelectPartner(p.id)} />
                 ))}
-
-                {stage === "prospect" && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full gap-1.5 text-muted-foreground hover:text-foreground text-xs mt-1"
-                    onClick={onNewPartner}
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Novo Partner
-                  </Button>
-                )}
               </div>
             </div>
           );
