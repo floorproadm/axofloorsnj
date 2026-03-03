@@ -515,12 +515,12 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           </TabsContent>
 
           {/* Projetos Tab */}
-          <TabsContent value="projetos" className="px-4 pb-4 mt-0">
-            <div className="pt-3 space-y-3">
+          <TabsContent value="projetos" className="px-4 pb-4 mt-0 w-full min-w-0 overflow-x-hidden">
+            <div className="pt-3 space-y-3 w-full min-w-0">
               <Button
                 onClick={() => setNewJobOpen(true)}
                 size="sm"
-                className="w-full gap-2 rounded-xl"
+                className="w-full gap-2"
               >
                 <Hammer className="w-4 h-4" /> Novo Job
               </Button>
@@ -623,7 +623,7 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
     <div
       key={project.id}
       onClick={() => navigate(`/admin/projects/${project.id}`)}
-      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30 cursor-pointer hover:bg-muted/60 hover:border-primary/30 transition-colors group"
+      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30 cursor-pointer hover:bg-muted/60 hover:border-primary/30 transition-colors group w-full min-w-0"
     >
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
@@ -636,9 +636,9 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
           {project.completion_date && ` – ${format(new Date(project.completion_date), "dd/MM/yy")}`}
         </p>
       </div>
-      <div className="text-right flex-shrink-0 ml-3 flex items-center gap-2">
-        <div>
-          <Badge variant="outline" className={`text-[10px] ${projectStatusColors[project.project_status] || ""}`}>
+      <div className="text-right flex-shrink-0 ml-3 flex items-center gap-2 max-w-[40%]">
+        <div className="min-w-0">
+          <Badge variant="outline" className={`text-[10px] truncate max-w-full ${projectStatusColors[project.project_status] || ""}`}>
             {project.project_status}
           </Badge>
           {project.estimated_cost != null && project.estimated_cost > 0 && (
@@ -653,7 +653,7 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
   );
 
   return (
-    <div className="pt-3 space-y-6">
+    <div className="pt-3 space-y-6 w-full min-w-0">
       {activeProjects.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -677,8 +677,8 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Histórico Financeiro
         </h4>
-        <div className="rounded-lg border border-border/50 overflow-hidden">
-          <Table>
+        <div className="rounded-lg border border-border/50 w-full max-w-full overflow-x-auto">
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow className="bg-muted/30">
                 <TableHead className="text-xs h-9">Projeto</TableHead>
@@ -690,9 +690,9 @@ function PartnerProjectsTab({ projects }: { projects: ProjectRow[] }) {
             <TableBody>
               {projects.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell className="text-xs py-2 font-medium">
-                    {p.address || p.customer_name}
-                    {p.city && <span className="text-muted-foreground ml-1">· {p.city}</span>}
+                  <TableCell className="text-xs py-2 font-medium truncate">
+                    <span className="truncate block">{p.address || p.customer_name}</span>
+                    {p.city && <span className="text-muted-foreground text-[10px]">· {p.city}</span>}
                   </TableCell>
                   <TableCell className="text-xs py-2 hidden sm:table-cell text-muted-foreground">
                     {p.project_type}
