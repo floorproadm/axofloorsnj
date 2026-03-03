@@ -72,48 +72,46 @@ export function PeriodSelector({ periodType, onPeriodTypeChange, anchor, onAncho
   const range = getPeriodRange(anchor, periodType);
 
   return (
-    <div className="flex items-center justify-between gap-2">
-      {/* Navigation */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 shrink-0"
-        onClick={() => onAnchorChange(navigate(anchor, periodType, -1))}
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </Button>
-
-      {/* Center: pills + label stacked */}
-      <div className="flex flex-col items-center gap-1 min-w-0">
-        <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
-          {pills.map((p) => (
-            <button
-              key={p.key}
-              onClick={() => onPeriodTypeChange(p.key)}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
-                periodType === p.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-        <span className="text-sm font-semibold text-center truncate max-w-full">
-          {range.label}
-        </span>
+    <div className="flex flex-col items-center gap-2">
+      {/* Period type pills */}
+      <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+        {pills.map((p) => (
+          <button
+            key={p.key}
+            onClick={() => onPeriodTypeChange(p.key)}
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+              periodType === p.key
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
       </div>
 
-      {/* Navigation right */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 shrink-0"
-        onClick={() => onAnchorChange(navigate(anchor, periodType, 1))}
-      >
-        <ChevronRight className="w-4 h-4" />
-      </Button>
+      {/* Navigation */}
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onAnchorChange(navigate(anchor, periodType, -1))}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        <span className="text-sm font-semibold min-w-[180px] text-center">
+          {range.label}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onAnchorChange(navigate(anchor, periodType, 1))}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }
