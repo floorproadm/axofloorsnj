@@ -2,10 +2,16 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle, Loader2, Trash2, ListTodo, CalendarClock } from "lucide-react";
+import { CheckCircle, Loader2, Trash2, ListTodo, CalendarClock, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NewTaskDialog } from "@/components/admin/dashboard/NewTaskDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -49,6 +55,7 @@ const EVENT_TYPES = [
 export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
   const queryClient = useQueryClient();
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
 
   // Event form state
   const [eventName, setEventName] = useState("");
@@ -192,14 +199,29 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
           )}
         </h3>
         <div className="flex items-center gap-1">
-          <NewTaskDialog
-            onSubmit={(task) => createTask.mutate(task)}
-            isPending={createTask.isPending}
-            relatedPartnerId={partnerId}
-          />
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]" onClick={() => setEventDialogOpen(true)}>
-            <CalendarClock className="w-3.5 h-3.5" /> Evento
-          </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1">
+              <Plus className="w-3.5 h-3.5" /> Novo
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={() => setTaskDialogOpen(true)} className="gap-2 cursor-pointer">
+              <ListTodo className="w-3.5 h-3.5" /> Tarefa
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setEventDialogOpen(true)} className="gap-2 cursor-pointer">
+              <CalendarClock className="w-3.5 h-3.5" /> Evento
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <NewTaskDialog
+          externalOpen={taskDialogOpen}
+          onExternalOpenChange={setTaskDialogOpen}
+          onSubmit={(task) => createTask.mutate(task)}
+          isPending={createTask.isPending}
+          relatedPartnerId={partnerId}
+          hideTrigger
+        />
         </div>
       </div>
 

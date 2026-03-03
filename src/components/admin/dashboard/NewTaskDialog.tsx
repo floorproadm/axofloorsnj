@@ -24,10 +24,15 @@ interface NewTaskDialogProps {
   }) => void;
   isPending?: boolean;
   relatedPartnerId?: string | null;
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
-export function NewTaskDialog({ onSubmit, isPending, relatedPartnerId }: NewTaskDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewTaskDialog({ onSubmit, isPending, relatedPartnerId, externalOpen, onExternalOpenChange, hideTrigger }: NewTaskDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onExternalOpenChange || setInternalOpen;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -64,11 +69,13 @@ export function NewTaskDialog({ onSubmit, isPending, relatedPartnerId }: NewTask
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]">
-          {t("mission.novaTarefa")}
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-[hsl(var(--gold-warm))]">
+            {t("mission.novaTarefa")}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("mission.novaTarefa")}</DialogTitle>
