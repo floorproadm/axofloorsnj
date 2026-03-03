@@ -921,7 +921,7 @@ function NotesEditor({ partner }: { partner: Partner }) {
     <div className="space-y-2">
       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
         <MessageSquare className="w-3.5 h-3.5" />
-        Notas
+          NOTA
       </h4>
       <Textarea
         value={notes}
