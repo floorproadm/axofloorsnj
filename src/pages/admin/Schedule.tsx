@@ -516,8 +516,23 @@ function AppointmentModal({
     location: "",
     notes: "",
     project_id: null as string | null,
+    assigned_to: [] as string[],
   });
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [teamPickerOpen, setTeamPickerOpen] = useState(false);
+
+  // Fetch team members (profiles)
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ["team-profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .order("full_name");
+      if (error) throw error;
+      return data.filter(p => p.user_id);
+    },
+  });
 
   // Reset form when modal opens
   const handleOpenChange = (v: boolean) => {
