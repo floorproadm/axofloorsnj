@@ -205,13 +205,13 @@ export default function Payments() {
                   ].map((s) => (
                     <Card key={s.label}>
                       <CardContent className="p-3">
-                        <div className="flex items-center gap-2">
-                          <div className={`p-1.5 rounded-lg bg-muted ${s.color}`}>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`p-1.5 rounded-lg bg-muted shrink-0 ${s.color}`}>
                             <s.icon className="w-4 h-4" />
                           </div>
-                          <div>
-                            <p className="text-[10px] text-muted-foreground uppercase">{s.label}</p>
-                            <p className={`text-sm font-bold ${s.color}`}>{s.value}</p>
+                          <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground uppercase whitespace-nowrap">{s.label}</p>
+                            <p className={`text-sm font-bold truncate ${s.color}`}>{s.value}</p>
                           </div>
                         </div>
                       </CardContent>
