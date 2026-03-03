@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, AlertTriangle, Users } from "lucide-react";
+import { Plus, AlertTriangle, Users, Globe } from "lucide-react";
 import {
   Partner,
   PARTNER_TYPES,
@@ -129,6 +129,12 @@ function PartnerCard({ partner, onClick }: { partner: Partner; onClick: () => vo
         <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
           {PARTNER_TYPES[partner.partner_type] || partner.partner_type}
         </Badge>
+        {(partner as any).lead_source_tag && (
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-blue-200 text-blue-700 bg-blue-500/10 gap-0.5">
+            <Globe className="w-2.5 h-2.5" />
+            {(partner as any).lead_source_tag === "builders_page" ? "Builders" : "Realtors"}
+          </Badge>
+        )}
         {partner.total_referrals > 0 && (
           <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
             <Users className="w-3 h-3" />

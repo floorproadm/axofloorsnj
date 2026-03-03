@@ -115,33 +115,43 @@ const Realtors = () => {
     setIsSubmitting(true);
 
     try {
-      // Save to Supabase leads table
+      // Save to partners table as B2B prospect
       const { error } = await supabase
-        .from('leads')
+        .from('partners')
         .insert([{
-          name: formData.agentName,
+          contact_name: formData.agentName,
+          company_name: formData.brokerageName || formData.agentName,
           email: formData.email,
           phone: formData.phone,
-          lead_source: 'realtors_page',
-          status: 'cold_lead',
-          priority: 'high',
-          services: ['partnership'],
-          message: `Brokerage: ${formData.brokerageName}\nAverage Listings: ${formData.averageListings}\nMarket Area: ${formData.marketArea}\n\nMessage: ${formData.message}`
-        }]);
+          partner_type: 'realtor',
+          status: 'prospect',
+          service_zone: 'core',
+          lead_source_tag: 'realtors_page',
+          notes: `Average Listings: ${formData.averageListings}\nMarket Area: ${formData.marketArea}\n\nMessage: ${formData.message}`,
+        } as any]);
 
       if (error) {
-        console.error('Error saving realtor lead:', error);
+        console.error('Error saving realtor partner:', error);
         throw error;
       }
 
-      // Also store in localStorage as backup
-      const realtorLead = {
-        ...formData,
-        source: 'realtors_page',
-        type: 'realtor_partnership',
-        created_at: new Date().toISOString()
-      };
-      localStorage.setItem('realtorLead', JSON.stringify(realtorLead));
+      // Notify admins
+      const { data: admins } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+
+      if (admins && admins.length > 0) {
+        await supabase.from('notifications').insert(
+          admins.map((a: any) => ({
+            user_id: a.user_id,
+            title: `Novo parceiro B2B: ${formData.agentName}`,
+            body: `${formData.brokerageName || formData.agentName} via Realtors Page`,
+            type: 'partner',
+            link: '/admin/partners',
+          }))
+        );
+      }
 
       toast({
         title: "Partnership Inquiry Received!",
