@@ -919,32 +919,10 @@ function NotesEditor({ partner }: { partner: Partner }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          <MessageSquare className="w-3.5 h-3.5" />
-          Notas
-        </h4>
-        {(hasChanges || saved) && (
-          <button
-            onClick={handleSave}
-            disabled={saving || saved}
-            className={`p-1.5 rounded-md transition-all ${
-              saved
-                ? "text-emerald-600 bg-emerald-500/10"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
-            title="Salvar notas"
-          >
-            {saving ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : saved ? (
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            ) : (
-              <Save className="w-3.5 h-3.5" />
-            )}
-          </button>
-        )}
-      </div>
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <MessageSquare className="w-3.5 h-3.5" />
+        Notas
+      </h4>
       <Textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
@@ -952,6 +930,27 @@ function NotesEditor({ partner }: { partner: Partner }) {
         rows={6}
         className="resize-none"
       />
+      <Button
+        onClick={handleSave}
+        disabled={saving || !hasChanges}
+        size="sm"
+        className="w-full gap-1.5"
+        variant={saved ? "secondary" : "default"}
+      >
+        {saving ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : saved ? (
+          <>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            Salvo
+          </>
+        ) : (
+          <>
+            <Save className="w-3.5 h-3.5" />
+            Salvar Notas
+          </>
+        )}
+      </Button>
     </div>
   );
 }
