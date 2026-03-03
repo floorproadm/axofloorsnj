@@ -50,12 +50,22 @@ import {
 import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Wrench, DollarSign, ImagePlus, X, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
-const PREDEFINED_CATEGORIES = [
+const PREDEFINED_SERVICE_CATEGORIES = [
   "Installation",
   "Refinishing",
   "Stairs",
   "Repair",
   "Flooring Sales",
+];
+
+const PREDEFINED_MATERIAL_CATEGORIES = [
+  "Hardwood",
+  "Vinyl",
+  "Laminate",
+  "Stain & Finish",
+  "Adhesives & Underlayment",
+  "Trim & Molding",
+  "Sundries",
 ];
 
 type SubcategoryType = "core" | "add-on";
@@ -149,25 +159,26 @@ export default function Catalog() {
     const sorted: [string, number][] = Array.from(map.entries()).sort((a, b) =>
       (categoryOrder[a[0]] ?? 99) - (categoryOrder[b[0]] ?? 99)
     );
-    if (addonsCount > 0) {
+    // Only show Add-ons badge for services tab
+    if (addonsCount > 0 && activeTab === "service") {
       sorted.push(["Add-ons", addonsCount]);
     }
     return sorted;
-  }, [items]);
+  }, [items, activeTab]);
 
-  // Merged category options for the Select (predefined + any custom from DB)
+  // Merged category options for the Select – separated by active tab
   const allCategoryOptions = useMemo(() => {
+    const predefined = activeTab === "service" ? PREDEFINED_SERVICE_CATEGORIES : PREDEFINED_MATERIAL_CATEGORIES;
     const dbCategories = new Set<string>();
     allItems.forEach((i) => {
-      if (i.category) {
-        // Extract base category (strip " - Add-ons" suffix if present)
+      if (i.category && i.item_type === activeTab) {
         const base = i.category.replace(/ - Add-ons$/, "");
         dbCategories.add(base);
       }
     });
-    const merged = new Set([...PREDEFINED_CATEGORIES, ...dbCategories]);
+    const merged = new Set([...predefined, ...dbCategories]);
     return Array.from(merged).sort();
-  }, [allItems]);
+  }, [allItems, activeTab]);
 
   // Filtered items
   const filtered = useMemo(() => {
@@ -279,10 +290,10 @@ export default function Catalog() {
       return;
     }
 
-    // Resolve final category with subcategory suffix
+    // Resolve final category with subcategory suffix (only for services)
     const baseCategory = customCategoryMode ? customCategoryValue.trim() : form.category;
     const finalCategory = baseCategory
-      ? subcategory === "add-on"
+      ? (activeTab === "service" && subcategory === "add-on")
         ? `${baseCategory} - Add-ons`
         : baseCategory
       : null;
@@ -390,7 +401,9 @@ export default function Catalog() {
 
             <Button size="sm" onClick={openCreate}>
               <Plus className="w-4 h-4 mr-1" />
-              {pt ? "Adicionar" : "Add"}
+              {activeTab === "service"
+                ? (pt ? "Novo Serviço" : "New Service")
+                : (pt ? "Novo Material" : "New Material")}
             </Button>
           </div>
 
@@ -441,10 +454,18 @@ export default function Catalog() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingItem ? (pt ? "Editar Item" : "Edit Item") : (pt ? "Novo Item" : "New Item")}
+              {editingItem
+                ? (activeTab === "service"
+                    ? (pt ? "Editar Serviço" : "Edit Service")
+                    : (pt ? "Editar Material" : "Edit Material"))
+                : (activeTab === "service"
+                    ? (pt ? "Novo Serviço" : "New Service")
+                    : (pt ? "Novo Material" : "New Material"))}
             </DialogTitle>
             <DialogDescription>
-              {pt ? "Preencha os dados do item do catálogo." : "Fill in the catalog item details."}
+              {activeTab === "service"
+                ? (pt ? "Preencha os dados do serviço." : "Fill in the service details.")
+                : (pt ? "Preencha os dados do material." : "Fill in the material details.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -502,7 +523,7 @@ export default function Catalog() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid ${activeTab === "service" ? "grid-cols-2" : "grid-cols-1"} gap-3`}>
               <div className="space-y-1.5">
                 <Label>{pt ? "Categoria" : "Category"}</Label>
                 {customCategoryMode ? (
@@ -556,18 +577,20 @@ export default function Catalog() {
                   </Select>
                 )}
               </div>
-              <div className="space-y-1.5">
-                <Label>{pt ? "Subcategoria" : "Subcategory"}</Label>
-                <Select value={subcategory} onValueChange={(v) => setSubcategory(v as SubcategoryType)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="core">Core</SelectItem>
-                    <SelectItem value="add-on">Add-on</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {activeTab === "service" && (
+                <div className="space-y-1.5">
+                  <Label>{pt ? "Subcategoria" : "Subcategory"}</Label>
+                  <Select value={subcategory} onValueChange={(v) => setSubcategory(v as SubcategoryType)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="core">Core</SelectItem>
+                      <SelectItem value="add-on">Add-on</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
