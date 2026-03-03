@@ -231,13 +231,17 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       {/* Header */}
       <div className="p-5 border-b border-border/50">
         <div className="flex items-start gap-4">
-          <div
-            className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
-              avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
-            }`}
-          >
-            {initials}
-          </div>
+          {partner.photo_url ? (
+            <img src={partner.photo_url} alt={partner.contact_name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+          ) : (
+            <div
+              className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
+                avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
+              }`}
+            >
+              {initials}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-xl font-bold text-foreground truncate">

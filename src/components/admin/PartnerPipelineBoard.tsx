@@ -105,13 +105,17 @@ function PartnerCard({ partner, onClick }: { partner: Partner; onClick: () => vo
       className="w-full text-left p-2.5 rounded-lg bg-card border border-border/50 hover:border-border hover:shadow-sm transition-all space-y-2"
     >
       <div className="flex items-center gap-2">
-        <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-            avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
-          }`}
-        >
-          {initials}
-        </div>
+        {partner.photo_url ? (
+          <img src={partner.photo_url} alt={partner.contact_name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+        ) : (
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+              avatarColors[partner.partner_type] || "bg-muted text-muted-foreground"
+            }`}
+          >
+            {initials}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground truncate">{partner.contact_name}</p>
           <p className="text-[11px] text-muted-foreground truncate">{partner.company_name}</p>
