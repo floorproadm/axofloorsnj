@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { usePartnersData, PARTNER_TYPES } from "@/hooks/admin/usePartnersData";
+import { usePartnersData, PARTNER_TYPES, PARTNER_STATUSES, PARTNER_PIPELINE_STAGES } from "@/hooks/admin/usePartnersData";
 
 const schema = z.object({
   company_name: z.string().trim().min(1, "Nome da empresa é obrigatório").max(200),
@@ -35,6 +35,7 @@ const schema = z.object({
   email: z.string().trim().email("Email inválido").max(255).optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
   partner_type: z.string().min(1, "Selecione o tipo"),
+  status: z.string().min(1, "Selecione o estágio"),
   notes: z.string().trim().max(2000).optional(),
 });
 
