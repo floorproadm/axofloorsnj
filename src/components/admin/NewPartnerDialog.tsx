@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { usePartnersData, PARTNER_TYPES } from "@/hooks/admin/usePartnersData";
+import { usePartnersData, PARTNER_TYPES, PARTNER_STATUSES, PARTNER_PIPELINE_STAGES } from "@/hooks/admin/usePartnersData";
 
 const schema = z.object({
   company_name: z.string().trim().min(1, "Nome da empresa é obrigatório").max(200),
@@ -35,6 +35,7 @@ const schema = z.object({
   email: z.string().trim().email("Email inválido").max(255).optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
   partner_type: z.string().min(1, "Selecione o tipo"),
+  status: z.string().min(1, "Selecione o estágio"),
   notes: z.string().trim().max(2000).optional(),
 });
 
@@ -44,9 +45,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultStatus?: string;
+  showStageSelector?: boolean;
 }
 
-export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active" }: Props) {
+export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active", showStageSelector = false }: Props) {
   const { createPartner } = usePartnersData();
   const [loading, setLoading] = useState(false);
 
@@ -58,9 +60,24 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active" 
       email: "",
       phone: "",
       partner_type: "builder",
+      status: defaultStatus,
       notes: "",
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        company_name: "",
+        contact_name: "",
+        email: "",
+        phone: "",
+        partner_type: "builder",
+        status: defaultStatus,
+        notes: "",
+      });
+    }
+  }, [open, defaultStatus]);
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
@@ -72,7 +89,7 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active" 
         phone: values.phone || null,
         partner_type: values.partner_type,
         notes: values.notes || null,
-        status: defaultStatus,
+        status: showStageSelector ? values.status : defaultStatus,
         last_contacted_at: null,
         next_action_date: null,
         next_action_note: null,
@@ -136,6 +153,22 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active" 
                 <FormMessage />
               </FormItem>
             )} />
+            {showStageSelector && (
+              <FormField control={form.control} name="status" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estágio</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {PARTNER_PIPELINE_STAGES.map((stage) => (
+                        <SelectItem key={stage} value={stage}>{PARTNER_STATUSES[stage]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            )}
             <FormField control={form.control} name="notes" render={({ field }) => (
               <FormItem>
                 <FormLabel>Notas (opcional)</FormLabel>
