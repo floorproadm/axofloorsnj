@@ -40,11 +40,6 @@ export default function Automations() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-primary/20 text-primary bg-primary/5">
-              {totalSequences} seq · {totalDrips} drips
-            </Badge>
-          </div>
         </div>
 
         {/* Summary Cards */}
