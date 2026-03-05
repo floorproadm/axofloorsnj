@@ -44,6 +44,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultStatus?: string;
+  showStageSelector?: boolean;
 }
 
 export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active" }: Props) {
