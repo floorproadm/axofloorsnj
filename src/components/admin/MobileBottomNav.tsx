@@ -168,7 +168,7 @@ export function MobileBottomNav() {
       <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
       <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
       <NewEstimateDialog open={newEstimateOpen} onOpenChange={setNewEstimateOpen} />
-      <NewPartnerDialog open={newPartnerOpen} onOpenChange={setNewPartnerOpen} />
+      <NewPartnerDialog open={newPartnerOpen} onOpenChange={setNewPartnerOpen} defaultStatus="prospect" />
     </>
   );
 }
