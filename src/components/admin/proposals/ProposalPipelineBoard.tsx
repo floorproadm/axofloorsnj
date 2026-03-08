@@ -71,7 +71,7 @@ export function ProposalPipelineBoard({ proposals, onSelect }: Props) {
       <div className="flex gap-3 p-3 h-full min-w-max">
         {PIPELINE_STAGES.map((stage) => {
           const items = grouped[stage.key] || [];
-          const stageTotal = items.reduce((s, p) => s + p.better_price, 0);
+          const stageTotal = items.reduce((s, p) => s + (!p.use_tiers ? (p.flat_price || p.better_price) : p.better_price), 0);
           return (
             <div
               key={stage.key}
