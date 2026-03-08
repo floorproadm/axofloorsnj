@@ -72,19 +72,19 @@ function OverviewTab() {
     });
   }, [allProjects, periodStart]);
 
-  const totalRevenue = projects.reduce((s, p) => s + (p.job_costs?.estimated_revenue ?? 0), 0);
-  const totalProfit = projects.reduce((s, p) => s + (p.job_costs?.profit_amount ?? 0), 0);
-  const totalLabor = projects.reduce((s, p) => s + (p.job_costs?.labor_cost ?? 0), 0);
-  const totalMaterial = projects.reduce((s, p) => s + (p.job_costs?.material_cost ?? 0), 0);
-  const avgMargin = projects.length > 0
-    ? projects.reduce((s, p) => s + (p.job_costs?.margin_percent ?? 0), 0) / projects.length : 0;
-  const completedJobs = projects.filter(p => p.project_status === "completed");
+  const completedJobs = useMemo(() => projects.filter(p => p.project_status === "completed"), [projects]);
+  const totalRevenue = completedJobs.reduce((s, p) => s + (p.job_costs?.estimated_revenue ?? 0), 0);
+  const totalProfit = completedJobs.reduce((s, p) => s + (p.job_costs?.profit_amount ?? 0), 0);
+  const totalLabor = completedJobs.reduce((s, p) => s + (p.job_costs?.labor_cost ?? 0), 0);
+  const totalMaterial = completedJobs.reduce((s, p) => s + (p.job_costs?.material_cost ?? 0), 0);
+  const avgMargin = completedJobs.length > 0
+    ? completedJobs.reduce((s, p) => s + (p.job_costs?.margin_percent ?? 0), 0) / completedJobs.length : 0;
   const avgJobValue = completedJobs.length > 0 ? totalRevenue / completedJobs.length : 0;
 
   // Service breakdown
   const byService = useMemo(() => {
     const map: Record<string, { revenue: number; count: number; profit: number }> = {};
-    projects.forEach(p => {
+    completedJobs.forEach(p => {
       const type = p.project_type || "Other";
       if (!map[type]) map[type] = { revenue: 0, count: 0, profit: 0 };
       map[type].revenue += p.job_costs?.estimated_revenue ?? 0;
@@ -94,12 +94,12 @@ function OverviewTab() {
     return Object.entries(map)
       .map(([name, v]) => ({ name: name.replace(" & ", " &\n"), ...v, margin: v.revenue > 0 ? (v.profit / v.revenue) * 100 : 0 }))
       .sort((a, b) => b.revenue - a.revenue);
-  }, [projects]);
+  }, [completedJobs]);
 
   // Chart: monthly with profit line
   const chartData = useMemo(() => {
     const byMonth: Record<string, { revenue: number; profit: number }> = {};
-    projects.forEach(p => {
+    completedJobs.forEach(p => {
       const d = p.start_date || p.completion_date;
       if (!d) return;
       const key = d.substring(0, 7);
@@ -112,10 +112,10 @@ function OverviewTab() {
       revenue: Math.round(v.revenue),
       profit: Math.round(v.profit),
     }));
-  }, [projects]);
+  }, [completedJobs]);
 
   const kpis = [
-    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${projects.length} jobs` },
+    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${completedJobs.length} jobs` },
     { label: "Net Profit", value: fmt(totalProfit), icon: TrendingUp, color: totalProfit >= 0 ? "text-emerald-500" : "text-red-500", sub: `${avgMargin.toFixed(1)}% avg margin` },
     { label: "Avg Job Value", value: fmt(avgJobValue), icon: Briefcase, color: "text-blue-500", sub: `${completedJobs.length} completed` },
     { label: "Labor + Material", value: fmt(totalLabor + totalMaterial), icon: Target, color: "text-muted-foreground", sub: `${fmt(totalLabor)} labor · ${fmt(totalMaterial)} mat.` },
@@ -217,15 +217,15 @@ function OverviewTab() {
       <Card className="border-border/50">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent Jobs ({projects.length})</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Completed Jobs ({completedJobs.length})</p>
           </div>
           {isLoading ? (
             <div className="text-center py-8 text-sm text-muted-foreground">Loading...</div>
-          ) : projects.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">No projects in this period</div>
+          ) : completedJobs.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">No completed projects in this period</div>
           ) : (
             <div className="space-y-1.5">
-              {projects.slice(0, 10).map(p => {
+              {completedJobs.slice(0, 10).map(p => {
                 const revenue = p.job_costs?.estimated_revenue ?? 0;
                 const margin = p.job_costs?.margin_percent ?? 0;
                 return (
