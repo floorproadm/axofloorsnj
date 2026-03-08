@@ -18,8 +18,6 @@ import {
   Handshake,
   DollarSign,
   Zap,
-  ClipboardList,
-  Hammer,
   Truck,
 } from "lucide-react";
 import {
