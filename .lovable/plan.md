@@ -1,165 +1,87 @@
 
-# Execucao: Limpeza de Status + Ciclo Collaborator + SLA V0
 
-## PARTE 1: Limpeza Total de Status Legados
+# Referral Booster — Sistema de Indicação Gamificado
 
-### 1A. `src/hooks/admin/useAdminData.ts`
-Substituir filtros de stats (linhas 101-108):
-- `'new'` -> `'cold_lead'`
-- `'contacted'` -> `'warm_lead'`
-- `'qualified'` -> `'estimate_requested'`
-- `'converted'` -> `'in_production'`
-- Renomear campos do interface `AdminStats` para refletir pipeline real (`coldLeads`, `warmLeads`, etc.)
+## Visão Geral
+Transformar a página estática de referral em um sistema funcional onde clientes criam conta, recebem link/QR code personalizado, indicam amigos e acumulam créditos por cada indicação convertida.
 
-### 1B. `src/pages/admin/Intake.tsx`
-- Linha 199: `l.status === 'proposal'` -> `l.status === 'proposal_sent'`
-- Linhas 236, 248: `'new_lead'` -> `'cold_lead'`
-- Linha 248: `'appt_scheduled'` -> `'estimate_scheduled'`
-- Linha 308: `status: 'new_lead'` -> `status: 'cold_lead'`
-- Linhas 370-381: Substituir mapa `getStatusBadge` hardcoded por import de `STAGE_LABELS` + `STAGE_CONFIG` do `useLeadPipeline`
+## Arquitetura
 
-### 1C. Formularios publicos (todos `status: 'new'` -> `status: 'cold_lead'`)
-- `src/pages/Contact.tsx` (linha 88)
-- `src/pages/Builders.tsx` (linha 112)
-- `src/pages/Realtors.tsx` (linha 126)
-- `src/pages/Quiz.tsx` (linhas 215, 253)
-- `src/components/shared/ContactForm.tsx` (linhas 148, 174)
-- `src/components/shared/ContactSection.tsx` (linhas 52, 78)
-- `src/components/shared/LeadMagnetGate.tsx` (linha 78)
-- `src/hooks/useLeadCapture.ts` (linha 37)
-- `src/pages/FloorDiagnostic.tsx` (linha 171): `'qualified'`/`'disqualified'` -> `'cold_lead'` (qualificacao fica em notes)
+### 1. Database (3 novas tabelas)
 
----
+**`referral_profiles`** — Perfil do indicador (cliente)
+- `id`, `name`, `email`, `phone`, `referral_code` (único, ex: "AXO-SARAH-7K2"),  `qr_code_url`, `total_credits` (acumulado), `total_referrals`, `total_converted`, `created_at`
+- RLS: public insert, own read/update
 
-## PARTE 2: Collaborator Upload -> Admin Dashboard
+**`referrals`** — Cada indicação feita
+- `id`, `referrer_id` (FK referral_profiles), `referred_name`, `referred_email`, `referred_phone`, `status` (pending / contacted / converted / expired), `lead_id` (FK leads, nullable), `credit_amount`, `credited_at`, `created_at`
+- RLS: referrer can read own, admin all
 
-### 2A. Edge Function `supabase/functions/collaborator-upload/index.ts`
-Apos insert bem-sucedido em `media_files` (antes do return 201), inserir registro em `audit_log`:
-```typescript
-await serviceClient.from("audit_log").insert({
-  user_id: userId,
-  user_role: "collaborator",
-  operation_type: "COLLABORATOR_UPLOAD",
-  table_accessed: "media_files",
-  data_classification: JSON.stringify({
-    project_id: projectId,
-    storage_path: storagePath,
-    folder_type: folderType,
-  }),
-});
+**`referral_rewards`** — Histórico de créditos/resgates
+- `id`, `referrer_id`, `referral_id` (nullable), `type` (credit / redemption), `amount`, `description`, `created_at`
+- RLS: referrer can read own, admin all
+
+### 2. Lógica de Créditos
+- Cada indicação convertida (lead vira projeto) = crédito de 7-10% do valor do projeto
+- Admin pode ajustar % via `company_settings` (novo campo `referral_commission_percent`, default 7)
+- Créditos são aplicáveis em serviços futuros ou resgatáveis como gift card
+
+### 3. Página Pública `/referral-program` (Redesign)
+- **Formulário de cadastro**: Nome, email, telefone → gera `referral_code` automaticamente
+- **Dashboard do indicador** (após cadastro):
+  - Link personalizado com código (`axofloors.com?ref=AXO-SARAH-7K2`)
+  - **QR Code** gerado dinamicamente (biblioteca JS, sem API externa)
+  - **Cartão digital** compartilhável (imagem estilizada com logo + código)
+  - Botões de share (WhatsApp, SMS, Email, Copy link)
+  - **Painel de progresso**: indicações feitas, convertidas, créditos acumulados
+  - **Barra de gamificação**: Tiers (Bronze 1-2 refs, Silver 3-5, Gold 6+) com badges visuais
+- **Formulário de indicação**: Adicionar nome/telefone/email do amigo → cria registro em `referrals` e opcionalmente em `leads`
+
+### 4. Integração com Pipeline Existente
+- Quando lead é criado via referral link (`?ref=CODE`), o `referred_by` é linkado automaticamente
+- Quando lead converte para projeto, trigger credita o referrer
+- Admin vê indicações no painel de Partners/Leads
+
+### 5. Admin — Novo tab ou seção em Partners
+- Lista de referrers ativos com contagem e créditos
+- Ação de "Resgatar crédito" (marcar como pago)
+- Visão de ROI do programa
+
+### 6. Componentes Novos
+- `src/pages/ReferralProgram.tsx` — Redesign completo (cadastro + dashboard)
+- `src/hooks/useReferralProfile.ts` — CRUD do perfil e indicações
+- `src/components/referral/ReferralDashboard.tsx` — Painel pós-cadastro
+- `src/components/referral/ReferralQRCode.tsx` — Gerador de QR
+- `src/components/referral/ReferralCard.tsx` — Cartão digital
+- `src/components/referral/ReferralTierBadge.tsx` — Badge de gamificação
+- `src/components/referral/AddReferralForm.tsx` — Form para indicar amigo
+
+### 7. QR Code
+- Usar biblioteca `qrcode` (leve, sem API) para gerar QR em canvas/SVG
+- QR aponta para `axofloors.com?ref=CODE`
+
+### 8. Gamificação (Tiers)
+```text
+Bronze  ★       → 1-2 indicações convertidas
+Silver  ★★      → 3-5 indicações convertidas  
+Gold    ★★★     → 6-9 indicações convertidas
+Diamond ★★★★    → 10+ indicações convertidas
+```
+Cada tier desbloqueia bônus visual (badge) e pode ter % maior de comissão.
+
+### 9. Fluxo do Usuário
+```text
+Cliente acessa /referral-program
+  → Cadastra nome/email/phone
+  → Recebe código único + QR + link
+  → Compartilha via WhatsApp/SMS/Email
+  → Amigo acessa link → preenche formulário → vira lead
+  → Admin converte lead → crédito automático ao referrer
+  → Referrer vê créditos no dashboard
 ```
 
-### 2B. Migration SQL: Atualizar RPC `get_dashboard_metrics()`
-Adicionar bloco `recentFieldUploads` ao retorno:
-- Query `audit_log` onde `operation_type = 'COLLABORATOR_UPLOAD'` nas ultimas 24h
-- JOIN com `projects` para pegar `customer_name`
-- Limite 10, ordenado por `created_at DESC`
+## Fora do Escopo (Fase 2)
+- Push notifications para referrer
+- Leaderboard público
+- Integração com pagamento automático
 
-### 2C. `src/hooks/admin/useDashboardData.ts`
-- Adicionar `recentFieldUploads` ao tipo `DashboardRPCResponse`
-- Expor `recentFieldUploads` no retorno do hook
-- Adicionar `slaBreaches` ao tipo e retorno (para Parte 3)
-
-### 2D. `src/pages/admin/Dashboard.tsx`
-- Incluir uploads recentes e SLA breaches no array `priorityTasks`
-- Novo type `'field_upload'` com link `/admin/jobs`
-
-### 2E. `src/components/admin/dashboard/PriorityTasksList.tsx`
-- Adicionar types `'field_upload'`, `'sla_followup'`, `'sla_estimate'` ao union type
-- Adicionar icones correspondentes: `Camera`, `PhoneOff`, `Timer`
-
----
-
-## PARTE 3: SLA V0 - Tempo Como Variavel Real
-
-### 3A. Migration SQL (unica, junto com 2B)
-```sql
--- 1. Nova coluna
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS status_changed_at timestamptz DEFAULT now();
-
--- 2. Backfill
-UPDATE leads SET status_changed_at = COALESCE(updated_at, created_at)
-WHERE status_changed_at IS NULL;
-
--- 3. Trigger
-CREATE OR REPLACE FUNCTION set_status_changed_at()
-RETURNS trigger AS $$
-BEGIN
-  IF OLD.status IS DISTINCT FROM NEW.status THEN
-    NEW.status_changed_at := now();
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_set_status_changed_at ON leads;
-CREATE TRIGGER trg_set_status_changed_at
-  BEFORE UPDATE ON leads FOR EACH ROW
-  EXECUTE FUNCTION set_status_changed_at();
-
--- 4. View: follow-up overdue
-CREATE OR REPLACE VIEW leads_followup_overdue AS
-SELECT id, name, next_action_date
-FROM leads
-WHERE status = 'proposal_sent'
-  AND next_action_date IS NOT NULL
-  AND next_action_date < current_date;
-
--- 5. View: estimate stale (>3 dias)
-CREATE OR REPLACE VIEW leads_estimate_scheduled_stale AS
-SELECT id, name,
-  EXTRACT(DAY FROM now() - status_changed_at)::int AS days_stale
-FROM leads
-WHERE status = 'estimate_scheduled'
-  AND converted_to_project_id IS NULL
-  AND status_changed_at < now() - interval '3 days';
-
--- 6. Atualizar get_dashboard_metrics() com slaBreaches + recentFieldUploads
-```
-
-### 3B. Dashboard Integration
-SLA breaches aparecem como tasks no `priorityTasks`:
-- Follow-up overdue = cor `blocked`, link `/admin/leads?status=proposal_sent`
-- Estimate stale = cor `risk`, link `/admin/leads?status=estimate_scheduled`
-
----
-
-## Checklist de Validacao
-
-**SQL pos-deploy:**
-```sql
-SELECT column_name FROM information_schema.columns
-WHERE table_name = 'leads' AND column_name = 'status_changed_at';
-
-SELECT * FROM leads_followup_overdue LIMIT 5;
-SELECT * FROM leads_estimate_scheduled_stale LIMIT 5;
-```
-
-**Network (DevTools):**
-- `POST /rpc/get_dashboard_metrics` deve retornar: `pipeline`, `financial`, `aging_top10`, `alerts`, `money`, `missingProgressPhotos`, `recentFieldUploads`, `slaBreaches`
-
-**Grep final:**
-- Zero ocorrencias de `'new'`, `'new_lead'`, `'contacted'`, `'qualified'`, `'converted'`, `'proposal'`, `'appt_scheduled'` como status no frontend
-
----
-
-## Arquivos Modificados (resumo)
-
-| Arquivo | Tipo |
-|---|---|
-| Migration SQL (1) | DB: coluna + trigger + views + RPC update |
-| `src/hooks/admin/useAdminData.ts` | Corrigir filtros legados |
-| `src/pages/admin/Intake.tsx` | Corrigir status + badges |
-| `src/pages/Contact.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Builders.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Realtors.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/Quiz.tsx` | `'new'` -> `'cold_lead'` |
-| `src/pages/FloorDiagnostic.tsx` | `'qualified'` -> `'cold_lead'` |
-| `src/components/shared/ContactForm.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/ContactSection.tsx` | `'new'` -> `'cold_lead'` |
-| `src/components/shared/LeadMagnetGate.tsx` | `'new'` -> `'cold_lead'` |
-| `src/hooks/useLeadCapture.ts` | `'new'` -> `'cold_lead'` |
-| `supabase/functions/collaborator-upload/index.ts` | Audit log insert |
-| `src/hooks/admin/useDashboardData.ts` | Novos tipos + retorno |
-| `src/pages/admin/Dashboard.tsx` | Novos task types |
-| `src/components/admin/dashboard/PriorityTasksList.tsx` | Novos icones |
