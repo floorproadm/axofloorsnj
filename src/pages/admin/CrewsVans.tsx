@@ -469,7 +469,7 @@ export default function CrewsVans() {
                 ) : (
                   <div className="space-y-2">
                     {payrollEntries.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group">
+                      <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group cursor-pointer" onClick={() => setSelectedPayrollEntry({ ...entry, created_at: entry.payment_date, updated_at: entry.payment_date, projects: entry.project } as Payment)}>
                         <div className="flex items-center gap-3 min-w-0">
                           <div className={cn(
                             "w-2 h-2 rounded-full flex-shrink-0",
@@ -710,6 +710,11 @@ export default function CrewsVans() {
           </div>
         </DialogContent>
       </Dialog>
+      <PaymentDetailsSheet
+        payment={selectedPayrollEntry}
+        open={!!selectedPayrollEntry}
+        onOpenChange={(open) => !open && setSelectedPayrollEntry(null)}
+      />
     </AdminLayout>
   );
 }
