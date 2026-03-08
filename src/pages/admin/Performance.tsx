@@ -276,12 +276,18 @@ export default function Performance() {
       <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
 
         <Tabs defaultValue="overview">
-          <TabsList className="w-full max-w-sm h-10 bg-muted/50 p-1">
-            <TabsTrigger value="overview" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
-              <TrendingUp className="w-3.5 h-3.5" /> Overview
+          <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+            <TabsTrigger
+              value="overview"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+            >
+              <TrendingUp className="w-4 h-4 mr-1.5" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="weekly" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
-              <CalendarDays className="w-3.5 h-3.5" /> Weekly
+            <TabsTrigger
+              value="weekly"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+            >
+              <CalendarDays className="w-4 h-4 mr-1.5" /> Weekly
             </TabsTrigger>
           </TabsList>
 
