@@ -1,21 +1,34 @@
 
+# Referral Booster — Implementado ✅
 
-# Show Only Completed Projects in Overview
+## O que foi feito
 
-The "Projects" tab was removed, but the Overview's "Recent Jobs" section currently shows all projects regardless of status. Since this is a **Performance** page, it makes more sense to focus on completed projects -- those are the ones with final cost/margin data.
+### Database (Migration)
+- **`referral_profiles`** — Perfil do indicador com `referral_code` único, contadores, créditos
+- **`referrals`** — Cada indicação com status, link para lead, créditos
+- **`referral_rewards`** — Histórico de créditos/resgates
+- **`company_settings.referral_commission_percent`** — Campo novo (default 7%)
+- RLS: public insert/read, admin all
 
-## Changes
+### Frontend
+- **`src/hooks/useReferralProfile.ts`** — Hook completo: register, lookup, addReferral, tiers
+- **`src/components/referral/ReferralDashboard.tsx`** — Dashboard pós-cadastro com stats, share, QR, histórico
+- **`src/components/referral/ReferralQRCode.tsx`** — QR code via `qrcode` lib (canvas)
+- **`src/components/referral/ReferralTierBadge.tsx`** — Badge visual com progresso (Bronze→Diamond)
+- **`src/components/referral/AddReferralForm.tsx`** — Form para indicar amigo (cria referral + lead)
+- **`src/pages/ReferralProgram.tsx`** — Redesign completo com registro/login + dashboard
 
-**`src/pages/admin/Performance.tsx`**
+### Integração Pipeline
+- **`src/utils/referral.ts`** — Utilitário `getReferralCodeFromURL()` + `buildReferralNotes()`
+- **ContactForm** e **ContactSection** detectam `?ref=CODE` e marcam lead como `referral`
+- Leads criados pelo formulário de indicação linkam automaticamente ao referrer
 
-1. Filter `projects` to only `completed` in the Overview's "Recent Jobs" list (line 228):
-   - Change `projects.slice(0, 10)` to `projects.filter(p => p.project_status === 'completed').slice(0, 10)`
-   - Update the header from "Recent Jobs" to "Completed Jobs"
+### Gamificação (Tiers)
+- Starter → Bronze (1-2) → Silver (3-5) → Gold (6-9) → Diamond (10+)
+- Barra de progresso visual + badges
 
-2. Optionally, also filter the KPI calculations (lines 75-82) to only count completed projects, so Revenue/Profit/Margin reflect actual delivered work rather than estimates from in-progress jobs.
-
-3. Clean up the dead `ProjectsTab` component (lines 271-405) since it's no longer used anywhere.
-
-## Result
-The Overview tab will show only completed projects with their final financials, making it a true performance retrospective rather than a mix of in-progress estimates and completed actuals.
-
+## Fora do Escopo (Fase 2)
+- Admin tab para gerenciar referrers e resgatar créditos
+- Trigger automático de crédito quando lead converte
+- Push notifications para referrer
+- Leaderboard público
