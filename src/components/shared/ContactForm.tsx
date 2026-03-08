@@ -138,6 +138,7 @@ const ContactForm = () => {
     setIsSubmitting(true);
 
     try {
+      const refCode = getReferralCodeFromURL();
       // Insert into leads table
       const { error } = await supabase
         .from('leads')
@@ -145,7 +146,7 @@ const ContactForm = () => {
           name: formData.name,
           email: formData.email || null,
           phone: formData.phone,
-          lead_source: 'contact',
+          lead_source: refCode ? 'referral' : 'contact',
           status: 'cold_lead',
           priority: formData.priority,
           services: formData.services,
@@ -153,7 +154,8 @@ const ContactForm = () => {
           room_size: formData.room_size || null,
           city: formData.city || null,
           zip_code: formData.zip_code || null,
-          message: formData.message || null
+          message: formData.message || null,
+          notes: refCode ? buildReferralNotes(null, refCode) : null,
         }]);
 
       if (error) throw error;
