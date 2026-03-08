@@ -505,7 +505,11 @@ export default function Proposals() {
         .select("*, projects(customer_name, customer_email, customer_phone, project_type, address, city, zip_code, square_footage)")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as ProposalWithRelations[];
+      return (data ?? []).map((d: any) => ({
+        ...d,
+        use_tiers: d.use_tiers ?? true,
+        flat_price: d.flat_price ?? null,
+      })) as ProposalWithRelations[];
     },
   });
 
