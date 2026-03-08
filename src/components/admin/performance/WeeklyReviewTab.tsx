@@ -5,9 +5,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { subWeeks, startOfWeek, endOfWeek, addWeeks, format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { DollarSign, TrendingUp, Briefcase, Users, ArrowUp, ArrowDown, Minus, Target, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { DollarSign, TrendingUp, Briefcase, Users, ArrowUp, ArrowDown, Minus, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PerformanceExportSheet } from "./PerformanceExportSheet";
 
 const fmt = (v: number) => `$${v.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 const marginColor = (m: number) => m >= 30 ? "text-emerald-500" : m >= 15 ? "text-amber-500" : "text-red-500";
@@ -15,7 +14,6 @@ const marginBg = (m: number) => m >= 30 ? "bg-emerald-500/10 border-emerald-500/
 
 export default function WeeklyReviewTab() {
   const [weekOffset, setWeekOffset] = useState(0);
-  const [exportOpen, setExportOpen] = useState(false);
   const baseDate = subWeeks(new Date(), weekOffset);
   const weekStart = startOfWeek(baseDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(baseDate, { weekStartsOn: 0 });
@@ -92,15 +90,6 @@ export default function WeeklyReviewTab() {
           <ChevronRight className="w-4 h-4" />
         </Button>
         <span className="text-xs text-muted-foreground">{format(weekStart, "MMM d")} – {format(weekEnd, "MMM d, yyyy")}</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 ml-auto"
-          onClick={() => setExportOpen(true)}
-          title="Download Report"
-        >
-          <Download className="w-4 h-4" />
-        </Button>
       </div>
 
       {/* KPIs */}
@@ -203,13 +192,6 @@ export default function WeeklyReviewTab() {
           </CardContent>
         </Card>
       )}
-
-      <PerformanceExportSheet
-        open={exportOpen}
-        onOpenChange={setExportOpen}
-        projects={weekProjects}
-        periodLabel={`${weekLabel} (${format(weekStart, "MMM d")} – ${format(weekEnd, "MMM d")})`}
-      />
     </div>
   );
 }
