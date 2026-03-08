@@ -286,14 +286,14 @@ export default function CrewsVans() {
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
-              <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-xs">
-                <Users className="w-3.5 h-3.5" /> Crew
+              <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <Users className="w-4 h-4" /> Crew
               </TabsTrigger>
-              <TabsTrigger value="vans" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-xs">
-                <Truck className="w-3.5 h-3.5" /> Fleet
+              <TabsTrigger value="vans" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <Truck className="w-4 h-4" /> Fleet
               </TabsTrigger>
-              <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-xs">
-                <Hammer className="w-3.5 h-3.5" /> Payroll
+              <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <Hammer className="w-4 h-4" /> Payroll
               </TabsTrigger>
             </TabsList>
             <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
