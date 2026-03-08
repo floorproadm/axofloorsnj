@@ -18,7 +18,8 @@ import {
   Clock, Eye, Loader2, Copy, Check, Share2, Printer,
   ChevronRight, DollarSign, TrendingUp, Star, Zap,
   MapPin, Phone, Mail, Calendar, Hash, Building2,
-  Link2, Mail as MailIcon, MessageCircle
+  Link2, Mail as MailIcon, MessageCircle,
+  LayoutGrid, List
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProposalGeneration } from "@/hooks/useProposalGeneration";
