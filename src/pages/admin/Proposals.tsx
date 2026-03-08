@@ -395,17 +395,12 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
       <Sheet open={open} onOpenChange={(v) => { if (!v) { setEditing(false); onClose(); } }}>
         <SheetContent className="w-full sm:max-w-lg flex flex-col overflow-hidden">
           <SheetHeader className="flex-shrink-0">
-            <SheetTitle className="flex items-center gap-2 text-base">
+            <SheetTitle className="flex items-center gap-2 text-base pr-6">
               <Hash className="w-4 h-4 text-muted-foreground" />
               {proposal.proposal_number}
               <Badge className={cn("text-[10px] h-5 px-2 rounded-full border", sc.bg, sc.color, sc.border)}>
                 {isExpired && proposal.status === "sent" ? "Expired" : sc.label}
               </Badge>
-              {isDraft && !editing && (
-                <Button size="sm" variant="ghost" className="ml-auto h-7 gap-1 text-xs" onClick={startEditing}>
-                  <Pencil className="w-3 h-3" /> Edit
-                </Button>
-              )}
             </SheetTitle>
           </SheetHeader>
 
@@ -413,6 +408,11 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
             {/* Quick actions */}
             {!editing && (
               <div className="flex gap-2">
+                {isDraft && (
+                  <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={startEditing}>
+                    <Pencil className="w-3.5 h-3.5" /> Edit Draft
+                  </Button>
+                )}
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => printProposal(proposal)}>
                   <Printer className="w-3.5 h-3.5" /> Print / PDF
                 </Button>
