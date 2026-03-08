@@ -619,7 +619,7 @@ export default function Proposals() {
           <div className="flex items-center gap-2">
             <div className="flex items-center bg-muted rounded-lg p-0.5">
               <button
-                onClick={() => setViewMode("list")}
+                onClick={() => handleViewMode("list")}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                   viewMode === "list"
@@ -631,7 +631,7 @@ export default function Proposals() {
                 List
               </button>
               <button
-                onClick={() => setViewMode("board")}
+                onClick={() => handleViewMode("board")}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                   viewMode === "board"
