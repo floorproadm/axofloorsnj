@@ -47,8 +47,8 @@ import AdminPartners from './pages/admin/Partners';
 import AdminPayments from './pages/admin/Payments';
 import AdminAutomations from './pages/admin/Automations';
 
-import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
+import { Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 

@@ -83,8 +83,6 @@ export function AdminSidebar() {
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Feed", url: "/admin/feed", icon: Images },
     { title: "Automations", url: "/admin/automations", icon: Zap },
-    
-    { title: "Labor Payroll", url: "/admin/labor-payroll", icon: Hammer },
     { title: "Crews & Fleet", url: "/admin/crews", icon: Truck },
   ];
 
