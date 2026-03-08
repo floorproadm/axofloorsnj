@@ -290,7 +290,7 @@ export default function Performance() {
       <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
 
         <Tabs defaultValue="overview">
-          <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+          <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-full md:w-auto justify-center md:justify-start">
             <TabsTrigger
               value="overview"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
