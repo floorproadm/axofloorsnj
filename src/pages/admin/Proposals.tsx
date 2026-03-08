@@ -677,9 +677,10 @@ export default function Proposals() {
 
   // Stats
   const stats = useMemo(() => {
-    const total = proposals.reduce((s, p) => s + p.better_price, 0);
+    const total = proposals.reduce((s, p) => s + (!p.use_tiers ? (p.flat_price || p.better_price) : p.better_price), 0);
     const accepted = proposals.filter(p => p.status === "accepted");
     const acceptedTotal = accepted.reduce((s, p) => {
+      if (!p.use_tiers) return s + (p.flat_price || p.better_price);
       const tier = p.selected_tier || "better";
       return s + (p[`${tier}_price` as keyof ProposalWithRelations] as number || p.better_price);
     }, 0);
