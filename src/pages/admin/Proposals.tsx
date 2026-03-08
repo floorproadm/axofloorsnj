@@ -596,15 +596,7 @@ export default function Proposals() {
 
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight">Proposals</h1>
-              <p className="text-xs text-muted-foreground">Good · Better · Best</p>
-            </div>
-          </div>
+          <h1 className="text-lg font-bold tracking-tight">Proposals</h1>
           <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="w-4 h-4" /> New Proposal
           </Button>
