@@ -541,6 +541,10 @@ export default function Proposals() {
   const [selected, setSelected] = useState<ProposalWithRelations | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
+  const handleViewMode = (mode: "list" | "board") => {
+    setViewMode(mode);
+    if (mode === "board") setTab("all");
+  };
   const qc = useQueryClient();
 
   const { data: proposals = [], isLoading } = useQuery({
