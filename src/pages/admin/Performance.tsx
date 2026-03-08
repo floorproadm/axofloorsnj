@@ -1,66 +1,414 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { StatsCardsGrid } from "@/components/admin/StatsCards";
-import { DollarSign, Briefcase, Users, TrendingUp } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  DollarSign, Briefcase, Users, TrendingUp, BarChart3,
+  CalendarDays, Target, ArrowUp, ArrowDown, Minus,
+  Filter, Download
+} from "lucide-react";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { usePerformanceData, ProjectWithCosts } from "@/hooks/usePerformanceData";
-import { RevenueTrendChart } from "@/components/admin/performance/RevenueTrendChart";
-import { ProjectPerformanceList } from "@/components/admin/performance/ProjectPerformanceList";
 import { JobCostDetailsSheet } from "@/components/admin/performance/JobCostDetailsSheet";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell, Legend
+} from "recharts";
+import { cn } from "@/lib/utils";
+import { subWeeks, startOfWeek, endOfWeek, format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 
-export default function Performance() {
-  const { performanceMetrics: m, isLoading: dashLoading } = useDashboardData();
-  const { projects, monthlyRevenue, isLoading: perfLoading } = usePerformanceData();
+// ── Weekly Review (inline, same component) ──────────────────────────────────
+import WeeklyReviewTab from "@/components/admin/performance/WeeklyReviewTab";
+
+const fmt = (v: number) =>
+  `$${v.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
+
+const marginColor = (m: number) =>
+  m >= 30 ? "text-emerald-500" : m >= 15 ? "text-amber-500" : "text-red-500";
+
+const marginBg = (m: number) =>
+  m >= 30 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
+    : m >= 15 ? "bg-amber-500/10 border-amber-500/20 text-amber-600"
+    : "bg-red-500/10 border-red-500/20 text-red-500";
+
+type Period = "30d" | "90d" | "6m" | "1y" | "all";
+
+const PERIODS: { label: string; value: Period }[] = [
+  { label: "30 days", value: "30d" },
+  { label: "90 days", value: "90d" },
+  { label: "6 months", value: "6m" },
+  { label: "1 year", value: "1y" },
+  { label: "All time", value: "all" },
+];
+
+function getPeriodStart(period: Period): Date | null {
+  const now = new Date();
+  if (period === "30d") return subMonths(now, 1);
+  if (period === "90d") return subMonths(now, 3);
+  if (period === "6m") return subMonths(now, 6);
+  if (period === "1y") return subMonths(now, 12);
+  return null;
+}
+
+// ── Overview Tab ─────────────────────────────────────────────────────────────
+function OverviewTab() {
+  const [period, setPeriod] = useState<Period>("90d");
   const [selectedProject, setSelectedProject] = useState<ProjectWithCosts | null>(null);
+  const { projects: allProjects, monthlyRevenue, isLoading } = usePerformanceData();
+  const { performanceMetrics: m } = useDashboardData();
 
-  const avgJobValue = m.completedCount > 0 ? Math.round(m.totalRevenue / m.completedCount) : 0;
+  const periodStart = getPeriodStart(period);
+  const projects = useMemo(() => {
+    if (!periodStart) return allProjects;
+    return allProjects.filter(p => {
+      const d = p.start_date || p.completion_date;
+      return d && new Date(d) >= periodStart;
+    });
+  }, [allProjects, periodStart]);
 
-  const cards = [
-    {
-      title: "Receita Total",
-      value: `$${m.totalRevenue.toLocaleString()}`,
-      icon: DollarSign,
-      description: `Lucro: $${m.totalProfit.toLocaleString()}`,
-      trend: 'up' as const,
-    },
-    {
-      title: "Jobs Concluídos",
-      value: m.completedCount.toString(),
-      icon: Briefcase,
-      description: `${m.inProductionCount} em produção`,
-      trend: 'neutral' as const,
-    },
-    {
-      title: "Leads (30d)",
-      value: m.recentLeadsCount.toString(),
-      icon: Users,
-      description: `${m.totalLeads} total`,
-      trend: 'up' as const,
-    },
-    {
-      title: "Valor Médio/Job",
-      value: `$${avgJobValue.toLocaleString()}`,
-      icon: TrendingUp,
-      description: `Margem: ${(m.avgMargin ?? 0).toFixed(1)}%`,
-      trend: (m.avgMargin ?? 0) >= 30 ? 'up' as const : 'down' as const,
-    },
+  const totalRevenue = projects.reduce((s, p) => s + (p.job_costs?.estimated_revenue ?? 0), 0);
+  const totalProfit = projects.reduce((s, p) => s + (p.job_costs?.profit_amount ?? 0), 0);
+  const totalLabor = projects.reduce((s, p) => s + (p.job_costs?.labor_cost ?? 0), 0);
+  const totalMaterial = projects.reduce((s, p) => s + (p.job_costs?.material_cost ?? 0), 0);
+  const avgMargin = projects.length > 0
+    ? projects.reduce((s, p) => s + (p.job_costs?.margin_percent ?? 0), 0) / projects.length : 0;
+  const completedJobs = projects.filter(p => p.project_status === "completed");
+  const avgJobValue = completedJobs.length > 0 ? totalRevenue / completedJobs.length : 0;
+
+  // Service breakdown
+  const byService = useMemo(() => {
+    const map: Record<string, { revenue: number; count: number; profit: number }> = {};
+    projects.forEach(p => {
+      const type = p.project_type || "Other";
+      if (!map[type]) map[type] = { revenue: 0, count: 0, profit: 0 };
+      map[type].revenue += p.job_costs?.estimated_revenue ?? 0;
+      map[type].profit += p.job_costs?.profit_amount ?? 0;
+      map[type].count += 1;
+    });
+    return Object.entries(map)
+      .map(([name, v]) => ({ name: name.replace(" & ", " &\n"), ...v, margin: v.revenue > 0 ? (v.profit / v.revenue) * 100 : 0 }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [projects]);
+
+  // Chart: monthly with profit line
+  const chartData = useMemo(() => {
+    const byMonth: Record<string, { revenue: number; profit: number }> = {};
+    projects.forEach(p => {
+      const d = p.start_date || p.completion_date;
+      if (!d) return;
+      const key = d.substring(0, 7);
+      if (!byMonth[key]) byMonth[key] = { revenue: 0, profit: 0 };
+      byMonth[key].revenue += p.job_costs?.estimated_revenue ?? 0;
+      byMonth[key].profit += p.job_costs?.profit_amount ?? 0;
+    });
+    return Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b)).map(([key, v]) => ({
+      month: format(new Date(key + "-01"), "MMM yy"),
+      revenue: Math.round(v.revenue),
+      profit: Math.round(v.profit),
+    }));
+  }, [projects]);
+
+  const kpis = [
+    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${projects.length} jobs` },
+    { label: "Net Profit", value: fmt(totalProfit), icon: TrendingUp, color: totalProfit >= 0 ? "text-emerald-500" : "text-red-500", sub: `${avgMargin.toFixed(1)}% avg margin` },
+    { label: "Avg Job Value", value: fmt(avgJobValue), icon: Briefcase, color: "text-blue-500", sub: `${completedJobs.length} completed` },
+    { label: "Labor + Material", value: fmt(totalLabor + totalMaterial), icon: Target, color: "text-muted-foreground", sub: `${fmt(totalLabor)} labor · ${fmt(totalMaterial)} mat.` },
   ];
 
   return (
+    <div className="space-y-5">
+      {/* Period filter */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Period:</span>
+        <div className="flex gap-1">
+          {PERIODS.map(p => (
+            <button
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
+              className={cn(
+                "text-xs px-3 py-1.5 rounded-lg border font-medium transition-all",
+                period === p.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {kpis.map(k => (
+          <Card key={k.label} className="border-border/50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{k.label}</span>
+                <k.icon className={cn("w-4 h-4", k.color)} />
+              </div>
+              <p className={cn("text-xl font-bold", k.color)}>{k.value}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{k.sub}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Avg Margin banner */}
+      <Card className={cn("border", avgMargin >= 30 ? "bg-emerald-500/5 border-emerald-500/20" : avgMargin >= 15 ? "bg-amber-500/5 border-amber-500/20" : "bg-red-500/5 border-red-500/20")}>
+        <CardContent className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">Average Margin</p>
+            <p className="text-xs text-muted-foreground">Target ≥ 30% · {avgMargin >= 30 ? "🟢 Excellent" : avgMargin >= 15 ? "🟡 Acceptable" : "🔴 Review Costs"}</p>
+          </div>
+          <span className={cn("text-3xl font-bold", marginColor(avgMargin))}>{avgMargin.toFixed(1)}%</span>
+        </CardContent>
+      </Card>
+
+      {/* Charts */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card className="border-border/50">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Revenue vs Profit</p>
+            {chartData.length === 0 ? (
+              <div className="h-36 flex items-center justify-center text-sm text-muted-foreground">No data for this period</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={150}>
+                <BarChart data={chartData} barSize={14} barGap={3}>
+                  <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: any, name: string) => [fmt(v), name === "revenue" ? "Revenue" : "Profit"]} />
+                  <Bar dataKey="revenue" fill="hsl(var(--primary))" opacity={0.25} radius={[3,3,0,0]} name="revenue" />
+                  <Bar dataKey="profit" fill="hsl(var(--primary))" radius={[3,3,0,0]} name="profit" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">By Service Type</p>
+            {byService.length === 0 ? (
+              <div className="h-36 flex items-center justify-center text-sm text-muted-foreground">No data</div>
+            ) : (
+              <div className="space-y-2">
+                {byService.slice(0, 5).map(s => (
+                  <div key={s.name} className="flex items-center gap-2">
+                    <div className="w-24 truncate text-xs text-muted-foreground flex-shrink-0">{s.name.replace("\n", " ")}</div>
+                    <div className="flex-1 h-5 bg-muted/30 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary/60 rounded-full transition-all"
+                        style={{ width: `${Math.min(100, (s.revenue / byService[0].revenue) * 100)}%` }}
+                      />
+                    </div>
+                    <div className="text-right flex-shrink-0 min-w-[80px]">
+                      <span className="text-xs font-semibold">{fmt(s.revenue)}</span>
+                      <span className={cn("text-[10px] ml-1", marginColor(s.margin))}>{s.margin.toFixed(0)}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Projects */}
+      <Card className="border-border/50">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent Jobs ({projects.length})</p>
+          </div>
+          {isLoading ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">Loading...</div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">No projects in this period</div>
+          ) : (
+            <div className="space-y-1.5">
+              {projects.slice(0, 10).map(p => {
+                const revenue = p.job_costs?.estimated_revenue ?? 0;
+                const margin = p.job_costs?.margin_percent ?? 0;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedProject(p)}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-border/50 hover:bg-muted/30 transition-colors text-left group"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={cn("w-2 h-2 rounded-full flex-shrink-0", margin >= 30 ? "bg-emerald-500" : margin >= 15 ? "bg-amber-500" : "bg-red-500")} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{p.customer_name}</p>
+                        <p className="text-xs text-muted-foreground">{p.project_type}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <Badge variant="outline" className={cn("text-[10px] h-5 px-1.5",
+                        p.project_status === "completed" ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/10" :
+                        p.project_status === "in_production" ? "text-blue-600 border-blue-500/30 bg-blue-500/10" :
+                        "text-muted-foreground"
+                      )}>
+                        {p.project_status === "in_production" ? "In Progress" : p.project_status}
+                      </Badge>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">{fmt(revenue)}</p>
+                        <p className={cn("text-xs font-medium", marginColor(margin))}>{margin.toFixed(0)}%</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <JobCostDetailsSheet project={selectedProject} open={!!selectedProject} onClose={() => setSelectedProject(null)} />
+    </div>
+  );
+}
+
+// ── Projects Tab ──────────────────────────────────────────────────────────────
+function ProjectsTab() {
+  const { projects, isLoading } = usePerformanceData();
+  const [selectedProject, setSelectedProject] = useState<ProjectWithCosts | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [marginFilter, setMarginFilter] = useState("all");
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => projects.filter(p => {
+    if (statusFilter !== "all" && p.project_status !== statusFilter) return false;
+    const margin = p.job_costs?.margin_percent ?? 0;
+    if (marginFilter === "good" && margin < 30) return false;
+    if (marginFilter === "ok" && (margin < 15 || margin >= 30)) return false;
+    if (marginFilter === "poor" && margin >= 15) return false;
+    if (search && !p.customer_name.toLowerCase().includes(search.toLowerCase()) && !p.project_type.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  }), [projects, statusFilter, marginFilter, search]);
+
+  const totalRevenue = filtered.reduce((s, p) => s + (p.job_costs?.estimated_revenue ?? 0), 0);
+  const totalProfit = filtered.reduce((s, p) => s + (p.job_costs?.profit_amount ?? 0), 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <Input placeholder="Search client or type..." value={search} onChange={e => setSearch(e.target.value)} className="h-8 w-48 text-sm" />
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="in_production">In Progress</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={marginFilter} onValueChange={setMarginFilter}>
+          <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Margins</SelectItem>
+            <SelectItem value="good">🟢 ≥30%</SelectItem>
+            <SelectItem value="ok">🟡 15–29%</SelectItem>
+            <SelectItem value="poor">🔴 &lt;15%</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-xs text-muted-foreground ml-auto">
+          {filtered.length} jobs · {fmt(totalRevenue)} · {fmt(totalProfit)} profit
+        </span>
+      </div>
+
+      <Card className="border-border/50">
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">Loading...</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">No projects match filters</div>
+          ) : (
+            <div className="divide-y divide-border/30">
+              {filtered.map(p => {
+                const revenue = p.job_costs?.estimated_revenue ?? 0;
+                const margin = p.job_costs?.margin_percent ?? 0;
+                const profit = p.job_costs?.profit_amount ?? 0;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedProject(p)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn("w-2 h-2 rounded-full flex-shrink-0", margin >= 30 ? "bg-emerald-500" : margin >= 15 ? "bg-amber-500" : "bg-red-500")} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">{p.customer_name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">{p.project_type}</span>
+                          {p.start_date && <span className="text-xs text-muted-foreground">· {format(new Date(p.start_date), "MMM d, yy")}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      <Badge variant="outline" className={cn("text-[10px] h-5 px-1.5 hidden sm:flex",
+                        p.project_status === "completed" ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/10" :
+                        p.project_status === "in_production" ? "text-blue-600 border-blue-500/30 bg-blue-500/10" : "text-muted-foreground"
+                      )}>
+                        {p.project_status === "in_production" ? "In Progress" : p.project_status}
+                      </Badge>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">{fmt(revenue)}</p>
+                        <p className={cn("text-xs", marginColor(margin))}>{margin.toFixed(0)}% · {fmt(profit)}</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <JobCostDetailsSheet project={selectedProject} open={!!selectedProject} onClose={() => setSelectedProject(null)} />
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+export default function Performance() {
+  return (
     <AdminLayout title="Performance">
-      <div className="space-y-6">
-        <StatsCardsGrid cards={cards} isLoading={dashLoading} columns={4} />
-        <RevenueTrendChart data={monthlyRevenue} isLoading={perfLoading} />
-        <ProjectPerformanceList
-          projects={projects}
-          isLoading={perfLoading}
-          onSelect={setSelectedProject}
-        />
-        <JobCostDetailsSheet
-          project={selectedProject}
-          open={!!selectedProject}
-          onClose={() => setSelectedProject(null)}
-        />
+      <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">Performance</h1>
+            <p className="text-xs text-muted-foreground">Revenue · Margins · Weekly KPIs</p>
+          </div>
+        </div>
+
+        <Tabs defaultValue="overview">
+          <TabsList className="w-full max-w-sm h-10 bg-muted/50 p-1">
+            <TabsTrigger value="overview" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <TrendingUp className="w-3.5 h-3.5" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="weekly" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <CalendarDays className="w-3.5 h-3.5" /> Weekly
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Briefcase className="w-3.5 h-3.5" /> Projects
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="mt-5"><OverviewTab /></TabsContent>
+          <TabsContent value="weekly" className="mt-5"><WeeklyReviewTab /></TabsContent>
+          <TabsContent value="projects" className="mt-5"><ProjectsTab /></TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );
