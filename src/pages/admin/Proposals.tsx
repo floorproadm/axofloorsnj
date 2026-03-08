@@ -541,6 +541,10 @@ export default function Proposals() {
   const [selected, setSelected] = useState<ProposalWithRelations | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
+  const handleViewMode = (mode: "list" | "board") => {
+    setViewMode(mode);
+    if (mode === "board") setTab("all");
+  };
   const qc = useQueryClient();
 
   const { data: proposals = [], isLoading } = useQuery({
@@ -615,7 +619,7 @@ export default function Proposals() {
           <div className="flex items-center gap-2">
             <div className="flex items-center bg-muted rounded-lg p-0.5">
               <button
-                onClick={() => setViewMode("list")}
+                onClick={() => handleViewMode("list")}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                   viewMode === "list"
@@ -627,7 +631,7 @@ export default function Proposals() {
                 List
               </button>
               <button
-                onClick={() => setViewMode("board")}
+                onClick={() => handleViewMode("board")}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                   viewMode === "board"
@@ -698,35 +702,45 @@ export default function Proposals() {
             </CardContent>
           </Card>
         ) : viewMode === "board" ? (
-          /* Board View — group by status columns */
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {(["draft", "pending", "accepted"] as const).map(groupKey => {
-              const groupProposals = filtered.filter(p => {
-                if (groupKey === "pending") return ["sent", "viewed"].includes(p.status);
-                if (groupKey === "accepted") return ["accepted", "rejected"].includes(p.status);
-                return p.status === "draft";
-              });
-              const groupLabel = groupKey === "draft" ? "Draft" : groupKey === "pending" ? "Pending" : "Closed";
-              const groupTotal = groupProposals.reduce((s, p) => s + p.better_price, 0);
-              return (
-                <div key={groupKey} className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{groupLabel}</span>
-                    <span className="text-xs text-muted-foreground">{groupProposals.length} · {fmt(groupTotal)}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {groupProposals.map(p => (
-                      <ProposalCard key={p.id} proposal={p} onClick={() => setSelected(p)} />
-                    ))}
-                    {groupProposals.length === 0 && (
-                      <div className="rounded-lg border border-dashed border-border/50 p-6 text-center">
-                        <p className="text-xs text-muted-foreground">No proposals</p>
+          /* Board View — horizontal Kanban pipeline */
+          <div className="flex-1 overflow-x-auto overflow-y-hidden -mx-4 md:-mx-6">
+            <div className="flex gap-3 px-4 md:px-6 pb-4 h-full min-w-max">
+              {([
+                { key: "draft",    label: "Draft",    filter: (p: ProposalWithRelations) => p.status === "draft" },
+                { key: "sent",     label: "Sent",     filter: (p: ProposalWithRelations) => p.status === "sent" },
+                { key: "viewed",   label: "Viewed",   filter: (p: ProposalWithRelations) => p.status === "viewed" },
+                { key: "accepted", label: "Accepted", filter: (p: ProposalWithRelations) => p.status === "accepted" },
+                { key: "declined", label: "Declined", filter: (p: ProposalWithRelations) => p.status === "rejected" || (isPast(parseISO(p.valid_until)) && !["accepted","rejected"].includes(p.status)) },
+              ] as const).map(stage => {
+                const stageProposals = filtered.filter(stage.filter);
+                const stageTotal = stageProposals.reduce((s, p) => s + p.better_price, 0);
+                const sc = STATUS_CONFIG[stage.key === "declined" ? "rejected" : stage.key] || STATUS_CONFIG.draft;
+                return (
+                  <div key={stage.key} className="flex flex-col w-[220px] sm:w-[250px] bg-muted/30 rounded-xl border border-border/50 shrink-0">
+                    {/* Column Header */}
+                    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/40">
+                      <span className={cn("w-2.5 h-2.5 rounded-full", sc.dot)} />
+                      <span className="text-sm font-semibold text-foreground truncate">{stage.label}</span>
+                      <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">
+                        {stageProposals.length}
+                      </Badge>
+                    </div>
+                    {/* Column Summary */}
+                    {stageProposals.length > 0 && (
+                      <div className="px-3 py-1.5 border-b border-border/30">
+                        <span className="text-[10px] text-muted-foreground">{fmt(stageTotal)}</span>
                       </div>
                     )}
+                    {/* Cards */}
+                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                      {stageProposals.map(p => (
+                        <ProposalCard key={p.id} proposal={p} onClick={() => setSelected(p)} />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         ) : (
           /* List View (default) — compact rows */
