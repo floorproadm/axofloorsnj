@@ -617,23 +617,19 @@ export default function Proposals() {
         ) : (
           <>
             {/* Filter Tabs — underline style */}
-            <div className="flex gap-4 px-3 border-b border-border/50 overflow-x-auto">
+            <div className="flex gap-1 px-3 py-1.5 border-b border-border/50 overflow-x-auto">
               {TABS.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    "flex items-center gap-1.5 pb-2 pt-2 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
+                    "px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors",
                     tab === t.id
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
-                  {t.label}
-                  <span className={cn(
-                    "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                    tab === t.id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  )}>{t.count}</span>
+                  {t.label} {t.count > 0 && <span className="ml-0.5 opacity-60">{t.count}</span>}
                 </button>
               ))}
             </div>
