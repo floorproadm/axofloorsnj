@@ -342,8 +342,8 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   return (
     <>
       <Sheet open={open} onOpenChange={onClose}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
+        <SheetContent className="w-full sm:max-w-lg flex flex-col overflow-hidden">
+          <SheetHeader className="flex-shrink-0">
             <SheetTitle className="flex items-center gap-2 text-base">
               <Hash className="w-4 h-4 text-muted-foreground" />
               {proposal.proposal_number}
@@ -353,7 +353,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
             </SheetTitle>
           </SheetHeader>
 
-          <div className="space-y-5 mt-5">
+          <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-10 space-y-5 mt-5">
             {/* Quick actions */}
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => printProposal(proposal)}>
