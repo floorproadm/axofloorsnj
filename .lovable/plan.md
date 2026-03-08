@@ -1,16 +1,34 @@
 
+# Referral Booster — Implementado ✅
 
-# Unify Crews & Fleet UI to match Catalog pattern
+## O que foi feito
 
-The Crews page has a custom header block (icon + title + subtitle) and pill-style tabs (`bg-muted/50`, `data-[state=active]:bg-card`), while Catalog uses **no custom header** (relies on `AdminLayout title`) and **underline-style tabs** (`bg-transparent border-b`, `border-b-2 border-primary`).
+### Database (Migration)
+- **`referral_profiles`** — Perfil do indicador com `referral_code` único, contadores, créditos
+- **`referrals`** — Cada indicação com status, link para lead, créditos
+- **`referral_rewards`** — Histórico de créditos/resgates
+- **`company_settings.referral_commission_percent`** — Campo novo (default 7%)
+- RLS: public insert/read, admin all
 
-## Changes — `src/pages/admin/CrewsVans.tsx`
+### Frontend
+- **`src/hooks/useReferralProfile.ts`** — Hook completo: register, lookup, addReferral, tiers
+- **`src/components/referral/ReferralDashboard.tsx`** — Dashboard pós-cadastro com stats, share, QR, histórico
+- **`src/components/referral/ReferralQRCode.tsx`** — QR code via `qrcode` lib (canvas)
+- **`src/components/referral/ReferralTierBadge.tsx`** — Badge visual com progresso (Bronze→Diamond)
+- **`src/components/referral/AddReferralForm.tsx`** — Form para indicar amigo (cria referral + lead)
+- **`src/pages/ReferralProgram.tsx`** — Redesign completo com registro/login + dashboard
 
-1. **Remove the custom header block** (lines 286-302) — the icon, "Crews & Fleet" title, and subtitle. The `AdminLayout title="Crews & Fleet"` already provides the page title. Move the "Add Entry" button to sit next to the tabs (same row, right-aligned), matching how Catalog places its "New Service" button.
+### Integração Pipeline
+- **`src/utils/referral.ts`** — Utilitário `getReferralCodeFromURL()` + `buildReferralNotes()`
+- **ContactForm** e **ContactSection** detectam `?ref=CODE` e marcam lead como `referral`
+- Leads criados pelo formulário de indicação linkam automaticamente ao referrer
 
-2. **Switch tabs to underline style** — replace the current `TabsList` and `TabsTrigger` classes:
-   - `TabsList`: `bg-transparent border-b border-border rounded-none p-0 h-auto w-auto`
-   - `TabsTrigger`: `rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1`
+### Gamificação (Tiers)
+- Starter → Bronze (1-2) → Silver (3-5) → Gold (6-9) → Diamond (10+)
+- Barra de progresso visual + badges
 
-3. **Layout wrapper**: Use `flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3` to place tabs left, button right — same pattern as Catalog.
-
+## Fora do Escopo (Fase 2)
+- Admin tab para gerenciar referrers e resgatar créditos
+- Trigger automático de crédito quando lead converte
+- Push notifications para referrer
+- Leaderboard público
