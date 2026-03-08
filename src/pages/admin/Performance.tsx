@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import {
   DollarSign, Briefcase, TrendingUp, BarChart3,
-  CalendarDays, Target
+  CalendarDays, Target, Download
 } from "lucide-react";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { usePerformanceData, ProjectWithCosts } from "@/hooks/usePerformanceData";
 import { JobCostDetailsSheet } from "@/components/admin/performance/JobCostDetailsSheet";
+import { PerformanceExportSheet } from "@/components/admin/performance/PerformanceExportSheet";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -59,6 +60,7 @@ function getPeriodStart(period: Period): Date | null {
 function OverviewTab() {
   const [period, setPeriod] = useState<Period>("90d");
   const [selectedProject, setSelectedProject] = useState<ProjectWithCosts | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const { projects: allProjects, monthlyRevenue, isLoading } = usePerformanceData();
   const { performanceMetrics: m } = useDashboardData();
 
@@ -122,8 +124,8 @@ function OverviewTab() {
 
   return (
     <div className="space-y-5">
-      {/* Period filter */}
-      <div className="flex items-center gap-2">
+      {/* Period filter + Download */}
+      <div className="relative flex items-center gap-2">
         <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
           <SelectTrigger className="w-[140px] h-8 text-xs">
             <SelectValue />
@@ -134,6 +136,15 @@ function OverviewTab() {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 ml-auto"
+          onClick={() => setExportOpen(true)}
+          title="Download Report"
+        >
+          <Download className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* KPI Cards */}
