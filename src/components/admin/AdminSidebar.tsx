@@ -18,6 +18,9 @@ import {
   Handshake,
   DollarSign,
   Zap,
+  ClipboardList,
+  Hammer,
+  Truck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -80,6 +83,9 @@ export function AdminSidebar() {
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Feed", url: "/admin/feed", icon: Images },
     { title: "Automations", url: "/admin/automations", icon: Zap },
+    { title: "Weekly Review", url: "/admin/weekly-review", icon: ClipboardList },
+    { title: "Labor Payroll", url: "/admin/labor-payroll", icon: Hammer },
+    { title: "Crews & Fleet", url: "/admin/crews", icon: Truck },
   ];
 
   const labeledGroups = [

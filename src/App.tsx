@@ -46,6 +46,9 @@ import AdminHelp from './pages/admin/Help';
 import AdminPartners from './pages/admin/Partners';
 import AdminPayments from './pages/admin/Payments';
 import AdminAutomations from './pages/admin/Automations';
+import WeeklyReview from './pages/admin/WeeklyReview';
+import LaborPayroll from './pages/admin/LaborPayroll';
+import CrewsVans from './pages/admin/CrewsVans';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 
@@ -190,6 +193,21 @@ const App = () => {
             <Route path="/admin/automations" element={
               <ProtectedRoute>
                 <AdminAutomations />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/weekly-review" element={
+              <ProtectedRoute>
+                <WeeklyReview />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/labor-payroll" element={
+              <ProtectedRoute>
+                <LaborPayroll />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/crews" element={
+              <ProtectedRoute>
+                <CrewsVans />
               </ProtectedRoute>
             } />
             {/* Collaborator Portal */}
