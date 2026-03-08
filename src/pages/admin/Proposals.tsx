@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, isPast, parseISO } from "date-fns";
@@ -19,7 +20,7 @@ import {
   ChevronRight, DollarSign, TrendingUp, Star, Zap,
   MapPin, Phone, Mail, Calendar, Hash, Building2,
   Link2, Mail as MailIcon, MessageCircle,
-  LayoutGrid, List
+  LayoutGrid, List, Pencil, Save, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProposalGeneration } from "@/hooks/useProposalGeneration";
