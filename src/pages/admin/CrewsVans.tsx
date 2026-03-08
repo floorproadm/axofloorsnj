@@ -283,36 +283,23 @@ export default function CrewsVans() {
     <AdminLayout title="Crews & Fleet">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
 
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-              <Users className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight">Crews & Fleet</h1>
-              <p className="text-xs text-muted-foreground">
-                {crew.length} workers · {vanRecords.length} vehicles
-              </p>
-            </div>
-          </div>
-          <Button size="sm" className="gap-1.5" onClick={handleAddClick}>
-            <Plus className="w-4 h-4" /> {addLabel}
-          </Button>
-        </div>
-
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-          <TabsList className="w-full max-w-md h-10 bg-muted/50 p-1">
-            <TabsTrigger value="crew" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card">
-              <Users className="w-3.5 h-3.5" /> Crew
-            </TabsTrigger>
-            <TabsTrigger value="vans" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card">
-              <Truck className="w-3.5 h-3.5" /> Fleet
-            </TabsTrigger>
-            <TabsTrigger value="payroll" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card">
-              <Hammer className="w-3.5 h-3.5" /> Payroll
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+              <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-xs">
+                <Users className="w-3.5 h-3.5" /> Crew
+              </TabsTrigger>
+              <TabsTrigger value="vans" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-xs">
+                <Truck className="w-3.5 h-3.5" /> Fleet
+              </TabsTrigger>
+              <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-xs">
+                <Hammer className="w-3.5 h-3.5" /> Payroll
+              </TabsTrigger>
+            </TabsList>
+            <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
+              <Plus className="w-4 h-4" /> {addLabel}
+            </Button>
+          </div>
 
           {/* ─── CREW TAB ─── */}
           <TabsContent value="crew" className="mt-4">
