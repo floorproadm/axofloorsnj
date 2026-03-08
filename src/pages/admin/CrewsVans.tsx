@@ -291,11 +291,11 @@ export default function CrewsVans() {
               <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Users className="w-4 h-4" /> Crew
               </TabsTrigger>
-              <TabsTrigger value="vans" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Truck className="w-4 h-4" /> Fleet
-              </TabsTrigger>
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Payroll
+              </TabsTrigger>
+              <TabsTrigger value="vans" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <Truck className="w-4 h-4" /> Fleet
               </TabsTrigger>
             </TabsList>
             <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
