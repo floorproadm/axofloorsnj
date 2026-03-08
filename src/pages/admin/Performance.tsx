@@ -141,12 +141,9 @@ function OverviewTab() {
         {kpis.map(k => (
           <Card key={k.label} className="border-border/50">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{k.label}</span>
-                <k.icon className={cn("w-4 h-4", k.color)} />
-              </div>
-              <p className={cn("text-xl font-bold", k.color)}>{k.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{k.sub}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">{k.label}</p>
+              <p className={cn("text-2xl font-bold", k.color)}>{k.value}</p>
+              <p className="text-[11px] text-muted-foreground">{k.sub}</p>
             </CardContent>
           </Card>
         ))}
