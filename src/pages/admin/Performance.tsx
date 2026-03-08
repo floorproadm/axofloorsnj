@@ -274,16 +274,6 @@ export default function Performance() {
   return (
     <AdminLayout title="Performance">
       <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight">Performance</h1>
-            <p className="text-xs text-muted-foreground">Revenue · Margins · Weekly KPIs</p>
-          </div>
-        </div>
 
         <Tabs defaultValue="overview">
           <TabsList className="w-full max-w-sm h-10 bg-muted/50 p-1">
