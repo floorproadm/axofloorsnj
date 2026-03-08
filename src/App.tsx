@@ -46,9 +46,10 @@ import AdminHelp from './pages/admin/Help';
 import AdminPartners from './pages/admin/Partners';
 import AdminPayments from './pages/admin/Payments';
 import AdminAutomations from './pages/admin/Automations';
-
+import WeeklyReview from './pages/admin/WeeklyReview';
+import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
-import { Navigate } from "react-router-dom";
+import AdminProposals from './pages/admin/Proposals';
 import Auth from "./pages/Auth";
 import Campaign from "./pages/Campaign";
 
@@ -195,10 +196,24 @@ const App = () => {
                 <AdminAutomations />
               </ProtectedRoute>
             } />
-            <Route path="/admin/labor-payroll" element={<Navigate to="/admin/crews" replace />} />
+            <Route path="/admin/weekly-review" element={
+              <ProtectedRoute>
+                <WeeklyReview />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/labor-payroll" element={
+              <ProtectedRoute>
+                <LaborPayroll />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/crews" element={
               <ProtectedRoute>
                 <CrewsVans />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/proposals" element={
+              <ProtectedRoute>
+                <AdminProposals />
               </ProtectedRoute>
             } />
             {/* Collaborator Portal */}
