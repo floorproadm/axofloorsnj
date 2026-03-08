@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Phone, Mail, MapPin, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getReferralCodeFromURL, buildReferralNotes } from "@/utils/referral";
 const ContactSection = () => {
   const {
     toast
@@ -44,18 +45,21 @@ const ContactSection = () => {
     setIsLoading(true);
     try {
       // Save contact form data to database
+      const refCode = getReferralCodeFromURL();
+      const baseNotes = 'Contact form submission from website';
       const contactData = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone || '',
-        lead_source: 'contact',
+        lead_source: refCode ? 'referral' : 'contact',
         status: 'cold_lead',
         priority: 'medium',
         city: null,
         room_size: 'contact_form',
         services: formData.service ? [formData.service] : ['general_inquiry'],
         budget: 0,
-        message: 'Contact form submission from website'
+        message: baseNotes,
+        notes: refCode ? buildReferralNotes(null, refCode) : null,
       };
       const {
         data: savedContact,

@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Phone, Mail, Send, AlertCircle } from 'lucide-react';
+import { getReferralCodeFromURL, buildReferralNotes } from '@/utils/referral';
 import { 
   validateForm, 
   sanitizeInput, 
