@@ -83,17 +83,17 @@ export function ProposalPipelineBoard({ proposals, onSelect }: Props) {
                   {items.length}
                 </Badge>
               </div>
-              {items.length > 0 && (
-                <div className="px-3 py-1.5 border-b border-border/30">
-                  <span className="text-[10px] text-muted-foreground">{fmt(stageTotal)}</span>
-                </div>
-              )}
               {/* Cards */}
               <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {items.map((p) => (
                   <PipelineCard key={p.id} proposal={p} onClick={() => onSelect(p)} />
                 ))}
               </div>
+              {items.length > 0 && (
+                <div className="px-3 py-1.5 border-t border-border/30">
+                  <span className="text-[10px] text-muted-foreground">{fmt(stageTotal)}</span>
+                </div>
+              )}
             </div>
           );
         })}
