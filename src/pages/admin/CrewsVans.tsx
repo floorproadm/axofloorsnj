@@ -62,6 +62,7 @@ export default function CrewsVans() {
   const [showNewCrew, setShowNewCrew] = useState(false);
   const [showNewVan, setShowNewVan] = useState(false);
   const [showNewPayroll, setShowNewPayroll] = useState(false);
+  const [selectedPayrollEntry, setSelectedPayrollEntry] = useState<Payment | null>(null);
   const [monthOffset, setMonthOffset] = useState(0);
 
   const [crewForm, setCrewForm] = useState({
