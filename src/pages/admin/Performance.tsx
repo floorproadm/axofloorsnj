@@ -125,23 +125,16 @@ function OverviewTab() {
     <div className="space-y-5">
       {/* Period filter */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Period:</span>
-        <div className="flex gap-1">
-          {PERIODS.map(p => (
-            <button
-              key={p.value}
-              onClick={() => setPeriod(p.value)}
-              className={cn(
-                "text-xs px-3 py-1.5 rounded-lg border font-medium transition-all",
-                period === p.value
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
-              )}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
+        <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+          <SelectTrigger className="w-[140px] h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PERIODS.map(p => (
+              <SelectItem key={p.value} value={p.value} className="text-xs">{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* KPI Cards */}
