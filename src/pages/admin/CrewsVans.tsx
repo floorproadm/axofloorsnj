@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils";
 import { PaymentDetailsSheet } from "@/components/admin/payments/PaymentDetailsSheet";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import type { Payment } from "@/hooks/usePayments";
-import type { Payment } from "@/hooks/usePayments";
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
 const EMPLOYMENT_TYPES = ["Head", "Full-Time Employee", "Daily Rate", "Subcontractor"];
