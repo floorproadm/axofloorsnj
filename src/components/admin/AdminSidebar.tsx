@@ -18,7 +18,8 @@ import {
   Handshake,
   DollarSign,
   Zap,
-  
+  ClipboardList,
+  Hammer,
   Truck,
 } from "lucide-react";
 import {
@@ -73,16 +74,18 @@ export function AdminSidebar() {
   const toolsItems = [
     { title: t("sidebar.captacao"), url: "/admin/intake", icon: Inbox },
     { title: t("sidebar.medicoes"), url: "/admin/measurements", icon: Ruler },
-    { title: t("sidebar.propostas"), url: "/admin/leads", icon: FileText },
+    { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
   ];
 
   const manageItems = [
     { title: "Leads", url: "/admin/leads", icon: Users },
     { title: "Partners", url: "/admin/partners", icon: Handshake },
-    { title: "Crews & Fleet", url: "/admin/crews", icon: Truck },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Feed", url: "/admin/feed", icon: Images },
     { title: "Automations", url: "/admin/automations", icon: Zap },
+    { title: "Weekly Review", url: "/admin/weekly-review", icon: ClipboardList },
+    { title: "Labor Payroll", url: "/admin/labor-payroll", icon: Hammer },
+    { title: "Crews & Fleet", url: "/admin/crews", icon: Truck },
   ];
 
   const labeledGroups = [
