@@ -605,13 +605,6 @@ export default function CrewsVans() {
                 <Label className="text-xs">License Plate</Label>
                 <Input placeholder="NJR 1234" value={vanForm.plate} onChange={e => setVanForm(f => ({ ...f, plate: e.target.value }))} />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Region</Label>
-                <Select value={vanForm.region} onValueChange={v => setVanForm(f => ({ ...f, region: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select region" /></SelectTrigger>
-                  <SelectContent>{REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
               <div className="col-span-2 space-y-1.5">
                 <Label className="text-xs">Status</Label>
                 <Select value={vanForm.status} onValueChange={v => setVanForm(f => ({ ...f, status: v }))}>
