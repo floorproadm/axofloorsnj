@@ -270,6 +270,12 @@ function OverviewTab() {
       </Card>
 
       <JobCostDetailsSheet project={selectedProject} open={!!selectedProject} onClose={() => setSelectedProject(null)} />
+      <PerformanceExportSheet
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        projects={projects}
+        periodLabel={PERIODS.find(p => p.value === period)?.label ?? period}
+      />
     </div>
   );
 }
