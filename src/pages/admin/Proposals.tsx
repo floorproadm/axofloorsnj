@@ -828,9 +828,11 @@ export default function Proposals() {
                     const isExpired = isPast(parseISO(p.valid_until)) && !["accepted", "rejected"].includes(p.status);
                     const displayStatus = isExpired ? STATUS_CONFIG.expired : sc;
                     const selectedTier = p.selected_tier;
-                    const displayPrice = selectedTier
-                      ? p[`${selectedTier}_price` as keyof ProposalWithRelations] as number
-                      : p.better_price;
+                    const displayPrice = !p.use_tiers
+                      ? (p.flat_price || p.better_price)
+                      : selectedTier
+                        ? p[`${selectedTier}_price` as keyof ProposalWithRelations] as number
+                        : p.better_price;
 
                     return (
                       <button key={p.id} onClick={() => setSelected(p)} className="w-full text-left group">
