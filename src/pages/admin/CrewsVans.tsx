@@ -427,23 +427,23 @@ export default function CrewsVans() {
           {/* ─── PAYROLL TAB ─── */}
           <TabsContent value="payroll" className="mt-4 space-y-4">
             {/* Month selector */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setMonthOffset(m => m + 1)}>‹</Button>
               <span className="text-sm font-medium min-w-[120px] text-center">{monthLabel}</span>
               <Button variant="outline" size="sm" disabled={monthOffset === 0} onClick={() => setMonthOffset(m => m - 1)}>›</Button>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
                 { label: "Total Labor", value: fmt(totalCost), color: "text-foreground" },
                 { label: "Confirmed", value: fmt(totalPaid), color: "text-emerald-500" },
                 { label: "Pending", value: fmt(totalPending), color: "text-amber-500" },
               ].map((c) => (
                 <Card key={c.label} className="border-border/50">
-                  <CardContent className="p-4">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">{c.label}</p>
-                    <p className={cn("text-2xl font-bold", c.color)}>{c.value}</p>
+                  <CardContent className="p-2.5 sm:p-4">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">{c.label}</p>
+                    <p className={cn("text-base sm:text-2xl font-bold truncate", c.color)}>{c.value}</p>
                   </CardContent>
                 </Card>
               ))}
