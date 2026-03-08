@@ -210,55 +210,6 @@ const ReferralProgram = () => {
         </div>
       </section>
 
-      {/* Earnings Examples */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold font-heading text-primary mb-8">
-                Earn More with Each Tier
-              </h2>
-              <div className="space-y-4">
-                {[
-                  { tier: 'Bronze ★', refs: '1-2', desc: 'Start earning 7% commission' },
-                  { tier: 'Silver ★★', refs: '3-5', desc: 'Unlock 8% commission' },
-                  { tier: 'Gold ★★★', refs: '6-9', desc: 'Enjoy 9% commission' },
-                  { tier: 'Diamond ★★★★', refs: '10+', desc: 'Maximum 10% commission' },
-                ].map(t => (
-                  <div key={t.tier} className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                    <div className="font-bold font-heading text-accent min-w-[120px]">{t.tier}</div>
-                    <div>
-                      <p className="font-medium text-primary">{t.refs} converted referrals</p>
-                      <p className="text-sm text-muted-foreground">{t.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Card className="border-2 border-accent/20">
-              <CardHeader>
-                <CardTitle className="text-2xl font-heading text-primary flex items-center gap-2">
-                  <DollarSign className="w-6 h-6 text-accent" />
-                  Earnings Examples
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { project: '$5,000 Refinishing', earn: '$350-500' },
-                  { project: '$12,000 Installation', earn: '$840-1,200' },
-                  { project: '$25,000 Whole House', earn: '$1,750-2,500' },
-                ].map(e => (
-                  <div key={e.project} className="flex justify-between items-center p-4 bg-accent/5 rounded-lg">
-                    <p className="font-medium text-primary">{e.project}</p>
-                    <p className="text-xl font-bold text-accent">{e.earn}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* Testimonials */}
       <section className="py-16 bg-secondary">
