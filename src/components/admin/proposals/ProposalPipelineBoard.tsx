@@ -108,9 +108,11 @@ function PipelineCard({ proposal, onClick }: { proposal: ProposalWithRelations; 
   const c = proposal.projects;
   const isExpired = isPast(parseISO(proposal.valid_until)) && !["accepted", "rejected"].includes(proposal.status);
   const selectedTier = proposal.selected_tier;
-  const displayPrice = selectedTier
-    ? (proposal[`${selectedTier}_price` as keyof ProposalWithRelations] as number)
-    : proposal.better_price;
+  const displayPrice = !proposal.use_tiers
+    ? (proposal.flat_price || proposal.better_price)
+    : selectedTier
+      ? (proposal[`${selectedTier}_price` as keyof ProposalWithRelations] as number)
+      : proposal.better_price;
   const daysLeft = Math.ceil((parseISO(proposal.valid_until).getTime() - Date.now()) / 86400000);
 
   return (
