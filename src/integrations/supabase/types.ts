@@ -1668,6 +1668,7 @@ export type Database = {
           better_price: number
           created_at: string
           customer_id: string
+          flat_price: number | null
           good_price: number
           id: string
           margin_best: number
@@ -1680,6 +1681,7 @@ export type Database = {
           sent_at: string | null
           status: string
           updated_at: string
+          use_tiers: boolean
           valid_until: string
         }
         Insert: {
@@ -1688,6 +1690,7 @@ export type Database = {
           better_price: number
           created_at?: string
           customer_id: string
+          flat_price?: number | null
           good_price: number
           id?: string
           margin_best: number
@@ -1700,6 +1703,7 @@ export type Database = {
           sent_at?: string | null
           status?: string
           updated_at?: string
+          use_tiers?: boolean
           valid_until: string
         }
         Update: {
@@ -1708,6 +1712,7 @@ export type Database = {
           better_price?: number
           created_at?: string
           customer_id?: string
+          flat_price?: number | null
           good_price?: number
           id?: string
           margin_best?: number
@@ -1720,6 +1725,7 @@ export type Database = {
           sent_at?: string | null
           status?: string
           updated_at?: string
+          use_tiers?: boolean
           valid_until?: string
         }
         Relationships: [

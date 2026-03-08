@@ -20,6 +20,8 @@ interface ProposalWithRelations {
   valid_until: string;
   created_at: string;
   project_id: string;
+  use_tiers: boolean;
+  flat_price: number | null;
   projects: {
     customer_name: string;
     customer_email: string;
@@ -69,7 +71,7 @@ export function ProposalPipelineBoard({ proposals, onSelect }: Props) {
       <div className="flex gap-3 p-3 h-full min-w-max">
         {PIPELINE_STAGES.map((stage) => {
           const items = grouped[stage.key] || [];
-          const stageTotal = items.reduce((s, p) => s + p.better_price, 0);
+          const stageTotal = items.reduce((s, p) => s + (!p.use_tiers ? (p.flat_price || p.better_price) : p.better_price), 0);
           return (
             <div
               key={stage.key}
@@ -106,9 +108,11 @@ function PipelineCard({ proposal, onClick }: { proposal: ProposalWithRelations; 
   const c = proposal.projects;
   const isExpired = isPast(parseISO(proposal.valid_until)) && !["accepted", "rejected"].includes(proposal.status);
   const selectedTier = proposal.selected_tier;
-  const displayPrice = selectedTier
-    ? (proposal[`${selectedTier}_price` as keyof ProposalWithRelations] as number)
-    : proposal.better_price;
+  const displayPrice = !proposal.use_tiers
+    ? (proposal.flat_price || proposal.better_price)
+    : selectedTier
+      ? (proposal[`${selectedTier}_price` as keyof ProposalWithRelations] as number)
+      : proposal.better_price;
   const daysLeft = Math.ceil((parseISO(proposal.valid_until).getTime() - Date.now()) / 86400000);
 
   return (
