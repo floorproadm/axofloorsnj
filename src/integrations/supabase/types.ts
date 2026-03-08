@@ -264,6 +264,7 @@ export type Database = {
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url: string | null
           primary_color: string | null
+          referral_commission_percent: number
           secondary_color: string | null
           singleton_key: boolean
           trade_name: string | null
@@ -278,6 +279,7 @@ export type Database = {
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           primary_color?: string | null
+          referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
           trade_name?: string | null
@@ -292,6 +294,7 @@ export type Database = {
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           primary_color?: string | null
+          referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
           trade_name?: string | null
@@ -1785,6 +1788,165 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      referral_profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          referral_code: string
+          total_converted: number
+          total_credits: number
+          total_referrals: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          referral_code: string
+          total_converted?: number
+          total_credits?: number
+          total_referrals?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          referral_code?: string
+          total_converted?: number
+          total_credits?: number
+          total_referrals?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          referral_id: string | null
+          referrer_id: string
+          type: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          referral_id?: string | null
+          referrer_id: string
+          type?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          referral_id?: string | null
+          referrer_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_rewards_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "referral_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          credit_amount: number
+          credited_at: string | null
+          id: string
+          lead_id: string | null
+          referred_email: string | null
+          referred_name: string
+          referred_phone: string
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          credit_amount?: number
+          credited_at?: string | null
+          id?: string
+          lead_id?: string | null
+          referred_email?: string | null
+          referred_name: string
+          referred_phone: string
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          credit_amount?: number
+          credited_at?: string | null
+          id?: string
+          lead_id?: string | null
+          referred_email?: string | null
+          referred_name?: string
+          referred_phone?: string
+          referrer_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_estimate_scheduled_stale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_followup_overdue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "view_stage_aging"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "referral_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_catalog: {
         Row: {
