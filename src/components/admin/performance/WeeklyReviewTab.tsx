@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { subWeeks, startOfWeek, endOfWeek, addWeeks, format } from "date-fns";
+import { subWeeks, startOfWeek, endOfWeek, addWeeks, format, getWeek } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { DollarSign, TrendingUp, Briefcase, Users, ArrowUp, ArrowDown, Minus, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -86,6 +86,7 @@ export default function WeeklyReviewTab() {
           <ChevronLeft className="w-4 h-4" />
         </Button>
         <span className="text-sm font-medium min-w-[120px] text-center">{weekLabel}</span>
+        <span className="text-xs font-mono font-semibold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">W{getWeek(weekStart)}</span>
         <Button variant="outline" size="icon" className="h-8 w-8" disabled={isCurrentWeek} onClick={() => setWeekOffset(w => w - 1)}>
           <ChevronRight className="w-4 h-4" />
         </Button>
