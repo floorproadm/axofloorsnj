@@ -11,13 +11,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { format } from "date-fns";
 import {
   Plus, Truck, Users, Phone, Mail,
   Loader2, Trash2, CheckCircle2, Clock, DollarSign, Hammer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PaymentDetailsSheet } from "@/components/admin/payments/PaymentDetailsSheet";
+import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
+import type { Payment } from "@/hooks/usePayments";
 import type { Payment } from "@/hooks/usePayments";
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
@@ -63,7 +65,8 @@ export default function CrewsVans() {
   const [showNewVan, setShowNewVan] = useState(false);
   const [showNewPayroll, setShowNewPayroll] = useState(false);
   const [selectedPayrollEntry, setSelectedPayrollEntry] = useState<Payment | null>(null);
-  const [monthOffset, setMonthOffset] = useState(0);
+  const [payrollPeriodType, setPayrollPeriodType] = useState<PeriodType>("month");
+  const [payrollAnchor, setPayrollAnchor] = useState(() => new Date());
 
   const [crewForm, setCrewForm] = useState({
     full_name: "", phone: "", email: "", role: "", bio: "",
@@ -109,20 +112,17 @@ export default function CrewsVans() {
   });
 
   // ─── Payroll queries ───
-  const baseDate = subMonths(new Date(), monthOffset);
-  const monthStart = startOfMonth(baseDate);
-  const monthEnd = endOfMonth(baseDate);
-  const monthLabel = format(baseDate, "MMMM yyyy");
+  const payrollRange = getPeriodRange(payrollAnchor, payrollPeriodType);
 
   const { data: payrollEntries = [], isLoading: loadingPayroll } = useQuery({
-    queryKey: ["labor-payroll", monthOffset],
+    queryKey: ["labor-payroll", payrollRange.label],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("payments")
         .select("*, project:projects(customer_name, project_type)")
         .eq("category", "labor")
-        .gte("payment_date", format(monthStart, "yyyy-MM-dd"))
-        .lte("payment_date", format(monthEnd, "yyyy-MM-dd"))
+        .gte("payment_date", format(payrollRange.start, "yyyy-MM-dd"))
+        .lte("payment_date", format(payrollRange.end, "yyyy-MM-dd"))
         .order("payment_date", { ascending: false });
       if (error) throw error;
       return (data ?? []) as PayrollEntry[];
@@ -429,11 +429,14 @@ export default function CrewsVans() {
 
           {/* ─── PAYROLL TAB ─── */}
           <TabsContent value="payroll" className="mt-4 space-y-4">
-            {/* Month selector */}
-            <div className="flex items-center justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setMonthOffset(m => m + 1)}>‹</Button>
-              <span className="text-sm font-medium min-w-[120px] text-center">{monthLabel}</span>
-              <Button variant="outline" size="sm" disabled={monthOffset === 0} onClick={() => setMonthOffset(m => m - 1)}>›</Button>
+            {/* Period selector */}
+            <div className="flex flex-col items-center gap-2">
+              <PeriodSelector
+                periodType={payrollPeriodType}
+                onPeriodTypeChange={setPayrollPeriodType}
+                anchor={payrollAnchor}
+                onAnchorChange={setPayrollAnchor}
+              />
             </div>
 
             {/* Summary Cards */}
