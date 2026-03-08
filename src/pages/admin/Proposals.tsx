@@ -317,6 +317,26 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
 }) {
   const qc = useQueryClient();
   const [showShare, setShowShare] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editUseTiers, setEditUseTiers] = useState(true);
+  const [editFlatPrice, setEditFlatPrice] = useState("");
+  const [editGoodPrice, setEditGoodPrice] = useState("");
+  const [editBetterPrice, setEditBetterPrice] = useState("");
+  const [editBestPrice, setEditBestPrice] = useState("");
+  const [editValidUntil, setEditValidUntil] = useState("");
+
+  const startEditing = () => {
+    if (!proposal) return;
+    setEditing(true);
+    setEditUseTiers(proposal.use_tiers);
+    setEditFlatPrice(proposal.flat_price?.toString() || proposal.better_price.toString());
+    setEditGoodPrice(proposal.good_price.toString());
+    setEditBetterPrice(proposal.better_price.toString());
+    setEditBestPrice(proposal.best_price.toString());
+    setEditValidUntil(proposal.valid_until);
+  };
+
+  const cancelEditing = () => setEditing(false);
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, selected_tier }: { id: string; status: string; selected_tier?: string }) => {
@@ -330,11 +350,39 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
     onError: () => toast.error("Failed to update"),
   });
 
+  const saveEdit = useMutation({
+    mutationFn: async () => {
+      if (!proposal) throw new Error("No proposal");
+      const update: any = {
+        use_tiers: editUseTiers,
+        valid_until: editValidUntil,
+      };
+      if (editUseTiers) {
+        update.good_price = parseFloat(editGoodPrice) || 0;
+        update.better_price = parseFloat(editBetterPrice) || 0;
+        update.best_price = parseFloat(editBestPrice) || 0;
+        update.flat_price = null;
+      } else {
+        update.flat_price = parseFloat(editFlatPrice) || 0;
+        // Keep tier prices as-is for reference
+      }
+      const { error } = await supabase.from("proposals").update(update).eq("id", proposal.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["proposals-list"] });
+      toast.success("Proposal updated");
+      setEditing(false);
+    },
+    onError: () => toast.error("Failed to save"),
+  });
+
   if (!proposal) return null;
   const c = proposal.projects;
   const address = [c?.address, c?.city, c?.zip_code].filter(Boolean).join(", ");
   const sc = STATUS_CONFIG[proposal.status] || STATUS_CONFIG.draft;
   const isExpired = isPast(parseISO(proposal.valid_until)) && proposal.status !== "accepted";
+  const isDraft = proposal.status === "draft";
 
   const tiers = [
     { id: "good",   price: proposal.good_price,   margin: proposal.margin_good,   ...TIER_CONFIG.good },
@@ -344,7 +392,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onClose}>
+      <Sheet open={open} onOpenChange={(v) => { if (!v) { setEditing(false); onClose(); } }}>
         <SheetContent className="w-full sm:max-w-lg flex flex-col overflow-hidden">
           <SheetHeader className="flex-shrink-0">
             <SheetTitle className="flex items-center gap-2 text-base">
@@ -353,19 +401,26 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
               <Badge className={cn("text-[10px] h-5 px-2 rounded-full border", sc.bg, sc.color, sc.border)}>
                 {isExpired && proposal.status === "sent" ? "Expired" : sc.label}
               </Badge>
+              {isDraft && !editing && (
+                <Button size="sm" variant="ghost" className="ml-auto h-7 gap-1 text-xs" onClick={startEditing}>
+                  <Pencil className="w-3 h-3" /> Edit
+                </Button>
+              )}
             </SheetTitle>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-10 space-y-5 mt-5">
             {/* Quick actions */}
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => printProposal(proposal)}>
-                <Printer className="w-3.5 h-3.5" /> Print / PDF
-              </Button>
-              <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
-                <Share2 className="w-3.5 h-3.5" /> Send to Client
-              </Button>
-            </div>
+            {!editing && (
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => printProposal(proposal)}>
+                  <Printer className="w-3.5 h-3.5" /> Print / PDF
+                </Button>
+                <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
+                  <Share2 className="w-3.5 h-3.5" /> Send to Client
+                </Button>
+              </div>
+            )}
 
             {/* Client info */}
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2.5">
@@ -385,91 +440,198 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
             </div>
 
             {/* Dates */}
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: "Created", value: format(parseISO(proposal.created_at), "MMM d, yyyy") },
-                { label: "Valid Until", value: format(parseISO(proposal.valid_until), "MMM d, yyyy"), warn: isExpired },
-                proposal.sent_at ? { label: "Sent", value: format(parseISO(proposal.sent_at), "MMM d, yyyy") } : null,
-                proposal.accepted_at ? { label: "Accepted", value: format(parseISO(proposal.accepted_at), "MMM d, yyyy"), good: true } : null,
-              ].filter(Boolean).map((d: any) => (
-                <div key={d.label} className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{d.label}</p>
-                  <p className={cn("text-sm font-semibold mt-0.5", d.warn ? "text-orange-500" : d.good ? "text-emerald-600" : "text-foreground")}>{d.value}</p>
-                </div>
-              ))}
-            </div>
+            {!editing ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Created", value: format(parseISO(proposal.created_at), "MMM d, yyyy") },
+                  { label: "Valid Until", value: format(parseISO(proposal.valid_until), "MMM d, yyyy"), warn: isExpired },
+                  proposal.sent_at ? { label: "Sent", value: format(parseISO(proposal.sent_at), "MMM d, yyyy") } : null,
+                  proposal.accepted_at ? { label: "Accepted", value: format(parseISO(proposal.accepted_at), "MMM d, yyyy"), good: true } : null,
+                ].filter(Boolean).map((d: any) => (
+                  <div key={d.label} className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{d.label}</p>
+                    <p className={cn("text-sm font-semibold mt-0.5", d.warn ? "text-orange-500" : d.good ? "text-emerald-600" : "text-foreground")}>{d.value}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label className="text-xs">Valid Until</Label>
+                <Input type="date" value={editValidUntil} onChange={e => setEditValidUntil(e.target.value)} className="h-9" />
+              </div>
+            )}
 
             <Separator />
 
-            {/* Tier Cards */}
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Pricing Tiers</p>
-              <div className="space-y-2">
-                {tiers.map((tier) => {
-                  const isSelected = proposal.selected_tier === tier.id;
-                  const TierIcon = tier.icon;
-                  return (
-                    <div key={tier.id} className={cn(
-                      "p-4 rounded-xl border-2 transition-all",
-                      isSelected ? "border-emerald-500 bg-emerald-500/5" : cn(tier.bg, tier.border)
-                    )}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <TierIcon className={cn("w-4 h-4", tier.color)} />
-                          <span className={cn("text-sm font-bold", tier.color)}>{tier.label}</span>
-                          {isSelected && <Badge className="text-[9px] h-4 px-1.5 bg-emerald-500 text-white border-0">ACCEPTED</Badge>}
-                          {tier.id === "better" && !isSelected && <Badge variant="outline" className="text-[9px] h-4 px-1.5">Recommended</Badge>}
+            {/* EDIT MODE */}
+            {editing ? (
+              <div className="space-y-5">
+                {/* Tier toggle */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50">
+                  <div>
+                    <p className="text-sm font-semibold">Pricing Tiers</p>
+                    <p className="text-xs text-muted-foreground">Good / Better / Best</p>
+                  </div>
+                  <Switch checked={editUseTiers} onCheckedChange={setEditUseTiers} />
+                </div>
+
+                {editUseTiers ? (
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tier Prices</p>
+                    {[
+                      { id: "good", label: "Good", value: editGoodPrice, onChange: setEditGoodPrice, ...TIER_CONFIG.good },
+                      { id: "better", label: "Better", value: editBetterPrice, onChange: setEditBetterPrice, ...TIER_CONFIG.better },
+                      { id: "best", label: "Best", value: editBestPrice, onChange: setEditBestPrice, ...TIER_CONFIG.best },
+                    ].map(t => {
+                      const TierIcon = t.icon;
+                      return (
+                        <div key={t.id} className={cn("p-3 rounded-xl border", t.bg, t.border)}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <TierIcon className={cn("w-4 h-4", t.color)} />
+                            <span className={cn("text-sm font-bold", t.color)}>{t.label}</span>
+                          </div>
+                          <div className="relative">
+                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              value={t.value}
+                              onChange={e => t.onChange(e.target.value)}
+                              className="pl-8 h-9"
+                              placeholder="0"
+                            />
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xl font-bold">{fmt(tier.price)}</p>
-                          <p className="text-[11px] text-muted-foreground">{tier.margin.toFixed(0)}% margin</p>
-                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Single Price</p>
+                    <div className="p-4 rounded-xl border border-primary/30 bg-primary/5">
+                      <Label className="text-xs text-muted-foreground mb-2 block">Total Price</Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          value={editFlatPrice}
+                          onChange={e => setEditFlatPrice(e.target.value)}
+                          className="pl-9 h-11 text-lg font-bold"
+                          placeholder="0"
+                        />
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Save / Cancel */}
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1 gap-1.5" onClick={cancelEditing}>
+                    <X className="w-4 h-4" /> Cancel
+                  </Button>
+                  <Button className="flex-1 gap-1.5" onClick={() => saveEdit.mutate()} disabled={saveEdit.isPending}>
+                    {saveEdit.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Save
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Tier Cards or Single Price — VIEW MODE */}
+                {proposal.use_tiers ? (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Pricing Tiers</p>
+                    <div className="space-y-2">
+                      {tiers.map((tier) => {
+                        const isSelected = proposal.selected_tier === tier.id;
+                        const TierIcon = tier.icon;
+                        return (
+                          <div key={tier.id} className={cn(
+                            "p-4 rounded-xl border-2 transition-all",
+                            isSelected ? "border-emerald-500 bg-emerald-500/5" : cn(tier.bg, tier.border)
+                          )}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <TierIcon className={cn("w-4 h-4", tier.color)} />
+                                <span className={cn("text-sm font-bold", tier.color)}>{tier.label}</span>
+                                {isSelected && <Badge className="text-[9px] h-4 px-1.5 bg-emerald-500 text-white border-0">ACCEPTED</Badge>}
+                                {tier.id === "better" && !isSelected && <Badge variant="outline" className="text-[9px] h-4 px-1.5">Recommended</Badge>}
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xl font-bold">{fmt(tier.price)}</p>
+                                <p className="text-[11px] text-muted-foreground">{tier.margin.toFixed(0)}% margin</p>
+                              </div>
+                            </div>
+                            {c?.square_footage && (
+                              <p className="text-xs text-muted-foreground mt-1.5">
+                                {fmt(Math.round(tier.price / c.square_footage))}/sqft
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Pricing</p>
+                    <div className="p-5 rounded-xl border-2 border-primary/30 bg-primary/5 text-center">
+                      <p className="text-3xl font-bold">{fmt(proposal.flat_price || proposal.better_price)}</p>
                       {c?.square_footage && (
-                        <p className="text-xs text-muted-foreground mt-1.5">
-                          {fmt(Math.round(tier.price / c.square_footage))}/sqft
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {fmt(Math.round((proposal.flat_price || proposal.better_price) / c.square_footage))}/sqft
                         </p>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Status Actions */}
-            {proposal.status !== "accepted" && proposal.status !== "rejected" && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</p>
-                {proposal.status === "draft" && (
-                  <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent" })}>
-                    <Send className="w-4 h-4" /> Mark as Sent
-                  </Button>
-                )}
-                {(proposal.status === "sent" || proposal.status === "viewed") && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {tiers.map(t => (
-                      <Button
-                        key={t.id}
-                        size="sm"
-                        variant="outline"
-                        className="gap-1 text-xs border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
-                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: t.id })}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        {t.label}
-                      </Button>
-                    ))}
                   </div>
                 )}
-                {(proposal.status === "sent" || proposal.status === "viewed") && (
-                  <Button variant="outline" className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
-                    onClick={() => updateStatus.mutate({ id: proposal.id, status: "rejected" })}>
-                    <XCircle className="w-4 h-4" /> Mark as Declined
-                  </Button>
+
+                <Separator />
+
+                {/* Status Actions */}
+                {proposal.status !== "accepted" && proposal.status !== "rejected" && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</p>
+                    {proposal.status === "draft" && (
+                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent" })}>
+                        <Send className="w-4 h-4" /> Mark as Sent
+                      </Button>
+                    )}
+                    {(proposal.status === "sent" || proposal.status === "viewed") && proposal.use_tiers && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {tiers.map(t => (
+                          <Button
+                            key={t.id}
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                            onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: t.id })}
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {t.label}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                    {(proposal.status === "sent" || proposal.status === "viewed") && !proposal.use_tiers && (
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: "flat" })}
+                      >
+                        <CheckCircle2 className="w-4 h-4" /> Mark as Accepted
+                      </Button>
+                    )}
+                    {(proposal.status === "sent" || proposal.status === "viewed") && (
+                      <Button variant="outline" className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
+                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "rejected" })}>
+                        <XCircle className="w-4 h-4" /> Mark as Declined
+                      </Button>
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </SheetContent>
