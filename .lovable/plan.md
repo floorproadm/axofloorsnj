@@ -1,37 +1,34 @@
 
+# Referral Booster — Implementado ✅
 
-# Unify KPI Card Style: Overview → Match Weekly
+## O que foi feito
 
-The Overview tab uses `text-xl` for values with an icon on the right, while the Weekly tab uses `text-2xl` with a simpler layout (no icon). We'll align the Overview cards to match Weekly's structure.
+### Database (Migration)
+- **`referral_profiles`** — Perfil do indicador com `referral_code` único, contadores, créditos
+- **`referrals`** — Cada indicação com status, link para lead, créditos
+- **`referral_rewards`** — Histórico de créditos/resgates
+- **`company_settings.referral_commission_percent`** — Campo novo (default 7%)
+- RLS: public insert/read, admin all
 
-## Change
+### Frontend
+- **`src/hooks/useReferralProfile.ts`** — Hook completo: register, lookup, addReferral, tiers
+- **`src/components/referral/ReferralDashboard.tsx`** — Dashboard pós-cadastro com stats, share, QR, histórico
+- **`src/components/referral/ReferralQRCode.tsx`** — QR code via `qrcode` lib (canvas)
+- **`src/components/referral/ReferralTierBadge.tsx`** — Badge visual com progresso (Bronze→Diamond)
+- **`src/components/referral/AddReferralForm.tsx`** — Form para indicar amigo (cria referral + lead)
+- **`src/pages/ReferralProgram.tsx`** — Redesign completo com registro/login + dashboard
 
-**`src/pages/admin/Performance.tsx`** — Lines 141-152 (Overview KPI cards rendering)
+### Integração Pipeline
+- **`src/utils/referral.ts`** — Utilitário `getReferralCodeFromURL()` + `buildReferralNotes()`
+- **ContactForm** e **ContactSection** detectam `?ref=CODE` e marcam lead como `referral`
+- Leads criados pelo formulário de indicação linkam automaticamente ao referrer
 
-Replace the current card layout that has:
-- Icon on the top-right (`flex justify-between` + `<k.icon>`)
-- `text-xl` value size
+### Gamificação (Tiers)
+- Starter → Bronze (1-2) → Silver (3-5) → Gold (6-9) → Diamond (10+)
+- Barra de progresso visual + badges
 
-With the Weekly pattern:
-- Label on top (no icon)
-- `text-2xl font-bold` value
-- Sub text below
-
-Specifically:
-```tsx
-// FROM (Overview - current)
-<div className="flex items-center justify-between mb-1.5">
-  <span className="text-[10px] ...">{k.label}</span>
-  <k.icon className={cn("w-4 h-4", k.color)} />
-</div>
-<p className={cn("text-xl font-bold", k.color)}>{k.value}</p>
-<p className="text-[11px] ... mt-0.5">{k.sub}</p>
-
-// TO (matching Weekly)
-<p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">{k.label}</p>
-<p className={cn("text-2xl font-bold", k.color)}>{k.value}</p>
-<p className="text-[11px] text-muted-foreground">{k.sub}</p>
-```
-
-This removes the icon from each card and bumps the value to `text-2xl`, matching the Weekly tab exactly.
-
+## Fora do Escopo (Fase 2)
+- Admin tab para gerenciar referrers e resgatar créditos
+- Trigger automático de crédito quando lead converte
+- Push notifications para referrer
+- Leaderboard público
