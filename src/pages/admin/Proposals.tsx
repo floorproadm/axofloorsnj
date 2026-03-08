@@ -479,63 +479,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   );
 }
 
-// ─── Proposal Card ────────────────────────────────────────────────────────────
-function ProposalCard({ proposal, onClick }: { proposal: ProposalWithRelations; onClick: () => void }) {
-  const sc = STATUS_CONFIG[proposal.status] || STATUS_CONFIG.draft;
-  const c = proposal.projects;
-  const isExpired = isPast(parseISO(proposal.valid_until)) && !["accepted", "rejected"].includes(proposal.status);
-  const displayStatus = isExpired ? STATUS_CONFIG.expired : sc;
-  const selectedTier = proposal.selected_tier;
-  const displayPrice = selectedTier
-    ? proposal[`${selectedTier}_price` as keyof ProposalWithRelations] as number
-    : proposal.better_price;
 
-  const daysLeft = Math.ceil((parseISO(proposal.valid_until).getTime() - Date.now()) / 86400000);
-
-  return (
-    <button onClick={onClick} className="w-full text-left group">
-      <Card className={cn(
-        "border-2 transition-all hover:shadow-md hover:-translate-y-0.5",
-        displayStatus.border,
-        "hover:border-primary/30"
-      )}>
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={cn(
-                  "w-2 h-2 rounded-full flex-shrink-0",
-                  displayStatus.dot
-                )} />
-                <p className="font-semibold text-sm truncate">{c?.customer_name || "—"}</p>
-              </div>
-              <p className="text-xs text-muted-foreground truncate ml-4">{c?.project_type}</p>
-              {c?.city && <p className="text-xs text-muted-foreground ml-4 flex items-center gap-1 mt-0.5"><MapPin className="w-2.5 h-2.5" />{c.city}</p>}
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-lg font-bold">{fmt(displayPrice)}</p>
-              <Badge className={cn("text-[10px] h-4 px-1.5 rounded-full border mt-0.5", displayStatus.bg, displayStatus.color, displayStatus.border)}>
-                {isExpired ? "Expired" : displayStatus.label}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 mt-3 pt-2.5 border-t border-border/40">
-            <span className="text-[10px] text-muted-foreground font-mono">{proposal.proposal_number}</span>
-            <span className="text-[10px] text-muted-foreground ml-auto">
-              {!isExpired && !["accepted", "rejected"].includes(proposal.status)
-                ? daysLeft > 0 ? `${daysLeft}d left` : "Expires today"
-                : format(parseISO(proposal.created_at), "MMM d")
-              }
-            </span>
-            {proposal.sent_at && <div title="Sent"><Send className="w-3 h-3 text-muted-foreground/50" /></div>}
-            {proposal.accepted_at && <div title="Accepted"><CheckCircle2 className="w-3 h-3 text-emerald-500" /></div>}
-          </div>
-        </CardContent>
-      </Card>
-    </button>
-  );
-}
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Proposals() {
