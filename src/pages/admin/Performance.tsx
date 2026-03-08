@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import {
-  DollarSign, Briefcase, Users, TrendingUp, BarChart3,
-  CalendarDays, Target, ArrowUp, ArrowDown, Minus,
-  Filter, Download
+  DollarSign, Briefcase, TrendingUp, BarChart3,
+  CalendarDays, Target
 } from "lucide-react";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { usePerformanceData, ProjectWithCosts } from "@/hooks/usePerformanceData";
