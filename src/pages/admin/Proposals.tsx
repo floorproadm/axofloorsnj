@@ -596,65 +596,89 @@ export default function Proposals() {
     <AdminLayout title="Proposals">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
 
-        <div className="flex items-center justify-end">
-          <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
-            <Plus className="w-4 h-4" /> New Proposal
-          </Button>
+        {/* Summary Bar */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <FileText className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{proposals.length} Proposals</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{fmt(stats.total)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{stats.closeRate}% close</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  viewMode === "list"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <List className="w-3.5 h-3.5" />
+                List
+              </button>
+              <button
+                onClick={() => setViewMode("board")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  viewMode === "board"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Board
+              </button>
+            </div>
+            <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
+              <Plus className="w-4 h-4" /> New
+            </Button>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "Pipeline Value", value: fmt(stats.total), color: "text-primary", icon: DollarSign },
-            { label: "Accepted",       value: fmt(stats.acceptedTotal), color: "text-emerald-500", icon: CheckCircle2 },
-            { label: "Close Rate",     value: `${stats.closeRate}%`, color: stats.closeRate >= 50 ? "text-emerald-500" : "text-amber-500", icon: TrendingUp },
-          ].map(s => (
-            <Card key={s.label} className="border-border/50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.label}</span>
-                  <s.icon className={cn("w-3.5 h-3.5", s.color)} />
-                </div>
-                <p className={cn("text-xl font-bold", s.color)}>{s.value}</p>
-              </CardContent>
-            </Card>
+        {/* Search */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Search by client or proposal number..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9 h-9 text-sm"
+          />
+        </div>
+
+        {/* Filter Tabs — underline style */}
+        <div className="flex gap-4 border-b border-border overflow-x-auto">
+          {TABS.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "flex items-center gap-1.5 pb-2 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
+                tab === t.id
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t.label}
+              <span className={cn(
+                "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
+                tab === t.id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+              )}>{t.count}</span>
+            </button>
           ))}
         </div>
 
-        {/* Tabs + Search */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex-shrink-0",
-                  tab === t.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                {t.label}
-                <span className={cn(
-                  "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                  tab === t.id ? "bg-white/20" : "bg-muted-foreground/20"
-                )}>{t.count}</span>
-              </button>
-            ))}
-          </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Search by client or proposal number..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-8 text-sm"
-            />
-          </div>
-        </div>
-
-        {/* List */}
+        {/* Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -673,11 +697,72 @@ export default function Proposals() {
               )}
             </CardContent>
           </Card>
+        ) : viewMode === "board" ? (
+          /* Board View — group by status columns */
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {(["draft", "pending", "accepted"] as const).map(groupKey => {
+              const groupProposals = filtered.filter(p => {
+                if (groupKey === "pending") return ["sent", "viewed"].includes(p.status);
+                if (groupKey === "accepted") return ["accepted", "rejected"].includes(p.status);
+                return p.status === "draft";
+              });
+              const groupLabel = groupKey === "draft" ? "Draft" : groupKey === "pending" ? "Pending" : "Closed";
+              const groupTotal = groupProposals.reduce((s, p) => s + p.better_price, 0);
+              return (
+                <div key={groupKey} className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{groupLabel}</span>
+                    <span className="text-xs text-muted-foreground">{groupProposals.length} · {fmt(groupTotal)}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {groupProposals.map(p => (
+                      <ProposalCard key={p.id} proposal={p} onClick={() => setSelected(p)} />
+                    ))}
+                    {groupProposals.length === 0 && (
+                      <div className="rounded-lg border border-dashed border-border/50 p-6 text-center">
+                        <p className="text-xs text-muted-foreground">No proposals</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            {filtered.map(p => (
-              <ProposalCard key={p.id} proposal={p} onClick={() => setSelected(p)} />
-            ))}
+          /* List View (default) — compact rows */
+          <div className="space-y-1.5">
+            {filtered.map(p => {
+              const sc = STATUS_CONFIG[p.status] || STATUS_CONFIG.draft;
+              const c = p.projects;
+              const isExpired = isPast(parseISO(p.valid_until)) && !["accepted", "rejected"].includes(p.status);
+              const displayStatus = isExpired ? STATUS_CONFIG.expired : sc;
+              const selectedTier = p.selected_tier;
+              const displayPrice = selectedTier
+                ? p[`${selectedTier}_price` as keyof ProposalWithRelations] as number
+                : p.better_price;
+
+              return (
+                <button key={p.id} onClick={() => setSelected(p)} className="w-full text-left group">
+                  <div className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                    "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
+                    "border-border/50 bg-card"
+                  )}>
+                    <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground font-mono hidden sm:block">{p.proposal_number}</span>
+                    <Badge className={cn("text-[10px] h-5 px-2 rounded-full border flex-shrink-0", displayStatus.bg, displayStatus.color, displayStatus.border)}>
+                      {isExpired ? "Expired" : displayStatus.label}
+                    </Badge>
+                    <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
