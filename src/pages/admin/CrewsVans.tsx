@@ -17,6 +17,8 @@ import {
   Loader2, Trash2, CheckCircle2, Clock, DollarSign, Hammer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PaymentDetailsSheet } from "@/components/admin/payments/PaymentDetailsSheet";
+import type { Payment } from "@/hooks/usePayments";
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
 const EMPLOYMENT_TYPES = ["Head", "Full-Time Employee", "Daily Rate", "Subcontractor"];
