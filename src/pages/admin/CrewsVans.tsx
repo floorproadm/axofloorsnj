@@ -6,16 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import {
-  Plus, Truck, Users, MapPin, Phone, Mail, Wrench,
-  Loader2, Trash2, Edit3, CheckCircle2, Circle,
-  Star, Hash
+  Plus, Truck, Users, Phone, Mail,
+  Loader2, Trash2, CheckCircle2, Clock, DollarSign, Hammer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +25,9 @@ const ROLES = [
   "Laminate", "Tile", "Demolition", "Trim & Molding", "Supervisor"
 ];
 const VAN_STATUSES = ["Available", "In Use", "Maintenance", "Out of Service"];
+
+const fmt = (v: number) =>
+  `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 interface CrewMember {
   id: string;
@@ -38,25 +40,27 @@ interface CrewMember {
   created_at: string;
 }
 
-interface VanEntry {
+interface PayrollEntry {
   id: string;
+  collaborator_id: string | null;
+  amount: number;
+  category: string;
+  payment_date: string;
   description: string | null;
   notes: string | null;
-  amount: number;
-  payment_date: string;
-  category: string;
   status: string;
+  payment_method: string | null;
+  project_id: string | null;
+  project?: { customer_name: string; project_type: string } | null;
 }
-
-// We store crew members in profiles table, vans as a local state + payments category
-// Using profiles for crew, and a dedicated "fleet" payment category for van costs
 
 export default function CrewsVans() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"crew" | "vans">("crew");
+  const [tab, setTab] = useState<"crew" | "vans" | "payroll">("crew");
   const [showNewCrew, setShowNewCrew] = useState(false);
   const [showNewVan, setShowNewVan] = useState(false);
-  const [editCrew, setEditCrew] = useState<CrewMember | null>(null);
+  const [showNewPayroll, setShowNewPayroll] = useState(false);
+  const [monthOffset, setMonthOffset] = useState(0);
 
   const [crewForm, setCrewForm] = useState({
     full_name: "", phone: "", email: "", role: "", bio: "",
@@ -68,7 +72,13 @@ export default function CrewsVans() {
     region: "", status: "Available", notes: ""
   });
 
-  // Fetch crew from profiles
+  const [payrollForm, setPayrollForm] = useState({
+    name: "", role: "", daily_rate: "", days_worked: "1",
+    service_date: format(new Date(), "yyyy-MM-dd"),
+    project_id: "", notes: "", payment_method: "cash"
+  });
+
+  // ─── Crew queries ───
   const { data: crew = [], isLoading: loadingCrew } = useQuery({
     queryKey: ["crew-members"],
     queryFn: async () => {
@@ -81,7 +91,7 @@ export default function CrewsVans() {
     },
   });
 
-  // Fetch van records (stored as payments with category "fleet")
+  // ─── Van queries ───
   const { data: vanRecords = [], isLoading: loadingVans } = useQuery({
     queryKey: ["van-records"],
     queryFn: async () => {
@@ -95,7 +105,47 @@ export default function CrewsVans() {
     },
   });
 
-  // Add crew member (update profile)
+  // ─── Payroll queries ───
+  const baseDate = subMonths(new Date(), monthOffset);
+  const monthStart = startOfMonth(baseDate);
+  const monthEnd = endOfMonth(baseDate);
+  const monthLabel = format(baseDate, "MMMM yyyy");
+
+  const { data: payrollEntries = [], isLoading: loadingPayroll } = useQuery({
+    queryKey: ["labor-payroll", monthOffset],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*, project:projects(customer_name, project_type)")
+        .eq("category", "labor")
+        .gte("payment_date", format(monthStart, "yyyy-MM-dd"))
+        .lte("payment_date", format(monthEnd, "yyyy-MM-dd"))
+        .order("payment_date", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as PayrollEntry[];
+    },
+  });
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ["active-projects-payroll"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, customer_name, project_type")
+        .in("project_status", ["pending", "in_production"])
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const totalPaid = payrollEntries.filter(e => e.status === "confirmed").reduce((s, e) => s + e.amount, 0);
+  const totalPending = payrollEntries.filter(e => e.status === "pending").reduce((s, e) => s + e.amount, 0);
+  const totalCost = payrollEntries.reduce((s, e) => s + e.amount, 0);
+  const payrollCalc = parseFloat(payrollForm.daily_rate || "0") * parseFloat(payrollForm.days_worked || "0");
+
+  // ─── Mutations ───
   const addCrewMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("profiles").insert({
@@ -121,7 +171,6 @@ export default function CrewsVans() {
     onError: (e: any) => toast.error(e.message || "Failed to add crew member"),
   });
 
-  // Add van record
   const addVanMutation = useMutation({
     mutationFn: async () => {
       const description = [
@@ -129,16 +178,9 @@ export default function CrewsVans() {
         vanForm.plate && `(${vanForm.plate})`,
         `— ${vanForm.name || "Van"}`
       ].filter(Boolean).join(" ");
-
       const { error } = await supabase.from("payments").insert({
-        amount: 0,
-        category: "fleet",
-        description,
-        notes: [
-          vanForm.region && `Region: ${vanForm.region}`,
-          `Status: ${vanForm.status}`,
-          vanForm.notes
-        ].filter(Boolean).join(" · ") || null,
+        amount: 0, category: "fleet", description,
+        notes: [vanForm.region && `Region: ${vanForm.region}`, `Status: ${vanForm.status}`, vanForm.notes].filter(Boolean).join(" · ") || null,
         payment_date: new Date().toISOString().split("T")[0],
         status: vanForm.status === "Available" ? "confirmed" : "pending",
       });
@@ -151,6 +193,39 @@ export default function CrewsVans() {
       setVanForm({ name: "", plate: "", year: "", make: "", model: "", region: "", status: "Available", notes: "" });
     },
     onError: (e: any) => toast.error(e.message || "Failed to add van"),
+  });
+
+  const addPayrollMutation = useMutation({
+    mutationFn: async () => {
+      const dailyRate = parseFloat(payrollForm.daily_rate);
+      const daysWorked = parseFloat(payrollForm.days_worked);
+      const total = dailyRate * daysWorked;
+      const { error } = await supabase.from("payments").insert({
+        amount: total, category: "labor",
+        description: `${payrollForm.name} – ${payrollForm.role} (${payrollForm.days_worked} days @ ${fmt(dailyRate)}/day)`,
+        payment_date: payrollForm.service_date,
+        project_id: payrollForm.project_id || null,
+        notes: payrollForm.notes || null,
+        payment_method: payrollForm.payment_method,
+        status: "pending",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Labor entry added");
+      qc.invalidateQueries({ queryKey: ["labor-payroll"] });
+      setShowNewPayroll(false);
+      setPayrollForm({ name: "", role: "", daily_rate: "", days_worked: "1", service_date: format(new Date(), "yyyy-MM-dd"), project_id: "", notes: "", payment_method: "cash" });
+    },
+    onError: () => toast.error("Failed to add entry"),
+  });
+
+  const confirmPayrollMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("payments").update({ status: "confirmed" }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Payment confirmed"); qc.invalidateQueries({ queryKey: ["labor-payroll"] }); },
   });
 
   const deleteCrewMutation = useMutation({
@@ -167,6 +242,14 @@ export default function CrewsVans() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Van removed"); qc.invalidateQueries({ queryKey: ["van-records"] }); },
+  });
+
+  const deletePayrollMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("payments").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Entry removed"); qc.invalidateQueries({ queryKey: ["labor-payroll"] }); },
   });
 
   const toggleVanStatus = useMutation({
@@ -188,8 +271,16 @@ export default function CrewsVans() {
     "Tile": "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   };
 
+  const handleAddClick = () => {
+    if (tab === "crew") setShowNewCrew(true);
+    else if (tab === "vans") setShowNewVan(true);
+    else setShowNewPayroll(true);
+  };
+
+  const addLabel = tab === "crew" ? "Add Worker" : tab === "vans" ? "Add Van" : "Add Entry";
+
   return (
-    <AdminLayout title="Crews & Vans">
+    <AdminLayout title="Crews & Fleet">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
 
         {/* Header */}
@@ -205,22 +296,25 @@ export default function CrewsVans() {
               </p>
             </div>
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => tab === "crew" ? setShowNewCrew(true) : setShowNewVan(true)}>
-            <Plus className="w-4 h-4" /> {tab === "crew" ? "Add Worker" : "Add Van"}
+          <Button size="sm" className="gap-1.5" onClick={handleAddClick}>
+            <Plus className="w-4 h-4" /> {addLabel}
           </Button>
         </div>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "crew" | "vans")}>
-          <TabsList className="w-full max-w-xs h-10 bg-muted/50 p-1">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+          <TabsList className="w-full max-w-md h-10 bg-muted/50 p-1">
             <TabsTrigger value="crew" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card">
-              <Users className="w-3.5 h-3.5" /> Crew ({crew.length})
+              <Users className="w-3.5 h-3.5" /> Crew
             </TabsTrigger>
             <TabsTrigger value="vans" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card">
-              <Truck className="w-3.5 h-3.5" /> Fleet ({vanRecords.length})
+              <Truck className="w-3.5 h-3.5" /> Fleet
+            </TabsTrigger>
+            <TabsTrigger value="payroll" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card">
+              <Hammer className="w-3.5 h-3.5" /> Payroll
             </TabsTrigger>
           </TabsList>
 
-          {/* CREW TAB */}
+          {/* ─── CREW TAB ─── */}
           <TabsContent value="crew" className="mt-4">
             {loadingCrew ? (
               <div className="flex items-center justify-center py-12">
@@ -269,8 +363,7 @@ export default function CrewsVans() {
                           </div>
                         </div>
                         <Button
-                          size="icon"
-                          variant="ghost"
+                          size="icon" variant="ghost"
                           className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                           onClick={() => deleteCrewMutation.mutate(member.id)}
                         >
@@ -284,7 +377,7 @@ export default function CrewsVans() {
             )}
           </TabsContent>
 
-          {/* VANS TAB */}
+          {/* ─── VANS TAB ─── */}
           <TabsContent value="vans" className="mt-4">
             {loadingVans ? (
               <div className="flex items-center justify-center py-12">
@@ -309,17 +402,13 @@ export default function CrewsVans() {
                       <CardContent className="p-4 flex items-center gap-3">
                         <div className={cn(
                           "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                          isAvailable
-                            ? "bg-emerald-500/10 border border-emerald-500/20"
-                            : "bg-amber-500/10 border border-amber-500/20"
+                          isAvailable ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-amber-500/10 border border-amber-500/20"
                         )}>
                           <Truck className={cn("w-5 h-5", isAvailable ? "text-emerald-500" : "text-amber-500")} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm">{van.description ?? "Vehicle"}</p>
-                          {van.notes && (
-                            <p className="text-xs text-muted-foreground truncate">{van.notes}</p>
-                          )}
+                          {van.notes && <p className="text-xs text-muted-foreground truncate">{van.notes}</p>}
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <button
@@ -333,9 +422,7 @@ export default function CrewsVans() {
                           >
                             {isAvailable ? "Available" : "In Use"}
                           </button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
+                          <Button size="icon" variant="ghost"
                             className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => deleteVanMutation.mutate(van.id)}
                           >
@@ -349,10 +436,96 @@ export default function CrewsVans() {
               </div>
             )}
           </TabsContent>
+
+          {/* ─── PAYROLL TAB ─── */}
+          <TabsContent value="payroll" className="mt-4 space-y-4">
+            {/* Month selector */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setMonthOffset(m => m + 1)}>‹</Button>
+              <span className="text-sm font-medium min-w-[120px] text-center">{monthLabel}</span>
+              <Button variant="outline" size="sm" disabled={monthOffset === 0} onClick={() => setMonthOffset(m => m - 1)}>›</Button>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Total Labor", value: fmt(totalCost), color: "text-foreground" },
+                { label: "Confirmed", value: fmt(totalPaid), color: "text-emerald-500" },
+                { label: "Pending", value: fmt(totalPending), color: "text-amber-500" },
+              ].map((c) => (
+                <Card key={c.label} className="border-border/50">
+                  <CardContent className="p-4">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">{c.label}</p>
+                    <p className={cn("text-2xl font-bold", c.color)}>{c.value}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Entries List */}
+            <Card className="border-border/50">
+              <CardContent className="p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  Entries — {payrollEntries.length} records
+                </p>
+                {loadingPayroll ? (
+                  <div className="flex items-center justify-center py-10">
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : payrollEntries.length === 0 ? (
+                  <div className="text-center py-10 text-sm text-muted-foreground">
+                    No labor payments this month
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {payrollEntries.map((entry) => (
+                      <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full flex-shrink-0",
+                            entry.status === "confirmed" ? "bg-emerald-500" : "bg-amber-500"
+                          )} />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{entry.description ?? "—"}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-muted-foreground">{format(new Date(entry.payment_date), "MMM d")}</span>
+                              {entry.project && (
+                                <span className="text-xs text-muted-foreground">· {entry.project.customer_name}</span>
+                              )}
+                              {entry.payment_method && (
+                                <Badge variant="outline" className="text-[9px] h-4 px-1">{entry.payment_method}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-sm font-semibold">{fmt(entry.amount)}</span>
+                          {entry.status === "pending" && (
+                            <Button size="icon" variant="ghost"
+                              className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => confirmPayrollMutation.mutate(entry.id)}
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button size="icon" variant="ghost"
+                            className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => deletePayrollMutation.mutate(entry.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
-      {/* ADD CREW DIALOG */}
+      {/* ─── ADD CREW DIALOG ─── */}
       <Dialog open={showNewCrew} onOpenChange={setShowNewCrew}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -414,7 +587,7 @@ export default function CrewsVans() {
         </DialogContent>
       </Dialog>
 
-      {/* ADD VAN DIALOG */}
+      {/* ─── ADD VAN DIALOG ─── */}
       <Dialog open={showNewVan} onOpenChange={setShowNewVan}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -426,7 +599,7 @@ export default function CrewsVans() {
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1.5">
                 <Label className="text-xs">Van Name / ID *</Label>
-                <Input placeholder='e.g. "Van 1" or "North Jersey Crew"' value={vanForm.name} onChange={e => setVanForm(f => ({ ...f, name: e.target.value }))} />
+                <Input placeholder='e.g. "Van 1"' value={vanForm.name} onChange={e => setVanForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Year</Label>
@@ -456,13 +629,92 @@ export default function CrewsVans() {
               </div>
               <div className="col-span-2 space-y-1.5">
                 <Label className="text-xs">Notes</Label>
-                <Input placeholder="Insurance, mileage, assigned driver..." value={vanForm.notes} onChange={e => setVanForm(f => ({ ...f, notes: e.target.value }))} />
+                <Input placeholder="Insurance, mileage..." value={vanForm.notes} onChange={e => setVanForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setShowNewVan(false)}>Cancel</Button>
               <Button className="flex-1" disabled={!vanForm.name || addVanMutation.isPending} onClick={() => addVanMutation.mutate()}>
                 {addVanMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Van"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── ADD PAYROLL DIALOG ─── */}
+      <Dialog open={showNewPayroll} onOpenChange={setShowNewPayroll}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Hammer className="w-4 h-4" /> New Labor Entry
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 space-y-1.5">
+                <Label className="text-xs">Worker Name *</Label>
+                <Input placeholder="e.g. Carlos" value={payrollForm.name} onChange={e => setPayrollForm(f => ({ ...f, name: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Role *</Label>
+                <Select value={payrollForm.role} onValueChange={v => setPayrollForm(f => ({ ...f, role: v }))}>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Payment Method</Label>
+                <Select value={payrollForm.payment_method} onValueChange={v => setPayrollForm(f => ({ ...f, payment_method: v }))}>
+                  <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["cash", "check", "zelle", "wire"].map(m => <SelectItem key={m} value={m} className="capitalize">{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Daily Rate ($) *</Label>
+                <Input type="number" placeholder="250" value={payrollForm.daily_rate} onChange={e => setPayrollForm(f => ({ ...f, daily_rate: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Days Worked *</Label>
+                <Input type="number" min="0.5" step="0.5" value={payrollForm.days_worked} onChange={e => setPayrollForm(f => ({ ...f, days_worked: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Service Date</Label>
+                <Input type="date" value={payrollForm.service_date} onChange={e => setPayrollForm(f => ({ ...f, service_date: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Project (optional)</Label>
+                <Select value={payrollForm.project_id} onValueChange={v => setPayrollForm(f => ({ ...f, project_id: v }))}>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Link to job" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">— None —</SelectItem>
+                    {projects.map((p: any) => (
+                      <SelectItem key={p.id} value={p.id}>{p.customer_name} · {p.project_type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2 space-y-1.5">
+                <Label className="text-xs">Notes</Label>
+                <Input placeholder="Optional notes..." value={payrollForm.notes} onChange={e => setPayrollForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+            </div>
+            {payrollCalc > 0 && (
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Total to pay</span>
+                <span className="text-lg font-bold text-primary">{fmt(payrollCalc)}</span>
+              </div>
+            )}
+            <div className="flex gap-2 pt-1">
+              <Button variant="outline" className="flex-1" onClick={() => setShowNewPayroll(false)}>Cancel</Button>
+              <Button
+                className="flex-1"
+                disabled={!payrollForm.name || !payrollForm.role || !payrollForm.daily_rate || addPayrollMutation.isPending}
+                onClick={() => addPayrollMutation.mutate()}
+              >
+                {addPayrollMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Entry"}
               </Button>
             </div>
           </div>
