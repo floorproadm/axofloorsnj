@@ -24,6 +24,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useProposalGeneration } from "@/hooks/useProposalGeneration";
 import { ProposalData } from "@/types/proposal";
+import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipelineBoard";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProposalWithRelations {
