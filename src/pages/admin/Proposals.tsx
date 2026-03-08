@@ -572,7 +572,8 @@ export default function Proposals() {
     }, 0);
     const sent = proposals.filter(p => ["sent", "viewed", "accepted", "rejected"].includes(p.status)).length;
     const closeRate = sent > 0 ? Math.round((accepted.length / sent) * 100) : 0;
-    return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length };
+    const pending = proposals.filter(p => ["sent", "viewed"].includes(p.status)).length;
+    return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length, pending };
   }, [proposals]);
 
   // Filter
@@ -601,186 +602,156 @@ export default function Proposals() {
 
   return (
     <AdminLayout title="Proposals">
-      <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
+      <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
 
-        {/* Summary Bar */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">{proposals.length} Proposals</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">{fmt(stats.total)}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">{stats.closeRate}% close</span>
-            </div>
+        {/* KPI Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3">
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</p>
+            <p className="text-2xl font-bold text-foreground mt-0.5">{proposals.length}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-muted rounded-lg p-0.5">
-              <button
-                onClick={() => handleViewMode("list")}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                  viewMode === "list"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <List className="w-3.5 h-3.5" />
-                List
-              </button>
-              <button
-                onClick={() => handleViewMode("board")}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                  viewMode === "board"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                Board
-              </button>
-            </div>
-            <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
-              <Plus className="w-4 h-4" /> New
-            </Button>
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Pipeline Value</p>
+            <p className="text-2xl font-bold text-foreground mt-0.5">{fmt(stats.total)}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Pending</p>
+            <p className="text-2xl font-bold text-foreground mt-0.5">{stats.pending}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Close Rate</p>
+            <p className="text-2xl font-bold text-foreground mt-0.5">{stats.closeRate}%</p>
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Search by client or proposal number..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9 h-9 text-sm"
-          />
-        </div>
-
-        {/* Filter Tabs — underline style */}
-        <div className="flex gap-4 border-b border-border overflow-x-auto">
-          {TABS.map(t => (
+        {/* Mini Stats + View Toggle */}
+        <div className="px-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
+          <span><strong className="text-foreground">{stats.accepted_count}</strong> accepted</span>
+          <span className="text-border">|</span>
+          <span><strong className="text-foreground">{fmt(stats.acceptedTotal)}</strong> won</span>
+          <div className="ml-auto flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => handleViewMode("list")}
               className={cn(
-                "flex items-center gap-1.5 pb-2 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
-                tab === t.id
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                "p-1.5 rounded-md transition-colors",
+                viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {t.label}
-              <span className={cn(
-                "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                tab === t.id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-              )}>{t.count}</span>
+              <List className="w-3.5 h-3.5" />
             </button>
-          ))}
+            <button
+              onClick={() => handleViewMode("board")}
+              className={cn(
+                "p-1.5 rounded-md transition-colors",
+                viewMode === "board" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        {/* Content */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        {/* Search & Filters */}
+        <div className="p-3 space-y-2 border-b border-border/50">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by client or proposal #..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9 h-9"
+            />
           </div>
-        ) : filtered.length === 0 ? (
-          <Card className="border-dashed border-2 border-border/50">
-            <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
-              <FileText className="w-10 h-10 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">
-                {search ? "No proposals match your search" : "No proposals yet"}
-              </p>
-              {!search && (
-                <Button size="sm" variant="outline" onClick={() => setShowNew(true)}>
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Create First Proposal
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : viewMode === "board" ? (
-          /* Board View — horizontal Kanban pipeline */
-          <div className="flex-1 overflow-x-auto overflow-y-hidden -mx-4 md:-mx-6">
-            <div className="flex gap-3 px-4 md:px-6 pb-4 h-full min-w-max">
-              {([
-                { key: "draft",    label: "Draft",    filter: (p: ProposalWithRelations) => p.status === "draft" },
-                { key: "sent",     label: "Sent",     filter: (p: ProposalWithRelations) => p.status === "sent" },
-                { key: "viewed",   label: "Viewed",   filter: (p: ProposalWithRelations) => p.status === "viewed" },
-                { key: "accepted", label: "Accepted", filter: (p: ProposalWithRelations) => p.status === "accepted" },
-                { key: "declined", label: "Declined", filter: (p: ProposalWithRelations) => p.status === "rejected" || (isPast(parseISO(p.valid_until)) && !["accepted","rejected"].includes(p.status)) },
-              ] as const).map(stage => {
-                const stageProposals = filtered.filter(stage.filter);
-                const stageTotal = stageProposals.reduce((s, p) => s + p.better_price, 0);
-                const sc = STATUS_CONFIG[stage.key === "declined" ? "rejected" : stage.key] || STATUS_CONFIG.draft;
-                return (
-                  <div key={stage.key} className="flex flex-col w-[220px] sm:w-[250px] bg-muted/30 rounded-xl border border-border/50 shrink-0">
-                    {/* Column Header */}
-                    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/40">
-                      <span className={cn("w-2.5 h-2.5 rounded-full", sc.dot)} />
-                      <span className="text-sm font-semibold text-foreground truncate">{stage.label}</span>
-                      <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">
-                        {stageProposals.length}
-                      </Badge>
-                    </div>
-                    {/* Column Summary */}
-                    {stageProposals.length > 0 && (
-                      <div className="px-3 py-1.5 border-b border-border/30">
-                        <span className="text-[10px] text-muted-foreground">{fmt(stageTotal)}</span>
-                      </div>
-                    )}
-                    {/* Cards */}
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                      {stageProposals.map(p => (
-                        <ProposalCard key={p.id} proposal={p} onClick={() => setSelected(p)} />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          /* List View (default) — compact rows */
-          <div className="space-y-1.5">
-            {filtered.map(p => {
-              const sc = STATUS_CONFIG[p.status] || STATUS_CONFIG.draft;
-              const c = p.projects;
-              const isExpired = isPast(parseISO(p.valid_until)) && !["accepted", "rejected"].includes(p.status);
-              const displayStatus = isExpired ? STATUS_CONFIG.expired : sc;
-              const selectedTier = p.selected_tier;
-              const displayPrice = selectedTier
-                ? p[`${selectedTier}_price` as keyof ProposalWithRelations] as number
-                : p.better_price;
+          <Button onClick={() => setShowNew(true)} className="w-full h-9 gap-2" size="sm">
+            <Plus className="w-4 h-4" /> New Proposal
+          </Button>
+        </div>
 
-              return (
-                <button key={p.id} onClick={() => setSelected(p)} className="w-full text-left group">
-                  <div className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border transition-all",
-                    "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
-                    "border-border/50 bg-card"
-                  )}>
-                    <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground font-mono hidden sm:block">{p.proposal_number}</span>
-                    <Badge className={cn("text-[10px] h-5 px-2 rounded-full border flex-shrink-0", displayStatus.bg, displayStatus.color, displayStatus.border)}>
-                      {isExpired ? "Expired" : displayStatus.label}
-                    </Badge>
-                    <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
-                  </div>
+        {/* Content: List or Board */}
+        {viewMode === "board" ? (
+          <ProposalPipelineBoard proposals={filtered} onSelect={setSelected} />
+        ) : (
+          <>
+            {/* Filter Tabs — underline style */}
+            <div className="flex gap-4 px-3 border-b border-border/50 overflow-x-auto">
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 pb-2 pt-2 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
+                    tab === t.id
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {t.label}
+                  <span className={cn(
+                    "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
+                    tab === t.id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                  )}>{t.count}</span>
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-14 w-full rounded-lg" />
+                  ))
+                ) : filtered.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm font-medium">
+                      {search ? "No proposals match your search" : "No proposals yet"}
+                    </p>
+                    {!search && (
+                      <Button size="sm" variant="outline" className="mt-3" onClick={() => setShowNew(true)}>
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Create First Proposal
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  filtered.map(p => {
+                    const sc = STATUS_CONFIG[p.status] || STATUS_CONFIG.draft;
+                    const c = p.projects;
+                    const isExpired = isPast(parseISO(p.valid_until)) && !["accepted", "rejected"].includes(p.status);
+                    const displayStatus = isExpired ? STATUS_CONFIG.expired : sc;
+                    const selectedTier = p.selected_tier;
+                    const displayPrice = selectedTier
+                      ? p[`${selectedTier}_price` as keyof ProposalWithRelations] as number
+                      : p.better_price;
+
+                    return (
+                      <button key={p.id} onClick={() => setSelected(p)} className="w-full text-left group">
+                        <div className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                          "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
+                          "border-border/50 bg-card"
+                        )}>
+                          <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                            <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-mono hidden sm:block">{p.proposal_number}</span>
+                          <Badge className={cn("text-[10px] h-5 px-2 rounded-full border flex-shrink-0", displayStatus.bg, displayStatus.color, displayStatus.border)}>
+                            {isExpired ? "Expired" : displayStatus.label}
+                          </Badge>
+                          <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </ScrollArea>
+            <div className="px-3 py-2 border-t border-border/50 text-xs text-muted-foreground">
+              {filtered.length} de {proposals.length} proposals
+            </div>
+          </>
         )}
       </div>
 
