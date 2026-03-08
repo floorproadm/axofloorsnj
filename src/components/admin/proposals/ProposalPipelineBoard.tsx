@@ -20,6 +20,8 @@ interface ProposalWithRelations {
   valid_until: string;
   created_at: string;
   project_id: string;
+  use_tiers: boolean;
+  flat_price: number | null;
   projects: {
     customer_name: string;
     customer_email: string;
