@@ -195,11 +195,7 @@ const App = () => {
                 <AdminAutomations />
               </ProtectedRoute>
             } />
-            <Route path="/admin/labor-payroll" element={
-              <ProtectedRoute>
-                <LaborPayroll />
-              </ProtectedRoute>
-            } />
+            <Route path="/admin/labor-payroll" element={<Navigate to="/admin/crews" replace />} />
             <Route path="/admin/crews" element={
               <ProtectedRoute>
                 <CrewsVans />
