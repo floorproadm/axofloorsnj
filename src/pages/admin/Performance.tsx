@@ -393,14 +393,11 @@ export default function Performance() {
             <TabsTrigger value="weekly" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <CalendarDays className="w-3.5 h-3.5" /> Weekly
             </TabsTrigger>
-            <TabsTrigger value="projects" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
-              <Briefcase className="w-3.5 h-3.5" /> Projects
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-5"><OverviewTab /></TabsContent>
           <TabsContent value="weekly" className="mt-5"><WeeklyReviewTab /></TabsContent>
-          <TabsContent value="projects" className="mt-5"><ProjectsTab /></TabsContent>
+          
         </Tabs>
       </div>
     </AdminLayout>
