@@ -1,34 +1,28 @@
 
-# Referral Booster — Implementado ✅
 
-## O que foi feito
+# Add Uploaded Files to Project
 
-### Database (Migration)
-- **`referral_profiles`** — Perfil do indicador com `referral_code` único, contadores, créditos
-- **`referrals`** — Cada indicação com status, link para lead, créditos
-- **`referral_rewards`** — Histórico de créditos/resgates
-- **`company_settings.referral_commission_percent`** — Campo novo (default 7%)
-- RLS: public insert/read, admin all
+## Overview
+Copy 5 uploaded files into the project, replacing existing ones where they already exist.
 
-### Frontend
-- **`src/hooks/useReferralProfile.ts`** — Hook completo: register, lookup, addReferral, tiers
-- **`src/components/referral/ReferralDashboard.tsx`** — Dashboard pós-cadastro com stats, share, QR, histórico
-- **`src/components/referral/ReferralQRCode.tsx`** — QR code via `qrcode` lib (canvas)
-- **`src/components/referral/ReferralTierBadge.tsx`** — Badge visual com progresso (Bronze→Diamond)
-- **`src/components/referral/AddReferralForm.tsx`** — Form para indicar amigo (cria referral + lead)
-- **`src/pages/ReferralProgram.tsx`** — Redesign completo com registro/login + dashboard
+## Files to Add/Replace
 
-### Integração Pipeline
-- **`src/utils/referral.ts`** — Utilitário `getReferralCodeFromURL()` + `buildReferralNotes()`
-- **ContactForm** e **ContactSection** detectam `?ref=CODE` e marcam lead como `referral`
-- Leads criados pelo formulário de indicação linkam automaticamente ao referrer
+| File | Destination | Action |
+|------|------------|--------|
+| `AdminSidebar.tsx` | `src/components/admin/AdminSidebar.tsx` | Replace (adds 3 new nav items: Weekly Review, Labor Payroll, Crews & Fleet) |
+| `App.tsx` | `src/App.tsx` | Replace (adds 3 new routes + imports for WeeklyReview, LaborPayroll, CrewsVans) |
+| `WeeklyReview.tsx` | `src/pages/admin/WeeklyReview.tsx` | Create new page |
+| `LaborPayroll.tsx` | `src/pages/admin/LaborPayroll.tsx` | Create new page |
+| `CrewsVans.tsx` | `src/pages/admin/CrewsVans.tsx` | Create new page |
 
-### Gamificação (Tiers)
-- Starter → Bronze (1-2) → Silver (3-5) → Gold (6-9) → Diamond (10+)
-- Barra de progresso visual + badges
+## What These Files Add
+- **AdminSidebar**: 3 new navigation entries under "Manage" group (Weekly Review, Labor Payroll, Crews & Fleet)
+- **App.tsx**: 3 new protected admin routes (`/admin/weekly-review`, `/admin/labor-payroll`, `/admin/crews`)
+- **WeeklyReview**: Dashboard with KPI cards, revenue/profit charts, cash flow, and jobs/leads breakdown by week
+- **LaborPayroll**: Worker payment tracker with monthly view, daily rate calculations, and project linking
+- **CrewsVans**: Crew member management (via profiles table) and fleet tracking (via payments table with "fleet" category)
 
-## Fora do Escopo (Fase 2)
-- Admin tab para gerenciar referrers e resgatar créditos
-- Trigger automático de crédito quando lead converte
-- Push notifications para referrer
-- Leaderboard público
+## Notes
+- All 3 new pages use existing tables (`projects`, `payments`, `profiles`, `leads`, `job_costs`) -- no database changes needed
+- All use existing UI components and patterns consistent with the admin panel
+
