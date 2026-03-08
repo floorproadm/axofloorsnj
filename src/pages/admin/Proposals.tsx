@@ -594,9 +594,7 @@ export default function Proposals() {
     <AdminLayout title="Proposals">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
 
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-lg font-bold tracking-tight">Proposals</h1>
+        <div className="flex items-center justify-end">
           <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="w-4 h-4" /> New Proposal
           </Button>
