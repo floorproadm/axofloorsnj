@@ -32,6 +32,7 @@ import {
 import { useLeadFollowUp } from "@/hooks/useLeadFollowUp";
 import { useLeadNRABatch } from "@/hooks/useLeadNRA";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
+import { QuickQuoteSheet } from "@/components/admin/QuickQuoteSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -39,7 +40,7 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2, X
+  Loader2, X, Zap
 } from "lucide-react";
 import { differenceInHours, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -561,6 +562,15 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const [showProposalModal, setShowProposalModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
+  // Quick Quote state
+  const [quickQuoteLead, setQuickQuoteLead] = useState<Lead | null>(null);
+  const [showQuickQuote, setShowQuickQuote] = useState(false);
+
+  const handleQuickQuote = useCallback((lead: Lead) => {
+    setQuickQuoteLead(lead);
+    setShowQuickQuote(true);
+  }, []);
+
   const salesLeads = useMemo(() => 
     leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)), 
     [leads]
@@ -831,6 +841,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                               isStale={isStale(lead)}
                               isBlocked={isBlocked(lead)}
                               onClick={() => handleCardClick(lead)}
+                              onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                             />
                           ))
                         )}
@@ -896,17 +907,26 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       <QuickApptModal open={showApptModal} onOpenChange={setShowApptModal} leads={salesLeads} onSuccess={onRefresh} />
       <QuickProposalModal open={showProposalModal} onOpenChange={setShowProposalModal} leads={salesLeads} />
       <QuickRequestModal open={showRequestModal} onOpenChange={setShowRequestModal} leads={salesLeads} onSuccess={onRefresh} />
+
+      {/* Quick Quote Sheet */}
+      <QuickQuoteSheet
+        lead={quickQuoteLead}
+        open={showQuickQuote}
+        onClose={() => { setShowQuickQuote(false); setQuickQuoteLead(null); }}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
 
 /* ─── Board Card ─── */
-function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
+function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: {
   lead: Lead;
   nra: any;
   isStale: boolean;
   isBlocked: boolean;
   onClick: () => void;
+  onQuickQuote?: () => void;
 }) {
   const timeBadge = getTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
@@ -975,6 +995,17 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
             <span className="text-[9px] text-muted-foreground font-medium">+{overflowCount}</span>
           )}
         </div>
+      )}
+
+      {/* Quick Quote button */}
+      {onQuickQuote && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+          className="flex items-center gap-1 mt-1.5 pt-1.5 border-t w-full text-[10px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+        >
+          <Zap className="w-3 h-3 flex-shrink-0" />
+          Quick Quote
+        </button>
       )}
 
       {/* Operational Alert (conditional) */}
