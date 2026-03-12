@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProposalTier, ProposalData, ProposalValidation, TierValidation } from '@/types/proposal';
+import { AXO_ORG_ID } from '@/lib/constants';
 
 /**
  * TIER DEFINITIONS
@@ -187,6 +188,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           valid_until: validUntil.toISOString().slice(0, 10),
           status: 'draft',
           proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

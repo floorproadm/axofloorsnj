@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput, useFieldValidation } from "@/utils/validation";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 export interface LeadData {
   name: string;
@@ -32,12 +33,13 @@ export const useLeadCapture = () => {
       const dbData = {
         name: sanitizeInput(leadData.name),
         email: sanitizeInput(leadData.email),
-        phone: "000-000-0000", // Placeholder since we don't collect phone for lead magnets
+        phone: "000-000-0000",
         lead_source: leadData.source,
         status: 'cold_lead',
         priority: 'high',
         services: leadData.category ? [leadData.category] : ['lead_magnet'],
-        notes: leadData.downloadTitle ? `Downloaded: ${leadData.downloadTitle}` : 'Lead magnet download'
+        notes: leadData.downloadTitle ? `Downloaded: ${leadData.downloadTitle}` : 'Lead magnet download',
+        organization_id: AXO_ORG_ID,
       };
 
       const { data: savedLead, error: saveError } = await supabase

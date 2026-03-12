@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -119,6 +120,7 @@ export default function LaborPayroll() {
         notes: form.notes || null,
         payment_method: form.payment_method,
         status: "pending",
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 export interface Payment {
   id: string;
@@ -60,6 +61,7 @@ export function useCreatePayment() {
           status: input.status || "pending",
           description: input.description || null,
           notes: input.notes || null,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -185,6 +186,7 @@ export default function CrewsVans() {
         notes: [vanForm.region && `Region: ${vanForm.region}`, `Status: ${vanForm.status}`, vanForm.notes].filter(Boolean).join(" · ") || null,
         payment_date: new Date().toISOString().split("T")[0],
         status: vanForm.status === "Available" ? "confirmed" : "pending",
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },
@@ -210,6 +212,7 @@ export default function CrewsVans() {
         notes: payrollForm.notes || null,
         payment_method: payrollForm.payment_method,
         status: "pending",
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },

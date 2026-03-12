@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { AXO_ORG_ID } from '@/lib/constants';
 
 export interface ReferralProfile {
   id: string;
@@ -175,6 +176,7 @@ export function useReferralProfile() {
           lead_source: 'referral',
           status: 'cold_lead',
           notes: `Referred by ${profile.name} (${profile.referral_code})`,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

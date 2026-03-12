@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -149,6 +150,7 @@ function QuickNewLeadModal({ open, onOpenChange, onSuccess }: {
         budget: form.budget ? parseFloat(form.budget) : null,
         notes: form.notes.trim() || null,
         lead_source: 'manual',
+        organization_id: AXO_ORG_ID,
         // status defaults to 'cold_lead' via DB default
       });
       if (error) throw error;
@@ -258,6 +260,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
         appointment_time: apptTime,
         appointment_type: 'estimate',
         notes: notes.trim() || null,
+        organization_id: AXO_ORG_ID,
       });
       if (apptError) throw apptError;
 

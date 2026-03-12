@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,6 +132,7 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
         status: "scheduled",
         notes: `partner:${partnerId}`,
         customer_phone: "",
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },

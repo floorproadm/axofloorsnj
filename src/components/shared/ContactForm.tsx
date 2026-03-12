@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AXO_ORG_ID } from '@/lib/constants';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -156,6 +157,7 @@ const ContactForm = () => {
           zip_code: formData.zip_code || null,
           message: formData.message || null,
           notes: refCode ? buildReferralNotes(null, refCode) : null,
+          organization_id: AXO_ORG_ID,
         }]);
 
       if (error) throw error;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
@@ -170,6 +171,7 @@ const FloorDiagnostic = () => {
         lead_source: 'floor-diagnostic',
         status: 'cold_lead',
         priority: qualification.qualified ? 'high' : 'low',
+        organization_id: AXO_ORG_ID,
         notes: `
           DIAGNOSTIC APPLICATION
           ----------------------

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
@@ -218,7 +219,8 @@ const Quiz = () => {
         services: [sanitizeInput(formData.serviceType) || 'unknown'],
         budget: formData.budget === "10k-plus" ? 15000 : 
                 formData.budget === "5k-10k" ? 7500 :
-                formData.budget === "2k-5k" ? 3500 : 2000
+                formData.budget === "2k-5k" ? 3500 : 2000,
+        organization_id: AXO_ORG_ID,
       };
 
       console.log('Prepared quiz data for submission:', quizData);

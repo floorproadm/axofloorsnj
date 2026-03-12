@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,7 +178,8 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
 
       const folderData = {
         ...folderForm,
-        display_order: editingFolder ? editingFolder.display_order : folders.length
+        display_order: editingFolder ? editingFolder.display_order : folders.length,
+        organization_id: AXO_ORG_ID,
       };
 
       let result;
@@ -227,7 +229,8 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
       const projectData = {
         ...projectForm,
         parent_folder_id: projectForm.parent_folder_id === "none" ? null : projectForm.parent_folder_id,
-        display_order: editingProject ? editingProject.display_order : projects.length
+        display_order: editingProject ? editingProject.display_order : projects.length,
+        organization_id: AXO_ORG_ID,
       };
 
       let result;
@@ -871,12 +874,13 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
                               const projectData = {
                                 title: fileName.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                                 description: `Projeto criado via upload automático`,
-                                category: categories[0], // Default to first category
+                                category: categories[0],
                                 location: '',
                                 image_url: url,
                                 is_featured: false,
                                 parent_folder_id: selectedFolder,
-                                display_order: projects.length
+                                display_order: projects.length,
+                                organization_id: AXO_ORG_ID,
                               };
 
                               supabase

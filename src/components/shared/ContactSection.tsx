@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ const ContactSection = () => {
         budget: 0,
         message: baseNotes,
         notes: refCode ? buildReferralNotes(null, refCode) : null,
+        organization_id: AXO_ORG_ID,
       };
       const {
         data: savedContact,

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -584,6 +585,7 @@ function AppointmentModal({
     if (!form.customer_name || !form.customer_phone) return;
     onSave({
       ...form,
+      organization_id: AXO_ORG_ID,
       ...(appointment ? { id: appointment.id } : {}),
     });
   };

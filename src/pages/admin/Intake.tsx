@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -306,7 +307,8 @@ export default function Intake() {
         budget: formData.budget ? parseFloat(formData.budget) : null,
         notes: formData.notes.trim() || null,
         lead_source: 'manual',
-        status: 'cold_lead'
+        status: 'cold_lead',
+        organization_id: AXO_ORG_ID,
       });
 
       if (error) throw error;
