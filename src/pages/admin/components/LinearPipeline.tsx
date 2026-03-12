@@ -150,6 +150,7 @@ function QuickNewLeadModal({ open, onOpenChange, onSuccess }: {
         budget: form.budget ? parseFloat(form.budget) : null,
         notes: form.notes.trim() || null,
         lead_source: 'manual',
+        organization_id: AXO_ORG_ID,
         // status defaults to 'cold_lead' via DB default
       });
       if (error) throw error;
