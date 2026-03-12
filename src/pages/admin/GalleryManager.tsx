@@ -227,7 +227,8 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
       const projectData = {
         ...projectForm,
         parent_folder_id: projectForm.parent_folder_id === "none" ? null : projectForm.parent_folder_id,
-        display_order: editingProject ? editingProject.display_order : projects.length
+        display_order: editingProject ? editingProject.display_order : projects.length,
+        organization_id: AXO_ORG_ID,
       };
 
       let result;
