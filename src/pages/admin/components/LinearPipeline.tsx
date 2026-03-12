@@ -920,12 +920,13 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
 }
 
 /* ─── Board Card ─── */
-function PipelineCard({ lead, nra, isStale, isBlocked, onClick }: {
+function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: {
   lead: Lead;
   nra: any;
   isStale: boolean;
   isBlocked: boolean;
   onClick: () => void;
+  onQuickQuote?: () => void;
 }) {
   const timeBadge = getTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
