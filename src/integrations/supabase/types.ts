@@ -28,6 +28,7 @@ export type Database = {
           id: string
           location: string | null
           notes: string | null
+          organization_id: string
           project_id: string | null
           reminder_sent: boolean | null
           status: string
@@ -46,6 +47,7 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          organization_id: string
           project_id?: string | null
           reminder_sent?: boolean | null
           status?: string
@@ -64,6 +66,7 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          organization_id?: string
           project_id?: string | null
           reminder_sent?: boolean | null
           status?: string
@@ -75,6 +78,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -100,6 +110,7 @@ export type Database = {
           data_classification: string | null
           id: string
           operation_type: string
+          organization_id: string | null
           table_accessed: string
           user_id: string | null
           user_role: string | null
@@ -110,6 +121,7 @@ export type Database = {
           data_classification?: string | null
           id?: string
           operation_type: string
+          organization_id?: string | null
           table_accessed: string
           user_id?: string | null
           user_role?: string | null
@@ -120,11 +132,20 @@ export type Database = {
           data_classification?: string | null
           id?: string
           operation_type?: string
+          organization_id?: string | null
           table_accessed?: string
           user_id?: string | null
           user_role?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       automation_drips: {
         Row: {
@@ -263,6 +284,7 @@ export type Database = {
           id: string
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url: string | null
+          organization_id: string | null
           primary_color: string | null
           referral_commission_percent: number
           secondary_color: string | null
@@ -278,6 +300,7 @@ export type Database = {
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
+          organization_id?: string | null
           primary_color?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
@@ -293,6 +316,7 @@ export type Database = {
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
+          organization_id?: string | null
           primary_color?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
@@ -300,7 +324,15 @@ export type Database = {
           trade_name?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "company_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
@@ -311,6 +343,7 @@ export type Database = {
           full_name: string
           id: string
           notes: string | null
+          organization_id: string
           phone: string | null
           updated_at: string
           zip_code: string | null
@@ -323,6 +356,7 @@ export type Database = {
           full_name: string
           id?: string
           notes?: string | null
+          organization_id: string
           phone?: string | null
           updated_at?: string
           zip_code?: string | null
@@ -335,11 +369,20 @@ export type Database = {
           full_name?: string
           id?: string
           notes?: string | null
+          organization_id?: string
           phone?: string | null
           updated_at?: string
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feed_comments: {
         Row: {
@@ -534,6 +577,7 @@ export type Database = {
           display_order: number | null
           id: string
           name: string
+          organization_id: string
           updated_at: string
         }
         Insert: {
@@ -543,6 +587,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           name: string
+          organization_id: string
           updated_at?: string
         }
         Update: {
@@ -552,9 +597,18 @@ export type Database = {
           display_order?: number | null
           id?: string
           name?: string
+          organization_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "gallery_folders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gallery_projects: {
         Row: {
@@ -567,6 +621,7 @@ export type Database = {
           image_url: string
           is_featured: boolean | null
           location: string
+          organization_id: string
           parent_folder_id: string | null
           title: string
           updated_at: string
@@ -581,6 +636,7 @@ export type Database = {
           image_url: string
           is_featured?: boolean | null
           location: string
+          organization_id: string
           parent_folder_id?: string | null
           title: string
           updated_at?: string
@@ -595,11 +651,19 @@ export type Database = {
           image_url?: string
           is_featured?: boolean | null
           location?: string
+          organization_id?: string
           parent_folder_id?: string | null
           title?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "gallery_projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "gallery_projects_parent_folder_id_fkey"
             columns: ["parent_folder_id"]
@@ -657,6 +721,7 @@ export type Database = {
           id: string
           invoice_number: string
           notes: string | null
+          organization_id: string
           paid_at: string | null
           payment_method: string | null
           project_id: string
@@ -674,6 +739,7 @@ export type Database = {
           id?: string
           invoice_number: string
           notes?: string | null
+          organization_id: string
           paid_at?: string | null
           payment_method?: string | null
           project_id: string
@@ -691,6 +757,7 @@ export type Database = {
           id?: string
           invoice_number?: string
           notes?: string | null
+          organization_id?: string
           paid_at?: string | null
           payment_method?: string | null
           project_id?: string
@@ -705,6 +772,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -878,6 +952,7 @@ export type Database = {
           name: string
           next_action_date: string | null
           notes: string | null
+          organization_id: string
           phone: string
           priority: string
           referred_by_partner_id: string | null
@@ -908,6 +983,7 @@ export type Database = {
           name: string
           next_action_date?: string | null
           notes?: string | null
+          organization_id: string
           phone: string
           priority?: string
           referred_by_partner_id?: string | null
@@ -938,6 +1014,7 @@ export type Database = {
           name?: string
           next_action_date?: string | null
           notes?: string | null
+          organization_id?: string
           phone?: string
           priority?: string
           referred_by_partner_id?: string | null
@@ -954,6 +1031,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1363,6 +1447,7 @@ export type Database = {
           description: string | null
           id: string
           notes: string | null
+          organization_id: string
           payment_date: string
           payment_method: string | null
           project_id: string | null
@@ -1377,6 +1462,7 @@ export type Database = {
           description?: string | null
           id?: string
           notes?: string | null
+          organization_id: string
           payment_date?: string
           payment_method?: string | null
           project_id?: string | null
@@ -1391,6 +1477,7 @@ export type Database = {
           description?: string | null
           id?: string
           notes?: string | null
+          organization_id?: string
           payment_date?: string
           payment_method?: string | null
           project_id?: string | null
@@ -1398,6 +1485,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payments_project_id_fkey"
             columns: ["project_id"]
@@ -1677,6 +1771,7 @@ export type Database = {
           estimated_cost: number | null
           id: string
           notes: string | null
+          organization_id: string
           project_status: string
           project_type: string
           referred_by_partner_id: string | null
@@ -1702,6 +1797,7 @@ export type Database = {
           estimated_cost?: number | null
           id?: string
           notes?: string | null
+          organization_id: string
           project_status?: string
           project_type: string
           referred_by_partner_id?: string | null
@@ -1727,6 +1823,7 @@ export type Database = {
           estimated_cost?: number | null
           id?: string
           notes?: string | null
+          organization_id?: string
           project_status?: string
           project_type?: string
           referred_by_partner_id?: string | null
@@ -1745,6 +1842,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1769,6 +1873,7 @@ export type Database = {
           margin_best: number
           margin_better: number
           margin_good: number
+          organization_id: string
           pdf_document_id: string | null
           project_id: string
           proposal_number: string
@@ -1791,6 +1896,7 @@ export type Database = {
           margin_best: number
           margin_better: number
           margin_good: number
+          organization_id: string
           pdf_document_id?: string | null
           project_id: string
           proposal_number: string
@@ -1813,6 +1919,7 @@ export type Database = {
           margin_best?: number
           margin_better?: number
           margin_good?: number
+          organization_id?: string
           pdf_document_id?: string | null
           project_id?: string
           proposal_number?: string
@@ -1829,6 +1936,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1862,6 +1976,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          organization_id: string | null
           phone: string
           room_size: string
           services: Json | null
@@ -1876,6 +1991,7 @@ export type Database = {
           email: string
           id?: string
           name: string
+          organization_id?: string | null
           phone: string
           room_size: string
           services?: Json | null
@@ -1890,6 +2006,7 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          organization_id?: string | null
           phone?: string
           room_size?: string
           services?: Json | null
@@ -1897,7 +2014,15 @@ export type Database = {
           updated_at?: string
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quiz_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_profiles: {
         Row: {
