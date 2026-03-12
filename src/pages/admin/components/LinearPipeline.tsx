@@ -562,6 +562,15 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const [showProposalModal, setShowProposalModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
+  // Quick Quote state
+  const [quickQuoteLead, setQuickQuoteLead] = useState<Lead | null>(null);
+  const [showQuickQuote, setShowQuickQuote] = useState(false);
+
+  const handleQuickQuote = useCallback((lead: Lead) => {
+    setQuickQuoteLead(lead);
+    setShowQuickQuote(true);
+  }, []);
+
   const salesLeads = useMemo(() => 
     leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)), 
     [leads]
