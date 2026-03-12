@@ -178,7 +178,8 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
 
       const folderData = {
         ...folderForm,
-        display_order: editingFolder ? editingFolder.display_order : folders.length
+        display_order: editingFolder ? editingFolder.display_order : folders.length,
+        organization_id: AXO_ORG_ID,
       };
 
       let result;
