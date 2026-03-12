@@ -32,6 +32,7 @@ import {
 import { useLeadFollowUp } from "@/hooks/useLeadFollowUp";
 import { useLeadNRABatch } from "@/hooks/useLeadNRA";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
+import { QuickQuoteSheet } from "@/components/admin/QuickQuoteSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
