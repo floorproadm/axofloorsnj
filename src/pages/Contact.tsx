@@ -88,7 +88,8 @@ const Contact = () => {
         status: 'cold_lead',
         priority: 'medium',
         services: formData.service ? [formData.service] : [],
-        message: `Timeline: ${formData.timeline || 'Not specified'}`
+        message: `Timeline: ${formData.timeline || 'Not specified'}`,
+        organization_id: AXO_ORG_ID,
       };
       console.log('Prepared lead data:', leadData);
       const {

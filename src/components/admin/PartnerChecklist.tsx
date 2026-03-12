@@ -131,6 +131,7 @@ export function PartnerChecklist({ partnerId }: PartnerChecklistProps) {
         status: "scheduled",
         notes: `partner:${partnerId}`,
         customer_phone: "",
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },

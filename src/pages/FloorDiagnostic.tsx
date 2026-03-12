@@ -170,6 +170,7 @@ const FloorDiagnostic = () => {
         lead_source: 'floor-diagnostic',
         status: 'cold_lead',
         priority: qualification.qualified ? 'high' : 'low',
+        organization_id: AXO_ORG_ID,
         notes: `
           DIAGNOSTIC APPLICATION
           ----------------------

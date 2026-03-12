@@ -60,6 +60,7 @@ export function useCreatePayment() {
           status: input.status || "pending",
           description: input.description || null,
           notes: input.notes || null,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

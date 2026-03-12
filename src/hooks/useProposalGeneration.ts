@@ -187,6 +187,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           valid_until: validUntil.toISOString().slice(0, 10),
           status: 'draft',
           proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

@@ -156,6 +156,7 @@ const ContactForm = () => {
           zip_code: formData.zip_code || null,
           message: formData.message || null,
           notes: refCode ? buildReferralNotes(null, refCode) : null,
+          organization_id: AXO_ORG_ID,
         }]);
 
       if (error) throw error;

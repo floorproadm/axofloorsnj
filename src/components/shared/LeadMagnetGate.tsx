@@ -73,12 +73,13 @@ export const LeadMagnetGate = ({
       const leadData = {
         name: sanitizeInput(name),
         email: sanitizeInput(email),
-        phone: "000-000-0000", // Placeholder since we don't collect phone for lead magnets
+        phone: "000-000-0000",
         lead_source: 'lead_magnet',
         status: 'cold_lead',
         priority: 'high',
         services: [category],
-        notes: `Downloaded: ${title}`
+        notes: `Downloaded: ${title}`,
+        organization_id: AXO_ORG_ID,
       };
 
       const { data: savedLead, error: saveError } = await supabase

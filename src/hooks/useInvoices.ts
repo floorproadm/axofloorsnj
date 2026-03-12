@@ -89,6 +89,7 @@ export function useCreateInvoice() {
           due_date: input.due_date,
           notes: input.notes || null,
           amount: totalAmount,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

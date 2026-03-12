@@ -175,6 +175,7 @@ export function useReferralProfile() {
           lead_source: 'referral',
           status: 'cold_lead',
           notes: `Referred by ${profile.name} (${profile.referral_code})`,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

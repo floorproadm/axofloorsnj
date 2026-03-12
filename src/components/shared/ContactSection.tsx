@@ -60,6 +60,7 @@ const ContactSection = () => {
         budget: 0,
         message: baseNotes,
         notes: refCode ? buildReferralNotes(null, refCode) : null,
+        organization_id: AXO_ORG_ID,
       };
       const {
         data: savedContact,

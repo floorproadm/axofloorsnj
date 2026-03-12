@@ -107,6 +107,7 @@ export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLe
         email: values.email || null,
         lead_source: values.lead_source,
         message: values.message || null,
+        organization_id: AXO_ORG_ID,
         ...(referredByPartnerId ? {
           referred_by_partner_id: referredByPartnerId,
           status: "warm_lead",

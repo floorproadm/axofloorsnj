@@ -115,6 +115,7 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
           project_type: values.project_types.join(", "),
           address: values.address || null,
           referred_by_partner_id: (values.referred_by_partner_id && values.referred_by_partner_id !== NONE_PARTNER) ? values.referred_by_partner_id : null,
+          organization_id: AXO_ORG_ID,
         })
         .select("id")
         .single();
