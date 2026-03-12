@@ -874,12 +874,13 @@ export default function GalleryManager({ embedded = false }: { embedded?: boolea
                               const projectData = {
                                 title: fileName.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                                 description: `Projeto criado via upload automático`,
-                                category: categories[0], // Default to first category
+                                category: categories[0],
                                 location: '',
                                 image_url: url,
                                 is_featured: false,
                                 parent_folder_id: selectedFolder,
-                                display_order: projects.length
+                                display_order: projects.length,
+                                organization_id: AXO_ORG_ID,
                               };
 
                               supabase

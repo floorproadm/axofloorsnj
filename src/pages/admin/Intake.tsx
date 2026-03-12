@@ -307,7 +307,8 @@ export default function Intake() {
         budget: formData.budget ? parseFloat(formData.budget) : null,
         notes: formData.notes.trim() || null,
         lead_source: 'manual',
-        status: 'cold_lead'
+        status: 'cold_lead',
+        organization_id: AXO_ORG_ID,
       });
 
       if (error) throw error;

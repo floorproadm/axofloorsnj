@@ -120,6 +120,7 @@ export default function LaborPayroll() {
         notes: form.notes || null,
         payment_method: form.payment_method,
         status: "pending",
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },

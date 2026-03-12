@@ -260,6 +260,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
         appointment_time: apptTime,
         appointment_type: 'estimate',
         notes: notes.trim() || null,
+        organization_id: AXO_ORG_ID,
       });
       if (apptError) throw apptError;
 
