@@ -1193,6 +1193,101 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["org_member_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["org_member_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["org_member_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          phone: string | null
+          plan: Database["public"]["Enums"]["org_plan"] | null
+          primary_color: string | null
+          slug: string
+          state: string | null
+          trial_ends_at: string | null
+          type: Database["public"]["Enums"]["org_type"]
+          updated_at: string | null
+          website_enabled: boolean | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          plan?: Database["public"]["Enums"]["org_plan"] | null
+          primary_color?: string | null
+          slug: string
+          state?: string | null
+          trial_ends_at?: string | null
+          type?: Database["public"]["Enums"]["org_type"]
+          updated_at?: string | null
+          website_enabled?: boolean | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          plan?: Database["public"]["Enums"]["org_plan"] | null
+          primary_color?: string | null
+          slug?: string
+          state?: string | null
+          trial_ends_at?: string | null
+          type?: Database["public"]["Enums"]["org_type"]
+          updated_at?: string | null
+          website_enabled?: boolean | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           birthday: string | null
@@ -2014,6 +2109,48 @@ export type Database = {
         }
         Relationships: []
       }
+      supply_connections: {
+        Row: {
+          connected_at: string | null
+          flooring_org_id: string
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["supply_conn_status"]
+          supply_org_id: string
+        }
+        Insert: {
+          connected_at?: string | null
+          flooring_org_id: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["supply_conn_status"]
+          supply_org_id: string
+        }
+        Update: {
+          connected_at?: string | null
+          flooring_org_id?: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["supply_conn_status"]
+          supply_org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supply_connections_flooring_org_id_fkey"
+            columns: ["flooring_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supply_connections_supply_org_id_fkey"
+            columns: ["supply_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string | null
@@ -2306,6 +2443,10 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user"
       labor_pricing_model: "sqft" | "daily"
+      org_member_role: "owner" | "admin" | "collaborator"
+      org_plan: "starter" | "pro" | "enterprise"
+      org_type: "flooring_owner" | "supply_partner"
+      supply_conn_status: "pending" | "active" | "paused"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2435,6 +2576,10 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       labor_pricing_model: ["sqft", "daily"],
+      org_member_role: ["owner", "admin", "collaborator"],
+      org_plan: ["starter", "pro", "enterprise"],
+      org_type: ["flooring_owner", "supply_partner"],
+      supply_conn_status: ["pending", "active", "paused"],
     },
   },
 } as const
