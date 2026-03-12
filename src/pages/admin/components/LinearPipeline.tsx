@@ -907,6 +907,14 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       <QuickApptModal open={showApptModal} onOpenChange={setShowApptModal} leads={salesLeads} onSuccess={onRefresh} />
       <QuickProposalModal open={showProposalModal} onOpenChange={setShowProposalModal} leads={salesLeads} />
       <QuickRequestModal open={showRequestModal} onOpenChange={setShowRequestModal} leads={salesLeads} onSuccess={onRefresh} />
+
+      {/* Quick Quote Sheet */}
+      <QuickQuoteSheet
+        lead={quickQuoteLead}
+        open={showQuickQuote}
+        onClose={() => { setShowQuickQuote(false); setQuickQuoteLead(null); }}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
