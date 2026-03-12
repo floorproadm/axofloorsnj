@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProposalTier, ProposalData, ProposalValidation, TierValidation } from '@/types/proposal';
+import { AXO_ORG_ID } from '@/lib/constants';
 
 /**
  * TIER DEFINITIONS
