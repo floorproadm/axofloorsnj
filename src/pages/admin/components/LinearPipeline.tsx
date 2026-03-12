@@ -1075,6 +1075,16 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
                 )} />
               )}
             </div>
+            {onQuickQuote && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+                className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors w-fit"
+              >
+                <Zap className="w-3 h-3" />
+                Quick Quote
+              </button>
+            )}
           </div>
         </div>
         <div className="flex items-center">
