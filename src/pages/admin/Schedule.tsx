@@ -585,6 +585,7 @@ function AppointmentModal({
     if (!form.customer_name || !form.customer_phone) return;
     onSave({
       ...form,
+      organization_id: AXO_ORG_ID,
       ...(appointment ? { id: appointment.id } : {}),
     });
   };
