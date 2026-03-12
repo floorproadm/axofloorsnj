@@ -2521,6 +2521,7 @@ export type Database = {
       get_dashboard_metrics: { Args: never; Returns: Json }
       get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
       get_leads_nra_batch: { Args: { p_lead_ids: string[] }; Returns: Json }
+      get_user_org_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2529,6 +2530,7 @@ export type Database = {
         Returns: boolean
       }
       run_sla_engine: { Args: never; Returns: Json }
+      supply_has_access: { Args: { p_org_id: string }; Returns: boolean }
       transition_lead_status: {
         Args: { p_lead_id: string; p_new_status: string }
         Returns: Json
