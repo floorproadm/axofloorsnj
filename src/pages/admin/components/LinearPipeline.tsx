@@ -997,6 +997,17 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
         </div>
       )}
 
+      {/* Quick Quote button */}
+      {onQuickQuote && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+          className="flex items-center gap-1 mt-1.5 pt-1.5 border-t w-full text-[10px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+        >
+          <Zap className="w-3 h-3 flex-shrink-0" />
+          Quick Quote
+        </button>
+      )}
+
       {/* Operational Alert (conditional) */}
       {alert && (
         <div className={cn(
