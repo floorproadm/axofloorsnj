@@ -883,6 +883,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     isStale={isStale(lead)}
                     isBlocked={isBlocked(lead)}
                     onClick={() => handleCardClick(lead)}
+                    onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                   />
                 ))
               )}
@@ -1025,12 +1026,13 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
 }
 
 /* ─── List Row ─── */
-function PipelineListRow({ lead, nra, isStale, isBlocked, onClick }: {
+function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: {
   lead: Lead;
   nra: any;
   isStale: boolean;
   isBlocked: boolean;
   onClick: () => void;
+  onQuickQuote?: () => void;
 }) {
   const timeBadge = getTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
@@ -1073,6 +1075,16 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick }: {
                 )} />
               )}
             </div>
+            {onQuickQuote && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+                className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors w-fit"
+              >
+                <Zap className="w-3 h-3" />
+                Quick Quote
+              </button>
+            )}
           </div>
         </div>
         <div className="flex items-center">
@@ -1164,6 +1176,16 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick }: {
             {sourceLabels[lead.lead_source] || lead.lead_source}
           </Badge>
         </div>
+        {onQuickQuote && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+            className="flex items-center gap-1.5 mt-2.5 pl-12 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            <Zap className="w-3 h-3" />
+            Quick Quote
+          </button>
+        )}
         {/* Row 3: Alert */}
         {alert && (
           <div className={cn(

@@ -1,27 +1,34 @@
 
+# Referral Booster — Implementado ✅
 
-## Analysis: Quick Quote vs Novo Orçamento
+## O que foi feito
 
-### What Each Does
+### Database (Migration)
+- **`referral_profiles`** — Perfil do indicador com `referral_code` único, contadores, créditos
+- **`referrals`** — Cada indicação com status, link para lead, créditos
+- **`referral_rewards`** — Histórico de créditos/resgates
+- **`company_settings.referral_commission_percent`** — Campo novo (default 7%)
+- RLS: public insert/read, admin all
 
-| Feature | Novo Orçamento | Quick Quote |
-|---------|---------------|-------------|
-| **Purpose** | Select an existing project, navigate to its detail page for full proposal generation | 3-step wizard (sqft → addons → tier) that auto-creates customer + project + proposal from a **lead** |
-| **Input required** | An existing project (already has customer, costs, etc.) | A lead (no project yet) |
-| **Output** | Navigation to project detail | Creates customer + project + proposal + moves lead to `proposal_sent` |
-| **Context** | Standalone — works from anywhere | Contextual — needs a specific lead to operate on |
+### Frontend
+- **`src/hooks/useReferralProfile.ts`** — Hook completo: register, lookup, addReferral, tiers
+- **`src/components/referral/ReferralDashboard.tsx`** — Dashboard pós-cadastro com stats, share, QR, histórico
+- **`src/components/referral/ReferralQRCode.tsx`** — QR code via `qrcode` lib (canvas)
+- **`src/components/referral/ReferralTierBadge.tsx`** — Badge visual com progresso (Bronze→Diamond)
+- **`src/components/referral/AddReferralForm.tsx`** — Form para indicar amigo (cria referral + lead)
+- **`src/pages/ReferralProgram.tsx`** — Redesign completo com registro/login + dashboard
 
-### Recommendation: Do NOT add Quick Quote to the "Criar" drawer
+### Integração Pipeline
+- **`src/utils/referral.ts`** — Utilitário `getReferralCodeFromURL()` + `buildReferralNotes()`
+- **ContactForm** e **ContactSection** detectam `?ref=CODE` e marcam lead como `referral`
+- Leads criados pelo formulário de indicação linkam automaticamente ao referrer
 
-Quick Quote is **contextual** — it requires selecting a specific lead to generate the quote from. The "Criar" drawer is for **standalone creation actions** that don't need prior context (new task, new job, new lead, etc.).
+### Gamificação (Tiers)
+- Starter → Bronze (1-2) → Silver (3-5) → Gold (6-9) → Diamond (10+)
+- Barra de progresso visual + badges
 
-Adding Quick Quote here would require an extra step (pick a lead first), which defeats the "quick" purpose and duplicates the flow already available on lead cards in the pipeline.
-
-**"Novo Orçamento" already covers the standalone estimate use case** — it lets you pick a project and go to its detail page for full proposal generation.
-
-### What Should Stay As-Is
-- **"Novo Orçamento"** in the Criar drawer → opens `NewEstimateDialog` (project-based)
-- **"⚡ Quick Quote"** on lead cards in Pipeline → opens `QuickQuoteSheet` (lead-based, contextual)
-
-No changes needed. The two features serve different audiences in the workflow.
-
+## Fora do Escopo (Fase 2)
+- Admin tab para gerenciar referrers e resgatar créditos
+- Trigger automático de crédito quando lead converte
+- Push notifications para referrer
+- Leaderboard público
