@@ -1176,6 +1176,16 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
             {sourceLabels[lead.lead_source] || lead.lead_source}
           </Badge>
         </div>
+        {onQuickQuote && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+            className="flex items-center gap-1.5 mt-2.5 pl-12 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            <Zap className="w-3 h-3" />
+            Quick Quote
+          </button>
+        )}
         {/* Row 3: Alert */}
         {alert && (
           <div className={cn(
