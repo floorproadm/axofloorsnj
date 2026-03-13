@@ -109,6 +109,7 @@ export function useTasks(showCompleted = false) {
           related_lead_id: input.related_lead_id ?? null,
           related_partner_id: input.related_partner_id ?? null,
           due_date: input.due_date ?? null,
+          organization_id: AXO_ORG_ID,
         } as any)
         .select()
         .single();

@@ -151,6 +151,7 @@ const Realtors = () => {
             body: `${formData.brokerageName || formData.agentName} via Realtors Page`,
             type: 'partner',
             link: '/admin/partners',
+            organization_id: AXO_ORG_ID,
           }))
         );
       }

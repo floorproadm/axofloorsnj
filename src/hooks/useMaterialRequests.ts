@@ -46,6 +46,7 @@ export function useMaterialRequests() {
       const { error } = await supabase.from("material_requests").insert({
         ...req,
         requested_by: user.id,
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },

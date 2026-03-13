@@ -155,7 +155,7 @@ export function useAutomationFlows(pipelineType: "sales" | "jobs") {
     }) => {
       const { data, error } = await supabase
         .from("automation_drips")
-        .insert(input)
+        .insert({ ...input, organization_id: AXO_ORG_ID })
         .select()
         .single();
       if (error) throw error;

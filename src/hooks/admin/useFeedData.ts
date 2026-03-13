@@ -382,6 +382,7 @@ export function useAddFeedComment() {
           feed_post_id: postId,
           content,
           author_name: authorName || "Admin",
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();
