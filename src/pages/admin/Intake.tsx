@@ -79,6 +79,7 @@ const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.C
   'realtors_page': { label: 'Página Realtors', type: 'B2B', icon: Home, url: '/realtors' },
   'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp, url: '/gallery' },
   'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
+  'quick_quote': { label: 'Quick Quote', type: 'Ação Rápida', icon: Zap },
 };
 
 // Normalize legacy contact sources to unified 'contact'
