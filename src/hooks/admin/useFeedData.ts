@@ -194,7 +194,7 @@ export function useCreateFeedPost() {
     }) => {
       const { data, error } = await supabase
         .from("feed_posts")
-        .insert(post)
+        .insert({ ...post, organization_id: AXO_ORG_ID })
         .select()
         .single();
       if (error) throw error;
