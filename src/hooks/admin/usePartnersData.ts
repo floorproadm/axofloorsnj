@@ -86,7 +86,7 @@ export function usePartnersData() {
 
   const createPartner = useMutation({
     mutationFn: async (values: Partial<PartnerInsert>) => {
-      const { error } = await supabase.from("partners").insert(values as any);
+      const { error } = await supabase.from("partners").insert({ ...values, organization_id: AXO_ORG_ID } as any);
       if (error) throw error;
     },
     onSuccess: () => {
