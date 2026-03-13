@@ -282,49 +282,134 @@ export function MobileBottomNav() {
       </Drawer>
 
       {/* Lead Picker for Quick Quote */}
-      <Dialog open={leadPickerOpen} onOpenChange={setLeadPickerOpen}>
+      <Dialog open={leadPickerOpen} onOpenChange={(v) => { setLeadPickerOpen(v); if (!v) setShowInlineNewLead(false); }}>
         <DialogContent className="sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-primary" />
-              Quick Quote — Selecionar Lead
+              Quick Quote
             </DialogTitle>
             <DialogDescription>
-              Escolha um lead em Visita Agendada ou Em Elaboração
+              Selecione um lead existente ou crie um novo
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto space-y-2 py-2">
-            {loadingLeads ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+
+          {/* Inline New Lead Form */}
+          {showInlineNewLead ? (
+            <div className="space-y-3 py-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Nome *</Label>
+                  <Input
+                    value={newLeadForm.name}
+                    onChange={e => setNewLeadForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Nome completo"
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Telefone *</Label>
+                  <Input
+                    value={newLeadForm.phone}
+                    onChange={e => setNewLeadForm(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="(XXX) XXX-XXXX"
+                    className="h-9"
+                  />
+                </div>
               </div>
-            ) : eligibleLeads.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">
-                <Zap className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p>Nenhum lead elegível</p>
-                <p className="text-xs mt-1">Leads precisam estar em "Visita Agendada" ou "Em Elaboração"</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Email</Label>
+                  <Input
+                    type="email"
+                    value={newLeadForm.email}
+                    onChange={e => setNewLeadForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="email@ex.com"
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Cidade</Label>
+                  <Input
+                    value={newLeadForm.city}
+                    onChange={e => setNewLeadForm(f => ({ ...f, city: e.target.value }))}
+                    placeholder="Cidade"
+                    className="h-9"
+                  />
+                </div>
               </div>
-            ) : (
-              eligibleLeads.map((lead) => (
-                <button
-                  key={lead.id}
-                  onClick={() => handleSelectLead(lead)}
-                  className="w-full text-left p-3 rounded-lg border bg-card hover:border-primary/40 hover:shadow-sm transition-all"
+              <div className="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setShowInlineNewLead(false)}
+                  disabled={savingNewLead}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm text-foreground">{lead.name}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                      {normalizeStatus(lead.status) === "estimate_scheduled" ? "Visita Agendada" : "Em Elaboração"}
-                    </span>
+                  Voltar
+                </Button>
+                <Button
+                  size="sm"
+                  className="flex-1 gap-1.5"
+                  onClick={handleCreateAndQuote}
+                  disabled={savingNewLead || !newLeadForm.name.trim() || !newLeadForm.phone.trim()}
+                >
+                  {savingNewLead ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                  Criar & Quotar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto space-y-2 py-2">
+              {/* New Lead button */}
+              <button
+                onClick={() => setShowInlineNewLead(true)}
+                className="w-full text-left p-3 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <UserPlus className="w-4 h-4 text-primary" />
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                    <span>{lead.phone}</span>
-                    {lead.city && <span>· {lead.city}</span>}
+                  <div>
+                    <span className="font-semibold text-sm text-foreground">Novo Lead + Quick Quote</span>
+                    <p className="text-[11px] text-muted-foreground">Criar lead e gerar proposta na hora</p>
                   </div>
-                </button>
-              ))
-            )}
-          </div>
+                </div>
+              </button>
+
+              {eligibleLeads.length > 0 && (
+                <>
+                  <Separator className="my-2" />
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1">Leads elegíveis</p>
+                </>
+              )}
+
+              {loadingLeads ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                eligibleLeads.map((lead) => (
+                  <button
+                    key={lead.id}
+                    onClick={() => handleSelectLead(lead)}
+                    className="w-full text-left p-3 rounded-lg border bg-card hover:border-primary/40 hover:shadow-sm transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm text-foreground">{lead.name}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                        {normalizeStatus(lead.status) === "estimate_scheduled" ? "Visita Agendada" : "Em Elaboração"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                      <span>{lead.phone}</span>
+                      {lead.city && <span>· {lead.city}</span>}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
