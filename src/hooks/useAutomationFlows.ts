@@ -104,6 +104,7 @@ export function useAutomationFlows(pipelineType: "sales" | "jobs") {
           pipeline_type: pipelineType,
           stage_key: input.stage_key,
           name: input.name,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();
