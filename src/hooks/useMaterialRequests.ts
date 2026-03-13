@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 export interface MaterialRequest {
   id: string;
@@ -45,6 +46,7 @@ export function useMaterialRequests() {
       const { error } = await supabase.from("material_requests").insert({
         ...req,
         requested_by: user.id,
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
     },

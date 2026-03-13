@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 export interface AutomationSequence {
   id: string;
@@ -103,6 +104,7 @@ export function useAutomationFlows(pipelineType: "sales" | "jobs") {
           pipeline_type: pipelineType,
           stage_key: input.stage_key,
           name: input.name,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();
@@ -153,7 +155,7 @@ export function useAutomationFlows(pipelineType: "sales" | "jobs") {
     }) => {
       const { data, error } = await supabase
         .from("automation_drips")
-        .insert(input)
+        .insert({ ...input, organization_id: AXO_ORG_ID })
         .select()
         .single();
       if (error) throw error;

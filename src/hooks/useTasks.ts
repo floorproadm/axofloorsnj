@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 export interface Task {
   id: string;
@@ -108,6 +109,7 @@ export function useTasks(showCompleted = false) {
           related_lead_id: input.related_lead_id ?? null,
           related_partner_id: input.related_partner_id ?? null,
           due_date: input.due_date ?? null,
+          organization_id: AXO_ORG_ID,
         } as any)
         .select()
         .single();

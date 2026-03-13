@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 export interface FeedPost {
   id: string;
@@ -193,7 +194,7 @@ export function useCreateFeedPost() {
     }) => {
       const { data, error } = await supabase
         .from("feed_posts")
-        .insert(post)
+        .insert({ ...post, organization_id: AXO_ORG_ID })
         .select()
         .single();
       if (error) throw error;
@@ -381,6 +382,7 @@ export function useAddFeedComment() {
           feed_post_id: postId,
           content,
           author_name: authorName || "Admin",
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

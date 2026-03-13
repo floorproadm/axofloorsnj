@@ -92,7 +92,7 @@ export function useReferralProfile() {
       const referral_code = generateReferralCode(name);
       const { data, error } = await supabase
         .from('referral_profiles')
-        .insert({ name, email, phone, referral_code })
+        .insert({ name, email, phone, referral_code, organization_id: AXO_ORG_ID })
         .select()
         .single();
 
@@ -161,6 +161,7 @@ export function useReferralProfile() {
           referred_name: name,
           referred_phone: phone,
           referred_email: email || null,
+          organization_id: AXO_ORG_ID,
         })
         .select()
         .single();

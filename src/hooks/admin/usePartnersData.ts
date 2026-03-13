@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 export interface Partner {
   id: string;
@@ -86,7 +87,7 @@ export function usePartnersData() {
 
   const createPartner = useMutation({
     mutationFn: async (values: Partial<PartnerInsert>) => {
-      const { error } = await supabase.from("partners").insert(values as any);
+      const { error } = await supabase.from("partners").insert({ ...values, organization_id: AXO_ORG_ID } as any);
       if (error) throw error;
     },
     onSuccess: () => {

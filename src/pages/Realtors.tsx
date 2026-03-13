@@ -1,6 +1,7 @@
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -128,6 +129,7 @@ const Realtors = () => {
           service_zone: 'core',
           lead_source_tag: 'realtors_page',
           notes: `Average Listings: ${formData.averageListings}\nMarket Area: ${formData.marketArea}\n\nMessage: ${formData.message}`,
+          organization_id: AXO_ORG_ID,
         } as any]);
 
       if (error) {
@@ -149,6 +151,7 @@ const Realtors = () => {
             body: `${formData.brokerageName || formData.agentName} via Realtors Page`,
             type: 'partner',
             link: '/admin/partners',
+            organization_id: AXO_ORG_ID,
           }))
         );
       }
