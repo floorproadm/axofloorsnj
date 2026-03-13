@@ -68,6 +68,9 @@ export function MobileBottomNav() {
   const [loadingLeads, setLoadingLeads] = useState(false);
   const [quickQuoteLead, setQuickQuoteLead] = useState<EligibleLead | null>(null);
   const [showQuickQuote, setShowQuickQuote] = useState(false);
+  const [showInlineNewLead, setShowInlineNewLead] = useState(false);
+  const [newLeadForm, setNewLeadForm] = useState({ name: '', phone: '', email: '', city: '' });
+  const [savingNewLead, setSavingNewLead] = useState(false);
 
   // Universal words stay in English
   const navItems = [
