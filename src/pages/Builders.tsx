@@ -136,6 +136,7 @@ const Builders = () => {
             body: `${formData.contactName} via Builders Page`,
             type: 'partner',
             link: '/admin/partners',
+            organization_id: AXO_ORG_ID,
           }))
         );
       }
