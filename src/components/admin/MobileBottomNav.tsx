@@ -146,8 +146,46 @@ export function MobileBottomNav() {
 
   const handleSelectLead = (lead: EligibleLead) => {
     setLeadPickerOpen(false);
+    setShowInlineNewLead(false);
     setQuickQuoteLead(lead);
     setShowQuickQuote(true);
+  };
+
+  const handleCreateAndQuote = async () => {
+    if (!newLeadForm.name.trim() || !newLeadForm.phone.trim()) {
+      toast.error('Nome e telefone são obrigatórios');
+      return;
+    }
+    setSavingNewLead(true);
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .insert({
+          name: newLeadForm.name.trim(),
+          phone: newLeadForm.phone.trim(),
+          email: newLeadForm.email.trim() || null,
+          city: newLeadForm.city.trim() || null,
+          lead_source: 'manual',
+          organization_id: AXO_ORG_ID,
+          status: 'estimate_scheduled',
+        })
+        .select('id, name, phone, email, city, status')
+        .single();
+      if (error) throw error;
+      const newLead: EligibleLead = {
+        ...data,
+        email: data.email ?? undefined,
+        city: data.city ?? undefined,
+        services: [],
+      };
+      setNewLeadForm({ name: '', phone: '', email: '', city: '' });
+      setShowInlineNewLead(false);
+      handleSelectLead(newLead);
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao criar lead');
+    } finally {
+      setSavingNewLead(false);
+    }
   };
 
   return (
