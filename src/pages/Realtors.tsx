@@ -129,6 +129,7 @@ const Realtors = () => {
           service_zone: 'core',
           lead_source_tag: 'realtors_page',
           notes: `Average Listings: ${formData.averageListings}\nMarket Area: ${formData.marketArea}\n\nMessage: ${formData.message}`,
+          organization_id: AXO_ORG_ID,
         } as any]);
 
       if (error) {
