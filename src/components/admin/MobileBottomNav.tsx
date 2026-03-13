@@ -171,7 +171,7 @@ export function MobileBottomNav() {
           phone: newLeadForm.phone.trim(),
           email: newLeadForm.email.trim() || null,
           city: newLeadForm.city.trim() || null,
-          lead_source: 'manual',
+          lead_source: 'quick_quote',
           organization_id: AXO_ORG_ID,
           status: 'estimate_scheduled',
         })
