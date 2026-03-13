@@ -41,6 +41,12 @@ import { QuickQuoteSheet } from "./QuickQuoteSheet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeStatus } from "@/hooks/useLeadPipeline";
+import { AXO_ORG_ID } from "@/lib/constants";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 interface EligibleLead {
   id: string;
