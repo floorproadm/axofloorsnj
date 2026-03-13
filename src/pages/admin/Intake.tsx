@@ -37,7 +37,8 @@ import {
   Mail,
   MapPin,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  Zap
 } from "lucide-react";
 import { format } from "date-fns";
 import { STAGE_LABELS, STAGE_CONFIG, normalizeStatus } from "@/hooks/useLeadPipeline";
