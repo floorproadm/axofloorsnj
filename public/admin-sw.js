@@ -1,6 +1,7 @@
 const CACHE_NAME = 'axo-admin-v1';
 const ADMIN_SHELL = [
   '/admin',
+  '/admin/auth',
   '/admin-manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',

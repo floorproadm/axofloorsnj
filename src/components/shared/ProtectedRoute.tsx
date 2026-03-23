@@ -54,11 +54,12 @@ export default function ProtectedRoute({ children, requireAdmin = true }: Protec
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    const authPath = requireAdmin ? "/admin/auth" : "/auth";
+    return <Navigate to={authPath} replace />;
   }
 
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/admin/auth" replace />;
   }
 
   return <>{children}</>;

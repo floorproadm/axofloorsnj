@@ -37,6 +37,16 @@ export default function Auth() {
     }
   }, [mode]);
 
+  // Detect PWA standalone mode and redirect to scoped auth
+  useEffect(() => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as any).standalone === true;
+    if (isStandalone) {
+      navigate('/admin/auth', { replace: true });
+    }
+  }, [navigate]);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (user && view !== 'reset') {
