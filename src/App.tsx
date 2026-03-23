@@ -51,6 +51,7 @@ import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
 import AdminProposals from './pages/admin/Proposals';
 import Auth from "./pages/Auth";
+import AdminAuth from "./pages/admin/AdminAuth";
 import Campaign from "./pages/Campaign";
 
 import FloorDiagnostic from "./pages/FloorDiagnostic";
