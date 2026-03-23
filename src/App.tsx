@@ -101,6 +101,7 @@ const App = () => {
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/admin/auth" element={<AdminAuth />} />
             <Route path="/admin" element={
               <ProtectedRoute>
                 <AdminDashboard />
