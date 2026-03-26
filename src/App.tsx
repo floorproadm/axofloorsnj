@@ -55,6 +55,7 @@ import AdminAuth from "./pages/admin/AdminAuth";
 import Campaign from "./pages/Campaign";
 
 import FloorDiagnostic from "./pages/FloorDiagnostic";
+import AxoMasterSystem from "./pages/AxoMasterSystem";
 import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
 
@@ -99,6 +100,7 @@ const App = () => {
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
             
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
+            <Route path="/axo-master-system" element={<AxoMasterSystem />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/auth" element={<AdminAuth />} />
