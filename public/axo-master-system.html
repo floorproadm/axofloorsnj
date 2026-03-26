@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXO Master System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e0f;--s:#141618;--s2:#1c1f21;--b:#252a2d;--b2:#323a3f;
+  --text:#dde2e6;--muted:#7a8490;--faint:#404850;
+  --gold:#c9952a;--gold-dim:#7a5a18;--gold-bg:#1a1408;
+  --pine:#3aaa60;--pine-dim:#1a4a2a;--pine-bg:#0a1410;
+  --steel:#4a9ad4;--steel-dim:#1a3a5a;--steel-bg:#080e18;
+  --violet:#8a7ad4;--violet-dim:#322a5a;--violet-bg:#0c0a18;
+  --ember:#e07040;--ember-dim:#6a2e12;--ember-bg:#180a04;
+  --teal:#30c4a8;--teal-dim:#0a3028;--teal-bg:#041412;
+}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── HEADER ── */
+.hdr{padding:24px 24px 0;border-bottom:1px solid var(--b)}
+.hdr-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+.hdr-title{font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--text)}
+.hdr-sub{font-size:11px;color:var(--muted);margin-top:3px;margin-bottom:16px}
+.tabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:11px 18px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ── CONTENT PANES ── */
+.pane{display:none;padding:28px 24px 60px}
+.pane.active{display:block}
+.pane-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.pane-title{font-size:19px;font-weight:600;letter-spacing:-.02em;color:var(--text);margin-bottom:4px}
+.pane-sub{font-size:12px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+
+/* ── CHART WRAPPER ── */
+.chart-wrap{width:100%;overflow-x:auto;padding-bottom:20px}
+.chart{position:relative;margin:0 auto}
+
+/* ── NODE BASE ── */
+.node{
+  position:absolute;border-radius:7px;border:1px solid var(--b2);background:var(--s);
+  cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:9px 11px;z-index:2;user-select:none
+}
+.node:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 18px rgba(201,149,42,.2);z-index:10}
+.node.active{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-dim);z-index:10}
+.node-tag{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:3px;line-height:1.2}
+.node-title{font-size:11px;font-weight:600;color:var(--text);line-height:1.3}
+.node-sub{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.3}
+
+/* node colors */
+.n-gold{background:var(--gold-bg);border-color:var(--gold-dim)}.n-gold .node-title{color:#e8c870}
+.n-pine{background:var(--pine-bg);border-color:var(--pine-dim)}.n-pine .node-title{color:#70d490}
+.n-steel{background:var(--steel-bg);border-color:var(--steel-dim)}.n-steel .node-title{color:#7ac0f0}
+.n-violet{background:var(--violet-bg);border-color:var(--violet-dim)}.n-violet .node-title{color:#b0a0f0}
+.n-ember{background:var(--ember-bg);border-color:var(--ember-dim)}.n-ember .node-title{color:#f09060}
+.n-teal{background:var(--teal-bg);border-color:var(--teal-dim)}.n-teal .node-title{color:#60d4b8}
+.n-axo{background:#181208;border:2px solid var(--gold-dim)}.n-axo .node-title{color:#f0d870}
+.n-axo:hover,.n-axo.active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,149,42,.25)}
+
+/* ── SVG ARROWS ── */
+.arrows{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1}
+
+/* ── BOTTOM SHEET PANEL ── */
+.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:200;backdrop-filter:blur(2px)}
+.overlay.open{display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:640px){.overlay.open{align-items:center}}
+.panel{
+  background:var(--s);border:1px solid var(--b2);border-radius:14px 14px 0 0;
+  width:100%;max-width:560px;max-height:85vh;overflow-y:auto;padding:24px;
+  position:relative;transform:translateY(40px);opacity:0;
+  transition:transform .25s ease,opacity .2s ease
+}
+@media(min-width:640px){.panel{border-radius:14px;max-height:80vh}}
+.overlay.open .panel{transform:translateY(0);opacity:1}
+.panel-close{
+  position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;
+  background:var(--s2);border:1px solid var(--b);color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;
+  transition:background .15s
+}
+.panel-close:hover{background:var(--b2);color:var(--text)}
+.p-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px}
+.p-title{font-size:19px;font-weight:600;letter-spacing:-.02em;color:var(--text);margin-bottom:6px}
+.p-intro{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--b)}
+.p-sec-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:12px 0 7px}
+.detail-list{display:flex;flex-direction:column;gap:6px}
+.detail-item{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:6px;background:var(--s2);border:1px solid var(--b);font-size:12px;color:var(--text);line-height:1.4}
+.d-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.d-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.axo-box{background:#181208;border:1px solid var(--gold-dim);border-radius:8px;padding:11px 13px;margin-top:10px}
+.axo-box-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.axo-box-txt{font-size:11px;color:#907848;line-height:1.7}
+.loop-box{background:var(--pine-bg);border:1px solid var(--pine-dim);border-radius:8px;padding:9px 12px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:10px}
+.loop-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--pine)}
+.loop-tag{font-size:10px;color:var(--pine);background:#0e2018;border:1px solid var(--pine-dim);border-radius:12px;padding:2px 8px}
+.pill-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.pill{font-size:10px;padding:2px 8px;border-radius:14px;background:var(--s2);border:1px solid var(--b);color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.04em}
+.panel::-webkit-scrollbar{width:4px}
+.panel::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px}
+
+/* ── TIER CARDS in panel ── */
+.tier-mini{border-radius:8px;padding:10px 12px;border:1px solid var(--b);margin-bottom:7px}
+.tier-mini-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.tier-mini-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+.tier-perk{font-size:10px;color:var(--muted);padding-left:10px;position:relative;line-height:1.5}
+.tier-perk::before{content:'·';position:absolute;left:0;color:var(--faint)}
+.t-entry{background:#0a0a06;border-color:#2a2818}.t-entry .tier-mini-name{color:#c0b870}
+.t-preferred{background:var(--gold-bg);border-color:var(--gold-dim)}.t-preferred .tier-mini-name{color:var(--gold)}
+.t-elite{background:#0c0818;border-color:#3a2050}.t-elite .tier-mini-name{color:#c0a0f0}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-eyebrow">AXO Floors LLC · Sistema Operacional</div>
+  <div class="hdr-title">AXO Master System</div>
+  <div class="hdr-sub">Clique em qualquer nó para ver os detalhes — use as abas para navegar entre os sistemas</div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('influence',this)">01 · Influência Local</button>
+    <button class="tab" onclick="switchTab('partner',this)">02 · Partner Program</button>
+    <button class="tab" onclick="switchTab('masterflow',this)">03 · Master Flow</button>
+    <button class="tab" onclick="switchTab('operational',this)">04 · Sistema Operacional</button>
+  </div>
+</div>
+
+<!-- ════ TAB 1 — INFLUENCE MAP (RADIAL) ════ -->
+<div class="pane active" id="pane-influence">
+  <div class="pane-label">Tab 01</div>
+  <div class="pane-title">Mapa de Influência Local</div>
+  <div class="pane-sub">AXO no centro — 8 atores ao redor que influenciam o cliente e indicam diretamente. Clique em cada um.</div>
+  <div class="chart-wrap">
+    <div class="chart" id="chart-influence" style="width:700px;height:560px">
+      <svg class="arrows" id="svg-influence" style="height:560px"></svg>
+      <!-- AXO CENTER -->
+      <div class="node n-axo" data-tab="influence" data-id="axo-center"
+        style="width:130px;height:80px;top:238px;left:285px">
+        <div class="node-tag">⬡ Centro</div>
+        <div class="node-title">AXO Floors</div>
+        <div class="node-sub">Execução · Confiança · Marca</div>
+      </div>
+      <!-- ACTORS around — 8 positions -->
+      <div class="node n-pine" data-tab="influence" data-id="inf-realtors"
+        style="width:118px;top:20px;left:291px">
+        <div class="node-tag">Indicação</div>
+        <div class="node-title">Realtors</div>
+        <div class="node-sub">Urgência alta · pré-listing</div>
+      </div>
+      <div class="node n-pine" data-tab="influence" data-id="inf-builders"
+        style="width:118px;top:100px;left:530px">
+        <div class="node-tag">Volume</div>
+        <div class="node-title">Builders</div>
+        <div class="node-sub">Jobs recorrentes · B2B</div>
+      </div>
+      <div class="node n-pine" data-tab="influence" data-id="inf-re"
+        style="width:118px;top:248px;left:560px">
+        <div class="node-tag">Multiplica</div>
+        <div class="node-title">Real Estate Co.</div>
+        <div class="node-sub">Portfólio de agentes</div>
+      </div>
+      <div class="node n-pine" data-tab="influence" data-id="inf-pm"
+        style="width:118px;top:390px;left:530px">
+        <div class="node-tag">Recorrência</div>
+        <div class="node-title">Property Managers</div>
+        <div class="node-sub">Unidades · turn previsível</div>
+      </div>
+      <div class="node n-violet" data-tab="influence" data-id="inf-designers"
+        style="width:118px;top:460px;left:291px">
+        <div class="node-tag">Premium</div>
+        <div class="node-title">Interior Designers</div>
+        <div class="node-sub">Alto LTV · especificação</div>
+      </div>
+      <div class="node n-violet" data-tab="influence" data-id="inf-arq"
+        style="width:118px;top:390px;left:50px">
+        <div class="node-tag">Projetos</div>
+        <div class="node-title">Arquitetos</div>
+        <div class="node-sub">Ciclo longo · alto ticket</div>
+      </div>
+      <div class="node n-violet" data-tab="influence" data-id="inf-gcs"
+        style="width:118px;top:248px;left:20px">
+        <div class="node-tag">B2B direto</div>
+        <div class="node-title">GCs</div>
+        <div class="node-sub">Trade partner · frequência</div>
+      </div>
+      <div class="node n-violet" data-tab="influence" data-id="inf-handyman"
+        style="width:118px;top:100px;left:50px">
+        <div class="node-tag">Indicação quente</div>
+        <div class="node-title">Handymans</div>
+        <div class="node-sub">Indicam specialist</div>
+      </div>
+      <!-- CLIENTE FINAL -->
+      <div class="node n-ember" data-tab="influence" data-id="inf-cliente"
+        style="width:118px;top:248px;left:285px;margin-left:0;top:158px;left:291px;display:none">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB 2 — PARTNER PROGRAM ════ -->
+<div class="pane" id="pane-partner">
+  <div class="pane-label">Tab 02</div>
+  <div class="pane-title">AXO Partner Program</div>
+  <div class="pane-sub">Jornada do parceiro — da prospecção ao canal travado. Clique em cada etapa ou tier.</div>
+  <div class="chart-wrap">
+    <div class="chart" id="chart-partner" style="width:860px;height:420px">
+      <svg class="arrows" id="svg-partner" style="height:420px"></svg>
+      <!-- JOURNEY STEPS -->
+      <div class="node n-gold" data-tab="partner" data-id="p-prospect" style="width:108px;top:60px;left:20px">
+        <div class="node-tag">01</div><div class="node-title">Prospectar</div><div class="node-sub">GC · Builder · Designer · PM</div>
+      </div>
+      <div class="node n-gold" data-tab="partner" data-id="p-onboard" style="width:108px;top:60px;left:148px">
+        <div class="node-tag">02</div><div class="node-title">Onboarding</div><div class="node-sub">Kit · processo · expectativas</div>
+      </div>
+      <div class="node n-gold" data-tab="partner" data-id="p-activate" style="width:108px;top:60px;left:276px">
+        <div class="node-tag">03</div><div class="node-title">1º Job Ativo</div><div class="node-sub">Trial · prova de qualidade</div>
+      </div>
+      <div class="node n-gold" data-tab="partner" data-id="p-exec" style="width:108px;top:60px;left:404px">
+        <div class="node-tag">04</div><div class="node-title">Execução AXO</div><div class="node-sub">SOP · updates · QC</div>
+      </div>
+      <div class="node n-pine" data-tab="partner" data-id="p-integrate" style="width:108px;top:60px;left:532px">
+        <div class="node-tag">05</div><div class="node-title">Integrar Fluxo</div><div class="node-sub">AXO no processo do parceiro</div>
+      </div>
+      <div class="node n-pine" data-tab="partner" data-id="p-recur" style="width:108px;top:60px;left:660px">
+        <div class="node-tag">06</div><div class="node-title">Recorrência</div><div class="node-sub">Priority slots · volume</div>
+      </div>
+      <div class="node" data-tab="partner" data-id="p-elite" style="width:108px;top:60px;left:788px;background:#0c0818;border-color:#3a2050">
+        <div class="node-tag" style="color:#6a4a9a">07</div><div class="node-title" style="color:#c0a0f0">Fidelizar</div><div class="node-sub" style="color:#6a4a9a">Canal travado · escala</div>
+      </div>
+      <!-- TIER NODES -->
+      <div class="node t-entry" data-tab="partner" data-id="tier-entry" style="width:200px;top:230px;left:80px;border-radius:8px">
+        <div class="node-tag" style="color:#8a8040">Tier 1</div><div class="node-title" style="color:#c0b870">Entry Partner</div><div class="node-sub">1º job concluído · qualificado</div>
+      </div>
+      <div class="node n-gold" data-tab="partner" data-id="tier-preferred" style="width:200px;top:230px;left:330px">
+        <div class="node-tag">Tier 2</div><div class="node-title">Preferred Partner</div><div class="node-sub">Volume consistente · priority slots</div>
+      </div>
+      <div class="node" data-tab="partner" data-id="tier-elite" style="width:200px;top:230px;left:580px;background:#0c0818;border-color:#3a2050">
+        <div class="node-tag" style="color:#8a60d0">Tier 3</div><div class="node-title" style="color:#c0a0f0">Elite Partner</div><div class="node-sub" style="color:#7a5ab0">Canal travado · co-marketing</div>
+      </div>
+      <!-- RECOVERY -->
+      <div class="node n-ember" data-tab="partner" data-id="p-recovery" style="width:140px;top:340px;left:300px">
+        <div class="node-tag">Recovery</div><div class="node-title">Feedback Loop</div><div class="node-sub">Job insatisfatório → plano</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB 3 — MASTER FLOW ════ -->
+<div class="pane" id="pane-masterflow">
+  <div class="pane-label">Tab 03</div>
+  <div class="pane-title">Master Flow System</div>
+  <div class="pane-sub">Pipeline completo — Discovery ao Loop. Dual track Residential / Partner convergindo em Produção.</div>
+  <div class="chart-wrap">
+    <div class="chart" id="chart-masterflow" style="width:700px;height:900px">
+      <svg class="arrows" id="svg-masterflow" style="height:900px"></svg>
+      <!-- TOP: DISCOVERY -->
+      <div class="node n-gold" data-tab="masterflow" data-id="mf-discovery" style="width:200px;top:10px;left:250px">
+        <div class="node-tag">Fase 01</div><div class="node-title">Discovery</div><div class="node-sub">Doorhanger · Google · Referral · Social</div>
+      </div>
+      <!-- ENTRY -->
+      <div class="node n-gold" data-tab="masterflow" data-id="mf-entry" style="width:200px;top:110px;left:250px">
+        <div class="node-tag">Fase 02</div><div class="node-title">Entry Point</div><div class="node-sub">Landing page · Form · Quiz</div>
+      </div>
+      <!-- LEAD CAPTURE -->
+      <div class="node n-gold" data-tab="masterflow" data-id="mf-capture" style="width:200px;top:210px;left:250px">
+        <div class="node-tag">Fase 03</div><div class="node-title">Lead Capture</div><div class="node-sub">Nome · Phone · Email · Tipo</div>
+      </div>
+      <!-- SPLIT -->
+      <div class="node n-pine" data-tab="masterflow" data-id="mf-residential" style="width:160px;top:330px;left:60px">
+        <div class="node-tag">Track A</div><div class="node-title">Residential Flow</div><div class="node-sub">Homeowner / Seller / Buyer</div>
+      </div>
+      <div class="node n-steel" data-tab="masterflow" data-id="mf-partner" style="width:160px;top:330px;left:480px">
+        <div class="node-tag">Track B</div><div class="node-title">Partner Flow</div><div class="node-sub">GC · Builder · Designer · PM</div>
+      </div>
+      <!-- RESIDENTIAL STEPS -->
+      <div class="node n-pine" data-tab="masterflow" data-id="mf-quiz" style="width:150px;top:430px;left:65px">
+        <div class="node-tag">R1</div><div class="node-title">Project Quiz</div><div class="node-sub">Size · Condition · Budget</div>
+      </div>
+      <div class="node n-pine" data-tab="masterflow" data-id="mf-estimate" style="width:150px;top:510px;left:65px">
+        <div class="node-tag">R2</div><div class="node-title">Estimate Engine</div><div class="node-sub">Silver · Gold · Platinum</div>
+      </div>
+      <div class="node n-pine" data-tab="masterflow" data-id="mf-schedule" style="width:150px;top:590px;left:65px">
+        <div class="node-tag">R3</div><div class="node-title">Schedule + Follow-up</div><div class="node-sub">Automation · nurture</div>
+      </div>
+      <!-- PARTNER STEPS -->
+      <div class="node n-steel" data-tab="masterflow" data-id="mf-pqualify" style="width:150px;top:430px;left:485px">
+        <div class="node-tag">P1</div><div class="node-title">Partner Qualify</div><div class="node-sub">GC · Builder · Designer</div>
+      </div>
+      <div class="node n-steel" data-tab="masterflow" data-id="mf-contact" style="width:150px;top:510px;left:485px">
+        <div class="node-tag">P2</div><div class="node-title">Initial Contact</div><div class="node-sub">Call · Message · Meeting</div>
+      </div>
+      <div class="node n-steel" data-tab="masterflow" data-id="mf-firstjob" style="width:150px;top:590px;left:485px">
+        <div class="node-tag">P3</div><div class="node-title">First Job Activation</div><div class="node-sub">Trial experience</div>
+      </div>
+      <!-- CONVERGE: PRODUCTION -->
+      <div class="node n-violet" data-tab="masterflow" data-id="mf-production" style="width:200px;top:700px;left:250px">
+        <div class="node-tag">Fase 04</div><div class="node-title">Production Flow</div><div class="node-sub">Planning · Execution · Completion</div>
+      </div>
+      <!-- POST JOB -->
+      <div class="node n-gold" data-tab="masterflow" data-id="mf-postjob" style="width:200px;top:800px;left:250px">
+        <div class="node-tag">Fase 05–06</div><div class="node-title">Post-Job + Retention</div><div class="node-sub">Review · Content · Loop</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB 4 — OPERATIONAL SYSTEM ════ -->
+<div class="pane" id="pane-operational">
+  <div class="pane-label">Tab 04</div>
+  <div class="pane-title">Sistema Operacional AXO</div>
+  <div class="pane-sub">Engenharia do pipeline — dual track C1–C5 (Residential) e D1–D5 (Partner) convergindo no Job DB.</div>
+  <div class="chart-wrap">
+    <div class="chart" id="chart-operational" style="width:860px;height:560px">
+      <svg class="arrows" id="svg-operational" style="height:560px"></svg>
+      <!-- INBOUND -->
+      <div class="node n-gold" data-tab="operational" data-id="op-inbound" style="width:160px;top:20px;left:350px">
+        <div class="node-tag">Entrada</div><div class="node-title">Inbound Sources</div><div class="node-sub">QR · Outreach · Google · Referral</div>
+      </div>
+      <!-- ROUTER -->
+      <div class="node n-gold" data-tab="operational" data-id="op-router" style="width:140px;top:120px;left:360px">
+        <div class="node-tag">Router</div><div class="node-title">Intent Detection</div><div class="node-sub">Homeowner vs Partner</div>
+      </div>
+      <!-- RESIDENTIAL C1-C5 -->
+      <div class="node n-pine" data-tab="operational" data-id="op-c1" style="width:130px;top:230px;left:20px">
+        <div class="node-tag">C1</div><div class="node-title">Qualify (Auto)</div><div class="node-sub">Quiz automático</div>
+      </div>
+      <div class="node n-pine" data-tab="operational" data-id="op-c2" style="width:130px;top:320px;left:20px">
+        <div class="node-tag">C2</div><div class="node-title">Estimate Engine</div><div class="node-sub">S/G/P automático</div>
+      </div>
+      <div class="node n-pine" data-tab="operational" data-id="op-c3" style="width:130px;top:410px;left:20px">
+        <div class="node-tag">C3</div><div class="node-title">Schedule</div><div class="node-sub">Self-serve booking</div>
+      </div>
+      <div class="node n-pine" data-tab="operational" data-id="op-c4" style="width:130px;top:490px;left:20px">
+        <div class="node-tag">C4</div><div class="node-title">Pre-Visit Kit</div><div class="node-sub">Enviado automaticamente</div>
+      </div>
+      <div class="node n-pine" data-tab="operational" data-id="op-c5" style="width:130px;top:490px;left:170px">
+        <div class="node-tag">C5</div><div class="node-title">Close / Nurture</div><div class="node-sub">Fechado → Job DB</div>
+      </div>
+      <!-- PARTNER D1-D5 -->
+      <div class="node n-steel" data-tab="operational" data-id="op-d1" style="width:130px;top:230px;left:710px">
+        <div class="node-tag">D1</div><div class="node-title">Partner Qualify</div><div class="node-sub">Score automático</div>
+      </div>
+      <div class="node n-steel" data-tab="operational" data-id="op-d2" style="width:130px;top:320px;left:710px">
+        <div class="node-tag">D2</div><div class="node-title">First Job Activation</div><div class="node-sub">Trial job</div>
+      </div>
+      <div class="node n-steel" data-tab="operational" data-id="op-d3" style="width:130px;top:410px;left:710px">
+        <div class="node-tag">D3</div><div class="node-title">Exec Experience</div><div class="node-sub">SOP · QC · updates</div>
+      </div>
+      <div class="node n-steel" data-tab="operational" data-id="op-d4" style="width:130px;top:490px;left:710px">
+        <div class="node-tag">D4</div><div class="node-title">Partner DB</div><div class="node-sub">Onboarding completo</div>
+      </div>
+      <div class="node n-steel" data-tab="operational" data-id="op-d5" style="width:130px;top:490px;left:560px">
+        <div class="node-tag">D5</div><div class="node-title">Recurring Slots</div><div class="node-sub">Canal estabelecido</div>
+      </div>
+      <!-- CONVERGENCE -->
+      <div class="node n-violet" data-tab="operational" data-id="op-jobdb" style="width:130px;top:340px;left:365px">
+        <div class="node-tag">Convergência</div><div class="node-title">Job DB</div><div class="node-sub">Production SOP</div>
+      </div>
+      <div class="node n-teal" data-tab="operational" data-id="op-completion" style="width:130px;top:430px;left:365px">
+        <div class="node-tag">Qualidade</div><div class="node-title">Completion + QA</div><div class="node-sub">Walkthrough · invoice</div>
+      </div>
+      <div class="node n-gold" data-tab="operational" data-id="op-review" style="width:130px;top:510px;left:260px">
+        <div class="node-tag">Motor G</div><div class="node-title">Review Engine</div><div class="node-sub">Google · NPS</div>
+      </div>
+      <div class="node n-pine" data-tab="operational" data-id="op-content" style="width:130px;top:510px;left:470px">
+        <div class="node-tag">Motor H</div><div class="node-title">Content Engine</div><div class="node-sub">Before/after → loop</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div class="overlay" id="overlay" onclick="closePanelClick(event)">
+  <div class="panel" id="panel">
+    <button class="panel-close" onclick="closePanel()">×</button>
+    <div class="p-eyebrow" id="p-eyebrow"></div>
+    <div class="p-title" id="p-title"></div>
+    <div class="p-intro" id="p-intro"></div>
+    <div id="p-body"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// NODE DATA
+// ══════════════════════════════════════════════
+const DATA = {
+
+  // ── TAB 1: INFLUENCE ──
+  'axo-center':{color:'#c9952a',eyebrow:'Centro do Sistema',title:'AXO Floors',
+    intro:'Posição central no mapa de influência local. Recebe demanda tanto diretamente dos atores quanto via cliente final. A marca, confiança e execução da AXO são o que transforma indicação em job fechado.',
+    sections:[
+      {title:'Proposta de valor no mapa',color:'#c9952a',items:[
+        {t:'Execução de qualidade',s:'O produto final que todos os atores indicam — qualidade é não-negociável'},
+        {t:'Confiança e compliance',s:'HIC · EPA RRP · Insurance — base para parceiros corporativos'},
+        {t:'Marca reconhecível',s:'Nome AXO = referência em hardwood flooring no NJ market'},
+        {t:'Processo claro',s:'SOP de comunicação — parceiro sabe o que esperar'},
+      ]}
+    ],
+    axo:{t:'Sistema de ativação',x:'Cada ator ao redor é um canal de indicação potencial. O objetivo é converter atores em parceiros ativos — que indicam AXO de forma sistemática, não ocasional.'}
+  },
+
+  'inf-realtors':{color:'#3aaa60',eyebrow:'Influenciador · Alta Urgência',title:'Realtors',
+    intro:'Canal de maior urgência e velocidade de decisão. Realtor precisa de refinish antes do listing — deadline do closing cria pressão que favorece contractors de confiança com agenda ágil.',
+    sections:[
+      {title:'Por que são valiosos',color:'#3aaa60',items:[
+        {t:'Timing de listing cria urgência',s:'Pré-venda = prazo curto · decisão rápida · pouca comparação de preço'},
+        {t:'ROI claro para o cliente',s:'Refinish eleva valor percebido do imóvel · vende mais rápido'},
+        {t:'Volume sazonal previsível',s:'Pico na primavera/verão = planejamento de capacidade possível'},
+        {t:'Um realtor = múltiplos clientes',s:'Cada agente ativo tem carteira de listings contínua'},
+      ]},
+      {title:'Como ativar este canal',color:'#3aaa60',items:[
+        {t:'Primeiro job impecável + prazo cumprido',s:'Confiança construída no primeiro job'},
+        {t:'Materiais de referral simples',s:'Card com QR code · link direto · fácil de compartilhar com cliente'},
+        {t:'Resposta em menos de 2h',s:'Realtor valoriza velocidade — resposta lenta = perde o job'},
+        {t:'Parceria com RE Company',s:'Uma parceria = acesso a múltiplos agentes'},
+      ]}
+    ]
+  },
+
+  'inf-builders':{color:'#3aaa60',eyebrow:'Influenciador · Alto Volume',title:'Builders',
+    intro:'Projetos novos e renovações de escala. Cada builder ativo pode gerar múltiplos jobs por mês — mas exige processo profissional, compliance completo e preço consistente.',
+    sections:[
+      {title:'Perfil do canal',color:'#3aaa60',items:[
+        {t:'Volume por projeto',s:'Uma construção nova pode ter 2.000–5.000 sqft de hardwood'},
+        {t:'Subcontratação sistemática',s:'Builder não executa flooring — precisa de trade specialist confiável'},
+        {t:'Relacionamento de longo prazo',s:'Builder satisfeito vira fonte recorrente por anos'},
+        {t:'Margem menor, volume maior',s:'Negociação de preço por volume é esperada'},
+      ]},
+      {title:'Requisitos para entrar neste canal',color:'#3aaa60',items:[
+        {t:'Compliance completo obrigatório',s:'HIC · insurance · EPA RRP — sem isso não entra na obra'},
+        {t:'Processo de communication claro',s:'Updates de progresso · documentação · invoice profissional'},
+        {t:'Capacidade de equipe',s:'Jobs de volume exigem crew disponível e escalável'},
+      ]}
+    ]
+  },
+
+  'inf-re':{color:'#3aaa60',eyebrow:'Influenciador · Multiplicador',title:'Real Estate Companies',
+    intro:'Uma parceria com a empresa multiplica o alcance para todos os agentes do portfólio. É o canal com maior leverage por esforço de ativação.',
+    sections:[
+      {title:'Mecânica de leverage',color:'#3aaa60',items:[
+        {t:'Uma empresa = dezenas de realtors',s:'Keller Williams NJ · RE/MAX · Coldwell Banker — cada um com carteira de listings'},
+        {t:'Preferred vendor program',s:'Algumas RE companies mantêm lista de contractors aprovados — entrar nessa lista = fluxo passivo'},
+        {t:'Treinamento e apresentação',s:'Oportunidade de apresentar AXO em team meeting da empresa'},
+        {t:'Co-marketing digital',s:'Tag da RE company no Instagram amplifica alcance local'},
+      ]}
+    ]
+  },
+
+  'inf-pm':{color:'#3aaa60',eyebrow:'Influenciador · Recorrência',title:'Property Managers',
+    intro:'Portfólios de unidades residenciais e comerciais. Turn de inquilinos gera demanda previsível e recorrente — ideal para planejamento de capacidade da AXO.',
+    sections:[
+      {title:'Por que é o canal mais previsível',color:'#3aaa60',items:[
+        {t:'Turn de inquilino = refinish frequente',s:'Cada saída de inquilino = potencial job de refinish ou recoat'},
+        {t:'Portfólio de múltiplas unidades',s:'10–200 unidades por PM = volume estável por trimestre'},
+        {t:'Decisão centralizada',s:'Um contato decide para todas as unidades — eficiência comercial'},
+        {t:'Pricing de volume negociável',s:'Contrato anual com pricing previsível para ambos os lados'},
+      ]},
+      {title:'Como abordar',color:'#3aaa60',items:[
+        {t:'Proposta de contrato anual',s:'Preço fixo por tipo de serviço · SLA de resposta · prioridade de agenda'},
+        {t:'Compliance como argumento',s:'PM de portfólio corporativo exige seguro e licença — ter isso é pré-requisito'},
+        {t:'Primeiro job gratuito ou descontado',s:'Trial job para provar qualidade e processo'},
+      ]}
+    ]
+  },
+
+  'inf-designers':{color:'#8a7ad4',eyebrow:'Influenciador · Premium',title:'Interior Designers',
+    intro:'Especificam produto e contractor como parte do projeto. Cliente de designer já vem com expectativa premium — ticket maior, exigência maior, mas LTV altíssimo.',
+    sections:[
+      {title:'Como funcionam',color:'#8a7ad4',items:[
+        {t:'Especificação formal',s:'Designer coloca AXO no caderno de especificações — cliente chega pré-vendido'},
+        {t:'Confiança no contractor é pessoal',s:'Designer recomenda com o próprio nome — só indica quem não vai embaraçar'},
+        {t:'Foco em color matching e premium finishes',s:'Water-based · custom stain · Rubio Monocoat — domínio técnico é exigido'},
+        {t:'Repeat em múltiplos projetos',s:'Designer ativo tem 5–20 projetos simultâneos ou sequenciais'},
+      ]},
+      {title:'Como atrair designers',color:'#8a7ad4',items:[
+        {t:'Portfólio visual premium',s:'Instagram com before/after de qualidade · fotos profissionais · projetos diferenciados'},
+        {t:'Amostras de stain customizado',s:'Kit de amostras físicas para apresentar a clientes'},
+        {t:'Processo de especificação claro',s:'PDF com opções de finish · timeline · amostras disponíveis'},
+      ]}
+    ]
+  },
+
+  'inf-arq':{color:'#8a7ad4',eyebrow:'Influenciador · Projetos',title:'Arquitetos',
+    intro:'Projetos residenciais e comerciais de maior escala. Ciclo longo mas alto ticket — quando o arquiteto especifica AXO, o job já está garantido antes do cliente pedir orçamento.',
+    sections:[
+      {title:'Perfil do canal',color:'#8a7ad4',items:[
+        {t:'Especificação na planta',s:'Arquiteto define floor type e finish na etapa de projeto — antes da obra'},
+        {t:'Projetos residenciais premium',s:'Renovações de alto padrão · adições · custom homes'},
+        {t:'Projetos comerciais',s:'Escritórios boutique · estúdios · varejo premium · hospitality'},
+        {t:'Ciclo de 6–18 meses',s:'Projeto → aprovação → obra — lead time longo mas job garantido'},
+      ]}
+    ]
+  },
+
+  'inf-gcs':{color:'#8a7ad4',eyebrow:'Influenciador · B2B Direto',title:'GCs (General Contractors)',
+    intro:'Gerenciam obras completas e subcontratam cada trade. Para um GC ativo, ter um flooring contractor confiável é necessidade operacional — não luxo.',
+    sections:[
+      {title:'Dinâmica do canal',color:'#8a7ad4',items:[
+        {t:'Subcontratação sistemática',s:'GC não executa flooring — precisa de specialist que apareça no dia certo'},
+        {t:'Confiabilidade > preço',s:'GC prefere pagar mais por um contractor que não faz vacilo na obra'},
+        {t:'Múltiplos projetos simultâneos',s:'GC ativo tem 3–10 obras abertas — potencial de volume real'},
+        {t:'Referral orgânico entre GCs',s:'GCs se recomendam entre si — entrar em uma rede é entrar em várias'},
+      ]},
+      {title:'Como entrar neste canal',color:'#8a7ad4',items:[
+        {t:'Primeiro job: zero falhas',s:'Prazo · qualidade · comunicação — tudo tem que ser perfeito'},
+        {t:'Processo profissional de invoice',s:'GC precisa de documentação para cobrar do dono da obra'},
+        {t:'Compliance na ponta da língua',s:'HIC · EPA RRP · insurance — GC vai perguntar antes de contratar'},
+      ]}
+    ]
+  },
+
+  'inf-handyman':{color:'#8a7ad4',eyebrow:'Influenciador · Indicação Quente',title:'Handymans',
+    intro:'Recebem pedidos de flooring que não têm skill ou licença para executar. Indicam contractors especializados de confiança — indicação quente porque o handyman já qualificou o cliente.',
+    sections:[
+      {title:'Mecânica da indicação',color:'#8a7ad4',items:[
+        {t:'Cliente já qualificado e pronto',s:'Handyman só indica quando cliente quer o serviço agora — não é lead frio'},
+        {t:'Baixo custo de ativação',s:'Handyman ativo precisa de poucos contatos para virar fonte recorrente'},
+        {t:'Reciprocidade natural',s:'AXO pode indicar handyman para clientes com outros serviços · troca de valor'},
+        {t:'Rede local densa',s:'Handymans conhecem outros contractors, realtors e PMs — ponto de entrada na rede local'},
+      ]}
+    ]
+  },
+
+  // ── TAB 2: PARTNER ──
+  'p-prospect':{color:'#c9952a',eyebrow:'Etapa 01 — Topo do Canal',title:'Prospectar Parceiros Certos',
+    intro:'Não é quantidade — é fit. Um parceiro errado consome energia sem gerar volume. O objetivo é identificar atores com volume real, clientes alinhados ao padrão AXO e disposição para relacionamento de longo prazo.',
+    sections:[
+      {title:'Critérios de qualificação',color:'#c9952a',items:[
+        {t:'Tipo de parceiro',s:'GC · Builder · Designer · PM · Realtor · Handyman'},
+        {t:'Volume estimado',s:'Quantos jobs/mês o parceiro pode gerar realisticamente'},
+        {t:'Quality fit',s:'Padrão de cliente alinhado com posicionamento AXO'},
+        {t:'Payment fit',s:'Termos de pagamento compatíveis com o fluxo de caixa AXO'},
+        {t:'Território',s:'Dentro da área de operação atual — NJ counties alvo'},
+      ]},
+      {title:'Fontes de prospecção',color:'#c9952a',items:[
+        {t:'Rede pessoal + indicações',s:'Mais rápido — parceiro indicado por quem já confia na AXO'},
+        {t:'LinkedIn local',s:'Busca por GC e PM no NJ · conexão direta'},
+        {t:'Eventos e feiras de construção',s:'Home shows · NAHB chapters · RE associations'},
+        {t:'Cold outreach direcionado',s:'Door-to-door em obras ativas · email para RE offices'},
+      ]}
+    ]
+  },
+
+  'p-onboard':{color:'#c9952a',eyebrow:'Etapa 02 — Ativação',title:'Onboarding Profissional',
+    intro:'A primeira impressão do parceiro com o sistema AXO. Um onboarding profissional sinaliza que AXO é uma empresa organizada — não um contractor individual.',
+    sections:[
+      {title:'Componentes do kit de onboarding',color:'#c9952a',items:[
+        {t:'Welcome kit físico ou digital',s:'PDF com serviços · preços de referência · processo · contato direto'},
+        {t:'Explicação do processo AXO',s:'Como funciona o agendamento · comunicação · entrega · garantia'},
+        {t:'Definição de expectativas',s:'O que AXO entrega · o que o parceiro precisa fornecer · SLA'},
+        {t:'Apresentação de compliance',s:'HIC · EPA RRP · insurance — prova de credibilidade'},
+        {t:'Canal de comunicação dedicado',s:'WhatsApp ou email direto — não telefone geral'},
+      ]}
+    ]
+  },
+
+  'p-activate':{color:'#c9952a',eyebrow:'Etapa 03 — Prova',title:'Primeiro Job Ativo',
+    intro:'O trial job é o momento de prova. Tudo o que foi prometido no onboarding é testado aqui. Um primeiro job impecável transforma um parceiro curioso em um parceiro comprometido.',
+    sections:[
+      {title:'O que precisa acontecer neste job',color:'#c9952a',items:[
+        {t:'Prazo 100% cumprido',s:'Atraso no primeiro job = fim do canal antes de começar'},
+        {t:'Comunicação proativa',s:'Updates sem o parceiro precisar perguntar · fotos durante a execução'},
+        {t:'Qualidade acima da expectativa',s:'Surpreender positivamente é o objetivo — não apenas cumprir'},
+        {t:'Processo de invoice claro',s:'Documentação profissional · pagamento fácil'},
+        {t:'Feedback request imediato',s:'Perguntar explicitamente como foi — sinaliza comprometimento com qualidade'},
+      ]}
+    ]
+  },
+
+  'p-exec':{color:'#c9952a',eyebrow:'Etapa 04 — Padrão',title:'Execução Padrão AXO',
+    intro:'O SOP de execução que todos os jobs do parceiro seguem. Consistência é o que transforma um bom primeiro job em confiança duradoura.',
+    sections:[
+      {title:'SOP de execução para partner jobs',color:'#c9952a',items:[
+        {t:'Briefing pré-job',s:'Confirmação de escopo · material · acesso · timeline com parceiro'},
+        {t:'Crew briefing',s:'Crew sabe que é job de parceiro — padrão extra de apresentação'},
+        {t:'Fotos de before + processo + after',s:'Documentação padrão em todo job de parceiro'},
+        {t:'Updates diários',s:'WhatsApp com status no final de cada dia de trabalho'},
+        {t:'Walkthrough com aprovação',s:'Parceiro (ou cliente do parceiro) aprova antes de fechar'},
+        {t:'Invoice com documentação',s:'Relatório de serviços executados + fotos para parceiro apresentar ao cliente final'},
+      ]}
+    ]
+  },
+
+  'p-integrate':{color:'#3aaa60',eyebrow:'Etapa 05 — Integração',title:'Integrar no Fluxo do Parceiro',
+    intro:'O parceiro começa a incluir AXO automaticamente no próprio processo — sem precisar ser solicitado. Esse é o sinal de que o canal está funcionando.',
+    sections:[
+      {title:'Sinais de integração real',color:'#3aaa60',items:[
+        {t:'Parceiro indica AXO sem ser perguntado',s:'Cliente pergunta flooring → parceiro manda contato AXO direto'},
+        {t:'Jobs chegam sem outreach da AXO',s:'Inbound passivo via parceiro — CAC = $0'},
+        {t:'Parceiro pede amostras ou materiais de apresentação',s:'Usa portfólio AXO em reuniões com clientes'},
+        {t:'Parceiro dá feedback proativo',s:'Reporta o que o cliente disse sobre o serviço — relação de confiança'},
+      ]},
+      {title:'Como acelerar a integração',color:'#3aaa60',items:[
+        {t:'Facilitar ao máximo a indicação',s:'Link direto · QR · mensagem pré-pronta para WhatsApp'},
+        {t:'Reconhecer cada indicação',s:'Agradecer explicitamente toda indicação — reforça o comportamento'},
+        {t:'Co-criar materiais',s:'Foto do projeto com crédito ao parceiro · post de Instagram conjunto'},
+      ]}
+    ]
+  },
+
+  'p-recur':{color:'#3aaa60',eyebrow:'Etapa 06 — Canal Ativo',title:'Gerar Recorrência',
+    intro:'Canal ativo gera jobs regulares. Neste estágio, o parceiro está no Tier 2 (Preferred) e tem priority slots reservados na agenda AXO.',
+    sections:[
+      {title:'Mecanismos de recorrência',color:'#3aaa60',items:[
+        {t:'Priority scheduling',s:'Parceiro Preferred tem slots reservados toda semana · não compete com agenda geral'},
+        {t:'Orçamento em 24h',s:'SLA de resposta exclusivo · parceiro sabe que vai receber retorno rápido'},
+        {t:'Volume discount',s:'Pricing melhor para parceiros com frequência comprovada'},
+        {t:'Revisão trimestral',s:'Check-in de relacionamento · volume projetado · feedback · oportunidades'},
+      ]}
+    ]
+  },
+
+  'p-elite':{color:'#b090e0',eyebrow:'Etapa 07 — Canal Travado',title:'Fidelizar / Travar Canal',
+    intro:'Parceiro Elite é um ativo estratégico. O canal está travado — mudar para outro contractor tem custo alto. AXO é o flooring partner padrão deste ator.',
+    sections:[
+      {title:'O que trava um canal',color:'#b090e0',items:[
+        {t:'Histórico de confiança acumulado',s:'Anos de execução perfeita = custo de mudança alto para o parceiro'},
+        {t:'Integração no processo interno',s:'AXO está no checklist de obra, no template de proposta, no contato salvo'},
+        {t:'Benefícios exclusivos de Tier 3',s:'Co-marketing · revenue share · relatório mensal · portal exclusivo'},
+        {t:'Relação pessoal com o dono',s:'Eduardo ↔ dono do parceiro — não é relação contractor/cliente'},
+      ]}
+    ],
+    axo:{t:'Objetivo final',x:'Ter 8–12 parceiros Elite ativos que gerem 60–70% do volume da AXO de forma previsível — liberando o canal digital para crescimento adicional e testes de novos mercados.'}
+  },
+
+  'tier-entry':{color:'#c0b870',eyebrow:'Tier 1',title:'Entry Partner',
+    intro:'Parceiro que completou o primeiro job com sucesso. Qualificado, mas sem histórico de volume ainda.',
+    sections:[
+      {title:'Benefícios',color:'#c0b870',items:[
+        {t:'Acesso ao processo padrão AXO',s:'SOP completo · kit de onboarding'},
+        {t:'Suporte direto no 1º job',s:'Eduardo ou lead disponível para qualquer dúvida'},
+        {t:'Avaliação pós-job',s:'Feedback estruturado para ambos os lados'},
+        {t:'Elegível para upgrade',s:'Após 2 jobs satisfatórios → avaliação para Preferred'},
+      ]}
+    ]
+  },
+
+  'tier-preferred':{color:'#c9952a',eyebrow:'Tier 2',title:'Preferred Partner',
+    intro:'Histórico positivo, volume consistente, integrado no fluxo AXO. Recebe benefícios exclusivos de prioridade.',
+    sections:[
+      {title:'Benefícios Preferred',color:'#c9952a',items:[
+        {t:'Priority scheduling semanal',s:'Slots reservados toda semana — não compete com agenda geral'},
+        {t:'Orçamento em 24h garantido',s:'SLA exclusivo de resposta'},
+        {t:'Volume discount',s:'Pricing melhor por volume comprovado'},
+        {t:'Acesso a materiais premium',s:'Produto de maior qualidade disponível para jobs do parceiro'},
+        {t:'Suporte dedicado',s:'Canal direto de comunicação — não fila geral'},
+      ]}
+    ]
+  },
+
+  'tier-elite':{color:'#c0a0f0',eyebrow:'Tier 3',title:'Elite Partner',
+    intro:'Canal travado. Alto volume, recorrência previsível. Parceiro embaixador da marca AXO.',
+    sections:[
+      {title:'Benefícios Elite',color:'#c0a0f0',items:[
+        {t:'Canal de comunicação exclusivo',s:'WhatsApp direto com Eduardo · resposta em <1h'},
+        {t:'Co-marketing ativo',s:'Logo AXO nos materiais do parceiro · post conjunto no Instagram'},
+        {t:'Revenue share em indicações',s:'% ou crédito por indicação fechada'},
+        {t:'Priority scheduling garantido',s:'Slots bloqueados com antecedência de 30 dias'},
+        {t:'Relatório mensal de performance',s:'Volume · ticket médio · satisfação · oportunidades'},
+        {t:'Acesso ao FloorPRO Partner Portal',s:'Dashboard exclusivo de jobs · histórico · proposta express'},
+      ]}
+    ],
+    axo:{t:'Meta de Elites ativos',x:'8–12 parceiros Elite gerando 60–70% do volume total da AXO com CAC próximo de zero.'}
+  },
+
+  'p-recovery':{color:'#e07040',eyebrow:'Recovery Loop',title:'Feedback Loop — Parceiro Insatisfeito',
+    intro:'Nem todo primeiro job é perfeito. O recovery bem feito pode salvar um canal que teria sido perdido — e demonstra profissionalismo que muitas vezes consolida a relação.',
+    sections:[
+      {title:'Processo de recovery',color:'#e07040',items:[
+        {t:'Pesquisa de feedback estruturada',s:'Perguntas específicas — o que não foi bem · o que esperava · o que melhoraria'},
+        {t:'Identificar causa-raiz',s:'Qualidade de execução · comunicação · prazo · expectativa mal alinhada'},
+        {t:'Plano de ação específico',s:'Uma ação concreta por ponto de falha — não resposta genérica'},
+        {t:'Job de recuperação',s:'Com desconto ou prioridade — prova de comprometimento'},
+        {t:'Parceiro irrecuperável',s:'Archive com notas · não forçar · energia melhor investida em novo parceiro'},
+      ]}
+    ]
+  },
+
+  // ── TAB 3: MASTER FLOW ──
+  'mf-discovery':{color:'#c9952a',eyebrow:'Fase 01 — Topo do Funil',title:'Discovery',
+    intro:'Como a AXO é descoberta. Múltiplos canais simultâneos — cada um com custo e qualidade de lead diferente. O mix ideal combina digital de alta intenção com referral de baixo CAC.',
+    sections:[
+      {title:'Canais de discovery',color:'#c9952a',items:[
+        {t:'Doorhanger + QR Code',s:'Hiperlocal · vizinhança · baixo custo · alta intenção geográfica'},
+        {t:'Google Search / Maps',s:'Alta intenção · CPC disputado · converte bem com reviews e GBP otimizado'},
+        {t:'Referral / Word of mouth',s:'CAC = $0 · maior taxa de conversão · depende de pós-venda bem feito'},
+        {t:'Partner referral',s:'Realtors · GCs · PMs → indicação direta ao cliente final'},
+        {t:'Instagram / Social',s:'Before/after content · brand awareness · demanda latente'},
+        {t:'Cold outreach',s:'Direcionado a parceiros B2B · não a homeowners'},
+      ]}
+    ],
+    axo:{t:'Estratégia de mix',x:'Prioridade 1: GBP + reviews para Google orgânico. Prioridade 2: doorhanger em zip codes alvo. Prioridade 3: ativar parceiros como canal de referral. Social como suporte de marca.'}
+  },
+
+  'mf-entry':{color:'#c9952a',eyebrow:'Fase 02 — Entrada',title:'Entry Point',
+    intro:'Onde o prospect faz o primeiro contato formal. A meta é reduzir fricção ao máximo — cada campo a mais no form reduz conversão.',
+    sections:[
+      {title:'Pontos de entrada',color:'#c9952a',items:[
+        {t:'Landing page com quiz',s:'Rota preferida — qualifica antes de entrar no pipeline'},
+        {t:'WhatsApp direto',s:'Rota rápida — especialmente para indicações de parceiros'},
+        {t:'Ligação / direct call',s:'Clientes mais velhos ou urgentes · requer resposta imediata'},
+        {t:'Formulário no site',s:'Assíncrono · não ideal para alta urgência'},
+        {t:'Google Business Profile',s:'"Ligar" ou "Solicitar orçamento" direto da busca'},
+      ]}
+    ]
+  },
+
+  'mf-capture':{color:'#c9952a',eyebrow:'Fase 03 — Captura',title:'Lead Capture + Intent Detection',
+    intro:'Captura os dados básicos e identifica o tipo de lead. O split Residential vs Partner determina qual pipeline segue — processos diferentes, expectativas diferentes.',
+    sections:[
+      {title:'Dados capturados',color:'#c9952a',items:[
+        {t:'Nome e telefone',s:'Mínimo obrigatório — tudo começa aqui'},
+        {t:'Email',s:'Para follow-up automatizado e proposta'},
+        {t:'Tipo de projeto',s:'Refinish · instalação · reparo · manutenção'},
+        {t:'Indicador de tipo',s:'Homeowner → Residential · GC/Builder/Designer → Partner'},
+      ]},
+      {title:'Intent detection',color:'#c9952a',items:[
+        {t:'Perguntas de classificação no quiz',s:'"Você é dono do imóvel?" · "É para projeto de cliente?"'},
+        {t:'Fonte de descoberta',s:'Realtor indicou → provavelmente urgente · Google → comparando preços'},
+        {t:'Urgência declarada',s:'"Preciso para semana que vem" vs "Estou pesquisando"'},
+      ]}
+    ]
+  },
+
+  'mf-residential':{color:'#3aaa60',eyebrow:'Track A — Homeowner',title:'Residential Flow',
+    intro:'Pipeline dedicado ao cliente final residencial. Mais emocional, maior margem, mais dependente de confiança e reviews.',
+    sections:[
+      {title:'Características do track',color:'#3aaa60',items:[
+        {t:'Decisão emocional',s:'Homeowner compra confiança · não só preço'},
+        {t:'Maior margem por job',s:'Sem intermediário · proposta direta · upsell possível'},
+        {t:'Ciclo de venda mais curto',s:'Urgência frequente · decisão em 1–3 contatos'},
+        {t:'Reviews são críticas',s:'Homeowner verifica Google antes de fechar · 5 estrelas é pré-requisito'},
+      ]}
+    ]
+  },
+
+  'mf-partner':{color:'#4a9ad4',eyebrow:'Track B — B2B',title:'Partner Flow',
+    intro:'Pipeline dedicado a parceiros B2B. Mais racional, menor margem unitária, maior volume e recorrência.',
+    sections:[
+      {title:'Características do track',color:'#4a9ad4',items:[
+        {t:'Decisão racional e processual',s:'Compliance · preço · prazo · processo — todos avaliados'},
+        {t:'Volume e recorrência',s:'Um parceiro ativo > 10 clientes residenciais em volume anual'},
+        {t:'Ciclo de venda mais longo',s:'Primeiro job é investimento de relacionamento'},
+        {t:'Compliance como entrada',s:'Sem HIC e insurance, não há conversa'},
+      ]}
+    ]
+  },
+
+  'mf-quiz':{color:'#3aaa60',eyebrow:'Residential R1',title:'Project Quiz',
+    intro:'Qualificação automatizada do projeto residencial. Coleta dados suficientes para gerar uma estimativa antes da visita.',
+    sections:[
+      {title:'Dados coletados no quiz',color:'#3aaa60',items:[
+        {t:'Tamanho aproximado',s:'Em sqft ou número de cômodos'},
+        {t:'Condição atual do piso',s:'Bom · médio · muito danificado · com stain atual'},
+        {t:'Tipo de serviço desejado',s:'Refinish completo · recoat · instalação · reparo'},
+        {t:'Timeline',s:'Urgente (< 2 sem) · próximo mês · pesquisando'},
+        {t:'Budget range',s:'Opcional mas qualificante'},
+      ]}
+    ]
+  },
+
+  'mf-estimate':{color:'#3aaa60',eyebrow:'Residential R2',title:'Estimate Engine',
+    intro:'Gera proposta automática em três pacotes — remove a fricção de esperar cotação manual para cada lead.',
+    sections:[
+      {title:'Estrutura dos pacotes',color:'#3aaa60',items:[
+        {t:'Silver — Essencial',s:'Sand + 2 demãos oil-based · sem stain · preço de entrada'},
+        {t:'Gold — Recomendado',s:'Sand + stain padrão + 3 demãos water-based · mais popular'},
+        {t:'Platinum — Premium',s:'Sand + custom stain + Bona finish premium + garantia estendida'},
+      ]},
+      {title:'Upsells disponíveis',color:'#3aaa60',items:[
+        {t:'Escadas',s:'Por lance ou degrau'},
+        {t:'Reparos pontuais',s:'Board replacement · preenchimento de gaps'},
+        {t:'Move furniture',s:'Incluir ou cobrar separado'},
+      ]}
+    ]
+  },
+
+  'mf-schedule':{color:'#3aaa60',eyebrow:'Residential R3',title:'Schedule + Follow-up',
+    intro:'Agendamento e automação de follow-up. Meta: reduzir intervenção manual sem perder calor humano.',
+    sections:[
+      {title:'Fluxo de agendamento',color:'#3aaa60',items:[
+        {t:'Self-serve booking link',s:'Calendly ou similar · cliente escolhe horário disponível'},
+        {t:'Confirmação automática',s:'WhatsApp + email com detalhes da visita'},
+        {t:'Pre-visit kit automático',s:'Instruções de preparação · o que esperar · contato direto'},
+      ]},
+      {title:'Follow-up de leads não fechados',color:'#3aaa60',items:[
+        {t:'Day 1',s:'"Vi que você preencheu o quiz — posso tirar alguma dúvida?"'},
+        {t:'Day 4',s:'Envio de caso similar antes/depois'},
+        {t:'Day 10',s:'"Ainda pensando? Posso ajustar o pacote."'},
+        {t:'Day 21',s:'Último contato — reativação em 90 dias'},
+      ]}
+    ]
+  },
+
+  'mf-pqualify':{color:'#4a9ad4',eyebrow:'Partner P1',title:'Partner Qualify',
+    intro:'Qualificação manual do parceiro B2B. Mais criteriosa que o quiz residencial — o objetivo é entrar em relacionamentos de longo prazo com fit real.',
+    sections:[
+      {title:'Critérios de qualificação',color:'#4a9ad4',items:[
+        {t:'Tipo e volume estimado',s:'GC ativo · builder com projetos em andamento · PM com portfólio'},
+        {t:'Território e mercado',s:'Dentro da área AXO · perfil de cliente compatível'},
+        {t:'Disposição para relacionamento',s:'Quer um parceiro de confiança ou só preço?'},
+        {t:'Payment terms',s:'30 dias net é padrão B2B — AXO precisa ter capital para suportar'},
+      ]}
+    ]
+  },
+
+  'mf-contact':{color:'#4a9ad4',eyebrow:'Partner P2',title:'Initial Contact',
+    intro:'Primeiro contato formal com o parceiro qualificado. O objetivo não é vender — é entender o negócio do parceiro e apresentar como AXO resolve um problema real dele.',
+    sections:[
+      {title:'Abordagem de contato',color:'#4a9ad4',items:[
+        {t:'Pesquisar antes de ligar',s:'Entender projetos ativos · nível de operação · dores prováveis'},
+        {t:'Abertura focada em dor',s:'"Você costuma precisar de flooring contractor de última hora?" → se sim, AXO resolve'},
+        {t:'Apresentar compliance proativamente',s:'HIC · insurance · EPA RRP — antes de ser perguntado'},
+        {t:'Propor um trial job',s:'Não um contrato · um job para provar qualidade sem compromisso'},
+      ]}
+    ]
+  },
+
+  'mf-firstjob':{color:'#4a9ad4',eyebrow:'Partner P3',title:'First Job Activation',
+    intro:'O job que define o canal. Tudo o que foi prometido é testado. Não há segunda chance para primeira impressão — mas um primeiro job perfeito pode travar um canal por anos.',
+    sections:[
+      {title:'Checklist do primeiro job de parceiro',color:'#4a9ad4',items:[
+        {t:'Briefing completo com parceiro',s:'Expectativas alinhadas antes de começar'},
+        {t:'Equipe briefada sobre importância',s:'Crew sabe que é job estratégico'},
+        {t:'Comunicação proativa durante',s:'Updates sem ser pedido · foto de progresso'},
+        {t:'Entrega antes do prazo (se possível)',s:'Surpreender positivamente'},
+        {t:'Walkthrough e feedback request',s:'Feedback imediato · demonstra comprometimento com qualidade'},
+      ]}
+    ]
+  },
+
+  'mf-production':{color:'#8a7ad4',eyebrow:'Fase 04 — Convergência',title:'Production Flow',
+    intro:'Onde os dois tracks convergem. Todo job aprovado — residencial ou parceiro — entra no mesmo sistema de produção com o mesmo padrão de execução.',
+    sections:[
+      {title:'Etapas da produção',color:'#8a7ad4',items:[
+        {t:'Project Planning',s:'Scope final · lista de materiais · schedule de crew'},
+        {t:'Material ordering',s:'Abrasives · finish · stain — pedido com antecedência'},
+        {t:'Crew assignment',s:'Lead crew definido · briefing de job'},
+        {t:'Daily execution',s:'SOP de sanding → stain → finish com QC checkpoints'},
+        {t:'Progress updates',s:'Foto de before · updates diários · foto de after'},
+        {t:'Final walkthrough',s:'Cliente ou parceiro aprova presencialmente ou por foto'},
+      ]}
+    ]
+  },
+
+  'mf-postjob':{color:'#c9952a',eyebrow:'Fase 05–06 — Pós-job e Retenção',title:'Post-Job + Retention Loop',
+    intro:'O sistema que transforma cada job em source de crescimento. Review + content + referral + retention — executados em sequência automatizada.',
+    sections:[
+      {title:'Sequência pós-job',color:'#c9952a',items:[
+        {t:'Day 0 (conclusão)',s:'Review request via WhatsApp com link direto · fotos de after'},
+        {t:'Day 1',s:'Agradecimento e envio de care instructions'},
+        {t:'Day 7',s:'Check-in de satisfação · pergunta sobre indicações'},
+        {t:'Day 30',s:'Follow-up de manutenção · "Como está o piso?"'},
+        {t:'Day 90 / Day 180',s:'Reativação · oportunidade de recoat ou novo projeto'},
+      ]},
+      {title:'Loops de retroalimentação',color:'#c9952a',items:[
+        {t:'Reviews → Google ranking',s:'Volume e recência afetam posição no 3-pack local'},
+        {t:'Referrals → Word of mouth',s:'Cliente satisfeito indica para vizinho · realtor · colega'},
+        {t:'Content → Instagram',s:'Before/after vira discovery para novos clientes'},
+        {t:'Partner recurrence',s:'Job de parceiro → priority slot → próximo job automático'},
+      ]}
+    ],
+    axo:{t:'Meta do loop',x:'Cada job gera pelo menos 1 review de 5 estrelas + 1 contato de indicação potencial. Em 12 meses, isso compõe um volume de reviews e referrals que sustenta crescimento orgânico sem depender de ad spend.'}
+  },
+
+  // ── TAB 4: OPERATIONAL ──
+  'op-inbound':{color:'#c9952a',eyebrow:'Entrada — Topo do Sistema',title:'Inbound Sources',
+    intro:'Todos os canais de entrada convergem para o mesmo router. O sistema não discrimina por canal — qualquer lead entra no mesmo processo de qualificação.',
+    sections:[
+      {title:'Canais de entrada',color:'#c9952a',items:[
+        {t:'QR Code (doorhanger · truck · yard sign)',s:'Hiperlocal · alta intenção geográfica'},
+        {t:'Cold outreach (email · ligação · visita)',s:'Proativo · usado principalmente para parceiros B2B'},
+        {t:'Google Search / Maps / GBP',s:'Alta intenção · "hardwood floor refinishing NJ"'},
+        {t:'Referral (cliente · parceiro · realtor)',s:'CAC = $0 · maior taxa de conversão'},
+        {t:'Instagram / Social',s:'Awareness + before/after · demanda gerada, não capturada'},
+      ]}
+    ]
+  },
+
+  'op-router':{color:'#c9952a',eyebrow:'Classificação — Router Central',title:'Intent Detection Router',
+    intro:'Ponto de bifurcação do sistema. Identifica o tipo de lead e direciona para o pipeline correto — residencial ou parceiro. Processo diferente, expectativa diferente, SLA diferente.',
+    sections:[
+      {title:'Como funciona o roteamento',color:'#c9952a',items:[
+        {t:'Quiz de entrada (automated)',s:'3–5 perguntas que identificam homeowner vs B2B automaticamente'},
+        {t:'Pergunta direta no primeiro contato',s:'"O imóvel é seu?" · "Você é contractor / agente?"'},
+        {t:'Fonte de lead como sinal',s:'Realtor indicou → provavelmente residencial urgente · GC entrou → Partner track'},
+        {t:'Manual override',s:'Eduardo pode reclassificar qualquer lead manualmente no FloorPRO'},
+      ]}
+    ]
+  },
+
+  'op-c1':{color:'#3aaa60',eyebrow:'Residential C1 — Auto',title:'Qualify (Auto)',
+    intro:'Qualificação automática via quiz. Sem intervenção manual até o lead provar que é qualificado. Economiza tempo e mantém pipeline limpo.',
+    sections:[
+      {title:'Quiz de qualificação',color:'#3aaa60',items:[
+        {t:'Tipo de serviço',s:'Refinish · recoat · instalação · reparo'},
+        {t:'Área aproximada',s:'< 500 sqft · 500–1500 · > 1500 sqft'},
+        {t:'Condição do piso',s:'Boa · média · muito danificada'},
+        {t:'Timeline',s:'Urgente · próximo mês · pesquisando'},
+        {t:'Budget awareness',s:'Sabe o range? Sim/Não — qualificante'},
+      ]},
+      {title:'Critérios de desqualificação automática',color:'#3aaa60',items:[
+        {t:'Fora da área de serviço',s:'Zip code fora do raio AXO → auto-resposta amigável'},
+        {t:'Tipo de serviço não atendido',s:'Carpet · tile · LVP → redirect ou parceria'},
+        {t:'Budget incompatível',s:'Expectativa muito abaixo do mínimo viável'},
+      ]}
+    ]
+  },
+
+  'op-c2':{color:'#3aaa60',eyebrow:'Residential C2 — Engine',title:'Estimate Engine (S/G/P)',
+    intro:'Geração automática de proposta em três pacotes baseada nos dados do quiz. Reduz o tempo de resposta de dias para minutos.',
+    sections:[
+      {title:'Como o engine funciona',color:'#3aaa60',items:[
+        {t:'Input: sqft + condição + serviço',s:'Quiz C1 alimenta o engine com esses três dados'},
+        {t:'Fórmula de cálculo por pacote',s:'Silver: base por sqft · Gold: +20–30% · Platinum: +50–70%'},
+        {t:'Output: PDF ou link de proposta',s:'Gerado automaticamente e enviado por WhatsApp ou email'},
+        {t:'Validade de 7 dias',s:'Cria urgência sem pressionar explicitamente'},
+      ]},
+      {title:'Estrutura dos pacotes',color:'#3aaa60',items:[
+        {t:'Silver',s:'Sand + 2 demãos oil-based polyurethane · preço de entrada'},
+        {t:'Gold (recomendado)',s:'Sand + stain padrão + 3 demãos water-based · destaque visual na proposta'},
+        {t:'Platinum',s:'Sand + custom stain + Bona Traffic HD + garantia 2 anos'},
+      ]}
+    ]
+  },
+
+  'op-c3':{color:'#3aaa60',eyebrow:'Residential C3 — Agendamento',title:'Schedule (Self-serve)',
+    intro:'Cliente agenda a visita de estimativa sem precisar falar com ninguém. Disponível 24/7 — funciona enquanto a AXO está em campo.',
+    sections:[
+      {title:'Componentes do self-serve',color:'#3aaa60',items:[
+        {t:'Link de agendamento (Calendly ou similar)',s:'Slots disponíveis baseados na agenda real da AXO'},
+        {t:'Confirmação automática',s:'WhatsApp + email com data · hora · endereço · o que preparar'},
+        {t:'Lembrete 24h antes',s:'Automático — reduz no-show'},
+        {t:'Rescheduling self-serve',s:'Cliente pode remarcar sem ligar'},
+      ]}
+    ]
+  },
+
+  'op-c4':{color:'#3aaa60',eyebrow:'Residential C4 — Preparação',title:'Pre-Visit Kit',
+    intro:'Kit enviado automaticamente após agendamento. Prepara o cliente, estabelece expectativas e demonstra profissionalismo antes do primeiro contato presencial.',
+    sections:[
+      {title:'Conteúdo do pre-visit kit',color:'#3aaa60',items:[
+        {t:'O que esperar da visita',s:'Duração · o que será medido e fotografado · como funciona a proposta'},
+        {t:'Como preparar o espaço',s:'Remover objetos pequenos · facilitar acesso · informar sobre pets'},
+        {t:'Portfólio de trabalhos recentes',s:'3–5 before/after do mesmo tipo de serviço'},
+        {t:'FAQ de objeções comuns',s:'"Quanto tempo dura?" · "Qual o cheiro?" · "Quando posso usar?"'},
+        {t:'Contato direto',s:'WhatsApp do Eduardo para qualquer dúvida antes da visita'},
+      ]}
+    ]
+  },
+
+  'op-c5':{color:'#3aaa60',eyebrow:'Residential C5 — Decisão',title:'Close / Nurture',
+    intro:'Ponto de decisão do lead residencial. Fechado vai para o Job DB. Não fechado entra em sequência de nurture — não é abandonado.',
+    sections:[
+      {title:'Se fechado',color:'#3aaa60',items:[
+        {t:'Depósito + assinatura digital',s:'50% upfront · contrato simples · via WhatsApp ou DocuSign'},
+        {t:'Entrada no Job DB (FloorPRO)',s:'Projeto criado · crew assigned · materiais pedidos'},
+        {t:'Confirmação de schedule',s:'Data confirmada com cliente + crew'},
+      ]},
+      {title:'Se não fechado — nurture sequence',color:'#3aaa60',items:[
+        {t:'Day 2',s:'"Vi que não avançamos — posso responder alguma dúvida?"'},
+        {t:'Day 7',s:'Caso similar com foto + depoimento'},
+        {t:'Day 14',s:'"Ainda pensando? Posso ajustar o pacote."'},
+        {t:'Day 30',s:'Check final — "Ainda é algo que você considera?"'},
+        {t:'Day 90',s:'Reativação automática — "Olá, vimos que você pesquisou conosco..."'},
+      ]}
+    ]
+  },
+
+  'op-d1':{color:'#4a9ad4',eyebrow:'Partner D1 — Score',title:'Partner Qualify (Score)',
+    intro:'Qualificação do parceiro B2B com score estruturado. Mais criteriosa que a residencial — o objetivo é investir tempo apenas em parceiros com fit real e potencial de volume.',
+    sections:[
+      {title:'Critérios de scoring',color:'#4a9ad4',items:[
+        {t:'Tipo de parceiro (0–3)',s:'Handyman=1 · Realtor=2 · Designer/PM=3 · GC/Builder=3'},
+        {t:'Volume estimado (0–3)',s:'< 2 jobs/mês=1 · 2–5=2 · > 5=3'},
+        {t:'Quality fit (0–2)',s:'Cliente compatível com padrão AXO'},
+        {t:'Payment fit (0–2)',s:'Termos de pagamento viáveis para o fluxo AXO'},
+        {t:'Score ≥ 7 → avançar',s:'Score < 7 → nurture ou arquivo'},
+      ]}
+    ]
+  },
+
+  'op-d2':{color:'#4a9ad4',eyebrow:'Partner D2 — Trial',title:'First Job Activation',
+    intro:'Trial job do parceiro. Investimento de relacionamento — pode ter margem menor ou condições especiais para garantir que o parceiro experiencie o padrão AXO.',
+    sections:[
+      {title:'Configuração do trial job',color:'#4a9ad4',items:[
+        {t:'Proposta de trial com desconto ou condições especiais',s:'Remove barreira de entrada · parceiro arrisca menos'},
+        {t:'Briefing extra cuidadoso',s:'Expectativas super-alinhadas · sem espaço para surpresa negativa'},
+        {t:'Crew mais experiente possível',s:'Job estratégico → melhor equipe disponível'},
+        {t:'Documentação completa',s:'Fotos de before/during/after · relatório pós-job'},
+      ]}
+    ]
+  },
+
+  'op-d3':{color:'#4a9ad4',eyebrow:'Partner D3 — Execução',title:'Exec Experience',
+    intro:'A experiência de execução que o parceiro terá em todos os jobs futuros. O padrão aqui é o padrão do canal.',
+    sections:[
+      {title:'SOP de execução para partner jobs',color:'#4a9ad4',items:[
+        {t:'Briefing pré-job com parceiro',s:'Confirmação de escopo · acesso · timeline'},
+        {t:'Updates diários via WhatsApp',s:'Status no fim de cada dia de trabalho'},
+        {t:'Foto de before + after padrão',s:'Sempre · sem exceção'},
+        {t:'Walkthrough com aprovação',s:'Parceiro (ou cliente do parceiro) aprova antes de fechar'},
+        {t:'Invoice com documentação',s:'Relatório de serviços + fotos para parceiro apresentar ao cliente'},
+      ]}
+    ]
+  },
+
+  'op-d4':{color:'#4a9ad4',eyebrow:'Partner D4 — Database',title:'Onboarding (Partner DB)',
+    intro:'Parceiro satisfeito entra no Partner Database do FloorPRO. A partir daqui, é gerenciado como ativo estratégico.',
+    sections:[
+      {title:'O que acontece no onboarding',color:'#4a9ad4',items:[
+        {t:'Registro no Partner DB',s:'Nome · empresa · tipo · território · tier inicial · histórico'},
+        {t:'Welcome kit formal',s:'PDF de boas-vindas · benefícios do tier · canal de comunicação'},
+        {t:'Tier assignment',s:'Entry por padrão · avaliação para Preferred após 2 jobs'},
+        {t:'Priority slots configurados',s:'Para Preferred e Elite · bloqueio antecipado de agenda'},
+      ]}
+    ]
+  },
+
+  'op-d5':{color:'#4a9ad4',eyebrow:'Partner D5 — Canal',title:'Recurring Slots',
+    intro:'Canal estabelecido. Parceiro tem slots reservados na agenda AXO — não compete com demanda geral. É aqui que o canal começa a gerar volume previsível.',
+    sections:[
+      {title:'Mecânica de recurring slots',color:'#4a9ad4',items:[
+        {t:'Slots semanais bloqueados',s:'Ex: toda terça é reservada para jobs de parceiros Preferred'},
+        {t:'Request express',s:'Parceiro solicita job → cotação em 24h · confirmação em 48h'},
+        {t:'Volume tracking',s:'Parceiro vê histórico e projeta próximos jobs no Partner Portal'},
+        {t:'Upgrade automático de tier',s:'Volume atinge threshold → notificação de upgrade para Elite'},
+      ]}
+    ]
+  },
+
+  'op-jobdb':{color:'#8a7ad4',eyebrow:'Convergência',title:'Job DB — Production SOP',
+    intro:'Ponto de convergência dos dois tracks. Todo job aprovado entra no Job Database do FloorPRO com o mesmo SOP de produção.',
+    sections:[
+      {title:'O que acontece no Job DB',color:'#8a7ad4',items:[
+        {t:'Registro do projeto',s:'Cliente · escopo · sqft · serviço · pacote · preço · crew assigned'},
+        {t:'Material planning',s:'Lista de abrasives · finish · stain · underlayment pedidos'},
+        {t:'Schedule confirmado',s:'Data de início · duração estimada · crew schedule'},
+        {t:'SOP checklist ativado',s:'Checklist digital de execução para o crew'},
+        {t:'Comunicação ativada',s:'Updates automáticos para cliente ou parceiro durante execução'},
+      ]}
+    ]
+  },
+
+  'op-completion':{color:'#30c4a8',eyebrow:'Qualidade',title:'Completion + QA',
+    intro:'Etapa final de qualidade antes do fechamento financeiro. Sem aprovação do cliente, o job não fecha.',
+    sections:[
+      {title:'Processo de conclusão',color:'#30c4a8',items:[
+        {t:'Final walkthrough',s:'Cliente ou parceiro inspeciona o resultado — ao vivo ou por foto/vídeo'},
+        {t:'Punch list',s:'Qualquer item pendente é registrado e executado antes do fechamento'},
+        {t:'Aprovação formal',s:'Confirmação escrita (WhatsApp serve) de que o cliente aprovou'},
+        {t:'Invoice enviado',s:'Imediatamente após aprovação · com detalhamento de serviços'},
+        {t:'Pagamento coletado',s:'50% upfront já pago · 50% na conclusão · pix · check · zelle'},
+        {t:'Warranty letter',s:'Carta de garantia enviada junto com care instructions'},
+      ]}
+    ]
+  },
+
+  'op-review':{color:'#c9952a',eyebrow:'Motor G — Reviews',title:'Review Engine',
+    intro:'Sistema de solicitação de reviews que funciona em automação. O objetivo é maximizar volume e recência de reviews no Google — os dois fatores que mais afetam ranking local.',
+    sections:[
+      {title:'Fluxo do review engine',color:'#c9952a',items:[
+        {t:'Day 0 — Request imediato',s:'WhatsApp com link direto para Google Review · enviado na hora da conclusão'},
+        {t:'Day 2 — Reminder',s:'Se não respondeu · mensagem leve de lembrete'},
+        {t:'Day 7 — Final reminder',s:'Último contato para review · não forçar além disso'},
+        {t:'NPS interno',s:'Pergunta de satisfação 0–10 para uso interno · identifica clientes insatisfeitos antes de pedir Google review'},
+      ]},
+      {title:'Impacto do review engine',color:'#c9952a',items:[
+        {t:'Google 3-pack ranking',s:'Volume + recência + rating afetam diretamente posição local'},
+        {t:'Conversão do GBP',s:'Mais reviews = mais confiança = mais ligações e mensagens'},
+        {t:'Social proof para parceiros',s:'Parceiros verificam Google antes de indicar AXO'},
+      ]}
+    ]
+  },
+
+  'op-content':{color:'#3aaa60',eyebrow:'Motor H — Conteúdo',title:'Content Engine → Loop',
+    intro:'Sistema de captura e publicação de conteúdo que fecha o loop — transformando cada job executado em source de novos jobs.',
+    sections:[
+      {title:'Captura de conteúdo',color:'#3aaa60',items:[
+        {t:'Foto de before (obrigatória)',s:'Tirada antes de qualquer trabalho em todo job'},
+        {t:'Foto de after (obrigatória)',s:'Após conclusão · mesmo ângulo · boa luz'},
+        {t:'Vídeo de processo (quando possível)',s:'Sanding · aplicação de stain · resultado final'},
+        {t:'Depoimento em vídeo (alta prioridade)',s:'30 segundos do cliente falando sobre resultado'},
+      ]},
+      {title:'Distribuição e loop',color:'#3aaa60',items:[
+        {t:'Instagram (before/after)',s:'Post + stories · tag de localização · hashtags locais'},
+        {t:'Google Business Profile',s:'Fotos adicionadas ao perfil · melhora rankeamento'},
+        {t:'Portfolio no site',s:'Case study com fotos · tipo de serviço · cidade'},
+        {t:'Proposta comercial',s:'Fotos de jobs similares usadas em novas propostas'},
+        {t:'→ Volta ao Inbound Sources',s:'Conteúdo alimenta descoberta de novos leads'},
+      ]}
+    ],
+    axo:{t:'Loop fechado',x:'Discovery → Lead → Job → Review + Content → Discovery. Cada job bem documentado é um ativo que gera novos jobs. Em 12 meses de operação consistente, o conteúdo acumulado sustenta crescimento orgânico.'}
+  },
+};
+
+// ══════════════════════════════════════════════
+// ARROWS CONFIG
+// ══════════════════════════════════════════════
+const ARROWS = {
+  influence:[
+    {f:'inf-realtors',  t:'axo-center'},{f:'inf-builders',   t:'axo-center'},
+    {f:'inf-re',        t:'axo-center'},{f:'inf-pm',         t:'axo-center'},
+    {f:'inf-designers', t:'axo-center'},{f:'inf-arq',        t:'axo-center'},
+    {f:'inf-gcs',       t:'axo-center'},{f:'inf-handyman',   t:'axo-center'},
+  ],
+  partner:[
+    {f:'p-prospect',t:'p-onboard'},{f:'p-onboard',t:'p-activate'},
+    {f:'p-activate',t:'p-exec'},{f:'p-exec',t:'p-integrate'},
+    {f:'p-integrate',t:'p-recur'},{f:'p-recur',t:'p-elite'},
+    {f:'p-activate',t:'p-recovery',style:'dashed'},
+    {f:'p-recovery',t:'p-activate',style:'dashed'},
+    {f:'p-onboard',t:'tier-entry',style:'dashed'},
+    {f:'p-recur',t:'tier-preferred',style:'dashed'},
+    {f:'p-elite',t:'tier-elite',style:'dashed'},
+  ],
+  masterflow:[
+    {f:'mf-discovery',t:'mf-entry'},{f:'mf-entry',t:'mf-capture'},
+    {f:'mf-capture',t:'mf-residential'},{f:'mf-capture',t:'mf-partner'},
+    {f:'mf-residential',t:'mf-quiz'},{f:'mf-quiz',t:'mf-estimate'},
+    {f:'mf-estimate',t:'mf-schedule'},
+    {f:'mf-partner',t:'mf-pqualify'},{f:'mf-pqualify',t:'mf-contact'},
+    {f:'mf-contact',t:'mf-firstjob'},
+    {f:'mf-schedule',t:'mf-production'},{f:'mf-firstjob',t:'mf-production'},
+    {f:'mf-production',t:'mf-postjob'},
+    {f:'mf-postjob',t:'mf-discovery',style:'dashed'},
+  ],
+  operational:[
+    {f:'op-inbound',t:'op-router'},
+    {f:'op-router',t:'op-c1'},{f:'op-router',t:'op-d1'},
+    {f:'op-c1',t:'op-c2'},{f:'op-c2',t:'op-c3'},
+    {f:'op-c3',t:'op-c4'},{f:'op-c4',t:'op-c5'},
+    {f:'op-c5',t:'op-jobdb'},
+    {f:'op-d1',t:'op-d2'},{f:'op-d2',t:'op-d3'},
+    {f:'op-d3',t:'op-d4'},{f:'op-d4',t:'op-d5'},
+    {f:'op-d5',t:'op-jobdb'},
+    {f:'op-jobdb',t:'op-completion'},
+    {f:'op-completion',t:'op-review'},{f:'op-completion',t:'op-content'},
+    {f:'op-content',t:'op-inbound',style:'dashed'},
+  ],
+};
+
+// ══════════════════════════════════════════════
+// DRAW ARROWS
+// ══════════════════════════════════════════════
+function getBox(el){
+  return {
+    x:el.offsetLeft,y:el.offsetTop,
+    w:el.offsetWidth,h:el.offsetHeight,
+    cx:el.offsetLeft+el.offsetWidth/2,
+    cy:el.offsetTop+el.offsetHeight/2,
+    bottom:el.offsetTop+el.offsetHeight,
+    top:el.offsetTop,
+    left:el.offsetLeft,
+    right:el.offsetLeft+el.offsetWidth,
+  };
+}
+
+function drawTab(tabId){
+  const svgEl = document.getElementById('svg-'+tabId);
+  if(!svgEl) return;
+  svgEl.innerHTML=`<defs>
+    <marker id="ah-${tabId}" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1L6 4L1 7" fill="none" stroke="#404850" stroke-width="1.5" stroke-linecap="round"/>
+    </marker>
+    <marker id="ahd-${tabId}" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1L6 4L1 7" fill="none" stroke="#1a4a2a" stroke-width="1.5" stroke-linecap="round"/>
+    </marker>
+  </defs>`;
+
+  const arrs = ARROWS[tabId]||[];
+  arrs.forEach(a=>{
+    const fEl=document.querySelector(`[data-tab="${tabId}"][data-id="${a.f}"]`);
+    const tEl=document.querySelector(`[data-tab="${tabId}"][data-id="${a.t}"]`);
+    if(!fEl||!tEl) return;
+    const f=getBox(fEl), t=getBox(tEl);
+    const dashed=a.style==='dashed';
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    let d;
+    const dy=t.cy-f.cy;
+    const dx=t.cx-f.cx;
+
+    if(tabId==='influence'){
+      // radial: from actor edge toward center
+      const angle=Math.atan2(t.cy-f.cy, t.cx-f.cx);
+      const sx=f.cx+Math.cos(angle)*(f.w/2+2);
+      const sy=f.cy+Math.sin(angle)*(f.h/2+2);
+      const ex=t.cx-Math.cos(angle)*(t.w/2+4);
+      const ey=t.cy-Math.sin(angle)*(t.h/2+4);
+      d=`M${sx} ${sy} L${ex} ${ey}`;
+    } else if(Math.abs(dy)<20 && Math.abs(dx)>30){
+      // horizontal flow
+      const sx=dx>0?f.right:f.left;
+      const ex=dx>0?t.left-2:t.right+2;
+      d=`M${sx} ${f.cy} C${sx+40} ${f.cy},${ex-40} ${t.cy},${ex} ${t.cy}`;
+    } else if(dy>20){
+      // going down
+      const sx=f.cx, sy=f.bottom;
+      const ex=t.cx, ey=t.top-2;
+      d=`M${sx} ${sy} C${sx} ${sy+25},${ex} ${ey-25},${ex} ${ey}`;
+    } else {
+      // loop back up — go around left
+      const lx=Math.min(f.left,t.left)-55;
+      d=`M${f.left} ${f.cy} Q${lx} ${f.cy},${lx} ${(f.cy+t.cy)/2} Q${lx} ${t.cy},${t.right} ${t.cy}`;
+    }
+
+    path.setAttribute('d',d);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke',dashed?'#1a4a2a':'#2a3238');
+    path.setAttribute('stroke-width','1.2');
+    if(dashed) path.setAttribute('stroke-dasharray','5 4');
+    path.setAttribute('marker-end',`url(#${dashed?'ahd':'ah'}-${tabId})`);
+    svgEl.appendChild(path);
+  });
+}
+
+// ══════════════════════════════════════════════
+// PANEL
+// ══════════════════════════════════════════════
+function openPanel(id){
+  const d=DATA[id]; if(!d) return;
+  document.querySelectorAll('.node').forEach(n=>n.classList.remove('active'));
+  const activeNode=document.querySelector(`[data-id="${id}"]`);
+  if(activeNode) activeNode.classList.add('active');
+
+  const ey=document.getElementById('p-eyebrow');
+  ey.textContent=d.eyebrow; ey.style.color=d.color;
+  document.getElementById('p-title').textContent=d.title;
+  document.getElementById('p-intro').textContent=d.intro;
+
+  const body=document.getElementById('p-body');
+  body.innerHTML='';
+
+  (d.sections||[]).forEach(sec=>{
+    const div=document.createElement('div');
+    div.style.marginBottom='12px';
+    const tl=document.createElement('div');
+    tl.className='p-sec-title';
+    tl.textContent=sec.title;
+    div.appendChild(tl);
+    const list=document.createElement('div');
+    list.className='detail-list';
+    sec.items.forEach(item=>{
+      const row=document.createElement('div');
+      row.className='detail-item';
+      const dot=document.createElement('div');
+      dot.className='d-dot';
+      dot.style.background=sec.color;
+      const txt=document.createElement('div');
+      txt.innerHTML=`<div>${item.t}</div>${item.s?`<div class="d-sub">${item.s}</div>`:''}`;
+      row.appendChild(dot); row.appendChild(txt);
+      list.appendChild(row);
+    });
+    div.appendChild(list);
+    body.appendChild(div);
+  });
+
+  if(d.axo){
+    const box=document.createElement('div');
+    box.className='axo-box';
+    box.innerHTML=`<div class="axo-box-lbl">⬡ ${d.axo.t}</div><div class="axo-box-txt">${d.axo.x}</div>`;
+    body.appendChild(box);
+  }
+
+  // tier cards for tier nodes
+  if(id==='tier-entry'||id==='tier-preferred'||id==='tier-elite'){
+    const loopBox=document.createElement('div');
+    loopBox.className='loop-box';
+    loopBox.style.marginTop='10px';
+    if(id==='tier-entry'){
+      loopBox.innerHTML='<span class="loop-lbl">Elegível para →</span><span class="loop-tag">Preferred após 2 jobs satisfatórios</span>';
+    } else if(id==='tier-preferred'){
+      loopBox.innerHTML='<span class="loop-lbl">Elegível para →</span><span class="loop-tag">Elite após volume e histórico</span>';
+    } else {
+      loopBox.innerHTML='<span class="loop-lbl">↻ canal travado</span><span class="loop-tag">Co-marketing · Revenue share · Partner Portal</span>';
+    }
+    body.appendChild(loopBox);
+  }
+
+  if(id==='mf-postjob'||id==='op-content'){
+    const lb=document.createElement('div');
+    lb.className='loop-box'; lb.style.marginTop='10px';
+    lb.innerHTML='<span class="loop-lbl">↻ loop fecha aqui</span><span class="loop-tag">Content → Discovery</span><span class="loop-tag">Reviews → Google ranking</span>';
+    body.appendChild(lb);
+  }
+
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closePanel(){
+  document.getElementById('overlay').classList.remove('open');
+  document.querySelectorAll('.node').forEach(n=>n.classList.remove('active'));
+}
+function closePanelClick(e){
+  if(e.target===document.getElementById('overlay')) closePanel();
+}
+
+// ══════════════════════════════════════════════
+// TAB SWITCH
+// ══════════════════════════════════════════════
+const TAB_MAP={
+  influence:'pane-influence',partner:'pane-partner',
+  masterflow:'pane-masterflow',operational:'pane-operational'
+};
+
+function switchTab(id,btn){
+  Object.values(TAB_MAP).forEach(p=>{
+    document.getElementById(p).classList.remove('active');
+  });
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(TAB_MAP[id]).classList.add('active');
+  btn.classList.add('active');
+  closePanel();
+  setTimeout(()=>drawTab(id),60);
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+document.querySelectorAll('.node').forEach(node=>{
+  node.addEventListener('click',()=>openPanel(node.dataset.id));
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closePanel();});
+
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    drawTab('influence');
+    drawTab('partner');
+    drawTab('masterflow');
+    drawTab('operational');
+  },80);
+});
+window.addEventListener('resize',()=>{
+  ['influence','partner','masterflow','operational'].forEach(drawTab);
+});
+</script>
+</body>
+</html>
