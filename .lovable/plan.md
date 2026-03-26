@@ -1,68 +1,47 @@
 
 
-## Problem: PWA Scope Breaks Authentication Flow
+## Plano: Tornar o AXO Master System Editável (Mindmap Flexível)
 
-The PWA manifest defines `scope: "/admin"` and `start_url: "/admin"`. When iOS opens the PWA:
+### Problema Atual
+O arquivo `public/axo-master-system.html` é um HTML estático com ~1345 linhas. Posições dos nodes são hardcoded em `style="top:Xpx;left:Ypx"`, e o conteúdo está embutido em um objeto `DATA` JavaScript. Para mudar qualquer texto ou adicionar um node, é preciso editar HTML + JS + recalcular posições manualmente.
 
-1. **Not logged in** → `ProtectedRoute` redirects to `/auth` → **outside `/admin` scope** → iOS opens Safari browser instead of staying in the standalone PWA
-2. **Logged in but not admin** → redirects to `/` → same problem, exits PWA
+### Solução
+Converter para uma **página React** com dados estruturados em arrays JSON. Isso permite:
+- **Editar textos** facilmente (basta mudar strings no array de dados)
+- **Adicionar/remover nodes** sem recalcular layout — usar layout automático (grid/radial)
+- **Manter o visual atual** (dark theme, IBM Plex, cores gold/pine/violet/etc)
 
-The `/auth` route lives outside the PWA scope, breaking the standalone experience entirely.
+### Estrutura Proposta
 
-## Solution: Scoped Auth Routes per Portal
+**Arquivo de dados**: `src/data/axoMasterSystem.ts`
+- Exporta os 4 tabs com seus nodes e conexões como arrays tipados
+- Cada node: `{ id, label, tag, subtitle, color, details }`
+- Cada conexão: `{ from, to }`
+- Adicionar um novo node = adicionar um objeto ao array
 
-Create dedicated auth routes inside each portal's scope so PWA navigation never leaves the scope boundary.
+**Página React**: Reescrever `src/pages/AxoMasterSystem.tsx`
+- 4 tabs com o mesmo visual atual
+- Nodes renderizados dinamicamente a partir dos dados
+- Layout automático (radial para Tab 1, horizontal flow para Tabs 2-4)
+- Panel/sheet ao clicar em um node mostra os detalhes
+- SVG arrows calculadas automaticamente entre nodes conectados
 
-```text
-/admin/auth      → Admin login (stays inside PWA scope)
-/collaborator/auth → Collaborator login (future PWA)
-/auth            → Keep as legacy redirect → detects context and forwards
-```
+**Rota**: Mantém `/axo-master-system` — sem mudança
 
-### Changes
+### O Que Muda para Você
+- Para **editar textos**: abre `src/data/axoMasterSystem.ts`, muda as strings
+- Para **adicionar um node**: adiciona um objeto no array do tab desejado + uma conexão
+- Para **remover**: deleta o objeto do array
+- Me pede para fazer qualquer uma dessas mudanças por chat
 
-**1. Create `/admin/auth` route**
-- New file: `src/pages/admin/AdminAuth.tsx`
-- Same login UI as current `Auth.tsx` but with admin-specific redirects
-- On success → `/admin`
-- "Voltar" link goes to `/admin` not `/`
-- Include `AdminPWAHead` for PWA meta tags
-- No "register" — admin is invite-only (matches existing behavior)
+### Arquivos
 
-**2. Update `ProtectedRoute` redirect targets**
-- When `requireAdmin === true` and user is not logged in → redirect to `/admin/auth` (not `/auth`)
-- When `requireAdmin === false` and user is not logged in → redirect to `/collaborator/auth` (future, for now `/auth`)
-- When logged in but wrong role → redirect to appropriate auth page with error message
+| Arquivo | Ação |
+|---------|------|
+| `src/data/axoMasterSystem.ts` | **Criar** — dados estruturados dos 4 tabs |
+| `src/pages/AxoMasterSystem.tsx` | **Reescrever** — de iframe para React completo |
+| `public/axo-master-system.html` | **Manter** como fallback (não deletar) |
 
-**3. Update `App.tsx` routing**
-- Add `<Route path="/admin/auth" element={<AdminAuth />} />`
-- Keep `/auth` as a smart redirect: if already on PWA context, forward to `/admin/auth`
-
-**4. Update PWA service worker**
-- Update `admin-sw.js` to also cache `/admin/auth` in the shell
-- Update manifest scope stays `/admin` (already correct)
-
-**5. Update `Auth.tsx` (legacy `/auth`)**
-- Add detection: if `navigator.standalone` (iOS PWA) or `display-mode: standalone`, redirect to `/admin/auth` immediately
-- Otherwise keep current behavior as fallback
-
-### Files to Create/Modify
-
-| File | Action |
-|------|--------|
-| `src/pages/admin/AdminAuth.tsx` | **Create** — scoped admin login page |
-| `src/components/shared/ProtectedRoute.tsx` | **Modify** — accept `authRedirect` prop, default `/admin/auth` for admin routes |
-| `src/App.tsx` | **Modify** — add `/admin/auth` route |
-| `public/admin-sw.js` | **Modify** — add `/admin/auth` to cache shell |
-| `src/pages/Auth.tsx` | **Modify** — add PWA standalone detection redirect |
-
-### Future-Ready Structure
-
-This sets up the pattern for when client/supply portals get their own PWAs:
-- `/admin/auth` → Admin PWA
-- `/collaborator/auth` → Collaborator PWA (when ready)
-- `/portal/auth` → Client portal (future)
-- `/supply/auth` → Supply portal (future)
-
-Each portal's `ProtectedRoute` will redirect to its own scoped auth route, keeping all navigation within the PWA scope boundary.
+### Escopo
+~700 linhas total entre os 2 arquivos novos. Visual idêntico ao atual.
 
