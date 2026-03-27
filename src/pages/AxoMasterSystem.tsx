@@ -1014,6 +1014,7 @@ export default function AxoMasterSystem() {
         <NewNodeDialog
           onClose={() => setShowNewNode(false)}
           onCreate={handleCreateNode}
+          ui={ui}
         />
       )}
     </div>
