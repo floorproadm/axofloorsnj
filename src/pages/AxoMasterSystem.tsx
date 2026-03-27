@@ -357,8 +357,11 @@ export default function AxoMasterSystem() {
 
       {/* Header */}
       <div style={{ padding: "24px 24px 0", borderBottom: "1px solid #252a2d" }}>
-        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "#404850", marginBottom: 5 }}>
-          AXO Floors LLC · Sistema Operacional
+        <div className="flex items-center gap-3 mb-2">
+          <img src={axoLogo} alt="AXO Floors" className="h-8 w-auto" />
+          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "#404850" }}>
+            AXO Floors LLC · Sistema Operacional
+          </div>
         </div>
         <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6" }}>
           AXO Master System
