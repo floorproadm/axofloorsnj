@@ -11,6 +11,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles, BookOpen, Calculator, Palette } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
+import serviceSanding from "@/assets/service-sanding.jpg";
+import serviceHardwood from "@/assets/service-hardwood.jpg";
+import serviceVinyl from "@/assets/service-vinyl.jpg";
+import serviceStaircase from "@/assets/service-staircase.jpg";
 import { useState, useEffect, useRef } from "react";
 import LeadMagnetGate from "@/components/shared/LeadMagnetGate";
 const Index = () => {
@@ -52,25 +56,25 @@ const Index = () => {
     description: "Restore your floors to their original beauty with professional refinishing services.",
     href: "/sanding-and-refinish",
     features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
-    icon: "✨"
+    image: serviceSanding
   }, {
     title: "Hardwood Flooring",
     description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
     href: "/hardwood-flooring",
     features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
-    icon: "🌳"
+    image: serviceHardwood
   }, {
     title: "Vinyl Plank Flooring",
     description: "Waterproof and durable luxury vinyl with the look of real hardwood.",
     href: "/vinyl-plank-flooring",
     features: ["100% Waterproof", "Easy Maintenance", "Realistic Wood Look"],
-    icon: "💧"
+    image: serviceVinyl
   }, {
     title: "Staircase Renovation",
     description: "Transform your staircase with custom hardwood steps and elegant railings.",
     href: "/staircase",
     features: ["Custom Design", "Safety First", "Premium Materials"],
-    icon: "🪜"
+    image: serviceStaircase
   }];
   const benefits = [{
     icon: Users,
@@ -132,11 +136,15 @@ const Index = () => {
                 <div className={`absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent transition-opacity duration-500 ${isMobile && activeServiceIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
                 
                 <CardContent className="relative p-6 text-center h-full flex flex-col">
-                  <div className="relative mb-6">
-                    <div className={`absolute inset-0 bg-accent/20 rounded-full blur-xl transition-opacity duration-500 transform scale-150 ${isMobile && activeServiceIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
-                    <div className={`relative text-4xl mb-2 transition-all duration-500 ${isMobile && activeServiceIndex === index ? 'scale-125 rotate-3' : 'group-hover:scale-125 group-hover:rotate-3'}`}>
-                      {service.icon}
-                    </div>
+                  <div className="relative mb-6 overflow-hidden rounded-xl">
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      loading="lazy"
+                      width={512}
+                      height={512}
+                      className={`w-full h-40 object-cover transition-all duration-500 ${isMobile && activeServiceIndex === index ? 'scale-110' : 'group-hover:scale-110'}`}
+                    />
                   </div>
                   
                   <h3 className={`text-lg font-heading font-bold mb-3 transition-all duration-300 leading-tight ${isMobile && activeServiceIndex === index ? 'text-accent' : 'group-hover:text-accent'}`}>
