@@ -891,7 +891,9 @@ export default function AxoMasterSystem() {
   const handleTabSwitch = useCallback((idx: number) => {
     setActiveTab(idx);
     setSelectedNode(null);
-  }, []);
+    // Reset zoom based on device
+    setZoom(isMobile ? 40 : 100);
+  }, [isMobile]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
