@@ -171,7 +171,6 @@ export default function Schedule() {
           {/* Title row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-foreground">Schedule</h1>
               <Select
                 value={`${getMonth(currentDate)}-${getYear(currentDate)}`}
                 onValueChange={(v) => {
