@@ -166,13 +166,14 @@ function EditableField({ label, value, onChange, fontSize = 13 }: {
 // ══════════════════════════════════════════════
 // INLINE TEXT — click to edit any text
 // ══════════════════════════════════════════════
-function InlineText({ value, onChange, style, placeholder, multiline, className }: {
+function InlineText({ value, onChange, style, placeholder, multiline, className, readOnly }: {
   value: string;
   onChange: (v: string) => void;
   style?: React.CSSProperties;
   placeholder?: string;
   multiline?: boolean;
   className?: string;
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -181,15 +182,15 @@ function InlineText({ value, onChange, style, placeholder, multiline, className 
   useEffect(() => { setDraft(value); }, [value]);
   useEffect(() => { if (editing && ref.current) ref.current.focus(); }, [editing]);
 
-  if (!editing) {
+  if (!editing || readOnly) {
     return (
       <div
-        onClick={() => setEditing(true)}
-        className={`cursor-text rounded px-1 -mx-1 transition-colors hover:bg-white/5 ${className || ""}`}
+        onClick={() => !readOnly && setEditing(true)}
+        className={`rounded px-1 -mx-1 transition-colors ${readOnly ? "" : "cursor-text hover:bg-white/5"} ${className || ""}`}
         style={{ ...style, minHeight: 18 }}
-        title="Clique para editar"
+        title={readOnly ? undefined : "Clique para editar"}
       >
-        {value || <span style={{ color: "#404850", fontStyle: "italic" }}>{placeholder || "Clique para editar..."}</span>}
+        {value || <span style={{ color: "#404850", fontStyle: "italic" }}>{placeholder || (readOnly ? "" : "Clique para editar...")}</span>}
       </div>
     );
   }
@@ -235,7 +236,7 @@ function InlineText({ value, onChange, style, placeholder, multiline, className 
 // ══════════════════════════════════════════════
 type PanelMode = "modal" | "sidebar" | "fullscreen";
 
-function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode, contentOverride, onSaveContent }: {
+function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode, contentOverride, onSaveContent, editMode }: {
   data: NodeData | null;
   nodeId: string;
   node: MasterNode;
@@ -247,6 +248,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
   onDeleteNode: () => void;
   contentOverride: Partial<NodeData> | null;
   onSaveContent: (content: Partial<NodeData>) => void;
+  editMode: boolean;
 }) {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
@@ -416,23 +418,27 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
           >
             <Maximize2 className="w-4 h-4" style={{ color: mode === "fullscreen" ? "#c9952a" : "#7a8490" }} />
           </button>
-          <div className="w-px h-4 mx-1" style={{ background: "#252a2d" }} />
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title="Editar card"
-          >
-            <Pencil className="w-4 h-4" style={{ color: isEditing ? "#c9952a" : "#7a8490" }} />
-          </button>
-          <button
-            onClick={() => {
-              if (confirm("Tem certeza que deseja remover este node?")) onDeleteNode();
-            }}
-            className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title="Remover node"
-          >
-            <Trash2 className="w-4 h-4" style={{ color: "#7a8490" }} />
-          </button>
+          {editMode && (
+            <>
+              <div className="w-px h-4 mx-1" style={{ background: "#252a2d" }} />
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="p-1.5 rounded hover:bg-white/5 transition-colors"
+                title="Editar card"
+              >
+                <Pencil className="w-4 h-4" style={{ color: isEditing ? "#c9952a" : "#7a8490" }} />
+              </button>
+              <button
+                onClick={() => {
+                  if (confirm("Tem certeza que deseja remover este node?")) onDeleteNode();
+                }}
+                className="p-1.5 rounded hover:bg-white/5 transition-colors"
+                title="Remover node"
+              >
+                <Trash2 className="w-4 h-4" style={{ color: "#7a8490" }} />
+              </button>
+            </>
+          )}
         </div>
         <button onClick={onClose} className="p-1.5 rounded hover:bg-white/5 transition-colors">
           <X className="w-4 h-4" style={{ color: "#7a8490" }} />
@@ -491,6 +497,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
         <InlineText
           value={data?.eyebrow || node.tag}
           onChange={updateEyebrow}
+          readOnly={!editMode}
           style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".16em", textTransform: "uppercase", color: data?.color || c.title, marginBottom: 5 }}
         />
 
@@ -498,6 +505,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
         <InlineText
           value={data?.title || node.title}
           onChange={(title) => updateContent({ title })}
+          readOnly={!editMode}
           style={{ fontSize: mode === "fullscreen" ? 28 : 20, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6", marginBottom: 8 }}
         />
 
@@ -506,6 +514,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
           value={data?.intro || ""}
           onChange={updateIntro}
           multiline
+          readOnly={!editMode}
           placeholder="Clique para adicionar uma descrição..."
           style={{ fontSize: 13, color: "#7a8490", lineHeight: 1.8, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #252a2d" }}
         />
@@ -517,15 +526,18 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
               <InlineText
                 value={sec.title}
                 onChange={(t) => updateSectionTitle(si, t)}
+                readOnly={!editMode}
                 style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850" }}
               />
-              <button
-                onClick={() => { if (confirm("Remover esta seção?")) removeSection(si); }}
-                className="p-1 rounded hover:bg-white/5"
-                title="Remover seção"
-              >
-                <X className="w-3 h-3" style={{ color: "#404850" }} />
-              </button>
+              {editMode && (
+                <button
+                  onClick={() => { if (confirm("Remover esta seção?")) removeSection(si); }}
+                  className="p-1 rounded hover:bg-white/5"
+                  title="Remover seção"
+                >
+                  <X className="w-3 h-3" style={{ color: "#404850" }} />
+                </button>
+              )}
             </div>
             <div className="flex flex-col gap-1.5">
               {sec.items.map((item, ii) => (
@@ -535,45 +547,53 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                     <InlineText
                       value={item.t}
                       onChange={(t) => updateSectionItemT(si, ii, t)}
+                      readOnly={!editMode}
                       style={{ fontWeight: 500, fontSize: 12, color: "#dde2e6" }}
                     />
                     <InlineText
                       value={item.s || ""}
                       onChange={(s) => updateSectionItemS(si, ii, s)}
+                      readOnly={!editMode}
                       placeholder="Descrição..."
                       style={{ fontSize: 11, color: "#7a8490", marginTop: 2 }}
                     />
                   </div>
-                  <button
-                    onClick={() => removeSectionItem(si, ii)}
-                    className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-opacity shrink-0"
-                    title="Remover item"
-                  >
-                    <X className="w-3 h-3" style={{ color: "#555" }} />
-                  </button>
+                  {editMode && (
+                    <button
+                      onClick={() => removeSectionItem(si, ii)}
+                      className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-opacity shrink-0"
+                      title="Remover item"
+                    >
+                      <X className="w-3 h-3" style={{ color: "#555" }} />
+                    </button>
+                  )}
                 </div>
               ))}
-              <button
-                onClick={() => addSectionItem(si)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors hover:bg-white/5"
-                style={{ color: "#404850", border: "1px dashed #252a2d" }}
-              >
-                <Plus className="w-3 h-3" />
-                Adicionar item
-              </button>
+              {editMode && (
+                <button
+                  onClick={() => addSectionItem(si)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors hover:bg-white/5"
+                  style={{ color: "#404850", border: "1px dashed #252a2d" }}
+                >
+                  <Plus className="w-3 h-3" />
+                  Adicionar item
+                </button>
+              )}
             </div>
           </div>
         ))}
 
         {/* Add Section */}
-        <button
-          onClick={addSection}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors hover:bg-white/5 mb-4"
-          style={{ color: "#7a8490", border: "1px dashed #323a3f" }}
-        >
-          <Plus className="w-3 h-3" />
-          Adicionar seção
-        </button>
+        {editMode && (
+          <button
+            onClick={addSection}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors hover:bg-white/5 mb-4"
+            style={{ color: "#7a8490", border: "1px dashed #323a3f" }}
+          >
+            <Plus className="w-3 h-3" />
+            Adicionar seção
+          </button>
+        )}
 
         {/* AXO Box — editable */}
         {data?.axo && (
@@ -581,12 +601,14 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             <InlineText
               value={data.axo.t}
               onChange={(t) => updateContent({ axo: { ...data.axo!, t } })}
+              readOnly={!editMode}
               style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a", marginBottom: 4 }}
             />
             <InlineText
               value={data.axo.x}
               onChange={(x) => updateContent({ axo: { ...data.axo!, x } })}
               multiline
+              readOnly={!editMode}
               style={{ fontSize: 11, color: "#907848", lineHeight: 1.7 }}
             />
           </div>
@@ -766,6 +788,7 @@ export default function AxoMasterSystem() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [panelMode, setPanelMode] = useState<PanelMode>("sidebar");
   const [showNewNode, setShowNewNode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const { overrides, getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
   const tab = TABS[activeTab];
@@ -832,14 +855,30 @@ export default function AxoMasterSystem() {
             Sistema Operacional
           </div>
         </div>
-        <button
-          onClick={() => setShowNewNode(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
-          style={{ background: "#1a1408", border: "1px solid #7a5a18", color: "#c9952a" }}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Node
-        </button>
+        <div className="flex items-center gap-2">
+          {editMode && (
+            <button
+              onClick={() => setShowNewNode(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
+              style={{ background: "#1a1408", border: "1px solid #7a5a18", color: "#c9952a" }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Node
+            </button>
+          )}
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
+            style={{
+              background: editMode ? "#1a1408" : "transparent",
+              border: editMode ? "1px solid #7a5a18" : "1px solid #323a3f",
+              color: editMode ? "#c9952a" : "#7a8490",
+            }}
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            {editMode ? "Editando" : "Editar"}
+          </button>
+        </div>
       </div>
 
       {/* Tabs Bar */}
@@ -917,6 +956,7 @@ export default function AxoMasterSystem() {
           onDeleteNode={() => handleDeleteNode(selectedNode)}
           contentOverride={selectedContentOverride}
           onSaveContent={handleSaveContent}
+          editMode={editMode}
         />
       )}
 
