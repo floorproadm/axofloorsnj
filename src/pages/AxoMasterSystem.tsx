@@ -1004,6 +1004,7 @@ export default function AxoMasterSystem() {
           contentOverride={selectedContentOverride}
           onSaveContent={handleSaveContent}
           editMode={editMode}
+          ui={ui}
         />
       )}
 
