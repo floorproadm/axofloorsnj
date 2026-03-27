@@ -59,7 +59,7 @@ const Portfolio = () => {
         {/* Hero Image */}
         <div className="mb-12 sm:mb-16">
           <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden">
-            <img src={axoWorkPhoto} alt="AXO Floors professional working on hardwood floor installation" className="w-full h-full object-cover object-[center_70%]" />
+            <img src={axoWorkPhoto} alt="AXO Floors professional working on hardwood floor installation" className="w-full h-full object-cover object-[center_40%]" />
             <div className="absolute inset-0 bg-navy/40 flex items-center justify-center">
               <div className="text-center text-white">
                 <h3 className="text-2xl sm:text-3xl font-bold mb-2">Professional Results</h3>
