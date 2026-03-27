@@ -61,6 +61,325 @@ export interface TabConfig {
 // NODE DETAIL DATA (panel content)
 // ══════════════════════════════════════════════
 export const NODE_DATA: Record<string, NodeData> = {
+  // ── TAB 0: CADEIA DE VALOR ──
+  "cv-macro": {
+    color: "#c9952a",
+    eyebrow: "Camada 0 — Forças Macro",
+    title: "Capital · Regras · Demanda Macro",
+    intro: "Não é uma etapa da cadeia — é o ambiente que condiciona todas as camadas simultaneamente. Quando taxas sobem, housing turnover cai e a demanda por refinishing enfraquece. Quando regulação aperta, o custo de compliance dos executores aumenta.",
+    sections: [
+      { title: "Forças econômicas", color: "#c9952a", items: [
+        { t: "Taxas de juros", s: "Movem o mercado imobiliário inteiro — alta taxa reduz transações e projetos" },
+        { t: "Housing turnover", s: "Volume de compra/venda de imóveis = principal driver de demanda por flooring" },
+        { t: "Crédito imobiliário (FHA, VA, conventional)", s: "Facilidade de crédito determina quem compra e quando" },
+        { t: "Seguro residencial", s: "Reclamos de dano frequentemente incluem flooring replacement" },
+      ]},
+      { title: "Regulação e compliance", color: "#c9952a", items: [
+        { t: "Regulação federal (EPA RRP)", s: "Obrigatório para work em casas pré-1978 — lead paint rules" },
+        { t: "HIC License (NJ, NY, CT...)", s: "Home Improvement Contractor license — exigida por estado" },
+        { t: "OSHA", s: "Safety compliance para crews em campo" },
+        { t: "Regulação estadual de licensing", s: "Varia por estado — NJ tem requisitos específicos" },
+      ]},
+      { title: "Plataformas digitais", color: "#c9952a", items: [
+        { t: "Google Local Services Ads", s: "Afeta custo de aquisição de lead diretamente" },
+        { t: "Angi / Thumbtack / Houzz", s: "Plataformas de lead marketplace — competição por preço" },
+        { t: "Instagram / TikTok", s: "Conteúdo before/after como canal de discovery" },
+      ]},
+      { title: "Impacto direto sobre a cadeia", color: "#c9952a", items: [
+        { t: "→ Manufatura", s: "Demanda macro determina volume de produção" },
+        { t: "→ Big Box / Retail", s: "Taxas e turnover movem volume de vendas varejo" },
+        { t: "→ Captura digital", s: "Plataformas definem custo e volume de leads" },
+        { t: "→ Compliance local (06B)", s: "Regulação define custo operacional dos executores" },
+      ]},
+    ],
+  },
+  "cv-recurso": {
+    color: "#3aaa60",
+    eyebrow: "Camada 01A — Recursos Primários",
+    title: "Recurso Base",
+    intro: "Ponto de origem de toda a cadeia física do hardwood flooring. A qualidade da madeira e o processo de secagem determinam a estabilidade do produto final.",
+    sections: [
+      { title: "Espécies mais comuns no mercado US", color: "#3aaa60", items: [
+        { t: "Red & White Oak", s: "Espécie dominante no mercado residencial northeast" },
+        { t: "Maple & Hickory", s: "Alta dureza — popular em comercial e sports floors" },
+        { t: "Cherry, Walnut, Ash", s: "Premium — maior valor por sqft" },
+        { t: "Exotic (teak, acacia, bamboo)", s: "Importado — segmento crescente" },
+      ]},
+      { title: "Processo de matéria-prima", color: "#3aaa60", items: [
+        { t: "Florestas (managed & harvested)", s: "FSC certified cada vez mais requerido por especificadores" },
+        { t: "Hardwood logs → serraria", s: "Corte em boards de dimensões específicas" },
+        { t: "Air drying / Kiln drying", s: "Secagem controla moisture content — crítico para estabilidade" },
+        { t: "Grading (Select, #1 Common, #2 Common)", s: "Grade afeta preço e onde o produto é usado" },
+      ]},
+    ],
+    axo: { t: "Relevância para AXO", x: "Solid unfinished hardwood (especialmente oak) é o produto que alimenta refinishing. Kiln-dried wood bem processada aceita melhor stain e finish. Conhecer grades ajuda a especificar material em projetos de instalação." },
+  },
+  "cv-quimica": {
+    color: "#c9952a",
+    eyebrow: "Camada 01B — Insumos Industriais",
+    title: "Química e Insumos",
+    intro: "Entra tanto na manufatura de piso quanto diretamente no campo de execução. É um dos poucos inputs que bypassa distribuidores e chega direto ao contractor.",
+    sections: [
+      { title: "Finishes", color: "#c9952a", items: [
+        { t: "Oil-based polyurethane", s: "Durável · âmbar com o tempo · secagem lenta (24-48h)" },
+        { t: "Water-based polyurethane", s: "Secagem rápida · mais claro · custo maior · VOC menor" },
+        { t: "Hardwax oil (Rubio, Osmo)", s: "Natural look · fácil reparo local · crescendo em premium" },
+        { t: "Aluminum oxide (factory only)", s: "Prefinished — não aplicável no campo" },
+      ]},
+      { title: "Stains", color: "#c9952a", items: [
+        { t: "Oil-based stains", s: "Mais penetração · mais tempo de trabalho" },
+        { t: "Water-based stains", s: "Secagem rápida · mais consistente" },
+        { t: "Reactive stains (Rubio, RBC)", s: "Reagem com taninos da madeira — look natural premium" },
+        { t: "Custom color matching", s: "Diferencial competitivo para projetos de reforma" },
+      ]},
+      { title: "Abrasives e outros", color: "#c9952a", items: [
+        { t: "Sandpaper (24 → 80 → 100 → 120 grit)", s: "Consumível principal de refinishing — custo operacional" },
+        { t: "Screen discs / rescreen pads", s: "Para screening & recoat sem sanding completo" },
+        { t: "Adhesives / glue", s: "Para instalação de solid e engineered" },
+        { t: "Fillers / wood putty", s: "Reparo de gaps e danos antes do finish" },
+      ]},
+    ],
+    axo: { t: "Posição AXO neste nível", x: "AXO compra insumos diretamente de distribuidores especializados (Loba, Bona, Basic Coatings) — não de Big Box. A escolha de finish define a qualidade percebida pelo cliente e é um diferencial de posicionamento." },
+  },
+  "cv-manufatura": {
+    color: "#c9952a",
+    eyebrow: "Camada 02 — Produção Industrial",
+    title: "Manufatura de Piso",
+    intro: "Converte matéria-prima em produto acabado. Produz os três formatos que chegam ao mercado — e essa escolha de formato determina quais serviços são necessários no campo.",
+    sections: [
+      { title: "Tipos de produto", color: "#c9952a", items: [
+        { t: "Solid Hardwood (3/4\" thick)", s: "Pode ser refinished múltiplas vezes — produto ideal para AXO" },
+        { t: "Engineered Wood (multicamada)", s: "Core de HDF/plywood + camada de hardwood · mais estável · menos refinishable" },
+        { t: "Prefinished (factory-coated)", s: "Sai da fábrica com finish · instalação rápida · difícil de repair" },
+        { t: "Unfinished (site-finished)", s: "Finish aplicado no local · território direto de AXO" },
+      ]},
+      { title: "Tendências de produto", color: "#c9952a", items: [
+        { t: "Wide plank crescendo (5\"+)", s: "Demanda mais cuidado no sanding" },
+        { t: "Gray / white washed tones", s: "Trendy — mais difícil de match em repair" },
+        { t: "Wire-brushed / distressed textures", s: "Finish texturizado — não pode ser resanded facilmente" },
+        { t: "Low gloss / matte finish", s: "Dominante em residencial premium atualmente" },
+      ]},
+    ],
+    axo: { t: "Impacto estratégico para AXO", x: "Prefinished com aluminum oxide reduz demanda por finishing em campo. Engineered tem wear layer fina — limita refinishings possíveis. O crescimento de solid unfinished é favorável à AXO." },
+  },
+  "cv-marcas": {
+    color: "#4a9ad4",
+    eyebrow: "Camada 03A — Marcas Nacionais",
+    title: "Fabricantes / Marcas",
+    intro: "Controlam especificação e preferência no canal B2B. Designers e arquitetos especificam por marca.",
+    sections: [
+      { title: "Players dominantes", color: "#4a9ad4", items: [
+        { t: "AHF Products", s: "Maior manufacturer de solid hardwood nos EUA (Bruce, Hartco, Robbins)" },
+        { t: "Mohawk Industries", s: "Maior flooring company do mundo — hardwood + carpet + tile" },
+        { t: "Shaw Floors", s: "Segundo maior — forte em engineered e prefinished" },
+        { t: "Mullican Flooring", s: "Mid-market solid hardwood — forte no northeast" },
+        { t: "Mirage (Boa-Franc)", s: "Premium Canadian brand — popular em high-end residential" },
+      ]},
+      { title: "Como afetam a cadeia", color: "#4a9ad4", items: [
+        { t: "→ Distribuição B2B", s: "Vendem via distribuidores regionais autorizados" },
+        { t: "→ Big Box direto", s: "Mohawk e Shaw têm contratos exclusivos com HD e Lowe's" },
+        { t: "Programas de preferência", s: "Pagam distribuidores para promover linha" },
+      ]},
+    ],
+    axo: { t: "Relevância para AXO", x: "AXO não compete com fabricantes — é complementar. Quando um cliente tem Bruce ou Mirage instalado, é AXO que faz o refinishing anos depois." },
+  },
+  "cv-importadores": {
+    color: "#4a9ad4",
+    eyebrow: "Camada 03B — Sourcing Alternativo",
+    title: "Importadores / Sourcing",
+    intro: "Pressão de preço sobre marcas nacionais. Produto importado domina segmentos de entrada e mid-market.",
+    sections: [
+      { title: "Origens principais", color: "#4a9ad4", items: [
+        { t: "China", s: "Domina engineered wood importado · preço baixo · qualidade variável" },
+        { t: "Brasil", s: "Espécies tropicais (cumaru, ipe, tauari) · popular em exotic hardwood" },
+        { t: "Europa (Alemanha, Suécia)", s: "Hardwax oil floors · Boen, Kahrs · premium segment" },
+        { t: "Canadá", s: "Oak e maple de alta qualidade · Mirage, Lauzon" },
+      ]},
+      { title: "Dinâmica de mercado", color: "#4a9ad4", items: [
+        { t: "Private label", s: "Distribuidores vendem produto importado com marca própria" },
+        { t: "Tarifas e anti-dumping", s: "Criaram incerteza de preço — oportunidade para sourcing nacional" },
+        { t: "Qualidade variável", s: "Produto de baixo custo gera mais demanda por repair e refinish" },
+      ]},
+    ],
+  },
+  "cv-distribb2b": {
+    color: "#c9952a",
+    eyebrow: "Camada 04A — Canal B2B",
+    title: "Distribuição B2B",
+    intro: "Intermediário entre fabricantes e contractors. É onde a AXO compra material para projetos de instalação.",
+    sections: [
+      { title: "Tipos de distribuidores", color: "#c9952a", items: [
+        { t: "Distribuidores regionais especializados", s: "Ex: BPI (Northeast), Swiff-Train (Southeast), Derr Flooring" },
+        { t: "Atacadistas gerais", s: "Carregam flooring entre outros materiais de construção" },
+        { t: "Manufacturer reps", s: "Representam uma ou poucas marcas" },
+        { t: "Specialty finish distributors", s: "Bona, Basic Coatings, Loba" },
+      ]},
+      { title: "Como servem o contractor", color: "#c9952a", items: [
+        { t: "Crédito para contractors", s: "Flooring é comprado antes de receber do cliente" },
+        { t: "Amostras e especificação", s: "Ajudam a fechar projetos" },
+        { t: "Tech support", s: "Bona e outros oferecem treinamento técnico" },
+        { t: "Volume pricing", s: "Discount tiers por volume" },
+      ]},
+    ],
+    axo: { t: "Posição AXO neste nível", x: "AXO deve desenvolver relacionamentos com 1-2 distribuidores especializados (material) + 1 finish distributor (Bona/Basic Coatings). Concentrar volume = melhores preços e crédito." },
+  },
+  "cv-bigbox": {
+    color: "#c9952a",
+    eyebrow: "Camada 04B — Varejo",
+    title: "Big Box / Especialistas",
+    intro: "Canal de venda direta para homeowners. Competidor indireto no canal de instalação — mas também fonte de demanda.",
+    sections: [
+      { title: "Players", color: "#c9952a", items: [
+        { t: "Home Depot", s: "Maior varejista de flooring dos EUA · tem próprio serviço de instalação" },
+        { t: "Lowe's", s: "Similar ao HD · menor share em flooring" },
+        { t: "Floor & Decor", s: "Especialista · foco em profissional (Pro desk) e DIY" },
+        { t: "LL Flooring (legacy)", s: "Era Lumber Liquidators · falência 2024" },
+      ]},
+      { title: "Dinâmica competitiva", color: "#c9952a", items: [
+        { t: "Venda direta ao consumidor final", s: "Homeowner compra em HD, contrata installer separado — oportunidade para AXO" },
+        { t: "Serviço de instalação próprio", s: "HD/Lowe's têm instaladores terceirizados — competição direta" },
+        { t: "Pro Desk (Floor & Decor)", s: "Canal B2B que tenta capturar contractors" },
+      ]},
+    ],
+    axo: { t: "Posição AXO", x: "AXO não sourcea de Big Box — margem muito baixa. Mas Big Box é fonte de leads: homeowner compra produto lá, precisa de installer." },
+  },
+  "cv-captura": {
+    color: "#3aaa60",
+    eyebrow: "Camada 05A — Marketing Digital",
+    title: "Captura de Demanda",
+    intro: "Como a demanda existente encontra a AXO. Alta-intenção (Google Search) converte melhor mas é disputada por preço.",
+    sections: [
+      { title: "Canais de alta intenção", color: "#3aaa60", items: [
+        { t: "Google Search", s: "\"Hardwood floor refinishing near me\" — intent máxima" },
+        { t: "Google Business Profile (GBP)", s: "Reviews · fotos · Q&A · crucial para ranking local" },
+        { t: "Local Services Ads (LSAs)", s: "Pay-per-lead · Google-backed badge de confiança" },
+      ]},
+      { title: "Canais de descoberta", color: "#3aaa60", items: [
+        { t: "Instagram / Facebook", s: "Before/after content · brand awareness" },
+        { t: "Nextdoor", s: "Hiperlocal — poderoso para NJ suburban market" },
+        { t: "Angi / Houzz / Thumbtack", s: "Lead marketplaces — competição por preço" },
+      ]},
+      { title: "Owned media", color: "#3aaa60", items: [
+        { t: "Website / landing page", s: "Hub de conversão · SEO local" },
+        { t: "Reviews (Google, Yelp)", s: "Social proof — volume e recência afetam ranking" },
+        { t: "Email / WhatsApp follow-up", s: "Nurture de leads e reativação de clientes" },
+      ]},
+    ],
+    axo: { t: "Foco estratégico AXO", x: "Prioridade: GBP otimizado + review velocity + LSAs para NJ market. Segundo: Instagram before/after. Terceiro: Nextdoor hyperlocal." },
+  },
+  "cv-especificadores": {
+    color: "#8a7ad4",
+    eyebrow: "Camada 05B — Canal B2B de Influência",
+    title: "Especificadores de Demanda",
+    intro: "Atores que influenciam a decisão do cliente final. Canal de maior valor por indicação — cada parceiro ativo gera múltiplos jobs recorrentes com CAC próximo de zero.",
+    sections: [
+      { title: "Atores e valor estratégico", color: "#8a7ad4", items: [
+        { t: "Realtors", s: "Alta urgência (pré-listing) · decisão rápida · volume sazonal" },
+        { t: "Builders", s: "Volume alto por projeto · margens menores · relacionamento de longo prazo" },
+        { t: "GCs (General Contractors)", s: "Subcontratam flooring como trade especializado" },
+        { t: "Interior Designers", s: "Especificam produto e contractor · cliente premium" },
+        { t: "Property Managers", s: "Portfolio de unidades · recorrência previsível" },
+        { t: "Handymans", s: "Recebem pedidos que não executam · indicam especialistas" },
+      ]},
+      { title: "Como ativar este canal", color: "#8a7ad4", items: [
+        { t: "Primeiro job impecável", s: "Experiência do parceiro define se vai indicar" },
+        { t: "Follow-up estruturado", s: "30/90/180 dias após job — manter topo de mente" },
+        { t: "Co-marketing", s: "Tag no Instagram, referência no portfolio" },
+      ]},
+    ],
+    axo: { t: "Posição AXO — Partner Channel", x: "Especificadores bem desenvolvidos viram o Partner Channel System da AXO — Tiers Entry/Preferred/Elite. Uma vez integrado, a AXO recebe jobs recorrentes sem custo de aquisição." },
+  },
+  "cv-execucao": {
+    color: "#c9952a",
+    eyebrow: "Camada 06A · AXO Floors",
+    title: "Execução Local — AXO Floors",
+    intro: "Posição central da AXO na cadeia. Recebe demanda de múltiplas fontes e entrega o serviço físico. É onde a proposta de valor é provada ou quebrada.",
+    sections: [
+      { title: "Serviços executados", color: "#c9952a", items: [
+        { t: "Sand & Refinish", s: "Core do negócio · solid hardwood" },
+        { t: "Staining", s: "Custom color · color matching · diferencial premium" },
+        { t: "Screening & Recoat", s: "Manutenção sem sanding completo · alta margem" },
+        { t: "Installation — Solid Hardwood", s: "Nail-down · subfloor prep" },
+        { t: "Installation — Engineered", s: "Glue-down · floating · staple-down" },
+        { t: "Repair / Board Replacement", s: "Matching de cor e espécie · diferencial técnico" },
+      ]},
+      { title: "Fluxo operacional", color: "#c9952a", items: [
+        { t: "Lead → Qualificação → Estimativa", s: "Residential ou Partner track" },
+        { t: "Site visit + Proposal", s: "Silver · Gold · Platinum packages" },
+        { t: "Execution SOP", s: "Crew · daily updates · QC checkpoints" },
+        { t: "Completion + Handover", s: "Walkthrough · approval · invoice · review request" },
+      ]},
+    ],
+    axo: { t: "Vantagem competitiva AXO", x: "Posicionamento acima do commodity contractor — comunicação, pontualidade, fotos de processo, garantia explícita e follow-up pós-job." },
+  },
+  "cv-compliance": {
+    color: "#8a7ad4",
+    eyebrow: "Camada 06B — Habilitadores",
+    title: "Mão de Obra e Compliance",
+    intro: "Entrada obrigatória para operar legalmente. Não é opcional — é o custo de estar no jogo. Quando bem executado, vira barreira de entrada contra concorrentes.",
+    sections: [
+      { title: "Requisitos de licensing", color: "#8a7ad4", items: [
+        { t: "HIC License", s: "Obrigatório em NJ para qualquer projeto acima de $500" },
+        { t: "EPA RRP Certification", s: "Lead-safe work practices para casas pré-1978" },
+        { t: "Business registration (LLC/Corp)", s: "NJ Division of Revenue · EIN" },
+      ]},
+      { title: "Seguros", color: "#8a7ad4", items: [
+        { t: "General Liability Insurance", s: "Mínimo $1M por ocorrência" },
+        { t: "Workers Compensation", s: "Obrigatório quando tem employees" },
+        { t: "Commercial Auto", s: "Veículos de trabalho precisam de cobertura comercial" },
+      ]},
+      { title: "Skill e crew", color: "#8a7ad4", items: [
+        { t: "Sanding skill (drum, edge, orbital)", s: "Anos de prática · ler o grain da madeira" },
+        { t: "Finishing technique", s: "Aplicação uniforme · temperatura e umidade afetam resultado" },
+        { t: "Crew management e SOP", s: "Consistência de resultado mesmo com diferentes crews" },
+      ]},
+    ],
+    axo: { t: "Posição AXO", x: "Compliance completo (HIC, EPA RRP, insurance) é diferencial explícito de confiança para homeowners e obrigatório para parceiros corporativos." },
+  },
+  "cv-cliente": {
+    color: "#e07040",
+    eyebrow: "Camada 07 — Demanda Final",
+    title: "Cliente Final",
+    intro: "O destinatário de toda a cadeia. Cada tipo tem perfil, urgência, LTV e canal de aquisição diferentes.",
+    sections: [
+      { title: "Segmento Residential", color: "#e07040", items: [
+        { t: "Homeowner direto", s: "Decisão própria · maior margem · quer confiança e qualidade" },
+        { t: "Buyer (pré-mudança)", s: "Refinish antes de ocupar · urgência alta" },
+        { t: "Seller (pré-venda)", s: "Preparação para listing · realtor indica" },
+        { t: "Homeowner de manutenção", s: "Screening & recoat · menor ticket · alta frequência" },
+      ]},
+      { title: "Segmento Commercial / B2B", color: "#e07040", items: [
+        { t: "Builder account", s: "Projetos novos · volume por unidade" },
+        { t: "Property Manager portfolio", s: "Múltiplas unidades · manutenção periódica" },
+        { t: "Light commercial", s: "Escritórios boutique · varejo premium" },
+        { t: "Flipper / investor", s: "Alto volume · preço-sensitivo · frequência alta" },
+      ]},
+    ],
+  },
+  "cv-posvenda": {
+    color: "#3aaa60",
+    eyebrow: "Camada 08 — Motor de Reputação",
+    title: "Pós-Venda / Reputação",
+    intro: "A única camada que retroalimenta diretamente a demanda. Um sistema de pós-venda bem executado transforma cada job fechado em source de novos jobs.",
+    sections: [
+      { title: "Componentes do motor", color: "#3aaa60", items: [
+        { t: "Google Review Request", s: "Pedido no dia da conclusão · link direto · meta: 5 estrelas" },
+        { t: "Before / After Photography", s: "Asset de conteúdo · Instagram · portfolio" },
+        { t: "Referral Ask", s: "Pedido explícito de indicação 2-4 semanas pós-job" },
+        { t: "30/90/180 day follow-up", s: "Check-in de satisfação · manutenção futura" },
+        { t: "Warranty communication", s: "Carta de garantia percebida · diferencial premium" },
+      ]},
+      { title: "Loops de retroalimentação", color: "#3aaa60", items: [
+        { t: "Reviews → Google ranking (05A)", s: "Volume e recência afetam posição no 3-pack" },
+        { t: "Referrals → Word of mouth (05B)", s: "Cliente satisfeito indica para realtor, vizinho" },
+        { t: "Content → Instagram (05A)", s: "Before/after vira discovery para novos clientes" },
+        { t: "Repeat network → Retention", s: "Cliente de manutenção = MRR previsível" },
+      ]},
+    ],
+    axo: { t: "Sistema AXO de pós-venda", x: "Review request automático + foto de before/after padrão em todo job + follow-up 30 dias. Cada job que gera review de 5 estrelas e indicação tem CAC = $0 para o próximo cliente." },
+    loopBox: { label: "↻ retroalimenta", tags: ["Reviews → Google (05A)", "Referrals → Especificadores (05B)", "Content → Social (05A)"] },
+  },
+
   // ── TAB 1: INFLUENCE ──
   "axo-center": {
     color: "#c9952a",
@@ -1186,6 +1505,50 @@ export const NODE_DATA: Record<string, NodeData> = {
 // TAB CONFIGURATIONS (nodes + arrows + layout)
 // ══════════════════════════════════════════════
 export const TABS: TabConfig[] = [
+  {
+    id: "valuechain",
+    label: "00 · Cadeia de Valor",
+    paneLabel: "Análise Setorial",
+    paneTitle: "Hardwood Flooring — Cadeia de Valor",
+    paneSub: "Mapeamento completo da cadeia de valor do hardwood flooring — da matéria-prima ao pós-venda. Clique em qualquer nó.",
+    chartWidth: 900,
+    chartHeight: 920,
+    nodes: [
+      { id: "cv-macro", tag: "Camada 0", title: "Capital · Regras · Demanda Macro", subtitle: "Taxas · housing turnover · regulação", color: "gold", x: 300, y: 10, w: 300 },
+      { id: "cv-recurso", tag: "01A", title: "Recurso Base", subtitle: "Florestas · logs · serrarias", color: "pine", x: 100, y: 110, w: 200 },
+      { id: "cv-quimica", tag: "01B", title: "Química e Insumos", subtitle: "Stains · finishes · abrasives", color: "gold", x: 600, y: 110, w: 200 },
+      { id: "cv-manufatura", tag: "02", title: "Manufatura de Piso", subtitle: "Solid · engineered · prefinished", color: "gold", x: 340, y: 230, w: 220 },
+      { id: "cv-marcas", tag: "03A", title: "Marcas / Fabricantes", subtitle: "AHF · Mohawk · Shaw", color: "steel", x: 250, y: 315, w: 185 },
+      { id: "cv-importadores", tag: "03B", title: "Importadores / Sourcing", subtitle: "Doméstico + importado", color: "steel", x: 465, y: 315, w: 185 },
+      { id: "cv-distribb2b", tag: "04A", title: "Distribuição B2B", subtitle: "Distribuidores · atacado · reps", color: "ember", x: 150, y: 415, w: 185 },
+      { id: "cv-bigbox", tag: "04B", title: "Big Box / Especialistas", subtitle: "HD · Lowe's · Floor&Decor", color: "ember", x: 500, y: 415, w: 185 },
+      { id: "cv-captura", tag: "05A", title: "Captura de Demanda", subtitle: "Google · GBP · Angi · Social", color: "pine", x: 130, y: 535, w: 185 },
+      { id: "cv-especificadores", tag: "05B", title: "Especificadores", subtitle: "Builders · GCs · Designers · PM", color: "violet", x: 530, y: 535, w: 185 },
+      { id: "cv-execucao", tag: "06A · AXO", title: "Execução Local", subtitle: "AXO Floors · contractors", color: "axo", x: 260, y: 635, w: 185 },
+      { id: "cv-compliance", tag: "06B", title: "Mão de Obra / Compliance", subtitle: "HIC · EPA RRP · Insurance", color: "violet", x: 600, y: 635, w: 185 },
+      { id: "cv-cliente", tag: "07", title: "Cliente Final", subtitle: "Homeowner · Builder · Commercial", color: "ember", x: 340, y: 740, w: 220 },
+      { id: "cv-posvenda", tag: "08", title: "Pós-Venda / Reputação", subtitle: "Reviews · referrals · repeat", color: "pine", x: 340, y: 840, w: 220 },
+    ],
+    arrows: [
+      { from: "cv-macro", to: "cv-recurso" }, { from: "cv-macro", to: "cv-quimica" },
+      { from: "cv-macro", to: "cv-manufatura" }, { from: "cv-macro", to: "cv-bigbox" },
+      { from: "cv-macro", to: "cv-captura" }, { from: "cv-macro", to: "cv-compliance" },
+      { from: "cv-recurso", to: "cv-manufatura" }, { from: "cv-quimica", to: "cv-manufatura" },
+      { from: "cv-quimica", to: "cv-execucao", dashed: true },
+      { from: "cv-manufatura", to: "cv-marcas" }, { from: "cv-manufatura", to: "cv-importadores" },
+      { from: "cv-marcas", to: "cv-distribb2b" }, { from: "cv-marcas", to: "cv-bigbox" },
+      { from: "cv-importadores", to: "cv-distribb2b" },
+      { from: "cv-distribb2b", to: "cv-execucao" },
+      { from: "cv-bigbox", to: "cv-cliente" }, { from: "cv-bigbox", to: "cv-execucao", dashed: true },
+      { from: "cv-captura", to: "cv-cliente" }, { from: "cv-especificadores", to: "cv-cliente" },
+      { from: "cv-especificadores", to: "cv-execucao" },
+      { from: "cv-compliance", to: "cv-execucao" },
+      { from: "cv-execucao", to: "cv-cliente" },
+      { from: "cv-cliente", to: "cv-posvenda" },
+      { from: "cv-posvenda", to: "cv-captura", dashed: true },
+      { from: "cv-posvenda", to: "cv-especificadores", dashed: true },
+    ],
+  },
   {
     id: "influence",
     label: "01 · Influência Local",

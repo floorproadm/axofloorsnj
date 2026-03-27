@@ -1129,6 +1129,12 @@ export const NODE_DATA_EN: Record<string, NodeData> = {
 
 // English TAB label translations
 export const TABS_EN_LABELS: Record<string, { label: string; paneLabel: string; paneTitle: string; paneSub: string }> = {
+  valuechain: {
+    label: "00 · Value Chain",
+    paneLabel: "Industry Analysis",
+    paneTitle: "Hardwood Flooring — Value Chain",
+    paneSub: "Complete value chain mapping — from raw materials to post-sale. Click any node.",
+  },
   influence: {
     label: "01 · Local Influence",
     paneLabel: "Tab 01",
@@ -1157,6 +1163,21 @@ export const TABS_EN_LABELS: Record<string, { label: string; paneLabel: string; 
 
 // English node card labels (tag, title, subtitle)
 export const NODE_CARD_EN: Record<string, { tag?: string; title?: string; subtitle?: string }> = {
+  // Tab 0 - Value Chain
+  "cv-macro": { tag: "Layer 0", title: "Capital · Rules · Macro Demand", subtitle: "Rates · housing turnover · regulation" },
+  "cv-recurso": { tag: "01A", title: "Raw Resource", subtitle: "Forests · logs · sawmills" },
+  "cv-quimica": { tag: "01B", title: "Chemistry & Inputs", subtitle: "Stains · finishes · abrasives" },
+  "cv-manufatura": { tag: "02", title: "Floor Manufacturing", subtitle: "Solid · engineered · prefinished" },
+  "cv-marcas": { tag: "03A", title: "Brands / Manufacturers", subtitle: "AHF · Mohawk · Shaw" },
+  "cv-importadores": { tag: "03B", title: "Importers / Sourcing", subtitle: "Domestic + imported" },
+  "cv-distribb2b": { tag: "04A", title: "B2B Distribution", subtitle: "Distributors · wholesale · reps" },
+  "cv-bigbox": { tag: "04B", title: "Big Box / Specialists", subtitle: "HD · Lowe's · Floor&Decor" },
+  "cv-captura": { tag: "05A", title: "Demand Capture", subtitle: "Google · GBP · Angi · Social" },
+  "cv-especificadores": { tag: "05B", title: "Specifiers", subtitle: "Builders · GCs · Designers · PM" },
+  "cv-execucao": { tag: "06A · AXO", title: "Local Execution", subtitle: "AXO Floors · contractors" },
+  "cv-compliance": { tag: "06B", title: "Labor / Compliance", subtitle: "HIC · EPA RRP · Insurance" },
+  "cv-cliente": { tag: "07", title: "End Customer", subtitle: "Homeowner · Builder · Commercial" },
+  "cv-posvenda": { tag: "08", title: "Post-Sale / Reputation", subtitle: "Reviews · referrals · repeat" },
   // Tab 1
   "axo-center": { tag: "⬡ Center", subtitle: "Execution · Trust · Brand" },
   "inf-realtors": { tag: "Referral", subtitle: "High urgency · pre-listing" },
