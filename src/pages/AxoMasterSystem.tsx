@@ -410,14 +410,14 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
           <button
             onClick={() => onModeChange(mode === "sidebar" ? "modal" : "sidebar")}
             className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title={mode === "sidebar" ? "Modo modal" : "Modo sidebar"}
+            title={mode === "sidebar" ? ui.modalMode : ui.sidebarMode}
           >
             <PanelRightOpen className="w-4 h-4" style={{ color: mode === "sidebar" ? "#c9952a" : "#7a8490" }} />
           </button>
           <button
             onClick={() => onModeChange(mode === "fullscreen" ? "modal" : "fullscreen")}
             className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title={mode === "fullscreen" ? "Modo modal" : "Tela cheia"}
+            title={mode === "fullscreen" ? ui.modalMode : ui.fullscreen}
           >
             <Maximize2 className="w-4 h-4" style={{ color: mode === "fullscreen" ? "#c9952a" : "#7a8490" }} />
           </button>
@@ -427,16 +427,16 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
               <button
                 onClick={() => setIsEditing(!isEditing)}
                 className="p-1.5 rounded hover:bg-white/5 transition-colors"
-                title="Editar card"
+                title={ui.editCard}
               >
                 <Pencil className="w-4 h-4" style={{ color: isEditing ? "#c9952a" : "#7a8490" }} />
               </button>
               <button
                 onClick={() => {
-                  if (confirm("Tem certeza que deseja remover este node?")) onDeleteNode();
+                  if (confirm(ui.confirmRemoveNode)) onDeleteNode();
                 }}
                 className="p-1.5 rounded hover:bg-white/5 transition-colors"
-                title="Remover node"
+                title={ui.removeNode}
               >
                 <Trash2 className="w-4 h-4" style={{ color: "#7a8490" }} />
               </button>
