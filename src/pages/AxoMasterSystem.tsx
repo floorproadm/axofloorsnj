@@ -927,7 +927,7 @@ export default function AxoMasterSystem() {
           {!isMobile && <div className="h-6 w-px" style={{ background: "#252a2d" }} />}
           {!isMobile && <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "#555d66" }}>
             {ui.operatingSystem}
-          </div>
+          </div>}
         </div>
         <div className="flex items-center gap-2">
           {/* Language toggle */}
