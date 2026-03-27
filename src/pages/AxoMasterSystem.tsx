@@ -724,7 +724,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
 
   if (mode === "sidebar") {
     return (
-      <div className="fixed top-0 right-0 bottom-0 z-[200] flex" style={{ width: "min(520px, 45vw)" }}>
+      <div className="fixed top-0 right-0 bottom-0 z-[200] flex" style={{ width: "min(520px, 90vw)" }}>
         <div className="fixed inset-0 z-[-1]" onClick={onClose} />
         <div className="w-full h-full flex flex-col shadow-2xl" style={{ background: "#141618", borderLeft: "1px solid #252a2d" }}>
           {panelContent}
