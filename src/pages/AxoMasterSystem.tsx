@@ -637,7 +637,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             <div className="flex items-center gap-2">
               <StickyNote className="w-3.5 h-3.5" style={{ color: "#c9952a" }} />
               <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
-                Suas Anotações
+                {ui.yourNotes}
               </span>
             </div>
             {hasUnsaved && (
@@ -648,7 +648,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                 style={{ background: "#1a1408", border: "1px solid #7a5a18", color: "#c9952a" }}
               >
                 <Save className="w-3 h-3" />
-                {saving ? "Salvando..." : "Salvar"}
+                {saving ? ui.saving : ui.save}
               </button>
             )}
           </div>
@@ -657,7 +657,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             onBlur={() => { if (hasUnsaved) saveNotes(); }}
-            placeholder={loading ? "Carregando..." : "Escreva suas anotações aqui...\n\n• Ações pendentes\n• Observações estratégicas\n• Links e referências"}
+            placeholder={loading ? ui.loading : ui.notesPlaceholder}
             className="w-full resize-none outline-none placeholder:text-[#404850]"
             style={{
               background: "transparent",
