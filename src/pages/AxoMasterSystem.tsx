@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { X, Maximize2, PanelRightOpen, StickyNote, Save, Plus, Trash2, Pencil, GripVertical, Check } from "lucide-react";
 import axoLogo from "@/assets/axo-logo-official.png";
 import { TABS, NODE_DATA, type TabConfig, type MasterNode, type NodeData } from "@/data/axoMasterSystem";
+import { NODE_DATA_EN, TABS_EN_LABELS, NODE_CARD_EN, UI_LABELS } from "@/data/axoMasterSystemEN";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNodeOverrides } from "@/hooks/useNodeOverrides";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ══════════════════════════════════════════════
 // COLOR MAP
@@ -236,7 +238,7 @@ function InlineText({ value, onChange, style, placeholder, multiline, className,
 // ══════════════════════════════════════════════
 type PanelMode = "modal" | "sidebar" | "fullscreen";
 
-function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode, contentOverride, onSaveContent, editMode }: {
+function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode, contentOverride, onSaveContent, editMode, ui }: {
   data: NodeData | null;
   nodeId: string;
   node: MasterNode;
@@ -249,6 +251,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
   contentOverride: Partial<NodeData> | null;
   onSaveContent: (content: Partial<NodeData>) => void;
   editMode: boolean;
+  ui: Record<string, string>;
 }) {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
@@ -320,7 +323,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
       );
     setSaving(false);
     if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      toast({ title: ui.errorSaving, description: error.message, variant: "destructive" });
     } else {
       setSavedNotes(notes);
     }
@@ -338,7 +341,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
   const handleSaveEdit = () => {
     onSaveNode({ title: editTitle, subtitle: editSubtitle, tag: editTag, color: editColor });
     setIsEditing(false);
-    toast({ title: "Card atualizado" });
+    toast({ title: ui.cardUpdated });
   };
 
   // Content editing helpers
@@ -407,14 +410,14 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
           <button
             onClick={() => onModeChange(mode === "sidebar" ? "modal" : "sidebar")}
             className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title={mode === "sidebar" ? "Modo modal" : "Modo sidebar"}
+            title={mode === "sidebar" ? ui.modalMode : ui.sidebarMode}
           >
             <PanelRightOpen className="w-4 h-4" style={{ color: mode === "sidebar" ? "#c9952a" : "#7a8490" }} />
           </button>
           <button
             onClick={() => onModeChange(mode === "fullscreen" ? "modal" : "fullscreen")}
             className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title={mode === "fullscreen" ? "Modo modal" : "Tela cheia"}
+            title={mode === "fullscreen" ? ui.modalMode : ui.fullscreen}
           >
             <Maximize2 className="w-4 h-4" style={{ color: mode === "fullscreen" ? "#c9952a" : "#7a8490" }} />
           </button>
@@ -424,16 +427,16 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
               <button
                 onClick={() => setIsEditing(!isEditing)}
                 className="p-1.5 rounded hover:bg-white/5 transition-colors"
-                title="Editar card"
+                title={ui.editCard}
               >
                 <Pencil className="w-4 h-4" style={{ color: isEditing ? "#c9952a" : "#7a8490" }} />
               </button>
               <button
                 onClick={() => {
-                  if (confirm("Tem certeza que deseja remover este node?")) onDeleteNode();
+                  if (confirm(ui.confirmRemoveNode)) onDeleteNode();
                 }}
                 className="p-1.5 rounded hover:bg-white/5 transition-colors"
-                title="Remover node"
+                title={ui.removeNode}
               >
                 <Trash2 className="w-4 h-4" style={{ color: "#7a8490" }} />
               </button>
@@ -453,17 +456,17 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             <div className="flex items-center gap-2 mb-4">
               <Pencil className="w-3.5 h-3.5" style={{ color: "#c9952a" }} />
               <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
-                Editar Card
+                {ui.editCard}
               </span>
             </div>
-            <EditableField label="Tag" value={editTag} onChange={setEditTag} fontSize={11} />
-            <EditableField label="Título" value={editTitle} onChange={setEditTitle} fontSize={14} />
-            <EditableField label="Subtítulo" value={editSubtitle} onChange={setEditSubtitle} fontSize={12} />
+            <EditableField label={ui.tag} value={editTag} onChange={setEditTag} fontSize={11} />
+            <EditableField label={ui.title} value={editTitle} onChange={setEditTitle} fontSize={14} />
+            <EditableField label={ui.subtitle} value={editSubtitle} onChange={setEditSubtitle} fontSize={12} />
             
             {/* Color picker */}
             <div className="mb-3">
               <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850", marginBottom: 6 }}>
-                Cor
+                {ui.color}
               </div>
               <div className="flex gap-2">
                 {COLOR_OPTIONS.map(co => (
@@ -488,7 +491,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
               style={{ background: "#c9952a", color: "#0c0e0f" }}
             >
               <Save className="w-3 h-3" />
-              Salvar alterações
+              {ui.saveChanges}
             </button>
           </div>
         )}
@@ -515,7 +518,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
           onChange={updateIntro}
           multiline
           readOnly={!editMode}
-          placeholder="Clique para adicionar uma descrição..."
+          placeholder={ui.clickToAddDescription}
           style={{ fontSize: 13, color: "#7a8490", lineHeight: 1.8, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #252a2d" }}
         />
 
@@ -531,9 +534,9 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
               />
               {editMode && (
                 <button
-                  onClick={() => { if (confirm("Remover esta seção?")) removeSection(si); }}
+                  onClick={() => { if (confirm(ui.removeSection)) removeSection(si); }}
                   className="p-1 rounded hover:bg-white/5"
-                  title="Remover seção"
+                  title={ui.removeSection}
                 >
                   <X className="w-3 h-3" style={{ color: "#404850" }} />
                 </button>
@@ -554,7 +557,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                       value={item.s || ""}
                       onChange={(s) => updateSectionItemS(si, ii, s)}
                       readOnly={!editMode}
-                      placeholder="Descrição..."
+                      placeholder={ui.description}
                       style={{ fontSize: 11, color: "#7a8490", marginTop: 2 }}
                     />
                   </div>
@@ -562,7 +565,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                     <button
                       onClick={() => removeSectionItem(si, ii)}
                       className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-opacity shrink-0"
-                      title="Remover item"
+                      title={ui.removeItem}
                     >
                       <X className="w-3 h-3" style={{ color: "#555" }} />
                     </button>
@@ -576,7 +579,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                   style={{ color: "#404850", border: "1px dashed #252a2d" }}
                 >
                   <Plus className="w-3 h-3" />
-                  Adicionar item
+                  {ui.addItem}
                 </button>
               )}
             </div>
@@ -591,7 +594,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             style={{ color: "#7a8490", border: "1px dashed #323a3f" }}
           >
             <Plus className="w-3 h-3" />
-            Adicionar seção
+            {ui.addSection}
           </button>
         )}
 
@@ -634,7 +637,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             <div className="flex items-center gap-2">
               <StickyNote className="w-3.5 h-3.5" style={{ color: "#c9952a" }} />
               <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
-                Suas Anotações
+                {ui.yourNotes}
               </span>
             </div>
             {hasUnsaved && (
@@ -645,7 +648,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                 style={{ background: "#1a1408", border: "1px solid #7a5a18", color: "#c9952a" }}
               >
                 <Save className="w-3 h-3" />
-                {saving ? "Salvando..." : "Salvar"}
+                {saving ? ui.saving : ui.save}
               </button>
             )}
           </div>
@@ -654,7 +657,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             onBlur={() => { if (hasUnsaved) saveNotes(); }}
-            placeholder={loading ? "Carregando..." : "Escreva suas anotações aqui...\n\n• Ações pendentes\n• Observações estratégicas\n• Links e referências"}
+            placeholder={loading ? ui.loading : ui.notesPlaceholder}
             className="w-full resize-none outline-none placeholder:text-[#404850]"
             style={{
               background: "transparent",
@@ -712,9 +715,10 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
 // ══════════════════════════════════════════════
 // NEW NODE DIALOG
 // ══════════════════════════════════════════════
-function NewNodeDialog({ onClose, onCreate }: {
+function NewNodeDialog({ onClose, onCreate, ui }: {
   onClose: () => void;
   onCreate: (node: { tag: string; title: string; subtitle: string; color: string; x: number; y: number; w: number }) => void;
+  ui: Record<string, string>;
 }) {
   const [tag, setTag] = useState("Novo");
   const [title, setTitle] = useState("");
@@ -732,7 +736,7 @@ function NewNodeDialog({ onClose, onCreate }: {
           <div className="flex items-center gap-2">
             <Plus className="w-4 h-4" style={{ color: "#c9952a" }} />
             <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
-              Novo Node
+              {ui.newNode}
             </span>
           </div>
         </div>
@@ -771,7 +775,7 @@ function NewNodeDialog({ onClose, onCreate }: {
             style={{ background: "#c9952a", color: "#0c0e0f" }}
           >
             <Plus className="w-4 h-4" />
-            Criar Node
+            {ui.createNode}
           </button>
         </div>
       </div>
@@ -784,6 +788,9 @@ function NewNodeDialog({ onClose, onCreate }: {
 // ══════════════════════════════════════════════
 export default function AxoMasterSystem() {
   const isMobile = useIsMobile();
+  const { language, setLanguage } = useLanguage();
+  const lang = language as "pt" | "en";
+  const ui = UI_LABELS[lang];
   const [activeTab, setActiveTab] = useState(0);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [panelMode, setPanelMode] = useState<PanelMode>("sidebar");
@@ -791,10 +798,39 @@ export default function AxoMasterSystem() {
   const [editMode, setEditMode] = useState(false);
   const { overrides, getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
-  const tab = TABS[activeTab];
-  const tabNodes = getTabNodes(tab);
+  // Localized tabs
+  const localizedTabs = useMemo(() => {
+    if (lang === "pt") return TABS;
+    return TABS.map(t => {
+      const en = TABS_EN_LABELS[t.id];
+      if (!en) return t;
+      return { ...t, label: en.label, paneLabel: en.paneLabel, paneTitle: en.paneTitle, paneSub: en.paneSub };
+    });
+  }, [lang]);
+
+  // Localized node data
+  const getNodeData = useCallback((nodeId: string): NodeData | null => {
+    if (lang === "en" && NODE_DATA_EN[nodeId]) return NODE_DATA_EN[nodeId];
+    return NODE_DATA[nodeId] || null;
+  }, [lang]);
+
+  // Localized node card labels
+  const getNodeCardProps = useCallback((node: MasterNode): MasterNode => {
+    if (lang === "pt") return node;
+    const en = NODE_CARD_EN[node.id];
+    if (!en) return node;
+    return {
+      ...node,
+      tag: en.tag ?? node.tag,
+      title: en.title ?? node.title,
+      subtitle: en.subtitle ?? node.subtitle,
+    };
+  }, [lang]);
+
+  const tab = localizedTabs[activeTab];
+  const tabNodes = getTabNodes(TABS[activeTab]);
   const selectedNodeObj = selectedNode ? tabNodes.find(n => n.id === selectedNode) : null;
-  const nodeData = selectedNode ? NODE_DATA[selectedNode] || null : null;
+  const nodeData = selectedNode ? getNodeData(selectedNode) : null;
 
   // Get content override for selected node
   const selectedContentOverride = useMemo(() => {
@@ -853,10 +889,18 @@ export default function AxoMasterSystem() {
           <img src={axoLogo} alt="AXO Floors" className="h-9 w-auto" />
           <div className="h-6 w-px" style={{ background: "#252a2d" }} />
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "#555d66" }}>
-            Sistema Operacional
+            {ui.operatingSystem}
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Language toggle */}
+          <button
+            onClick={() => setLanguage(lang === "pt" ? "en" : "pt")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
+            style={{ background: "transparent", border: "1px solid #323a3f", color: "#7a8490" }}
+          >
+            {lang === "pt" ? "🇧🇷 PT" : "🇺🇸 EN"}
+          </button>
           {editMode && (
             <button
               onClick={() => setShowNewNode(true)}
@@ -877,7 +921,7 @@ export default function AxoMasterSystem() {
             }}
           >
             <Pencil className="w-3.5 h-3.5" />
-            {editMode ? "Editando" : "Editar"}
+            {editMode ? ui.editing : ui.edit}
           </button>
         </div>
       </div>
@@ -885,7 +929,7 @@ export default function AxoMasterSystem() {
       {/* Tabs Bar */}
       <div style={{ padding: "0 24px", borderBottom: "1px solid #252a2d" }}>
         <div className="flex overflow-x-auto" style={{ gap: 0, scrollbarWidth: "none" }}>
-          {TABS.map((t, i) => (
+          {localizedTabs.map((t, i) => (
             <button
               key={t.id}
               onClick={() => handleTabSwitch(i)}
@@ -930,15 +974,18 @@ export default function AxoMasterSystem() {
                 );
               })}
             </svg>
-            {tabNodes.map((node) => (
-              <NodeCard
-                key={node.id}
-                node={node}
-                active={selectedNode === node.id}
-                onClick={() => setSelectedNode(node.id)}
-                onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
-              />
-            ))}
+            {tabNodes.map((node) => {
+              const localNode = getNodeCardProps(node);
+              return (
+                <NodeCard
+                  key={node.id}
+                  node={localNode}
+                  active={selectedNode === node.id}
+                  onClick={() => setSelectedNode(node.id)}
+                  onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
@@ -958,6 +1005,7 @@ export default function AxoMasterSystem() {
           contentOverride={selectedContentOverride}
           onSaveContent={handleSaveContent}
           editMode={editMode}
+          ui={ui}
         />
       )}
 
@@ -966,6 +1014,7 @@ export default function AxoMasterSystem() {
         <NewNodeDialog
           onClose={() => setShowNewNode(false)}
           onCreate={handleCreateNode}
+          ui={ui}
         />
       )}
     </div>
