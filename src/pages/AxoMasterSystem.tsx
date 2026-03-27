@@ -456,17 +456,17 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             <div className="flex items-center gap-2 mb-4">
               <Pencil className="w-3.5 h-3.5" style={{ color: "#c9952a" }} />
               <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
-                Editar Card
+                {ui.editCard}
               </span>
             </div>
-            <EditableField label="Tag" value={editTag} onChange={setEditTag} fontSize={11} />
-            <EditableField label="Título" value={editTitle} onChange={setEditTitle} fontSize={14} />
-            <EditableField label="Subtítulo" value={editSubtitle} onChange={setEditSubtitle} fontSize={12} />
+            <EditableField label={ui.tag} value={editTag} onChange={setEditTag} fontSize={11} />
+            <EditableField label={ui.title} value={editTitle} onChange={setEditTitle} fontSize={14} />
+            <EditableField label={ui.subtitle} value={editSubtitle} onChange={setEditSubtitle} fontSize={12} />
             
             {/* Color picker */}
             <div className="mb-3">
               <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850", marginBottom: 6 }}>
-                Cor
+                {ui.color}
               </div>
               <div className="flex gap-2">
                 {COLOR_OPTIONS.map(co => (
@@ -491,7 +491,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
               style={{ background: "#c9952a", color: "#0c0e0f" }}
             >
               <Save className="w-3 h-3" />
-              Salvar alterações
+              {ui.saveChanges}
             </button>
           </div>
         )}
