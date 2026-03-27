@@ -323,7 +323,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
       );
     setSaving(false);
     if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      toast({ title: ui.errorSaving, description: error.message, variant: "destructive" });
     } else {
       setSavedNotes(notes);
     }
@@ -341,7 +341,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
   const handleSaveEdit = () => {
     onSaveNode({ title: editTitle, subtitle: editSubtitle, tag: editTag, color: editColor });
     setIsEditing(false);
-    toast({ title: "Card atualizado" });
+    toast({ title: ui.cardUpdated });
   };
 
   // Content editing helpers
