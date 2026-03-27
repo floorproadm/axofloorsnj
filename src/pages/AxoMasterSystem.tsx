@@ -166,13 +166,14 @@ function EditableField({ label, value, onChange, fontSize = 13 }: {
 // ══════════════════════════════════════════════
 // INLINE TEXT — click to edit any text
 // ══════════════════════════════════════════════
-function InlineText({ value, onChange, style, placeholder, multiline, className }: {
+function InlineText({ value, onChange, style, placeholder, multiline, className, readOnly }: {
   value: string;
   onChange: (v: string) => void;
   style?: React.CSSProperties;
   placeholder?: string;
   multiline?: boolean;
   className?: string;
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -181,15 +182,15 @@ function InlineText({ value, onChange, style, placeholder, multiline, className 
   useEffect(() => { setDraft(value); }, [value]);
   useEffect(() => { if (editing && ref.current) ref.current.focus(); }, [editing]);
 
-  if (!editing) {
+  if (!editing || readOnly) {
     return (
       <div
-        onClick={() => setEditing(true)}
-        className={`cursor-text rounded px-1 -mx-1 transition-colors hover:bg-white/5 ${className || ""}`}
+        onClick={() => !readOnly && setEditing(true)}
+        className={`rounded px-1 -mx-1 transition-colors ${readOnly ? "" : "cursor-text hover:bg-white/5"} ${className || ""}`}
         style={{ ...style, minHeight: 18 }}
-        title="Clique para editar"
+        title={readOnly ? undefined : "Clique para editar"}
       >
-        {value || <span style={{ color: "#404850", fontStyle: "italic" }}>{placeholder || "Clique para editar..."}</span>}
+        {value || <span style={{ color: "#404850", fontStyle: "italic" }}>{placeholder || (readOnly ? "" : "Clique para editar...")}</span>}
       </div>
     );
   }
