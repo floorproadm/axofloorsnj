@@ -887,10 +887,18 @@ export default function AxoMasterSystem() {
           <img src={axoLogo} alt="AXO Floors" className="h-9 w-auto" />
           <div className="h-6 w-px" style={{ background: "#252a2d" }} />
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "#555d66" }}>
-            Sistema Operacional
+            {ui.operatingSystem}
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Language toggle */}
+          <button
+            onClick={() => setLanguage(lang === "pt" ? "en" : "pt")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
+            style={{ background: "transparent", border: "1px solid #323a3f", color: "#7a8490" }}
+          >
+            {lang === "pt" ? "🇧🇷 PT" : "🇺🇸 EN"}
+          </button>
           {editMode && (
             <button
               onClick={() => setShowNewNode(true)}
