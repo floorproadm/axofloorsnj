@@ -182,9 +182,11 @@ export default function AdminAuth() {
                 className="h-16 w-auto"
               />
             </div>
-            <CardTitle className="text-white">
-              {getTitle()}
-            </CardTitle>
+            {view !== 'login' && (
+              <CardTitle className="text-white">
+                {getTitle()}
+              </CardTitle>
+            )}
             <CardDescription className="text-gray-300">
               {getDescription()}
             </CardDescription>
