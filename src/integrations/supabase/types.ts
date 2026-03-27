@@ -2370,6 +2370,47 @@ export type Database = {
           },
         ]
       }
+      system_node_arrows: {
+        Row: {
+          created_at: string
+          dashed: boolean
+          from_node_id: string
+          id: string
+          is_deleted: boolean
+          organization_id: string
+          tab_id: string
+          to_node_id: string
+        }
+        Insert: {
+          created_at?: string
+          dashed?: boolean
+          from_node_id: string
+          id?: string
+          is_deleted?: boolean
+          organization_id: string
+          tab_id: string
+          to_node_id: string
+        }
+        Update: {
+          created_at?: string
+          dashed?: boolean
+          from_node_id?: string
+          id?: string
+          is_deleted?: boolean
+          organization_id?: string
+          tab_id?: string
+          to_node_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_node_arrows_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_node_notes: {
         Row: {
           content: string
@@ -2398,6 +2439,71 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "system_node_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_node_overrides: {
+        Row: {
+          color: string | null
+          created_at: string
+          h: number | null
+          id: string
+          is_custom: boolean
+          is_deleted: boolean
+          node_id: string
+          organization_id: string
+          subtitle: string | null
+          tab_id: string
+          tag: string | null
+          title: string | null
+          updated_at: string
+          w: number | null
+          x: number | null
+          y: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          h?: number | null
+          id?: string
+          is_custom?: boolean
+          is_deleted?: boolean
+          node_id: string
+          organization_id: string
+          subtitle?: string | null
+          tab_id: string
+          tag?: string | null
+          title?: string | null
+          updated_at?: string
+          w?: number | null
+          x?: number | null
+          y?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          h?: number | null
+          id?: string
+          is_custom?: boolean
+          is_deleted?: boolean
+          node_id?: string
+          organization_id?: string
+          subtitle?: string | null
+          tab_id?: string
+          tag?: string | null
+          title?: string | null
+          updated_at?: string
+          w?: number | null
+          x?: number | null
+          y?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_node_overrides_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
