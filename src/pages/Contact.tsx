@@ -149,7 +149,7 @@ const Contact = () => {
     answer: "Within 24h for estimates."
   }, {
     question: "How long does refinishing take?",
-    answer: "3–5 days on average."
+    answer: "1–5 days on average."
   }, {
     question: "Is there dust?",
     answer: "We use dust-free sanding systems."
