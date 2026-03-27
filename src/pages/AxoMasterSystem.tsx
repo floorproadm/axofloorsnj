@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { X, Maximize2, PanelRightOpen, StickyNote, Save, Plus, Trash2, Pencil, GripVertical, Check } from "lucide-react";
 import axoLogo from "@/assets/axo-logo-official.png";
 import { TABS, NODE_DATA, type TabConfig, type MasterNode, type NodeData } from "@/data/axoMasterSystem";
+import { NODE_DATA_EN, TABS_EN_LABELS, NODE_CARD_EN, UI_LABELS } from "@/data/axoMasterSystemEN";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNodeOverrides } from "@/hooks/useNodeOverrides";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ══════════════════════════════════════════════
 // COLOR MAP
