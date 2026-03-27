@@ -990,41 +990,60 @@ export default function AxoMasterSystem() {
         <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6", marginBottom: 4 }}>{tab.paneTitle}</div>
         <div style={{ fontSize: 12, color: "#7a8490", marginBottom: 24, lineHeight: 1.6 }}>{tab.paneSub}</div>
 
-        <div className="w-full overflow-x-auto pb-5">
-          <div className="relative mx-auto" style={{ width: tab.chartWidth, height: tab.chartHeight }}>
-            <svg className="absolute top-0 left-0 w-full pointer-events-none overflow-visible z-[1]" style={{ height: tab.chartHeight }}>
-              <defs>
-                <marker id={`ah-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                  <path d="M1 1L6 4L1 7" fill="none" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" />
-                </marker>
-                <marker id={`ahd-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                  <path d="M1 1L6 4L1 7" fill="none" stroke="#1a4a2a" strokeWidth="1.5" strokeLinecap="round" />
-                </marker>
-              </defs>
-              {tab.arrows.map((arrow, i) => {
-                const d = calcPath(tabNodes, tab.id, arrow.from, arrow.to);
-                if (!d) return null;
+        {/* Desktop: canvas with arrows */}
+        {!isMobile ? (
+          <div className="w-full overflow-x-auto pb-5">
+            <div className="relative mx-auto" style={{ width: tab.chartWidth, height: tab.chartHeight }}>
+              <svg className="absolute top-0 left-0 w-full pointer-events-none overflow-visible z-[1]" style={{ height: tab.chartHeight }}>
+                <defs>
+                  <marker id={`ah-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M1 1L6 4L1 7" fill="none" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" />
+                  </marker>
+                  <marker id={`ahd-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M1 1L6 4L1 7" fill="none" stroke="#1a4a2a" strokeWidth="1.5" strokeLinecap="round" />
+                  </marker>
+                </defs>
+                {tab.arrows.map((arrow, i) => {
+                  const d = calcPath(tabNodes, tab.id, arrow.from, arrow.to);
+                  if (!d) return null;
+                  return (
+                    <path key={i} d={d} fill="none" stroke={arrow.dashed ? "#1a4a2a" : "#2a3238"} strokeWidth="1.2"
+                      strokeDasharray={arrow.dashed ? "5 4" : undefined}
+                      markerEnd={`url(#${arrow.dashed ? "ahd" : "ah"}-${tab.id})`} />
+                  );
+                })}
+              </svg>
+              {tabNodes.map((node) => {
+                const localNode = getNodeCardProps(node);
                 return (
-                  <path key={i} d={d} fill="none" stroke={arrow.dashed ? "#1a4a2a" : "#2a3238"} strokeWidth="1.2"
-                    strokeDasharray={arrow.dashed ? "5 4" : undefined}
-                    markerEnd={`url(#${arrow.dashed ? "ahd" : "ah"}-${tab.id})`} />
+                  <NodeCard
+                    key={node.id}
+                    node={localNode}
+                    active={selectedNode === node.id}
+                    onClick={() => setSelectedNode(node.id)}
+                    onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
+                    draggable={editMode}
+                  />
                 );
               })}
-            </svg>
+            </div>
+          </div>
+        ) : (
+          /* Mobile: clean list layout */
+          <div className="flex flex-col gap-2">
             {tabNodes.map((node) => {
               const localNode = getNodeCardProps(node);
               return (
-                <NodeCard
+                <MobileNodeCard
                   key={node.id}
                   node={localNode}
                   active={selectedNode === node.id}
                   onClick={() => setSelectedNode(node.id)}
-                  onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
                 />
               );
             })}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Detail Panel */}
