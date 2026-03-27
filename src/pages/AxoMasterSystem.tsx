@@ -915,6 +915,8 @@ export default function AxoMasterSystem() {
           onModeChange={setPanelMode}
           onSaveNode={(fields) => handleSaveNode(selectedNode, fields)}
           onDeleteNode={() => handleDeleteNode(selectedNode)}
+          contentOverride={selectedContentOverride}
+          onSaveContent={handleSaveContent}
         />
       )}
 
