@@ -518,7 +518,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
           onChange={updateIntro}
           multiline
           readOnly={!editMode}
-          placeholder="Clique para adicionar uma descrição..."
+          placeholder={ui.clickToAddDescription}
           style={{ fontSize: 13, color: "#7a8490", lineHeight: 1.8, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #252a2d" }}
         />
 
@@ -534,9 +534,9 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
               />
               {editMode && (
                 <button
-                  onClick={() => { if (confirm("Remover esta seção?")) removeSection(si); }}
+                  onClick={() => { if (confirm(ui.removeSection)) removeSection(si); }}
                   className="p-1 rounded hover:bg-white/5"
-                  title="Remover seção"
+                  title={ui.removeSection}
                 >
                   <X className="w-3 h-3" style={{ color: "#404850" }} />
                 </button>
@@ -557,7 +557,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                       value={item.s || ""}
                       onChange={(s) => updateSectionItemS(si, ii, s)}
                       readOnly={!editMode}
-                      placeholder="Descrição..."
+                      placeholder={ui.description}
                       style={{ fontSize: 11, color: "#7a8490", marginTop: 2 }}
                     />
                   </div>
@@ -565,7 +565,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                     <button
                       onClick={() => removeSectionItem(si, ii)}
                       className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-opacity shrink-0"
-                      title="Remover item"
+                      title={ui.removeItem}
                     >
                       <X className="w-3 h-3" style={{ color: "#555" }} />
                     </button>
@@ -579,7 +579,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
                   style={{ color: "#404850", border: "1px dashed #252a2d" }}
                 >
                   <Plus className="w-3 h-3" />
-                  Adicionar item
+                  {ui.addItem}
                 </button>
               )}
             </div>
@@ -594,7 +594,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
             style={{ color: "#7a8490", border: "1px dashed #323a3f" }}
           >
             <Plus className="w-3 h-3" />
-            Adicionar seção
+            {ui.addSection}
           </button>
         )}
 
