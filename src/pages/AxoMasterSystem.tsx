@@ -238,7 +238,7 @@ function InlineText({ value, onChange, style, placeholder, multiline, className,
 // ══════════════════════════════════════════════
 type PanelMode = "modal" | "sidebar" | "fullscreen";
 
-function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode, contentOverride, onSaveContent, editMode }: {
+function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode, contentOverride, onSaveContent, editMode, ui }: {
   data: NodeData | null;
   nodeId: string;
   node: MasterNode;
@@ -251,6 +251,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
   contentOverride: Partial<NodeData> | null;
   onSaveContent: (content: Partial<NodeData>) => void;
   editMode: boolean;
+  ui: typeof UI_LABELS["pt"];
 }) {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
