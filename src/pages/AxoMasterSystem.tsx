@@ -417,23 +417,27 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
           >
             <Maximize2 className="w-4 h-4" style={{ color: mode === "fullscreen" ? "#c9952a" : "#7a8490" }} />
           </button>
-          <div className="w-px h-4 mx-1" style={{ background: "#252a2d" }} />
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title="Editar card"
-          >
-            <Pencil className="w-4 h-4" style={{ color: isEditing ? "#c9952a" : "#7a8490" }} />
-          </button>
-          <button
-            onClick={() => {
-              if (confirm("Tem certeza que deseja remover este node?")) onDeleteNode();
-            }}
-            className="p-1.5 rounded hover:bg-white/5 transition-colors"
-            title="Remover node"
-          >
-            <Trash2 className="w-4 h-4" style={{ color: "#7a8490" }} />
-          </button>
+          {editMode && (
+            <>
+              <div className="w-px h-4 mx-1" style={{ background: "#252a2d" }} />
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="p-1.5 rounded hover:bg-white/5 transition-colors"
+                title="Editar card"
+              >
+                <Pencil className="w-4 h-4" style={{ color: isEditing ? "#c9952a" : "#7a8490" }} />
+              </button>
+              <button
+                onClick={() => {
+                  if (confirm("Tem certeza que deseja remover este node?")) onDeleteNode();
+                }}
+                className="p-1.5 rounded hover:bg-white/5 transition-colors"
+                title="Remover node"
+              >
+                <Trash2 className="w-4 h-4" style={{ color: "#7a8490" }} />
+              </button>
+            </>
+          )}
         </div>
         <button onClick={onClose} className="p-1.5 rounded hover:bg-white/5 transition-colors">
           <X className="w-4 h-4" style={{ color: "#7a8490" }} />
@@ -935,6 +939,7 @@ export default function AxoMasterSystem() {
           onDeleteNode={() => handleDeleteNode(selectedNode)}
           contentOverride={selectedContentOverride}
           onSaveContent={handleSaveContent}
+          editMode={editMode}
         />
       )}
 
