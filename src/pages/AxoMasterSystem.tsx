@@ -360,7 +360,7 @@ export default function AxoMasterSystem() {
         <div className="flex items-center gap-3 mb-2">
           <img src={axoLogo} alt="AXO Floors" className="h-8 w-auto" />
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "#404850" }}>
-            AXO Floors LLC · Sistema Operacional
+            Sistema Operacional
           </div>
         </div>
         <div style={{ fontSize: 11, color: "#7a8490", marginTop: 3, marginBottom: 16 }}>
