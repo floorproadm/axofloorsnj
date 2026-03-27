@@ -835,6 +835,8 @@ export default function AxoMasterSystem() {
   const [editMode, setEditMode] = useState(false);
   const [zoom, setZoom] = useState(isMobile ? 40 : 100);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
   const { overrides, getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
   // Localized tabs
