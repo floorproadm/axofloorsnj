@@ -1269,6 +1269,10 @@ export const UI_LABELS = {
     modalMode: "Modo modal",
     sidebarMode: "Modo sidebar",
     fullscreen: "Tela cheia",
+    zoomIn: "Aumentar zoom",
+    zoomOut: "Diminuir zoom",
+    centerMap: "Centralizar mapa",
+    fitToScreen: "Ajustar à tela",
   },
   en: {
     operatingSystem: "Operating System",
@@ -1304,5 +1308,9 @@ export const UI_LABELS = {
     modalMode: "Modal mode",
     sidebarMode: "Sidebar mode",
     fullscreen: "Fullscreen",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    centerMap: "Center map",
+    fitToScreen: "Fit to screen",
   },
 } as const;
