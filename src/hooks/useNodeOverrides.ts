@@ -15,6 +15,7 @@ interface NodeOverride {
   y?: number | null;
   w?: number | null;
   h?: number | null;
+  content?: Record<string, unknown> | null;
   is_custom: boolean;
   is_deleted: boolean;
 }
