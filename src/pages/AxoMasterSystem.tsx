@@ -363,9 +363,6 @@ export default function AxoMasterSystem() {
             AXO Floors LLC · Sistema Operacional
           </div>
         </div>
-        <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6" }}>
-          AXO Master System
-        </div>
         <div style={{ fontSize: 11, color: "#7a8490", marginTop: 3, marginBottom: 16 }}>
           Clique em qualquer nó para ver os detalhes — use as abas para navegar entre os sistemas
         </div>
