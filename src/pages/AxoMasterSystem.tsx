@@ -766,12 +766,24 @@ export default function AxoMasterSystem() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [panelMode, setPanelMode] = useState<PanelMode>("sidebar");
   const [showNewNode, setShowNewNode] = useState(false);
-  const { getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
+  const { overrides, getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
   const tab = TABS[activeTab];
   const tabNodes = getTabNodes(tab);
   const selectedNodeObj = selectedNode ? tabNodes.find(n => n.id === selectedNode) : null;
   const nodeData = selectedNode ? NODE_DATA[selectedNode] || null : null;
+
+  // Get content override for selected node
+  const selectedContentOverride = useMemo(() => {
+    if (!selectedNode) return null;
+    const ov = overrides.find(o => o.tab_id === tab.id && o.node_id === selectedNode);
+    return (ov?.content as Partial<NodeData>) || null;
+  }, [selectedNode, overrides, tab.id]);
+
+  const handleSaveContent = useCallback((content: Partial<NodeData>) => {
+    if (!selectedNode) return;
+    saveOverride(tab.id, selectedNode, { content: content as any });
+  }, [selectedNode, tab.id, saveOverride]);
 
   // Mobile defaults to modal
   useEffect(() => {
