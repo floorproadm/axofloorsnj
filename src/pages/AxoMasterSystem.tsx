@@ -164,11 +164,78 @@ function EditableField({ label, value, onChange, fontSize = 13 }: {
 }
 
 // ══════════════════════════════════════════════
-// DETAIL PANEL (Notion-like + Card Editing)
+// INLINE TEXT — click to edit any text
+// ══════════════════════════════════════════════
+function InlineText({ value, onChange, style, placeholder, multiline, className }: {
+  value: string;
+  onChange: (v: string) => void;
+  style?: React.CSSProperties;
+  placeholder?: string;
+  multiline?: boolean;
+  className?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const ref = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
+
+  useEffect(() => { setDraft(value); }, [value]);
+  useEffect(() => { if (editing && ref.current) ref.current.focus(); }, [editing]);
+
+  if (!editing) {
+    return (
+      <div
+        onClick={() => setEditing(true)}
+        className={`cursor-text rounded px-1 -mx-1 transition-colors hover:bg-white/5 ${className || ""}`}
+        style={{ ...style, minHeight: 18 }}
+        title="Clique para editar"
+      >
+        {value || <span style={{ color: "#404850", fontStyle: "italic" }}>{placeholder || "Clique para editar..."}</span>}
+      </div>
+    );
+  }
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) onChange(draft);
+  };
+
+  if (multiline) {
+    return (
+      <textarea
+        ref={ref as any}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => { if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+        className="w-full outline-none rounded px-1 -mx-1 resize-none"
+        style={{ ...style, background: "#1c1f21", border: "1px solid #323a3f", minHeight: 50 }}
+        rows={3}
+      />
+    );
+  }
+
+  return (
+    <input
+      ref={ref as any}
+      value={draft}
+      onChange={e => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => {
+        if (e.key === "Enter") commit();
+        if (e.key === "Escape") { setDraft(value); setEditing(false); }
+      }}
+      className="w-full outline-none rounded px-1 -mx-1"
+      style={{ ...style, background: "#1c1f21", border: "1px solid #323a3f" }}
+    />
+  );
+}
+
+// ══════════════════════════════════════════════
+// DETAIL PANEL (Notion-like + Full Content Editing)
 // ══════════════════════════════════════════════
 type PanelMode = "modal" | "sidebar" | "fullscreen";
 
-function DetailPanel({ data, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode }: {
+function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode, contentOverride, onSaveContent }: {
   data: NodeData | null;
   nodeId: string;
   node: MasterNode;
@@ -178,6 +245,8 @@ function DetailPanel({ data, nodeId, node, tabId, mode, onClose, onModeChange, o
   onModeChange: (m: PanelMode) => void;
   onSaveNode: (fields: { title?: string; subtitle?: string; tag?: string; color?: string }) => void;
   onDeleteNode: () => void;
+  contentOverride: Partial<NodeData> | null;
+  onSaveContent: (content: Partial<NodeData>) => void;
 }) {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
@@ -190,6 +259,22 @@ function DetailPanel({ data, nodeId, node, tabId, mode, onClose, onModeChange, o
   const [editTag, setEditTag] = useState(node.tag);
   const [editColor, setEditColor] = useState(node.color);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Merge base data with content override
+  const data = useMemo<NodeData | null>(() => {
+    if (!baseData && !contentOverride) return null;
+    const base = baseData || { color: "#c9952a", eyebrow: node.tag, title: node.title, intro: "", sections: [] };
+    if (!contentOverride) return base;
+    return {
+      ...base,
+      eyebrow: contentOverride.eyebrow ?? base.eyebrow,
+      title: contentOverride.title ?? base.title,
+      intro: contentOverride.intro ?? base.intro,
+      sections: contentOverride.sections ?? base.sections,
+      axo: contentOverride.axo ?? base.axo,
+      loopBox: contentOverride.loopBox ?? base.loopBox,
+    };
+  }, [baseData, contentOverride, node]);
 
   // Reset edit fields when node changes
   useEffect(() => {
@@ -253,6 +338,62 @@ function DetailPanel({ data, nodeId, node, tabId, mode, onClose, onModeChange, o
     setIsEditing(false);
     toast({ title: "Card atualizado" });
   };
+
+  // Content editing helpers
+  const updateContent = useCallback((patch: Partial<NodeData>) => {
+    const current = contentOverride || {};
+    const base = baseData || { color: "#c9952a", eyebrow: node.tag, title: node.title, intro: "", sections: [] };
+    onSaveContent({ ...current, ...patch });
+  }, [contentOverride, baseData, node, onSaveContent]);
+
+  const updateIntro = useCallback((intro: string) => updateContent({ intro }), [updateContent]);
+  const updateEyebrow = useCallback((eyebrow: string) => updateContent({ eyebrow }), [updateContent]);
+
+  const updateSectionTitle = useCallback((sIdx: number, title: string) => {
+    const sections = [...(data?.sections || [])];
+    sections[sIdx] = { ...sections[sIdx], title };
+    updateContent({ sections });
+  }, [data, updateContent]);
+
+  const updateSectionItemT = useCallback((sIdx: number, iIdx: number, t: string) => {
+    const sections = [...(data?.sections || [])];
+    const items = [...sections[sIdx].items];
+    items[iIdx] = { ...items[iIdx], t };
+    sections[sIdx] = { ...sections[sIdx], items };
+    updateContent({ sections });
+  }, [data, updateContent]);
+
+  const updateSectionItemS = useCallback((sIdx: number, iIdx: number, s: string) => {
+    const sections = [...(data?.sections || [])];
+    const items = [...sections[sIdx].items];
+    items[iIdx] = { ...items[iIdx], s: s || undefined };
+    sections[sIdx] = { ...sections[sIdx], items };
+    updateContent({ sections });
+  }, [data, updateContent]);
+
+  const addSectionItem = useCallback((sIdx: number) => {
+    const sections = [...(data?.sections || [])];
+    const items = [...sections[sIdx].items, { t: "Novo item", s: "" }];
+    sections[sIdx] = { ...sections[sIdx], items };
+    updateContent({ sections });
+  }, [data, updateContent]);
+
+  const removeSectionItem = useCallback((sIdx: number, iIdx: number) => {
+    const sections = [...(data?.sections || [])];
+    const items = sections[sIdx].items.filter((_, i) => i !== iIdx);
+    sections[sIdx] = { ...sections[sIdx], items };
+    updateContent({ sections });
+  }, [data, updateContent]);
+
+  const addSection = useCallback(() => {
+    const sections = [...(data?.sections || []), { title: "Nova Seção", color: "#c9952a", items: [{ t: "Novo item" }] }];
+    updateContent({ sections });
+  }, [data, updateContent]);
+
+  const removeSection = useCallback((sIdx: number) => {
+    const sections = (data?.sections || []).filter((_, i) => i !== sIdx);
+    updateContent({ sections });
+  }, [data, updateContent]);
 
   const c = COLOR_MAP[node.color] || COLOR_MAP.gold;
 
@@ -346,50 +487,108 @@ function DetailPanel({ data, nodeId, node, tabId, mode, onClose, onModeChange, o
           </div>
         )}
 
-        {/* Eyebrow */}
-        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".16em", textTransform: "uppercase", color: data?.color || c.title, marginBottom: 5 }}>
-          {data?.eyebrow || node.tag}
-        </div>
+        {/* Eyebrow — inline editable */}
+        <InlineText
+          value={data?.eyebrow || node.tag}
+          onChange={updateEyebrow}
+          style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".16em", textTransform: "uppercase", color: data?.color || c.title, marginBottom: 5 }}
+        />
 
-        {/* Title */}
-        <div style={{ fontSize: mode === "fullscreen" ? 28 : 20, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6", marginBottom: 8 }}>
-          {data?.title || node.title}
-        </div>
+        {/* Title — inline editable */}
+        <InlineText
+          value={data?.title || node.title}
+          onChange={(title) => updateContent({ title })}
+          style={{ fontSize: mode === "fullscreen" ? 28 : 20, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6", marginBottom: 8 }}
+        />
 
-        {/* Intro */}
-        {data?.intro && (
-          <div style={{ fontSize: 13, color: "#7a8490", lineHeight: 1.8, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #252a2d" }}>
-            {data.intro}
-          </div>
-        )}
+        {/* Intro — inline editable */}
+        <InlineText
+          value={data?.intro || ""}
+          onChange={updateIntro}
+          multiline
+          placeholder="Clique para adicionar uma descrição..."
+          style={{ fontSize: 13, color: "#7a8490", lineHeight: 1.8, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #252a2d" }}
+        />
 
-        {/* Sections */}
+        {/* Sections — inline editable */}
         {data?.sections?.map((sec, si) => (
           <div key={si} style={{ marginBottom: 16 }}>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850", margin: "14px 0 8px" }}>
-              {sec.title}
+            <div className="flex items-center justify-between" style={{ margin: "14px 0 8px" }}>
+              <InlineText
+                value={sec.title}
+                onChange={(t) => updateSectionTitle(si, t)}
+                style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850" }}
+              />
+              <button
+                onClick={() => { if (confirm("Remover esta seção?")) removeSection(si); }}
+                className="p-1 rounded hover:bg-white/5"
+                title="Remover seção"
+              >
+                <X className="w-3 h-3" style={{ color: "#404850" }} />
+              </button>
             </div>
             <div className="flex flex-col gap-1.5">
               {sec.items.map((item, ii) => (
-                <div key={ii} className="flex items-start gap-2.5" style={{ padding: "10px 12px", borderRadius: 6, background: "#1c1f21", border: "1px solid #252a2d", fontSize: 12, color: "#dde2e6", lineHeight: 1.5 }}>
+                <div key={ii} className="group flex items-start gap-2.5" style={{ padding: "10px 12px", borderRadius: 6, background: "#1c1f21", border: "1px solid #252a2d", fontSize: 12, color: "#dde2e6", lineHeight: 1.5 }}>
                   <div className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: sec.color }} />
-                  <div>
-                    <div style={{ fontWeight: 500 }}>{item.t}</div>
-                    {item.s && <div style={{ fontSize: 11, color: "#7a8490", marginTop: 2 }}>{item.s}</div>}
+                  <div className="flex-1 min-w-0">
+                    <InlineText
+                      value={item.t}
+                      onChange={(t) => updateSectionItemT(si, ii, t)}
+                      style={{ fontWeight: 500, fontSize: 12, color: "#dde2e6" }}
+                    />
+                    <InlineText
+                      value={item.s || ""}
+                      onChange={(s) => updateSectionItemS(si, ii, s)}
+                      placeholder="Descrição..."
+                      style={{ fontSize: 11, color: "#7a8490", marginTop: 2 }}
+                    />
                   </div>
+                  <button
+                    onClick={() => removeSectionItem(si, ii)}
+                    className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-opacity shrink-0"
+                    title="Remover item"
+                  >
+                    <X className="w-3 h-3" style={{ color: "#555" }} />
+                  </button>
                 </div>
               ))}
+              <button
+                onClick={() => addSectionItem(si)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors hover:bg-white/5"
+                style={{ color: "#404850", border: "1px dashed #252a2d" }}
+              >
+                <Plus className="w-3 h-3" />
+                Adicionar item
+              </button>
             </div>
           </div>
         ))}
 
-        {/* AXO Box */}
+        {/* Add Section */}
+        <button
+          onClick={addSection}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors hover:bg-white/5 mb-4"
+          style={{ color: "#7a8490", border: "1px dashed #323a3f" }}
+        >
+          <Plus className="w-3 h-3" />
+          Adicionar seção
+        </button>
+
+        {/* AXO Box — editable */}
         {data?.axo && (
           <div style={{ background: "#181208", border: "1px solid #7a5a18", borderRadius: 8, padding: "12px 14px", marginTop: 12 }}>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a", marginBottom: 4 }}>
-              ⬡ {data.axo.t}
-            </div>
-            <div style={{ fontSize: 11, color: "#907848", lineHeight: 1.7 }}>{data.axo.x}</div>
+            <InlineText
+              value={data.axo.t}
+              onChange={(t) => updateContent({ axo: { ...data.axo!, t } })}
+              style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a", marginBottom: 4 }}
+            />
+            <InlineText
+              value={data.axo.x}
+              onChange={(x) => updateContent({ axo: { ...data.axo!, x } })}
+              multiline
+              style={{ fontSize: 11, color: "#907848", lineHeight: 1.7 }}
+            />
           </div>
         )}
 
