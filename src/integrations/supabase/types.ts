@@ -2449,6 +2449,7 @@ export type Database = {
       system_node_overrides: {
         Row: {
           color: string | null
+          content: Json | null
           created_at: string
           h: number | null
           id: string
@@ -2467,6 +2468,7 @@ export type Database = {
         }
         Insert: {
           color?: string | null
+          content?: Json | null
           created_at?: string
           h?: number | null
           id?: string
@@ -2485,6 +2487,7 @@ export type Database = {
         }
         Update: {
           color?: string | null
+          content?: Json | null
           created_at?: string
           h?: number | null
           id?: string

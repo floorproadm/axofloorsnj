@@ -1,0 +1,1 @@
+ALTER TABLE public.system_node_overrides ADD COLUMN IF NOT EXISTS content jsonb DEFAULT NULL;
