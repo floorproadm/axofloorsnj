@@ -833,6 +833,8 @@ export default function AxoMasterSystem() {
   const [panelMode, setPanelMode] = useState<PanelMode>("sidebar");
   const [showNewNode, setShowNewNode] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [zoom, setZoom] = useState(isMobile ? 40 : 100);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const { overrides, getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
   // Localized tabs
