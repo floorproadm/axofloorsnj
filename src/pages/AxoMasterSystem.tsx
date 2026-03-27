@@ -1000,7 +1000,37 @@ export default function AxoMasterSystem() {
         <div className="relative w-full overflow-hidden pb-5" ref={canvasContainerRef} style={{ borderRadius: 8 }}>
           <div
             className="w-full overflow-auto"
-            style={{ maxHeight: "70vh" }}
+            style={{ maxHeight: "70vh", cursor: "grab" }}
+            onMouseDown={(e) => {
+              const el = e.currentTarget;
+              isPanningRef.current = true;
+              panStartRef.current = { x: e.clientX, y: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
+              el.style.cursor = "grabbing";
+              el.style.userSelect = "none";
+            }}
+            onMouseMove={(e) => {
+              if (!isPanningRef.current) return;
+              const el = e.currentTarget;
+              el.scrollLeft = panStartRef.current.scrollLeft - (e.clientX - panStartRef.current.x);
+              el.scrollTop = panStartRef.current.scrollTop - (e.clientY - panStartRef.current.y);
+            }}
+            onMouseUp={(e) => { isPanningRef.current = false; e.currentTarget.style.cursor = "grab"; e.currentTarget.style.userSelect = ""; }}
+            onMouseLeave={(e) => { isPanningRef.current = false; e.currentTarget.style.cursor = "grab"; e.currentTarget.style.userSelect = ""; }}
+            onTouchStart={(e) => {
+              if (e.touches.length !== 1) return;
+              const el = e.currentTarget;
+              const t = e.touches[0];
+              isPanningRef.current = true;
+              panStartRef.current = { x: t.clientX, y: t.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
+            }}
+            onTouchMove={(e) => {
+              if (!isPanningRef.current || e.touches.length !== 1) return;
+              const el = e.currentTarget;
+              const t = e.touches[0];
+              el.scrollLeft = panStartRef.current.scrollLeft - (t.clientX - panStartRef.current.x);
+              el.scrollTop = panStartRef.current.scrollTop - (t.clientY - panStartRef.current.y);
+            }}
+            onTouchEnd={() => { isPanningRef.current = false; }}
           >
             <div
               className="relative mx-auto origin-top-left"
