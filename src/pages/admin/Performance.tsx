@@ -287,7 +287,7 @@ function OverviewTab() {
 export default function Performance() {
   return (
     <AdminLayout title="Performance">
-      <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
+      <div className="space-y-5">
 
         <Tabs defaultValue="overview">
           <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-full md:w-auto justify-center md:justify-start">
