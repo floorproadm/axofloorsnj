@@ -919,7 +919,7 @@ export default function AxoMasterSystem() {
             }}
           >
             <Pencil className="w-3.5 h-3.5" />
-            {editMode ? "Editando" : "Editar"}
+            {editMode ? ui.editing : ui.edit}
           </button>
         </div>
       </div>
@@ -927,7 +927,7 @@ export default function AxoMasterSystem() {
       {/* Tabs Bar */}
       <div style={{ padding: "0 24px", borderBottom: "1px solid #252a2d" }}>
         <div className="flex overflow-x-auto" style={{ gap: 0, scrollbarWidth: "none" }}>
-          {TABS.map((t, i) => (
+          {localizedTabs.map((t, i) => (
             <button
               key={t.id}
               onClick={() => handleTabSwitch(i)}
