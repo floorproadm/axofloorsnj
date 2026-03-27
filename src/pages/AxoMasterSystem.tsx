@@ -994,41 +994,111 @@ export default function AxoMasterSystem() {
         <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6", marginBottom: 4 }}>{tab.paneTitle}</div>
         <div style={{ fontSize: 12, color: "#7a8490", marginBottom: 24, lineHeight: 1.6 }}>{tab.paneSub}</div>
 
-        {/* Desktop/Tablet: canvas with arrows */}
-        <div className="w-full overflow-x-auto pb-5">
-          <div className="relative mx-auto" style={{ width: tab.chartWidth, height: tab.chartHeight }}>
-            <svg className="absolute top-0 left-0 w-full pointer-events-none overflow-visible z-[1]" style={{ height: tab.chartHeight }}>
-              <defs>
-                <marker id={`ah-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                  <path d="M1 1L6 4L1 7" fill="none" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" />
-                </marker>
-                <marker id={`ahd-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                  <path d="M1 1L6 4L1 7" fill="none" stroke="#1a4a2a" strokeWidth="1.5" strokeLinecap="round" />
-                </marker>
-              </defs>
-              {tab.arrows.map((arrow, i) => {
-                const d = calcPath(tabNodes, tab.id, arrow.from, arrow.to);
-                if (!d) return null;
+        {/* Canvas with zoom */}
+        <div className="relative w-full overflow-hidden pb-5" ref={canvasContainerRef} style={{ borderRadius: 8 }}>
+          <div
+            className="w-full overflow-auto"
+            style={{ maxHeight: "70vh" }}
+          >
+            <div
+              className="relative mx-auto origin-top-left"
+              style={{
+                width: tab.chartWidth,
+                height: tab.chartHeight,
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "top left",
+              }}
+            >
+              <svg className="absolute top-0 left-0 w-full pointer-events-none overflow-visible z-[1]" style={{ height: tab.chartHeight }}>
+                <defs>
+                  <marker id={`ah-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M1 1L6 4L1 7" fill="none" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" />
+                  </marker>
+                  <marker id={`ahd-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M1 1L6 4L1 7" fill="none" stroke="#1a4a2a" strokeWidth="1.5" strokeLinecap="round" />
+                  </marker>
+                </defs>
+                {tab.arrows.map((arrow, i) => {
+                  const d = calcPath(tabNodes, tab.id, arrow.from, arrow.to);
+                  if (!d) return null;
+                  return (
+                    <path key={i} d={d} fill="none" stroke={arrow.dashed ? "#1a4a2a" : "#2a3238"} strokeWidth="1.2"
+                      strokeDasharray={arrow.dashed ? "5 4" : undefined}
+                      markerEnd={`url(#${arrow.dashed ? "ahd" : "ah"}-${tab.id})`} />
+                  );
+                })}
+              </svg>
+              {tabNodes.map((node) => {
+                const localNode = getNodeCardProps(node);
                 return (
-                  <path key={i} d={d} fill="none" stroke={arrow.dashed ? "#1a4a2a" : "#2a3238"} strokeWidth="1.2"
-                    strokeDasharray={arrow.dashed ? "5 4" : undefined}
-                    markerEnd={`url(#${arrow.dashed ? "ahd" : "ah"}-${tab.id})`} />
+                  <NodeCard
+                    key={node.id}
+                    node={localNode}
+                    active={selectedNode === node.id}
+                    onClick={() => setSelectedNode(node.id)}
+                    onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
+                    draggable={editMode}
+                  />
                 );
               })}
-            </svg>
-            {tabNodes.map((node) => {
-              const localNode = getNodeCardProps(node);
-              return (
-                <NodeCard
-                  key={node.id}
-                  node={localNode}
-                  active={selectedNode === node.id}
-                  onClick={() => setSelectedNode(node.id)}
-                  onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
-                  draggable={editMode}
-                />
-              );
-            })}
+            </div>
+          </div>
+
+          {/* Zoom Controls Toolbar */}
+          <div
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-0 rounded-xl shadow-2xl z-[10]"
+            style={{ background: "#1a1c1e", border: "1px solid #323a3f", padding: "6px 8px" }}
+          >
+            <button
+              onClick={() => setZoom(z => Math.max(20, z - 10))}
+              className="p-2 rounded-lg transition-colors hover:bg-white/5"
+              style={{ color: "#7a8490" }}
+              title={ui.zoomOut}
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+            <span
+              className="px-2 min-w-[48px] text-center select-none"
+              style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#dde2e6" }}
+            >
+              {zoom}%
+            </span>
+            <button
+              onClick={() => setZoom(z => Math.min(200, z + 10))}
+              className="p-2 rounded-lg transition-colors hover:bg-white/5"
+              style={{ color: "#7a8490" }}
+              title={ui.zoomIn}
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+            <div className="w-px h-5 mx-1.5" style={{ background: "#323a3f" }} />
+            <button
+              onClick={() => {
+                setZoom(isMobile ? 40 : 100);
+                if (canvasContainerRef.current) {
+                  const scrollEl = canvasContainerRef.current.querySelector('[class*="overflow-auto"]') as HTMLElement;
+                  if (scrollEl) { scrollEl.scrollLeft = 0; scrollEl.scrollTop = 0; }
+                }
+              }}
+              className="p-2 rounded-lg transition-colors hover:bg-white/5"
+              style={{ color: "#7a8490" }}
+              title={ui.centerMap}
+            >
+              <Crosshair className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                if (!canvasContainerRef.current) return;
+                const containerW = canvasContainerRef.current.clientWidth;
+                const fitZoom = Math.round((containerW / tab.chartWidth) * 100);
+                setZoom(Math.max(20, Math.min(200, fitZoom)));
+              }}
+              className="p-2 rounded-lg transition-colors hover:bg-white/5"
+              style={{ color: "#7a8490" }}
+              title={ui.fitToScreen}
+            >
+              <Maximize className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
