@@ -251,7 +251,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
   contentOverride: Partial<NodeData> | null;
   onSaveContent: (content: Partial<NodeData>) => void;
   editMode: boolean;
-  ui: typeof UI_LABELS["pt"];
+  ui: Record<string, string>;
 }) {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
