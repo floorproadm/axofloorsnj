@@ -71,11 +71,12 @@ function calcPath(nodes: MasterNode[], tabId: string, fromId: string, toId: stri
 // ══════════════════════════════════════════════
 // DRAGGABLE NODE CARD
 // ══════════════════════════════════════════════
-function NodeCard({ node, active, onClick, onDragEnd }: {
+function NodeCard({ node, active, onClick, onDragEnd, draggable }: {
   node: MasterNode;
   active: boolean;
   onClick: () => void;
   onDragEnd: (x: number, y: number) => void;
+  draggable?: boolean;
 }) {
   const c = COLOR_MAP[node.color] || COLOR_MAP.gold;
   const isAxo = node.color === "axo";
@@ -83,6 +84,7 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
   const elRef = useRef<HTMLDivElement>(null);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (!draggable) return;
     dragRef.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -94,7 +96,7 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current || !elRef.current) return;
+    if (!draggable || !dragRef.current || !elRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragRef.current.moved = true;
@@ -105,7 +107,10 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    if (!dragRef.current) return;
+    if (!draggable || !dragRef.current) {
+      onClick();
+      return;
+    }
     if (dragRef.current.moved) {
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
@@ -122,20 +127,52 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      className="absolute flex flex-col justify-center items-center text-center cursor-grab select-none transition-shadow duration-150 z-[2] hover:z-10 active:cursor-grabbing"
+      className={`absolute flex flex-col justify-center items-center text-center select-none transition-shadow duration-150 z-[2] hover:z-10 ${draggable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"}`}
       style={{
         left: node.x, top: node.y, width: node.w || 120, height: node.h,
         borderRadius: 7, padding: "9px 11px",
         background: c.bg,
         border: active ? `2px solid ${c.hover}` : isAxo ? `2px solid ${c.border}` : `1px solid ${c.border}`,
         boxShadow: active ? `0 0 0 2px ${c.border}` : undefined,
-        touchAction: "none",
+        touchAction: draggable ? "none" : "auto",
       }}
     >
       <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".1em", textTransform: "uppercase", color: "#404850", marginBottom: 3, lineHeight: 1.2 }}>{node.tag}</div>
       <div style={{ fontSize: 11, fontWeight: 600, color: c.title, lineHeight: 1.3 }}>{node.title}</div>
       {node.subtitle && <div style={{ fontSize: 9, color: "#7a8490", marginTop: 3, lineHeight: 1.3 }}>{node.subtitle}</div>}
     </div>
+  );
+}
+
+// ══════════════════════════════════════════════
+// MOBILE NODE CARD (list item)
+// ══════════════════════════════════════════════
+function MobileNodeCard({ node, active, onClick }: {
+  node: MasterNode;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const c = COLOR_MAP[node.color] || COLOR_MAP.gold;
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 text-left rounded-lg transition-all"
+      style={{
+        padding: "12px 14px",
+        background: active ? c.bg : "#141618",
+        border: active ? `1.5px solid ${c.hover}` : "1px solid #252a2d",
+      }}
+    >
+      <div className="w-1.5 h-8 rounded-full shrink-0" style={{ background: c.border }} />
+      <div className="flex-1 min-w-0">
+        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".1em", textTransform: "uppercase", color: "#404850", marginBottom: 2 }}>{node.tag}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: c.title, lineHeight: 1.3 }}>{node.title}</div>
+        {node.subtitle && <div style={{ fontSize: 11, color: "#7a8490", marginTop: 2, lineHeight: 1.3 }}>{node.subtitle}</div>}
+      </div>
+      <div className="w-5 h-5 flex items-center justify-center shrink-0">
+        <svg width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1l4 4-4 4" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </div>
+    </button>
   );
 }
 
@@ -687,7 +724,7 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
 
   if (mode === "sidebar") {
     return (
-      <div className="fixed top-0 right-0 bottom-0 z-[200] flex" style={{ width: "min(520px, 45vw)" }}>
+      <div className="fixed top-0 right-0 bottom-0 z-[200] flex" style={{ width: "min(520px, 90vw)" }}>
         <div className="fixed inset-0 z-[-1]" onClick={onClose} />
         <div className="w-full h-full flex flex-col shadow-2xl" style={{ background: "#141618", borderLeft: "1px solid #252a2d" }}>
           {panelContent}
@@ -884,13 +921,13 @@ export default function AxoMasterSystem() {
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-8 py-5" style={{ borderBottom: "1px solid #252a2d", background: "#111314" }}>
-        <div className="flex items-center gap-4">
-          <img src={axoLogo} alt="AXO Floors" className="h-9 w-auto" />
-          <div className="h-6 w-px" style={{ background: "#252a2d" }} />
-          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "#555d66" }}>
+        <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "px-8 py-5"}`} style={{ borderBottom: "1px solid #252a2d", background: "#111314" }}>
+        <div className="flex items-center gap-3">
+          <img src={axoLogo} alt="AXO Floors" className={`${isMobile ? "h-7" : "h-9"} w-auto`} />
+          {!isMobile && <div className="h-6 w-px" style={{ background: "#252a2d" }} />}
+          {!isMobile && <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "#555d66" }}>
             {ui.operatingSystem}
-          </div>
+          </div>}
         </div>
         <div className="flex items-center gap-2">
           {/* Language toggle */}
@@ -953,41 +990,60 @@ export default function AxoMasterSystem() {
         <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6", marginBottom: 4 }}>{tab.paneTitle}</div>
         <div style={{ fontSize: 12, color: "#7a8490", marginBottom: 24, lineHeight: 1.6 }}>{tab.paneSub}</div>
 
-        <div className="w-full overflow-x-auto pb-5">
-          <div className="relative mx-auto" style={{ width: tab.chartWidth, height: tab.chartHeight }}>
-            <svg className="absolute top-0 left-0 w-full pointer-events-none overflow-visible z-[1]" style={{ height: tab.chartHeight }}>
-              <defs>
-                <marker id={`ah-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                  <path d="M1 1L6 4L1 7" fill="none" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" />
-                </marker>
-                <marker id={`ahd-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                  <path d="M1 1L6 4L1 7" fill="none" stroke="#1a4a2a" strokeWidth="1.5" strokeLinecap="round" />
-                </marker>
-              </defs>
-              {tab.arrows.map((arrow, i) => {
-                const d = calcPath(tabNodes, tab.id, arrow.from, arrow.to);
-                if (!d) return null;
+        {/* Desktop: canvas with arrows */}
+        {!isMobile ? (
+          <div className="w-full overflow-x-auto pb-5">
+            <div className="relative mx-auto" style={{ width: tab.chartWidth, height: tab.chartHeight }}>
+              <svg className="absolute top-0 left-0 w-full pointer-events-none overflow-visible z-[1]" style={{ height: tab.chartHeight }}>
+                <defs>
+                  <marker id={`ah-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M1 1L6 4L1 7" fill="none" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" />
+                  </marker>
+                  <marker id={`ahd-${tab.id}`} viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M1 1L6 4L1 7" fill="none" stroke="#1a4a2a" strokeWidth="1.5" strokeLinecap="round" />
+                  </marker>
+                </defs>
+                {tab.arrows.map((arrow, i) => {
+                  const d = calcPath(tabNodes, tab.id, arrow.from, arrow.to);
+                  if (!d) return null;
+                  return (
+                    <path key={i} d={d} fill="none" stroke={arrow.dashed ? "#1a4a2a" : "#2a3238"} strokeWidth="1.2"
+                      strokeDasharray={arrow.dashed ? "5 4" : undefined}
+                      markerEnd={`url(#${arrow.dashed ? "ahd" : "ah"}-${tab.id})`} />
+                  );
+                })}
+              </svg>
+              {tabNodes.map((node) => {
+                const localNode = getNodeCardProps(node);
                 return (
-                  <path key={i} d={d} fill="none" stroke={arrow.dashed ? "#1a4a2a" : "#2a3238"} strokeWidth="1.2"
-                    strokeDasharray={arrow.dashed ? "5 4" : undefined}
-                    markerEnd={`url(#${arrow.dashed ? "ahd" : "ah"}-${tab.id})`} />
+                  <NodeCard
+                    key={node.id}
+                    node={localNode}
+                    active={selectedNode === node.id}
+                    onClick={() => setSelectedNode(node.id)}
+                    onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
+                    draggable={editMode}
+                  />
                 );
               })}
-            </svg>
+            </div>
+          </div>
+        ) : (
+          /* Mobile: clean list layout */
+          <div className="flex flex-col gap-2">
             {tabNodes.map((node) => {
               const localNode = getNodeCardProps(node);
               return (
-                <NodeCard
+                <MobileNodeCard
                   key={node.id}
                   node={localNode}
                   active={selectedNode === node.id}
                   onClick={() => setSelectedNode(node.id)}
-                  onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
                 />
               );
             })}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Detail Panel */}
