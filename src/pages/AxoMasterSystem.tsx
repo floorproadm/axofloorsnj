@@ -786,6 +786,9 @@ function NewNodeDialog({ onClose, onCreate }: {
 // ══════════════════════════════════════════════
 export default function AxoMasterSystem() {
   const isMobile = useIsMobile();
+  const { language, setLanguage } = useLanguage();
+  const lang = language as "pt" | "en";
+  const ui = UI_LABELS[lang];
   const [activeTab, setActiveTab] = useState(0);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [panelMode, setPanelMode] = useState<PanelMode>("sidebar");
@@ -793,10 +796,39 @@ export default function AxoMasterSystem() {
   const [editMode, setEditMode] = useState(false);
   const { overrides, getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
-  const tab = TABS[activeTab];
-  const tabNodes = getTabNodes(tab);
+  // Localized tabs
+  const localizedTabs = useMemo(() => {
+    if (lang === "pt") return TABS;
+    return TABS.map(t => {
+      const en = TABS_EN_LABELS[t.id];
+      if (!en) return t;
+      return { ...t, label: en.label, paneLabel: en.paneLabel, paneTitle: en.paneTitle, paneSub: en.paneSub };
+    });
+  }, [lang]);
+
+  // Localized node data
+  const getNodeData = useCallback((nodeId: string): NodeData | null => {
+    if (lang === "en" && NODE_DATA_EN[nodeId]) return NODE_DATA_EN[nodeId];
+    return NODE_DATA[nodeId] || null;
+  }, [lang]);
+
+  // Localized node card labels
+  const getNodeCardProps = useCallback((node: MasterNode): MasterNode => {
+    if (lang === "pt") return node;
+    const en = NODE_CARD_EN[node.id];
+    if (!en) return node;
+    return {
+      ...node,
+      tag: en.tag ?? node.tag,
+      title: en.title ?? node.title,
+      subtitle: en.subtitle ?? node.subtitle,
+    };
+  }, [lang]);
+
+  const tab = localizedTabs[activeTab];
+  const tabNodes = getTabNodes(TABS[activeTab]);
   const selectedNodeObj = selectedNode ? tabNodes.find(n => n.id === selectedNode) : null;
-  const nodeData = selectedNode ? NODE_DATA[selectedNode] || null : null;
+  const nodeData = selectedNode ? getNodeData(selectedNode) : null;
 
   // Get content override for selected node
   const selectedContentOverride = useMemo(() => {
