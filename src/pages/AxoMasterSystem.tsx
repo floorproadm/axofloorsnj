@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Maximize2, PanelRightOpen, StickyNote, Save } from "lucide-react";
+import axoLogo from "@/assets/axo-logo-official.png";
 import { TABS, NODE_DATA, type TabConfig, type MasterNode, type NodeData } from "@/data/axoMasterSystem";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
