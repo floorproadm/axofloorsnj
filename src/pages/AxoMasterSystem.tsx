@@ -363,9 +363,6 @@ export default function AxoMasterSystem() {
             Sistema Operacional
           </div>
         </div>
-        <div style={{ fontSize: 11, color: "#7a8490", marginTop: 3, marginBottom: 16 }}>
-          Clique em qualquer nó para ver os detalhes — use as abas para navegar entre os sistemas
-        </div>
         <div className="flex overflow-x-auto" style={{ gap: 0, scrollbarWidth: "none" }}>
           {TABS.map((t, i) => (
             <button
