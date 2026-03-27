@@ -715,9 +715,10 @@ function DetailPanel({ data: baseData, nodeId, node, tabId, mode, onClose, onMod
 // ══════════════════════════════════════════════
 // NEW NODE DIALOG
 // ══════════════════════════════════════════════
-function NewNodeDialog({ onClose, onCreate }: {
+function NewNodeDialog({ onClose, onCreate, ui }: {
   onClose: () => void;
   onCreate: (node: { tag: string; title: string; subtitle: string; color: string; x: number; y: number; w: number }) => void;
+  ui: Record<string, string>;
 }) {
   const [tag, setTag] = useState("Novo");
   const [title, setTitle] = useState("");
@@ -735,7 +736,7 @@ function NewNodeDialog({ onClose, onCreate }: {
           <div className="flex items-center gap-2">
             <Plus className="w-4 h-4" style={{ color: "#c9952a" }} />
             <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
-              Novo Node
+              {ui.newNode}
             </span>
           </div>
         </div>
@@ -774,7 +775,7 @@ function NewNodeDialog({ onClose, onCreate }: {
             style={{ background: "#c9952a", color: "#0c0e0f" }}
           >
             <Plus className="w-4 h-4" />
-            Criar Node
+            {ui.createNode}
           </button>
         </div>
       </div>
