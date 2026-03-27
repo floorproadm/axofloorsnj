@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { X, Maximize2, PanelRightOpen, StickyNote, Save } from "lucide-react";
+import { X, Maximize2, PanelRightOpen, StickyNote, Save, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import axoLogo from "@/assets/axo-logo-official.png";
 import { TABS, NODE_DATA, type TabConfig, type MasterNode, type NodeData } from "@/data/axoMasterSystem";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useNodeOverrides } from "@/hooks/useNodeOverrides";
 
 // ══════════════════════════════════════════════
 // COLOR MAP
 // ══════════════════════════════════════════════
-const COLOR_MAP = {
+const COLOR_MAP: Record<string, { bg: string; border: string; title: string; hover: string }> = {
   gold:   { bg: "#1a1408", border: "#7a5a18", title: "#e8c870", hover: "#c9952a" },
   pine:   { bg: "#0a1410", border: "#1a4a2a", title: "#70d490", hover: "#3aaa60" },
   steel:  { bg: "#080e18", border: "#1a3a5a", title: "#7ac0f0", hover: "#4a9ad4" },
@@ -18,6 +20,8 @@ const COLOR_MAP = {
   teal:   { bg: "#041412", border: "#0a3028", title: "#60d4b8", hover: "#30c4a8" },
   axo:    { bg: "#181208", border: "#7a5a18", title: "#f0d870", hover: "#c9952a" },
 };
+
+const COLOR_OPTIONS = ["gold", "pine", "steel", "violet", "ember", "teal", "axo"] as const;
 
 // ══════════════════════════════════════════════
 // SVG ARROW DRAWING
@@ -33,16 +37,16 @@ function getNodeRect(node: MasterNode) {
   };
 }
 
-function calcPath(tab: TabConfig, fromId: string, toId: string): string {
-  const fNode = tab.nodes.find(n => n.id === fromId);
-  const tNode = tab.nodes.find(n => n.id === toId);
+function calcPath(nodes: MasterNode[], tabId: string, fromId: string, toId: string): string {
+  const fNode = nodes.find(n => n.id === fromId);
+  const tNode = nodes.find(n => n.id === toId);
   if (!fNode || !tNode) return "";
   const f = getNodeRect(fNode);
   const t = getNodeRect(tNode);
   const dy = t.cy - f.cy;
   const dx = t.cx - f.cx;
 
-  if (tab.id === "influence") {
+  if (tabId === "influence") {
     const angle = Math.atan2(dy, dx);
     const sx = f.cx + Math.cos(angle) * (f.w / 2 + 2);
     const sy = f.cy + Math.sin(angle) * (f.h / 2 + 2);
@@ -63,22 +67,67 @@ function calcPath(tab: TabConfig, fromId: string, toId: string): string {
 }
 
 // ══════════════════════════════════════════════
-// NODE CARD
+// DRAGGABLE NODE CARD
 // ══════════════════════════════════════════════
-function NodeCard({ node, active, onClick }: { node: MasterNode; active: boolean; onClick: () => void }) {
-  const c = COLOR_MAP[node.color];
+function NodeCard({ node, active, onClick, onDragEnd }: {
+  node: MasterNode;
+  active: boolean;
+  onClick: () => void;
+  onDragEnd: (x: number, y: number) => void;
+}) {
+  const c = COLOR_MAP[node.color] || COLOR_MAP.gold;
   const isAxo = node.color === "axo";
+  const dragRef = useRef<{ startX: number; startY: number; nodeX: number; nodeY: number; moved: boolean } | null>(null);
+  const elRef = useRef<HTMLDivElement>(null);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      nodeX: node.x,
+      nodeY: node.y,
+      moved: false,
+    };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current || !elRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragRef.current.moved = true;
+    if (dragRef.current.moved) {
+      elRef.current.style.left = `${dragRef.current.nodeX + dx}px`;
+      elRef.current.style.top = `${dragRef.current.nodeY + dy}px`;
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    if (dragRef.current.moved) {
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+      onDragEnd(Math.round(dragRef.current.nodeX + dx), Math.round(dragRef.current.nodeY + dy));
+    } else {
+      onClick();
+    }
+    dragRef.current = null;
+  };
+
   return (
     <div
-      onClick={onClick}
-      className="absolute flex flex-col justify-center items-center text-center cursor-pointer select-none transition-all duration-150 z-[2] hover:z-10"
+      ref={elRef}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      className="absolute flex flex-col justify-center items-center text-center cursor-grab select-none transition-shadow duration-150 z-[2] hover:z-10 active:cursor-grabbing"
       style={{
         left: node.x, top: node.y, width: node.w || 120, height: node.h,
         borderRadius: 7, padding: "9px 11px",
         background: c.bg,
         border: active ? `2px solid ${c.hover}` : isAxo ? `2px solid ${c.border}` : `1px solid ${c.border}`,
         boxShadow: active ? `0 0 0 2px ${c.border}` : undefined,
-        transform: active ? "translateY(-2px)" : undefined,
+        touchAction: "none",
       }}
     >
       <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".1em", textTransform: "uppercase", color: "#404850", marginBottom: 3, lineHeight: 1.2 }}>{node.tag}</div>
@@ -89,23 +138,67 @@ function NodeCard({ node, active, onClick }: { node: MasterNode; active: boolean
 }
 
 // ══════════════════════════════════════════════
-// NOTION-LIKE DETAIL PANEL
+// EDITABLE FIELD
+// ══════════════════════════════════════════════
+function EditableField({ label, value, onChange, fontSize = 13 }: {
+  label: string; value: string; onChange: (v: string) => void; fontSize?: number;
+}) {
+  return (
+    <div className="mb-3">
+      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850", marginBottom: 4 }}>
+        {label}
+      </div>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full outline-none rounded px-2.5 py-1.5"
+        style={{
+          background: "#1c1f21",
+          border: "1px solid #252a2d",
+          color: "#dde2e6",
+          fontSize,
+        }}
+      />
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════
+// DETAIL PANEL (Notion-like + Card Editing)
 // ══════════════════════════════════════════════
 type PanelMode = "modal" | "sidebar" | "fullscreen";
 
-function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
-  data: NodeData;
+function DetailPanel({ data, nodeId, node, tabId, mode, onClose, onModeChange, onSaveNode, onDeleteNode }: {
+  data: NodeData | null;
   nodeId: string;
+  node: MasterNode;
+  tabId: string;
   mode: PanelMode;
   onClose: () => void;
   onModeChange: (m: PanelMode) => void;
+  onSaveNode: (fields: { title?: string; subtitle?: string; tag?: string; color?: string }) => void;
+  onDeleteNode: () => void;
 }) {
   const { toast } = useToast();
   const [notes, setNotes] = useState("");
   const [savedNotes, setSavedNotes] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(node.title);
+  const [editSubtitle, setEditSubtitle] = useState(node.subtitle || "");
+  const [editTag, setEditTag] = useState(node.tag);
+  const [editColor, setEditColor] = useState(node.color);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Reset edit fields when node changes
+  useEffect(() => {
+    setEditTitle(node.title);
+    setEditSubtitle(node.subtitle || "");
+    setEditTag(node.tag);
+    setEditColor(node.color);
+    setIsEditing(false);
+  }, [nodeId, node.title, node.subtitle, node.tag, node.color]);
 
   // Load notes from DB
   useEffect(() => {
@@ -143,11 +236,9 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
       toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
     } else {
       setSavedNotes(notes);
-      toast({ title: "Notas salvas" });
     }
   }, [notes, savedNotes, nodeId, toast]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -156,6 +247,14 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
   }, [notes]);
 
   const hasUnsaved = notes !== savedNotes;
+
+  const handleSaveEdit = () => {
+    onSaveNode({ title: editTitle, subtitle: editSubtitle, tag: editTag, color: editColor });
+    setIsEditing(false);
+    toast({ title: "Card atualizado" });
+  };
+
+  const c = COLOR_MAP[node.color] || COLOR_MAP.gold;
 
   const panelContent = (
     <div className="flex flex-col h-full">
@@ -176,6 +275,23 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
           >
             <Maximize2 className="w-4 h-4" style={{ color: mode === "fullscreen" ? "#c9952a" : "#7a8490" }} />
           </button>
+          <div className="w-px h-4 mx-1" style={{ background: "#252a2d" }} />
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="p-1.5 rounded hover:bg-white/5 transition-colors"
+            title="Editar card"
+          >
+            <Pencil className="w-4 h-4" style={{ color: isEditing ? "#c9952a" : "#7a8490" }} />
+          </button>
+          <button
+            onClick={() => {
+              if (confirm("Tem certeza que deseja remover este node?")) onDeleteNode();
+            }}
+            className="p-1.5 rounded hover:bg-white/5 transition-colors"
+            title="Remover node"
+          >
+            <Trash2 className="w-4 h-4" style={{ color: "#7a8490" }} />
+          </button>
         </div>
         <button onClick={onClose} className="p-1.5 rounded hover:bg-white/5 transition-colors">
           <X className="w-4 h-4" style={{ color: "#7a8490" }} />
@@ -184,23 +300,71 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto px-6 py-5" style={{ scrollbarWidth: "thin", scrollbarColor: "#323a3f #141618" }}>
+        {/* ═══ CARD EDIT MODE ═══ */}
+        {isEditing && (
+          <div style={{ background: "#1a1408", border: "1px solid #7a5a18", borderRadius: 10, padding: "16px 18px", marginBottom: 20 }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Pencil className="w-3.5 h-3.5" style={{ color: "#c9952a" }} />
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
+                Editar Card
+              </span>
+            </div>
+            <EditableField label="Tag" value={editTag} onChange={setEditTag} fontSize={11} />
+            <EditableField label="Título" value={editTitle} onChange={setEditTitle} fontSize={14} />
+            <EditableField label="Subtítulo" value={editSubtitle} onChange={setEditSubtitle} fontSize={12} />
+            
+            {/* Color picker */}
+            <div className="mb-3">
+              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850", marginBottom: 6 }}>
+                Cor
+              </div>
+              <div className="flex gap-2">
+                {COLOR_OPTIONS.map(co => (
+                  <button
+                    key={co}
+                    onClick={() => setEditColor(co)}
+                    className="w-7 h-7 rounded-md transition-all"
+                    style={{
+                      background: COLOR_MAP[co].bg,
+                      border: editColor === co ? `2px solid ${COLOR_MAP[co].hover}` : `1px solid ${COLOR_MAP[co].border}`,
+                      boxShadow: editColor === co ? `0 0 0 1px ${COLOR_MAP[co].border}` : undefined,
+                    }}
+                    title={co}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleSaveEdit}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-medium transition-colors mt-2"
+              style={{ background: "#c9952a", color: "#0c0e0f" }}
+            >
+              <Save className="w-3 h-3" />
+              Salvar alterações
+            </button>
+          </div>
+        )}
+
         {/* Eyebrow */}
-        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".16em", textTransform: "uppercase", color: data.color, marginBottom: 5 }}>
-          {data.eyebrow}
+        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".16em", textTransform: "uppercase", color: data?.color || c.title, marginBottom: 5 }}>
+          {data?.eyebrow || node.tag}
         </div>
 
         {/* Title */}
         <div style={{ fontSize: mode === "fullscreen" ? 28 : 20, fontWeight: 600, letterSpacing: "-.02em", color: "#dde2e6", marginBottom: 8 }}>
-          {data.title}
+          {data?.title || node.title}
         </div>
 
         {/* Intro */}
-        <div style={{ fontSize: 13, color: "#7a8490", lineHeight: 1.8, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #252a2d" }}>
-          {data.intro}
-        </div>
+        {data?.intro && (
+          <div style={{ fontSize: 13, color: "#7a8490", lineHeight: 1.8, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #252a2d" }}>
+            {data.intro}
+          </div>
+        )}
 
         {/* Sections */}
-        {data.sections.map((sec, si) => (
+        {data?.sections?.map((sec, si) => (
           <div key={si} style={{ marginBottom: 16 }}>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850", margin: "14px 0 8px" }}>
               {sec.title}
@@ -220,7 +384,7 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
         ))}
 
         {/* AXO Box */}
-        {data.axo && (
+        {data?.axo && (
           <div style={{ background: "#181208", border: "1px solid #7a5a18", borderRadius: 8, padding: "12px 14px", marginTop: 12 }}>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a", marginBottom: 4 }}>
               ⬡ {data.axo.t}
@@ -230,7 +394,7 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
         )}
 
         {/* Loop Box */}
-        {data.loopBox && (
+        {data?.loopBox && (
           <div className="flex flex-wrap gap-1.5 items-center" style={{ background: "#0a1410", border: "1px solid #1a4a2a", borderRadius: 8, padding: "9px 12px", marginTop: 12 }}>
             <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "#3aaa60" }}>
               {data.loopBox.label}
@@ -243,7 +407,7 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
           </div>
         )}
 
-        {/* ═══ NOTES SECTION (Notion-like) ═══ */}
+        {/* ═══ NOTES SECTION ═══ */}
         <div style={{ marginTop: 24, paddingTop: 18, borderTop: "1px solid #252a2d" }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -269,7 +433,7 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             onBlur={() => { if (hasUnsaved) saveNotes(); }}
-            placeholder={loading ? "Carregando..." : "Escreva suas anotações aqui...\n\nVocê pode usar este espaço para:\n• Ações pendentes\n• Observações estratégicas\n• Links e referências\n• Qualquer nota pessoal"}
+            placeholder={loading ? "Carregando..." : "Escreva suas anotações aqui...\n\n• Ações pendentes\n• Observações estratégicas\n• Links e referências"}
             className="w-full resize-none outline-none placeholder:text-[#404850]"
             style={{
               background: "transparent",
@@ -287,7 +451,6 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
   );
 
   // ═══ RENDER MODES ═══
-
   if (mode === "fullscreen") {
     return (
       <div className="fixed inset-0 z-[200] flex" style={{ background: "#0c0e0f" }}>
@@ -301,7 +464,6 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
   if (mode === "sidebar") {
     return (
       <div className="fixed top-0 right-0 bottom-0 z-[200] flex" style={{ width: "min(520px, 45vw)" }}>
-        {/* Click-away overlay */}
         <div className="fixed inset-0 z-[-1]" onClick={onClose} />
         <div className="w-full h-full flex flex-col shadow-2xl" style={{ background: "#141618", borderLeft: "1px solid #252a2d" }}>
           {panelContent}
@@ -310,7 +472,6 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
     );
   }
 
-  // Default: modal (centered overlay)
   return (
     <div
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center"
@@ -328,15 +489,95 @@ function DetailPanel({ data, nodeId, mode, onClose, onModeChange }: {
 }
 
 // ══════════════════════════════════════════════
+// NEW NODE DIALOG
+// ══════════════════════════════════════════════
+function NewNodeDialog({ onClose, onCreate }: {
+  onClose: () => void;
+  onCreate: (node: { tag: string; title: string; subtitle: string; color: string; x: number; y: number; w: number }) => void;
+}) {
+  const [tag, setTag] = useState("Novo");
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [color, setColor] = useState<string>("gold");
+
+  return (
+    <div
+      className="fixed inset-0 z-[300] flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,.6)", backdropFilter: "blur(2px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-sm rounded-xl overflow-hidden" style={{ background: "#141618", border: "1px solid #323a3f" }}>
+        <div className="px-5 py-4 border-b" style={{ borderColor: "#252a2d" }}>
+          <div className="flex items-center gap-2">
+            <Plus className="w-4 h-4" style={{ color: "#c9952a" }} />
+            <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#c9952a" }}>
+              Novo Node
+            </span>
+          </div>
+        </div>
+        <div className="px-5 py-4">
+          <EditableField label="Tag" value={tag} onChange={setTag} fontSize={11} />
+          <EditableField label="Título" value={title} onChange={setTitle} fontSize={14} />
+          <EditableField label="Subtítulo" value={subtitle} onChange={setSubtitle} fontSize={12} />
+          <div className="mb-4">
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".12em", textTransform: "uppercase", color: "#404850", marginBottom: 6 }}>
+              Cor
+            </div>
+            <div className="flex gap-2">
+              {COLOR_OPTIONS.map(co => (
+                <button
+                  key={co}
+                  onClick={() => setColor(co)}
+                  className="w-7 h-7 rounded-md transition-all"
+                  style={{
+                    background: COLOR_MAP[co].bg,
+                    border: color === co ? `2px solid ${COLOR_MAP[co].hover}` : `1px solid ${COLOR_MAP[co].border}`,
+                    boxShadow: color === co ? `0 0 0 1px ${COLOR_MAP[co].border}` : undefined,
+                  }}
+                  title={co}
+                />
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              if (!title.trim()) return;
+              onCreate({ tag, title, subtitle, color, x: 100, y: 100, w: 140 });
+              onClose();
+            }}
+            disabled={!title.trim()}
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-40"
+            style={{ background: "#c9952a", color: "#0c0e0f" }}
+          >
+            <Plus className="w-4 h-4" />
+            Criar Node
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════
 // MAIN PAGE
 // ══════════════════════════════════════════════
 export default function AxoMasterSystem() {
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState(0);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [panelMode, setPanelMode] = useState<PanelMode>("modal");
+  const [panelMode, setPanelMode] = useState<PanelMode>("sidebar");
+  const [showNewNode, setShowNewNode] = useState(false);
+  const { getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
   const tab = TABS[activeTab];
-  const nodeData = selectedNode ? NODE_DATA[selectedNode] : null;
+  const tabNodes = getTabNodes(tab);
+  const selectedNodeObj = selectedNode ? tabNodes.find(n => n.id === selectedNode) : null;
+  const nodeData = selectedNode ? NODE_DATA[selectedNode] || null : null;
+
+  // Mobile defaults to modal
+  useEffect(() => {
+    if (isMobile) setPanelMode("modal");
+  }, [isMobile]);
 
   const handleTabSwitch = useCallback((idx: number) => {
     setActiveTab(idx);
@@ -351,17 +592,43 @@ export default function AxoMasterSystem() {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
+  const handleDragEnd = useCallback((nodeId: string, x: number, y: number) => {
+    saveOverride(tab.id, nodeId, { x, y });
+  }, [tab.id, saveOverride]);
+
+  const handleSaveNode = useCallback((nodeId: string, fields: { title?: string; subtitle?: string; tag?: string; color?: string }) => {
+    saveOverride(tab.id, nodeId, fields);
+  }, [tab.id, saveOverride]);
+
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    deleteNode(tab.id, nodeId);
+    setSelectedNode(null);
+  }, [tab.id, deleteNode]);
+
+  const handleCreateNode = useCallback((node: { tag: string; title: string; subtitle: string; color: string; x: number; y: number; w: number }) => {
+    createNode(tab.id, node);
+  }, [tab.id, createNode]);
+
   return (
     <div className="min-h-screen" style={{ fontFamily: "'IBM Plex Sans', system-ui, sans-serif", background: "#0c0e0f", color: "#dde2e6" }}>
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-      {/* Header */}
       {/* Top Bar */}
-      <div className="flex items-center gap-3 px-6 py-3" style={{ borderBottom: "1px solid #252a2d", background: "#111314" }}>
-        <img src={axoLogo} alt="AXO Floors" className="h-7 w-auto" />
-        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "#404850" }}>
-          Sistema Operacional
+      <div className="flex items-center justify-between px-6 py-3" style={{ borderBottom: "1px solid #252a2d", background: "#111314" }}>
+        <div className="flex items-center gap-3">
+          <img src={axoLogo} alt="AXO Floors" className="h-7 w-auto" />
+          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "#404850" }}>
+            Sistema Operacional
+          </div>
         </div>
+        <button
+          onClick={() => setShowNewNode(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
+          style={{ background: "#1a1408", border: "1px solid #7a5a18", color: "#c9952a" }}
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Node
+        </button>
       </div>
 
       {/* Tabs Bar */}
@@ -403,7 +670,7 @@ export default function AxoMasterSystem() {
                 </marker>
               </defs>
               {tab.arrows.map((arrow, i) => {
-                const d = calcPath(tab, arrow.from, arrow.to);
+                const d = calcPath(tabNodes, tab.id, arrow.from, arrow.to);
                 if (!d) return null;
                 return (
                   <path key={i} d={d} fill="none" stroke={arrow.dashed ? "#1a4a2a" : "#2a3238"} strokeWidth="1.2"
@@ -412,21 +679,39 @@ export default function AxoMasterSystem() {
                 );
               })}
             </svg>
-            {tab.nodes.map((node) => (
-              <NodeCard key={node.id} node={node} active={selectedNode === node.id} onClick={() => setSelectedNode(node.id)} />
+            {tabNodes.map((node) => (
+              <NodeCard
+                key={node.id}
+                node={node}
+                active={selectedNode === node.id}
+                onClick={() => setSelectedNode(node.id)}
+                onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
+              />
             ))}
           </div>
         </div>
       </div>
 
       {/* Detail Panel */}
-      {nodeData && selectedNode && (
+      {selectedNodeObj && selectedNode && (
         <DetailPanel
           data={nodeData}
           nodeId={selectedNode}
+          node={selectedNodeObj}
+          tabId={tab.id}
           mode={panelMode}
           onClose={() => setSelectedNode(null)}
           onModeChange={setPanelMode}
+          onSaveNode={(fields) => handleSaveNode(selectedNode, fields)}
+          onDeleteNode={() => handleDeleteNode(selectedNode)}
+        />
+      )}
+
+      {/* New Node Dialog */}
+      {showNewNode && (
+        <NewNodeDialog
+          onClose={() => setShowNewNode(false)}
+          onCreate={handleCreateNode}
         />
       )}
     </div>
