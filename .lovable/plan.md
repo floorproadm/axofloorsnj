@@ -1,47 +1,50 @@
 
 
-## Plano: Tornar o AXO Master System Editável (Mindmap Flexível)
+## Plano: Adicionar Toggle PT/EN no AXO Master System
 
-### Problema Atual
-O arquivo `public/axo-master-system.html` é um HTML estático com ~1345 linhas. Posições dos nodes são hardcoded em `style="top:Xpx;left:Ypx"`, e o conteúdo está embutido em um objeto `DATA` JavaScript. Para mudar qualquer texto ou adicionar um node, é preciso editar HTML + JS + recalcular posições manualmente.
+### Abordagem
+Adicionar um seletor de idioma na top bar do AXO Master System. Todo o conteúdo (tabs, nodes, painéis de detalhe, UI labels) terá versão PT e EN. O idioma atual fica salvo em localStorage e sincronizado com o `LanguageContext` já existente.
 
-### Solução
-Converter para uma **página React** com dados estruturados em arrays JSON. Isso permite:
-- **Editar textos** facilmente (basta mudar strings no array de dados)
-- **Adicionar/remover nodes** sem recalcular layout — usar layout automático (grid/radial)
-- **Manter o visual atual** (dark theme, IBM Plex, cores gold/pine/violet/etc)
+### Estrutura de dados
 
-### Estrutura Proposta
+Atualmente `axoMasterSystem.ts` tem strings fixas em português. A solução:
 
-**Arquivo de dados**: `src/data/axoMasterSystem.ts`
-- Exporta os 4 tabs com seus nodes e conexões como arrays tipados
-- Cada node: `{ id, label, tag, subtitle, color, details }`
-- Cada conexão: `{ from, to }`
-- Adicionar um novo node = adicionar um objeto ao array
+1. **Criar um arquivo `src/data/axoMasterSystemEN.ts`** com traduções EN de:
+   - `NODE_DATA` — eyebrow, title, intro, section titles, items (t/s), axo box
+   - `TABS` — label, paneLabel, paneTitle, paneSub, e cada node (tag, title, subtitle)
 
-**Página React**: Reescrever `src/pages/AxoMasterSystem.tsx`
-- 4 tabs com o mesmo visual atual
-- Nodes renderizados dinamicamente a partir dos dados
-- Layout automático (radial para Tab 1, horizontal flow para Tabs 2-4)
-- Panel/sheet ao clicar em um node mostra os detalhes
-- SVG arrows calculadas automaticamente entre nodes conectados
+2. **Criar helper `getLocalizedData(lang)`** que retorna os dados corretos (PT original ou EN traduzido)
 
-**Rota**: Mantém `/axo-master-system` — sem mudança
+3. **No `AxoMasterSystem.tsx`**:
+   - Importar `useLanguage` do contexto existente
+   - Adicionar toggle PT/EN na top bar (ao lado do botão Editar)
+   - Usar `language` para selecionar dados PT ou EN
+   - Traduzir labels de UI fixos (botões "Editar/Edit", "Editando/Editing", "Novo Node/New Node", "Criar Node/Create Node", labels do painel etc.)
 
-### O Que Muda para Você
-- Para **editar textos**: abre `src/data/axoMasterSystem.ts`, muda as strings
-- Para **adicionar um node**: adiciona um objeto no array do tab desejado + uma conexão
-- Para **remover**: deleta o objeto do array
-- Me pede para fazer qualquer uma dessas mudanças por chat
+### O que será traduzido
+
+| Elemento | Exemplo PT → EN |
+|----------|----------------|
+| Tab labels | "01 · Influência Local" → "01 · Local Influence" |
+| Pane titles | "Mapa de Influência Local" → "Local Influence Map" |
+| Node tags | "Indicação" → "Referral" |
+| Node titles | Mantidos quando já em inglês (ex: "Realtors") |
+| Node subtitles | "Urgência alta · pré-listing" → "High urgency · pre-listing" |
+| Panel content | Todas as seções, items, intros, AXO boxes |
+| UI buttons | "Editar" → "Edit", "Criar Node" → "Create Node" |
+| Panel labels | "Notas" → "Notes", "Salvar" → "Save" etc. |
 
 ### Arquivos
 
 | Arquivo | Ação |
 |---------|------|
-| `src/data/axoMasterSystem.ts` | **Criar** — dados estruturados dos 4 tabs |
-| `src/pages/AxoMasterSystem.tsx` | **Reescrever** — de iframe para React completo |
-| `public/axo-master-system.html` | **Manter** como fallback (não deletar) |
+| `src/data/axoMasterSystemEN.ts` | **Criar** — traduções EN completas (~500 linhas) |
+| `src/data/axoMasterSystem.ts` | **Modificar** — exportar helper de localização |
+| `src/pages/AxoMasterSystem.tsx` | **Modificar** — integrar toggle + usar dados localizados |
 
-### Escopo
-~700 linhas total entre os 2 arquivos novos. Visual idêntico ao atual.
+### Toggle na UI
+Botão discreto na top bar, estilo consistente com o design atual:
+- Mostra `🇧🇷 PT` ou `🇺🇸 EN`
+- Click alterna entre os dois
+- Salva preferência via `LanguageContext` (já persiste em localStorage)
 
