@@ -766,6 +766,7 @@ export default function AxoMasterSystem() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [panelMode, setPanelMode] = useState<PanelMode>("sidebar");
   const [showNewNode, setShowNewNode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const { overrides, getTabNodes, saveOverride, deleteNode, createNode } = useNodeOverrides();
 
   const tab = TABS[activeTab];
@@ -832,14 +833,30 @@ export default function AxoMasterSystem() {
             Sistema Operacional
           </div>
         </div>
-        <button
-          onClick={() => setShowNewNode(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
-          style={{ background: "#1a1408", border: "1px solid #7a5a18", color: "#c9952a" }}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Node
-        </button>
+        <div className="flex items-center gap-2">
+          {editMode && (
+            <button
+              onClick={() => setShowNewNode(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
+              style={{ background: "#1a1408", border: "1px solid #7a5a18", color: "#c9952a" }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Node
+            </button>
+          )}
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors hover:opacity-80"
+            style={{
+              background: editMode ? "#1a1408" : "transparent",
+              border: editMode ? "1px solid #7a5a18" : "1px solid #323a3f",
+              color: editMode ? "#c9952a" : "#7a8490",
+            }}
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            {editMode ? "Editando" : "Editar"}
+          </button>
+        </div>
       </div>
 
       {/* Tabs Bar */}
