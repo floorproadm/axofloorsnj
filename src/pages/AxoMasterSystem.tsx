@@ -71,11 +71,12 @@ function calcPath(nodes: MasterNode[], tabId: string, fromId: string, toId: stri
 // ══════════════════════════════════════════════
 // DRAGGABLE NODE CARD
 // ══════════════════════════════════════════════
-function NodeCard({ node, active, onClick, onDragEnd }: {
+function NodeCard({ node, active, onClick, onDragEnd, draggable }: {
   node: MasterNode;
   active: boolean;
   onClick: () => void;
   onDragEnd: (x: number, y: number) => void;
+  draggable?: boolean;
 }) {
   const c = COLOR_MAP[node.color] || COLOR_MAP.gold;
   const isAxo = node.color === "axo";
@@ -83,6 +84,7 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
   const elRef = useRef<HTMLDivElement>(null);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (!draggable) return;
     dragRef.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -94,7 +96,7 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current || !elRef.current) return;
+    if (!draggable || !dragRef.current || !elRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragRef.current.moved = true;
@@ -105,7 +107,10 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    if (!dragRef.current) return;
+    if (!draggable || !dragRef.current) {
+      onClick();
+      return;
+    }
     if (dragRef.current.moved) {
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
@@ -122,20 +127,52 @@ function NodeCard({ node, active, onClick, onDragEnd }: {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      className="absolute flex flex-col justify-center items-center text-center cursor-grab select-none transition-shadow duration-150 z-[2] hover:z-10 active:cursor-grabbing"
+      className={`absolute flex flex-col justify-center items-center text-center select-none transition-shadow duration-150 z-[2] hover:z-10 ${draggable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"}`}
       style={{
         left: node.x, top: node.y, width: node.w || 120, height: node.h,
         borderRadius: 7, padding: "9px 11px",
         background: c.bg,
         border: active ? `2px solid ${c.hover}` : isAxo ? `2px solid ${c.border}` : `1px solid ${c.border}`,
         boxShadow: active ? `0 0 0 2px ${c.border}` : undefined,
-        touchAction: "none",
+        touchAction: draggable ? "none" : "auto",
       }}
     >
       <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".1em", textTransform: "uppercase", color: "#404850", marginBottom: 3, lineHeight: 1.2 }}>{node.tag}</div>
       <div style={{ fontSize: 11, fontWeight: 600, color: c.title, lineHeight: 1.3 }}>{node.title}</div>
       {node.subtitle && <div style={{ fontSize: 9, color: "#7a8490", marginTop: 3, lineHeight: 1.3 }}>{node.subtitle}</div>}
     </div>
+  );
+}
+
+// ══════════════════════════════════════════════
+// MOBILE NODE CARD (list item)
+// ══════════════════════════════════════════════
+function MobileNodeCard({ node, active, onClick }: {
+  node: MasterNode;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const c = COLOR_MAP[node.color] || COLOR_MAP.gold;
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 text-left rounded-lg transition-all"
+      style={{
+        padding: "12px 14px",
+        background: active ? c.bg : "#141618",
+        border: active ? `1.5px solid ${c.hover}` : "1px solid #252a2d",
+      }}
+    >
+      <div className="w-1.5 h-8 rounded-full shrink-0" style={{ background: c.border }} />
+      <div className="flex-1 min-w-0">
+        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: ".1em", textTransform: "uppercase", color: "#404850", marginBottom: 2 }}>{node.tag}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: c.title, lineHeight: 1.3 }}>{node.title}</div>
+        {node.subtitle && <div style={{ fontSize: 11, color: "#7a8490", marginTop: 2, lineHeight: 1.3 }}>{node.subtitle}</div>}
+      </div>
+      <div className="w-5 h-5 flex items-center justify-center shrink-0">
+        <svg width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1l4 4-4 4" stroke="#404850" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </div>
+    </button>
   );
 }
 
