@@ -356,13 +356,16 @@ export default function AxoMasterSystem() {
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
       {/* Header */}
-      <div style={{ padding: "24px 24px 0", borderBottom: "1px solid #252a2d" }}>
-        <div className="flex items-center gap-3 mb-2">
-          <img src={axoLogo} alt="AXO Floors" className="h-8 w-auto" />
-          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "#404850" }}>
-            Sistema Operacional
-          </div>
+      {/* Top Bar */}
+      <div className="flex items-center gap-3 px-6 py-3" style={{ borderBottom: "1px solid #252a2d", background: "#111314" }}>
+        <img src={axoLogo} alt="AXO Floors" className="h-7 w-auto" />
+        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", color: "#404850" }}>
+          Sistema Operacional
         </div>
+      </div>
+
+      {/* Tabs Bar */}
+      <div style={{ padding: "0 24px", borderBottom: "1px solid #252a2d" }}>
         <div className="flex overflow-x-auto" style={{ gap: 0, scrollbarWidth: "none" }}>
           {TABS.map((t, i) => (
             <button
