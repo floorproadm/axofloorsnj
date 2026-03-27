@@ -156,7 +156,7 @@ export default function Dashboard() {
 
   return (
     <AdminLayout title="" breadcrumbs={[]}>
-      <div className="max-w-2xl mx-auto px-1 sm:px-0 pb-10">
+      <div className="max-w-2xl lg:max-w-5xl mx-auto px-1 sm:px-0 pb-10">
         {/* Greeting */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
