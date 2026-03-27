@@ -921,11 +921,11 @@ export default function AxoMasterSystem() {
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-8 py-5" style={{ borderBottom: "1px solid #252a2d", background: "#111314" }}>
-        <div className="flex items-center gap-4">
-          <img src={axoLogo} alt="AXO Floors" className="h-9 w-auto" />
-          <div className="h-6 w-px" style={{ background: "#252a2d" }} />
-          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "#555d66" }}>
+        <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "px-8 py-5"}`} style={{ borderBottom: "1px solid #252a2d", background: "#111314" }}>
+        <div className="flex items-center gap-3">
+          <img src={axoLogo} alt="AXO Floors" className={`${isMobile ? "h-7" : "h-9"} w-auto`} />
+          {!isMobile && <div className="h-6 w-px" style={{ background: "#252a2d" }} />}
+          {!isMobile && <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "#555d66" }}>
             {ui.operatingSystem}
           </div>
         </div>
