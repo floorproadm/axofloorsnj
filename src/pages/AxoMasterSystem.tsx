@@ -972,15 +972,18 @@ export default function AxoMasterSystem() {
                 );
               })}
             </svg>
-            {tabNodes.map((node) => (
-              <NodeCard
-                key={node.id}
-                node={node}
-                active={selectedNode === node.id}
-                onClick={() => setSelectedNode(node.id)}
-                onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
-              />
-            ))}
+            {tabNodes.map((node) => {
+              const localNode = getNodeCardProps(node);
+              return (
+                <NodeCard
+                  key={node.id}
+                  node={localNode}
+                  active={selectedNode === node.id}
+                  onClick={() => setSelectedNode(node.id)}
+                  onDragEnd={(x, y) => handleDragEnd(node.id, x, y)}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
