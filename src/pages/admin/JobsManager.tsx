@@ -598,7 +598,7 @@ function getNextAction(
   return { label: "Tudo em dia ✓", severity: "ok", action: "none" };
 }
 
-function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModalProps) {
+function JobControlModal({ project, isOpen, onClose, onRefresh, embedded = false }: JobControlModalProps & { embedded?: boolean }) {
   const { data: jobCost, refetch: refetchCost } = useJobCost(project.id);
   const { marginMinPercent } = useCompanySettings();
   const validation = useMarginValidation(project.id);
@@ -617,6 +617,33 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const [isSavingTeam, setIsSavingTeam] = useState(false);
   const [isChangingStatus, setIsChangingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Resizable sidebar state
+  const [sheetWidth, setSheetWidth] = useState(640);
+  const isResizing = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    const startX = e.clientX;
+    const startWidth = sheetWidth;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isResizing.current) return;
+      const delta = startX - ev.clientX;
+      const newWidth = Math.max(480, Math.min(960, startWidth + delta));
+      setSheetWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      isResizing.current = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     setIsChangingStatus(true);
