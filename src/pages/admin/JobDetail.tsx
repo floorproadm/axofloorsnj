@@ -2,10 +2,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { JobControlModal } from './JobsManager';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-// JobControlModal is not exported — we import the whole module and use the default export's internal
-// We need to extract JobControlModal. For now, let's re-use the page approach like LeadDetail.
 
 export default function JobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -23,7 +22,6 @@ export default function JobDetail() {
         .single();
       if (error) throw error;
 
-      // Fetch related data
       const [costsRes, proofRes, partnerRes] = await Promise.all([
         supabase.from('job_costs').select('*').eq('project_id', jobId).maybeSingle(),
         supabase.from('job_proof').select('id, project_id, before_image_url, after_image_url').eq('project_id', jobId),
@@ -45,10 +43,6 @@ export default function JobDetail() {
     enabled: !!jobId,
   });
 
-  // Dynamically import JobControlModal
-  // Since JobControlModal is defined inside JobsManager, we need to extract it.
-  // For now, we'll use a lazy approach with the extracted component.
-  
   return (
     <AdminLayout title="Job Detail">
       <div className="p-4 sm:p-6">
@@ -71,30 +65,15 @@ export default function JobDetail() {
             Job não encontrado
           </div>
         ) : (
-          <JobControlModalEmbedded
+          <JobControlModal
             project={project}
+            isOpen={true}
+            onClose={() => navigate('/admin/jobs')}
             onRefresh={refetch}
+            embedded
           />
         )}
       </div>
     </AdminLayout>
-  );
-}
-
-// We need to import JobControlModal from JobsManager — but it's not exported.
-// Let's create a thin wrapper that imports from the refactored export.
-// For this to work, we need to export JobControlModal from JobsManager.
-
-function JobControlModalEmbedded({ project, onRefresh }: { project: any; onRefresh: () => void }) {
-  // This is a placeholder — we'll use the exported version
-  const { JobControlModal } = require('./JobsManager');
-  return (
-    <JobControlModal
-      project={project}
-      isOpen={true}
-      onClose={() => {}}
-      onRefresh={onRefresh}
-      embedded
-    />
   );
 }

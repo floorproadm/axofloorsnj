@@ -598,7 +598,7 @@ function getNextAction(
   return { label: "Tudo em dia ✓", severity: "ok", action: "none" };
 }
 
-function JobControlModal({ project, isOpen, onClose, onRefresh, embedded = false }: JobControlModalProps & { embedded?: boolean }) {
+export function JobControlModal({ project, isOpen, onClose, onRefresh, embedded = false }: JobControlModalProps & { embedded?: boolean }) {
   const { data: jobCost, refetch: refetchCost } = useJobCost(project.id);
   const { marginMinPercent } = useCompanySettings();
   const validation = useMarginValidation(project.id);
