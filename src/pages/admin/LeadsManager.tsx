@@ -28,8 +28,8 @@ export default function LeadsManager() {
 
   return (
     <AdminLayout 
-      title="Pipeline de Vendas" 
-      breadcrumbs={[{ label: "Pipeline" }]}
+      title="Leads & Vendas" 
+      breadcrumbs={[{ label: "Leads & Vendas" }]}
     >
       <div className="animate-fade-in">
         {isLoading ? (
