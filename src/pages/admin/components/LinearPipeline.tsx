@@ -549,11 +549,10 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 }) {
   const navigate = useNavigate();
   const [selectedLeadId, setSelectedLeadId] = useState('');
-  const [source, setSource] = useState<'lead' | 'partner'>('lead');
+  const [source, setSource] = useState<SourceType>('lead');
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const { partners } = usePartnersData();
 
-  // Partners that have referred leads with projects
   const partnerLeadsWithProject = useMemo(() =>
     leads.filter(l => !!l.converted_to_project_id && !!l.referred_by_partner_id),
     [leads]
@@ -564,7 +563,6 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
     return partners.filter(p => partnerIds.has(p.id));
   }, [partners, partnerLeadsWithProject]);
 
-  // Leads with project linked
   const eligibleLeads = useMemo(() =>
     leads.filter(l => !!l.converted_to_project_id),
     [leads]
@@ -574,7 +572,6 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 
   const handleGo = () => {
     if (source === 'partner') {
-      // Find leads referred by this partner that have a project
       const partnerLeads = partnerLeadsWithProject.filter(l => l.referred_by_partner_id === selectedPartnerId);
       if (partnerLeads.length > 0 && partnerLeads[0].converted_to_project_id) {
         onOpenChange(false);
@@ -590,7 +587,7 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
     }
   };
 
-  const canGo = source === 'lead' ? !!selectedLeadId : !!selectedPartnerId;
+  const canGo = source === 'lead' ? !!selectedLeadId : source === 'partner' ? !!selectedPartnerId : false;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
@@ -604,29 +601,13 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">Selecione o lead ou parceiro com projeto para abrir o gerador de proposta.</p>
 
-          {/* Source toggle */}
-          <div className="flex gap-1 p-1 bg-muted rounded-lg">
-            <button
-              onClick={() => { setSource('lead'); setSelectedPartnerId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'lead' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Lead
-            </button>
-            <button
-              onClick={() => { setSource('partner'); setSelectedLeadId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'partner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Parceiro
-            </button>
-          </div>
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); }} />
 
-          {source === 'lead' ? (
+          {source === 'new' ? (
+            <div className="p-3 border border-dashed border-border rounded-lg bg-muted/30 text-center">
+              <p className="text-sm text-muted-foreground">Para criar uma proposta, primeiro crie o lead e converta-o em projeto usando os botões <strong>Request</strong> ou <strong>Appt</strong>.</p>
+            </div>
+          ) : source === 'lead' ? (
             <div>
               <Label>Lead com Projeto *</Label>
               <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
