@@ -1,36 +1,50 @@
 
 
-## Plano: 3 Melhorias no Dashboard Admin
+## Sugestões de Melhoria — Pipeline de Vendas (`/admin/leads`)
 
-### 1. 4º MetricCard — "Proposals"
-- Buscar contagem de propostas com status `sent` ou `draft` da tabela `proposals`
-- Adicionar um 4º `MetricCard` com ícone `FileText`, label "Proposals", value = contagem de propostas abertas, sub = valor total em pipeline
-- Grid de 4 cards com `flex gap-3` (já funciona, só adicionar o 4º)
+### Sobre o nome da página
 
-### 2. Mini calendário semanal
-- Barra visual de 7 dias (Dom–Sab) entre a Agenda header e os cards de agenda
-- Cada dia mostra a letra do dia + um dot indicator se tem appointments naquele dia
-- Dia atual highlighted com bg accent
-- Usa os dados de `weekAppointments` já disponíveis (contém `appointment_date`)
-- Componente inline simples, sem novo arquivo
+O título **"Pipeline de Vendas"** faz sentido técnico, mas para apresentar a outros donos de empresa de flooring pode soar abstrato. Sugestões:
+- **"Leads & Vendas"** — mais direto
+- **"Funil de Vendas"** — termo mais popular em português  
+- **"Oportunidades"** — linguagem CRM moderna
 
-### 3. Recent Activity feed
-- Nova query busca as últimas 10 atividades combinando:
-  - `leads` criados recentemente (últimas 48h)
-  - `proposals` com `sent_at` recente
-  - `payments` com status `confirmed` recentes
-- Combina, ordena por data, e mostra numa lista compacta com ícone por tipo + timestamp relativo (formatDistance)
-- Nova section abaixo da Agenda com header "Recent Activity" + link "Ver tudo"
+### Melhorias de UI/UX propostas
+
+**1. Barra de saúde do funil (Conversion Funnel Bar)**
+- Adicionar uma barra visual horizontal mostrando a proporção de leads em cada estágio como segmentos coloridos
+- Dá uma visão instantânea de onde os leads estão concentrados (gargalos ficam óbvios)
+
+**2. Busca/filtro rápido por nome**
+- Campo de busca no topo para localizar um lead específico rapidamente (hoje não existe)
+- Essencial quando o pipeline cresce
+
+**3. Indicadores de conversão entre estágios**
+- Entre cada coluna do board, mostrar a taxa de conversão (ex: "65%" entre Cold Lead → Warm Lead)
+- Permite identificar onde o funil perde mais leads
+
+**4. Contador de dias médios por estágio**
+- No header de cada coluna, mostrar "Avg: 3.2 dias" — tempo médio que leads ficam naquele estágio
+- Identifica gargalos operacionais
+
+**5. Ações rápidas no card com swipe (mobile)**
+- No mobile, permitir swipe left no card para revelar ações (ligar, agendar, avançar)
+- Evita ter que abrir o modal para ações simples
+
+**6. Separar botões de ação por contexto**  
+- Hoje todos os 4 botões (New Lead, Appt, Proposal, Request) têm o mesmo estilo `bg-primary`
+- Diferenciar visualmente: "New Lead" como primary, os outros como `outline` ou `secondary`
+
+**7. Modo "Atenção" — filtro de leads que precisam de ação**
+- Botão toggle "Needs Action" que filtra apenas leads com alertas (stale, blocked, overdue follow-up)
+- Para o dono ver rapidamente "o que preciso fazer agora"
 
 ### Arquivos alterados
 | Arquivo | Ação |
 |---------|------|
-| `src/pages/admin/Dashboard.tsx` | Adicionar 4º MetricCard, mini calendário, query de activity feed, nova section |
+| `src/pages/admin/LeadsManager.tsx` | Renomear título |
+| `src/pages/admin/components/LinearPipeline.tsx` | Funnel bar, busca, conversão entre estágios, avg days, botões diferenciados, filtro "Needs Action" |
 
-### Layout no desktop (lg)
-No desktop, o layout atual é single-column. As 3 adições mantêm o mesmo padrão:
-- 4 MetricCards em row
-- Mission Control
-- Agenda (com mini calendário no topo)
-- Recent Activity (nova section)
+### Impacto
+Tudo visual/UX — sem mudança de lógica de backend ou pipeline.
 
