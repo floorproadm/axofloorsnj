@@ -1,71 +1,35 @@
 
 
-# Reorganizar Payments & Invoices — Integrar Payroll como Custo
+# Job Detail — Sidebar 640px + Resize + Página Dedicada
 
-## Problema Atual
-- **Payments** tem apenas 2 opções: Income e Expense (labor/material/other)
-- **Payroll** (folha de pagamento) fica isolado em Crews & Fleet
-- O usuário precisa ver tudo junto: ganhos, gastos operacionais e custos de mão de obra (payroll) num único hub financeiro
+## O que falta
+1. **Largura padrão da Sheet** está em `520px`, precisa ir para `640px`
+2. **Resize drag** (arrastar borda esquerda) como já existe no Lead Detail
+3. **Botão para abrir página dedicada** (`ExternalLink`) no header, navegando para `/admin/jobs/:id`
+4. **Página dedicada `/admin/jobs/:id`** que renderiza o mesmo conteúdo embedded (igual LeadDetail)
 
-## Proposta de Organização
+## Mudanças
 
-O sistema financeiro passa a ter **3 categorias claras**:
+### 1. `src/pages/admin/JobsManager.tsx` — JobDetailSheet
+- Trocar `sm:max-w-[520px]` por `sm:max-w-none` + `style={{ width: sheetWidth }}`
+- Adicionar estado `sheetWidth` com default `640`
+- Adicionar `handleMouseDown` com listeners de `mousemove`/`mouseup` para resize drag (mesmo padrão do LeadControlModal)
+- Adicionar div de resize handle na borda esquerda da Sheet
+- Adicionar botão `ExternalLink` no header que navega para `/admin/jobs/${project.id}`
 
-```text
-┌─────────────────────────────────────────────┐
-│  PAYMENTS & INVOICES                        │
-│                                             │
-│  New Payment → 3 opções:                    │
-│  ┌──────────────────┐                       │
-│  │ 💰 Record Income │ Pagamento recebido    │
-│  │ 📦 Record Expense│ Material / Other      │
-│  │ 👷 Record Payroll│ Custo de mão de obra  │
-│  └──────────────────┘                       │
-│                                             │
-│  Category pills:                            │
-│  [All] [Income] [Payroll] [Material] [Other]│
-│                                             │
-│  Payroll entries from Crews & Fleet         │
-│  aparecem automaticamente aqui também       │
-└─────────────────────────────────────────────┘
-```
+### 2. Nova página `src/pages/admin/JobDetail.tsx`
+- Rota: `/admin/jobs/:jobId`
+- Busca o projeto por ID no Supabase
+- Renderiza o componente JobDetailSheet em modo `embedded` (sem Sheet wrapper, direto no layout)
+- Botão "Voltar para Jobs" no topo
+- Padrão idêntico ao `src/pages/admin/LeadDetail.tsx`
 
-## Mudanças Técnicas
+### 3. `src/App.tsx` — Nova rota
+- Adicionar rota `/admin/jobs/:jobId` apontando para `JobDetail`
+- Posicionar antes da rota `/admin/jobs/:projectId/documents` para não conflitar
 
-### 1. PaymentActionSheet — Adicionar 3a opção "Record Payroll"
-- Novo botão com ícone `Hammer` e descrição "Crew wages, daily rates, sub payments"
-- Ao clicar, abre `NewPaymentDialog` com `defaultCategory = "labor"`
-- Renomear "Record Expense" para focar em material/other
-
-### 2. Category Pills em Payments.tsx
-- Renomear "Received" → "Income"
-- Renomear "Labor" → "Payroll"
-- Manter "Material" e "Other"
-- O filtro continua usando os mesmos valores do DB (`received`, `labor`, `material`, `other`)
-
-### 3. MonthlyOverview — Renomear labels
-- "Labor" → "Payroll" no display (o valor no DB continua `labor`)
-
-### 4. NewPaymentDialog — Melhorar UX para Payroll
-- Quando `defaultCategory = "labor"`:
-  - Mostrar campo de **Payment Method** (cash, check, zelle, etc.) — hoje só aparece para income
-  - Placeholder do description: "e.g. Crew wages week 1, John daily rate..."
-
-### 5. Crews & Fleet Payroll — Referência cruzada
-- Entries de payroll criadas em Crews & Fleet já usam `category: "labor"` na tabela `payments`
-- Portanto, já aparecem automaticamente em Payments — sem mudança de dados necessária
-- Adicionar um link sutil no Payroll tab de Crews que diga "View all in Payments →"
-
-## O Que NÃO Muda
-- Schema do banco (a coluna `category` já suporta `labor`)
-- Hooks `usePayments` / `useCreatePayment`
-- KPIs (payroll já é contado em "Total Out")
-- Chart financeiro (payroll já aparece como Expenses)
-
-## Resumo dos Arquivos
-1. `src/components/admin/payments/PaymentActionSheet.tsx` — adicionar 3a opção Payroll
-2. `src/pages/admin/Payments.tsx` — renomear labels nos pills
-3. `src/components/admin/payments/MonthlyOverview.tsx` — renomear "Labor" → "Payroll"
-4. `src/components/admin/payments/NewPaymentDialog.tsx` — mostrar payment method para labor
-5. `src/pages/admin/CrewsVans.tsx` — link "View all in Payments →" no tab Payroll
+### Arquivos
+1. `src/pages/admin/JobsManager.tsx` — resize + width 640 + botão ExternalLink
+2. `src/pages/admin/JobDetail.tsx` — nova página dedicada
+3. `src/App.tsx` — nova rota
 
