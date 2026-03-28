@@ -124,6 +124,62 @@ function getOperationalAlert(lead: Lead, nra: any) {
   return null;
 }
 
+/* ─── Reusable Source Toggle (Lead | Parceiro | Novo) ─── */
+type SourceType = 'lead' | 'partner' | 'new';
+
+function SourceToggle({ source, onChange }: { source: SourceType; onChange: (s: SourceType) => void }) {
+  return (
+    <div className="flex gap-1 p-1 bg-muted rounded-lg">
+      {([['lead', 'Lead'], ['partner', 'Parceiro'], ['new', '+ Novo']] as const).map(([key, label]) => (
+        <button
+          key={key}
+          onClick={() => onChange(key)}
+          className={cn(
+            "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
+            source === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Inline New Lead Fields ─── */
+function InlineNewLeadFields({ form, setForm }: {
+  form: { name: string; phone: string; email: string; address: string };
+  setForm: React.Dispatch<React.SetStateAction<{ name: string; phone: string; email: string; address: string }>>;
+}) {
+  return (
+    <div className="space-y-2 p-3 border border-dashed border-border rounded-lg bg-muted/30">
+      <p className="text-xs font-medium text-muted-foreground">Dados do novo lead</p>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Nome *</Label>
+          <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome completo" className="h-8 text-sm" />
+        </div>
+        <div>
+          <Label className="text-xs">Telefone *</Label>
+          <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(XXX) XXX-XXXX" className="h-8 text-sm" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Email</Label>
+          <Input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@ex.com" className="h-8 text-sm" />
+        </div>
+        <div>
+          <Label className="text-xs">Endereço *</Label>
+          <Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="Endereço" className="h-8 text-sm" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const EMPTY_NEW_LEAD = { name: '', phone: '', email: '', address: '' };
+
 /* ════════════════════════════════════════════════════════════
    QUICK ACTION MODALS
    ════════════════════════════════════════════════════════════ */
@@ -233,8 +289,9 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const [apptTime, setApptTime] = useState('');
   const [apptAddress, setApptAddress] = useState('');
   const [notes, setNotes] = useState('');
-  const [source, setSource] = useState<'lead' | 'partner'>('lead');
+  const [source, setSource] = useState<SourceType>('lead');
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
+  const [newLeadForm, setNewLeadForm] = useState(EMPTY_NEW_LEAD);
   const { updateLeadStatus } = useLeadPipeline();
   const { addFollowUpAction } = useLeadFollowUp();
   const { partners } = usePartnersData();
@@ -244,7 +301,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
     [partners]
   );
 
-  // Leads eligible for scheduling: early stages, not yet converted
   const eligibleLeads = useMemo(() =>
     leads.filter(l => {
       const s = normalizeStatus(l.status);
@@ -255,7 +311,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
 
   const resetForm = () => { 
     setSelectedLeadId(''); setApptDate(''); setApptTime(''); setApptAddress(''); setNotes(''); 
-    setSource('lead'); setSelectedPartnerId('');
+    setSource('lead'); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD);
   };
 
   // Auto-fill address when lead is selected
@@ -274,7 +330,12 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
       toast.error('Selecione um parceiro');
       return;
     }
-    if (!apptAddress.trim()) {
+    if (source === 'new' && (!newLeadForm.name.trim() || !newLeadForm.phone.trim())) {
+      toast.error('Nome e telefone são obrigatórios');
+      return;
+    }
+    const addressValue = source === 'new' ? newLeadForm.address.trim() : apptAddress.trim();
+    if (!addressValue) {
       toast.error('Endereço é obrigatório');
       return;
     }
@@ -285,11 +346,34 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
 
     setSaving(true);
     try {
-      if (source === 'partner') {
+      let leadName = '';
+      let leadPhone = '';
+      let createdLeadId = '';
+
+      if (source === 'new') {
+        // Create new lead directly
+        const { data: newLead, error: insertError } = await supabase
+          .from('leads')
+          .insert({
+            name: newLeadForm.name.trim(),
+            phone: newLeadForm.phone.trim(),
+            email: newLeadForm.email.trim() || null,
+            address: addressValue,
+            lead_source: 'manual',
+            status: 'estimate_scheduled',
+            priority: 'medium',
+            organization_id: AXO_ORG_ID,
+          })
+          .select('id')
+          .single();
+        if (insertError) throw insertError;
+        createdLeadId = newLead.id;
+        leadName = newLeadForm.name.trim();
+        leadPhone = newLeadForm.phone.trim();
+      } else if (source === 'partner') {
         const partner = activePartners.find(p => p.id === selectedPartnerId);
         if (!partner) throw new Error('Parceiro não encontrado');
 
-        // Create lead from partner
         const { data: newLead, error: insertError } = await supabase
           .from('leads')
           .insert({
@@ -299,7 +383,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
             lead_source: 'referral',
             status: 'estimate_scheduled',
             priority: 'high',
-            address: apptAddress.trim(),
+            address: addressValue,
             notes: `Via parceiro: ${partner.company_name}`,
             referred_by_partner_id: partner.id,
             organization_id: AXO_ORG_ID,
@@ -307,20 +391,10 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           .select('id')
           .single();
         if (insertError) throw insertError;
+        createdLeadId = newLead.id;
+        leadName = partner.contact_name;
+        leadPhone = partner.phone || 'N/A';
 
-        // Create appointment
-        await supabase.from('appointments').insert({
-          customer_name: partner.contact_name,
-          customer_phone: partner.phone || 'N/A',
-          appointment_date: apptDate,
-          appointment_time: apptTime,
-          appointment_type: 'estimate',
-          location: apptAddress.trim(),
-          notes: notes.trim() || `Parceiro: ${partner.company_name}`,
-          organization_id: AXO_ORG_ID,
-        });
-
-        // Increment partner referrals
         await supabase
           .from('partners')
           .update({ 
@@ -328,50 +402,40 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
             last_contacted_at: new Date().toISOString(),
           } as any)
           .eq('id', partner.id);
-
-        if (newLead) {
-          await addFollowUpAction(newLead.id, {
-            date: new Date().toISOString(),
-            action: 'Visita agendada via parceiro',
-            notes: `Parceiro: ${partner.company_name}`,
-          });
-        }
-
-        toast.success('Visita agendada via parceiro');
       } else {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
+        createdLeadId = lead.id;
+        leadName = lead.name;
+        leadPhone = lead.phone;
 
-        // Save address to lead
-        if (apptAddress.trim()) {
-          await supabase.from('leads').update({ address: apptAddress.trim() }).eq('id', lead.id);
+        if (addressValue) {
+          await supabase.from('leads').update({ address: addressValue }).eq('id', lead.id);
         }
+        await updateLeadStatus(lead.id, 'estimate_scheduled');
+      }
 
-        const { error: apptError } = await supabase.from('appointments').insert({
-          customer_name: lead.name,
-          customer_phone: lead.phone,
-          appointment_date: apptDate,
-          appointment_time: apptTime,
-          appointment_type: 'estimate',
-          location: apptAddress.trim() || null,
-          notes: notes.trim() || null,
-          organization_id: AXO_ORG_ID,
-        });
-        if (apptError) throw apptError;
+      // Create appointment
+      await supabase.from('appointments').insert({
+        customer_name: leadName,
+        customer_phone: leadPhone,
+        appointment_date: apptDate,
+        appointment_time: apptTime,
+        appointment_type: 'estimate',
+        location: addressValue || null,
+        notes: notes.trim() || null,
+        organization_id: AXO_ORG_ID,
+      });
 
-        const ok = await updateLeadStatus(lead.id, 'estimate_scheduled');
-
-        await addFollowUpAction(lead.id, {
+      if (createdLeadId) {
+        await addFollowUpAction(createdLeadId, {
           date: new Date().toISOString(),
           action: 'Visita agendada',
           notes: notes.trim() || undefined,
         });
-
-        if (ok) {
-          toast.success('Visita agendada com sucesso');
-        }
       }
 
+      toast.success('Visita agendada com sucesso');
       resetForm();
       onOpenChange(false);
       onSuccess();
@@ -392,27 +456,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          {/* Source toggle */}
-          <div className="flex gap-1 p-1 bg-muted rounded-lg">
-            <button
-              onClick={() => { setSource('lead'); setSelectedPartnerId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'lead' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Lead
-            </button>
-            <button
-              onClick={() => { setSource('partner'); setSelectedLeadId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'partner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Parceiro
-            </button>
-          </div>
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
           {source === 'lead' ? (
             <div>
@@ -434,7 +478,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
                 </SelectContent>
               </Select>
             </div>
-          ) : (
+          ) : source === 'partner' ? (
             <div>
               <Label>Parceiro *</Label>
               <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
@@ -454,17 +498,21 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
                 </SelectContent>
               </Select>
             </div>
+          ) : (
+            <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} />
           )}
 
-          <div>
-            <Label htmlFor="appt-address">Endereço *</Label>
-            <Input 
-              id="appt-address" 
-              value={apptAddress} 
-              onChange={e => setApptAddress(e.target.value)} 
-              placeholder="Endereço do cliente..."
-            />
-          </div>
+          {source !== 'new' && (
+            <div>
+              <Label htmlFor="appt-address">Endereço *</Label>
+              <Input 
+                id="appt-address" 
+                value={apptAddress} 
+                onChange={e => setApptAddress(e.target.value)} 
+                placeholder="Endereço do cliente..."
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -501,11 +549,10 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 }) {
   const navigate = useNavigate();
   const [selectedLeadId, setSelectedLeadId] = useState('');
-  const [source, setSource] = useState<'lead' | 'partner'>('lead');
+  const [source, setSource] = useState<SourceType>('lead');
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const { partners } = usePartnersData();
 
-  // Partners that have referred leads with projects
   const partnerLeadsWithProject = useMemo(() =>
     leads.filter(l => !!l.converted_to_project_id && !!l.referred_by_partner_id),
     [leads]
@@ -516,7 +563,6 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
     return partners.filter(p => partnerIds.has(p.id));
   }, [partners, partnerLeadsWithProject]);
 
-  // Leads with project linked
   const eligibleLeads = useMemo(() =>
     leads.filter(l => !!l.converted_to_project_id),
     [leads]
@@ -526,7 +572,6 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 
   const handleGo = () => {
     if (source === 'partner') {
-      // Find leads referred by this partner that have a project
       const partnerLeads = partnerLeadsWithProject.filter(l => l.referred_by_partner_id === selectedPartnerId);
       if (partnerLeads.length > 0 && partnerLeads[0].converted_to_project_id) {
         onOpenChange(false);
@@ -542,7 +587,7 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
     }
   };
 
-  const canGo = source === 'lead' ? !!selectedLeadId : !!selectedPartnerId;
+  const canGo = source === 'lead' ? !!selectedLeadId : source === 'partner' ? !!selectedPartnerId : false;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
@@ -556,29 +601,13 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">Selecione o lead ou parceiro com projeto para abrir o gerador de proposta.</p>
 
-          {/* Source toggle */}
-          <div className="flex gap-1 p-1 bg-muted rounded-lg">
-            <button
-              onClick={() => { setSource('lead'); setSelectedPartnerId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'lead' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Lead
-            </button>
-            <button
-              onClick={() => { setSource('partner'); setSelectedLeadId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'partner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Parceiro
-            </button>
-          </div>
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); }} />
 
-          {source === 'lead' ? (
+          {source === 'new' ? (
+            <div className="p-3 border border-dashed border-border rounded-lg bg-muted/30 text-center">
+              <p className="text-sm text-muted-foreground">Para criar uma proposta, primeiro crie o lead e converta-o em projeto usando os botões <strong>Request</strong> ou <strong>Appt</strong>.</p>
+            </div>
+          ) : source === 'lead' ? (
             <div>
               <Label>Lead com Projeto *</Label>
               <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
@@ -643,8 +672,9 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [budget, setBudget] = useState('');
   const [notes, setNotes] = useState('');
-  const [source, setSource] = useState<'lead' | 'partner'>('lead');
+  const [source, setSource] = useState<SourceType>('lead');
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
+  const [newLeadForm, setNewLeadForm] = useState(EMPTY_NEW_LEAD);
   const { updateLeadStatus } = useLeadPipeline();
   const { addFollowUpAction } = useLeadFollowUp();
   const { partners } = usePartnersData();
@@ -654,7 +684,6 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
     [partners]
   );
 
-  // Leads eligible: warm leads that can move to estimate_requested
   const eligibleLeads = useMemo(() =>
     leads.filter(l => {
       const s = normalizeStatus(l.status);
@@ -665,7 +694,7 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
 
   const resetForm = () => { 
     setSelectedLeadId(''); setSelectedServices([]); setBudget(''); setNotes(''); 
-    setSource('lead'); setSelectedPartnerId('');
+    setSource('lead'); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD);
   };
 
   const toggleService = (svc: string) => {
@@ -683,11 +712,42 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
       toast.error('Selecione um parceiro');
       return;
     }
+    if (source === 'new' && (!newLeadForm.name.trim() || !newLeadForm.phone.trim())) {
+      toast.error('Nome e telefone são obrigatórios');
+      return;
+    }
 
     setSaving(true);
     try {
-      if (source === 'partner') {
-        // Create a new lead from the partner
+      if (source === 'new') {
+        const { data: newLead, error: insertError } = await supabase
+          .from('leads')
+          .insert({
+            name: newLeadForm.name.trim(),
+            phone: newLeadForm.phone.trim(),
+            email: newLeadForm.email.trim() || null,
+            address: newLeadForm.address.trim() || null,
+            lead_source: 'manual',
+            status: 'estimate_requested',
+            priority: 'medium',
+            services: selectedServices.length > 0 ? selectedServices : undefined,
+            budget: budget ? parseFloat(budget) : undefined,
+            notes: notes.trim() || null,
+            organization_id: AXO_ORG_ID,
+          })
+          .select('id')
+          .single();
+        if (insertError) throw insertError;
+
+        if (newLead) {
+          await addFollowUpAction(newLead.id, {
+            date: new Date().toISOString(),
+            action: 'Orçamento solicitado (novo lead)',
+            notes: notes.trim() || undefined,
+          });
+        }
+        toast.success('Lead criado e solicitação registrada');
+      } else if (source === 'partner') {
         const partner = activePartners.find(p => p.id === selectedPartnerId);
         if (!partner) throw new Error('Parceiro não encontrado');
 
@@ -708,10 +768,8 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
           })
           .select('id')
           .single();
-
         if (insertError) throw insertError;
 
-        // Increment partner referrals
         await supabase
           .from('partners')
           .update({ 
@@ -727,13 +785,11 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
             notes: `Parceiro: ${partner.company_name}`,
           });
         }
-
         toast.success('Solicitação registrada via parceiro');
       } else {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
 
-        // Update informational fields
         const updateData: Record<string, any> = {};
         if (selectedServices.length > 0) updateData.services = selectedServices;
         if (budget) updateData.budget = parseFloat(budget);
@@ -775,29 +831,11 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          {/* Source toggle */}
-          <div className="flex gap-1 p-1 bg-muted rounded-lg">
-            <button
-              onClick={() => { setSource('lead'); setSelectedPartnerId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'lead' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Lead
-            </button>
-            <button
-              onClick={() => { setSource('partner'); setSelectedLeadId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'partner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Parceiro
-            </button>
-          </div>
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
-          {source === 'lead' ? (
+          {source === 'new' ? (
+            <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} />
+          ) : source === 'lead' ? (
             <div>
               <Label>Lead *</Label>
               <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
