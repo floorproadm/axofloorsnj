@@ -1131,12 +1131,6 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
       {/* Row 1: Name + Value */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className={cn(
-            "text-[9px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap flex-shrink-0",
-            timeBadge.className
-          )}>
-            {timeBadge.text}
-          </span>
           <span className="font-bold text-sm text-foreground truncate leading-tight">
             {lead.name.toUpperCase()}
           </span>
