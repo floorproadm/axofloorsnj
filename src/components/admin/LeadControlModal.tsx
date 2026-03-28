@@ -509,6 +509,28 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
             </Button>
           )}
         </div>
+      </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-140px)] border rounded-lg overflow-hidden">
+        {innerContent}
+      </div>
+    );
+  }
+
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="right" className="p-0 flex flex-col h-full w-full sm:max-w-none" style={{ width: `${sheetWidth}px` }}>
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-primary/20 transition-colors"
+        >
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
+        </div>
+        {innerContent}
       </SheetContent>
     </Sheet>
   );
