@@ -76,7 +76,7 @@ export function AdminSidebar() {
   ];
 
   const manageItems = [
-    { title: "Leads", url: "/admin/leads", icon: Users },
+    { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: "Crews & Fleet", url: "/admin/crews", icon: Truck },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
