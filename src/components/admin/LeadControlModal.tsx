@@ -1130,3 +1130,74 @@ function ProposalActionsPanel({
     </div>
   );
 }
+
+// ═══════════════════════════════════════════════════════════
+// INLINE FIELD — click to edit, Notion-style
+// ═══════════════════════════════════════════════════════════
+function InlineField({
+  icon, label, value, field, editingField, editValues,
+  onStartEdit, onSave, onCancel, onChange,
+  linkHref, placeholder, prefix, type = 'text',
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  field: string;
+  editingField: string | null;
+  editValues: Record<string, string>;
+  onStartEdit: (field: string, value: string) => void;
+  onSave: (field: string, value: string) => void;
+  onCancel: () => void;
+  onChange: (field: string, value: string) => void;
+  linkHref?: string;
+  placeholder?: string;
+  prefix?: string;
+  type?: string;
+}) {
+  const isEditing = editingField === field;
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-muted/50">
+        <span className="text-muted-foreground shrink-0">{icon}</span>
+        <Input
+          autoFocus
+          type={type}
+          value={editValues[field] ?? value}
+          onChange={(e) => onChange(field, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onSave(field, editValues[field] ?? value);
+            if (e.key === 'Escape') onCancel();
+          }}
+          className="h-7 text-sm flex-1"
+          placeholder={placeholder}
+        />
+        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onSave(field, editValues[field] ?? value)}>
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 cursor-pointer group transition-colors"
+      onClick={() => onStartEdit(field, value)}
+    >
+      <span className="text-muted-foreground shrink-0">{icon}</span>
+      <span className="text-xs text-muted-foreground w-16 shrink-0">{label}</span>
+      {value ? (
+        linkHref ? (
+          <a href={linkHref} className="text-sm text-primary hover:underline truncate flex-1" onClick={e => e.stopPropagation()}>
+            {prefix}{value}
+          </a>
+        ) : (
+          <span className="text-sm font-medium truncate flex-1">{prefix}{value}</span>
+        )
+      ) : (
+        <span className="text-sm text-muted-foreground/60 italic truncate flex-1">{placeholder || 'Vazio'}</span>
+      )}
+      <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+    </div>
+  );
+}
