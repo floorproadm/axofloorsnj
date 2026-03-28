@@ -40,9 +40,9 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2, X, Zap
+  Loader2, X, Zap, Search, Filter
 } from "lucide-react";
-import { differenceInHours, format } from "date-fns";
+import { differenceInHours, differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type Lead = {
@@ -555,6 +555,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [needsActionOnly, setNeedsActionOnly] = useState(false);
 
   // Quick-action modal states
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
