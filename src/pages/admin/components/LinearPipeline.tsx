@@ -469,6 +469,20 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 }) {
   const navigate = useNavigate();
   const [selectedLeadId, setSelectedLeadId] = useState('');
+  const [source, setSource] = useState<'lead' | 'partner'>('lead');
+  const [selectedPartnerId, setSelectedPartnerId] = useState('');
+  const { partners } = usePartnersData();
+
+  // Partners that have referred leads with projects
+  const partnerLeadsWithProject = useMemo(() =>
+    leads.filter(l => !!l.converted_to_project_id && !!l.referred_by_partner_id),
+    [leads]
+  );
+
+  const partnersWithProjects = useMemo(() => {
+    const partnerIds = new Set(partnerLeadsWithProject.map(l => l.referred_by_partner_id));
+    return partners.filter(p => partnerIds.has(p.id));
+  }, [partners, partnerLeadsWithProject]);
 
   // Leads with project linked
   const eligibleLeads = useMemo(() =>
@@ -476,16 +490,30 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
     [leads]
   );
 
+  const resetForm = () => { setSelectedLeadId(''); setSelectedPartnerId(''); setSource('lead'); };
+
   const handleGo = () => {
-    const lead = eligibleLeads.find(l => l.id === selectedLeadId);
-    if (!lead?.converted_to_project_id) return;
-    onOpenChange(false);
-    setSelectedLeadId('');
-    navigate(`/admin/projects/${lead.converted_to_project_id}`);
+    if (source === 'partner') {
+      // Find leads referred by this partner that have a project
+      const partnerLeads = partnerLeadsWithProject.filter(l => l.referred_by_partner_id === selectedPartnerId);
+      if (partnerLeads.length > 0 && partnerLeads[0].converted_to_project_id) {
+        onOpenChange(false);
+        resetForm();
+        navigate(`/admin/projects/${partnerLeads[0].converted_to_project_id}`);
+      }
+    } else {
+      const lead = eligibleLeads.find(l => l.id === selectedLeadId);
+      if (!lead?.converted_to_project_id) return;
+      onOpenChange(false);
+      resetForm();
+      navigate(`/admin/projects/${lead.converted_to_project_id}`);
+    }
   };
 
+  const canGo = source === 'lead' ? !!selectedLeadId : !!selectedPartnerId;
+
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) setSelectedLeadId(''); onOpenChange(v); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -494,30 +522,75 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Selecione o lead com projeto para abrir o gerador de proposta.</p>
-          <div>
-            <Label>Lead com Projeto *</Label>
-            <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione..." />
-              </SelectTrigger>
-              <SelectContent>
-                {eligibleLeads.length === 0 ? (
-                  <SelectItem value="_none" disabled>Nenhum lead com projeto</SelectItem>
-                ) : (
-                  eligibleLeads.map(l => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name} — {STAGE_LABELS[normalizeStatus(l.status)]}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+          <p className="text-sm text-muted-foreground">Selecione o lead ou parceiro com projeto para abrir o gerador de proposta.</p>
+
+          {/* Source toggle */}
+          <div className="flex gap-1 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => { setSource('lead'); setSelectedPartnerId(''); }}
+              className={cn(
+                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
+                source === 'lead' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Lead
+            </button>
+            <button
+              onClick={() => { setSource('partner'); setSelectedLeadId(''); }}
+              className={cn(
+                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
+                source === 'partner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Parceiro
+            </button>
           </div>
+
+          {source === 'lead' ? (
+            <div>
+              <Label>Lead com Projeto *</Label>
+              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {eligibleLeads.length === 0 ? (
+                    <SelectItem value="_none" disabled>Nenhum lead com projeto</SelectItem>
+                  ) : (
+                    eligibleLeads.map(l => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.name} — {STAGE_LABELS[normalizeStatus(l.status)]}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div>
+              <Label>Parceiro com Projeto *</Label>
+              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um parceiro..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {partnersWithProjects.length === 0 ? (
+                    <SelectItem value="_none" disabled>Nenhum parceiro com projeto</SelectItem>
+                  ) : (
+                    partnersWithProjects.map(p => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.contact_name} — {p.company_name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleGo} disabled={!selectedLeadId} className="bg-primary text-primary-foreground">
+          <Button onClick={handleGo} disabled={!canGo} className="bg-primary text-primary-foreground">
             Abrir Projeto
           </Button>
         </DialogFooter>
