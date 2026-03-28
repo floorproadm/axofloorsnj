@@ -456,27 +456,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          {/* Source toggle */}
-          <div className="flex gap-1 p-1 bg-muted rounded-lg">
-            <button
-              onClick={() => { setSource('lead'); setSelectedPartnerId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'lead' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Lead
-            </button>
-            <button
-              onClick={() => { setSource('partner'); setSelectedLeadId(''); }}
-              className={cn(
-                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-                source === 'partner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Parceiro
-            </button>
-          </div>
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
           {source === 'lead' ? (
             <div>
@@ -498,7 +478,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
                 </SelectContent>
               </Select>
             </div>
-          ) : (
+          ) : source === 'partner' ? (
             <div>
               <Label>Parceiro *</Label>
               <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
@@ -518,17 +498,21 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
                 </SelectContent>
               </Select>
             </div>
+          ) : (
+            <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} />
           )}
 
-          <div>
-            <Label htmlFor="appt-address">Endereço *</Label>
-            <Input 
-              id="appt-address" 
-              value={apptAddress} 
-              onChange={e => setApptAddress(e.target.value)} 
-              placeholder="Endereço do cliente..."
-            />
-          </div>
+          {source !== 'new' && (
+            <div>
+              <Label htmlFor="appt-address">Endereço *</Label>
+              <Input 
+                id="appt-address" 
+                value={apptAddress} 
+                onChange={e => setApptAddress(e.target.value)} 
+                placeholder="Endereço do cliente..."
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
