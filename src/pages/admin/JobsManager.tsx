@@ -600,6 +600,7 @@ function getNextAction(
 }
 
 export function JobControlModal({ project, isOpen, onClose, onRefresh, embedded = false }: JobControlModalProps & { embedded?: boolean }) {
+  const isMobile = useIsMobile();
   const { data: jobCost, refetch: refetchCost } = useJobCost(project.id);
   const { marginMinPercent } = useCompanySettings();
   const validation = useMarginValidation(project.id);
