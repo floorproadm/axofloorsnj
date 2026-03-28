@@ -230,8 +230,16 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const [apptDate, setApptDate] = useState('');
   const [apptTime, setApptTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [source, setSource] = useState<'lead' | 'partner'>('lead');
+  const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const { updateLeadStatus } = useLeadPipeline();
   const { addFollowUpAction } = useLeadFollowUp();
+  const { partners } = usePartnersData();
+
+  const activePartners = useMemo(() =>
+    partners.filter(p => ['active', 'trial_first_job'].includes(p.status)),
+    [partners]
+  );
 
   // Leads eligible for scheduling: early stages, not yet converted
   const eligibleLeads = useMemo(() =>
@@ -242,43 +250,106 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
     [leads]
   );
 
-  const resetForm = () => { setSelectedLeadId(''); setApptDate(''); setApptTime(''); setNotes(''); };
+  const resetForm = () => { 
+    setSelectedLeadId(''); setApptDate(''); setApptTime(''); setNotes(''); 
+    setSource('lead'); setSelectedPartnerId('');
+  };
 
   const handleSave = async () => {
-    if (!selectedLeadId || !apptDate || !apptTime) {
-      toast.error('Selecione lead, data e hora');
+    if (source === 'lead' && !selectedLeadId) {
+      toast.error('Selecione um lead');
       return;
     }
-    const lead = eligibleLeads.find(l => l.id === selectedLeadId);
-    if (!lead) return;
+    if (source === 'partner' && !selectedPartnerId) {
+      toast.error('Selecione um parceiro');
+      return;
+    }
+    if (!apptDate || !apptTime) {
+      toast.error('Selecione data e hora');
+      return;
+    }
 
     setSaving(true);
     try {
-      // 1. Insert appointment
-      const { error: apptError } = await supabase.from('appointments').insert({
-        customer_name: lead.name,
-        customer_phone: lead.phone,
-        appointment_date: apptDate,
-        appointment_time: apptTime,
-        appointment_type: 'estimate',
-        notes: notes.trim() || null,
-        organization_id: AXO_ORG_ID,
-      });
-      if (apptError) throw apptError;
+      if (source === 'partner') {
+        const partner = activePartners.find(p => p.id === selectedPartnerId);
+        if (!partner) throw new Error('Parceiro não encontrado');
 
-      // 2. Transition status via RPC (trigger validates)
-      const ok = await updateLeadStatus(lead.id, 'estimate_scheduled');
+        // Create lead from partner
+        const { data: newLead, error: insertError } = await supabase
+          .from('leads')
+          .insert({
+            name: partner.contact_name,
+            phone: partner.phone || 'N/A',
+            email: partner.email,
+            lead_source: 'referral',
+            status: 'estimate_scheduled',
+            priority: 'high',
+            notes: `Via parceiro: ${partner.company_name}`,
+            referred_by_partner_id: partner.id,
+            organization_id: AXO_ORG_ID,
+          })
+          .select('id')
+          .single();
+        if (insertError) throw insertError;
 
-      // 3. Register follow-up action
-      await addFollowUpAction(lead.id, {
-        date: new Date().toISOString(),
-        action: 'Visita agendada',
-        notes: notes.trim() || undefined,
-      });
+        // Create appointment
+        await supabase.from('appointments').insert({
+          customer_name: partner.contact_name,
+          customer_phone: partner.phone || 'N/A',
+          appointment_date: apptDate,
+          appointment_time: apptTime,
+          appointment_type: 'estimate',
+          notes: notes.trim() || `Parceiro: ${partner.company_name}`,
+          organization_id: AXO_ORG_ID,
+        });
 
-      if (ok) {
-        toast.success('Visita agendada com sucesso');
+        // Increment partner referrals
+        await supabase
+          .from('partners')
+          .update({ 
+            total_referrals: (partner.total_referrals || 0) + 1,
+            last_contacted_at: new Date().toISOString(),
+          } as any)
+          .eq('id', partner.id);
+
+        if (newLead) {
+          await addFollowUpAction(newLead.id, {
+            date: new Date().toISOString(),
+            action: 'Visita agendada via parceiro',
+            notes: `Parceiro: ${partner.company_name}`,
+          });
+        }
+
+        toast.success('Visita agendada via parceiro');
+      } else {
+        const lead = eligibleLeads.find(l => l.id === selectedLeadId);
+        if (!lead) return;
+
+        const { error: apptError } = await supabase.from('appointments').insert({
+          customer_name: lead.name,
+          customer_phone: lead.phone,
+          appointment_date: apptDate,
+          appointment_time: apptTime,
+          appointment_type: 'estimate',
+          notes: notes.trim() || null,
+          organization_id: AXO_ORG_ID,
+        });
+        if (apptError) throw apptError;
+
+        const ok = await updateLeadStatus(lead.id, 'estimate_scheduled');
+
+        await addFollowUpAction(lead.id, {
+          date: new Date().toISOString(),
+          action: 'Visita agendada',
+          notes: notes.trim() || undefined,
+        });
+
+        if (ok) {
+          toast.success('Visita agendada com sucesso');
+        }
       }
+
       resetForm();
       onOpenChange(false);
       onSuccess();
@@ -299,25 +370,70 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <div>
-            <Label>Lead *</Label>
-            <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um lead..." />
-              </SelectTrigger>
-              <SelectContent>
-                {eligibleLeads.length === 0 ? (
-                  <SelectItem value="_none" disabled>Nenhum lead elegível</SelectItem>
-                ) : (
-                  eligibleLeads.map(l => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name}{l.city ? ` — ${l.city}` : ''}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+          {/* Source toggle */}
+          <div className="flex gap-1 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => { setSource('lead'); setSelectedPartnerId(''); }}
+              className={cn(
+                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
+                source === 'lead' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Lead
+            </button>
+            <button
+              onClick={() => { setSource('partner'); setSelectedLeadId(''); }}
+              className={cn(
+                "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
+                source === 'partner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Parceiro
+            </button>
           </div>
+
+          {source === 'lead' ? (
+            <div>
+              <Label>Lead *</Label>
+              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um lead..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {eligibleLeads.length === 0 ? (
+                    <SelectItem value="_none" disabled>Nenhum lead elegível</SelectItem>
+                  ) : (
+                    eligibleLeads.map(l => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.name}{l.city ? ` — ${l.city}` : ''}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div>
+              <Label>Parceiro *</Label>
+              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um parceiro..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {activePartners.length === 0 ? (
+                    <SelectItem value="_none" disabled>Nenhum parceiro ativo</SelectItem>
+                  ) : (
+                    activePartners.map(p => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.contact_name} — {p.company_name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="appt-date">Data *</Label>
