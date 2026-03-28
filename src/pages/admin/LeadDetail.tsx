@@ -23,14 +23,14 @@ export default function LeadDetail() {
       return {
         ...data,
         services: Array.isArray(data.services) ? data.services as string[] : [],
-        follow_up_actions: Array.isArray(data.follow_up_actions) ? data.follow_up_actions : [],
+        follow_up_actions: Array.isArray(data.follow_up_actions) ? data.follow_up_actions as any[] : [],
       };
     },
     enabled: !!leadId,
   });
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Lead Detail">
       <div className="p-4 sm:p-6">
         <Button
           variant="ghost"

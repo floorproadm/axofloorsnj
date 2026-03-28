@@ -57,6 +57,7 @@ interface LeadControlModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRefresh: () => void;
+  embedded?: boolean;
 }
 
 const PROJECT_TYPES = [
