@@ -633,11 +633,7 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 
           <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); }} />
 
-          {source === 'new' ? (
-            <div className="p-3 border border-dashed border-border rounded-lg bg-muted/30 text-center">
-              <p className="text-sm text-muted-foreground">Para criar uma proposta, primeiro crie o lead e converta-o em projeto usando os botões <strong>Request</strong> ou <strong>Appt</strong>.</p>
-            </div>
-          ) : source === 'lead' ? (
+          {source === 'lead' ? (
             <div>
               <Label>Lead com Projeto *</Label>
               <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
