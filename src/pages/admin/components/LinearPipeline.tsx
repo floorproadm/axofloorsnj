@@ -750,7 +750,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   return (
     <div className="space-y-3">
       {/* Top Summary Bar */}
-      <div className="bg-card border rounded-xl px-3 sm:px-4 py-3 space-y-2">
+      <div className="bg-card border rounded-xl px-3 sm:px-4 py-3 space-y-3">
         {/* Row 1: Stats + View Toggle */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -762,9 +762,18 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
             <div>
               <span className="text-[10px] sm:text-xs text-muted-foreground block">Valor Total</span>
               <span className="text-lg sm:text-xl font-bold text-primary">
-                ${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </span>
             </div>
+            {pipelineHealth.needsAction > 0 && (
+              <>
+                <div className="h-6 sm:h-8 w-px bg-border" />
+                <div>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground block">Atenção</span>
+                  <span className="text-lg sm:text-xl font-bold text-destructive">{pipelineHealth.needsAction}</span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* View Toggle */}
@@ -796,11 +805,87 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </div>
         </div>
 
-        {/* Row 2: Action Buttons — scrollable on mobile */}
+        {/* Funnel Health Bar */}
+        {pipelineHealth.active > 0 && (
+          <div className="space-y-1">
+            <div className="flex h-2.5 rounded-full overflow-hidden bg-muted/40">
+              {SALES_STAGES.map(stage => {
+                const count = stageStats[stage]?.count || 0;
+                if (count === 0) return null;
+                const pct = (count / pipelineHealth.active) * 100;
+                const config = STAGE_CONFIG[stage];
+                return (
+                  <div
+                    key={stage}
+                    className={cn("h-full transition-all", config.bgColor, "opacity-80")}
+                    style={{ width: `${pct}%`, minWidth: count > 0 ? '4px' : '0' }}
+                    title={`${STAGE_LABELS[stage]}: ${count} leads (${Math.round(pct)}%)`}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {SALES_STAGES.filter(s => (stageStats[s]?.count || 0) > 0).map(stage => {
+                const config = STAGE_CONFIG[stage];
+                return (
+                  <span key={stage} className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                    <span className={cn("w-2 h-2 rounded-full inline-block", config.bgColor)} />
+                    {STAGE_LABELS[stage]} ({stageStats[stage]?.count})
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Row 2: Search + Needs Action Toggle */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar lead..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-xs"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          <Button
+            size="sm"
+            variant={needsActionOnly ? "default" : "outline"}
+            className={cn(
+              "text-xs h-8 flex-shrink-0 gap-1.5",
+              needsActionOnly && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            )}
+            onClick={() => setNeedsActionOnly(!needsActionOnly)}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Atenção</span>
+            {pipelineHealth.needsAction > 0 && (
+              <span className={cn(
+                "text-[10px] px-1.5 py-0 rounded-full font-bold",
+                needsActionOnly 
+                  ? "bg-destructive-foreground/20 text-destructive-foreground" 
+                  : "bg-destructive/10 text-destructive"
+              )}>
+                {pipelineHealth.needsAction}
+              </span>
+            )}
+          </Button>
+        </div>
+
+        {/* Row 3: Action Buttons — differentiated */}
         <div className="flex items-center gap-2 overflow-x-auto pb-0.5 -mx-1 px-1">
           <Button
             size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
+            className="text-xs h-7 sm:h-8 flex-shrink-0"
             onClick={() => setShowNewLeadModal(true)}
           >
             <UserPlus className="w-3.5 h-3.5" />
@@ -808,7 +893,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </Button>
           <Button
             size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
+            variant="outline"
+            className="text-xs h-7 sm:h-8 flex-shrink-0"
             onClick={() => setShowApptModal(true)}
           >
             <CalendarPlus className="w-3.5 h-3.5" />
@@ -816,7 +902,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </Button>
           <Button
             size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
+            variant="outline"
+            className="text-xs h-7 sm:h-8 flex-shrink-0"
             onClick={() => setShowProposalModal(true)}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -824,7 +911,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </Button>
           <Button
             size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-7 sm:h-8 flex-shrink-0"
+            variant="secondary"
+            className="text-xs h-7 sm:h-8 flex-shrink-0"
             onClick={() => setShowRequestModal(true)}
           >
             <PlusCircle className="w-3.5 h-3.5" />
@@ -834,22 +922,35 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       </div>
 
       {/* Active Filter Chip */}
-      {statusFilter && (
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium",
-            STAGE_CONFIG[statusFilter]?.bgColor,
-            STAGE_CONFIG[statusFilter]?.textColor
-          )}>
-            Filtro: {STAGE_LABELS[statusFilter]}
-            <button
-              onClick={onClearFilter}
-              className="ml-1 rounded-full hover:bg-black/10 p-0.5 transition-colors"
-              aria-label="Limpar filtro"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </Badge>
+      {(statusFilter || searchQuery || needsActionOnly) && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {statusFilter && (
+            <Badge variant="secondary" className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium",
+              STAGE_CONFIG[statusFilter]?.bgColor,
+              STAGE_CONFIG[statusFilter]?.textColor
+            )}>
+              Filtro: {STAGE_LABELS[statusFilter]}
+              <button
+                onClick={onClearFilter}
+                className="ml-1 rounded-full hover:bg-foreground/10 p-0.5 transition-colors"
+                aria-label="Limpar filtro"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          )}
+          {searchQuery && (
+            <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
+              Busca: "{searchQuery}" ({filteredSalesLeads.length})
+            </Badge>
+          )}
+          {needsActionOnly && (
+            <Badge variant="destructive" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
+              <AlertTriangle className="w-3 h-3" />
+              Modo Atenção
+            </Badge>
+          )}
         </div>
       )}
 
