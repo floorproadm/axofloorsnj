@@ -957,63 +957,80 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       {/* Board View */}
       {viewMode === 'board' && (
         <div className="overflow-x-auto pb-2 -mx-1 px-1">
-          <div className="flex gap-3 min-w-max">
-            {SALES_STAGES.map(stage => {
+          <div className="flex gap-1 min-w-max items-start">
+            {SALES_STAGES.map((stage, idx) => {
               const config = STAGE_CONFIG[stage];
               const stageLeads = leadsByStage[stage];
               const stats = stageStats[stage];
+              const rate = conversionRates[stage];
 
               return (
-                <div
-                  key={stage}
-                  className={cn(
-                    "w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col transition-opacity duration-200",
-                    statusFilter && statusFilter !== stage && "opacity-40"
-                  )}
-                >
-                  <div className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
-                    config.bgColor,
-                    statusFilter === stage && "ring-2 ring-offset-1 ring-primary"
-                  )}>
-                    <span className={cn("font-semibold text-xs truncate", config.textColor)}>
-                      {STAGE_LABELS[stage]}
-                    </span>
-                  </div>
+                <div key={stage} className="flex items-start">
+                  <div
+                    className={cn(
+                      "w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col transition-opacity duration-200",
+                      statusFilter && statusFilter !== stage && "opacity-40"
+                    )}
+                  >
+                    <div className={cn(
+                      "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
+                      config.bgColor,
+                      statusFilter === stage && "ring-2 ring-offset-1 ring-primary"
+                    )}>
+                      <span className={cn("font-semibold text-xs truncate", config.textColor)}>
+                        {STAGE_LABELS[stage]}
+                      </span>
+                      {stats.avgDays > 0 && (
+                        <span className="text-[9px] text-muted-foreground font-medium bg-background/60 px-1.5 py-0.5 rounded">
+                          ~{stats.avgDays}d
+                        </span>
+                      )}
+                    </div>
 
-                  <div className={cn(
-                    "flex items-center justify-between px-3 py-1.5 border-x text-xs",
-                    config.bgColor, "border-b"
-                  )}>
-                    <span className="text-muted-foreground font-medium">{stats.count}</span>
-                    <span className="text-muted-foreground font-medium">
-                      ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </span>
-                  </div>
+                    <div className={cn(
+                      "flex items-center justify-between px-3 py-1.5 border-x text-xs",
+                      config.bgColor, "border-b"
+                    )}>
+                      <span className="text-muted-foreground font-medium">{stats.count}</span>
+                      <span className="text-muted-foreground font-medium">
+                        ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
 
-                  <div className="flex-1 border border-t-0 rounded-b-xl bg-muted/20">
-                    <div className="max-h-[60vh] overflow-y-auto">
-                      <div className="p-1.5 space-y-1.5">
-                        {stageLeads.length === 0 ? (
-                          <div className="text-center py-16 text-muted-foreground/60 text-xs">
-                            Sem leads neste estagio
-                          </div>
-                        ) : (
-                          stageLeads.map(lead => (
-                            <PipelineCard
-                              key={lead.id}
-                              lead={lead}
-                              nra={nraMap[lead.id]}
-                              isStale={isStale(lead)}
-                              isBlocked={isBlocked(lead)}
-                              onClick={() => handleCardClick(lead)}
-                              onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
-                            />
-                          ))
-                        )}
+                    <div className="flex-1 border border-t-0 rounded-b-xl bg-muted/20">
+                      <div className="max-h-[60vh] overflow-y-auto">
+                        <div className="p-1.5 space-y-1.5">
+                          {stageLeads.length === 0 ? (
+                            <div className="text-center py-16 text-muted-foreground/60 text-xs">
+                              Sem leads neste estagio
+                            </div>
+                          ) : (
+                            stageLeads.map(lead => (
+                              <PipelineCard
+                                key={lead.id}
+                                lead={lead}
+                                nra={nraMap[lead.id]}
+                                isStale={isStale(lead)}
+                                isBlocked={isBlocked(lead)}
+                                onClick={() => handleCardClick(lead)}
+                                onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
+                              />
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Conversion rate arrow between stages */}
+                  {idx < SALES_STAGES.length - 1 && rate !== undefined && (
+                    <div className="flex flex-col items-center justify-center px-0.5 pt-8 flex-shrink-0">
+                      <span className="text-[9px] font-bold text-muted-foreground whitespace-nowrap">
+                        {rate}%
+                      </span>
+                      <span className="text-muted-foreground/40 text-xs">→</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
