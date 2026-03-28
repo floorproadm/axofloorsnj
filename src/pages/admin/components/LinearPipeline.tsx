@@ -1122,85 +1122,83 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
     <div
       onClick={onClick}
       className={cn(
-        "p-3 rounded-lg border bg-card cursor-pointer transition-all",
-        "hover:shadow-md hover:border-primary/40",
-        isBlocked && "ring-2 ring-destructive/50 bg-destructive/5",
-        isStale && !isBlocked && "ring-2 ring-[hsl(var(--state-risk))]/50 bg-[hsl(var(--state-risk))]/5"
+        "p-4 rounded-xl border bg-card cursor-pointer transition-all group",
+        "hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5",
+        isBlocked && "ring-2 ring-destructive/40 bg-destructive/5",
+        isStale && !isBlocked && "ring-2 ring-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
       )}
     >
-      {/* Row 1: TimeBadge + Name + Value */}
-      <div className="flex items-center justify-between gap-1">
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+      {/* Row 1: Name + Value */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <span className={cn(
-            "text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0",
+            "text-[9px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap flex-shrink-0",
             timeBadge.className
           )}>
             {timeBadge.text}
           </span>
-          <span className="font-semibold text-xs text-foreground truncate">
+          <span className="font-bold text-sm text-foreground truncate leading-tight">
             {lead.name.toUpperCase()}
           </span>
         </div>
-        <span className="font-bold text-xs text-foreground whitespace-nowrap flex-shrink-0">
+        <span className="font-bold text-sm text-foreground whitespace-nowrap flex-shrink-0">
           {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
         </span>
       </div>
 
-      {/* Row 2: Contact */}
-      <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+      {/* Row 2: Contact info */}
+      <div className="flex items-center gap-3 mt-2.5 text-[11px] text-muted-foreground">
         <a
           href={`tel:${lead.phone}`}
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-0.5 hover:text-primary transition-colors"
+          className="flex items-center gap-1 hover:text-primary transition-colors"
         >
-          <Phone className="w-2.5 h-2.5 flex-shrink-0" />
+          <Phone className="w-3 h-3 flex-shrink-0" />
           <span>{lead.phone}</span>
         </a>
         {lead.city && (
-          <span className="flex items-center gap-0.5">
-            <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3 flex-shrink-0" />
             {lead.city}
           </span>
         )}
-        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5">
-          {sourceLabels[lead.lead_source] || lead.lead_source}
-        </Badge>
       </div>
 
-      {/* Row 3: Services */}
-      {services.length > 0 && (
-        <div className="flex items-center gap-1 mt-1.5">
-          {visibleServices.map(s => (
-            <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
-              {serviceLabels[s] || s}
-            </Badge>
-          ))}
-          {overflowCount > 0 && (
-            <span className="text-[9px] text-muted-foreground font-medium">+{overflowCount}</span>
-          )}
-        </div>
-      )}
+      {/* Row 3: Source + Services */}
+      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+        <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-auto">
+          {sourceLabels[lead.lead_source] || lead.lead_source}
+        </Badge>
+        {visibleServices.map(s => (
+          <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0.5 h-auto">
+            {serviceLabels[s] || s}
+          </Badge>
+        ))}
+        {overflowCount > 0 && (
+          <span className="text-[9px] text-muted-foreground font-medium">+{overflowCount}</span>
+        )}
+      </div>
 
       {/* Quick Quote button */}
       {onQuickQuote && (
         <button
           onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-          className="flex items-center gap-1 mt-1.5 pt-1.5 border-t w-full text-[10px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+          className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 w-full text-[11px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
         >
-          <Zap className="w-3 h-3 flex-shrink-0" />
+          <Zap className="w-3.5 h-3.5 flex-shrink-0" />
           Quick Quote
         </button>
       )}
 
-      {/* Operational Alert (conditional) */}
+      {/* Operational Alert */}
       {alert && (
         <div className={cn(
-          "flex items-center gap-1 mt-1.5 pt-1.5 border-t text-[10px] font-medium",
+          "flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 text-[11px] font-medium",
           alert.type === 'critical' && "text-destructive",
           alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
           alert.type === 'info' && "text-primary"
         )}>
-          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{alert.text}</span>
         </div>
       )}
