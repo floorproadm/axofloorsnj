@@ -160,6 +160,69 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
     document.addEventListener('mouseup', onMouseUp);
   }, [sheetWidth]);
 
+  // Lead notes query
+  const { data: leadNotes = [], refetch: refetchNotes } = useQuery({
+    queryKey: ['lead-notes', lead?.id],
+    queryFn: async () => {
+      if (!lead?.id) return [];
+      const { data, error } = await supabase
+        .from('lead_notes')
+        .select('*')
+        .eq('lead_id', lead.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!lead?.id,
+  });
+
+  const addNoteMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const { data: orgData } = await supabase.rpc('get_user_org_id');
+      const { error } = await supabase.from('lead_notes').insert({
+        lead_id: lead!.id,
+        content,
+        organization_id: orgData,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setNewNote('');
+      refetchNotes();
+      toast.success('Nota adicionada');
+    },
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (noteId: string) => {
+      const { error } = await supabase.from('lead_notes').delete().eq('id', noteId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchNotes();
+      toast.success('Nota removida');
+    },
+  });
+
+  // Inline edit save
+  const handleInlineEdit = async (field: string, value: string) => {
+    const updateData: Record<string, any> = {};
+    if (field === 'budget') {
+      updateData[field] = value ? parseFloat(value) : null;
+    } else {
+      updateData[field] = value || null;
+    }
+    const { error } = await supabase.from('leads').update(updateData).eq('id', lead!.id);
+    if (error) {
+      toast.error('Erro ao salvar');
+      return;
+    }
+    setEditingField(null);
+    setEditValues({});
+    onRefresh();
+    toast.success('Atualizado');
+  };
+
   if (!lead) return null;
 
   const stage = normalizeStatus(lead.status);
