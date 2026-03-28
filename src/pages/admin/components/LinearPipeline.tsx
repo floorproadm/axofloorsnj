@@ -729,7 +729,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     return nra && (nra.severity === 'critical' || nra.severity === 'blocked');
   };
 
-  if (salesLeads.length === 0) {
+  if (allSalesLeads.length === 0 && !searchQuery) {
     return (
       <>
         <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
