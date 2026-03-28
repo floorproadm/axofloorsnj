@@ -102,19 +102,20 @@ export default function Dashboard() {
           .limit(5),
       ]);
 
-      const items: { type: "lead" | "proposal" | "payment"; label: string; date: string }[] = [];
+      const items: { type: "lead" | "proposal" | "payment"; label: string; date: string; link: string }[] = [];
 
       (leadsRes.data || []).forEach((l) =>
-        items.push({ type: "lead", label: l.name, date: l.created_at })
+        items.push({ type: "lead", label: l.name, date: l.created_at, link: `/admin/leads` })
       );
       (proposalsRes.data || []).forEach((p) =>
-        items.push({ type: "proposal", label: `#${p.proposal_number}`, date: p.sent_at! })
+        items.push({ type: "proposal", label: `#${p.proposal_number}`, date: p.sent_at!, link: `/admin/proposals` })
       );
       (paymentsRes.data || []).forEach((p) =>
         items.push({
           type: "payment",
           label: p.description || `$${p.amount}`,
           date: p.created_at,
+          link: `/admin/payments`,
         })
       );
 
@@ -429,7 +430,7 @@ export default function Dashboard() {
               </p>
             ) : (
               recentActivity.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                <Link key={i} to={item.link} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer">
                   <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                     {activityIcon(item.type)}
                   </div>
@@ -443,7 +444,7 @@ export default function Dashboard() {
                       addSuffix: true,
                     })}
                   </span>
-                </div>
+                </Link>
               ))
             )}
           </div>
