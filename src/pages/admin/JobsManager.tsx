@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,24 +15,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useJobCost, useMarginValidation } from "@/hooks/useJobCosts";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { JobCostEditor } from "@/components/admin/JobCostEditor";
-import { JobMarginDisplay } from "@/components/admin/JobMarginDisplay";
 import { ProposalGenerator } from "@/components/admin/ProposalGenerator";
-
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import {
   Hammer, CheckCircle, Clock, DollarSign, MapPin,
   AlertTriangle, Camera, FileText, Calculator, ChevronRight,
   Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
-  CalendarDays, TrendingUp, Eye, MessageSquare, Hash, Ruler,
+  CalendarDays, TrendingUp, MessageSquare, Ruler,
   Send, ImagePlus, X, StickyNote, LayoutGrid, List, Users, ExternalLink,
-  Wrench, BarChart3, Shield, Navigation
+  Navigation
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { JobChecklist } from "@/components/admin/JobChecklist";
 import { toast } from "sonner";
-
 type ProjectStatus = "pending" | "in_production" | "completed";
 
 interface ProjectWithRelations {
@@ -574,8 +570,9 @@ function KanbanCard({
 }
 
 // ═══════════════════════════════════════════════════════════
-// JOB CONTROL MODAL V2 — Dual-Mode Operacional/Executivo
+// JOB CONTROL SHEET — Sidebar estilo Notion com Tabs
 // ═══════════════════════════════════════════════════════════
+
 
 interface JobControlModalProps {
   project: ProjectWithRelations;
@@ -584,7 +581,6 @@ interface JobControlModalProps {
   onRefresh: () => void;
 }
 
-// ── Next Recommended Action logic ──
 function getNextAction(
   project: ProjectWithRelations,
   hasCosts: boolean,
@@ -602,26 +598,6 @@ function getNextAction(
   return { label: "Tudo em dia ✓", severity: "ok", action: "none" };
 }
 
-// ── Risk Score ──
-function getRiskScore(
-  project: ProjectWithRelations,
-  hasCosts: boolean,
-  marginOk: boolean,
-  proofComplete: boolean
-): { score: number; level: "healthy" | "attention" | "risk"; label: string; color: string } {
-  let score = 0;
-  if (!hasCosts) score++;
-  if (!marginOk) score++;
-  if (!project.team_lead) score++;
-  if (!proofComplete) score++;
-  const daysSinceUpdate = Math.floor((Date.now() - new Date(project.updated_at).getTime()) / (1000 * 60 * 60 * 24));
-  if (daysSinceUpdate > 3) score++;
-
-  if (score <= 1) return { score, level: "healthy", label: "Saudável", color: "bg-emerald-100 text-emerald-700 border-emerald-300" };
-  if (score <= 3) return { score, level: "attention", label: "Atenção", color: "bg-amber-100 text-amber-700 border-amber-300" };
-  return { score, level: "risk", label: "Em risco", color: "bg-red-100 text-red-700 border-red-300" };
-}
-
 function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModalProps) {
   const { data: jobCost, refetch: refetchCost } = useJobCost(project.id);
   const { marginMinPercent } = useCompanySettings();
@@ -629,7 +605,8 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [showBlock, setShowBlock] = useState<"costs" | "proposal" | null>(null);
+  const [showCosts, setShowCosts] = useState(false);
+  const [showProposal, setShowProposal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteStep, setDeleteStep] = useState<0 | 1>(0);
   const [isEditingTeam, setIsEditingTeam] = useState(false);
@@ -638,8 +615,8 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const [workSchedule, setWorkSchedule] = useState(project.work_schedule || '8:00 AM - 5:00 PM');
   const [newMember, setNewMember] = useState('');
   const [isSavingTeam, setIsSavingTeam] = useState(false);
-  const [modalViewMode, setModalViewMode] = useState<"operational" | "executive">("operational");
   const [isChangingStatus, setIsChangingStatus] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const handleStatusChange = async (newStatus: string) => {
     setIsChangingStatus(true);
@@ -720,7 +697,6 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   const currentMargin = jobCost?.margin_percent ?? 0;
   const marginOk = !!(jobCost && currentMargin >= marginMinPercent && (jobCost.estimated_revenue ?? 0) > 0);
   const hasCosts = !!(jobCost && (jobCost.labor_cost > 0 || jobCost.material_cost > 0));
-
   const hasBefore = project.job_proof.some((p) => p.before_image_url);
   const hasAfter = project.job_proof.some((p) => p.after_image_url);
   const proofComplete = hasBefore && hasAfter;
@@ -729,7 +705,6 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
 
   const statusConfig = STATUS_CONFIG[project.project_status as ProjectStatus] || STATUS_CONFIG.pending;
 
-  // Progress checklist
   const checklistItems = [
     { label: "Medições", ok: hasMeasurements },
     { label: "Custos", ok: hasCosts },
@@ -739,528 +714,432 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
   ];
   const progressPercent = Math.round((checklistItems.filter(i => i.ok).length / checklistItems.length) * 100);
 
-  // NRA
   const nra = getNextAction(project, hasCosts, marginOk, proofComplete, marginMinPercent, currentMargin);
-
-  // Risk
-  const risk = getRiskScore(project, hasCosts, marginOk, proofComplete);
 
   const handleCostSaved = () => {
     refetchCost();
     onRefresh();
   };
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
   const addressFull = [project.address, project.city, project.zip_code].filter(Boolean).join(", ");
   const mapsUrl = addressFull ? `https://maps.google.com/?q=${encodeURIComponent(addressFull)}` : null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[calc(100vw-16px)] sm:max-w-2xl max-h-[90vh] overflow-hidden p-0 [&>button:last-child]:text-white [&>button:last-child]:opacity-90 [&>button:last-child]:hover:opacity-100 [&>button:last-child]:z-10">
-          {/* ═══ HEADER ═══ */}
-          <div className={cn("px-4 sm:px-6 py-4 text-white", statusConfig.headerBg)}>
-            <DialogHeader className="pb-0">
-              <div className="flex items-center gap-2 mb-1 pr-10">
-                {/* Status Dropdown */}
-                <Select
-                  value={project.project_status}
-                  onValueChange={handleStatusChange}
-                  disabled={isChangingStatus}
-                >
-                  <SelectTrigger className="h-7 w-auto min-w-[120px] bg-white/20 border-white/30 text-white text-xs font-medium hover:bg-white/30 [&>svg]:text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACTIVE_STATUSES.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        <span className="flex items-center gap-2">
-                          {STATUS_CONFIG[s].icon}
-                          {STATUS_CONFIG[s].label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <span className="text-white/60 text-xs">•</span>
-                <span className="text-white/80 text-xs truncate">Criado {timeAgo(project.created_at)} atrás</span>
-
-                {/* Risk Badge */}
-                <Badge className={cn("text-[10px] px-2 py-0.5 border font-semibold ml-auto", risk.color)}>
-                  <Shield className="w-3 h-3 mr-1" />
-                  {risk.label}
-                </Badge>
-              </div>
-              <DialogTitle className="text-xl font-bold text-white truncate pr-10">
-                {project.customer_name}
-              </DialogTitle>
-            </DialogHeader>
-          </div>
-
-          {/* View Mode Toggle — below header */}
-          <div className="flex items-center justify-end gap-1 px-4 sm:px-6 pt-3">
-            <div className="flex items-center bg-muted rounded-lg p-0.5">
-              <button
-                onClick={() => setModalViewMode("operational")}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                  modalViewMode === "operational"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Wrench className="w-3.5 h-3.5" />
-                Operacional
-              </button>
-              <button
-                onClick={() => setModalViewMode("executive")}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                  modalViewMode === "executive"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <BarChart3 className="w-3.5 h-3.5" />
-                Executivo
-              </button>
-            </div>
-          </div>
-
-        <ScrollArea className="max-h-[calc(90vh-140px)]">
-          <div className="p-4 sm:p-6 space-y-4">
-
-            {/* ═══ NRA — Next Recommended Action (sempre visível) ═══ */}
-            <div className={cn(
-              "rounded-xl border p-3 flex items-center gap-3",
-              nra.severity === "critical" ? "bg-red-50 border-red-200" :
-              nra.severity === "warning" ? "bg-amber-50 border-amber-200" :
-              "bg-emerald-50 border-emerald-200"
-            )}>
-              <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                nra.severity === "critical" ? "bg-red-100" :
-                nra.severity === "warning" ? "bg-amber-100" :
-                "bg-emerald-100"
-              )}>
-                {nra.severity === "ok" ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                ) : (
-                  <AlertTriangle className={cn("w-4 h-4", nra.severity === "critical" ? "text-red-600" : "text-amber-600")} />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Próxima Ação</p>
-                <p className="text-sm font-semibold truncate">{nra.label}</p>
-              </div>
-              {nra.action !== "none" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-shrink-0 h-8 text-xs"
-                  onClick={() => {
-                    if (nra.action === "costs") setShowBlock("costs");
-                    else if (nra.action === "proof") {
-                      onClose();
-                      navigate(`/admin/feed?project=${project.id}`);
-                    }
-                    else if (nra.action === "team") setIsEditingTeam(true);
-                  }}
-                >
-                  Fazer
-                  <ChevronRight className="w-3 h-3 ml-1" />
-                </Button>
-              )}
-            </div>
-
-            {/* ═══ PROGRESS CHECKLIST (sempre visível) ═══ */}
-            <div className="rounded-xl border bg-card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progresso do Job</h3>
-                <span className="text-sm font-bold">{progressPercent}%</span>
-              </div>
-              <Progress value={progressPercent} className="h-2.5 mb-3" />
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                {checklistItems.map((item) => (
-                  <div key={item.label} className="flex items-center gap-1.5">
-                    {item.ok ? (
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-                    ) : (
-                      <X className="w-3.5 h-3.5 text-red-400" />
-                    )}
-                    <span className={cn("text-xs font-medium", item.ok ? "text-foreground" : "text-muted-foreground")}>
-                      {item.label}
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-[520px] p-0 flex flex-col [&>button:first-child]:z-20 [&>button:first-child]:text-white [&>button:first-child]:hover:text-white/80"
+      >
+        {/* ═══ HEADER ═══ */}
+        <div className={cn("px-5 py-4 text-white flex-shrink-0", statusConfig.headerBg)}>
+          <div className="flex items-center gap-2 mb-2 pr-8">
+            <Select
+              value={project.project_status}
+              onValueChange={handleStatusChange}
+              disabled={isChangingStatus}
+            >
+              <SelectTrigger className="h-7 w-auto min-w-[120px] bg-white/20 border-white/30 text-white text-xs font-medium hover:bg-white/30 [&>svg]:text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTIVE_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    <span className="flex items-center gap-2">
+                      {STATUS_CONFIG[s].icon}
+                      {STATUS_CONFIG[s].label}
                     </span>
-                  </div>
+                  </SelectItem>
                 ))}
-              </div>
-            </div>
-
-            {/* ═══ CLIENT + ADDRESS (sempre visível) ═══ */}
-            <div className="rounded-xl border bg-card p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</h3>
-                <div className="flex gap-1.5">
-                  <a
-                    href={`tel:${project.customer_phone}`}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                    Ligar
-                  </a>
-                  <a
-                    href={`sms:${project.customer_phone}`}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-medium hover:bg-emerald-200 transition-colors"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    SMS
-                  </a>
-                  {project.customer_email && (
-                    <a
-                      href={`mailto:${project.customer_email}`}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
-                    >
-                      <Mail className="w-3.5 h-3.5" />
-                      Email
-                    </a>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2.5">
-                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-sm font-semibold">{project.customer_name}</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-sm">{project.customer_phone}</span>
-                </div>
-                {project.customer_email && (
-                  <div className="flex items-center gap-2.5">
-                    <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm truncate">{project.customer_email}</span>
-                  </div>
-                )}
-                {addressFull && (
-                  <div className="flex items-center gap-2.5">
-                    <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    {mapsUrl ? (
-                      <a
-                        href={mapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline flex items-center gap-1"
-                      >
-                        {addressFull}
-                        <Navigation className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <span className="text-sm">{addressFull}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ═══ TEAM SECTION (sempre visível) ═══ */}
-            <div className="rounded-xl border bg-card p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Time</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => {
-                    if (isEditingTeam) {
-                      handleSaveTeam();
-                    } else {
-                      setIsEditingTeam(true);
-                    }
-                  }}
-                  disabled={isSavingTeam}
-                >
-                  {isSavingTeam ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                  {isEditingTeam ? 'Salvar' : 'Editar'}
-                </Button>
-              </div>
-
-              {isEditingTeam ? (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Team Lead</label>
-                    <Input
-                      value={teamLead}
-                      onChange={(e) => setTeamLead(e.target.value)}
-                      placeholder="Nome do líder..."
-                      className="mt-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Horário</label>
-                    <Input
-                      value={workSchedule}
-                      onChange={(e) => setWorkSchedule(e.target.value)}
-                      placeholder="8:00 AM - 5:00 PM"
-                      className="mt-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Membros</label>
-                    <div className="flex flex-wrap gap-1.5 mt-1.5 mb-2">
-                      {teamMembers.map((m) => (
-                        <Badge key={m} variant="secondary" className="text-xs gap-1 pr-1">
-                          {m}
-                          <button onClick={() => removeMember(m)} className="hover:text-destructive">
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex gap-1.5">
-                      <Input
-                        value={newMember}
-                        onChange={(e) => setNewMember(e.target.value)}
-                        placeholder="Adicionar membro..."
-                        className="text-sm"
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); } }}
-                      />
-                      <Button size="sm" onClick={addMember} disabled={!newMember.trim()}>
-                        <Send className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Team Lead</span>
-                    </div>
-                    <span className="text-sm font-semibold">{teamLead || '—'}</span>
-                  </div>
-                  {teamMembers.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {teamMembers.map((m) => (
-                        <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{workSchedule}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ═══ QUICK ACTIONS — Fotos always visible, full grid in executive ═══ */}
-            <div className="rounded-xl border bg-card p-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações Rápidas</h3>
-              <div className={cn("grid gap-2", modalViewMode === "executive" ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-3")}>
-                {/* Measurements — always */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-auto py-2.5 flex-col gap-1"
-                  onClick={() => {
-                    onClose();
-                    navigate(`/admin/measurements?project=${project.id}`);
-                  }}
-                >
-                  <Ruler className="w-4 h-4" />
-                  <span className="text-[11px]">Medições</span>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                </Button>
-
-                {/* Costs — always */}
-                <Button
-                  variant={showBlock === "costs" ? "default" : "outline"}
-                  size="sm"
-                  className="h-auto py-2.5 flex-col gap-1"
-                  onClick={() => setShowBlock(showBlock === "costs" ? null : "costs")}
-                >
-                  <Calculator className="w-4 h-4" />
-                  <span className="text-[11px]">Custos</span>
-                  {hasCosts ? (
-                    <CheckCircle className="w-3 h-3 text-emerald-500" />
-                  ) : (
-                    <AlertTriangle className="w-3 h-3 text-amber-500" />
-                  )}
-                </Button>
-
-                {/* Photos — always */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-auto py-2.5 flex-col gap-1"
-                  onClick={() => {
-                    onClose();
-                    navigate(`/admin/feed?project=${project.id}`);
-                  }}
-                >
-                  <Camera className="w-4 h-4" />
-                  <span className="text-[11px]">Fotos</span>
-                  {proofComplete ? (
-                    <CheckCircle className="w-3 h-3 text-emerald-500" />
-                  ) : (
-                    <AlertTriangle className="w-3 h-3 text-amber-500" />
-                  )}
-                </Button>
-
-                {/* Executive-only actions */}
-                {modalViewMode === "executive" && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-auto py-2.5 flex-col gap-1 cursor-default"
-                      disabled
-                    >
-                      <DollarSign className="w-4 h-4" />
-                      <span className="text-[11px]">Margem</span>
-                      <span className={cn("text-[11px] font-bold", marginOk ? "text-emerald-600" : "text-red-600")}>
-                        {currentMargin.toFixed(0)}%
-                      </span>
-                    </Button>
-
-                    <Button
-                      variant={showBlock === "proposal" ? "default" : "outline"}
-                      size="sm"
-                      className="h-auto py-2.5 flex-col gap-1"
-                      onClick={() => setShowBlock(showBlock === "proposal" ? null : "proposal")}
-                      disabled={!marginOk}
-                    >
-                      <FileText className="w-4 h-4" />
-                      <span className="text-[11px]">Proposta</span>
-                      {!marginOk ? (
-                        <Ban className="w-3 h-3 text-red-400" />
-                      ) : (
-                        <ChevronRight className="w-3 h-3" />
-                      )}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-auto py-2.5 flex-col gap-1"
-                      onClick={() => {
-                        onClose();
-                        navigate(`/admin/jobs/${project.id}/documents`);
-                      }}
-                    >
-                      <FolderOpen className="w-4 h-4" />
-                      <span className="text-[11px]">Docs</span>
-                      <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* ═══ Job Checklist ═══ */}
-            <JobChecklist projectId={project.id} />
-
-            {/* ═══ Expandable Blocks ═══ */}
-            {showBlock === "costs" && (
-              <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 animate-fade-in">
-                <h3 className="font-bold text-amber-800 text-sm mb-3 flex items-center gap-2">
-                  <Calculator className="w-4 h-4" />
-                  Custos do Projeto
-                </h3>
-                <JobCostEditor projectId={project.id} onSaved={handleCostSaved} />
-              </div>
-            )}
-
-            {showBlock === "proposal" && marginOk && (
-              <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-4 animate-fade-in">
-                <h3 className="font-bold text-blue-800 text-sm mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Proposta 3-Tiers
-                </h3>
-                <ProposalGenerator projectId={project.id} onClose={() => setShowBlock(null)} />
-              </div>
-            )}
-
-
-            {/* ═══ EXECUTIVE-ONLY SECTIONS ═══ */}
-            {modalViewMode === "executive" && (
-              <>
-                {/* Financial Summary */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className={cn(
-                    "rounded-xl border-2 p-3.5",
-                    marginOk ? "border-emerald-300 bg-emerald-50" : "border-red-300 bg-red-50"
-                  )}>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      {marginOk ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <AlertTriangle className="w-4 h-4 text-red-600" />
-                      )}
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Margem</span>
-                    </div>
-                    <p className={cn("text-2xl font-bold", marginOk ? "text-emerald-700" : "text-red-700")}>
-                      {currentMargin.toFixed(1)}%
-                    </p>
-                    <p className={cn("text-xs mt-0.5", marginOk ? "text-emerald-600" : "text-red-600")}>
-                      {marginOk
-                        ? `Lucro: ${formatCurrency(jobCost?.profit_amount ?? 0)}`
-                        : `Mínimo: ${marginMinPercent}%`}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border-2 border-border p-3.5 bg-card">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <DollarSign className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Revenue</span>
-                    </div>
-                    <p className="text-2xl font-bold">
-                      {formatCurrency(jobCost?.estimated_revenue ?? 0)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Custo: {formatCurrency(jobCost?.total_cost ?? 0)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Project Details */}
-                <div className="rounded-xl border bg-card p-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Detalhes do Projeto</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Área</p>
-                      <p className="text-sm font-bold">{project.square_footage ? `${project.square_footage} sqft` : '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Tipo de Serviço</p>
-                      <p className="text-sm font-bold">{project.project_type}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Início</p>
-                      <p className="text-sm font-bold">{formatDate(project.start_date)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Est. Conclusão</p>
-                      <p className="text-sm font-bold">{formatDate(project.completion_date)}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notes & Comments Section */}
-                <ProjectNotesSection projectId={project.id} initialNotes={project.notes} onRefresh={onRefresh} />
-              </>
-            )}
-
+              </SelectContent>
+            </Select>
+            <span className="text-white/50 text-xs">•</span>
+            <span className="text-white/70 text-xs">{timeAgo(project.created_at)}</span>
           </div>
-        </ScrollArea>
+          <h2 className="text-lg font-bold text-white truncate pr-8">{project.customer_name}</h2>
+          <p className="text-white/70 text-xs mt-0.5">{project.project_type}</p>
+        </div>
 
-        {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
+        {/* ═══ QUICK ACTIONS BAR ═══ */}
+        <div className="flex items-center gap-1.5 px-5 py-3 border-b bg-muted/30 flex-shrink-0 overflow-x-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 flex-shrink-0"
+            onClick={() => { onClose(); navigate(`/admin/measurements?project=${project.id}`); }}
+          >
+            <Ruler className="w-3.5 h-3.5" />
+            Medições
+          </Button>
+          <Button
+            variant={showCosts ? "default" : "outline"}
+            size="sm"
+            className="h-8 text-xs gap-1.5 flex-shrink-0"
+            onClick={() => { setShowCosts(!showCosts); setShowProposal(false); setActiveTab("financial"); }}
+          >
+            <Calculator className="w-3.5 h-3.5" />
+            Custos
+            {hasCosts ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <AlertTriangle className="w-3 h-3 text-amber-500" />}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 flex-shrink-0"
+            onClick={() => { onClose(); navigate(`/admin/feed?project=${project.id}`); }}
+          >
+            <Camera className="w-3.5 h-3.5" />
+            Fotos
+            {proofComplete ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <AlertTriangle className="w-3 h-3 text-amber-500" />}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 flex-shrink-0"
+            onClick={() => { onClose(); navigate(`/admin/jobs/${project.id}/documents`); }}
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            Docs
+          </Button>
+        </div>
+
+        {/* ═══ TABS CONTENT ═══ */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+          <TabsList className="w-full justify-start px-5 pt-2 pb-0 bg-transparent h-auto gap-0 rounded-none border-b">
+            {[
+              { value: "overview", label: "Overview" },
+              { value: "financial", label: "Financial" },
+              { value: "team", label: "Team" },
+              { value: "notes", label: "Notes" },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2.5 text-xs font-medium"
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <ScrollArea className="flex-1">
+            {/* ── OVERVIEW TAB ── */}
+            <TabsContent value="overview" className="mt-0 p-5 space-y-4">
+              {/* NRA */}
+              <div className={cn(
+                "rounded-xl border p-3 flex items-center gap-3",
+                nra.severity === "critical" ? "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800" :
+                nra.severity === "warning" ? "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800" :
+                "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
+              )}>
+                <div className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                  nra.severity === "critical" ? "bg-red-100 dark:bg-red-900/30" :
+                  nra.severity === "warning" ? "bg-amber-100 dark:bg-amber-900/30" :
+                  "bg-emerald-100 dark:bg-emerald-900/30"
+                )}>
+                  {nra.severity === "ok" ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  ) : (
+                    <AlertTriangle className={cn("w-4 h-4", nra.severity === "critical" ? "text-red-600" : "text-amber-600")} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Próxima Ação</p>
+                  <p className="text-sm font-semibold truncate">{nra.label}</p>
+                </div>
+                {nra.action !== "none" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-shrink-0 h-7 text-xs"
+                    onClick={() => {
+                      if (nra.action === "costs") { setShowCosts(true); setActiveTab("financial"); }
+                      else if (nra.action === "proof") { onClose(); navigate(`/admin/feed?project=${project.id}`); }
+                      else if (nra.action === "team") setActiveTab("team");
+                    }}
+                  >
+                    Fazer
+                  </Button>
+                )}
+              </div>
+
+              {/* Progress */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progresso</h3>
+                  <span className="text-sm font-bold">{progressPercent}%</span>
+                </div>
+                <Progress value={progressPercent} className="h-2 mb-3" />
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                  {checklistItems.map((item) => (
+                    <div key={item.label} className="flex items-center gap-1.5">
+                      {item.ok ? (
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                      ) : (
+                        <X className="w-3.5 h-3.5 text-red-400" />
+                      )}
+                      <span className={cn("text-xs font-medium", item.ok ? "text-foreground" : "text-muted-foreground")}>
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Client Info */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</h3>
+                  <div className="flex gap-1">
+                    <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20">
+                      <Phone className="w-3 h-3" /> Ligar
+                    </a>
+                    <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[11px] font-medium hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400">
+                      <MessageSquare className="w-3 h-3" /> SMS
+                    </a>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2.5">
+                    <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="font-semibold">{project.customer_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span>{project.customer_phone}</span>
+                  </div>
+                  {project.customer_email && (
+                    <div className="flex items-center gap-2.5">
+                      <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{project.customer_email}</span>
+                    </div>
+                  )}
+                  {addressFull && (
+                    <div className="flex items-center gap-2.5">
+                      <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      {mapsUrl ? (
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                          {addressFull} <Navigation className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <span>{addressFull}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Project Details */}
+              <div className="rounded-xl border bg-card p-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Detalhes</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[11px] text-muted-foreground uppercase">Área</p>
+                    <p className="text-sm font-bold">{project.square_footage ? `${project.square_footage} sqft` : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-muted-foreground uppercase">Serviço</p>
+                    <p className="text-sm font-bold">{project.project_type}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-muted-foreground uppercase">Início</p>
+                    <p className="text-sm font-bold">{project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-muted-foreground uppercase">Conclusão</p>
+                    <p className="text-sm font-bold">{project.completion_date ? new Date(project.completion_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Checklist */}
+              <JobChecklist projectId={project.id} />
+            </TabsContent>
+
+            {/* ── FINANCIAL TAB ── */}
+            <TabsContent value="financial" className="mt-0 p-5 space-y-4">
+              {/* Financial Summary Cards */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className={cn(
+                  "rounded-xl border-2 p-3.5",
+                  marginOk ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20" : "border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/20"
+                )}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    {marginOk ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">Margem</span>
+                  </div>
+                  <p className={cn("text-2xl font-bold", marginOk ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
+                    {currentMargin.toFixed(1)}%
+                  </p>
+                  <p className={cn("text-xs mt-0.5", marginOk ? "text-emerald-600" : "text-red-600")}>
+                    {marginOk ? `Lucro: ${formatCurrency(jobCost?.profit_amount ?? 0)}` : `Mínimo: ${marginMinPercent}%`}
+                  </p>
+                </div>
+                <div className="rounded-xl border-2 border-border p-3.5 bg-card">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">Revenue</span>
+                  </div>
+                  <p className="text-2xl font-bold">{formatCurrency(jobCost?.estimated_revenue ?? 0)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Custo: {formatCurrency(jobCost?.total_cost ?? 0)}</p>
+                </div>
+              </div>
+
+              {/* Costs Editor (inline) */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Calculator className="w-3.5 h-3.5" /> Custos do Projeto
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowCosts(!showCosts)}>
+                    {showCosts ? 'Fechar' : 'Editar'}
+                  </Button>
+                </div>
+                {showCosts && (
+                  <div className="animate-fade-in">
+                    <JobCostEditor projectId={project.id} onSaved={handleCostSaved} />
+                  </div>
+                )}
+                {!showCosts && hasCosts && (
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase">Labor</p>
+                      <p className="text-sm font-bold">{formatCurrency(jobCost?.labor_cost ?? 0)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase">Material</p>
+                      <p className="text-sm font-bold">{formatCurrency(jobCost?.material_cost ?? 0)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase">Other</p>
+                      <p className="text-sm font-bold">{formatCurrency(jobCost?.additional_costs ?? 0)}</p>
+                    </div>
+                  </div>
+                )}
+                {!showCosts && !hasCosts && (
+                  <p className="text-xs text-muted-foreground italic text-center py-3">
+                    Nenhum custo registrado. Clique em Editar para adicionar.
+                  </p>
+                )}
+              </div>
+
+              {/* Proposal Section */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5" /> Proposta
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setShowProposal(!showProposal)}
+                    disabled={!marginOk}
+                  >
+                    {!marginOk ? (
+                      <span className="flex items-center gap-1 text-red-500">
+                        <Ban className="w-3 h-3" /> Margem baixa
+                      </span>
+                    ) : showProposal ? 'Fechar' : 'Gerar'}
+                  </Button>
+                </div>
+                {showProposal && marginOk && (
+                  <div className="animate-fade-in">
+                    <ProposalGenerator projectId={project.id} onClose={() => setShowProposal(false)} />
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* ── TEAM TAB ── */}
+            <TabsContent value="team" className="mt-0 p-5 space-y-4">
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Time</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      if (isEditingTeam) handleSaveTeam();
+                      else setIsEditingTeam(true);
+                    }}
+                    disabled={isSavingTeam}
+                  >
+                    {isSavingTeam ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                    {isEditingTeam ? 'Salvar' : 'Editar'}
+                  </Button>
+                </div>
+
+                {isEditingTeam ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Team Lead</label>
+                      <Input value={teamLead} onChange={(e) => setTeamLead(e.target.value)} placeholder="Nome do líder..." className="mt-1 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Horário</label>
+                      <Input value={workSchedule} onChange={(e) => setWorkSchedule(e.target.value)} placeholder="8:00 AM - 5:00 PM" className="mt-1 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Membros</label>
+                      <div className="flex flex-wrap gap-1.5 mt-1.5 mb-2">
+                        {teamMembers.map((m) => (
+                          <Badge key={m} variant="secondary" className="text-xs gap-1 pr-1">
+                            {m}
+                            <button onClick={() => removeMember(m)} className="hover:text-destructive">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-1.5">
+                        <Input
+                          value={newMember}
+                          onChange={(e) => setNewMember(e.target.value)}
+                          placeholder="Adicionar membro..."
+                          className="text-sm"
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); } }}
+                        />
+                        <Button size="sm" onClick={addMember} disabled={!newMember.trim()}>
+                          <Send className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Team Lead</span>
+                      </div>
+                      <span className="text-sm font-semibold">{teamLead || '—'}</span>
+                    </div>
+                    {teamMembers.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {teamMembers.map((m) => (
+                          <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{workSchedule}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* ── NOTES TAB ── */}
+            <TabsContent value="notes" className="mt-0 p-5">
+              <ProjectNotesSection projectId={project.id} initialNotes={project.notes} onRefresh={onRefresh} />
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
+
+        {/* ═══ FOOTER ═══ */}
+        <div className="px-5 py-3 border-t bg-muted/30 flex justify-between items-center flex-shrink-0">
           <AlertDialog onOpenChange={(open) => { if (!open) setDeleteStep(0); }}>
             <AlertDialogTrigger asChild>
               <Button
@@ -1270,7 +1149,7 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                 className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 gap-1.5"
               >
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                Deletar Job
+                Deletar
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -1280,53 +1159,37 @@ function JobControlModal({ project, isOpen, onClose, onRefresh }: JobControlModa
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   {deleteStep === 0 ? (
-                    <>
-                      Esta ação removerá o job e todos os dados relacionados (custos, propostas, fotos, documentos).
-                      <span className="block mt-2 font-semibold text-destructive">
-                        Esta ação é irreversível.
-                      </span>
-                    </>
+                    <>Esta ação removerá o job e todos os dados relacionados.<span className="block mt-2 font-semibold text-destructive">Irreversível.</span></>
                   ) : (
-                    <>
-                      Você está prestes a deletar permanentemente o job de <strong>{project.customer_name}</strong> e todos os registros associados.
-                      <span className="block mt-2 font-semibold text-destructive">
-                        Tem certeza absoluta? Não será possível recuperar.
-                      </span>
-                    </>
+                    <>Deletar permanentemente <strong>{project.customer_name}</strong>?<span className="block mt-2 font-semibold text-destructive">Não será possível recuperar.</span></>
                   )}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 {deleteStep === 0 ? (
-                  <Button
-                    variant="destructive"
-                    onClick={(e) => { e.preventDefault(); setDeleteStep(1); }}
-                  >
+                  <Button variant="destructive" onClick={(e) => { e.preventDefault(); setDeleteStep(1); }}>
                     Sim, quero deletar
                   </Button>
                 ) : (
-                  <AlertDialogAction
-                    onClick={handleDeleteProject}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Confirmar exclusão permanente
+                  <AlertDialogAction onClick={handleDeleteProject} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Confirmar exclusão
                   </AlertDialogAction>
                 )}
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
           <span className="text-[10px] text-muted-foreground">
-            Job criado em {new Date(project.created_at).toLocaleDateString('pt-BR')} • Apenas admins
+            Criado {new Date(project.created_at).toLocaleDateString('pt-BR')}
           </span>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 
 // ═══════════════════════════════════════════════════════════
-// PROJECT NOTES SECTION — Rich notes, photos & comments
+// PROJECT NOTES SECTION
 // ═══════════════════════════════════════════════════════════
 
 interface ProjectNotesSectionProps {
@@ -1346,7 +1209,6 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch comments
   const { data: comments = [], isLoading: loadingComments } = useQuery({
     queryKey: ['project-comments', projectId],
     queryFn: async () => {
@@ -1363,10 +1225,7 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
   const handleSaveNotes = async () => {
     setIsSavingNotes(true);
     try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ notes })
-        .eq('id', projectId);
+      const { error } = await supabase.from('projects').update({ notes }).eq('id', projectId);
       if (error) throw error;
       toast.success('Notas salvas');
       setIsEditingNotes(false);
@@ -1396,34 +1255,23 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
   const handleSubmitComment = async () => {
     if (!commentText.trim() && !commentImage) return;
     setIsSubmitting(true);
-
     try {
       let imageUrl: string | null = null;
-
       if (commentImage) {
         const ext = commentImage.name.split('.').pop() || 'jpg';
         const path = `${projectId}/comments/${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from('project-documents')
-          .upload(path, commentImage);
+        const { error: upErr } = await supabase.storage.from('project-documents').upload(path, commentImage);
         if (upErr) throw upErr;
-
-        const { data: urlData } = await supabase.storage
-          .from('project-documents')
-          .createSignedUrl(path, 60 * 60 * 24 * 365);
+        const { data: urlData } = await supabase.storage.from('project-documents').createSignedUrl(path, 60 * 60 * 24 * 365);
         imageUrl = urlData?.signedUrl || null;
       }
-
-      const { error } = await supabase
-        .from('project_comments')
-        .insert({
-          project_id: projectId,
-          content: commentText.trim() || '📷 Foto adicionada',
-          image_url: imageUrl,
-          author_name: 'Admin',
-        });
+      const { error } = await supabase.from('project_comments').insert({
+        project_id: projectId,
+        content: commentText.trim() || '📷 Foto adicionada',
+        image_url: imageUrl,
+        author_name: 'Admin',
+      });
       if (error) throw error;
-
       setCommentText('');
       clearImage();
       queryClient.invalidateQueries({ queryKey: ['project-comments', projectId] });
@@ -1436,10 +1284,7 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    const { error } = await supabase
-      .from('project_comments')
-      .delete()
-      .eq('id', commentId);
+    const { error } = await supabase.from('project_comments').delete().eq('id', commentId);
     if (error) {
       toast.error('Erro ao remover');
     } else {
@@ -1459,25 +1304,16 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <StickyNote className="w-3.5 h-3.5" />
-            Notas do Projeto
+            <StickyNote className="w-3.5 h-3.5" /> Notas do Projeto
           </h3>
           <Button
             variant="ghost"
             size="sm"
             className="h-7 text-xs"
-            onClick={() => {
-              if (isEditingNotes) {
-                handleSaveNotes();
-              } else {
-                setIsEditingNotes(true);
-              }
-            }}
+            onClick={() => { if (isEditingNotes) handleSaveNotes(); else setIsEditingNotes(true); }}
             disabled={isSavingNotes}
           >
-            {isSavingNotes ? (
-              <Loader2 className="w-3 h-3 animate-spin mr-1" />
-            ) : null}
+            {isSavingNotes ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
             {isEditingNotes ? 'Salvar' : 'Editar'}
           </Button>
         </div>
@@ -1485,34 +1321,24 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Garage Code: 86753&#10;There are dogs so be sure to close the gate...&#10;&#10;Informações importantes sobre o local, acesso, pets, etc."
+            placeholder="Garage Code: 86753&#10;Dogs, close the gate...&#10;&#10;Informações sobre o local, acesso, etc."
             className="min-h-[100px] text-sm"
             autoFocus
           />
         ) : (
           <div className="text-sm leading-relaxed whitespace-pre-wrap min-h-[40px]">
-            {notes ? (
-              notes
-            ) : (
-              <span className="text-muted-foreground italic">Clique em Editar para adicionar notas...</span>
-            )}
+            {notes || <span className="text-muted-foreground italic">Clique em Editar para adicionar notas...</span>}
           </div>
         )}
       </div>
 
-      {/* Comments Timeline */}
+      {/* Comments */}
       <div className="p-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
-          <MessageSquare className="w-3.5 h-3.5" />
-          Comentários & Fotos
-          {comments.length > 0 && (
-            <Badge variant="secondary" className="text-[10px] ml-1 px-1.5 py-0 h-4">
-              {comments.length}
-            </Badge>
-          )}
+          <MessageSquare className="w-3.5 h-3.5" /> Comentários
+          {comments.length > 0 && <Badge variant="secondary" className="text-[10px] ml-1 px-1.5 py-0 h-4">{comments.length}</Badge>}
         </h3>
 
-        {/* Comment input */}
         <div className="flex gap-2 mb-4">
           <div className="flex-1 space-y-2">
             <div className="flex gap-2">
@@ -1521,52 +1347,20 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 className="text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmitComment();
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(); } }}
               />
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={handleImageSelect}
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                className="flex-shrink-0 h-9 w-9"
-                onClick={() => fileInputRef.current?.click()}
-              >
+              <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageSelect} />
+              <Button variant="outline" size="icon" className="flex-shrink-0 h-9 w-9" onClick={() => fileInputRef.current?.click()}>
                 <ImagePlus className="w-4 h-4" />
               </Button>
-              <Button
-                size="icon"
-                className="flex-shrink-0 h-9 w-9"
-                disabled={isSubmitting || (!commentText.trim() && !commentImage)}
-                onClick={handleSubmitComment}
-              >
+              <Button size="icon" className="flex-shrink-0 h-9 w-9" disabled={isSubmitting || (!commentText.trim() && !commentImage)} onClick={handleSubmitComment}>
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
             </div>
-
-            {/* Image preview */}
             {commentImagePreview && (
               <div className="relative inline-block">
-                <img
-                  src={commentImagePreview}
-                  alt="Preview"
-                  className="h-20 rounded-lg border object-cover"
-                />
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full"
-                  onClick={clearImage}
-                >
+                <img src={commentImagePreview} alt="Preview" className="h-20 rounded-lg border object-cover" />
+                <Button variant="destructive" size="icon" className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full" onClick={clearImage}>
                   <X className="w-3 h-3" />
                 </Button>
               </div>
@@ -1574,17 +1368,12 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
           </div>
         </div>
 
-        {/* Comments list */}
         {loadingComments ? (
-          <div className="flex justify-center py-4">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
+          <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
         ) : comments.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-4 italic">
-            Nenhum comentário. Adicione notas, fotos do local ou observações.
-          </p>
+          <p className="text-xs text-muted-foreground text-center py-4 italic">Nenhum comentário.</p>
         ) : (
-          <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
             {comments.map((c: any) => (
               <div key={c.id} className="group flex gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -1594,23 +1383,14 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-xs font-semibold">{c.author_name}</span>
                     <span className="text-[10px] text-muted-foreground">{formatCommentDate(c.created_at)}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleDeleteComment(c.id)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-5 w-5 ml-auto opacity-0 group-hover:opacity-100" onClick={() => handleDeleteComment(c.id)}>
                       <Trash2 className="w-3 h-3 text-destructive" />
                     </Button>
                   </div>
                   <p className="text-sm leading-relaxed">{c.content}</p>
                   {c.image_url && (
                     <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
-                      <img
-                        src={c.image_url}
-                        alt="Anexo"
-                        className="max-h-40 rounded-lg border object-cover hover:opacity-90 transition-opacity cursor-pointer"
-                      />
+                      <img src={c.image_url} alt="Anexo" className="max-h-40 rounded-lg border object-cover hover:opacity-90" />
                     </a>
                   )}
                 </div>
