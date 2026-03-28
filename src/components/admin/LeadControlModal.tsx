@@ -253,7 +253,6 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
     const success = await updateLeadStatus(lead.id, newStatus);
     if (success) {
       onRefresh();
-      onClose();
     }
   };
 
