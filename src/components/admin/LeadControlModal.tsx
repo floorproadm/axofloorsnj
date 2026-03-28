@@ -126,6 +126,12 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [selectedTier, setSelectedTier] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [sheetWidth, setSheetWidth] = useState(512);
+  const [activeTab, setActiveTab] = useState('resumo');
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [newNote, setNewNote] = useState('');
+  const isResizing = useRef(false);
+  const queryClient = useQueryClient();
   const isResizing = useRef(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
