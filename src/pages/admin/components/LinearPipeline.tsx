@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { usePartnersData } from "@/hooks/admin/usePartnersData";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
@@ -57,6 +57,7 @@ type Lead = {
   services: string[];
   budget?: number;
   city?: string;
+  address?: string;
   created_at: string;
   updated_at: string;
   notes?: string;
@@ -230,6 +231,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const [selectedLeadId, setSelectedLeadId] = useState('');
   const [apptDate, setApptDate] = useState('');
   const [apptTime, setApptTime] = useState('');
+  const [apptAddress, setApptAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [source, setSource] = useState<'lead' | 'partner'>('lead');
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
@@ -252,9 +254,16 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   );
 
   const resetForm = () => { 
-    setSelectedLeadId(''); setApptDate(''); setApptTime(''); setNotes(''); 
+    setSelectedLeadId(''); setApptDate(''); setApptTime(''); setApptAddress(''); setNotes(''); 
     setSource('lead'); setSelectedPartnerId('');
   };
+
+  // Auto-fill address when lead is selected
+  const selectedLead = eligibleLeads.find(l => l.id === selectedLeadId);
+  useEffect(() => {
+    if (selectedLead?.address) setApptAddress(selectedLead.address);
+    else setApptAddress('');
+  }, [selectedLeadId, selectedLead?.address]);
 
   const handleSave = async () => {
     if (source === 'lead' && !selectedLeadId) {
@@ -263,6 +272,10 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
     }
     if (source === 'partner' && !selectedPartnerId) {
       toast.error('Selecione um parceiro');
+      return;
+    }
+    if (source === 'lead' && !apptAddress.trim()) {
+      toast.error('Endereço é obrigatório');
       return;
     }
     if (!apptDate || !apptTime) {
@@ -327,12 +340,18 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
 
+        // Save address to lead
+        if (apptAddress.trim()) {
+          await supabase.from('leads').update({ address: apptAddress.trim() }).eq('id', lead.id);
+        }
+
         const { error: apptError } = await supabase.from('appointments').insert({
           customer_name: lead.name,
           customer_phone: lead.phone,
           appointment_date: apptDate,
           appointment_time: apptTime,
           appointment_type: 'estimate',
+          location: apptAddress.trim() || null,
           notes: notes.trim() || null,
           organization_id: AXO_ORG_ID,
         });
@@ -432,6 +451,18 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
                   )}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {source === 'lead' && (
+            <div>
+              <Label htmlFor="appt-address">Endereço *</Label>
+              <Input 
+                id="appt-address" 
+                value={apptAddress} 
+                onChange={e => setApptAddress(e.target.value)} 
+                placeholder="Endereço do cliente..."
+              />
             </div>
           )}
 
