@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from "react";
+import { usePartnersData } from "@/hooks/admin/usePartnersData";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
