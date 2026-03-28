@@ -258,12 +258,12 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
     <>
       {/* Header */}
       <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0", config.bgColor)}>
-        <SheetHeader className="pb-0">
+        <div className="pb-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <SheetTitle className="text-xl font-bold text-foreground truncate pr-8">
+              <h2 className="text-xl font-bold text-foreground truncate pr-8">
                 {lead.name}
-              </SheetTitle>
+              </h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", config.bgColor, config.textColor, config.borderColor)}>
                   {STAGE_LABELS[stage]}
@@ -297,7 +297,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
               </Button>
             )}
           </div>
-        </SheetHeader>
+        </div>
       </div>
 
         <ScrollArea className="flex-1 overflow-auto">
