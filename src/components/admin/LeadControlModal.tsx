@@ -102,7 +102,7 @@ const NRA_STYLES: Record<string, { bg: string; border: string; text: string; ico
   }
 };
 
-export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadControlModalProps) {
+export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = false }: LeadControlModalProps) {
   const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToProject, isConverting } = useLeadConversion();
