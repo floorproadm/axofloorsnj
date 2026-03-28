@@ -180,17 +180,37 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   });
 
   const addNoteMutation = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({ content, file }: { content: string; file?: File }) => {
       const { data: orgData } = await supabase.rpc('get_user_org_id');
+      let attachmentUrl: string | null = null;
+      let attachmentName: string | null = null;
+
+      if (file) {
+        const ext = file.name.split('.').pop();
+        const path = `lead-notes/${lead!.id}/${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('project-documents')
+          .upload(path, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from('project-documents')
+          .getPublicUrl(path);
+        attachmentUrl = urlData.publicUrl;
+        attachmentName = file.name;
+      }
+
       const { error } = await supabase.from('lead_notes').insert({
         lead_id: lead!.id,
         content,
         organization_id: orgData,
-      });
+        attachment_url: attachmentUrl,
+        attachment_name: attachmentName,
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       setNewNote('');
+      setNoteFiles([]);
       refetchNotes();
       toast.success('Nota adicionada');
     },
