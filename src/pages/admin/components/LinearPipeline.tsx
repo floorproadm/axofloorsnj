@@ -230,6 +230,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const [selectedLeadId, setSelectedLeadId] = useState('');
   const [apptDate, setApptDate] = useState('');
   const [apptTime, setApptTime] = useState('');
+  const [apptAddress, setApptAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [source, setSource] = useState<'lead' | 'partner'>('lead');
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
@@ -252,9 +253,16 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   );
 
   const resetForm = () => { 
-    setSelectedLeadId(''); setApptDate(''); setApptTime(''); setNotes(''); 
+    setSelectedLeadId(''); setApptDate(''); setApptTime(''); setApptAddress(''); setNotes(''); 
     setSource('lead'); setSelectedPartnerId('');
   };
+
+  // Auto-fill address when lead is selected
+  const selectedLead = eligibleLeads.find(l => l.id === selectedLeadId);
+  React.useEffect(() => {
+    if (selectedLead?.address) setApptAddress(selectedLead.address);
+    else setApptAddress('');
+  }, [selectedLeadId]);
 
   const handleSave = async () => {
     if (source === 'lead' && !selectedLeadId) {
