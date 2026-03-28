@@ -274,6 +274,10 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
       toast.error('Selecione um parceiro');
       return;
     }
+    if (source === 'lead' && !apptAddress.trim()) {
+      toast.error('Endereço é obrigatório');
+      return;
+    }
     if (!apptDate || !apptTime) {
       toast.error('Selecione data e hora');
       return;
