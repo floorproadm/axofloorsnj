@@ -1,49 +1,71 @@
 
 
-## Plano: Converter LeadControlModal de Dialog para Sheet (Sidebar estilo Notion)
+# Reorganizar Payments & Invoices — Integrar Payroll como Custo
 
-### O que muda
-Trocar o `Dialog` centralizado por um `Sheet` lateral (side="right") que abre como uma página sidebar, igual ao padrão do Notion. Todas as informações do lead permanecem as mesmas, mas o layout será otimizado para sidebar.
+## Problema Atual
+- **Payments** tem apenas 2 opções: Income e Expense (labor/material/other)
+- **Payroll** (folha de pagamento) fica isolado em Crews & Fleet
+- O usuário precisa ver tudo junto: ganhos, gastos operacionais e custos de mão de obra (payroll) num único hub financeiro
 
-### Alterações
+## Proposta de Organização
 
-**`src/components/admin/LeadControlModal.tsx`**
-- Substituir `Dialog` + `DialogContent` por `Sheet` + `SheetContent` com `side="right"`
-- Largura: `sm:max-w-lg` (480px) no desktop, full-width no mobile
-- Manter `ScrollArea` para o conteúdo
-- Header com `SheetHeader` + `SheetTitle`
-- Footer de ações (Deletar, Mark Lost) fica fixo no bottom
-- Toda a estrutura interna (NRA panel, contact info, follow-up, proposals) permanece igual
-
-### Layout da Sidebar
+O sistema financeiro passa a ter **3 categorias claras**:
 
 ```text
-┌─────────────────────────┐
-│  Nome do Lead        X  │  ← SheetHeader
-│  [Badge Status] [+48h]  │
-├─────────────────────────┤
-│  🟢 NRA Panel           │
-│  Fazer primeiro contato  │
-├─────────────────────────┤
-│  Proposal Actions       │
-├─────────────────────────┤
-│  Histórico de Contatos  │
-├─────────────────────────┤
-│  📞 Telefone  ✉ Email   │
-│  📍 Cidade   $ Budget   │
-├─────────────────────────┤
-│  Serviços: [badges]     │
-├─────────────────────────┤
-│  Criado / Atualizado    │
-├─────────────────────────┤
-│  🗑 Deletar    Mark Lost │  ← Footer fixo
-└─────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  PAYMENTS & INVOICES                        │
+│                                             │
+│  New Payment → 3 opções:                    │
+│  ┌──────────────────┐                       │
+│  │ 💰 Record Income │ Pagamento recebido    │
+│  │ 📦 Record Expense│ Material / Other      │
+│  │ 👷 Record Payroll│ Custo de mão de obra  │
+│  └──────────────────┘                       │
+│                                             │
+│  Category pills:                            │
+│  [All] [Income] [Payroll] [Material] [Other]│
+│                                             │
+│  Payroll entries from Crews & Fleet         │
+│  aparecem automaticamente aqui também       │
+└─────────────────────────────────────────────┘
 ```
 
-### Arquivos alterados
-| Arquivo | Ação |
-|---------|------|
-| `src/components/admin/LeadControlModal.tsx` | `Dialog` → `Sheet`, ajustar layout para sidebar |
+## Mudanças Técnicas
 
-Nenhuma mudança em `LinearPipeline.tsx` — as props `isOpen`/`onClose` continuam iguais.
+### 1. PaymentActionSheet — Adicionar 3a opção "Record Payroll"
+- Novo botão com ícone `Hammer` e descrição "Crew wages, daily rates, sub payments"
+- Ao clicar, abre `NewPaymentDialog` com `defaultCategory = "labor"`
+- Renomear "Record Expense" para focar em material/other
+
+### 2. Category Pills em Payments.tsx
+- Renomear "Received" → "Income"
+- Renomear "Labor" → "Payroll"
+- Manter "Material" e "Other"
+- O filtro continua usando os mesmos valores do DB (`received`, `labor`, `material`, `other`)
+
+### 3. MonthlyOverview — Renomear labels
+- "Labor" → "Payroll" no display (o valor no DB continua `labor`)
+
+### 4. NewPaymentDialog — Melhorar UX para Payroll
+- Quando `defaultCategory = "labor"`:
+  - Mostrar campo de **Payment Method** (cash, check, zelle, etc.) — hoje só aparece para income
+  - Placeholder do description: "e.g. Crew wages week 1, John daily rate..."
+
+### 5. Crews & Fleet Payroll — Referência cruzada
+- Entries de payroll criadas em Crews & Fleet já usam `category: "labor"` na tabela `payments`
+- Portanto, já aparecem automaticamente em Payments — sem mudança de dados necessária
+- Adicionar um link sutil no Payroll tab de Crews que diga "View all in Payments →"
+
+## O Que NÃO Muda
+- Schema do banco (a coluna `category` já suporta `labor`)
+- Hooks `usePayments` / `useCreatePayment`
+- KPIs (payroll já é contado em "Total Out")
+- Chart financeiro (payroll já aparece como Expenses)
+
+## Resumo dos Arquivos
+1. `src/components/admin/payments/PaymentActionSheet.tsx` — adicionar 3a opção Payroll
+2. `src/pages/admin/Payments.tsx` — renomear labels nos pills
+3. `src/components/admin/payments/MonthlyOverview.tsx` — renomear "Labor" → "Payroll"
+4. `src/components/admin/payments/NewPaymentDialog.tsx` — mostrar payment method para labor
+5. `src/pages/admin/CrewsVans.tsx` — link "View all in Payments →" no tab Payroll
 
