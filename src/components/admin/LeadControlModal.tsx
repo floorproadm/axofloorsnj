@@ -132,7 +132,6 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [newNote, setNewNote] = useState('');
   const isResizing = useRef(false);
   const queryClient = useQueryClient();
-  const isResizing = useRef(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
