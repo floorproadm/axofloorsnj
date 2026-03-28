@@ -1114,7 +1114,6 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
 }) {
   const timeBadge = getTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
-  const services = Array.isArray(lead.services) ? lead.services : [];
   const services: string[] = Array.isArray(lead.services) ? lead.services : [];
 
   return (
