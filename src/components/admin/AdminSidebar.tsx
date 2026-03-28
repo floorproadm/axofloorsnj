@@ -71,12 +71,12 @@ export function AdminSidebar() {
 
   const toolsItems = [
     { title: t("sidebar.captacao"), url: "/admin/intake", icon: Inbox },
-    { title: t("sidebar.medicoes"), url: "/admin/measurements", icon: Ruler },
     { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
+    { title: t("sidebar.medicoes"), url: "/admin/measurements", icon: Ruler },
+    { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
   ];
 
   const manageItems = [
-    { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: "Crews & Fleet", url: "/admin/crews", icon: Truck },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
