@@ -1114,9 +1114,7 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
 }) {
   const timeBadge = getTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
-  const services = Array.isArray(lead.services) ? lead.services : [];
-  const visibleServices = services.slice(0, 2);
-  const overflowCount = services.length - 2;
+  const services: string[] = Array.isArray(lead.services) ? lead.services : [];
 
   return (
     <div
@@ -1158,19 +1156,25 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
         )}
       </div>
 
-      {/* Row 3: Source + Services */}
-      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+      {/* Divider: Serviços */}
+      {services.length > 0 && (
+        <div className="mt-3 pt-2.5 border-t border-border/40">
+          <span className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Serviços</span>
+          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+            {services.map(s => (
+              <Badge key={s} variant="secondary" className="text-[9px] px-2 py-0.5 h-auto bg-primary/10 text-primary border-primary/20">
+                {serviceLabels[s] || s}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Source badge */}
+      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
         <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-auto">
           {sourceLabels[lead.lead_source] || lead.lead_source}
         </Badge>
-        {visibleServices.map(s => (
-          <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0.5 h-auto">
-            {serviceLabels[s] || s}
-          </Badge>
-        ))}
-        {overflowCount > 0 && (
-          <span className="text-[9px] text-muted-foreground font-medium">+{overflowCount}</span>
-        )}
       </div>
 
       {/* Quick Quote button */}
