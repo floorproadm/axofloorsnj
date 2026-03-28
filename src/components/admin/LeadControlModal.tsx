@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -220,16 +220,16 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
   const primaryNextStatus = nra ? NRA_TO_NEXT_STATUS[nra.action] : undefined;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[calc(100vw-16px)] sm:max-w-xl max-h-[90vh] overflow-hidden p-0">
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col h-full">
         {/* Header */}
-        <div className={cn("px-4 sm:px-6 py-4 border-b", config.bgColor)}>
-          <DialogHeader className="pb-0">
+        <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0", config.bgColor)}>
+          <SheetHeader className="pb-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <DialogTitle className="text-xl font-bold text-foreground truncate pr-8">
+                <SheetTitle className="text-xl font-bold text-foreground truncate pr-8">
                   {lead.name}
-                </DialogTitle>
+                </SheetTitle>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", config.bgColor, config.textColor, config.borderColor)}>
                     {STAGE_LABELS[stage]}
@@ -249,10 +249,10 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
                 </div>
               </div>
             </div>
-          </DialogHeader>
+          </SheetHeader>
         </div>
 
-        <ScrollArea className="max-h-[calc(90vh-120px)]">
+        <ScrollArea className="flex-1 overflow-auto">
           <div className="p-4 sm:p-6 space-y-4">
             
             {/* NRA PANEL */}
@@ -410,7 +410,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
         </ScrollArea>
 
         {/* Footer - Actions */}
-        <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
+        <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center flex-shrink-0">
           {/* Delete Lead */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -462,8 +462,8 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
             </Button>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 
