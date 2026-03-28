@@ -274,7 +274,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
       toast.error('Selecione um parceiro');
       return;
     }
-    if (source === 'lead' && !apptAddress.trim()) {
+    if (!apptAddress.trim()) {
       toast.error('Endereço é obrigatório');
       return;
     }
@@ -299,6 +299,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
             lead_source: 'referral',
             status: 'estimate_scheduled',
             priority: 'high',
+            address: apptAddress.trim(),
             notes: `Via parceiro: ${partner.company_name}`,
             referred_by_partner_id: partner.id,
             organization_id: AXO_ORG_ID,
@@ -314,6 +315,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           appointment_date: apptDate,
           appointment_time: apptTime,
           appointment_type: 'estimate',
+          location: apptAddress.trim(),
           notes: notes.trim() || `Parceiro: ${partner.company_name}`,
           organization_id: AXO_ORG_ID,
         });
@@ -454,17 +456,15 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
             </div>
           )}
 
-          {source === 'lead' && (
-            <div>
-              <Label htmlFor="appt-address">Endereço *</Label>
-              <Input 
-                id="appt-address" 
-                value={apptAddress} 
-                onChange={e => setApptAddress(e.target.value)} 
-                placeholder="Endereço do cliente..."
-              />
-            </div>
-          )}
+          <div>
+            <Label htmlFor="appt-address">Endereço *</Label>
+            <Input 
+              id="appt-address" 
+              value={apptAddress} 
+              onChange={e => setApptAddress(e.target.value)} 
+              placeholder="Endereço do cliente..."
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
