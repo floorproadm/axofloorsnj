@@ -250,9 +250,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col h-full">
-        {/* Header */}
-        <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0", config.bgColor)}>
+      <SheetContent side="right" className="p-0 flex flex-col h-full w-full sm:max-w-none" style={{ width: `${sheetWidth}px` }}>
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-primary/20 transition-colors"
+        >
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
+        </div>
           <SheetHeader className="pb-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
