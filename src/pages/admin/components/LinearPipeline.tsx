@@ -330,7 +330,12 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
       toast.error('Selecione um parceiro');
       return;
     }
-    if (!apptAddress.trim()) {
+    if (source === 'new' && (!newLeadForm.name.trim() || !newLeadForm.phone.trim())) {
+      toast.error('Nome e telefone são obrigatórios');
+      return;
+    }
+    const addressValue = source === 'new' ? newLeadForm.address.trim() : apptAddress.trim();
+    if (!addressValue) {
       toast.error('Endereço é obrigatório');
       return;
     }
@@ -341,11 +346,34 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
 
     setSaving(true);
     try {
-      if (source === 'partner') {
+      let leadName = '';
+      let leadPhone = '';
+      let createdLeadId = '';
+
+      if (source === 'new') {
+        // Create new lead directly
+        const { data: newLead, error: insertError } = await supabase
+          .from('leads')
+          .insert({
+            name: newLeadForm.name.trim(),
+            phone: newLeadForm.phone.trim(),
+            email: newLeadForm.email.trim() || null,
+            address: addressValue,
+            lead_source: 'manual',
+            status: 'estimate_scheduled',
+            priority: 'medium',
+            organization_id: AXO_ORG_ID,
+          })
+          .select('id')
+          .single();
+        if (insertError) throw insertError;
+        createdLeadId = newLead.id;
+        leadName = newLeadForm.name.trim();
+        leadPhone = newLeadForm.phone.trim();
+      } else if (source === 'partner') {
         const partner = activePartners.find(p => p.id === selectedPartnerId);
         if (!partner) throw new Error('Parceiro não encontrado');
 
-        // Create lead from partner
         const { data: newLead, error: insertError } = await supabase
           .from('leads')
           .insert({
@@ -355,7 +383,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
             lead_source: 'referral',
             status: 'estimate_scheduled',
             priority: 'high',
-            address: apptAddress.trim(),
+            address: addressValue,
             notes: `Via parceiro: ${partner.company_name}`,
             referred_by_partner_id: partner.id,
             organization_id: AXO_ORG_ID,
@@ -363,20 +391,10 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           .select('id')
           .single();
         if (insertError) throw insertError;
+        createdLeadId = newLead.id;
+        leadName = partner.contact_name;
+        leadPhone = partner.phone || 'N/A';
 
-        // Create appointment
-        await supabase.from('appointments').insert({
-          customer_name: partner.contact_name,
-          customer_phone: partner.phone || 'N/A',
-          appointment_date: apptDate,
-          appointment_time: apptTime,
-          appointment_type: 'estimate',
-          location: apptAddress.trim(),
-          notes: notes.trim() || `Parceiro: ${partner.company_name}`,
-          organization_id: AXO_ORG_ID,
-        });
-
-        // Increment partner referrals
         await supabase
           .from('partners')
           .update({ 
@@ -384,50 +402,40 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
             last_contacted_at: new Date().toISOString(),
           } as any)
           .eq('id', partner.id);
-
-        if (newLead) {
-          await addFollowUpAction(newLead.id, {
-            date: new Date().toISOString(),
-            action: 'Visita agendada via parceiro',
-            notes: `Parceiro: ${partner.company_name}`,
-          });
-        }
-
-        toast.success('Visita agendada via parceiro');
       } else {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
+        createdLeadId = lead.id;
+        leadName = lead.name;
+        leadPhone = lead.phone;
 
-        // Save address to lead
-        if (apptAddress.trim()) {
-          await supabase.from('leads').update({ address: apptAddress.trim() }).eq('id', lead.id);
+        if (addressValue) {
+          await supabase.from('leads').update({ address: addressValue }).eq('id', lead.id);
         }
+        await updateLeadStatus(lead.id, 'estimate_scheduled');
+      }
 
-        const { error: apptError } = await supabase.from('appointments').insert({
-          customer_name: lead.name,
-          customer_phone: lead.phone,
-          appointment_date: apptDate,
-          appointment_time: apptTime,
-          appointment_type: 'estimate',
-          location: apptAddress.trim() || null,
-          notes: notes.trim() || null,
-          organization_id: AXO_ORG_ID,
-        });
-        if (apptError) throw apptError;
+      // Create appointment
+      await supabase.from('appointments').insert({
+        customer_name: leadName,
+        customer_phone: leadPhone,
+        appointment_date: apptDate,
+        appointment_time: apptTime,
+        appointment_type: 'estimate',
+        location: addressValue || null,
+        notes: notes.trim() || null,
+        organization_id: AXO_ORG_ID,
+      });
 
-        const ok = await updateLeadStatus(lead.id, 'estimate_scheduled');
-
-        await addFollowUpAction(lead.id, {
+      if (createdLeadId) {
+        await addFollowUpAction(createdLeadId, {
           date: new Date().toISOString(),
           action: 'Visita agendada',
           notes: notes.trim() || undefined,
         });
-
-        if (ok) {
-          toast.success('Visita agendada com sucesso');
-        }
       }
 
+      toast.success('Visita agendada com sucesso');
       resetForm();
       onOpenChange(false);
       onSuccess();
