@@ -33,6 +33,7 @@ import CompanyFeed from './pages/admin/CompanyFeed';
 import FeedPostDetail from './pages/admin/FeedPostDetail';
 import FeedPostEdit from './pages/admin/FeedPostEdit';
 import AdminLeadsManager from './pages/admin/LeadsManager';
+import LeadDetail from './pages/admin/LeadDetail';
 import AdminJobsManager from './pages/admin/JobsManager';
 import AdminIntake from './pages/admin/Intake';
 import AdminSettings from './pages/admin/Settings';
@@ -133,6 +134,11 @@ const App = () => {
             <Route path="/admin/leads" element={
               <ProtectedRoute>
                 <AdminLeadsManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/leads/:leadId" element={
+              <ProtectedRoute>
+                <LeadDetail />
               </ProtectedRoute>
             } />
             <Route path="/admin/jobs" element={
