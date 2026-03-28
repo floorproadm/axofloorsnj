@@ -257,11 +257,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const innerContent = (
     <>
       {/* Header */}
-      <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0", config.bgColor)}>
+      <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0 pr-12", config.bgColor)}>
         <div className="pb-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-bold text-foreground truncate pr-8">
+              <h2 className="text-xl font-bold text-foreground truncate">
                 {lead.name}
               </h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -280,22 +280,22 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                     +48h parado
                   </Badge>
                 )}
+                {!embedded && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-foreground"
+                    title="Abrir como página"
+                    onClick={() => {
+                      onClose();
+                      navigate(`/admin/leads/${lead.id}`);
+                    }}
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </Button>
+                )}
               </div>
             </div>
-            {!embedded && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-                title="Abrir como página"
-                onClick={() => {
-                  onClose();
-                  navigate(`/admin/leads/${lead.id}`);
-                }}
-              >
-                <Maximize2 className="w-4 h-4" />
-              </Button>
-            )}
           </div>
         </div>
       </div>
