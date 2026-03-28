@@ -257,44 +257,42 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const innerContent = (
     <>
       {/* Header */}
-      <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0 pr-12", config.bgColor)}>
+      <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0 pr-14", config.bgColor)}>
+        {/* Open as page button - positioned left of the X close button */}
+        {!embedded && (
+          <button
+            type="button"
+            title="Abrir como página"
+            className="absolute right-12 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 z-10"
+            onClick={() => {
+              onClose();
+              navigate(`/admin/leads/${lead.id}`);
+            }}
+          >
+            <Maximize2 className="h-4 w-4" />
+          </button>
+        )}
         <div className="pb-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-bold text-foreground truncate">
-                {lead.name}
-              </h2>
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", config.bgColor, config.textColor, config.borderColor)}>
-                  {STAGE_LABELS[stage]}
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold text-foreground truncate">
+              {lead.name}
+            </h2>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", config.bgColor, config.textColor, config.borderColor)}>
+                {STAGE_LABELS[stage]}
+              </Badge>
+              {hasProject && (
+                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300">
+                  Projeto ✓
                 </Badge>
-                {hasProject && (
-                  <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300">
-                    Projeto ✓
-                  </Badge>
-                )}
-                {proposal && <ProposalStatusBadge status={proposal.status as ProposalStatus} />}
-                {isStale && !isTerminal && (
-                  <Badge variant="destructive" className="text-xs flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    +48h parado
-                  </Badge>
-                )}
-                {!embedded && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-foreground"
-                    title="Abrir como página"
-                    onClick={() => {
-                      onClose();
-                      navigate(`/admin/leads/${lead.id}`);
-                    }}
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-              </div>
+              )}
+              {proposal && <ProposalStatusBadge status={proposal.status as ProposalStatus} />}
+              {isStale && !isTerminal && (
+                <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  +48h parado
+                </Badge>
+              )}
             </div>
           </div>
         </div>
