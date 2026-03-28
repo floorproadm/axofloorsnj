@@ -258,6 +258,8 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh }: LeadContr
         >
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
         </div>
+        {/* Header */}
+        <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0", config.bgColor)}>
           <SheetHeader className="pb-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
