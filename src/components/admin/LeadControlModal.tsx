@@ -105,6 +105,7 @@ const NRA_STYLES: Record<string, { bg: string; border: string; text: string; ico
 };
 
 export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = false }: LeadControlModalProps) {
+  const navigate = useNavigate();
   const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToProject, isConverting } = useLeadConversion();
@@ -251,7 +252,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   };
   const primaryNextStatus = nra ? NRA_TO_NEXT_STATUS[nra.action] : undefined;
 
-  const navigate = useNavigate();
+  
 
   const innerContent = (
     <>
