@@ -230,10 +230,18 @@ export function QuickQuoteSheet({ lead, open, onClose, onSuccess }: QuickQuoteSh
         })
         .eq("id", lead.id);
 
-      // 6. Move lead para proposal_sent via direct update
+      // 6. Move lead through pipeline stages sequentially
+      // First move to in_draft (required intermediate step)
+      const { error: draftErr } = await supabase
+        .from("leads")
+        .update({ status: "in_draft", status_changed_at: new Date().toISOString() })
+        .eq("id", lead.id);
+      if (draftErr) throw draftErr;
+
+      // Then move to proposal_sent
       const { error: leadErr } = await supabase
         .from("leads")
-        .update({ status: "proposal_sent" })
+        .update({ status: "proposal_sent", status_changed_at: new Date().toISOString() })
         .eq("id", lead.id);
       if (leadErr) throw leadErr;
 
