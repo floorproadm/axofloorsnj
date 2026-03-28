@@ -57,6 +57,7 @@ type Lead = {
   services: string[];
   budget?: number;
   city?: string;
+  address?: string;
   created_at: string;
   updated_at: string;
   notes?: string;
@@ -259,10 +260,10 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
 
   // Auto-fill address when lead is selected
   const selectedLead = eligibleLeads.find(l => l.id === selectedLeadId);
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedLead?.address) setApptAddress(selectedLead.address);
     else setApptAddress('');
-  }, [selectedLeadId]);
+  }, [selectedLeadId, selectedLead?.address]);
 
   const handleSave = async () => {
     if (source === 'lead' && !selectedLeadId) {
