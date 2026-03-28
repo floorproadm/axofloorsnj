@@ -751,40 +751,46 @@ function JobControlModal({ project, isOpen, onClose, onRefresh, embedded = false
   const addressFull = [project.address, project.city, project.zip_code].filter(Boolean).join(", ");
   const mapsUrl = addressFull ? `https://maps.google.com/?q=${encodeURIComponent(addressFull)}` : null;
 
-  return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-[520px] p-0 flex flex-col [&>button:first-child]:z-20 [&>button:first-child]:text-white [&>button:first-child]:hover:text-white/80"
-      >
-        {/* ═══ HEADER ═══ */}
-        <div className={cn("px-5 py-4 text-white flex-shrink-0", statusConfig.headerBg)}>
-          <div className="flex items-center gap-2 mb-2 pr-8">
-            <Select
-              value={project.project_status}
-              onValueChange={handleStatusChange}
-              disabled={isChangingStatus}
+  const headerContent = (
+    <>
+      {/* ═══ HEADER ═══ */}
+      <div className={cn("px-5 py-4 text-white flex-shrink-0", statusConfig.headerBg)}>
+        <div className="flex items-center gap-2 mb-2 pr-8">
+          <Select
+            value={project.project_status}
+            onValueChange={handleStatusChange}
+            disabled={isChangingStatus}
+          >
+            <SelectTrigger className="h-7 w-auto min-w-[120px] bg-white/20 border-white/30 text-white text-xs font-medium hover:bg-white/30 [&>svg]:text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ACTIVE_STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  <span className="flex items-center gap-2">
+                    {STATUS_CONFIG[s].icon}
+                    {STATUS_CONFIG[s].label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-white/50 text-xs">•</span>
+          <span className="text-white/70 text-xs">{timeAgo(project.created_at)}</span>
+          {!embedded && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto h-7 w-7 text-white/70 hover:text-white hover:bg-white/20"
+              onClick={() => { onClose(); navigate(`/admin/jobs/${project.id}`); }}
             >
-              <SelectTrigger className="h-7 w-auto min-w-[120px] bg-white/20 border-white/30 text-white text-xs font-medium hover:bg-white/30 [&>svg]:text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ACTIVE_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    <span className="flex items-center gap-2">
-                      {STATUS_CONFIG[s].icon}
-                      {STATUS_CONFIG[s].label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-white/50 text-xs">•</span>
-            <span className="text-white/70 text-xs">{timeAgo(project.created_at)}</span>
-          </div>
-          <h2 className="text-lg font-bold text-white truncate pr-8">{project.customer_name}</h2>
-          <p className="text-white/70 text-xs mt-0.5">{project.project_type}</p>
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+          )}
         </div>
+        <h2 className="text-lg font-bold text-white truncate pr-8">{project.customer_name}</h2>
+        <p className="text-white/70 text-xs mt-0.5">{project.project_type}</p>
+      </div>
 
         {/* ═══ QUICK ACTIONS BAR ═══ */}
         <div className="flex items-center gap-1.5 px-5 py-3 border-b bg-muted/30 flex-shrink-0 overflow-x-auto">
