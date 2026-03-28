@@ -315,6 +315,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           appointment_date: apptDate,
           appointment_time: apptTime,
           appointment_type: 'estimate',
+          location: apptAddress.trim(),
           notes: notes.trim() || `Parceiro: ${partner.company_name}`,
           organization_id: AXO_ORG_ID,
         });
