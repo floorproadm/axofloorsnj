@@ -751,455 +751,397 @@ function JobControlModal({ project, isOpen, onClose, onRefresh, embedded = false
   const addressFull = [project.address, project.city, project.zip_code].filter(Boolean).join(", ");
   const mapsUrl = addressFull ? `https://maps.google.com/?q=${encodeURIComponent(addressFull)}` : null;
 
+  const renderHeader = () => (
+    <div className={cn("px-5 py-4 text-white flex-shrink-0", statusConfig.headerBg)}>
+      <div className="flex items-center gap-2 mb-2 pr-8">
+        <Select value={project.project_status} onValueChange={handleStatusChange} disabled={isChangingStatus}>
+          <SelectTrigger className="h-7 w-auto min-w-[120px] bg-white/20 border-white/30 text-white text-xs font-medium hover:bg-white/30 [&>svg]:text-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ACTIVE_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>
+                <span className="flex items-center gap-2">{STATUS_CONFIG[s].icon}{STATUS_CONFIG[s].label}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <span className="text-white/50 text-xs">•</span>
+        <span className="text-white/70 text-xs">{timeAgo(project.created_at)}</span>
+        {!embedded && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-auto h-7 w-7 text-white/70 hover:text-white hover:bg-white/20"
+            onClick={() => { onClose(); navigate(`/admin/jobs/${project.id}`); }}
+          >
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+      <h2 className="text-lg font-bold text-white truncate pr-8">{project.customer_name}</h2>
+      <p className="text-white/70 text-xs mt-0.5">{project.project_type}</p>
+    </div>
+  );
+
+  const renderBody = () => (
+    <>
+      {/* ═══ QUICK ACTIONS BAR ═══ */}
+      <div className="flex items-center gap-1.5 px-5 py-3 border-b bg-muted/30 flex-shrink-0 overflow-x-auto">
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 flex-shrink-0"
+          onClick={() => { if (!embedded) onClose(); navigate(`/admin/measurements?project=${project.id}`); }}>
+          <Ruler className="w-3.5 h-3.5" /> Medições
+        </Button>
+        <Button variant={showCosts ? "default" : "outline"} size="sm" className="h-8 text-xs gap-1.5 flex-shrink-0"
+          onClick={() => { setShowCosts(!showCosts); setShowProposal(false); setActiveTab("financial"); }}>
+          <Calculator className="w-3.5 h-3.5" /> Custos
+          {hasCosts ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <AlertTriangle className="w-3 h-3 text-amber-500" />}
+        </Button>
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 flex-shrink-0"
+          onClick={() => { if (!embedded) onClose(); navigate(`/admin/feed?project=${project.id}`); }}>
+          <Camera className="w-3.5 h-3.5" /> Fotos
+          {proofComplete ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <AlertTriangle className="w-3 h-3 text-amber-500" />}
+        </Button>
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 flex-shrink-0"
+          onClick={() => { if (!embedded) onClose(); navigate(`/admin/jobs/${project.id}/documents`); }}>
+          <FolderOpen className="w-3.5 h-3.5" /> Docs
+        </Button>
+      </div>
+
+      {/* ═══ TABS CONTENT ═══ */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="w-full justify-start px-5 pt-2 pb-0 bg-transparent h-auto gap-0 rounded-none border-b">
+          {[
+            { value: "overview", label: "Overview" },
+            { value: "financial", label: "Financial" },
+            { value: "team", label: "Team" },
+            { value: "notes", label: "Notes" },
+          ].map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2.5 text-xs font-medium">
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <ScrollArea className="flex-1">
+          {/* ── OVERVIEW TAB ── */}
+          <TabsContent value="overview" className="mt-0 p-5 space-y-4">
+            {/* NRA */}
+            <div className={cn(
+              "rounded-xl border p-3 flex items-center gap-3",
+              nra.severity === "critical" ? "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800" :
+              nra.severity === "warning" ? "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800" :
+              "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
+            )}>
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                nra.severity === "critical" ? "bg-red-100 dark:bg-red-900/30" :
+                nra.severity === "warning" ? "bg-amber-100 dark:bg-amber-900/30" :
+                "bg-emerald-100 dark:bg-emerald-900/30"
+              )}>
+                {nra.severity === "ok" ? (
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                ) : (
+                  <AlertTriangle className={cn("w-4 h-4", nra.severity === "critical" ? "text-red-600" : "text-amber-600")} />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Próxima Ação</p>
+                <p className="text-sm font-semibold truncate">{nra.label}</p>
+              </div>
+              {nra.action !== "none" && (
+                <Button size="sm" variant="outline" className="flex-shrink-0 h-7 text-xs"
+                  onClick={() => {
+                    if (nra.action === "costs") { setShowCosts(true); setActiveTab("financial"); }
+                    else if (nra.action === "proof") { if (!embedded) onClose(); navigate(`/admin/feed?project=${project.id}`); }
+                    else if (nra.action === "team") setActiveTab("team");
+                  }}>
+                  Fazer
+                </Button>
+              )}
+            </div>
+
+            {/* Progress */}
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progresso</h3>
+                <span className="text-sm font-bold">{progressPercent}%</span>
+              </div>
+              <Progress value={progressPercent} className="h-2 mb-3" />
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                {checklistItems.map((item) => (
+                  <div key={item.label} className="flex items-center gap-1.5">
+                    {item.ok ? <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> : <X className="w-3.5 h-3.5 text-red-400" />}
+                    <span className={cn("text-xs font-medium", item.ok ? "text-foreground" : "text-muted-foreground")}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Client Info */}
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</h3>
+                <div className="flex gap-1">
+                  <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20">
+                    <Phone className="w-3 h-3" /> Ligar
+                  </a>
+                  <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[11px] font-medium hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    <MessageSquare className="w-3 h-3" /> SMS
+                  </a>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2.5">
+                  <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <span className="font-semibold">{project.customer_name}</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <span>{project.customer_phone}</span>
+                </div>
+                {project.customer_email && (
+                  <div className="flex items-center gap-2.5">
+                    <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="truncate">{project.customer_email}</span>
+                  </div>
+                )}
+                {addressFull && (
+                  <div className="flex items-center gap-2.5">
+                    <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    {mapsUrl ? (
+                      <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                        {addressFull} <Navigation className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span>{addressFull}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Project Details */}
+            <div className="rounded-xl border bg-card p-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Detalhes</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase">Área</p>
+                  <p className="text-sm font-bold">{project.square_footage ? `${project.square_footage} sqft` : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase">Serviço</p>
+                  <p className="text-sm font-bold">{project.project_type}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase">Início</p>
+                  <p className="text-sm font-bold">{project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase">Conclusão</p>
+                  <p className="text-sm font-bold">{project.completion_date ? new Date(project.completion_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Checklist */}
+            <JobChecklist projectId={project.id} />
+          </TabsContent>
+
+          {/* ── FINANCIAL TAB ── */}
+          <TabsContent value="financial" className="mt-0 p-5 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className={cn(
+                "rounded-xl border-2 p-3.5",
+                marginOk ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20" : "border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/20"
+              )}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  {marginOk ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Margem</span>
+                </div>
+                <p className={cn("text-2xl font-bold", marginOk ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
+                  {currentMargin.toFixed(1)}%
+                </p>
+                <p className={cn("text-xs mt-0.5", marginOk ? "text-emerald-600" : "text-red-600")}>
+                  {marginOk ? `Lucro: ${formatCurrency(jobCost?.profit_amount ?? 0)}` : `Mínimo: ${marginMinPercent}%`}
+                </p>
+              </div>
+              <div className="rounded-xl border-2 border-border p-3.5 bg-card">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <DollarSign className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Revenue</span>
+                </div>
+                <p className="text-2xl font-bold">{formatCurrency(jobCost?.estimated_revenue ?? 0)}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Custo: {formatCurrency(jobCost?.total_cost ?? 0)}</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Calculator className="w-3.5 h-3.5" /> Custos do Projeto
+                </h3>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowCosts(!showCosts)}>
+                  {showCosts ? 'Fechar' : 'Editar'}
+                </Button>
+              </div>
+              {showCosts && (
+                <div className="animate-fade-in">
+                  <JobCostEditor projectId={project.id} onSaved={handleCostSaved} />
+                </div>
+              )}
+              {!showCosts && hasCosts && (
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div><p className="text-[10px] text-muted-foreground uppercase">Labor</p><p className="text-sm font-bold">{formatCurrency(jobCost?.labor_cost ?? 0)}</p></div>
+                  <div><p className="text-[10px] text-muted-foreground uppercase">Material</p><p className="text-sm font-bold">{formatCurrency(jobCost?.material_cost ?? 0)}</p></div>
+                  <div><p className="text-[10px] text-muted-foreground uppercase">Other</p><p className="text-sm font-bold">{formatCurrency(jobCost?.additional_costs ?? 0)}</p></div>
+                </div>
+              )}
+              {!showCosts && !hasCosts && (
+                <p className="text-xs text-muted-foreground italic text-center py-3">Nenhum custo registrado. Clique em Editar para adicionar.</p>
+              )}
+            </div>
+
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" /> Proposta
+                </h3>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowProposal(!showProposal)} disabled={!marginOk}>
+                  {!marginOk ? (
+                    <span className="flex items-center gap-1 text-red-500"><Ban className="w-3 h-3" /> Margem baixa</span>
+                  ) : showProposal ? 'Fechar' : 'Gerar'}
+                </Button>
+              </div>
+              {showProposal && marginOk && (
+                <div className="animate-fade-in">
+                  <ProposalGenerator projectId={project.id} onClose={() => setShowProposal(false)} />
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* ── TEAM TAB ── */}
+          <TabsContent value="team" className="mt-0 p-5 space-y-4">
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Time</h3>
+                <Button variant="ghost" size="sm" className="h-7 text-xs"
+                  onClick={() => { if (isEditingTeam) handleSaveTeam(); else setIsEditingTeam(true); }}
+                  disabled={isSavingTeam}>
+                  {isSavingTeam ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                  {isEditingTeam ? 'Salvar' : 'Editar'}
+                </Button>
+              </div>
+              {isEditingTeam ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Team Lead</label>
+                    <Input value={teamLead} onChange={(e) => setTeamLead(e.target.value)} placeholder="Nome do líder..." className="mt-1 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Horário</label>
+                    <Input value={workSchedule} onChange={(e) => setWorkSchedule(e.target.value)} placeholder="8:00 AM - 5:00 PM" className="mt-1 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Membros</label>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5 mb-2">
+                      {teamMembers.map((m) => (
+                        <Badge key={m} variant="secondary" className="text-xs gap-1 pr-1">
+                          {m}
+                          <button onClick={() => removeMember(m)} className="hover:text-destructive"><X className="w-3 h-3" /></button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Input value={newMember} onChange={(e) => setNewMember(e.target.value)} placeholder="Adicionar membro..." className="text-sm"
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); } }} />
+                      <Button size="sm" onClick={addMember} disabled={!newMember.trim()}><Send className="w-3.5 h-3.5" /></Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2"><User className="w-4 h-4 text-muted-foreground" /><span className="text-xs text-muted-foreground">Team Lead</span></div>
+                    <span className="text-sm font-semibold">{teamLead || '—'}</span>
+                  </div>
+                  {teamMembers.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {teamMembers.map((m) => (<Badge key={m} variant="outline" className="text-xs">{m}</Badge>))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" /><span className="text-sm">{workSchedule}</span></div>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* ── NOTES TAB ── */}
+          <TabsContent value="notes" className="mt-0 p-5">
+            <ProjectNotesSection projectId={project.id} initialNotes={project.notes} onRefresh={onRefresh} />
+          </TabsContent>
+        </ScrollArea>
+      </Tabs>
+
+      {/* ═══ FOOTER ═══ */}
+      <div className="px-5 py-3 border-t bg-muted/30 flex justify-between items-center flex-shrink-0">
+        <AlertDialog onOpenChange={(open) => { if (!open) setDeleteStep(0); }}>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm" disabled={isDeleting} className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 gap-1.5">
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Deletar
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{deleteStep === 0 ? `Deletar job "${project.customer_name}"?` : "⚠️ Confirmação final"}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteStep === 0 ? (
+                  <>Esta ação removerá o job e todos os dados relacionados.<span className="block mt-2 font-semibold text-destructive">Irreversível.</span></>
+                ) : (
+                  <>Deletar permanentemente <strong>{project.customer_name}</strong>?<span className="block mt-2 font-semibold text-destructive">Não será possível recuperar.</span></>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              {deleteStep === 0 ? (
+                <Button variant="destructive" onClick={(e) => { e.preventDefault(); setDeleteStep(1); }}>Sim, quero deletar</Button>
+              ) : (
+                <AlertDialogAction onClick={handleDeleteProject} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Confirmar exclusão</AlertDialogAction>
+              )}
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <span className="text-[10px] text-muted-foreground">Criado {new Date(project.created_at).toLocaleDateString('pt-BR')}</span>
+      </div>
+    </>
+  );
+
   if (embedded) {
     return (
-      <div className="flex flex-col h-full">
-        {/* ═══ HEADER ═══ */}
-        <div className={cn("px-5 py-4 text-white flex-shrink-0 rounded-t-xl", statusConfig.headerBg)}>
-          <div className="flex items-center gap-2 mb-2 pr-8">
-            <Select value={project.project_status} onValueChange={handleStatusChange} disabled={isChangingStatus}>
-              <SelectTrigger className="h-7 w-auto min-w-[120px] bg-white/20 border-white/30 text-white text-xs font-medium hover:bg-white/30 [&>svg]:text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ACTIVE_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    <span className="flex items-center gap-2">{STATUS_CONFIG[s].icon}{STATUS_CONFIG[s].label}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-white/50 text-xs">•</span>
-            <span className="text-white/70 text-xs">{timeAgo(project.created_at)}</span>
-          </div>
-          <h2 className="text-lg font-bold text-white truncate pr-8">{project.customer_name}</h2>
-          <p className="text-white/70 text-xs mt-0.5">{project.project_type}</p>
-        </div>
+      <div className="flex flex-col h-full rounded-xl border overflow-hidden">
+        {renderHeader()}
+        {renderBody()}
+      </div>
+    );
+  }
 
-        {/* ═══ QUICK ACTIONS BAR ═══ */}
-        <div className="flex items-center gap-1.5 px-5 py-3 border-b bg-muted/30 flex-shrink-0 overflow-x-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 flex-shrink-0"
-            onClick={() => { onClose(); navigate(`/admin/measurements?project=${project.id}`); }}
-          >
-            <Ruler className="w-3.5 h-3.5" />
-            Medições
-          </Button>
-          <Button
-            variant={showCosts ? "default" : "outline"}
-            size="sm"
-            className="h-8 text-xs gap-1.5 flex-shrink-0"
-            onClick={() => { setShowCosts(!showCosts); setShowProposal(false); setActiveTab("financial"); }}
-          >
-            <Calculator className="w-3.5 h-3.5" />
-            Custos
-            {hasCosts ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <AlertTriangle className="w-3 h-3 text-amber-500" />}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 flex-shrink-0"
-            onClick={() => { onClose(); navigate(`/admin/feed?project=${project.id}`); }}
-          >
-            <Camera className="w-3.5 h-3.5" />
-            Fotos
-            {proofComplete ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <AlertTriangle className="w-3 h-3 text-amber-500" />}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 flex-shrink-0"
-            onClick={() => { onClose(); navigate(`/admin/jobs/${project.id}/documents`); }}
-          >
-            <FolderOpen className="w-3.5 h-3.5" />
-            Docs
-          </Button>
-        </div>
-
-        {/* ═══ TABS CONTENT ═══ */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-          <TabsList className="w-full justify-start px-5 pt-2 pb-0 bg-transparent h-auto gap-0 rounded-none border-b">
-            {[
-              { value: "overview", label: "Overview" },
-              { value: "financial", label: "Financial" },
-              { value: "team", label: "Team" },
-              { value: "notes", label: "Notes" },
-            ].map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2.5 text-xs font-medium"
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <ScrollArea className="flex-1">
-            {/* ── OVERVIEW TAB ── */}
-            <TabsContent value="overview" className="mt-0 p-5 space-y-4">
-              {/* NRA */}
-              <div className={cn(
-                "rounded-xl border p-3 flex items-center gap-3",
-                nra.severity === "critical" ? "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800" :
-                nra.severity === "warning" ? "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800" :
-                "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
-              )}>
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                  nra.severity === "critical" ? "bg-red-100 dark:bg-red-900/30" :
-                  nra.severity === "warning" ? "bg-amber-100 dark:bg-amber-900/30" :
-                  "bg-emerald-100 dark:bg-emerald-900/30"
-                )}>
-                  {nra.severity === "ok" ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <AlertTriangle className={cn("w-4 h-4", nra.severity === "critical" ? "text-red-600" : "text-amber-600")} />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Próxima Ação</p>
-                  <p className="text-sm font-semibold truncate">{nra.label}</p>
-                </div>
-                {nra.action !== "none" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-shrink-0 h-7 text-xs"
-                    onClick={() => {
-                      if (nra.action === "costs") { setShowCosts(true); setActiveTab("financial"); }
-                      else if (nra.action === "proof") { onClose(); navigate(`/admin/feed?project=${project.id}`); }
-                      else if (nra.action === "team") setActiveTab("team");
-                    }}
-                  >
-                    Fazer
-                  </Button>
-                )}
-              </div>
-
-              {/* Progress */}
-              <div className="rounded-xl border bg-card p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progresso</h3>
-                  <span className="text-sm font-bold">{progressPercent}%</span>
-                </div>
-                <Progress value={progressPercent} className="h-2 mb-3" />
-                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                  {checklistItems.map((item) => (
-                    <div key={item.label} className="flex items-center gap-1.5">
-                      {item.ok ? (
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-                      ) : (
-                        <X className="w-3.5 h-3.5 text-red-400" />
-                      )}
-                      <span className={cn("text-xs font-medium", item.ok ? "text-foreground" : "text-muted-foreground")}>
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Client Info */}
-              <div className="rounded-xl border bg-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</h3>
-                  <div className="flex gap-1">
-                    <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20">
-                      <Phone className="w-3 h-3" /> Ligar
-                    </a>
-                    <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[11px] font-medium hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400">
-                      <MessageSquare className="w-3 h-3" /> SMS
-                    </a>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2.5">
-                    <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <span className="font-semibold">{project.customer_name}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <span>{project.customer_phone}</span>
-                  </div>
-                  {project.customer_email && (
-                    <div className="flex items-center gap-2.5">
-                      <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{project.customer_email}</span>
-                    </div>
-                  )}
-                  {addressFull && (
-                    <div className="flex items-center gap-2.5">
-                      <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      {mapsUrl ? (
-                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                          {addressFull} <Navigation className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span>{addressFull}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Project Details */}
-              <div className="rounded-xl border bg-card p-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Detalhes</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-[11px] text-muted-foreground uppercase">Área</p>
-                    <p className="text-sm font-bold">{project.square_footage ? `${project.square_footage} sqft` : '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground uppercase">Serviço</p>
-                    <p className="text-sm font-bold">{project.project_type}</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground uppercase">Início</p>
-                    <p className="text-sm font-bold">{project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground uppercase">Conclusão</p>
-                    <p className="text-sm font-bold">{project.completion_date ? new Date(project.completion_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Checklist */}
-              <JobChecklist projectId={project.id} />
-            </TabsContent>
-
-            {/* ── FINANCIAL TAB ── */}
-            <TabsContent value="financial" className="mt-0 p-5 space-y-4">
-              {/* Financial Summary Cards */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className={cn(
-                  "rounded-xl border-2 p-3.5",
-                  marginOk ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20" : "border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/20"
-                )}>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    {marginOk ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
-                    <span className="text-xs font-semibold text-muted-foreground uppercase">Margem</span>
-                  </div>
-                  <p className={cn("text-2xl font-bold", marginOk ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
-                    {currentMargin.toFixed(1)}%
-                  </p>
-                  <p className={cn("text-xs mt-0.5", marginOk ? "text-emerald-600" : "text-red-600")}>
-                    {marginOk ? `Lucro: ${formatCurrency(jobCost?.profit_amount ?? 0)}` : `Mínimo: ${marginMinPercent}%`}
-                  </p>
-                </div>
-                <div className="rounded-xl border-2 border-border p-3.5 bg-card">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-xs font-semibold text-muted-foreground uppercase">Revenue</span>
-                  </div>
-                  <p className="text-2xl font-bold">{formatCurrency(jobCost?.estimated_revenue ?? 0)}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Custo: {formatCurrency(jobCost?.total_cost ?? 0)}</p>
-                </div>
-              </div>
-
-              {/* Costs Editor (inline) */}
-              <div className="rounded-xl border bg-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Calculator className="w-3.5 h-3.5" /> Custos do Projeto
-                  </h3>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowCosts(!showCosts)}>
-                    {showCosts ? 'Fechar' : 'Editar'}
-                  </Button>
-                </div>
-                {showCosts && (
-                  <div className="animate-fade-in">
-                    <JobCostEditor projectId={project.id} onSaved={handleCostSaved} />
-                  </div>
-                )}
-                {!showCosts && hasCosts && (
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Labor</p>
-                      <p className="text-sm font-bold">{formatCurrency(jobCost?.labor_cost ?? 0)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Material</p>
-                      <p className="text-sm font-bold">{formatCurrency(jobCost?.material_cost ?? 0)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Other</p>
-                      <p className="text-sm font-bold">{formatCurrency(jobCost?.additional_costs ?? 0)}</p>
-                    </div>
-                  </div>
-                )}
-                {!showCosts && !hasCosts && (
-                  <p className="text-xs text-muted-foreground italic text-center py-3">
-                    Nenhum custo registrado. Clique em Editar para adicionar.
-                  </p>
-                )}
-              </div>
-
-              {/* Proposal Section */}
-              <div className="rounded-xl border bg-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" /> Proposta
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => setShowProposal(!showProposal)}
-                    disabled={!marginOk}
-                  >
-                    {!marginOk ? (
-                      <span className="flex items-center gap-1 text-red-500">
-                        <Ban className="w-3 h-3" /> Margem baixa
-                      </span>
-                    ) : showProposal ? 'Fechar' : 'Gerar'}
-                  </Button>
-                </div>
-                {showProposal && marginOk && (
-                  <div className="animate-fade-in">
-                    <ProposalGenerator projectId={project.id} onClose={() => setShowProposal(false)} />
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* ── TEAM TAB ── */}
-            <TabsContent value="team" className="mt-0 p-5 space-y-4">
-              <div className="rounded-xl border bg-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Time</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => {
-                      if (isEditingTeam) handleSaveTeam();
-                      else setIsEditingTeam(true);
-                    }}
-                    disabled={isSavingTeam}
-                  >
-                    {isSavingTeam ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                    {isEditingTeam ? 'Salvar' : 'Editar'}
-                  </Button>
-                </div>
-
-                {isEditingTeam ? (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Team Lead</label>
-                      <Input value={teamLead} onChange={(e) => setTeamLead(e.target.value)} placeholder="Nome do líder..." className="mt-1 text-sm" />
-                    </div>
-                    <div>
-                      <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Horário</label>
-                      <Input value={workSchedule} onChange={(e) => setWorkSchedule(e.target.value)} placeholder="8:00 AM - 5:00 PM" className="mt-1 text-sm" />
-                    </div>
-                    <div>
-                      <label className="text-[11px] text-muted-foreground uppercase tracking-wide">Membros</label>
-                      <div className="flex flex-wrap gap-1.5 mt-1.5 mb-2">
-                        {teamMembers.map((m) => (
-                          <Badge key={m} variant="secondary" className="text-xs gap-1 pr-1">
-                            {m}
-                            <button onClick={() => removeMember(m)} className="hover:text-destructive">
-                              <X className="w-3 h-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex gap-1.5">
-                        <Input
-                          value={newMember}
-                          onChange={(e) => setNewMember(e.target.value)}
-                          placeholder="Adicionar membro..."
-                          className="text-sm"
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); } }}
-                        />
-                        <Button size="sm" onClick={addMember} disabled={!newMember.trim()}>
-                          <Send className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Team Lead</span>
-                      </div>
-                      <span className="text-sm font-semibold">{teamLead || '—'}</span>
-                    </div>
-                    {teamMembers.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {teamMembers.map((m) => (
-                          <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{workSchedule}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* ── NOTES TAB ── */}
-            <TabsContent value="notes" className="mt-0 p-5">
-              <ProjectNotesSection projectId={project.id} initialNotes={project.notes} onRefresh={onRefresh} />
-            </TabsContent>
-          </ScrollArea>
-        </Tabs>
-
-        {/* ═══ FOOTER ═══ */}
-        <div className="px-5 py-3 border-t bg-muted/30 flex justify-between items-center flex-shrink-0">
-          <AlertDialog onOpenChange={(open) => { if (!open) setDeleteStep(0); }}>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={isDeleting}
-                className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 gap-1.5"
-              >
-                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                Deletar
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  {deleteStep === 0 ? `Deletar job "${project.customer_name}"?` : "⚠️ Confirmação final"}
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  {deleteStep === 0 ? (
-                    <>Esta ação removerá o job e todos os dados relacionados.<span className="block mt-2 font-semibold text-destructive">Irreversível.</span></>
-                  ) : (
-                    <>Deletar permanentemente <strong>{project.customer_name}</strong>?<span className="block mt-2 font-semibold text-destructive">Não será possível recuperar.</span></>
-                  )}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                {deleteStep === 0 ? (
-                  <Button variant="destructive" onClick={(e) => { e.preventDefault(); setDeleteStep(1); }}>
-                    Sim, quero deletar
-                  </Button>
-                ) : (
-                  <AlertDialogAction onClick={handleDeleteProject} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Confirmar exclusão
-                  </AlertDialogAction>
-                )}
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <span className="text-[10px] text-muted-foreground">
-            Criado {new Date(project.created_at).toLocaleDateString('pt-BR')}
-          </span>
-        </div>
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-none p-0 flex flex-col [&>button:first-child]:z-20 [&>button:first-child]:text-white [&>button:first-child]:hover:text-white/80"
+        style={{ width: sheetWidth }}
+      >
+        {/* Resize handle */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/30 transition-colors z-30"
+          onMouseDown={handleMouseDown}
+        />
+        {renderHeader()}
+        {renderBody()}
       </SheetContent>
     </Sheet>
   );
