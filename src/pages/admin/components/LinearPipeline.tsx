@@ -864,27 +864,15 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
           <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
           {source === 'new' ? (
-            <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} />
+            <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} onCancel={() => setSource('lead')} />
           ) : source === 'lead' ? (
-            <div>
-              <Label>Lead *</Label>
-              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um lead..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {eligibleLeads.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum lead elegível</SelectItem>
-                  ) : (
-                    eligibleLeads.map(l => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.name}{l.city ? ` — ${l.city}` : ''}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            <LeadSelectorOrNew
+              source={source}
+              selectedLeadId={selectedLeadId}
+              setSelectedLeadId={setSelectedLeadId}
+              eligibleLeads={eligibleLeads}
+              onSwitchToNew={() => { setSource('new'); setSelectedLeadId(''); }}
+            />
           ) : (
             <div>
               <Label>Parceiro *</Label>
