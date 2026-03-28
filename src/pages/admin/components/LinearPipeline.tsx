@@ -124,6 +124,62 @@ function getOperationalAlert(lead: Lead, nra: any) {
   return null;
 }
 
+/* ─── Reusable Source Toggle (Lead | Parceiro | Novo) ─── */
+type SourceType = 'lead' | 'partner' | 'new';
+
+function SourceToggle({ source, onChange }: { source: SourceType; onChange: (s: SourceType) => void }) {
+  return (
+    <div className="flex gap-1 p-1 bg-muted rounded-lg">
+      {([['lead', 'Lead'], ['partner', 'Parceiro'], ['new', '+ Novo']] as const).map(([key, label]) => (
+        <button
+          key={key}
+          onClick={() => onChange(key)}
+          className={cn(
+            "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
+            source === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Inline New Lead Fields ─── */
+function InlineNewLeadFields({ form, setForm }: {
+  form: { name: string; phone: string; email: string; address: string };
+  setForm: React.Dispatch<React.SetStateAction<{ name: string; phone: string; email: string; address: string }>>;
+}) {
+  return (
+    <div className="space-y-2 p-3 border border-dashed border-border rounded-lg bg-muted/30">
+      <p className="text-xs font-medium text-muted-foreground">Dados do novo lead</p>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Nome *</Label>
+          <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome completo" className="h-8 text-sm" />
+        </div>
+        <div>
+          <Label className="text-xs">Telefone *</Label>
+          <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(XXX) XXX-XXXX" className="h-8 text-sm" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Email</Label>
+          <Input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@ex.com" className="h-8 text-sm" />
+        </div>
+        <div>
+          <Label className="text-xs">Endereço *</Label>
+          <Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="Endereço" className="h-8 text-sm" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const EMPTY_NEW_LEAD = { name: '', phone: '', email: '', address: '' };
+
 /* ════════════════════════════════════════════════════════════
    QUICK ACTION MODALS
    ════════════════════════════════════════════════════════════ */
