@@ -125,6 +125,16 @@ const translations = {
   "mission.prazo": { pt: "Definir prazo", en: "Set due date" },
   "mission.criar": { pt: "Criar Tarefa", en: "Create Task" },
   "mission.missionControl": { pt: "Mission Control", en: "Mission Control" },
+
+  // Dashboard extras
+  "dashboard.proposals": { pt: "Propostas", en: "Proposals" },
+  "dashboard.abertas": { pt: "abertas", en: "open" },
+  "dashboard.atividadeRecente": { pt: "Atividade Recente", en: "Recent Activity" },
+  "dashboard.verTudo": { pt: "Ver tudo", en: "View all" },
+  "dashboard.novoLead": { pt: "Novo lead", en: "New lead" },
+  "dashboard.propostaEnviada": { pt: "Proposta enviada", en: "Proposal sent" },
+  "dashboard.pagamentoRecebido": { pt: "Pagamento recebido", en: "Payment received" },
+  "dashboard.semAtividade": { pt: "Sem atividade recente", en: "No recent activity" },
 } as const;
 
 type TranslationKey = keyof typeof translations;
