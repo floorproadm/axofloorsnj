@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,8 @@ import {
   Phone, Mail, MapPin, DollarSign, 
   ChevronRight, Clock, XCircle, Trash2,
   CheckCircle2, Plus, Loader2, History, Ban,
-  ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown
+  ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown,
+  Maximize2
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -249,45 +251,53 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   };
   const primaryNextStatus = nra ? NRA_TO_NEXT_STATUS[nra.action] : undefined;
 
-  return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="p-0 flex flex-col h-full w-full sm:max-w-none" style={{ width: `${sheetWidth}px` }}>
-        {/* Resize handle */}
-        <div
-          onMouseDown={handleMouseDown}
-          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-primary/20 transition-colors"
-        >
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
-        </div>
-        {/* Header */}
-        <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0", config.bgColor)}>
-          <SheetHeader className="pb-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <SheetTitle className="text-xl font-bold text-foreground truncate pr-8">
-                  {lead.name}
-                </SheetTitle>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", config.bgColor, config.textColor, config.borderColor)}>
-                    {STAGE_LABELS[stage]}
+  const navigate = useNavigate();
+
+  const innerContent = (
+    <>
+      {/* Header */}
+      <div className={cn("px-4 sm:px-6 py-4 border-b flex-shrink-0", config.bgColor)}>
+        <SheetHeader className="pb-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <SheetTitle className="text-xl font-bold text-foreground truncate pr-8">
+                {lead.name}
+              </SheetTitle>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <Badge className={cn("px-2.5 py-0.5 text-xs font-semibold border", config.bgColor, config.textColor, config.borderColor)}>
+                  {STAGE_LABELS[stage]}
+                </Badge>
+                {hasProject && (
+                  <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300">
+                    Projeto ✓
                   </Badge>
-                  {hasProject && (
-                    <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300">
-                      Projeto ✓
-                    </Badge>
-                  )}
-                  {proposal && <ProposalStatusBadge status={proposal.status as ProposalStatus} />}
-                  {isStale && !isTerminal && (
-                    <Badge variant="destructive" className="text-xs flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      +48h parado
-                    </Badge>
-                  )}
-                </div>
+                )}
+                {proposal && <ProposalStatusBadge status={proposal.status as ProposalStatus} />}
+                {isStale && !isTerminal && (
+                  <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    +48h parado
+                  </Badge>
+                )}
               </div>
             </div>
-          </SheetHeader>
-        </div>
+            {!embedded && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                title="Abrir como página"
+                onClick={() => {
+                  onClose();
+                  navigate(`/admin/leads/${lead.id}`);
+                }}
+              >
+                <Maximize2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </SheetHeader>
+      </div>
 
         <ScrollArea className="flex-1 overflow-auto">
           <div className="p-4 sm:p-6 space-y-4">
