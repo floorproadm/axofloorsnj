@@ -573,18 +573,49 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     setShowQuickQuote(true);
   }, []);
 
-  const salesLeads = useMemo(() => 
-    leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)), 
+  const salesLeads = useMemo(() => {
+    let filtered = leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage));
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(l => 
+        l.name.toLowerCase().includes(q) || 
+        l.phone.includes(q) ||
+        (l.city && l.city.toLowerCase().includes(q)) ||
+        (l.email && l.email.toLowerCase().includes(q))
+      );
+    }
+    return filtered;
+  }, [leads, searchQuery]);
+
+  // Unfiltered sales leads for stats (funnel bar uses all data)
+  const allSalesLeads = useMemo(() => 
+    leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)),
     [leads]
   );
 
   const activeLeadIds = useMemo(() => 
-    salesLeads
+    allSalesLeads
       .filter(l => !['completed', 'lost'].includes(normalizeStatus(l.status)))
       .map(l => l.id),
-    [salesLeads]
+    [allSalesLeads]
   );
   const { nraMap } = useLeadNRABatch(activeLeadIds);
+
+  // Check if a lead needs action (stale or blocked)
+  const leadNeedsAction = useCallback((lead: Lead) => {
+    const nra = nraMap[lead.id];
+    const stale = differenceInHours(new Date(), new Date(lead.updated_at)) > 48;
+    const blocked = nra && (nra.severity === 'critical' || nra.severity === 'blocked');
+    const followUpOverdue = lead.next_action_date && new Date(lead.next_action_date) < new Date();
+    return stale || blocked || followUpOverdue || lead.follow_up_required;
+  }, [nraMap]);
+
+  // Apply "needs action" filter
+  const filteredSalesLeads = useMemo(() => {
+    if (!needsActionOnly) return salesLeads;
+    return salesLeads.filter(leadNeedsAction);
+  }, [salesLeads, needsActionOnly, leadNeedsAction]);
 
   const leadsByStage = useMemo(() => {
     const grouped: Record<PipelineStage, Lead[]> = {
@@ -593,7 +624,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       proposal_rejected: [],
       in_production: [], completed: [], lost: []
     };
-    salesLeads.forEach(lead => {
+    filteredSalesLeads.forEach(lead => {
       const stage = normalizeStatus(lead.status);
       grouped[stage].push(lead);
     });
@@ -609,13 +640,13 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       });
     });
     return grouped;
-  }, [salesLeads]);
+  }, [filteredSalesLeads]);
 
   // Flat sorted list for list view (filtered when statusFilter is active)
   const sortedLeads = useMemo(() => {
     const base = statusFilter
-      ? salesLeads.filter(l => normalizeStatus(l.status) === statusFilter)
-      : salesLeads;
+      ? filteredSalesLeads.filter(l => normalizeStatus(l.status) === statusFilter)
+      : filteredSalesLeads;
     return [...base].sort((a, b) => {
       const timeA = new Date(a.updated_at).getTime();
       const timeB = new Date(b.updated_at).getTime();
@@ -625,30 +656,62 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       if (valA !== valB) return valB - valA;
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
-  }, [salesLeads, statusFilter]);
+  }, [filteredSalesLeads, statusFilter]);
+
+  // Stats from ALL leads (not filtered) for accurate funnel visualization
+  const allLeadsByStage = useMemo(() => {
+    const grouped: Record<string, Lead[]> = {};
+    SALES_STAGES.forEach(s => grouped[s] = []);
+    allSalesLeads.forEach(lead => {
+      const stage = normalizeStatus(lead.status);
+      if (grouped[stage]) grouped[stage].push(lead);
+    });
+    return grouped;
+  }, [allSalesLeads]);
 
   const stageStats = useMemo(() => {
-    const stats: Record<string, { count: number; value: number; stale: number; blocked: number }> = {};
+    const stats: Record<string, { count: number; value: number; stale: number; blocked: number; avgDays: number }> = {};
     SALES_STAGES.forEach(stage => {
-      const stageLeads = leadsByStage[stage];
+      const stageLeads = allLeadsByStage[stage] || [];
+      const now = new Date();
+      const totalDays = stageLeads.reduce((sum, l) => {
+        const statusChanged = l.updated_at;
+        return sum + differenceInDays(now, new Date(statusChanged));
+      }, 0);
       stats[stage] = {
         count: stageLeads.length,
         value: stageLeads.reduce((sum, l) => sum + (l.budget || 0), 0),
-        stale: stageLeads.filter(l => differenceInHours(new Date(), new Date(l.updated_at)) > 48).length,
+        stale: stageLeads.filter(l => differenceInHours(now, new Date(l.updated_at)) > 48).length,
         blocked: stageLeads.filter(l => {
           const nra = nraMap[l.id];
           return nra && (nra.severity === 'critical' || nra.severity === 'blocked');
         }).length,
+        avgDays: stageLeads.length > 0 ? Math.round((totalDays / stageLeads.length) * 10) / 10 : 0,
       };
     });
     return stats;
-  }, [leadsByStage, nraMap]);
+  }, [allLeadsByStage, nraMap]);
+
+  // Conversion rates between consecutive stages
+  const conversionRates = useMemo(() => {
+    const rates: Record<string, number> = {};
+    for (let i = 0; i < SALES_STAGES.length - 1; i++) {
+      const from = SALES_STAGES[i];
+      const fromCount = stageStats[from]?.count || 0;
+      // "converted" = all leads that are in this stage or beyond
+      const beyondCount = SALES_STAGES.slice(i + 1).reduce((sum, s) => sum + (stageStats[s]?.count || 0), 0);
+      const total = fromCount + beyondCount;
+      rates[from] = total > 0 ? Math.round((beyondCount / total) * 100) : 0;
+    }
+    return rates;
+  }, [stageStats]);
 
   const pipelineHealth = useMemo(() => {
     const active = SALES_STAGES.reduce((sum, s) => sum + (stageStats[s]?.count || 0), 0);
     const totalValue = SALES_STAGES.reduce((sum, s) => sum + (stageStats[s]?.value || 0), 0);
-    return { active, totalValue };
-  }, [stageStats]);
+    const needsAction = allSalesLeads.filter(leadNeedsAction).length;
+    return { active, totalValue, needsAction };
+  }, [stageStats, allSalesLeads, leadNeedsAction]);
 
   const syncedSelectedLead = useMemo(() => {
     if (!selectedLead) return null;
