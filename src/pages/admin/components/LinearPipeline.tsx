@@ -340,12 +340,18 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
 
+        // Save address to lead
+        if (apptAddress.trim()) {
+          await supabase.from('leads').update({ address: apptAddress.trim() }).eq('id', lead.id);
+        }
+
         const { error: apptError } = await supabase.from('appointments').insert({
           customer_name: lead.name,
           customer_phone: lead.phone,
           appointment_date: apptDate,
           appointment_time: apptTime,
           appointment_type: 'estimate',
+          location: apptAddress.trim() || null,
           notes: notes.trim() || null,
           organization_id: AXO_ORG_ID,
         });
@@ -445,6 +451,18 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
                   )}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {source === 'lead' && (
+            <div>
+              <Label htmlFor="appt-address">Endereço *</Label>
+              <Input 
+                id="appt-address" 
+                value={apptAddress} 
+                onChange={e => setApptAddress(e.target.value)} 
+                placeholder="Endereço do cliente..."
+              />
             </div>
           )}
 
