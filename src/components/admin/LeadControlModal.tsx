@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { 
@@ -26,7 +28,7 @@ import {
   ChevronRight, Clock, XCircle, Trash2,
   CheckCircle2, Plus, Loader2, History, Ban,
   ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown,
-  Maximize2
+  Maximize2, Pencil, MessageSquare, StickyNote, User, CalendarDays, Tag
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -124,7 +126,12 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [selectedTier, setSelectedTier] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [sheetWidth, setSheetWidth] = useState(512);
+  const [activeTab, setActiveTab] = useState('resumo');
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [newNote, setNewNote] = useState('');
   const isResizing = useRef(false);
+  const queryClient = useQueryClient();
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -152,6 +159,69 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   }, [sheetWidth]);
+
+  // Lead notes query
+  const { data: leadNotes = [], refetch: refetchNotes } = useQuery({
+    queryKey: ['lead-notes', lead?.id],
+    queryFn: async () => {
+      if (!lead?.id) return [];
+      const { data, error } = await supabase
+        .from('lead_notes')
+        .select('*')
+        .eq('lead_id', lead.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!lead?.id,
+  });
+
+  const addNoteMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const { data: orgData } = await supabase.rpc('get_user_org_id');
+      const { error } = await supabase.from('lead_notes').insert({
+        lead_id: lead!.id,
+        content,
+        organization_id: orgData,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setNewNote('');
+      refetchNotes();
+      toast.success('Nota adicionada');
+    },
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (noteId: string) => {
+      const { error } = await supabase.from('lead_notes').delete().eq('id', noteId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchNotes();
+      toast.success('Nota removida');
+    },
+  });
+
+  // Inline edit save
+  const handleInlineEdit = async (field: string, value: string) => {
+    const updateData: Record<string, any> = {};
+    if (field === 'budget') {
+      updateData[field] = value ? parseFloat(value) : null;
+    } else {
+      updateData[field] = value || null;
+    }
+    const { error } = await supabase.from('leads').update(updateData).eq('id', lead!.id);
+    if (error) {
+      toast.error('Erro ao salvar');
+      return;
+    }
+    setEditingField(null);
+    setEditValues({});
+    onRefresh();
+    toast.success('Atualizado');
+  };
 
   if (!lead) return null;
 
@@ -298,10 +368,41 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
         </div>
       </div>
 
+        {/* Quick Actions Toolbar */}
+        <div className="px-4 sm:px-6 py-2 border-b bg-muted/20 flex items-center gap-2 flex-shrink-0 overflow-x-auto">
+          {!isTerminal && (
+            <>
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => { setActiveTab('historico'); setShowFollowUpForm(true); }}>
+                <Phone className="w-3 h-3" /> Registrar Contato
+              </Button>
+              {primaryNextStatus && (
+                <Button size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => handleAdvanceStatus(primaryNextStatus)} disabled={isUpdating}>
+                  <ChevronRight className="w-3 h-3" /> Avançar
+                </Button>
+              )}
+              {!hasProject && stage === 'estimate_scheduled' && (
+                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => setShowConvertForm(true)}>
+                  <ArrowRightLeft className="w-3 h-3" /> Converter
+                </Button>
+              )}
+            </>
+          )}
+          {lead.phone && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 shrink-0" asChild>
+              <a href={`tel:${lead.phone}`}><Phone className="w-3 h-3" /> Ligar</a>
+            </Button>
+          )}
+          {lead.email && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 shrink-0" asChild>
+              <a href={`mailto:${lead.email}`}><Mail className="w-3 h-3" /> Email</a>
+            </Button>
+          )}
+        </div>
+
         <ScrollArea className="flex-1 overflow-auto">
           <div className="p-4 sm:p-6 space-y-4">
             
-            {/* NRA PANEL */}
+            {/* NRA PANEL — always visible at top */}
             {nraLoading ? (
               <div className="p-4 rounded-lg bg-muted/50 border flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -333,125 +434,219 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
               />
             ) : null}
 
-            {/* PROPOSAL ACTIONS PANEL */}
-            {hasProject && (
-              <ProposalActionsPanel
-                proposal={proposal}
-                showAcceptForm={showAcceptForm}
-                selectedTier={selectedTier}
-                isUpdating={updateProposalStatus.isPending}
-                onSend={() => handleProposalAction('send')}
-                onAccept={() => handleProposalAction('accept')}
-                onReject={() => handleProposalAction('reject')}
-                onShowAcceptForm={setShowAcceptForm}
-                onSelectTier={setSelectedTier}
-              />
-            )}
+            {/* TABS */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="resumo" className="text-xs gap-1"><User className="w-3 h-3" /> Resumo</TabsTrigger>
+                <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Histórico</TabsTrigger>
+                <TabsTrigger value="notas" className="text-xs gap-1"><StickyNote className="w-3 h-3" /> Notas</TabsTrigger>
+              </TabsList>
 
-            {/* Info: Job operations moved to /admin/jobs */}
-            {hasProject && (nra?.action === 'enter_job_costs' || nra?.action === 'fix_margin' || nra?.action === 'advance_to_proposal') && (
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-700">
-                💡 Custos, margem e proposta são gerenciados em <strong>Pipeline Operacional</strong> (/admin/jobs)
-              </div>
-            )}
+              {/* ═══ TAB: RESUMO ═══ */}
+              <TabsContent value="resumo" className="space-y-4 mt-4">
+                {/* PROPOSAL ACTIONS */}
+                {hasProject && (
+                  <ProposalActionsPanel
+                    proposal={proposal}
+                    showAcceptForm={showAcceptForm}
+                    selectedTier={selectedTier}
+                    isUpdating={updateProposalStatus.isPending}
+                    onSend={() => handleProposalAction('send')}
+                    onAccept={() => handleProposalAction('accept')}
+                    onReject={() => handleProposalAction('reject')}
+                    onShowAcceptForm={setShowAcceptForm}
+                    onSelectTier={setSelectedTier}
+                  />
+                )}
 
-            {/* FOLLOW-UP HISTORY */}
-            {followUpStatus.hasActions && lead.follow_up_actions && (
-              <div className="p-4 rounded-lg bg-muted/50 border">
-                <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
-                  <History className="w-4 h-4" />
-                  Histórico de Contatos ({followUpStatus.actionCount})
-                </h3>
-                <div className="space-y-2">
-                  {lead.follow_up_actions.slice(-3).reverse().map((action, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm p-2 bg-background rounded-lg">
-                      <div className="w-2 h-2 rounded-full bg-state-success mt-1.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium truncate">{action.action}</span>
-                          <span className="text-xs text-muted-foreground flex-shrink-0">
-                            {formatDistanceToNow(new Date(action.date), { addSuffix: true, locale: ptBR })}
-                          </span>
-                        </div>
-                        {action.notes && (
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{action.notes}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-3 w-full"
-                  onClick={() => setShowFollowUpForm(true)}
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1.5" />
-                  Registrar Novo Contato
-                </Button>
-
-                {showFollowUpForm && (
-                  <div className="mt-3">
-                    <FollowUpForm
-                      actionType={actionType}
-                      actionNotes={actionNotes}
-                      onActionTypeChange={setActionType}
-                      onActionNotesChange={setActionNotes}
-                      onSubmit={handleAddFollowUp}
-                      onCancel={() => setShowFollowUpForm(false)}
-                      isUpdating={isFollowUpUpdating}
-                    />
+                {hasProject && (nra?.action === 'enter_job_costs' || nra?.action === 'fix_margin' || nra?.action === 'advance_to_proposal') && (
+                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-700">
+                    💡 Custos, margem e proposta são gerenciados em <strong>Pipeline Operacional</strong> (/admin/jobs)
                   </div>
                 )}
-              </div>
-            )}
 
-            <Separator />
+                <Separator />
 
-            {/* CONTACT INFO */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                  <Phone className="w-3 h-3" /> Telefone
-                </p>
-                <a href={`tel:${lead.phone}`} className="font-medium text-sm text-primary hover:underline">
-                  {lead.phone}
-                </a>
-              </div>
-              {lead.email && (
-                <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                    <Mail className="w-3 h-3" /> Email
-                  </p>
-                  <a href={`mailto:${lead.email}`} className="font-medium text-sm text-primary hover:underline truncate block">
-                    {lead.email}
-                  </a>
+                {/* CONTACT INFO — Inline Editable */}
+                <div className="space-y-1">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Informações de Contato</h3>
+                  <InlineField
+                    icon={<Phone className="w-3.5 h-3.5" />}
+                    label="Telefone"
+                    value={lead.phone}
+                    field="phone"
+                    editingField={editingField}
+                    editValues={editValues}
+                    onStartEdit={(f, v) => { setEditingField(f); setEditValues({ [f]: v }); }}
+                    onSave={handleInlineEdit}
+                    onCancel={() => setEditingField(null)}
+                    onChange={(f, v) => setEditValues(prev => ({ ...prev, [f]: v }))}
+                    linkHref={`tel:${lead.phone}`}
+                  />
+                  <InlineField
+                    icon={<Mail className="w-3.5 h-3.5" />}
+                    label="Email"
+                    value={lead.email || ''}
+                    field="email"
+                    editingField={editingField}
+                    editValues={editValues}
+                    onStartEdit={(f, v) => { setEditingField(f); setEditValues({ [f]: v }); }}
+                    onSave={handleInlineEdit}
+                    onCancel={() => setEditingField(null)}
+                    onChange={(f, v) => setEditValues(prev => ({ ...prev, [f]: v }))}
+                    linkHref={lead.email ? `mailto:${lead.email}` : undefined}
+                    placeholder="Adicionar email..."
+                  />
+                  <InlineField
+                    icon={<MapPin className="w-3.5 h-3.5" />}
+                    label="Cidade"
+                    value={lead.city || ''}
+                    field="city"
+                    editingField={editingField}
+                    editValues={editValues}
+                    onStartEdit={(f, v) => { setEditingField(f); setEditValues({ [f]: v }); }}
+                    onSave={handleInlineEdit}
+                    onCancel={() => setEditingField(null)}
+                    onChange={(f, v) => setEditValues(prev => ({ ...prev, [f]: v }))}
+                    placeholder="Adicionar cidade..."
+                  />
+                  <InlineField
+                    icon={<DollarSign className="w-3.5 h-3.5" />}
+                    label="Orçamento"
+                    value={lead.budget ? String(lead.budget) : ''}
+                    field="budget"
+                    editingField={editingField}
+                    editValues={editValues}
+                    onStartEdit={(f, v) => { setEditingField(f); setEditValues({ [f]: v }); }}
+                    onSave={handleInlineEdit}
+                    onCancel={() => setEditingField(null)}
+                    onChange={(f, v) => setEditValues(prev => ({ ...prev, [f]: v }))}
+                    placeholder="Adicionar orçamento..."
+                    prefix="$"
+                    type="number"
+                  />
                 </div>
-              )}
-              {lead.city && (
-                <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                    <MapPin className="w-3 h-3" /> Cidade
-                  </p>
-                  <p className="font-medium text-sm">{lead.city}</p>
-                </div>
-              )}
-              {lead.budget && (
-                <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                    <DollarSign className="w-3 h-3" /> Orçamento
-                  </p>
-                  <p className="font-medium text-sm text-state-success">${lead.budget.toLocaleString()}</p>
-                </div>
-              )}
-            </div>
 
-            {/* Timestamps */}
-            <div className="flex justify-between text-xs text-muted-foreground pt-2">
-              <span>Criado: {format(new Date(lead.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
-              <span>Atualizado: {format(new Date(lead.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
-            </div>
+                <Separator />
+
+                {/* Services */}
+                {lead.services && lead.services.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+                      <Tag className="w-3 h-3" /> Serviços
+                    </h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {lead.services.map((s, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{String(s)}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Timestamps */}
+                <div className="flex justify-between text-xs text-muted-foreground pt-2">
+                  <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {format(new Date(lead.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
+                  <span>Atualizado: {format(new Date(lead.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
+                </div>
+              </TabsContent>
+
+              {/* ═══ TAB: HISTÓRICO ═══ */}
+              <TabsContent value="historico" className="space-y-4 mt-4">
+                {/* Follow-up form */}
+                {showFollowUpForm && (
+                  <FollowUpForm
+                    actionType={actionType}
+                    actionNotes={actionNotes}
+                    onActionTypeChange={setActionType}
+                    onActionNotesChange={setActionNotes}
+                    onSubmit={handleAddFollowUp}
+                    onCancel={() => setShowFollowUpForm(false)}
+                    isUpdating={isFollowUpUpdating}
+                  />
+                )}
+
+                {!showFollowUpForm && (
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowFollowUpForm(true)}>
+                    <Plus className="w-3.5 h-3.5 mr-1.5" /> Registrar Novo Contato
+                  </Button>
+                )}
+
+                {/* Timeline */}
+                {followUpStatus.hasActions && lead.follow_up_actions ? (
+                  <div className="space-y-2">
+                    {lead.follow_up_actions.slice().reverse().map((action, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm p-3 bg-muted/30 rounded-lg border">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium">{action.action}</span>
+                            <span className="text-xs text-muted-foreground flex-shrink-0">
+                              {formatDistanceToNow(new Date(action.date), { addSuffix: true, locale: ptBR })}
+                            </span>
+                          </div>
+                          {action.notes && (
+                            <p className="text-xs text-muted-foreground mt-1">{action.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum contato registrado ainda</p>
+                )}
+              </TabsContent>
+
+              {/* ═══ TAB: NOTAS ═══ */}
+              <TabsContent value="notas" className="space-y-4 mt-4">
+                {/* New note input */}
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Escreva uma nota sobre este lead..."
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    rows={3}
+                    className="text-sm"
+                  />
+                  <Button
+                    size="sm"
+                    disabled={!newNote.trim() || addNoteMutation.isPending}
+                    onClick={() => addNoteMutation.mutate(newNote.trim())}
+                    className="w-full"
+                  >
+                    {addNoteMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <MessageSquare className="w-4 h-4 mr-1.5" />}
+                    Adicionar Nota
+                  </Button>
+                </div>
+
+                <Separator />
+
+                {/* Notes list */}
+                {leadNotes.length > 0 ? (
+                  <div className="space-y-3">
+                    {leadNotes.map((note: any) => (
+                      <div key={note.id} className="p-3 rounded-lg bg-muted/30 border group">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm whitespace-pre-wrap flex-1">{note.content}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => deleteNoteMutation.mutate(note.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {note.author_name} · {formatDistanceToNow(new Date(note.created_at), { addSuffix: true, locale: ptBR })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">Nenhuma nota adicionada ainda</p>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         </ScrollArea>
 
@@ -932,6 +1127,77 @@ function ProposalActionsPanel({
           )}
         </>
       )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// INLINE FIELD — click to edit, Notion-style
+// ═══════════════════════════════════════════════════════════
+function InlineField({
+  icon, label, value, field, editingField, editValues,
+  onStartEdit, onSave, onCancel, onChange,
+  linkHref, placeholder, prefix, type = 'text',
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  field: string;
+  editingField: string | null;
+  editValues: Record<string, string>;
+  onStartEdit: (field: string, value: string) => void;
+  onSave: (field: string, value: string) => void;
+  onCancel: () => void;
+  onChange: (field: string, value: string) => void;
+  linkHref?: string;
+  placeholder?: string;
+  prefix?: string;
+  type?: string;
+}) {
+  const isEditing = editingField === field;
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-muted/50">
+        <span className="text-muted-foreground shrink-0">{icon}</span>
+        <Input
+          autoFocus
+          type={type}
+          value={editValues[field] ?? value}
+          onChange={(e) => onChange(field, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onSave(field, editValues[field] ?? value);
+            if (e.key === 'Escape') onCancel();
+          }}
+          className="h-7 text-sm flex-1"
+          placeholder={placeholder}
+        />
+        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onSave(field, editValues[field] ?? value)}>
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 cursor-pointer group transition-colors"
+      onClick={() => onStartEdit(field, value)}
+    >
+      <span className="text-muted-foreground shrink-0">{icon}</span>
+      <span className="text-xs text-muted-foreground w-16 shrink-0">{label}</span>
+      {value ? (
+        linkHref ? (
+          <a href={linkHref} className="text-sm text-primary hover:underline truncate flex-1" onClick={e => e.stopPropagation()}>
+            {prefix}{value}
+          </a>
+        ) : (
+          <span className="text-sm font-medium truncate flex-1">{prefix}{value}</span>
+        )
+      ) : (
+        <span className="text-sm text-muted-foreground/60 italic truncate flex-1">{placeholder || 'Vazio'}</span>
+      )}
+      <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
     </div>
   );
 }
