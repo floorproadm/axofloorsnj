@@ -974,6 +974,8 @@ export type Database = {
       }
       lead_notes: {
         Row: {
+          attachment_name: string | null
+          attachment_url: string | null
           author_name: string
           content: string
           created_at: string
@@ -983,6 +985,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           author_name?: string
           content: string
           created_at?: string
@@ -992,6 +996,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           author_name?: string
           content?: string
           created_at?: string
