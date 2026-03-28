@@ -144,8 +144,8 @@ export default function Payments() {
     return invoices.filter((i) => i.status === invoiceFilter);
   }, [invoices, invoiceFilter]);
 
-  const handleActionSelect = (type: "income" | "expense") => {
-    setPaymentDefaultCategory(type === "income" ? "received" : "labor");
+  const handleActionSelect = (type: "income" | "expense" | "payroll") => {
+    setPaymentDefaultCategory(type === "income" ? "received" : type === "payroll" ? "labor" : "material");
     setPaymentDialogOpen(true);
   };
 
@@ -252,8 +252,8 @@ export default function Payments() {
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {[
                     { key: null, label: "All" },
-                    { key: "received", label: "Received" },
-                    { key: "labor", label: "Labor" },
+                    { key: "received", label: "Income" },
+                    { key: "labor", label: "Payroll" },
                     { key: "material", label: "Material" },
                     { key: "other", label: "Other" },
                   ].map((cat) => {
