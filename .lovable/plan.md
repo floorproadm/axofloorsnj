@@ -1,50 +1,36 @@
 
 
-## Plano: Adicionar Toggle PT/EN no AXO Master System
+## Plano: 3 Melhorias no Dashboard Admin
 
-### Abordagem
-Adicionar um seletor de idioma na top bar do AXO Master System. Todo o conteúdo (tabs, nodes, painéis de detalhe, UI labels) terá versão PT e EN. O idioma atual fica salvo em localStorage e sincronizado com o `LanguageContext` já existente.
+### 1. 4º MetricCard — "Proposals"
+- Buscar contagem de propostas com status `sent` ou `draft` da tabela `proposals`
+- Adicionar um 4º `MetricCard` com ícone `FileText`, label "Proposals", value = contagem de propostas abertas, sub = valor total em pipeline
+- Grid de 4 cards com `flex gap-3` (já funciona, só adicionar o 4º)
 
-### Estrutura de dados
+### 2. Mini calendário semanal
+- Barra visual de 7 dias (Dom–Sab) entre a Agenda header e os cards de agenda
+- Cada dia mostra a letra do dia + um dot indicator se tem appointments naquele dia
+- Dia atual highlighted com bg accent
+- Usa os dados de `weekAppointments` já disponíveis (contém `appointment_date`)
+- Componente inline simples, sem novo arquivo
 
-Atualmente `axoMasterSystem.ts` tem strings fixas em português. A solução:
+### 3. Recent Activity feed
+- Nova query busca as últimas 10 atividades combinando:
+  - `leads` criados recentemente (últimas 48h)
+  - `proposals` com `sent_at` recente
+  - `payments` com status `confirmed` recentes
+- Combina, ordena por data, e mostra numa lista compacta com ícone por tipo + timestamp relativo (formatDistance)
+- Nova section abaixo da Agenda com header "Recent Activity" + link "Ver tudo"
 
-1. **Criar um arquivo `src/data/axoMasterSystemEN.ts`** com traduções EN de:
-   - `NODE_DATA` — eyebrow, title, intro, section titles, items (t/s), axo box
-   - `TABS` — label, paneLabel, paneTitle, paneSub, e cada node (tag, title, subtitle)
-
-2. **Criar helper `getLocalizedData(lang)`** que retorna os dados corretos (PT original ou EN traduzido)
-
-3. **No `AxoMasterSystem.tsx`**:
-   - Importar `useLanguage` do contexto existente
-   - Adicionar toggle PT/EN na top bar (ao lado do botão Editar)
-   - Usar `language` para selecionar dados PT ou EN
-   - Traduzir labels de UI fixos (botões "Editar/Edit", "Editando/Editing", "Novo Node/New Node", "Criar Node/Create Node", labels do painel etc.)
-
-### O que será traduzido
-
-| Elemento | Exemplo PT → EN |
-|----------|----------------|
-| Tab labels | "01 · Influência Local" → "01 · Local Influence" |
-| Pane titles | "Mapa de Influência Local" → "Local Influence Map" |
-| Node tags | "Indicação" → "Referral" |
-| Node titles | Mantidos quando já em inglês (ex: "Realtors") |
-| Node subtitles | "Urgência alta · pré-listing" → "High urgency · pre-listing" |
-| Panel content | Todas as seções, items, intros, AXO boxes |
-| UI buttons | "Editar" → "Edit", "Criar Node" → "Create Node" |
-| Panel labels | "Notas" → "Notes", "Salvar" → "Save" etc. |
-
-### Arquivos
-
+### Arquivos alterados
 | Arquivo | Ação |
 |---------|------|
-| `src/data/axoMasterSystemEN.ts` | **Criar** — traduções EN completas (~500 linhas) |
-| `src/data/axoMasterSystem.ts` | **Modificar** — exportar helper de localização |
-| `src/pages/AxoMasterSystem.tsx` | **Modificar** — integrar toggle + usar dados localizados |
+| `src/pages/admin/Dashboard.tsx` | Adicionar 4º MetricCard, mini calendário, query de activity feed, nova section |
 
-### Toggle na UI
-Botão discreto na top bar, estilo consistente com o design atual:
-- Mostra `🇧🇷 PT` ou `🇺🇸 EN`
-- Click alterna entre os dois
-- Salva preferência via `LanguageContext` (já persiste em localStorage)
+### Layout no desktop (lg)
+No desktop, o layout atual é single-column. As 3 adições mantêm o mesmo padrão:
+- 4 MetricCards em row
+- Mission Control
+- Agenda (com mini calendário no topo)
+- Recent Activity (nova section)
 
