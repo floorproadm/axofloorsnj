@@ -131,6 +131,8 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [newNote, setNewNote] = useState('');
+  const [noteFiles, setNoteFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isResizing = useRef(false);
   const queryClient = useQueryClient();
 
