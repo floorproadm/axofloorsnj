@@ -289,8 +289,9 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const [apptTime, setApptTime] = useState('');
   const [apptAddress, setApptAddress] = useState('');
   const [notes, setNotes] = useState('');
-  const [source, setSource] = useState<'lead' | 'partner'>('lead');
+  const [source, setSource] = useState<SourceType>('lead');
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
+  const [newLeadForm, setNewLeadForm] = useState(EMPTY_NEW_LEAD);
   const { updateLeadStatus } = useLeadPipeline();
   const { addFollowUpAction } = useLeadFollowUp();
   const { partners } = usePartnersData();
@@ -300,7 +301,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
     [partners]
   );
 
-  // Leads eligible for scheduling: early stages, not yet converted
   const eligibleLeads = useMemo(() =>
     leads.filter(l => {
       const s = normalizeStatus(l.status);
@@ -311,7 +311,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
 
   const resetForm = () => { 
     setSelectedLeadId(''); setApptDate(''); setApptTime(''); setApptAddress(''); setNotes(''); 
-    setSource('lead'); setSelectedPartnerId('');
+    setSource('lead'); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD);
   };
 
   // Auto-fill address when lead is selected
