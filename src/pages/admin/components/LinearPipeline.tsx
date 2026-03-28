@@ -750,68 +750,95 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   return (
     <div className="space-y-3">
       {/* Top Summary Bar */}
-      <div className="bg-card border rounded-xl px-3 sm:px-4 py-2.5 space-y-2">
-        {/* Row 1: Inline stats + View Toggle */}
+      <div className="bg-card border rounded-xl px-3 sm:px-4 py-3 space-y-3">
+        {/* Row 1: Stats + View Toggle */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 text-sm">
-            <span className="font-semibold text-foreground">{pipelineHealth.active} <span className="text-muted-foreground font-normal">leads</span></span>
-            <span className="text-muted-foreground">·</span>
-            <span className="font-semibold text-primary">${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div>
+              <span className="text-[10px] sm:text-xs text-muted-foreground block">Total Leads</span>
+              <span className="text-lg sm:text-xl font-bold text-foreground">{pipelineHealth.active}</span>
+            </div>
+            <div className="h-6 sm:h-8 w-px bg-border" />
+            <div>
+              <span className="text-[10px] sm:text-xs text-muted-foreground block">Valor Total</span>
+              <span className="text-lg sm:text-xl font-bold text-primary">
+                ${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
+            </div>
             {pipelineHealth.needsAction > 0 && (
               <>
-                <span className="text-muted-foreground">·</span>
-                <span className="font-semibold text-destructive">{pipelineHealth.needsAction} <span className="text-muted-foreground font-normal text-xs">atenção</span></span>
+                <div className="h-6 sm:h-8 w-px bg-border" />
+                <div>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground block">Atenção</span>
+                  <span className="text-lg sm:text-xl font-bold text-destructive">{pipelineHealth.needsAction}</span>
+                </div>
               </>
             )}
           </div>
 
+          {/* View Toggle */}
           <div className="flex items-center border rounded-lg overflow-hidden flex-shrink-0">
             <button
               onClick={() => setViewMode('board')}
               className={cn(
-                "flex items-center px-2.5 py-1.5 text-xs font-medium transition-colors",
+                "flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors",
                 viewMode === 'board'
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground hover:text-foreground"
               )}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Board</span>
             </button>
             <button
               onClick={() => setViewMode('list')}
               className={cn(
-                "flex items-center px-2.5 py-1.5 text-xs font-medium transition-colors border-l",
+                "flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors border-l",
                 viewMode === 'list'
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground hover:text-foreground"
               )}
             >
               <List className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">List</span>
             </button>
           </div>
         </div>
 
-        {/* Funnel Bar — thin & minimal */}
+        {/* Funnel Health Bar */}
         {pipelineHealth.active > 0 && (
-          <div className="flex h-1.5 rounded-full overflow-hidden bg-muted/30">
-            {SALES_STAGES.map(stage => {
-              const count = stageStats[stage]?.count || 0;
-              if (count === 0) return null;
-              const pct = (count / pipelineHealth.active) * 100;
-              const config = STAGE_CONFIG[stage];
-              return (
-                <div
-                  key={stage}
-                  className={cn("h-full transition-all", config.bgColor, "opacity-70")}
-                  style={{ width: `${pct}%`, minWidth: count > 0 ? '3px' : '0' }}
-                  title={`${STAGE_LABELS[stage]}: ${count} (${Math.round(pct)}%)`}
-                />
-              );
-            })}
+          <div className="space-y-1">
+            <div className="flex h-2.5 rounded-full overflow-hidden bg-muted/40">
+              {SALES_STAGES.map(stage => {
+                const count = stageStats[stage]?.count || 0;
+                if (count === 0) return null;
+                const pct = (count / pipelineHealth.active) * 100;
+                const config = STAGE_CONFIG[stage];
+                return (
+                  <div
+                    key={stage}
+                    className={cn("h-full transition-all", config.bgColor, "opacity-80")}
+                    style={{ width: `${pct}%`, minWidth: count > 0 ? '4px' : '0' }}
+                    title={`${STAGE_LABELS[stage]}: ${count} leads (${Math.round(pct)}%)`}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {SALES_STAGES.filter(s => (stageStats[s]?.count || 0) > 0).map(stage => {
+                const config = STAGE_CONFIG[stage];
+                return (
+                  <span key={stage} className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                    <span className={cn("w-2 h-2 rounded-full inline-block", config.bgColor)} />
+                    {STAGE_LABELS[stage]} ({stageStats[stage]?.count})
+                  </span>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Row 2: Search + Needs Action */}
+        {/* Row 2: Search + Needs Action Toggle */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -832,16 +859,24 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </div>
           <Button
             size="sm"
-            variant={needsActionOnly ? "default" : "ghost"}
+            variant={needsActionOnly ? "default" : "outline"}
             className={cn(
-              "text-xs h-8 flex-shrink-0 gap-1",
+              "text-xs h-8 flex-shrink-0 gap-1.5",
               needsActionOnly && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
             )}
             onClick={() => setNeedsActionOnly(!needsActionOnly)}
           >
             <Filter className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Atenção</span>
             {pipelineHealth.needsAction > 0 && (
-              <span className="text-[10px] font-bold">{pipelineHealth.needsAction}</span>
+              <span className={cn(
+                "text-[10px] px-1.5 py-0 rounded-full font-bold",
+                needsActionOnly 
+                  ? "bg-destructive-foreground/20 text-destructive-foreground" 
+                  : "bg-destructive/10 text-destructive"
+              )}>
+                {pipelineHealth.needsAction}
+              </span>
             )}
           </Button>
         </div>
@@ -1087,85 +1122,83 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: 
     <div
       onClick={onClick}
       className={cn(
-        "p-3 rounded-lg border bg-card cursor-pointer transition-all",
-        "hover:shadow-md hover:border-primary/40",
-        isBlocked && "ring-2 ring-destructive/50 bg-destructive/5",
-        isStale && !isBlocked && "ring-2 ring-[hsl(var(--state-risk))]/50 bg-[hsl(var(--state-risk))]/5"
+        "p-4 rounded-xl border bg-card cursor-pointer transition-all group",
+        "hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5",
+        isBlocked && "ring-2 ring-destructive/40 bg-destructive/5",
+        isStale && !isBlocked && "ring-2 ring-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
       )}
     >
-      {/* Row 1: TimeBadge + Name + Value */}
-      <div className="flex items-center justify-between gap-1">
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+      {/* Row 1: Name + Value */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <span className={cn(
-            "text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0",
+            "text-[9px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap flex-shrink-0",
             timeBadge.className
           )}>
             {timeBadge.text}
           </span>
-          <span className="font-semibold text-xs text-foreground truncate">
+          <span className="font-bold text-sm text-foreground truncate leading-tight">
             {lead.name.toUpperCase()}
           </span>
         </div>
-        <span className="font-bold text-xs text-foreground whitespace-nowrap flex-shrink-0">
+        <span className="font-bold text-sm text-foreground whitespace-nowrap flex-shrink-0">
           {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
         </span>
       </div>
 
-      {/* Row 2: Contact */}
-      <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+      {/* Row 2: Contact info */}
+      <div className="flex items-center gap-3 mt-2.5 text-[11px] text-muted-foreground">
         <a
           href={`tel:${lead.phone}`}
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-0.5 hover:text-primary transition-colors"
+          className="flex items-center gap-1 hover:text-primary transition-colors"
         >
-          <Phone className="w-2.5 h-2.5 flex-shrink-0" />
+          <Phone className="w-3 h-3 flex-shrink-0" />
           <span>{lead.phone}</span>
         </a>
         {lead.city && (
-          <span className="flex items-center gap-0.5">
-            <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3 flex-shrink-0" />
             {lead.city}
           </span>
         )}
-        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5">
-          {sourceLabels[lead.lead_source] || lead.lead_source}
-        </Badge>
       </div>
 
-      {/* Row 3: Services */}
-      {services.length > 0 && (
-        <div className="flex items-center gap-1 mt-1.5">
-          {visibleServices.map(s => (
-            <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
-              {serviceLabels[s] || s}
-            </Badge>
-          ))}
-          {overflowCount > 0 && (
-            <span className="text-[9px] text-muted-foreground font-medium">+{overflowCount}</span>
-          )}
-        </div>
-      )}
+      {/* Row 3: Source + Services */}
+      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+        <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-auto">
+          {sourceLabels[lead.lead_source] || lead.lead_source}
+        </Badge>
+        {visibleServices.map(s => (
+          <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0.5 h-auto">
+            {serviceLabels[s] || s}
+          </Badge>
+        ))}
+        {overflowCount > 0 && (
+          <span className="text-[9px] text-muted-foreground font-medium">+{overflowCount}</span>
+        )}
+      </div>
 
       {/* Quick Quote button */}
       {onQuickQuote && (
         <button
           onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-          className="flex items-center gap-1 mt-1.5 pt-1.5 border-t w-full text-[10px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+          className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 w-full text-[11px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
         >
-          <Zap className="w-3 h-3 flex-shrink-0" />
+          <Zap className="w-3.5 h-3.5 flex-shrink-0" />
           Quick Quote
         </button>
       )}
 
-      {/* Operational Alert (conditional) */}
+      {/* Operational Alert */}
       {alert && (
         <div className={cn(
-          "flex items-center gap-1 mt-1.5 pt-1.5 border-t text-[10px] font-medium",
+          "flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 text-[11px] font-medium",
           alert.type === 'critical' && "text-destructive",
           alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
           alert.type === 'info' && "text-primary"
         )}>
-          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{alert.text}</span>
         </div>
       )}
