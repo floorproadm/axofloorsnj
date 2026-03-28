@@ -64,6 +64,7 @@ type Lead = {
   next_action_date?: string;
   follow_up_actions?: { date: string; action: string; notes?: string }[];
   converted_to_project_id?: string;
+  referred_by_partner_id?: string;
 };
 
 interface LinearPipelineProps {
