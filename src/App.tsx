@@ -142,6 +142,11 @@ const App = () => {
                 <LeadDetail />
               </ProtectedRoute>
             } />
+            <Route path="/admin/jobs/:jobId" element={
+              <ProtectedRoute>
+                <JobDetail />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/jobs" element={
               <ProtectedRoute>
                 <AdminJobsManager />
