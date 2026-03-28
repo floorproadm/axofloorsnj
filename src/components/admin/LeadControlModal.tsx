@@ -28,7 +28,8 @@ import {
   ChevronRight, Clock, XCircle, Trash2,
   CheckCircle2, Plus, Loader2, History, Ban,
   ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown,
-  Maximize2, Pencil, MessageSquare, StickyNote, User, CalendarDays, Tag
+  Maximize2, Pencil, MessageSquare, StickyNote, User, CalendarDays, Tag,
+  Paperclip, Image, File, X, Download
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
