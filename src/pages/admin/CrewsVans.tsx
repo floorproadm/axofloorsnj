@@ -439,6 +439,9 @@ export default function CrewsVans() {
                 anchor={payrollAnchor}
                 onAnchorChange={setPayrollAnchor}
               />
+              <a href="/admin/payments" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                View all in Payments →
+              </a>
             </div>
 
             {/* Summary Cards */}

@@ -148,7 +148,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
               <Label>Date</Label>
               <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
             </div>
-            {isIncome && (
+            {(isIncome || category === "labor") && (
               <div>
                 <Label>Payment Method</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
@@ -168,7 +168,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={isIncome ? "e.g. 50% deposit..." : "e.g. Sanding crew week 1..."}
+              placeholder={isIncome ? "e.g. 50% deposit..." : category === "labor" ? "e.g. Crew wages week 1, John daily rate..." : "e.g. Sanding supplies, stain..."}
             />
           </div>
 

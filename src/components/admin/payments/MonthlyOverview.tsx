@@ -13,7 +13,7 @@ const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const expenseCategories = [
-  { key: "labor", label: "Labor", icon: Hammer, colorClass: "text-blue-500" },
+  { key: "labor", label: "Payroll", icon: Hammer, colorClass: "text-blue-500" },
   { key: "material", label: "Material", icon: Package, colorClass: "text-amber-500" },
   { key: "other", label: "Other", icon: MoreHorizontal, colorClass: "text-muted-foreground" },
 ] as const;
