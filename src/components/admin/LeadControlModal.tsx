@@ -28,7 +28,8 @@ import {
   ChevronRight, Clock, XCircle, Trash2,
   CheckCircle2, Plus, Loader2, History, Ban,
   ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown,
-  Maximize2, Pencil, MessageSquare, StickyNote, User, CalendarDays, Tag
+  Maximize2, Pencil, MessageSquare, StickyNote, User, CalendarDays, Tag,
+  Paperclip, Image, File, X, Download
 } from 'lucide-react';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -130,6 +131,8 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [newNote, setNewNote] = useState('');
+  const [noteFiles, setNoteFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isResizing = useRef(false);
   const queryClient = useQueryClient();
 
@@ -177,17 +180,37 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   });
 
   const addNoteMutation = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({ content, file }: { content: string; file?: File }) => {
       const { data: orgData } = await supabase.rpc('get_user_org_id');
+      let attachmentUrl: string | null = null;
+      let attachmentName: string | null = null;
+
+      if (file) {
+        const ext = file.name.split('.').pop();
+        const path = `lead-notes/${lead!.id}/${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('project-documents')
+          .upload(path, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from('project-documents')
+          .getPublicUrl(path);
+        attachmentUrl = urlData.publicUrl;
+        attachmentName = file.name;
+      }
+
       const { error } = await supabase.from('lead_notes').insert({
         lead_id: lead!.id,
         content,
         organization_id: orgData,
-      });
+        attachment_url: attachmentUrl,
+        attachment_name: attachmentName,
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       setNewNote('');
+      setNoteFiles([]);
       refetchNotes();
       toast.success('Nota adicionada');
     },
@@ -606,15 +629,52 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                     rows={3}
                     className="text-sm"
                   />
-                  <Button
-                    size="sm"
-                    disabled={!newNote.trim() || addNoteMutation.isPending}
-                    onClick={() => addNoteMutation.mutate(newNote.trim())}
-                    className="w-full"
-                  >
-                    {addNoteMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <MessageSquare className="w-4 h-4 mr-1.5" />}
-                    Adicionar Nota
-                  </Button>
+                  {/* File previews */}
+                  {noteFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {noteFiles.map((file, i) => (
+                        <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted text-xs border">
+                          {file.type.startsWith('image/') ? <Image className="w-3 h-3 text-primary" /> : <File className="w-3 h-3 text-muted-foreground" />}
+                          <span className="truncate max-w-[120px]">{file.name}</span>
+                          <button onClick={() => setNoteFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-destructive">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setNoteFiles(prev => [...prev, file]);
+                        e.target.value = '';
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="gap-1.5"
+                    >
+                      <Paperclip className="w-3.5 h-3.5" />
+                      Anexar
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={(!newNote.trim() && noteFiles.length === 0) || addNoteMutation.isPending}
+                      onClick={() => addNoteMutation.mutate({ content: newNote.trim(), file: noteFiles[0] })}
+                      className="flex-1"
+                    >
+                      {addNoteMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <MessageSquare className="w-4 h-4 mr-1.5" />}
+                      Adicionar Nota
+                    </Button>
+                  </div>
                 </div>
 
                 <Separator />
@@ -635,6 +695,26 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                             <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
+                        {/* Attachment */}
+                        {note.attachment_url && (
+                          <div className="mt-2">
+                            {note.attachment_name?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                              <a href={note.attachment_url} target="_blank" rel="noopener noreferrer" className="block">
+                                <img src={note.attachment_url} alt={note.attachment_name} className="rounded-md max-h-40 object-cover border" />
+                              </a>
+                            ) : (
+                              <a
+                                href={note.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-muted border text-xs hover:bg-accent transition-colors"
+                              >
+                                <Download className="w-3 h-3" />
+                                {note.attachment_name || 'Arquivo'}
+                              </a>
+                            )}
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground mt-2">
                           {note.author_name} · {formatDistanceToNow(new Date(note.created_at), { addSuffix: true, locale: ptBR })}
                         </p>
