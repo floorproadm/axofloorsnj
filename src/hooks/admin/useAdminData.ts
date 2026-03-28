@@ -52,7 +52,7 @@ interface AdminStats {
   averageProjectValue: number;
 }
 
-const LEAD_COLUMNS = 'id, name, email, phone, lead_source, status, priority, services, budget, room_size, location, address, city, zip_code, message, assigned_to, follow_up_date, last_contacted_at, converted_to_project_id, notes, follow_up_required, next_action_date, follow_up_actions, created_at, updated_at';
+const LEAD_COLUMNS = 'id, name, email, phone, lead_source, status, priority, services, budget, room_size, location, address, city, zip_code, message, assigned_to, follow_up_date, last_contacted_at, converted_to_project_id, referred_by_partner_id, notes, follow_up_required, next_action_date, follow_up_actions, created_at, updated_at';
 
 const PROJECT_COLUMNS = 'id, customer_name, customer_email, customer_phone, project_type, project_status, address, city, zip_code, square_footage, estimated_cost, actual_cost, start_date, completion_date, notes, created_at, updated_at';
 
