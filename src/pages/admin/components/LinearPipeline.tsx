@@ -124,19 +124,20 @@ function getOperationalAlert(lead: Lead, nra: any) {
   return null;
 }
 
-/* ─── Reusable Source Toggle (Lead | Parceiro | Novo) ─── */
+/* ─── Reusable Source Toggle (Lead | Parceiro) ─── */
 type SourceType = 'lead' | 'partner' | 'new';
 
 function SourceToggle({ source, onChange }: { source: SourceType; onChange: (s: SourceType) => void }) {
+  const active = source === 'new' ? 'lead' : source;
   return (
     <div className="flex gap-1 p-1 bg-muted rounded-lg">
-      {([['lead', 'Lead'], ['partner', 'Parceiro'], ['new', '+ Novo']] as const).map(([key, label]) => (
+      {([['lead', 'Lead'], ['partner', 'Parceiro']] as const).map(([key, label]) => (
         <button
           key={key}
           onClick={() => onChange(key)}
           className={cn(
             "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-            source === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+            active === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
           )}
         >
           {label}
@@ -147,13 +148,17 @@ function SourceToggle({ source, onChange }: { source: SourceType; onChange: (s: 
 }
 
 /* ─── Inline New Lead Fields ─── */
-function InlineNewLeadFields({ form, setForm }: {
+function InlineNewLeadFields({ form, setForm, onCancel }: {
   form: { name: string; phone: string; email: string; address: string };
   setForm: React.Dispatch<React.SetStateAction<{ name: string; phone: string; email: string; address: string }>>;
+  onCancel: () => void;
 }) {
   return (
     <div className="space-y-2 p-3 border border-dashed border-border rounded-lg bg-muted/30">
-      <p className="text-xs font-medium text-muted-foreground">Dados do novo lead</p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">Novo lead</p>
+        <button onClick={onCancel} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Selecionar existente</button>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <Label className="text-xs">Nome *</Label>
@@ -174,6 +179,43 @@ function InlineNewLeadFields({ form, setForm }: {
           <Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="Endereço" className="h-8 text-sm" />
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── Lead Selector with "+ Criar novo" link ─── */
+function LeadSelectorOrNew({ 
+  source, selectedLeadId, setSelectedLeadId, eligibleLeads, onSwitchToNew 
+}: {
+  source: SourceType;
+  selectedLeadId: string;
+  setSelectedLeadId: (id: string) => void;
+  eligibleLeads: Lead[];
+  onSwitchToNew: () => void;
+}) {
+  if (source !== 'lead') return null;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <Label>Lead *</Label>
+        <button onClick={onSwitchToNew} className="text-xs text-primary hover:underline transition-colors">+ Criar novo</button>
+      </div>
+      <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+        <SelectTrigger>
+          <SelectValue placeholder="Selecione um lead..." />
+        </SelectTrigger>
+        <SelectContent>
+          {eligibleLeads.length === 0 ? (
+            <SelectItem value="_none" disabled>Nenhum lead elegível</SelectItem>
+          ) : (
+            eligibleLeads.map(l => (
+              <SelectItem key={l.id} value={l.id}>
+                {l.name}{l.city ? ` — ${l.city}` : ''}
+              </SelectItem>
+            ))
+          )}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
