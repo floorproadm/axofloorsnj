@@ -573,8 +573,6 @@ function KanbanCard({
 // JOB CONTROL SHEET — Sidebar estilo Notion com Tabs
 // ═══════════════════════════════════════════════════════════
 
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface JobControlModalProps {
   project: ProjectWithRelations;
