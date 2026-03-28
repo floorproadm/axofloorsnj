@@ -1088,9 +1088,9 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
 
       {/* Quick Action Modals */}
       <QuickNewLeadModal open={showNewLeadModal} onOpenChange={setShowNewLeadModal} onSuccess={onRefresh} />
-      <QuickApptModal open={showApptModal} onOpenChange={setShowApptModal} leads={salesLeads} onSuccess={onRefresh} />
-      <QuickProposalModal open={showProposalModal} onOpenChange={setShowProposalModal} leads={salesLeads} />
-      <QuickRequestModal open={showRequestModal} onOpenChange={setShowRequestModal} leads={salesLeads} onSuccess={onRefresh} />
+      <QuickApptModal open={showApptModal} onOpenChange={setShowApptModal} leads={allSalesLeads} onSuccess={onRefresh} />
+      <QuickProposalModal open={showProposalModal} onOpenChange={setShowProposalModal} leads={allSalesLeads} />
+      <QuickRequestModal open={showRequestModal} onOpenChange={setShowRequestModal} leads={allSalesLeads} onSuccess={onRefresh} />
 
       {/* Quick Quote Sheet */}
       <QuickQuoteSheet
