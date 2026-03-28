@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -942,16 +943,27 @@ function NRAActionButton({
     case 'convert_to_project':
       return showConvertForm ? (
         <div className="space-y-3 p-3 bg-white rounded-lg border">
-          <Select value={projectType} onValueChange={onProjectTypeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Tipo do projeto..." />
-            </SelectTrigger>
-            <SelectContent>
-              {PROJECT_TYPES.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <p className="text-xs text-muted-foreground font-medium">Selecione os serviços:</p>
+          <div className="space-y-1.5">
+            {PROJECT_TYPES.map(type => {
+              const selected = projectType.split(' + ').filter(Boolean);
+              const isChecked = selected.includes(type);
+              return (
+                <label key={type} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-2 rounded hover:bg-muted/50">
+                  <Checkbox
+                    checked={isChecked}
+                    onCheckedChange={() => {
+                      const next = isChecked
+                        ? selected.filter(s => s !== type)
+                        : [...selected, type];
+                      onProjectTypeChange(next.join(' + '));
+                    }}
+                  />
+                  {type}
+                </label>
+              );
+            })}
+          </div>
           <div className="flex gap-2">
             <Button 
               onClick={onConvertToProject}
