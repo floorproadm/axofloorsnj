@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -1133,13 +1134,15 @@ export function JobControlModal({ project, isOpen, onClose, onRefresh, embedded 
       <SheetContent
         side="right"
         className="w-full sm:max-w-none p-0 flex flex-col [&>button:first-child]:z-20 [&>button:first-child]:text-white [&>button:first-child]:hover:text-white/80"
-        style={{ width: sheetWidth }}
+        style={isMobile ? undefined : { width: sheetWidth }}
       >
-        {/* Resize handle */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/30 transition-colors z-30"
-          onMouseDown={handleMouseDown}
-        />
+        {/* Resize handle - desktop only */}
+        {!isMobile && (
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/30 transition-colors z-30"
+            onMouseDown={handleMouseDown}
+          />
+        )}
         {renderHeader()}
         {renderBody()}
       </SheetContent>
