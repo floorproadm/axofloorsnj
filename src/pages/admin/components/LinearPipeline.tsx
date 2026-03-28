@@ -500,27 +500,17 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
         <div className="space-y-3">
           <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
-          {source === 'lead' ? (
-            <div>
-              <Label>Lead *</Label>
-              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um lead..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {eligibleLeads.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum lead elegível</SelectItem>
-                  ) : (
-                    eligibleLeads.map(l => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.name}{l.city ? ` — ${l.city}` : ''}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : source === 'partner' ? (
+          {source === 'new' ? (
+            <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} onCancel={() => setSource('lead')} />
+          ) : source === 'lead' ? (
+            <LeadSelectorOrNew
+              source={source}
+              selectedLeadId={selectedLeadId}
+              setSelectedLeadId={setSelectedLeadId}
+              eligibleLeads={eligibleLeads}
+              onSwitchToNew={() => { setSource('new'); setSelectedLeadId(''); }}
+            />
+          ) : (
             <div>
               <Label>Parceiro *</Label>
               <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
@@ -540,8 +530,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
                 </SelectContent>
               </Select>
             </div>
-          ) : (
-            <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} />
           )}
 
           {source !== 'new' && (
