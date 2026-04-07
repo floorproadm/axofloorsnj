@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from "react";
+import { AXO_ORG_ID } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -1233,6 +1234,7 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
         content: commentText.trim() || '📷 Foto adicionada',
         image_url: imageUrl,
         author_name: 'Admin',
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
       setCommentText('');

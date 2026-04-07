@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_assignees: {
+        Row: {
+          appointment_id: string
+          created_at: string | null
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string | null
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_assignees_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_assignees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_date: string
@@ -456,6 +492,7 @@ export type Database = {
           id: string
           item_count: number
           name: string
+          organization_id: string | null
           updated_at: string
         }
         Insert: {
@@ -466,6 +503,7 @@ export type Database = {
           id?: string
           item_count?: number
           name: string
+          organization_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -476,9 +514,18 @@ export type Database = {
           id?: string
           item_count?: number
           name?: string
+          organization_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "feed_folders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feed_post_images: {
         Row: {
@@ -1210,6 +1257,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_material_requests_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_material_requests_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+          {
             foreignKeyName: "material_requests_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -1631,6 +1692,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_payments_collaborator"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payments_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -1702,6 +1770,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          organization_id: string
           project_id: string
           updated_at: string
         }
@@ -1711,6 +1780,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          organization_id: string
           project_id: string
           updated_at?: string
         }
@@ -1720,10 +1790,18 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          organization_id?: string
           project_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "project_comments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_comments_project_id_fkey"
             columns: ["project_id"]
@@ -2639,6 +2717,55 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_tasks_lead"
+            columns: ["related_lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tasks_lead"
+            columns: ["related_lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_estimate_scheduled_stale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tasks_lead"
+            columns: ["related_lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_followup_overdue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tasks_lead"
+            columns: ["related_lead_id"]
+            isOneToOne: false
+            referencedRelation: "view_stage_aging"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "fk_tasks_partner"
+            columns: ["related_partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tasks_project"
+            columns: ["related_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tasks_project"
+            columns: ["related_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
           {
             foreignKeyName: "tasks_organization_id_fkey"
             columns: ["organization_id"]
