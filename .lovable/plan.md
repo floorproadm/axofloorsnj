@@ -1,35 +1,35 @@
 
 
-# Job Detail — Sidebar 640px + Resize + Página Dedicada
+# Aplicar Migration: Corrigir 8 Gargalos Estruturais
 
-## O que falta
-1. **Largura padrão da Sheet** está em `520px`, precisa ir para `640px`
-2. **Resize drag** (arrastar borda esquerda) como já existe no Lead Detail
-3. **Botão para abrir página dedicada** (`ExternalLink`) no header, navegando para `/admin/jobs/:id`
-4. **Página dedicada `/admin/jobs/:id`** que renderiza o mesmo conteúdo embedded (igual LeadDetail)
+## O que será feito
+Executar uma migration única que corrige 8 problemas de integridade referencial e isolamento multi-tenant identificados na auditoria do sistema.
 
-## Mudanças
+## Ajustes necessários ao arquivo enviado
+O arquivo está bem escrito, mas precisa de **2 correções** antes de aplicar:
 
-### 1. `src/pages/admin/JobsManager.tsx` — JobDetailSheet
-- Trocar `sm:max-w-[520px]` por `sm:max-w-none` + `style={{ width: sheetWidth }}`
-- Adicionar estado `sheetWidth` com default `640`
-- Adicionar `handleMouseDown` com listeners de `mousemove`/`mouseup` para resize drag (mesmo padrão do LeadControlModal)
-- Adicionar div de resize handle na borda esquerda da Sheet
-- Adicionar botão `ExternalLink` no header que navega para `/admin/jobs/${project.id}`
+1. **FIX 7 (appointment_assignees RLS)**: A policy original faz JOIN via `projects`, mas `appointments` já tem `organization_id` diretamente. Simplificar para usar `appointments.organization_id = get_user_org_id()`.
 
-### 2. Nova página `src/pages/admin/JobDetail.tsx`
-- Rota: `/admin/jobs/:jobId`
-- Busca o projeto por ID no Supabase
-- Renderiza o componente JobDetailSheet em modo `embedded` (sem Sheet wrapper, direto no layout)
-- Botão "Voltar para Jobs" no topo
-- Padrão idêntico ao `src/pages/admin/LeadDetail.tsx`
+2. **FIX 6 (feed_folders backfill)**: O backfill via `feed_posts → projects` pode não pegar todos os registros (feed_folders sem posts vinculados a projetos). Adicionar fallback com `AXO_ORG_ID` para preencher os restantes.
 
-### 3. `src/App.tsx` — Nova rota
-- Adicionar rota `/admin/jobs/:jobId` apontando para `JobDetail`
-- Posicionar antes da rota `/admin/jobs/:projectId/documents` para não conflitar
+## Os 8 Fixes
 
-### Arquivos
-1. `src/pages/admin/JobsManager.tsx` — resize + width 640 + botão ExternalLink
-2. `src/pages/admin/JobDetail.tsx` — nova página dedicada
-3. `src/App.tsx` — nova rota
+| Fix | Tabela | Problema | Ação |
+|-----|--------|----------|------|
+| 1 | `leads` | `converted_to_project_id` sem FK | FK → `projects(id)` ON DELETE SET NULL |
+| 2 | `payments` | `collaborator_id` sem FK | FK → `profiles(id)` ON DELETE SET NULL |
+| 3 | `project_comments` | Sem `organization_id` (tenant leak) | Add column + backfill + RLS |
+| 4 | `tasks` | `related_*` sem FK | 3 FKs ON DELETE SET NULL |
+| 5 | `material_requests` | `project_id` sem FK | FK → `projects(id)` ON DELETE SET NULL |
+| 6 | `feed_folders` | Sem `organization_id` (tenant leak) | Add column + backfill + RLS |
+| 7 | `appointments` | `assigned_to` como text array | Criar junction table `appointment_assignees` |
+| 8 | `projects` | `customer_id` nullable | SET NOT NULL (se zero nulls) |
+
+## Impacto no código
+- **Nenhuma mudança de código obrigatória** — todas as alterações são aditivas (novas FKs, novas colunas, nova tabela)
+- O código existente continua funcionando sem modificação
+- `appointment_assignees` é uma tabela nova para uso futuro; o campo `assigned_to` original é preservado
+
+## Execução
+Uma única migration via ferramenta de database migration do Lovable Cloud. Cada fix é isolado em seu próprio bloco `DO $$ ... EXCEPTION`, então falha em um não afeta os outros.
 
