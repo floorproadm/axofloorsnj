@@ -1233,6 +1233,7 @@ function ProjectNotesSection({ projectId, initialNotes, onRefresh }: ProjectNote
         content: commentText.trim() || '📷 Foto adicionada',
         image_url: imageUrl,
         author_name: 'Admin',
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
       setCommentText('');
