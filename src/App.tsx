@@ -22,6 +22,7 @@ import About from "./pages/About";
 
 import StainGallery from "./pages/StainGallery";
 import BuilderPartnerships from "./pages/BuilderPartnerships";
+import PartnerProgram from "./pages/PartnerProgram";
 import Quiz from "./pages/Quiz";
 import ThankYou from "./pages/ThankYou";
 import ReferralProgram from "./pages/ReferralProgram";
@@ -100,6 +101,7 @@ const App = () => {
             <Route path="/builders" element={<Builders />} />
             <Route path="/realtors" element={<Realtors />} />
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
+            <Route path="/partner-program" element={<PartnerProgram />} />
             
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
             <Route path="/axo-master-system" element={<AxoMasterSystem />} />
