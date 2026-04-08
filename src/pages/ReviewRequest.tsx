@@ -302,7 +302,7 @@ export default function ReviewRequest() {
           <ScrollReveal>
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-foreground mb-3">
-                Share Your Before & After
+                Request Your Before & After
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
                 Got photos of the transformation? We'd love to feature your project!
