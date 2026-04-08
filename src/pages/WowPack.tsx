@@ -132,7 +132,7 @@ const WowPack = () => {
                   <CardContent className="p-6">
                     <p className="text-xs tracking-wider uppercase text-accent mb-2 font-medium">Owner & Head Craftsman</p>
                     <h3 className="font-heading text-xl font-bold text-foreground mb-3">Ademir Oliveira</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-2">Ademir brought his craft from Brazil, where flooring is treated as an art form. With over 15 years of hands-on experience in hardwood installation, sanding, and refinishing, he approaches every project with the precision of someone who takes it personally.</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-2">With over 15 years of hands-on experience in hardwood installation, sanding, and refinishing, he approaches every project with the precision of someone who takes it personally.</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">He doesn't oversee. He executes. Every premium project in NJ/NY/PA has Ademir's hands and eyes directly on it.</p>
                     <div className="mt-5 pt-4 border-t border-border flex items-baseline gap-2">
                       <span className="font-heading text-3xl text-accent font-bold">15+</span>
