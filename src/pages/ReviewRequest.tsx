@@ -144,7 +144,7 @@ export default function ReviewRequest() {
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Google — Preferred */}
             <ScrollReveal>
               <Card className="border-2 border-accent/40 relative overflow-hidden hover:shadow-lg transition-shadow">
