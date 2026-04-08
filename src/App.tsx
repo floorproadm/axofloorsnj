@@ -59,6 +59,7 @@ import Campaign from "./pages/Campaign";
 
 import FloorDiagnostic from "./pages/FloorDiagnostic";
 import AxoMasterSystem from "./pages/AxoMasterSystem";
+import WowPack from "./pages/WowPack";
 import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
 
@@ -105,6 +106,7 @@ const App = () => {
             
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
             <Route path="/axo-master-system" element={<AxoMasterSystem />} />
+            <Route path="/wow-pack" element={<WowPack />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/auth" element={<AdminAuth />} />
