@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import SEOHead from "@/components/shared/SEOHead";
+import throwbackPhoto from "@/assets/ademir-eduardo-throwback.jpg";
 import {
   Phone, Search, Palette, ClipboardList, FileText,
   Shield, Star, CheckCircle, ArrowRight
@@ -114,6 +115,15 @@ const WowPack = () => {
               <p className="text-xs tracking-[0.2em] uppercase text-accent font-medium mb-3">Our Story</p>
               <h2 className="font-heading text-2xl md:text-4xl font-bold text-foreground mb-4">Two craftsmen.<br /><span className="text-accent italic">One standard of work.</span></h2>
               <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-2xl">AXO Floors isn't a flooring company. We're a team of master craftsmen who happen to work with floors — and there's a meaningful difference between the two.</p>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <div className="mb-8 flex flex-col items-center">
+                <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-2xl overflow-hidden shadow-lg border-2 border-accent/20 rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+                  <img src={throwbackPhoto} alt="Ademir and Eduardo — early days on the job site" className="w-full h-full object-cover" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-4 italic text-center max-w-xs">Where it all started — father and son, side by side on the job site.</p>
+              </div>
             </ScrollReveal>
 
             <div className="grid md:grid-cols-2 gap-4 mb-8">
