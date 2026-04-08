@@ -106,6 +106,7 @@ const App = () => {
             
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
             <Route path="/axo-master-system" element={<AxoMasterSystem />} />
+            <Route path="/wow-pack" element={<WowPack />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/auth" element={<AdminAuth />} />

@@ -77,7 +77,6 @@ const WowPack = () => {
       <SEOHead
         title="Your Pre-Visit Guide | AXO Floors NJ"
         description="Everything you need to know before your free site visit — our process, guarantees, stain guide, and investment options."
-        url="https://axofloorsnj.com/wow-pack"
       />
       <Header />
       <main>
