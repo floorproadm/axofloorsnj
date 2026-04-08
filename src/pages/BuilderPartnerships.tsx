@@ -40,7 +40,7 @@ const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode;
 
 const BuilderPartnerships = () => {
   const heroStats = [
-    { value: "15+", label: "Years minimum per craftsman" },
+    { value: "10+", label: "Years minimum per craftsman" },
     { value: "100%", label: "Timeline adherence guaranteed" },
     { value: "Zero", label: "Dust — hospital-grade containment" },
     { value: "10yr", label: "Structural warranty — transferable" },
