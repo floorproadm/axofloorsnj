@@ -4,7 +4,8 @@ import { ProposalData, ProposalTier } from '@/types/proposal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, Printer, Check, AlertTriangle } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ProposalGeneratorProps {
@@ -15,8 +16,7 @@ interface ProposalGeneratorProps {
 /**
  * PROPOSAL GENERATOR
  * Generates 3-tier proposal (Good/Better/Best)
- * All tiers validated against minimum margin
- * Output: Preview + Print/PDF
+ * Professional print document with AXO branding
  */
 export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps) {
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
@@ -25,64 +25,74 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
   const handleGenerate = async () => {
     const data = await fetchProjectData(projectId);
-    if (data) {
-      setProposal(data);
-    }
+    if (data) setProposal(data);
   };
 
   const handlePrint = () => {
-    if (printRef.current) {
-      const printContent = printRef.current.innerHTML;
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Proposal - ${proposal?.customer_name}</title>
-            <style>
-              * { box-sizing: border-box; margin: 0; padding: 0; }
-              body { font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a; }
-              .proposal-header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-              .proposal-header h1 { font-size: 28px; margin-bottom: 10px; }
-              .proposal-header p { color: #666; }
-              .customer-info { margin-bottom: 30px; }
-              .customer-info h2 { font-size: 18px; margin-bottom: 10px; color: #333; }
-              .customer-info p { margin: 5px 0; }
-              .tiers-container { display: flex; gap: 20px; margin-bottom: 40px; }
-              .tier-card { flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 20px; }
-              .tier-card.recommended { border-color: #2563eb; background: #f0f7ff; }
-              .tier-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
-              .tier-price { font-size: 32px; font-weight: bold; color: #2563eb; margin-bottom: 10px; }
-              .tier-desc { color: #666; margin-bottom: 15px; font-size: 14px; }
-              .tier-features { list-style: none; }
-              .tier-features li { padding: 5px 0; font-size: 14px; }
-              .tier-features li:before { content: "✓"; color: #22c55e; margin-right: 8px; }
-              .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
-              .valid-until { background: #fef3c7; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 20px; }
-              @media print {
-                body { padding: 20px; }
-                .tiers-container { page-break-inside: avoid; }
-              }
-            </style>
-          </head>
-          <body>
-            ${printContent}
-          </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-      }
-    }
+    if (!printRef.current) return;
+    const printContent = printRef.current.innerHTML;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`<!DOCTYPE html><html><head>
+      <title>Proposal - ${proposal?.customer_name}</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Roboto', Arial, sans-serif; color: #1a1a2e; background: #fff; }
+        h1, h2, h3, h4, h5 { font-family: 'Montserrat', sans-serif; }
+        .print-page { max-width: 800px; margin: 0 auto; padding: 40px; }
+        .hero-section { text-align: center; padding: 40px 20px; border-bottom: 3px solid #1e3a5f; margin-bottom: 30px; }
+        .hero-section h1 { font-size: 32px; color: #1e3a5f; margin-bottom: 8px; }
+        .hero-section .subtitle { color: #d97706; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+        .hero-section .proposal-num { color: #888; font-size: 12px; margin-top: 8px; }
+        .section { margin-bottom: 30px; }
+        .section-title { font-size: 18px; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #d97706; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .info-item { font-size: 14px; }
+        .info-item .label { color: #888; font-size: 12px; }
+        .info-item .value { font-weight: 500; }
+        .method-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .method-step { text-align: center; padding: 15px 10px; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .method-step .step-num { display: inline-block; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; background: #1e3a5f; color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .method-step h4 { font-size: 13px; color: #1e3a5f; margin-bottom: 4px; }
+        .method-step p { font-size: 11px; color: #666; }
+        .tiers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .tier-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; }
+        .tier-card.recommended { border-color: #d97706; background: #fffbeb; }
+        .tier-card .tier-badge { display: inline-block; background: #1e3a5f; color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .tier-card.recommended .tier-badge { background: #d97706; }
+        .tier-card .tier-name { font-size: 20px; font-weight: 700; color: #1e3a5f; }
+        .tier-card .tier-price { font-size: 32px; font-weight: 700; color: #d97706; margin: 10px 0; }
+        .tier-card .tier-sqft { font-size: 12px; color: #888; margin-bottom: 12px; }
+        .tier-card .tier-desc { font-size: 12px; color: #666; margin-bottom: 12px; }
+        .tier-card .feature-list { list-style: none; text-align: left; }
+        .tier-card .feature-list li { font-size: 12px; padding: 4px 0; padding-left: 18px; position: relative; }
+        .tier-card .feature-list li:before { content: "✓"; color: #22c55e; position: absolute; left: 0; font-weight: 700; }
+        .guarantee-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .guarantee-card { text-align: center; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .guarantee-card .guarantee-period { font-size: 28px; font-weight: 700; color: #d97706; }
+        .guarantee-card .guarantee-type { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .guarantee-card p { font-size: 12px; color: #666; margin-top: 6px; }
+        .valid-until { background: #fef3c7; padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; margin-bottom: 20px; }
+        .cta-section { background: #1e3a5f; color: #fff; padding: 25px; border-radius: 12px; text-align: center; }
+        .cta-section h3 { color: #d97706; margin-bottom: 8px; }
+        .cta-section p { font-size: 14px; opacity: 0.9; }
+        .cta-section .phone { font-size: 20px; font-weight: 700; color: #d97706; margin-top: 10px; }
+        .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb; margin-top: 30px; color: #888; font-size: 11px; }
+        @media print {
+          body { padding: 0; }
+          .print-page { padding: 20px; }
+          .tiers-grid, .method-steps, .guarantee-grid { page-break-inside: avoid; }
+        }
+      </style>
+    </head><body>${printContent}</body></html>`);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
   };
 
   if (!proposal) {
@@ -96,7 +106,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground">
-            <p>This will generate a 3-tier proposal (Good / Better / Best).</p>
+            <p>This will generate a professional 3-tier proposal (Good / Better / Best).</p>
             <p className="mt-2 font-medium">Requirements:</p>
             <ul className="list-disc ml-5 mt-1">
               <li>Job costs must be calculated</li>
@@ -114,18 +124,13 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           <div className="flex gap-2">
             <Button onClick={handleGenerate} disabled={isLoading}>
               {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
               ) : (
                 'Generate Proposal'
               )}
             </Button>
             {onClose && (
-              <Button variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
+              <Button variant="outline" onClick={onClose}>Cancel</Button>
             )}
           </div>
         </CardContent>
@@ -133,15 +138,16 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     );
   }
 
+  const sqftPerDay = 350;
+  const durationDays = Math.max(1, Math.ceil((proposal.square_footage || 500) / sqftPerDay));
+
   return (
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setProposal(null)}>
-            Back
-          </Button>
+          <Button variant="outline" onClick={() => setProposal(null)}>Back</Button>
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print / Save PDF
@@ -149,7 +155,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </div>
       </div>
 
-      {/* Margin Summary */}
+      {/* Margin Summary (internal only, not printed) */}
       <Card className="bg-muted/50">
         <CardContent className="py-3">
           <div className="flex items-center justify-between text-sm">
@@ -166,81 +172,153 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </CardContent>
       </Card>
 
-      {/* Printable Content */}
-      <div ref={printRef} className="bg-white p-6 rounded-lg border">
-        <div className="proposal-header text-center mb-8 pb-4 border-b-2">
-          <h1 className="text-2xl font-bold mb-2">AXO Floors</h1>
-          <p className="text-muted-foreground">Professional Flooring Services</p>
-          {proposal.proposal_number && (
-            <p className="text-xs text-muted-foreground mt-1">#{proposal.proposal_number}</p>
-          )}
-        </div>
+      {/* Printable Professional Document */}
+      <div ref={printRef} className="bg-white rounded-lg border overflow-hidden">
+        <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40 }}>
+          {/* Hero */}
+          <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: '3px solid #1e3a5f', marginBottom: 30 }}>
+            <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: '#1e3a5f', marginBottom: 8 }}>AXO Floors</h1>
+            <p style={{ color: '#d97706', fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>Professional Flooring Services</p>
+            {proposal.proposal_number && (
+              <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>#{proposal.proposal_number}</p>
+            )}
+          </div>
 
-        <div className="customer-info mb-6">
-          <h2 className="text-lg font-semibold mb-2">Proposal For:</h2>
-          <p><strong>{proposal.customer_name}</strong></p>
-          <p>{proposal.address}</p>
-          <p>{proposal.customer_email} | {proposal.customer_phone}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Project: {proposal.project_type} | {proposal.square_footage} sq ft
-          </p>
-        </div>
+          {/* Customer Info */}
+          <div style={{ marginBottom: 25 }}>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Prepared For</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div><span style={{ color: '#888', fontSize: 12 }}>Client</span><br/><strong>{proposal.customer_name}</strong></div>
+              <div><span style={{ color: '#888', fontSize: 12 }}>Address</span><br/>{proposal.address}</div>
+              <div><span style={{ color: '#888', fontSize: 12 }}>Contact</span><br/>{proposal.customer_email} | {proposal.customer_phone}</div>
+              <div><span style={{ color: '#888', fontSize: 12 }}>Project</span><br/>{proposal.project_type} — {proposal.square_footage} sqft</div>
+            </div>
+          </div>
 
-        <div className="valid-until bg-amber-50 p-3 rounded text-center mb-6">
-          <p className="text-sm">
+          {/* Site Assessment */}
+          <div style={{ marginBottom: 25 }}>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Site Assessment</h2>
+            <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
+              Based on our evaluation of your {proposal.square_footage} sqft {proposal.project_type} project, 
+              we've prepared three tailored options. Each tier uses professional-grade materials and our proven 
+              AXO Transformation Method to ensure lasting results.
+            </p>
+          </div>
+
+          {/* AXO Transformation Method */}
+          <div style={{ marginBottom: 25 }}>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>The AXO Transformation Method</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+              {[
+                { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
+                { num: 2, title: 'Preparation', desc: 'Dustless sanding & surface prep' },
+                { num: 3, title: 'Execution', desc: 'Staining & finish application' },
+                { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
+              ].map(step => (
+                <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: '1px solid #e5e7eb', borderRadius: 8 }}>
+                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: '#1e3a5f', color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
+                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: '#1e3a5f', marginBottom: 4 }}>{step.title}</h4>
+                  <p style={{ fontSize: 11, color: '#666' }}>{step.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Valid Until */}
+          <div style={{ background: '#fef3c7', padding: 12, borderRadius: 8, textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
             Valid until: <strong>{format(new Date(proposal.valid_until), 'MMMM d, yyyy')}</strong>
-          </p>
-        </div>
+          </div>
 
-        <div className="tiers-container grid grid-cols-3 gap-4 mb-8">
-          {proposal.tiers.map((tier, index) => (
-            <TierCard 
-              key={tier.id} 
-              tier={tier} 
-              isRecommended={index === 1}
-              formatCurrency={formatCurrency}
-            />
-          ))}
-        </div>
+          {/* Tier Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
+            {proposal.tiers.map((tier, index) => (
+              <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} />
+            ))}
+          </div>
 
-        <div className="footer text-center pt-4 border-t text-muted-foreground text-sm">
-          <p>Thank you for considering AXO Floors</p>
-          <p>Questions? Contact us at (555) 123-4567</p>
-          <p className="mt-2 text-xs">
-            Generated: {format(new Date(proposal.created_at), 'MMM d, yyyy h:mm a')}
-          </p>
+          {/* Timeline */}
+          <div style={{ marginBottom: 25 }}>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Estimated Timeline</h2>
+            <p style={{ fontSize: 14, color: '#444' }}>
+              Based on {proposal.square_footage} sqft, we estimate <strong>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
+              Our crew works 8AM–5PM with full area protection.
+            </p>
+          </div>
+
+          {/* Woody's Guarantee */}
+          <div style={{ marginBottom: 25 }}>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Woody's Guarantee</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {[
+                { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
+                { period: '10', unit: 'Years', type: 'Structural', desc: 'Peeling, bubbling, or delamination covered.' },
+                { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
+              ].map(g => (
+                <div key={g.type} style={{ textAlign: 'center', padding: 15, border: '1px solid #e5e7eb', borderRadius: 8 }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{g.period}</div>
+                  <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
+                  <p style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{g.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div style={{ background: '#1e3a5f', color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
+            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#d97706', marginBottom: 8, fontSize: 18 }}>Ready to Transform Your Floors?</h3>
+            <p style={{ fontSize: 14, opacity: 0.9 }}>Contact Eduardo to discuss your project and choose the best option for your home.</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: '#d97706', marginTop: 10 }}>(862) 216-4658</p>
+          </div>
+
+          {/* Footer */}
+          <div style={{ textAlign: 'center', paddingTop: 20, borderTop: '1px solid #e5e7eb', color: '#888', fontSize: 11 }}>
+            <p>AXO Floors — Professional Flooring Services</p>
+            <p>www.axofloors.com | info@axofloors.com</p>
+            <p style={{ marginTop: 4 }}>Generated: {format(new Date(proposal.created_at), 'MMM d, yyyy h:mm a')}</p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function TierCard({ 
-  tier, 
-  isRecommended,
-  formatCurrency 
-}: { 
-  tier: ProposalTier; 
+function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
+  tier: ProposalTier;
   isRecommended: boolean;
-  formatCurrency: (value: number) => string;
+  formatCurrency: (v: number) => string;
+  sqft: number;
 }) {
+  const pricePerSqft = sqft > 0 ? (tier.price / sqft).toFixed(2) : '0';
   return (
-    <div className={`tier-card border-2 rounded-lg p-4 ${isRecommended ? 'border-primary bg-primary/5' : 'border-border'}`}>
-      {isRecommended && (
-        <Badge className="mb-2" variant="default">Recommended</Badge>
-      )}
-      <h3 className="tier-name text-xl font-bold">{tier.name}</h3>
-      <p className="tier-price text-3xl font-bold text-primary my-2">
-        {formatCurrency(tier.price)}
-      </p>
-      <p className="tier-desc text-sm text-muted-foreground mb-4">
-        {tier.short_description}
-      </p>
-      <ul className="tier-features space-y-2">
-        {tier.features.map((feature, idx) => (
-          <li key={idx} className="flex items-start gap-2 text-sm">
-            <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-            <span>{feature}</span>
+    <div style={{
+      border: `2px solid ${isRecommended ? '#d97706' : '#e5e7eb'}`,
+      borderRadius: 12,
+      padding: 20,
+      textAlign: 'center',
+      background: isRecommended ? '#fffbeb' : '#fff',
+    }}>
+      <div style={{
+        display: 'inline-block',
+        background: isRecommended ? '#d97706' : '#1e3a5f',
+        color: '#fff',
+        fontSize: 9,
+        padding: '3px 8px',
+        borderRadius: 10,
+        textTransform: 'uppercase' as const,
+        letterSpacing: 1,
+        marginBottom: 8,
+      }}>
+        {isRecommended ? 'Recommended' : tier.name}
+      </div>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: '#1e3a5f' }}>{tier.name}</h3>
+      <p style={{ fontSize: 32, fontWeight: 700, color: '#d97706', margin: '10px 0' }}>{formatCurrency(tier.price)}</p>
+      <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>${pricePerSqft}/sqft</p>
+      <p style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>{tier.short_description}</p>
+      <ul style={{ listStyle: 'none', textAlign: 'left', padding: 0 }}>
+        {tier.features.map((f, i) => (
+          <li key={i} style={{ fontSize: 12, padding: '4px 0', paddingLeft: 18, position: 'relative' as const }}>
+            <span style={{ position: 'absolute' as const, left: 0, color: '#22c55e', fontWeight: 700 }}>✓</span>
+            {f}
           </li>
         ))}
       </ul>
