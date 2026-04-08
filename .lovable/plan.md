@@ -1,74 +1,54 @@
 
 
-# Análise: AXO-ESTIMATE.html e AXO-PROPOSAL.html vs. Sistema Atual
+# Criar Página "Review Request" — Pedir Avaliação Pós-Projeto
 
-## O que o Claude Code criou (2 HTMLs — você disse 3, mas recebi 2)
+## O que é
+O HTML é uma página enviada ao cliente **após conclusão do projeto** para solicitar reviews no Google/Houzz/Facebook. Inclui:
+- Hero com nota pessoal do Eduardo
+- Cards de plataforma (Google preferido, Houzz, Facebook) com links diretos
+- Tutorial step-by-step de como deixar review no Google
+- **Draft Generator** — seleciona serviço + destaque + nome/cidade e gera texto pronto para colar
+- Seção "Share Before & After" — WhatsApp/Instagram
+- Referral CTA — indicar amigos
+- Contact CTA Eduardo
 
-### 1. AXO-ESTIMATE.html — Calculadora de Orçamento
-- Layout 2 colunas: inputs à esquerda, resultado sticky à direita
-- 4 service types: Refinishing, Installation, Vinyl, Custom Quote
-- 3 tiers: Silver/Gold/Platinum com rate tables detalhados (price/sqft + cost/sqft + materials fraction)
-- Add-ons: Staircase ($95/step), Baseboards ($8/lin ft), Water Damage ($12/sqft)
-- Rate overrides: permite sobreescrever price/sqft, cost/sqft, labor rate
-- Result card: preço sugerido, breakdown (labor/materials/addons/total cost/profit), margin gauge com gate 30%, duração estimada
-- "Copy Estimate Text" — gera texto formatado para WhatsApp/SMS
-
-### 2. AXO-PROPOSAL.html — Gerador de Proposta (client-facing)
-- Painel gerador no topo: preenche dados do cliente, sqft, espécie, timeline, preços dos 3 tiers
-- Documento bonito abaixo: hero, site assessment, AXO Transformation Method (4 fases), 3 tier cards (Silver/Gold/Platinum), timeline, Woody's Guarantee, CTA Eduardo
-- Print/PDF ready
-
----
-
-## O que JÁ TEMOS no sistema AXO
+## O que já temos vs. o que é novo
 
 | Feature | Nosso sistema | HTML do Claude |
 |---|---|---|
-| **QuickQuoteSheet** | ✅ 3-step wizard (sqft → addons → tiers Good/Better/Best), salva proposal + cria customer/project | Não salva nada, é standalone |
-| **ProposalGenerator** | ✅ Gera preview + print com 3 tiers, puxa dados do projeto | Similar mas nosso é integrado ao DB |
-| **Proposals page** | ✅ Lista + Board pipeline (Draft→Sent→Viewed→Accepted→Declined), edição inline, toggle tiers/flat price | HTML não tem gestão |
-| **EstimateDetailsSheet** | ✅ Sheet com detalhes de cada proposta | HTML não tem |
-| **Margin validation** | ✅ Via useProposalValidation | HTML tem margin gauge visual |
-| **Rate tables** | ❌ Hardcoded simples no QuickQuote | ✅ HTML tem tabelas completas por serviço × tier |
-| **Breakdown visual** | ❌ Não temos | ✅ HTML tem labor/materials/addons separados |
-| **Margin gauge** | ❌ Não temos gauge visual | ✅ HTML tem barra de progresso + gate pass/warn/fail |
-| **Copy estimate text** | ❌ Não temos | ✅ HTML gera texto para WhatsApp |
-| **Rate overrides** | ❌ Não temos | ✅ HTML permite override de price e cost per sqft |
-| **Proposal document** | Básico (print window com CSS inline) | ✅ HTML tem documento profissional com seções ricas |
-| **Duration estimate** | ❌ Não temos | ✅ HTML calcula dias estimados |
-| **Vinyl/Custom types** | ❌ Só refinishing/installation/repair | ✅ HTML tem vinyl + custom quote mode |
+| ReviewsSection (público) | ✅ Exibe reviews estáticos na landing | Não exibe reviews, **pede** reviews |
+| ReferralProgram page | ✅ Página completa de referral | HTML tem CTA simples |
+| Google review link | ❌ Não temos | ✅ Link direto + tutorial |
+| Draft generator | ❌ Não temos | ✅ Gera texto baseado em serviço/destaque |
+| Copy to clipboard | ❌ Não temos | ✅ Copia draft para colar no Google |
+| Photo sharing CTA | ❌ Não temos | ✅ WhatsApp + Instagram links |
+| Post-project flow | ❌ Não temos nada pós-entrega | ✅ Página completa |
 
----
+## Plano
 
-## O que vale aproveitar (gargalos do nosso sistema)
+### 1. Criar `src/pages/ReviewRequest.tsx`
+Página pública (`/review-request`) na paleta AXO light mode com Header/Footer. Seções:
 
-### Prioridade Alta — melhorias concretas
-1. **Rate tables completas** — nosso QuickQuote usa rates simplistas. O HTML tem price/cost/materials separados por serviço × tier
-2. **Breakdown visual no resultado** — mostrar labor, materials, addons, profit separadamente
-3. **Margin gauge** — barra visual com gate pass/warn/fail no QuickQuote step 3
-4. **Copy estimate text** — botão para copiar texto formatado para WhatsApp/SMS
-5. **Duration estimate** — calcular dias estimados baseado em sqft
+1. **Hero** — badge "Project Complete", título, nota pessoal Eduardo com avatar
+2. **Platform Cards** — 3 cards (Google como "preferred", Houzz, Facebook) com links reais configuráveis
+3. **How-To Steps** — 4 passos de como deixar Google review
+4. **Draft Generator** — 2 selects (serviço, destaque) + 2 inputs (nome, cidade), gera texto em tempo real, botão "Copy Draft" + "Open Google Review"
+5. **Share Photos** — 2 cards (WhatsApp/Text + Instagram @axofloors)
+6. **Referral CTA** — card com chips de público-alvo + link para `/referral-program`
+7. **Contact Eduardo** — card com tel + SMS
 
-### Prioridade Média
-6. **Rate overrides** — permitir override manual de price/sqft e cost/sqft
-7. **Vinyl + Custom service types** — adicionar ao QuickQuote
-8. **Proposal document melhorado** — melhorar o print/PDF com as seções ricas (assessment, method, guarantee, CTA)
+### 2. Atualizar `src/App.tsx`
+- Adicionar rota `/review-request` → `ReviewRequest`
 
-### Já temos e é melhor
-- Pipeline de propostas com board Kanban
-- Integração com DB (customer, project, job_costs)
-- Edição inline de propostas
-- Toggle tiers/flat price
-- Lead → Proposal → Project flow completo
+### Detalhes Tecnicas
+- Draft generator usa state local (useState) com templates de texto por serviço/destaque
+- Copy usa `navigator.clipboard.writeText` com fallback
+- Toast de confirmacao via sonner
+- ScrollReveal pattern identico ao WowPack/BuilderPartnerships
+- Links Google/Houzz/Facebook ficam como constantes no topo (facil de trocar)
+- Mobile responsive: platform grid colapsa para 1 coluna
 
----
-
-## Plano recomendado
-
-Não vale criar páginas novas — vale **enriquecer o QuickQuoteSheet e o ProposalGenerator** com as boas ideias dos HTMLs:
-
-1. **Upgrade QuickQuoteSheet** — rate tables reais, breakdown visual, margin gauge, duration, copy text, vinyl/custom types
-2. **Upgrade ProposalGenerator print** — documento profissional com seções do HTML (assessment, method, guarantee, CTA)
-
-Quer que eu faça um plano detalhado de implementação para algum desses upgrades?
+### Arquivos
+1. `src/pages/ReviewRequest.tsx` — criar
+2. `src/App.tsx` — adicionar rota
 
