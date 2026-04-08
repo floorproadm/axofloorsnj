@@ -40,7 +40,7 @@ const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode;
 
 const BuilderPartnerships = () => {
   const heroStats = [
-    { value: "15+", label: "Years minimum per craftsman" },
+    { value: "10+", label: "Years minimum per craftsman" },
     { value: "100%", label: "Timeline adherence guaranteed" },
     { value: "Zero", label: "Dust — hospital-grade containment" },
     { value: "10yr", label: "Structural warranty — transferable" },
@@ -86,7 +86,7 @@ const BuilderPartnerships = () => {
   ];
 
   const axoProvides = [
-    "All labor — master craftsmen with 15+ years",
+    "All labor — master craftsmen with 10+ years",
     "All finish materials (stain, sealer, topcoat)",
     "Hospital-grade dust containment equipment",
     "Day-1 before photo documentation",
