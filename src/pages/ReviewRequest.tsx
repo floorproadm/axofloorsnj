@@ -317,9 +317,9 @@ export default function ReviewRequest() {
                   <div className="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-4">
                     <MessageCircle className="w-7 h-7 text-green-600" />
                   </div>
-                  <h3 className="font-heading font-bold text-lg mb-2">Send via WhatsApp / Text</h3>
+                  <h3 className="font-heading font-bold text-lg mb-2">Request via WhatsApp / Text</h3>
                   <p className="text-muted-foreground text-sm mb-4">
-                    Text your before & after photos directly to Eduardo
+                    Request your before & after photos from Eduardo
                   </p>
                   <Button asChild variant="outline" className="w-full">
                     <a href={`sms:${EDUARDO_PHONE}?body=Here%20are%20my%20before%20%26%20after%20photos!`}>
