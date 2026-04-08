@@ -3,326 +3,434 @@ import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { CheckCircle, ArrowRight, Star, Shield, Clock, Zap, Users, Target, AlertTriangle, Phone, Mail } from "lucide-react";
+import { 
+  ArrowRight, CheckCircle, Star, Shield, Clock, Zap, Users, 
+  Calendar, Camera, FileText, Calculator, Wrench, Handshake,
+  Phone, Mail, AlertTriangle, ClipboardCheck, Eye, Send
+} from "lucide-react";
 import sandingHero from "@/assets/sanding-hero-new.jpg";
-import { FileText, Calculator, Wrench, Handshake } from "lucide-react";
 import beforeAfterImage from "@/assets/before-after-comparison.png";
 import beforeAfterImage2 from "@/assets/before-after-2.png";
+import { useEffect, useRef, useState } from "react";
+
+const useScrollReveal = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { threshold: 0.1 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  
+  return { ref, isVisible };
+};
+
+const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  const { ref, isVisible } = useScrollReveal();
+  return (
+    <div ref={ref} className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${className}`}>
+      {children}
+    </div>
+  );
+};
 
 const BuilderPartnerships = () => {
-  const benefits = [
-    {
-      icon: Clock,
-      title: "On-Time Execution",
-      description: "Crews that show up, finish on time, and keep your schedule intact."
-    },
-    {
-      icon: Users,
-      title: "Scalable Workforce", 
-      description: "Multiple projects handled in parallel, no compromise in quality."
-    },
-    {
-      icon: Shield,
-      title: "Stress-Free Coordination",
-      description: "Clear communication, organized processes, professional teams."
-    },
-    {
-      icon: Target,
-      title: "Buyer-Ready Finish",
-      description: "Floors that impress your buyers and increase perceived value."
-    }
+  const heroStats = [
+    { value: "15+", label: "Years minimum per craftsman" },
+    { value: "100%", label: "Timeline adherence guaranteed" },
+    { value: "Zero", label: "Dust — hospital-grade containment" },
+    { value: "10yr", label: "Structural warranty — transferable" },
+  ];
+
+  const valueProps = [
+    { icon: Calendar, title: "Schedule Predictability", description: "Our start date is your start date. We lock in your slot and protect it. Timeline is written into every subcontract — not a verbal estimate." },
+    { icon: Shield, title: "Zero Dust Protocol", description: "Hospital-grade containment systems on every sanding job. Your other trades continue working. No cross-contamination, no cleanup delays." },
+    { icon: Camera, title: "Daily Documentation", description: "Progress photos and daily status reports every single day. Share updates with your client without making a single call." },
+    { icon: Star, title: "Transferable Warranty", description: "Our 10-year structural warranty transfers to the new homeowner at closing. A documented asset that follows the home." },
+    { icon: ClipboardCheck, title: "Licensed, Insured, Documented", description: "Full documentation for your project file — COI on request, scope confirmation in writing, punch list resolution in 48 hours." },
+    { icon: Phone, title: "One Point of Contact", description: "Eduardo manages every project directly. No account managers, no call centers. You have his cell. Answers in minutes, not days." },
+  ];
+
+  const services = [
+    { name: "Hardwood Installation", desc: "Solid & engineered — nail-down, glue-down, or floating. Includes acclimation, subfloor prep, and final inspection.", unit: "per sqft" },
+    { name: "Sanding & Refinishing", desc: "Full sanding sequence, stain application, multi-coat finish. Hospital-grade dust control included.", unit: "per sqft" },
+    { name: "Custom Staining", desc: "Color consultation, sample boards, formulated per microclimate and lifestyle spec (UV resistance, pet/child-safe).", unit: "per sqft" },
+    { name: "Floor Repairs", desc: "Board replacement, crack filling, squeaky floor remediation, water damage spot repair. Matched to existing species.", unit: "per area" },
+    { name: "Water Damage Restoration", desc: "Assessment, removal, subfloor treatment, reinstallation. Documented before/after for insurance.", unit: "per sqft" },
+    { name: "Staircase Refinishing", desc: "Treads, risers, handrails. Matched to adjacent floor species and finish. Open and closed stringer.", unit: "per step" },
+    { name: "Baseboard Installation", desc: "Supply and install. Coordinated with floor species and finish for seamless wall transition.", unit: "per linear ft" },
+    { name: "Vinyl Plank Flooring", desc: "LVP — floating or glue-down. Below-grade, wet areas, and high-traffic commercial applications.", unit: "per sqft" },
   ];
 
   const processSteps = [
-    {
-      step: "Step 1: Briefing & Scope",
-      description: "Fast understanding of project needs.",
-      icon: FileText
-    },
-    {
-      step: "Step 2: Quote in 24h",
-      description: "Clear numbers, no hidden costs.",
-      icon: Calculator
-    },
-    {
-      step: "Step 3: Execution on Schedule",
-      description: "Organized crews, clean job sites.",
-      icon: Wrench
-    },
-    {
-      step: "Step 4: Post-Project Support",
-      description: "Touch-ups and maintenance guidance.",
-      icon: Handshake
-    }
+    { step: "01", title: "Scope Submission", desc: "Send project specs — address, service type, sqft, species, finish direction, target schedule. Eduardo responds within 24h." },
+    { step: "02", title: "Site Assessment & Quote", desc: "We visit the site, evaluate subfloor and microclimate, return a firm written quote. Price is locked at this step." },
+    { step: "03", title: "Subcontract & Schedule Lock", desc: "Written agreement with start date, scope, pricing, and SLAs. Your slot is guaranteed. COI forwarded." },
+    { step: "04", title: "Pre-Job Coordination", desc: "48h before start: access confirmation, site check, materials staged. We confirm other trades' schedule." },
+    { step: "05", title: "Execution & Daily Reports", desc: "Master craftsmen on site. Before photos Day 1. Daily progress updates sent each evening." },
+    { step: "06", title: "Punch List & Closeout", desc: "Final walkthrough with GC. Punch list resolved within 48h. After photos, warranty docs, and project file delivered." },
   ];
 
-  const testimonials = [
-    {
-      text: "AXO Floors installed 7,200 sq.ft. of hardwood in just 6 days — with zero delays and zero callbacks. That builder has since partnered with us on 5 more projects.",
-      author: "Mike T., General Contractor",
-      rating: 5,
-      avatar: "👷‍♂️"
-    }
+  const slaItems = [
+    { title: "Timeline Adherence", desc: "We finish on the date we commit to. Delays within our control are resolved at our cost." },
+    { title: "Scope Confirmation Before Start", desc: "No work begins without a written, signed scope. No assumptions. Every detail confirmed." },
+    { title: "Zero-Dust Execution", desc: "Hospital-grade containment on all sanding. Site stays clean. Adjacent trades not disrupted." },
+    { title: "Change Order Protocol", desc: "Any scope change submitted in writing before execution. You approve the change and revised price." },
+    { title: "Punch List in 48 Hours", desc: "Items identified at walkthrough resolved within 48 business hours. No mobilization charge." },
+    { title: "Full Documentation at Closeout", desc: "Before/after photos, warranty certificate, spec sheet, and completion certificate within 24h." },
+    { title: "Single Accountable Contact", desc: "Eduardo manages every project. Reachable by call or text. Response within 2 business hours." },
   ];
 
-  const faqs = [
-    {
-      question: "Can AXO handle multiple projects at once?",
-      answer: "Yes. Dedicated crews, proven systems."
-    },
-    {
-      question: "Do you guarantee timelines?",
-      answer: "Yes. We commit to schedules in writing."
-    },
-    {
-      question: "What types of projects?",
-      answer: "Single homes, multi-unit, commercial spaces."
-    },
-    {
-      question: "Do you work with recurring partners?",
-      answer: "Absolutely. 80% of our work is ongoing builder partnerships."
-    },
-    {
-      question: "Do you handle site coordination with other trades?",
-      answer: "Yes. We adapt to builder schedules and coordinate seamlessly with other crews."
-    }
+  const axoProvides = [
+    "All labor — master craftsmen with 15+ years",
+    "All finish materials (stain, sealer, topcoat)",
+    "Hospital-grade dust containment equipment",
+    "Day-1 before photo documentation",
+    "Daily progress reports",
+    "Certificate of Insurance on request",
+    "Punch list resolution within 48 hours",
+    "Full warranty documentation at closeout",
+  ];
+
+  const gcProvides = [
+    "Clear, unobstructed access on start date",
+    "Site temperature 60–80°F, humidity below 55%",
+    "Subfloor cleaned, free of adhesive/staples/debris",
+    "Flooring materials (when supply-by-GC is agreed)",
+    "Coordination of other trades to avoid conflicts",
+    "Single contact with authority to approve changes",
+    "Deposit per payment schedule at contract execution",
+    "Final walkthrough attendance at closeout",
+  ];
+
+  const guaranteeStats = [
+    { value: "30d", label: "Satisfaction Guarantee" },
+    { value: "10yr", label: "Structural Warranty" },
+    { value: "5yr", label: "Premium Finish" },
+    { value: "48h", label: "Punch List Resolution" },
+    { value: "24h", label: "Quote Turnaround" },
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       
-      {/* 1. Hero Section */}
+      {/* Hero */}
       <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            src={sandingHero} 
-            alt="AXO Floors Premium Service" 
-            className="w-full h-full object-cover"
-          />
+          <img src={sandingHero} alt="AXO Floors GC Partnership" className="w-full h-full object-cover" />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
-
         <div className="relative z-10 container mx-auto px-4 py-12 sm:py-20">
           <div className="max-w-4xl mx-auto text-center text-white">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-heading mb-6 sm:mb-8 leading-tight px-2" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8), 0 0 15px rgba(255,215,0,0.4)' }}>
-              Flooring Partner for Builders Who Can't Afford Delays
+            <p className="text-sm sm:text-base font-heading tracking-[0.3em] text-gold mb-4 uppercase">General Contractor Partner Pack</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-6 leading-tight">
+              The Subcontractor That Never Lets You Down.
             </h1>
-            
-            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/95 mb-8 sm:mb-10 leading-relaxed px-2 font-medium" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
-              We help contractors and developers hit deadlines and hand over projects with premium flooring that boosts client satisfaction and resale value.
+            <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+              Premium hardwood flooring execution for GCs, builders, and developers across NJ, NY, and PA. Delivered on schedule. Documented to spec.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 sm:px-0">
-              <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
-                <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
-                  Request a Partnership Call
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+            {/* Hero Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-3xl mx-auto">
+              {heroStats.map((stat, i) => (
+                <div key={i} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <p className="text-2xl sm:text-3xl font-bold font-heading text-gold">{stat.value}</p>
+                  <p className="text-xs sm:text-sm text-white/80 mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild className="gold-gradient hover:scale-105 transition-all text-lg px-8 py-5 h-auto text-black font-semibold">
+                <Link to="/contact" className="flex items-center gap-2 text-black">
+                  Request a Partnership Call <ArrowRight className="w-5 h-5 text-black" />
                 </Link>
               </Button>
-              <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white hover:text-black text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
-                <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
-                  See Our Work
-                </Link>
+              <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white/90 text-lg px-8 py-5 h-auto font-semibold">
+                <a href="tel:7323518653" className="flex items-center gap-2 text-black">
+                  <Phone className="w-5 h-5" /> Call Eduardo Direct
+                </a>
               </Button>
             </div>
-            
-            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/95 mt-6 leading-relaxed px-2 font-normal" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
-              Trusted by builders and contractors across NJ, NY, and PA.
-            </p>
           </div>
         </div>
       </section>
 
-      {/* 2. Why Builders Choose AXO Floors */}
-      <section className="py-12 bg-background">
+      {/* Why GCs Choose AXO */}
+      <section className="py-16 sm:py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-4">
-              Why Builders Choose AXO Floors
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="bg-white border-2 border-gold/20 text-center hover:shadow-2xl hover:shadow-gold/30 transition-all duration-300 hover:-translate-y-3 hover:border-gold/50 group">
-                <CardContent className="p-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-gold to-gold/80 rounded-full mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
-                    <benefit.icon className="w-10 h-10 text-white" />
-                  </div>
-                  <h3 className="text-xl font-heading font-bold text-navy mb-4 group-hover:text-gold transition-colors duration-300">{benefit.title}</h3>
-                  <p className="text-grey text-sm leading-relaxed">{benefit.description}</p>
-                </CardContent>
-              </Card>
+          <ScrollReveal>
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4">Built for the Way You Work</h2>
+              <p className="text-lg text-grey max-w-3xl mx-auto">We understand your timeline is everything. Here's how AXO fits into your operation without adding friction.</p>
+            </div>
+          </ScrollReveal>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {valueProps.map((prop, i) => (
+              <ScrollReveal key={i}>
+                <Card className="bg-white border-2 border-gold/20 hover:shadow-xl hover:border-gold/40 transition-all h-full group">
+                  <CardContent className="p-6 sm:p-8">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-gold/10 rounded-full mb-5 group-hover:bg-gold/20 transition-colors">
+                      <prop.icon className="w-7 h-7 text-gold" />
+                    </div>
+                    <h3 className="text-lg font-heading font-bold text-navy mb-3">{prop.title}</h3>
+                    <p className="text-grey text-sm leading-relaxed">{prop.description}</p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 3. Our 4-Step Partnership Process */}
-      <section className="py-20 navy-gradient">
+      {/* Scope of Work — Services Table */}
+      <section className="py-16 sm:py-20 navy-gradient">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4 sm:mb-6 px-4">
-              How We Keep Your Projects on Track
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12">
-            {processSteps.map((step, index) => (
-              <Card key={index} className="bg-white/95 backdrop-blur-sm border-gold/20 text-center group hover:shadow-gold transition-smooth hover:-translate-y-2">
-                <CardContent className="p-6 sm:p-8">
-                  <div className="w-full h-48 sm:h-56 bg-gold/10 rounded-lg mb-4 sm:mb-6 group-hover:scale-105 transition-bounce overflow-hidden border border-gold/20 flex items-center justify-center">
-                    <step.icon className="w-16 h-16 text-gold" />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-heading font-bold text-navy mb-3 sm:mb-4">
-                    {step.step}
-                  </h3>
-                  <p className="text-grey leading-relaxed text-base sm:text-lg">
-                    {step.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center px-4">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
-              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
-                Let's Build Together
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Case Study / Proof */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-4">
-              Partnership in Action
-            </h2>
-          </div>
-
-          {/* Testimonial */}
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-white border-navy/10 hover:shadow-gold transition-smooth">
-              <CardContent className="p-8 text-center">
-                <div className="flex items-center justify-center gap-1 mb-6">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-gold text-gold" />
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4">What We Deliver</h2>
+              <p className="text-lg text-white/80">Full-service hardwood flooring execution. All services priced per unit — no ambiguity.</p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal>
+            <div className="max-w-5xl mx-auto overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-white/20">
+                    <th className="text-gold font-heading font-semibold text-sm uppercase tracking-wider py-4 pr-4">Service</th>
+                    <th className="text-gold font-heading font-semibold text-sm uppercase tracking-wider py-4 pr-4 hidden sm:table-cell">What's Included</th>
+                    <th className="text-gold font-heading font-semibold text-sm uppercase tracking-wider py-4 text-right">Unit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {services.map((svc, i) => (
+                    <tr key={i} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                      <td className="py-4 pr-4">
+                        <p className="text-white font-semibold text-sm sm:text-base">{svc.name}</p>
+                        <p className="text-white/60 text-xs mt-1 sm:hidden">{svc.desc}</p>
+                      </td>
+                      <td className="py-4 pr-4 text-white/70 text-sm hidden sm:table-cell">{svc.desc}</td>
+                      <td className="py-4 text-gold text-sm font-medium text-right whitespace-nowrap">{svc.unit}</td>
+                    </tr>
                   ))}
-                </div>
-                <p className="text-grey text-xl leading-relaxed mb-6">
-                  "{testimonials[0].text}"
-                </p>
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-12 h-12 bg-gold/20 rounded-full flex items-center justify-center text-xl">
-                    {testimonials[0].avatar}
-                  </div>
-                  <p className="text-navy font-semibold text-lg">
-                    – {testimonials[0].author}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Before & After Section */}
-      <section className="py-20 navy-gradient">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold font-heading text-white mb-4 sm:mb-6 px-4" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(255,215,0,0.3)' }}>
-              From Slab to Showcase Floors
-            </h2>
-            <p className="text-lg sm:text-xl md:text-2xl text-gold font-semibold">On time. On budget. Every time.</p>
-          </div>
-
-          {/* Before/After Gallery */}
-          <div className="max-w-6xl mx-auto mb-8 sm:mb-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-              <div className="space-y-4">
-                <img 
-                  src={beforeAfterImage} 
-                  alt="Before and After Floor Installation Transformation 1" 
-                  className="w-full h-auto rounded-lg shadow-2xl"
-                />
-              </div>
-              <div className="space-y-4">
-                <img 
-                  src={beforeAfterImage2} 
-                  alt="Before and After Floor Installation Transformation 2" 
-                  className="w-full h-auto rounded-lg shadow-2xl"
-                />
-              </div>
+                </tbody>
+              </table>
             </div>
-          </div>
-
-          <div className="text-center px-4 flex justify-center">
-            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
-              <Link to="/gallery" className="flex items-center justify-center gap-2 text-black">
-                See More Projects
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
-              </Link>
-            </Button>
-          </div>
+          </ScrollReveal>
+          <ScrollReveal className="mt-6">
+            <p className="text-white/60 text-sm text-center max-w-3xl mx-auto">
+              📐 Minimum project size: 500 sqft. We maintain max 5 active projects/month for master-craftsman-level attention.
+            </p>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* 6. FAQ Section */}
-      <section className="py-20 bg-background">
+      {/* 6-Step Process */}
+      <section className="py-16 sm:py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-4">
-              Still Wondering if AXO is the Right Partner?
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
-            {faqs.map((faq, index) => (
-              <Card key={index} className="bg-white border-navy/10">
-                <CardContent className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-heading font-semibold text-navy mb-3">
-                    {faq.question}
-                  </h3>
-                  <p className="text-grey flex items-start gap-2 text-sm sm:text-base">
-                    <span className="text-gold text-lg sm:text-xl">👉</span>
-                    {faq.answer}
-                  </p>
-                </CardContent>
-              </Card>
+          <ScrollReveal>
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4">The AXO Subcontract Process</h2>
+              <p className="text-lg text-grey">Six steps from first call to closeout. Transparent, documented, no surprises.</p>
+            </div>
+          </ScrollReveal>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {processSteps.map((step, i) => (
+              <ScrollReveal key={i}>
+                <Card className="bg-white border border-gold/20 hover:shadow-lg transition-all h-full group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-3xl font-bold font-heading text-gold/30 group-hover:text-gold transition-colors">{step.step}</span>
+                      <h3 className="text-lg font-heading font-bold text-navy">{step.title}</h3>
+                    </div>
+                    <p className="text-grey text-sm leading-relaxed">{step.desc}</p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 7. Urgency Section */}
-      <section className="py-20 bg-red-50 border-t-4 border-red-500">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy">
-              Now Accepting New Builder Partnerships for Q4
-            </h2>
+      {/* SLAs — What We Guarantee */}
+      <section className="py-16 sm:py-20 navy-gradient">
+        <div className="container mx-auto px-4">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4">What We Guarantee</h2>
+              <p className="text-lg text-white/80">Written into every subcontract we sign. Not aspirations — commitments.</p>
+            </div>
+          </ScrollReveal>
+          <div className="max-w-4xl mx-auto space-y-4">
+            {slaItems.map((item, i) => (
+              <ScrollReveal key={i}>
+                <div className="flex items-start gap-4 bg-white/5 border border-white/10 rounded-lg p-5 hover:bg-white/10 transition-colors">
+                  <CheckCircle className="w-6 h-6 text-gold flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-white font-heading font-semibold mb-1">{item.title}</h3>
+                    <p className="text-white/70 text-sm">{item.desc}</p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
           </div>
-          
-          <p className="text-base sm:text-lg text-grey mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
-            We limit active builder partnerships each quarter to guarantee quality. Only a few new spots available this season.
-          </p>
+          {/* Guarantee Stats Strip */}
+          <ScrollReveal className="mt-12">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-4xl mx-auto">
+              {guaranteeStats.map((stat, i) => (
+                <div key={i} className="text-center bg-white/5 border border-white/10 rounded-lg p-4">
+                  <p className="text-2xl font-bold font-heading text-gold">{stat.value}</p>
+                  <p className="text-white/70 text-xs mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
 
-          <div className="px-4">
-            <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-black hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold max-w-md mx-auto">
-              <Link to="/contact" className="flex items-center justify-center gap-2 text-center">
-                <span className="block sm:hidden">Let's Build Together</span>
-                <span className="hidden sm:block">Let's Build Together</span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+      {/* Division of Responsibility */}
+      <section className="py-16 sm:py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4">What We Each Own</h2>
+              <p className="text-lg text-grey">Clear ownership prevents delays and disputes.</p>
+            </div>
+          </ScrollReveal>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <ScrollReveal>
+              <Card className="border-2 border-gold/30 h-full">
+                <CardContent className="p-6 sm:p-8">
+                  <h3 className="text-xl font-heading font-bold text-navy mb-6 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gold"></div>
+                    AXO Floors Provides
+                  </h3>
+                  <ul className="space-y-3">
+                    {axoProvides.map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm text-grey">
+                        <CheckCircle className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+            <ScrollReveal>
+              <Card className="border-2 border-navy/20 h-full">
+                <CardContent className="p-6 sm:p-8">
+                  <h3 className="text-xl font-heading font-bold text-navy mb-6 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-navy"></div>
+                    GC / Builder Provides
+                  </h3>
+                  <ul className="space-y-3">
+                    {gcProvides.map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm text-grey">
+                        <CheckCircle className="w-4 h-4 text-navy/50 flex-shrink-0 mt-0.5" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+          </div>
+          <ScrollReveal className="mt-6">
+            <p className="text-sm text-grey/70 text-center max-w-3xl mx-auto">
+              ⚠ Subfloor condition assessed at site visit. If remediation is needed (leveling, rot, moisture barrier), a change order is issued before flooring work begins.
+            </p>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Payment Structure */}
+      <section className="py-16 sm:py-20 navy-gradient">
+        <div className="container mx-auto px-4">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4">Simple, Milestone-Based Billing</h2>
+              <p className="text-lg text-white/80">Three clear invoices tied to project milestones. No surprises.</p>
+            </div>
+          </ScrollReveal>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[
+              { pct: "30%", title: "Deposit", timing: "At Contract Execution", desc: "Secures your slot on the AXO calendar, covers material staging and crew scheduling." },
+              { pct: "40%", title: "Progress", timing: "At Job Midpoint", desc: "Invoiced when 50% of contracted sqft is complete, confirmed by progress photos. Due within 48h." },
+              { pct: "30%", title: "Final", timing: "At Punch List Clearance", desc: "Issued upon GC sign-off at walkthrough. Due within 5 business days. Warranty activates upon receipt." },
+            ].map((payment, i) => (
+              <ScrollReveal key={i}>
+                <Card className="bg-white/10 border border-white/20 text-center h-full backdrop-blur-sm">
+                  <CardContent className="p-6 sm:p-8">
+                    <p className="text-4xl font-bold font-heading text-gold mb-2">{payment.pct}</p>
+                    <p className="text-white font-heading font-semibold text-lg mb-1">{payment.title}</p>
+                    <p className="text-gold/80 text-xs font-medium uppercase tracking-wider mb-4">{payment.timing}</p>
+                    <p className="text-white/70 text-sm">{payment.desc}</p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
+            ))}
+          </div>
+          <ScrollReveal className="mt-6">
+            <p className="text-white/50 text-sm text-center max-w-3xl mx-auto">
+              💳 Check, ACH, or wire transfer. Credit card with 3% processing fee. Net-30 terms available for established GC partners.
+            </p>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Before & After */}
+      <section className="py-16 sm:py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4">From Slab to Showcase</h2>
+              <p className="text-lg text-gold font-semibold">On time. On budget. Every time.</p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto mb-8">
+              <img src={beforeAfterImage} alt="Before and After Transformation 1" className="w-full h-auto rounded-lg shadow-xl" />
+              <img src={beforeAfterImage2} alt="Before and After Transformation 2" className="w-full h-auto rounded-lg shadow-xl" />
+            </div>
+          </ScrollReveal>
+          <div className="text-center">
+            <Button asChild className="gold-gradient hover:scale-105 transition-all text-lg px-8 py-5 h-auto text-black font-semibold">
+              <Link to="/gallery" className="flex items-center gap-2 text-black">
+                See More Projects <ArrowRight className="w-5 h-5 text-black" />
               </Link>
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16 sm:py-20 navy-gradient">
+        <div className="container mx-auto px-4 text-center">
+          <ScrollReveal>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-white mb-4">
+              Send Your Specs to Eduardo
+            </h2>
+            <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+              Eduardo responds within 24 hours with availability and preliminary pricing direction. No sales calls. No runaround.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild className="gold-gradient hover:scale-105 transition-all text-lg px-8 py-5 h-auto text-black font-semibold">
+                <Link to="/contact" className="flex items-center gap-2 text-black">
+                  Submit Project Scope <Send className="w-5 h-5 text-black" />
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="border-white text-white bg-transparent hover:bg-white hover:text-navy text-lg px-8 py-5 h-auto font-semibold">
+                <a href="tel:7323518653" className="flex items-center gap-2">
+                  <Phone className="w-5 h-5" /> (732) 351-8653
+                </a>
+              </Button>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
