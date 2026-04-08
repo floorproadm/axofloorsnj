@@ -167,24 +167,6 @@ export default function ReviewRequest() {
               </Card>
             </ScrollReveal>
 
-            {/* Houzz */}
-            <ScrollReveal>
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 pt-8 text-center">
-                  <div className="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-4">
-                    <Star className="w-7 h-7 text-green-600" />
-                  </div>
-                  <h3 className="font-heading font-bold text-lg mb-2">Houzz</h3>
-                  <p className="text-muted-foreground text-sm mb-4">Great for home renovation audiences</p>
-                  <Button asChild variant="outline" className="w-full">
-                    <a href={HOUZZ_URL} target="_blank" rel="noopener noreferrer">
-                      Review on Houzz <ExternalLink className="w-4 h-4 ml-1" />
-                    </a>
-                  </Button>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
             {/* Facebook */}
             <ScrollReveal>
               <Card className="hover:shadow-lg transition-shadow">
