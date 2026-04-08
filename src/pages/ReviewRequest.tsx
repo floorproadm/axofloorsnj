@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
 // ── Configurable Links ──
-const GOOGLE_REVIEW_URL = "https://g.page/r/CQkN6_example/review"; // Replace with real link
+const GOOGLE_REVIEW_URL = "https://g.page/r/CW2mOYkIlVC-EAE/review";
 const HOUZZ_URL = "https://www.houzz.com/pro/axofloors";
 const FACEBOOK_URL = "https://www.facebook.com/axofloors/reviews";
 const INSTAGRAM_HANDLE = "@axofloors";
