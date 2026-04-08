@@ -88,7 +88,7 @@ const BuilderPartnerships = () => {
   const axoProvides = [
     "All labor — master craftsmen with 10+ years",
     "All finish materials (stain, sealer, topcoat)",
-    "Hospital-grade dust containment equipment",
+    "Dustless sanding workspace",
     "Day-1 before photo documentation",
     "Daily progress reports",
     "Certificate of Insurance on request",
