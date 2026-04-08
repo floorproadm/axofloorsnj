@@ -323,7 +323,7 @@ export default function ReviewRequest() {
                   </p>
                   <Button asChild variant="outline" className="w-full">
                     <a href={`sms:${EDUARDO_PHONE}?body=Hi%20Eduardo!%20Here%20are%20my%20before%20%26%20after%20photos!`}>
-                      <Camera className="w-4 h-4 mr-2" /> Send Photos
+                      <Camera className="w-4 h-4 mr-2" /> Request Photos
                     </a>
                   </Button>
                 </CardContent>
