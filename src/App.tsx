@@ -59,6 +59,7 @@ import Campaign from "./pages/Campaign";
 
 import FloorDiagnostic from "./pages/FloorDiagnostic";
 import AxoMasterSystem from "./pages/AxoMasterSystem";
+import WowPack from "./pages/WowPack";
 import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
 
