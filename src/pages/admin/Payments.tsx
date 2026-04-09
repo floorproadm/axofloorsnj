@@ -17,6 +17,7 @@ import {
   Package,
   MoreHorizontal,
   Download,
+  Eye,
 } from "lucide-react";
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
 import { usePayments, type Payment } from "@/hooks/usePayments";
