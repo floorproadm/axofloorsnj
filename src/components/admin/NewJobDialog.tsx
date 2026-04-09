@@ -110,7 +110,7 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
       const { data, error } = await supabase
         .from("projects")
         .insert({
-          customer_name: values.customer_name || "TBD (via parceiro)",
+          customer_name: values.customer_name || "",
           customer_email: "",
           customer_phone: values.customer_phone || "",
           project_type: values.project_types.join(", "),

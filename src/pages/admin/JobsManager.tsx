@@ -500,7 +500,7 @@ export default function JobsManager() {
                 disabled={jobPage === 0}
                 onClick={() => setJobPage(p => Math.max(0, p - 1))}
               >
-                Anterior
+                Previous
               </Button>
               <span className="text-xs text-muted-foreground">
                 {jobPage + 1} / {totalPages}
@@ -511,7 +511,7 @@ export default function JobsManager() {
                 disabled={jobPage >= totalPages - 1}
                 onClick={() => setJobPage(p => p + 1)}
               >
-                Próximo
+                Next
               </Button>
             </div>
           </div>
