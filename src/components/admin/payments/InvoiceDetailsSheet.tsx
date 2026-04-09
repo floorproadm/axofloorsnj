@@ -399,12 +399,17 @@ export function InvoiceDetailsSheet({ invoice, open, onOpenChange }: Props) {
                   <p className="font-semibold mt-0.5 capitalize">{invoice.payment_method.replace("_", " ")}</p>
                 </div>
               )}
-              {(invoice as any).viewed_at && (
+              {invoice.viewed_at && (
                 <div className="col-span-2">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Client Viewed</p>
-                  <p className="font-semibold mt-0.5 text-xs flex items-center gap-1 text-primary">
+                  <p className={cn(
+                    "font-semibold mt-0.5 text-xs flex items-center gap-1",
+                    (Date.now() - new Date(invoice.viewed_at).getTime()) < 5 * 60 * 1000
+                      ? "text-green-600 animate-pulse"
+                      : "text-primary"
+                  )}>
                     <Eye className="w-3 h-3" />
-                    {format(new Date((invoice as any).viewed_at), "MMM dd, yyyy 'at' h:mm a")}
+                    {format(new Date(invoice.viewed_at), "MMM dd, yyyy 'at' h:mm a")}
                   </p>
                 </div>
               )}

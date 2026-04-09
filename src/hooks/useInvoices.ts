@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AXO_ORG_ID } from "@/lib/constants";
+import { toast as sonnerToast } from "sonner";
 
 export interface Invoice {
   id: string;
@@ -20,6 +22,8 @@ export interface Invoice {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  share_token: string | null;
+  viewed_at: string | null;
   projects?: { customer_name: string; project_type: string; address: string | null };
   customers?: { full_name: string; email: string | null; phone: string | null } | null;
 }
@@ -61,6 +65,34 @@ export interface CreateInvoiceInput {
 }
 
 export function useInvoices() {
+  const qc = useQueryClient();
+
+  // Realtime subscription for instant viewed_at updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("invoices-realtime")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "invoices" },
+        (payload) => {
+          const newRow = payload.new as any;
+          const oldRow = payload.old as any;
+          // If viewed_at just changed from null to a value, show toast
+          if (newRow.viewed_at && !oldRow.viewed_at) {
+            sonnerToast.info(`📩 Client viewed ${newRow.invoice_number}`, {
+              description: "Just now",
+            });
+          }
+          qc.invalidateQueries({ queryKey: ["invoices"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
   return useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
