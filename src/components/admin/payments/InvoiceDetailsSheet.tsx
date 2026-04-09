@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   CheckCircle, Send, XCircle, Trash2, Edit3, Plus,
-  Printer, Share2, Mail, Link2, Copy, Check, Loader2, X, Calendar
+  Printer, Share2, Mail, Link2, Copy, Check, Loader2, X, Calendar, Eye
 } from "lucide-react";
 import { Invoice, InvoiceItem, InvoicePaymentPhase, useInvoiceItems, useInvoicePaymentSchedule, useUpdateInvoiceStatus, useDeleteInvoice } from "@/hooks/useInvoices";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,8 +135,28 @@ function EditItemsPanel({ invoice, items, onDone }: { invoice: Invoice; items: I
 // ── Public Link Modal ────────────────────────────────────────────────────────
 function PublicLinkModal({ invoice, open, onClose }: { invoice: Invoice; open: boolean; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const shareToken = btoa(`inv-${invoice.id}`).replace(/=/g, "").slice(0, 16);
-  const publicUrl = `${window.location.origin}/invoice/${shareToken}`;
+  const [shareToken, setShareToken] = useState<string | null>((invoice as any).share_token || null);
+  const [generating, setGenerating] = useState(false);
+  const qc = useQueryClient();
+
+  // Generate share token on open if not yet set
+  useEffect(() => {
+    if (!open || shareToken) return;
+    (async () => {
+      setGenerating(true);
+      const token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+      const { error } = await supabase.from("invoices").update({ share_token: token } as any).eq("id", invoice.id);
+      if (!error) {
+        setShareToken(token);
+        qc.invalidateQueries({ queryKey: ["invoices"] });
+      } else {
+        toast.error("Failed to generate link");
+      }
+      setGenerating(false);
+    })();
+  }, [open]);
+
+  const publicUrl = shareToken ? `${window.location.origin}/invoice/${shareToken}` : "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl);
@@ -165,19 +185,28 @@ function PublicLinkModal({ invoice, open, onClose }: { invoice: Invoice; open: b
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
-          <div className="p-3 rounded-xl bg-muted/50 border border-border/50">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Public Link</p>
-            <p className="text-xs text-foreground font-mono break-all">{publicUrl}</p>
-          </div>
-          <Button variant="outline" className="w-full gap-2" onClick={handleCopy}>
-            {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
-            {copied ? "Copied!" : "Copy Link"}
-          </Button>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" className="gap-2 text-sm" onClick={handleWhatsApp}>💬 WhatsApp</Button>
-            <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail}><Mail className="w-4 h-4" /> Email</Button>
-          </div>
-          <p className="text-[11px] text-muted-foreground text-center">Anyone with this link can view the invoice</p>
+          {generating ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">Generating link...</span>
+            </div>
+          ) : (
+            <>
+              <div className="p-3 rounded-xl bg-muted/50 border border-border/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Public Link</p>
+                <p className="text-xs text-foreground font-mono break-all">{publicUrl}</p>
+              </div>
+              <Button variant="outline" className="w-full gap-2" onClick={handleCopy}>
+                {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
+                {copied ? "Copied!" : "Copy Link"}
+              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" className="gap-2 text-sm" onClick={handleWhatsApp}>💬 WhatsApp</Button>
+                <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail}><Mail className="w-4 h-4" /> Email</Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground text-center">Anyone with this link can view the invoice</p>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
@@ -368,6 +397,15 @@ export function InvoiceDetailsSheet({ invoice, open, onOpenChange }: Props) {
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Method</p>
                   <p className="font-semibold mt-0.5 capitalize">{invoice.payment_method.replace("_", " ")}</p>
+                </div>
+              )}
+              {(invoice as any).viewed_at && (
+                <div className="col-span-2">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Client Viewed</p>
+                  <p className="font-semibold mt-0.5 text-xs flex items-center gap-1 text-primary">
+                    <Eye className="w-3 h-3" />
+                    {format(new Date((invoice as any).viewed_at), "MMM dd, yyyy 'at' h:mm a")}
+                  </p>
                 </div>
               )}
             </div>
