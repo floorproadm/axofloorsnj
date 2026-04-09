@@ -388,6 +388,8 @@ export default function Payments() {
               <div className="space-y-2">
                 {filteredInvoices.map((inv) => {
                   const sc = invoiceStatusConfig[inv.status] || invoiceStatusConfig.draft;
+                  const isViewed = !!inv.viewed_at;
+                  const viewedRecently = isViewed && (Date.now() - new Date(inv.viewed_at!).getTime()) < 5 * 60 * 1000;
                   return (
                     <Card
                       key={inv.id}
@@ -395,13 +397,24 @@ export default function Payments() {
                       onClick={() => setSelectedInvoice(inv)}
                     >
                       <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-foreground">{inv.invoice_number}</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-foreground">{inv.invoice_number}</p>
+                            {isViewed && (
+                              <span className={cn(
+                                "inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+                                viewedRecently && "animate-pulse"
+                              )}>
+                                <Eye className="w-3 h-3" />
+                                Viewed
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">
                             {inv.projects?.customer_name || "—"} · {inv.projects?.project_type || ""}
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 text-right">
+                        <div className="flex items-center gap-4 text-right shrink-0">
                           <div>
                             <p className="font-bold text-foreground">{fmt(Number(inv.total_amount || 0))}</p>
                             <p className="text-xs text-muted-foreground">
