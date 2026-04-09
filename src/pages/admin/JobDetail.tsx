@@ -27,6 +27,7 @@ import {
   Trash2, ImagePlus, MessageSquare, StickyNote
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
+import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pending', color: 'bg-amber-100 text-amber-800 border-amber-300' },
