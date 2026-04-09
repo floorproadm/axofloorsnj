@@ -54,6 +54,10 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
 
+  // Status
+  const [invoiceStatus, setInvoiceStatus] = useState("draft");
+  const [paidMethod, setPaidMethod] = useState("");
+
   // Payment schedule
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [phases, setPhases] = useState<PaymentPhase[]>(DEFAULT_PHASES);
@@ -106,6 +110,8 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
         invoice_number: generateInvoiceNumber(),
         due_date: dueDate,
         notes,
+        status: invoiceStatus,
+        payment_method: invoiceStatus === "paid" ? paidMethod : undefined,
         tax_percent: taxEnabled ? taxPercent : 0,
         discount_amount: discountAmount,
         deposit_amount: depositAmount,
@@ -129,6 +135,8 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
           setScheduleEnabled(false);
           setPhases(DEFAULT_PHASES);
           setShowFinancials(false);
+          setInvoiceStatus("draft");
+          setPaidMethod("");
         },
       }
     );
@@ -165,7 +173,35 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
             <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
 
-          {/* Line Items */}
+          {/* Status */}
+          <div>
+            <Label>Status</Label>
+            <Select value={invoiceStatus} onValueChange={setInvoiceStatus}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {invoiceStatus === "paid" && (
+            <div>
+              <Label>Payment Method</Label>
+              <Select value={paidMethod} onValueChange={setPaidMethod}>
+                <SelectTrigger><SelectValue placeholder="Select method..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="check">Check</SelectItem>
+                  <SelectItem value="zelle">Zelle</SelectItem>
+                  <SelectItem value="credit_card">Credit Card</SelectItem>
+                  <SelectItem value="bank_transfer">Bank Transfer (ACH/Wire)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label>Line Items</Label>
