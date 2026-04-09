@@ -12,6 +12,7 @@ export interface Invoice {
   amount: number;
   tax_amount: number;
   discount_amount: number;
+  deposit_amount: number;
   total_amount: number;
   due_date: string;
   paid_at: string | null;
@@ -27,9 +28,20 @@ export interface InvoiceItem {
   id: string;
   invoice_id: string;
   description: string;
+  detail: string | null;
   quantity: number;
   unit_price: number;
   amount: number;
+  created_at: string;
+}
+
+export interface InvoicePaymentPhase {
+  id: string;
+  invoice_id: string;
+  phase_label: string;
+  percentage: number;
+  timing: string;
+  phase_order: number;
   created_at: string;
 }
 
@@ -39,7 +51,11 @@ export interface CreateInvoiceInput {
   invoice_number: string;
   due_date: string;
   notes?: string;
-  items: { description: string; quantity: number; unit_price: number }[];
+  tax_percent?: number;
+  discount_amount?: number;
+  deposit_amount?: number;
+  items: { description: string; detail?: string; quantity: number; unit_price: number }[];
+  payment_phases?: { phase_label: string; percentage: number; timing: string }[];
 }
 
 export function useInvoices() {
@@ -73,13 +89,33 @@ export function useInvoiceItems(invoiceId: string | null) {
   });
 }
 
+export function useInvoicePaymentSchedule(invoiceId: string | null) {
+  return useQuery({
+    queryKey: ["invoice_payment_schedule", invoiceId],
+    queryFn: async () => {
+      if (!invoiceId) return [];
+      const { data, error } = await supabase
+        .from("invoice_payment_schedule")
+        .select("*")
+        .eq("invoice_id", invoiceId)
+        .order("phase_order");
+      if (error) throw error;
+      return data as unknown as InvoicePaymentPhase[];
+    },
+    enabled: !!invoiceId,
+  });
+}
+
 export function useCreateInvoice() {
   const qc = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (input: CreateInvoiceInput) => {
-      const totalAmount = input.items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+      const subtotal = input.items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+      const taxAmount = input.tax_percent ? Math.round(subtotal * input.tax_percent) / 100 : 0;
+      const discountAmount = input.discount_amount || 0;
+      const depositAmount = input.deposit_amount || 0;
 
       const { data: invoice, error } = await supabase
         .from("invoices")
@@ -89,7 +125,10 @@ export function useCreateInvoice() {
           invoice_number: input.invoice_number,
           due_date: input.due_date,
           notes: input.notes || null,
-          amount: totalAmount,
+          amount: subtotal,
+          tax_amount: taxAmount,
+          discount_amount: discountAmount,
+          deposit_amount: depositAmount,
           organization_id: AXO_ORG_ID,
         })
         .select()
@@ -102,20 +141,34 @@ export function useCreateInvoice() {
           .insert(input.items.map((item) => ({
             invoice_id: (invoice as any).id,
             description: item.description,
+            detail: item.detail || null,
             quantity: item.quantity,
             unit_price: item.unit_price,
           })));
         if (itemsError) throw itemsError;
       }
 
+      if (input.payment_phases && input.payment_phases.length > 0) {
+        const { error: phaseErr } = await supabase
+          .from("invoice_payment_schedule")
+          .insert(input.payment_phases.map((p, idx) => ({
+            invoice_id: (invoice as any).id,
+            phase_label: p.phase_label,
+            percentage: p.percentage,
+            timing: p.timing,
+            phase_order: idx,
+          })));
+        if (phaseErr) throw phaseErr;
+      }
+
       return invoice;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
-      toast({ title: "Fatura criada", description: "Nova fatura adicionada com sucesso." });
+      toast({ title: "Invoice created", description: "New invoice added successfully." });
     },
     onError: (err: any) => {
-      toast({ title: "Erro", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
 }
@@ -136,10 +189,10 @@ export function useUpdateInvoiceStatus() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
-      toast({ title: "Status atualizado" });
+      toast({ title: "Status updated" });
     },
     onError: (err: any) => {
-      toast({ title: "Erro", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
 }
@@ -155,10 +208,10 @@ export function useDeleteInvoice() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
-      toast({ title: "Fatura removida" });
+      toast({ title: "Invoice removed" });
     },
     onError: (err: any) => {
-      toast({ title: "Erro", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
 }
