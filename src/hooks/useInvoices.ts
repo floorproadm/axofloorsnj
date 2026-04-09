@@ -51,6 +51,8 @@ export interface CreateInvoiceInput {
   invoice_number: string;
   due_date: string;
   notes?: string;
+  status?: string;
+  payment_method?: string;
   tax_percent?: number;
   discount_amount?: number;
   deposit_amount?: number;
@@ -117,9 +119,7 @@ export function useCreateInvoice() {
       const discountAmount = input.discount_amount || 0;
       const depositAmount = input.deposit_amount || 0;
 
-      const { data: invoice, error } = await supabase
-        .from("invoices")
-        .insert({
+      const insertData: any = {
           project_id: input.project_id,
           customer_id: input.customer_id || null,
           invoice_number: input.invoice_number,
@@ -130,7 +130,16 @@ export function useCreateInvoice() {
           discount_amount: discountAmount,
           deposit_amount: depositAmount,
           organization_id: AXO_ORG_ID,
-        })
+        };
+      if (input.status) insertData.status = input.status;
+      if (input.status === "paid") {
+        insertData.paid_at = new Date().toISOString();
+        if (input.payment_method) insertData.payment_method = input.payment_method;
+      }
+
+      const { data: invoice, error } = await supabase
+        .from("invoices")
+        .insert(insertData)
         .select()
         .single();
       if (error) throw error;
