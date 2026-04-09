@@ -305,26 +305,25 @@ export default function JobDetail() {
                     icon={<Mail className="w-4 h-4" />}
                     placeholder="Email address"
                   />
-                  <EditableField
-                    label="Address"
-                    value={project.address || ''}
-                    onSave={(v) => updateField('address', v)}
-                    icon={<MapPin className="w-4 h-4" />}
-                    placeholder="Street address"
-                  />
-                  <EditableField
-                    label="City"
-                    value={project.city || ''}
-                    onSave={(v) => updateField('city', v)}
-                    icon={<MapPin className="w-4 h-4" />}
-                    placeholder="City"
-                  />
-                  <EditableField
-                    label="Zip Code"
-                    value={project.zip_code || ''}
-                    onSave={(v) => updateField('zip_code', v)}
-                    placeholder="ZIP"
-                  />
+                   <div className="space-y-1">
+                     <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Address</label>
+                     <AddressAutocomplete
+                       value={project.address || ''}
+                       onChange={(v) => updateField('address', v)}
+                       onSelect={async (result) => {
+                         try {
+                           await supabase.from('projects').update({
+                             address: result.full,
+                             city: result.city,
+                             zip_code: result.zip,
+                           }).eq('id', project.id);
+                           queryClient.invalidateQueries({ queryKey: ['project', id] });
+                           toast.success('Address updated');
+                         } catch { toast.error('Failed to save address'); }
+                       }}
+                       placeholder="Start typing an address…"
+                     />
+                   </div>
                 </div>
                 {mapsUrl && (
                   <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
