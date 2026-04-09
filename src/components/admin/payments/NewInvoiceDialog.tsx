@@ -340,11 +340,11 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
           <div className="bg-muted/30 rounded-lg p-3 space-y-1 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{fmt(subtotal)}</span></div>
             {taxEnabled && <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxPercent}%)</span><span>{fmt(taxAmount)}</span></div>}
-            {discountAmount > 0 && <div className="flex justify-between text-amber-600"><span>Discount</span><span>-{fmt(discountAmount)}</span></div>}
+            {discountAmount > 0 && <div className="flex justify-between text-accent-foreground"><span>Discount</span><span>-{fmt(discountAmount)}</span></div>}
             <div className="flex justify-between font-bold border-t border-border/50 pt-1"><span>Total</span><span>{fmt(total)}</span></div>
             {depositAmount > 0 && (
               <>
-                <div className="flex justify-between text-emerald-600"><span>Deposit Paid</span><span>-{fmt(depositAmount)}</span></div>
+                <div className="flex justify-between text-primary"><span>Deposit Paid</span><span>-{fmt(depositAmount)}</span></div>
                 <div className="flex justify-between font-bold text-lg"><span>Balance Due</span><span>{fmt(balanceDue)}</span></div>
               </>
             )}
