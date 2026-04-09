@@ -54,6 +54,10 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
 
+  // Status
+  const [invoiceStatus, setInvoiceStatus] = useState("draft");
+  const [paidMethod, setPaidMethod] = useState("");
+
   // Payment schedule
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [phases, setPhases] = useState<PaymentPhase[]>(DEFAULT_PHASES);
