@@ -72,7 +72,7 @@ interface ProjectWithRelations {
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: string; border: string; icon: React.ReactNode; headerBg: string }> = {
   pending: {
-    label: "Pendente",
+    label: "Pending",
     bg: "bg-amber-50",
     text: "text-amber-700",
     border: "border-amber-300",
@@ -80,7 +80,7 @@ const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: st
     headerBg: "bg-gradient-to-r from-amber-600 to-amber-500",
   },
   in_production: {
-    label: "Em Produção",
+    label: "Active",
     bg: "bg-blue-50",
     text: "text-blue-700",
     border: "border-blue-300",
@@ -88,7 +88,7 @@ const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: st
     headerBg: "bg-gradient-to-r from-blue-700 to-blue-500",
   },
   completed: {
-    label: "Concluído",
+    label: "Done",
     bg: "bg-emerald-50",
     text: "text-emerald-700",
     border: "border-emerald-300",
@@ -171,16 +171,20 @@ function getProjectIndicator(project: ProjectWithRelations, minMargin: number) {
   return { color: "bg-emerald-500", label: "OK", severity: "ok" as const };
 }
 
-function timeAgo(dateString: string): string {
+function timeAgoShort(dateString: string): string {
   const now = new Date();
   const date = new Date(dateString);
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "hoje";
-  if (diffDays === 1) return "1 dia";
-  if (diffDays < 30) return `${diffDays} dias`;
+  if (diffDays === 0) return "today";
+  if (diffDays < 30) return `${diffDays}d`;
   const months = Math.floor(diffDays / 30);
-  return months === 1 ? "1 mês" : `${months} meses`;
+  return `${months}mo`;
+}
+
+function displayCustomerName(name: string): string {
+  if (!name || name.trim() === "" || name.includes("TBD")) return "Pending info";
+  return name;
 }
 
 export default function JobsManager() {
@@ -232,11 +236,21 @@ export default function JobsManager() {
     return filteredProjects.reduce((sum, p) => sum + (p.job_costs?.estimated_revenue || 0), 0);
   }, [filteredProjects]);
 
+  const statusCounts = useMemo(() => {
+    const all = projects || [];
+    return {
+      all: all.length,
+      pending: all.filter(p => p.project_status === "pending").length,
+      in_production: all.filter(p => p.project_status === "in_production").length,
+      completed: all.filter(p => p.project_status === "completed").length,
+    };
+  }, [projects]);
+
   const filterTabs: { key: "all" | ProjectStatus; label: string }[] = [
-    { key: "all", label: "All Jobs" },
-    { key: "in_production", label: "In Progress" },
-    { key: "pending", label: "Scheduled" },
-    { key: "completed", label: "Completed" },
+    { key: "all", label: `All (${statusCounts.all})` },
+    { key: "in_production", label: `Active (${statusCounts.in_production})` },
+    { key: "pending", label: `Pending (${statusCounts.pending})` },
+    { key: "completed", label: `Done (${statusCounts.completed})` },
   ];
 
   return (
@@ -248,6 +262,9 @@ export default function JobsManager() {
             <div className="flex items-center gap-1.5">
               <Hammer className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-semibold text-foreground">{filteredProjects.length} Deals</span>
+              <span className="text-xs text-muted-foreground ml-1">
+                {statusCounts.pending} pending · {statusCounts.in_production} active · {statusCounts.completed} done
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <DollarSign className="w-4 h-4 text-muted-foreground" />
@@ -327,8 +344,8 @@ export default function JobsManager() {
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-16">
-            <Hammer className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Nenhum job encontrado.</p>
+           <Hammer className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground font-medium">No jobs found.</p>
           </div>
         ) : viewMode === "board" ? (
           /* ═══════════ KANBAN BOARD VIEW ═══════════ */
@@ -363,7 +380,7 @@ export default function JobsManager() {
                     <div className="p-2 space-y-2">
                       {items.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground text-xs">
-                          Nenhum job
+                          No jobs
                         </div>
                       ) : (
                         items.map((project) => (
@@ -393,7 +410,8 @@ export default function JobsManager() {
             {filteredProjects.map((project) => {
               const statusConf = STATUS_CONFIG[project.project_status as ProjectStatus] || STATUS_CONFIG.pending;
               const revenue = project.job_costs?.estimated_revenue || 0;
-              const location = [project.address, project.city].filter(Boolean).join(", ");
+              const margin = project.job_costs?.margin_percent;
+              const customerDisplay = displayCustomerName(project.customer_name);
               const startDate = project.start_date
                 ? new Date(project.start_date)
                 : new Date(project.created_at);
@@ -411,10 +429,11 @@ export default function JobsManager() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <h3 className="font-bold text-sm text-foreground leading-tight truncate">
-                              {project.address || project.customer_name}
+                              {project.address || customerDisplay}
                             </h3>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {project.project_type} · {project.address ? project.customer_name : ""}
+                              {project.project_type}
+                              {project.address && customerDisplay !== "Pending info" ? ` · ${customerDisplay}` : ""}
                             </p>
                           </div>
                           <Badge
@@ -427,23 +446,37 @@ export default function JobsManager() {
                             {statusConf.label}
                           </Badge>
                         </div>
+                        {project.partner_name && (
+                          <p className="text-xs text-primary/80 flex items-center gap-1.5 font-medium">
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            {project.partner_name}
+                          </p>
+                        )}
                         {project.city && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                             {[project.city, project.zip_code].filter(Boolean).join(", ")}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                          <CalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
-                          {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </p>
                         <div className="flex items-center justify-between pt-2 border-t border-dashed border-border">
                           <span className="text-xs text-muted-foreground">
                             {project.square_footage ? `${project.square_footage.toLocaleString()} sqft` : "—"}
                           </span>
-                          <span className="text-sm font-bold text-foreground">
-                            {revenue > 0 ? formatCurrency(revenue) : "—"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {margin !== null && margin !== undefined && revenue > 0 && (
+                              <span className={cn(
+                                "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                                margin >= marginMinPercent
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-destructive/10 text-destructive"
+                              )}>
+                                {margin.toFixed(0)}%
+                              </span>
+                            )}
+                            <span className="text-sm font-bold text-foreground">
+                              {revenue > 0 ? formatCurrency(revenue) : "—"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -467,7 +500,7 @@ export default function JobsManager() {
                 disabled={jobPage === 0}
                 onClick={() => setJobPage(p => Math.max(0, p - 1))}
               >
-                Anterior
+                Previous
               </Button>
               <span className="text-xs text-muted-foreground">
                 {jobPage + 1} / {totalPages}
@@ -478,7 +511,7 @@ export default function JobsManager() {
                 disabled={jobPage >= totalPages - 1}
                 onClick={() => setJobPage(p => p + 1)}
               >
-                Próximo
+                Next
               </Button>
             </div>
           </div>
@@ -514,21 +547,19 @@ function KanbanCard({
   const indicator = getProjectIndicator(project, minMargin);
   const costs = project.job_costs;
   const revenue = costs?.estimated_revenue || 0;
-  const totalCost = costs?.total_cost || 0;
-
-  const startDate = project.start_date ? new Date(project.start_date) : null;
-  const endDate = project.completion_date ? new Date(project.completion_date) : null;
-  const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const margin = costs?.margin_percent;
+  const customerDisplay = displayCustomerName(project.customer_name);
+  const serviceTypes = project.project_type.split(",").map(s => s.trim()).filter(Boolean);
 
   return (
     <div
       onClick={onClick}
       className="bg-background rounded-lg border border-border p-3.5 space-y-2 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
     >
-      {/* Project type */}
+      {/* Title: address or customer */}
       <div className="flex items-start justify-between gap-2">
         <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2 flex-1">
-          {project.address || project.customer_name}
+          {project.address || customerDisplay}
         </h4>
         {indicator.severity !== "ok" && (
           <Badge variant="outline" className={cn(
@@ -541,34 +572,70 @@ function KanbanCard({
           </Badge>
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground font-medium">{project.project_type}</p>
+
+      {/* Service type chips */}
+      <div className="flex flex-wrap gap-1">
+        {serviceTypes.slice(0, 3).map((svc) => (
+          <span key={svc} className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-medium">
+            {svc}
+          </span>
+        ))}
+      </div>
 
       {/* Customer + Partner */}
       <div className="space-y-1">
-        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <User className="w-3 h-3 flex-shrink-0" />
-          {project.customer_name}
-          {project.partner_name && (
-            <span className="text-muted-foreground/60">(via parceiro)</span>
-          )}
-        </p>
+        {project.address && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <User className="w-3 h-3 flex-shrink-0" />
+            <span className={customerDisplay === "Pending info" ? "italic text-muted-foreground/60" : ""}>
+              {customerDisplay}
+            </span>
+          </p>
+        )}
         {project.partner_name && (
           <p className="text-xs text-primary/80 flex items-center gap-1.5 font-medium">
-            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            <Users className="w-3 h-3 flex-shrink-0" />
             {project.partner_name}
           </p>
         )}
       </div>
 
-      {/* Team lead */}
-      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-        <Users className="w-3 h-3 flex-shrink-0" />
-        {project.team_lead || "No Crew Assigned"}
-      </p>
+      {/* Team lead — only if assigned */}
+      {project.team_lead && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Hammer className="w-3 h-3 flex-shrink-0" />
+          {project.team_lead}
+        </p>
+      )}
 
-      {/* Updated ago */}
+      {/* Sqft */}
+      {project.square_footage && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Ruler className="w-3 h-3 flex-shrink-0" />
+          {project.square_footage.toLocaleString()} sqft
+        </p>
+      )}
+
+      {/* Financial bar */}
+      {revenue > 0 && (
+        <div className="flex items-center justify-between pt-1.5 border-t border-dashed border-border">
+          <span className="text-xs font-semibold text-foreground">{formatCurrency(revenue)}</span>
+          {margin !== null && margin !== undefined && (
+            <span className={cn(
+              "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+              margin >= minMargin
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-destructive/10 text-destructive"
+            )}>
+              {margin.toFixed(0)}%
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Timestamp */}
       <p className="text-[10px] text-muted-foreground/50 text-right">
-        Updated {timeAgo(project.updated_at)} ago
+        {timeAgoShort(project.updated_at)}
       </p>
     </div>
   );
@@ -773,7 +840,7 @@ export function JobControlModal({ project, isOpen, onClose, onRefresh, embedded 
           </SelectContent>
         </Select>
         <span className="text-white/50 text-xs">•</span>
-        <span className="text-white/70 text-xs">{timeAgo(project.created_at)}</span>
+        <span className="text-white/70 text-xs">{timeAgoShort(project.created_at)}</span>
         {!embedded && (
           <Button
             variant="ghost"
