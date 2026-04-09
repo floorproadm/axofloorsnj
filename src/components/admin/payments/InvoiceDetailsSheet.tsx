@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   CheckCircle, Send, XCircle, Trash2, Edit3, Plus,
-  Printer, Share2, Mail, Link2, Copy, Check, Loader2, X, Calendar
+  Printer, Share2, Mail, Link2, Copy, Check, Loader2, X, Calendar, Eye
 } from "lucide-react";
 import { Invoice, InvoiceItem, InvoicePaymentPhase, useInvoiceItems, useInvoicePaymentSchedule, useUpdateInvoiceStatus, useDeleteInvoice } from "@/hooks/useInvoices";
 import { supabase } from "@/integrations/supabase/client";
