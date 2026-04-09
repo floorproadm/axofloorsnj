@@ -110,6 +110,8 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
         invoice_number: generateInvoiceNumber(),
         due_date: dueDate,
         notes,
+        status: invoiceStatus,
+        payment_method: invoiceStatus === "paid" ? paidMethod : undefined,
         tax_percent: taxEnabled ? taxPercent : 0,
         discount_amount: discountAmount,
         deposit_amount: depositAmount,
