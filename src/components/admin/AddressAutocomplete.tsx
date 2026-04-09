@@ -3,6 +3,13 @@ import { Input } from "@/components/ui/input";
 import { MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+import { cn } from "@/lib/utils";
+
 interface AddressResult {
   full: string;
   street: string;
@@ -52,7 +59,7 @@ function loadGoogleMapsScript(): Promise<void> {
   });
 }
 
-function parsePlace(place: google.maps.places.PlaceResult): AddressResult {
+function parsePlace(place: any): AddressResult {
   const comps = place.address_components || [];
   const get = (type: string) => comps.find((c) => c.types.includes(type))?.long_name || "";
   const getShort = (type: string) => comps.find((c) => c.types.includes(type))?.short_name || "";
@@ -82,7 +89,7 @@ export function AddressAutocomplete({
   disabled,
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const autocompleteRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
 
