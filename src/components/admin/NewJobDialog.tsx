@@ -32,19 +32,19 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Users } from "lucide-react";
 
 const newJobSchema = z.object({
-  address: z.string().trim().max(300, "Máximo 300 caracteres").optional(),
-  customer_name: z.string().trim().max(200, "Máximo 200 caracteres").optional().default(""),
-  customer_phone: z.string().trim().max(30, "Máximo 30 caracteres").optional().default(""),
-  project_types: z.array(z.string()).min(1, "Selecione ao menos um serviço"),
+  address: z.string().trim().max(300, "Max 300 characters").optional(),
+  customer_name: z.string().trim().max(200, "Max 200 characters").optional().default(""),
+  customer_phone: z.string().trim().max(30, "Max 30 characters").optional().default(""),
+  project_types: z.array(z.string()).min(1, "Select at least one service"),
   referred_by_partner_id: z.string().optional(),
 }).superRefine((data, ctx) => {
   const hasPartner = data.referred_by_partner_id && data.referred_by_partner_id !== "" && data.referred_by_partner_id !== "none";
   if (!hasPartner) {
     if (!data.customer_name || data.customer_name.length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome é obrigatório sem parceiro", path: ["customer_name"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Name is required without a partner", path: ["customer_name"] });
     }
     if (!data.customer_phone || data.customer_phone.length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone é obrigatório sem parceiro", path: ["customer_phone"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Phone is required without a partner", path: ["customer_phone"] });
     }
   }
 });
@@ -138,8 +138,8 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
       }
 
       toast({
-        title: "Job criado!",
-        description: `Projeto para ${values.customer_name} criado com sucesso.`,
+        title: "Job created!",
+        description: `Project for ${values.customer_name || "new client"} created successfully.`,
       });
 
       form.reset();
@@ -147,8 +147,8 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
       navigate("/admin/jobs");
     } catch (err: any) {
       toast({
-        title: "Erro ao criar job",
-        description: err.message || "Tente novamente.",
+        title: "Error creating job",
+        description: err.message || "Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -192,10 +192,10 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Customer name {hasPartner && <span className="text-xs text-muted-foreground font-normal">(opcional via parceiro)</span>}
+                          Customer name {hasPartner && <span className="text-xs text-muted-foreground font-normal">(optional via partner)</span>}
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder={hasPartner ? "Pode adicionar depois" : "Full name"} {...field} />
+                          <Input placeholder={hasPartner ? "Can add later" : "Full name"} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -208,10 +208,10 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Customer phone {hasPartner && <span className="text-xs text-muted-foreground font-normal">(opcional via parceiro)</span>}
+                          Customer phone {hasPartner && <span className="text-xs text-muted-foreground font-normal">(optional via partner)</span>}
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder={hasPartner ? "Pode adicionar depois" : "(000) 000-0000"} {...field} />
+                          <Input placeholder={hasPartner ? "Can add later" : "(000) 000-0000"} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -226,7 +226,7 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
               name="project_types"
               render={() => (
                 <FormItem>
-                  <FormLabel>Serviços</FormLabel>
+                  <FormLabel>Services</FormLabel>
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     {PROJECT_TYPES.map((t) => (
                       <FormField
@@ -266,16 +266,16 @@ export function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
                 <FormItem>
                   <FormLabel className="flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5" />
-                    Parceiro (indicação)
+                    Partner (referral)
                   </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Nenhum parceiro" />
+                        <SelectValue placeholder="No partner" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">Nenhum parceiro</SelectItem>
+                      <SelectItem value="none">No partner</SelectItem>
                       {partners.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
                           {p.company_name} — {p.contact_name}
