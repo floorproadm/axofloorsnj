@@ -317,7 +317,7 @@ export default function JobDetail() {
                              city: result.city,
                              zip_code: result.zip,
                            }).eq('id', project.id);
-                           queryClient.invalidateQueries({ queryKey: ['project', id] });
+                           queryClient.invalidateQueries({ queryKey: ['project', jobId] });
                            toast.success('Address updated');
                          } catch { toast.error('Failed to save address'); }
                        }}
