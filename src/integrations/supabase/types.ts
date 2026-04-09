@@ -855,10 +855,12 @@ export type Database = {
           paid_at: string | null
           payment_method: string | null
           project_id: string
+          share_token: string | null
           status: string
           tax_amount: number
           total_amount: number | null
           updated_at: string
+          viewed_at: string | null
         }
         Insert: {
           amount?: number
@@ -874,10 +876,12 @@ export type Database = {
           paid_at?: string | null
           payment_method?: string | null
           project_id: string
+          share_token?: string | null
           status?: string
           tax_amount?: number
           total_amount?: number | null
           updated_at?: string
+          viewed_at?: string | null
         }
         Update: {
           amount?: number
@@ -893,10 +897,12 @@ export type Database = {
           paid_at?: string | null
           payment_method?: string | null
           project_id?: string
+          share_token?: string | null
           status?: string
           tax_amount?: number
           total_amount?: number | null
           updated_at?: string
+          viewed_at?: string | null
         }
         Relationships: [
           {
