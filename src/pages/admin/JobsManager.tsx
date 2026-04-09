@@ -407,7 +407,8 @@ export default function JobsManager() {
             {filteredProjects.map((project) => {
               const statusConf = STATUS_CONFIG[project.project_status as ProjectStatus] || STATUS_CONFIG.pending;
               const revenue = project.job_costs?.estimated_revenue || 0;
-              const location = [project.address, project.city].filter(Boolean).join(", ");
+              const margin = project.job_costs?.margin_percent;
+              const customerDisplay = displayCustomerName(project.customer_name);
               const startDate = project.start_date
                 ? new Date(project.start_date)
                 : new Date(project.created_at);
@@ -425,10 +426,11 @@ export default function JobsManager() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <h3 className="font-bold text-sm text-foreground leading-tight truncate">
-                              {project.address || project.customer_name}
+                              {project.address || customerDisplay}
                             </h3>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {project.project_type} · {project.address ? project.customer_name : ""}
+                              {project.project_type}
+                              {project.address && customerDisplay !== "Pending info" ? ` · ${customerDisplay}` : ""}
                             </p>
                           </div>
                           <Badge
@@ -441,23 +443,37 @@ export default function JobsManager() {
                             {statusConf.label}
                           </Badge>
                         </div>
+                        {project.partner_name && (
+                          <p className="text-xs text-primary/80 flex items-center gap-1.5 font-medium">
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            {project.partner_name}
+                          </p>
+                        )}
                         {project.city && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                             {[project.city, project.zip_code].filter(Boolean).join(", ")}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                          <CalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
-                          {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </p>
                         <div className="flex items-center justify-between pt-2 border-t border-dashed border-border">
                           <span className="text-xs text-muted-foreground">
                             {project.square_footage ? `${project.square_footage.toLocaleString()} sqft` : "—"}
                           </span>
-                          <span className="text-sm font-bold text-foreground">
-                            {revenue > 0 ? formatCurrency(revenue) : "—"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {margin !== null && margin !== undefined && revenue > 0 && (
+                              <span className={cn(
+                                "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                                margin >= marginMinPercent
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-destructive/10 text-destructive"
+                              )}>
+                                {margin.toFixed(0)}%
+                              </span>
+                            )}
+                            <span className="text-sm font-bold text-foreground">
+                              {revenue > 0 ? formatCurrency(revenue) : "—"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
