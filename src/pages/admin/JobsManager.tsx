@@ -528,21 +528,19 @@ function KanbanCard({
   const indicator = getProjectIndicator(project, minMargin);
   const costs = project.job_costs;
   const revenue = costs?.estimated_revenue || 0;
-  const totalCost = costs?.total_cost || 0;
-
-  const startDate = project.start_date ? new Date(project.start_date) : null;
-  const endDate = project.completion_date ? new Date(project.completion_date) : null;
-  const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const margin = costs?.margin_percent;
+  const customerDisplay = displayCustomerName(project.customer_name);
+  const serviceTypes = project.project_type.split(",").map(s => s.trim()).filter(Boolean);
 
   return (
     <div
       onClick={onClick}
       className="bg-background rounded-lg border border-border p-3.5 space-y-2 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
     >
-      {/* Project type */}
+      {/* Title: address or customer */}
       <div className="flex items-start justify-between gap-2">
         <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2 flex-1">
-          {project.address || project.customer_name}
+          {project.address || customerDisplay}
         </h4>
         {indicator.severity !== "ok" && (
           <Badge variant="outline" className={cn(
@@ -555,32 +553,68 @@ function KanbanCard({
           </Badge>
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground font-medium">{project.project_type}</p>
+
+      {/* Service type chips */}
+      <div className="flex flex-wrap gap-1">
+        {serviceTypes.slice(0, 3).map((svc) => (
+          <span key={svc} className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-medium">
+            {svc}
+          </span>
+        ))}
+      </div>
 
       {/* Customer + Partner */}
       <div className="space-y-1">
-        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <User className="w-3 h-3 flex-shrink-0" />
-          {project.customer_name}
-          {project.partner_name && (
-            <span className="text-muted-foreground/60">(via parceiro)</span>
-          )}
-        </p>
+        {project.address && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <User className="w-3 h-3 flex-shrink-0" />
+            <span className={customerDisplay === "Pending info" ? "italic text-muted-foreground/60" : ""}>
+              {customerDisplay}
+            </span>
+          </p>
+        )}
         {project.partner_name && (
           <p className="text-xs text-primary/80 flex items-center gap-1.5 font-medium">
-            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            <Users className="w-3 h-3 flex-shrink-0" />
             {project.partner_name}
           </p>
         )}
       </div>
 
-      {/* Team lead */}
-      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-        <Users className="w-3 h-3 flex-shrink-0" />
-        {project.team_lead || "No Crew Assigned"}
-      </p>
+      {/* Team lead — only if assigned */}
+      {project.team_lead && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Hammer className="w-3 h-3 flex-shrink-0" />
+          {project.team_lead}
+        </p>
+      )}
 
-      {/* Updated ago */}
+      {/* Sqft */}
+      {project.square_footage && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Ruler className="w-3 h-3 flex-shrink-0" />
+          {project.square_footage.toLocaleString()} sqft
+        </p>
+      )}
+
+      {/* Financial bar */}
+      {revenue > 0 && (
+        <div className="flex items-center justify-between pt-1.5 border-t border-dashed border-border">
+          <span className="text-xs font-semibold text-foreground">{formatCurrency(revenue)}</span>
+          {margin !== null && margin !== undefined && (
+            <span className={cn(
+              "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+              margin >= minMargin
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-destructive/10 text-destructive"
+            )}>
+              {margin.toFixed(0)}%
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Timestamp */}
       <p className="text-[10px] text-muted-foreground/50 text-right">
         {timeAgoShort(project.updated_at)}
       </p>
