@@ -341,8 +341,8 @@ export default function JobsManager() {
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-16">
-            <Hammer className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Nenhum job encontrado.</p>
+           <Hammer className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground font-medium">No jobs found.</p>
           </div>
         ) : viewMode === "board" ? (
           /* ═══════════ KANBAN BOARD VIEW ═══════════ */
@@ -377,7 +377,7 @@ export default function JobsManager() {
                     <div className="p-2 space-y-2">
                       {items.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground text-xs">
-                          Nenhum job
+                          No jobs
                         </div>
                       ) : (
                         items.map((project) => (
