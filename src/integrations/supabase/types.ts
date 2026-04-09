@@ -766,6 +766,7 @@ export type Database = {
           amount: number | null
           created_at: string
           description: string
+          detail: string | null
           id: string
           invoice_id: string
           quantity: number
@@ -775,6 +776,7 @@ export type Database = {
           amount?: number | null
           created_at?: string
           description: string
+          detail?: string | null
           id?: string
           invoice_id: string
           quantity?: number
@@ -784,6 +786,7 @@ export type Database = {
           amount?: number | null
           created_at?: string
           description?: string
+          detail?: string | null
           id?: string
           invoice_id?: string
           quantity?: number
@@ -799,11 +802,50 @@ export type Database = {
           },
         ]
       }
+      invoice_payment_schedule: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_id: string
+          percentage: number
+          phase_label: string
+          phase_order: number
+          timing: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_id: string
+          percentage?: number
+          phase_label?: string
+          phase_order?: number
+          timing?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          percentage?: number
+          phase_label?: string
+          phase_order?: number
+          timing?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payment_schedule_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
           created_at: string
           customer_id: string | null
+          deposit_amount: number
           discount_amount: number
           due_date: string
           id: string
@@ -822,6 +864,7 @@ export type Database = {
           amount?: number
           created_at?: string
           customer_id?: string | null
+          deposit_amount?: number
           discount_amount?: number
           due_date: string
           id?: string
@@ -840,6 +883,7 @@ export type Database = {
           amount?: number
           created_at?: string
           customer_id?: string | null
+          deposit_amount?: number
           discount_amount?: number
           due_date?: string
           id?: string
