@@ -183,7 +183,7 @@ function timeAgoShort(dateString: string): string {
 }
 
 function displayCustomerName(name: string): string {
-  if (!name || name.includes("TBD")) return "Pending info";
+  if (!name || name.trim() === "" || name.includes("TBD")) return "Pending info";
   return name;
 }
 
