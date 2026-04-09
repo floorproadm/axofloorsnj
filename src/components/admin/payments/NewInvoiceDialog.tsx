@@ -135,6 +135,8 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
           setScheduleEnabled(false);
           setPhases(DEFAULT_PHASES);
           setShowFinancials(false);
+          setInvoiceStatus("draft");
+          setPaidMethod("");
         },
       }
     );
