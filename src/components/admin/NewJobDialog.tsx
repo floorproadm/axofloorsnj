@@ -35,16 +35,15 @@ const newJobSchema = z.object({
   address: z.string().trim().max(300, "Máximo 300 caracteres").optional(),
   customer_name: z.string().trim().max(200, "Máximo 200 caracteres").optional().default(""),
   customer_phone: z.string().trim().max(30, "Máximo 30 caracteres").optional().default(""),
-  project_types: z.array(z.string()).min(1, "Selecione ao menos um serviço"),
-  referred_by_partner_id: z.string().optional(),
+  project_types: z.array(z.string()).min(1, "Select at least one service"),
 }).superRefine((data, ctx) => {
   const hasPartner = data.referred_by_partner_id && data.referred_by_partner_id !== "" && data.referred_by_partner_id !== "none";
   if (!hasPartner) {
     if (!data.customer_name || data.customer_name.length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome é obrigatório sem parceiro", path: ["customer_name"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Name is required without a partner", path: ["customer_name"] });
     }
     if (!data.customer_phone || data.customer_phone.length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone é obrigatório sem parceiro", path: ["customer_phone"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Phone is required without a partner", path: ["customer_phone"] });
     }
   }
 });
