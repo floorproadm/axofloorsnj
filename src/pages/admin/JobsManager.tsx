@@ -72,7 +72,7 @@ interface ProjectWithRelations {
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: string; border: string; icon: React.ReactNode; headerBg: string }> = {
   pending: {
-    label: "Pendente",
+    label: "Pending",
     bg: "bg-amber-50",
     text: "text-amber-700",
     border: "border-amber-300",
@@ -80,7 +80,7 @@ const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: st
     headerBg: "bg-gradient-to-r from-amber-600 to-amber-500",
   },
   in_production: {
-    label: "Em Produção",
+    label: "Active",
     bg: "bg-blue-50",
     text: "text-blue-700",
     border: "border-blue-300",
@@ -88,7 +88,7 @@ const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: st
     headerBg: "bg-gradient-to-r from-blue-700 to-blue-500",
   },
   completed: {
-    label: "Concluído",
+    label: "Done",
     bg: "bg-emerald-50",
     text: "text-emerald-700",
     border: "border-emerald-300",
@@ -171,16 +171,20 @@ function getProjectIndicator(project: ProjectWithRelations, minMargin: number) {
   return { color: "bg-emerald-500", label: "OK", severity: "ok" as const };
 }
 
-function timeAgo(dateString: string): string {
+function timeAgoShort(dateString: string): string {
   const now = new Date();
   const date = new Date(dateString);
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "hoje";
-  if (diffDays === 1) return "1 dia";
-  if (diffDays < 30) return `${diffDays} dias`;
+  if (diffDays === 0) return "today";
+  if (diffDays < 30) return `${diffDays}d`;
   const months = Math.floor(diffDays / 30);
-  return months === 1 ? "1 mês" : `${months} meses`;
+  return `${months}mo`;
+}
+
+function displayCustomerName(name: string): string {
+  if (!name || name.includes("TBD")) return "Pending info";
+  return name;
 }
 
 export default function JobsManager() {
@@ -232,11 +236,21 @@ export default function JobsManager() {
     return filteredProjects.reduce((sum, p) => sum + (p.job_costs?.estimated_revenue || 0), 0);
   }, [filteredProjects]);
 
+  const statusCounts = useMemo(() => {
+    const all = projects || [];
+    return {
+      all: all.length,
+      pending: all.filter(p => p.project_status === "pending").length,
+      in_production: all.filter(p => p.project_status === "in_production").length,
+      completed: all.filter(p => p.project_status === "completed").length,
+    };
+  }, [projects]);
+
   const filterTabs: { key: "all" | ProjectStatus; label: string }[] = [
-    { key: "all", label: "All Jobs" },
-    { key: "in_production", label: "In Progress" },
-    { key: "pending", label: "Scheduled" },
-    { key: "completed", label: "Completed" },
+    { key: "all", label: `All (${statusCounts.all})` },
+    { key: "in_production", label: `Active (${statusCounts.in_production})` },
+    { key: "pending", label: `Pending (${statusCounts.pending})` },
+    { key: "completed", label: `Done (${statusCounts.completed})` },
   ];
 
   return (
