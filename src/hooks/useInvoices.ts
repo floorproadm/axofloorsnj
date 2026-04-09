@@ -63,6 +63,34 @@ export interface CreateInvoiceInput {
 }
 
 export function useInvoices() {
+  const qc = useQueryClient();
+
+  // Realtime subscription for instant viewed_at updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("invoices-realtime")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "invoices" },
+        (payload) => {
+          const newRow = payload.new as any;
+          const oldRow = payload.old as any;
+          // If viewed_at just changed from null to a value, show toast
+          if (newRow.viewed_at && !oldRow.viewed_at) {
+            sonnerToast.info(`📩 Client viewed ${newRow.invoice_number}`, {
+              description: "Just now",
+            });
+          }
+          qc.invalidateQueries({ queryKey: ["invoices"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
   return useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
