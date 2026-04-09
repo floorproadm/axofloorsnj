@@ -582,7 +582,7 @@ function KanbanCard({
 
       {/* Updated ago */}
       <p className="text-[10px] text-muted-foreground/50 text-right">
-        Updated {timeAgo(project.updated_at)} ago
+        {timeAgoShort(project.updated_at)}
       </p>
     </div>
   );
@@ -787,7 +787,7 @@ export function JobControlModal({ project, isOpen, onClose, onRefresh, embedded 
           </SelectContent>
         </Select>
         <span className="text-white/50 text-xs">•</span>
-        <span className="text-white/70 text-xs">{timeAgo(project.created_at)}</span>
+        <span className="text-white/70 text-xs">{timeAgoShort(project.created_at)}</span>
         {!embedded && (
           <Button
             variant="ghost"
