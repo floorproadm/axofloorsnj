@@ -262,6 +262,9 @@ export default function JobsManager() {
             <div className="flex items-center gap-1.5">
               <Hammer className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-semibold text-foreground">{filteredProjects.length} Deals</span>
+              <span className="text-xs text-muted-foreground ml-1">
+                {statusCounts.pending} pending · {statusCounts.in_production} active · {statusCounts.completed} done
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <DollarSign className="w-4 h-4 text-muted-foreground" />
