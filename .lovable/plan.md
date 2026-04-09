@@ -1,52 +1,53 @@
 
 
-# Melhorar UI da Página /admin/jobs
+# Unificar Campos de Endereço com Autocomplete
 
-## Problemas Atuais (vistos no screenshot)
-- Cards mostram "TBD (via parceiro)" como nome do cliente — confuso
-- "No Crew Assigned" aparece em todos os cards sem equipe — ruído visual
-- Falta informação financeira visível nos cards do Kanban (revenue, margin)
-- Sem indicador visual de sqft nos cards
-- "Updated X dias ago" ocupa espaço sem agregar muito
-- Labels misturados PT/EN ("Pendente" header, "via parceiro", "Updated")
-- Filtros "Scheduled" não faz sentido — pending = aguardando, não agendado
+## Problema
+A página Job Detail tem 3 campos separados (Address, City, Zip Code) — redundante. O usuário quer um campo único com autocomplete estilo Google Places, como nos sites públicos.
 
-## Melhorias Planejadas
+## Solução
 
-### 1. Kanban Cards — Redesign com densidade útil
-- **Título principal**: endereço (já implementado), fallback para customer_name
-- **Subtítulo**: service type em badge pequeno (chips coloridos por tipo)
-- **Cliente**: mostrar nome real, ou "Pending info" em itálico se TBD — nunca "TBD (via parceiro)"
-- **Partner**: mostrar com ícone de handshake apenas se existir, sem "(via parceiro)" redundante
-- **Crew**: esconder se não houver — não mostrar "No Crew Assigned"
-- **Financeiro inline**: barra compacta com revenue e margin % (verde/vermelho)
-- **Sqft**: mostrar se disponível, com ícone de régua
-- **Timestamp**: simplificar para apenas ícone + "11d" no canto
+### 1. Campo único "Address" com autocomplete via Google Places API
+- Remover campos separados de City e Zip Code do formulário
+- Criar um componente `AddressAutocomplete` que usa a **Google Places Autocomplete API**
+- Quando o usuário digita, suggestions aparecem em dropdown
+- Ao selecionar, preenche automaticamente o campo `address` com endereço completo e salva `city` e `zip_code` nos campos do banco em background (parse automático dos componentes)
 
-### 2. Filtros — English consistente e mais úteis
-- Renomear: "All Jobs" → "All", "In Progress" → "Active", "Scheduled" → "Pending", "Completed" → "Done"
-- Adicionar contagem em cada tab: "Active (0)", "Pending (2)"
+### 2. Configuração necessária
+- Precisa de uma **Google Maps API Key** com Places API habilitada
+- A key será armazenada como secret (`GOOGLE_MAPS_API_KEY`) e exposta via `VITE_GOOGLE_MAPS_API_KEY`
+- Script do Google Maps carregado dinamicamente no componente
 
-### 3. Summary Bar — Mais informativo
-- Adicionar contadores por status ao lado dos totals: "2 pending · 0 active · 0 done"
-- Manter total deals e total value
+### 3. Componente `AddressAutocomplete`
+- Novo arquivo: `src/components/admin/AddressAutocomplete.tsx`
+- Input com autocomplete dropdown nativo do Google Places
+- Restrição geográfica: US (foco em NJ)
+- Ao selecionar endereço: extrai `street`, `city`, `state`, `zip` dos `address_components`
+- Callback `onSelect({ full, city, zip })` permite salvar tudo de uma vez
 
-### 4. Lista View — Mesmo tratamento
-- Aplicar mesmas melhorias de exibição de cliente/partner/crew
-- Adicionar financial preview inline
+### 4. Mudanças no JobDetail
+- Substituir os 3 `EditableField` (Address, City, Zip Code) por um único `AddressAutocomplete`
+- Ao selecionar endereço, salva `address` (completo), `city`, e `zip_code` automaticamente no banco
+- Manter o link "Open in Google Maps"
+- Manter edição manual como fallback (se digitar sem selecionar suggestion)
 
-### 5. Consistência de idioma
-- Padronizar headers de coluna em inglês (Pending, In Production, Completed)
-- Textos internos do card em inglês
+### 5. Reutilização
+- O componente pode ser reutilizado em `NewJobDialog`, `NewLeadDialog`, formulários públicos
 
 ## Detalhes Técnicos
 
-### Arquivo afetado
-- `src/pages/admin/JobsManager.tsx` — KanbanCard, ListView cards, filterTabs, STATUS_CONFIG labels
+### Arquivos
+1. `src/components/admin/AddressAutocomplete.tsx` — novo componente
+2. `src/pages/admin/JobDetail.tsx` — substituir 3 campos por 1
+3. Secret: `VITE_GOOGLE_MAPS_API_KEY` — precisa ser configurada
 
-### Mudanças específicas
-- `STATUS_CONFIG` labels: "Pendente" → "Pending", "Em Produção" → "Active", "Concluído" → "Done"
-- KanbanCard: adicionar revenue/margin bar, chips de service type, esconder crew vazio, tratar TBD
-- filterTabs: adicionar contagem dinâmica
-- Tratar `customer_name === "TBD (via parceiro)"` como "Pending info"
+### Fluxo
+```text
+User types "11 Kath..."
+  → Google Places suggestions dropdown
+  → Seleciona "11 Katharine Pl, Washington Twp, NJ 07676"
+  → Salva: address="11 Katharine Pl", city="Washington Township", zip_code="07676"
+```
+
+**Nota**: Vou precisar que você forneça uma Google Maps API Key com a Places API habilitada para o autocomplete funcionar.
 
