@@ -5,65 +5,34 @@
 ## O Problema
 O app está cheio de gates, validações obrigatórias, progress bars, e 7 abas separadas. Para um crew de hardwood flooring, isso é overengineering. No Notion, você abre, escreve, e pronto. Precisamos dessa mesma fluidez.
 
-## Mudanças Propostas
+## Status: ✅ Implementado
 
-### 1. Job Detail — Tudo em uma página, sem abas
-Eliminar as 7 abas. Tudo aparece em scroll vertical numa única página, como um "doc" do Notion:
+### Alinhamento com Modelo Notion (Abril 2026)
 
-```text
-┌─────────────────────────────────┐
-│ ← Back     [Status: Active ▼]  │
-│ 11 Katharine Pl  📍 Maps        │
-│─────────────────────────────────│
-│ CLIENT                          │
-│ Name: John Doe  📞 Call  💬 SMS │
-│ Phone: (201) 555-1234           │
-│ Email: john@email.com           │
-│─────────────────────────────────│
-│ JOB INFO                        │
-│ Service: Sand & Refinish        │
-│ Sqft: 1,200    Start: 04/15     │
-│ Team Lead: Carlos               │
-│─────────────────────────────────│
-│ COSTS (inline, collapsible)     │
-│ Labor: $2,400  Material: $800   │
-│ Revenue: $5,500  Margin: 42% ✓ │
-│─────────────────────────────────│
-│ NOTES (textarea, always visible)│
-│ Garage code: 1234, dog in yard  │
-│─────────────────────────────────│
-│ PHOTOS  [+ Add]                 │
-│ 🖼️ 🖼️ 🖼️ (grid thumbnails)     │
-│─────────────────────────────────│
-│ COMMENTS                        │
-│ Admin: "Started sanding today"  │
-│ [Type a comment...] [Send]      │
-└─────────────────────────────────┘
-```
+Novas tabelas criadas:
+- **material_costs** — registros individuais de compra por projeto (description, supplier, amount, receipt_url, is_paid)
+- **labor_entries** — custo de mão de obra por job/dia (worker_name, role, daily_rate, days_worked, total_cost calculado)
+- **weekly_reviews** — entidade persistente para governança semanal (notes, action_items, status open/closed)
+- **weekly_review_projects** — tabela de junção projects ↔ weekly reviews
 
-### 2. Remover bloqueios e progress bar
-- Eliminar a progress bar com checklist obrigatória
-- Remover a aba "Checklist" separada
-- Status muda livremente (Pending → Active → Done) sem gates
-- Margin warning vira apenas um indicador visual (amarelo/vermelho), não bloqueia nada
+Triggers de sincronização:
+- material_costs → job_costs.material_cost (auto-sync)
+- labor_entries → job_costs.labor_cost (auto-sync)
+- compute_project_next_action() — calcula next_action inteligente
 
-### 3. Seções colapsáveis em vez de abas
-Cada seção (Client, Job Info, Costs, Notes, Photos, Documents) fica em cards colapsáveis na mesma página. Tudo visível por padrão, pode fechar o que não interessa.
+Colunas adicionadas em projects:
+- next_action (orientação automática)
+- next_action_date
 
-### 4. Proposal e Documents — acesso por botões
-- "Proposal" e "Documents" viram botões de ação no topo, não abas. Abrem em sheet/modal quando necessário, mas não ocupam espaço permanente.
+### JobDetail — Seções adicionadas
+- **Next Action Banner** no topo (quando existe orientação)
+- **Materials** — seção colapsável com lista + inline add/delete
+- **Labor** — seção colapsável com worker name, daily rate, days worked
 
-### 5. NewJobDialog — mínimo absoluto
-Criar job com apenas: **Address + Service type**. Tudo o resto é opcional e pode ser editado depois no detalhe.
+### WeeklyReview — Persistência
+- Save Notes + Close Week (snapshot semanal persistido)
+- Histórico de semanas anteriores clicável
 
-## Arquivos a Editar
-
-1. **`src/pages/admin/JobDetail.tsx`** — Reescrever: single-scroll, sem tabs, seções colapsáveis, sem progress bar obrigatória
-2. **`src/components/admin/NewJobDialog.tsx`** — Simplificar: só address + service, resto opcional
-
-## O Que NÃO Muda
-- A edição inline (click-to-edit) permanece — é boa
-- AddressAutocomplete permanece
-- Os componentes internos (JobCostEditor, ProposalGenerator, JobProofUploader) continuam existindo, só mudam de contexto (inline/modal em vez de tabs)
-- Dados no banco não mudam
-
+### JobCostEditor — Read-only auto-calculado
+- Material e Labor mostram totais auto-calculados das novas tabelas
+- Apenas Additional Costs e Revenue são editáveis manualmente
