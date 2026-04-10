@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
@@ -21,24 +20,22 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Loader2, User, Phone, Mail, MapPin, Ruler, Calendar,
-  Clock, Hammer, DollarSign, ChevronDown,
+  Clock, Hammer, ChevronRight,
   Camera, Pencil, Check, X, Navigation, Send, Users,
   Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
-  Package, HardHat, Plus, Lightbulb, Receipt, Target
+  Package, HardHat, Plus, Target, Receipt
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending', color: 'bg-amber-100 text-amber-800 border-amber-300' },
-  { value: 'in_production', label: 'Active', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-  { value: 'completed', label: 'Done', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  { value: 'pending', label: 'Pending', dot: 'bg-amber-500' },
+  { value: 'in_production', label: 'Active', dot: 'bg-blue-500' },
+  { value: 'completed', label: 'Done', dot: 'bg-emerald-500' },
 ];
 
-// ─── Inline editable field ───
+// ─── Inline editable field (Linear-style) ───
 function EditableField({
   label, value, onSave, type = 'text', icon, placeholder, className,
 }: {
@@ -59,20 +56,20 @@ function EditableField({
 
   if (editing) {
     return (
-      <div className={cn("space-y-1", className)}>
-        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{label}</label>
+      <div className={cn("space-y-1.5", className)}>
+        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{label}</label>
         <div className="flex items-center gap-1.5">
           {type === 'textarea' ? (
-            <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={placeholder} className="text-sm min-h-[80px]" autoFocus />
+            <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={placeholder} className="text-sm min-h-[72px] bg-muted/50 border-border/60 focus-visible:ring-1 focus-visible:ring-primary/40" autoFocus />
           ) : (
-            <Input type={type === 'number' ? 'number' : type === 'date' ? 'date' : 'text'} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={placeholder} className="text-sm h-9" autoFocus
+            <Input type={type === 'number' ? 'number' : type === 'date' ? 'date' : 'text'} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={placeholder} className="text-sm h-8 bg-muted/50 border-border/60 focus-visible:ring-1 focus-visible:ring-primary/40" autoFocus
               onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') handleCancel(); }} />
           )}
-          <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 flex-shrink-0" onClick={handleSave} disabled={saving}>
-            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+          <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 flex-shrink-0" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
           </Button>
-          <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0" onClick={handleCancel}>
-            <X className="w-3.5 h-3.5" />
+          <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-foreground flex-shrink-0" onClick={handleCancel}>
+            <X className="w-3 h-3" />
           </Button>
         </div>
       </div>
@@ -80,37 +77,35 @@ function EditableField({
   }
 
   return (
-    <div className={cn("group cursor-pointer rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors -mx-3", className)} onClick={() => { setDraft(value); setEditing(true); }}>
-      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{label}</label>
+    <div className={cn("group cursor-pointer rounded-md px-2.5 py-2 hover:bg-muted/40 transition-colors -mx-2.5", className)} onClick={() => { setDraft(value); setEditing(true); }}>
+      <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{label}</label>
       <div className="flex items-center gap-2 mt-0.5">
-        {icon && <span className="text-muted-foreground flex-shrink-0">{icon}</span>}
-        <span className={cn("text-sm font-medium", !value && "text-muted-foreground italic")}>{value || placeholder || 'Click to edit'}</span>
-        <Pencil className="w-3 h-3 text-muted-foreground/0 group-hover:text-muted-foreground/60 ml-auto flex-shrink-0 transition-colors" />
+        {icon && <span className="text-muted-foreground/60 flex-shrink-0">{icon}</span>}
+        <span className={cn("text-sm", value ? "font-medium text-foreground" : "text-muted-foreground/60 italic")}>{value || placeholder || 'Empty'}</span>
+        <Pencil className="w-3 h-3 text-muted-foreground/0 group-hover:text-muted-foreground/50 ml-auto flex-shrink-0 transition-opacity" />
       </div>
     </div>
   );
 }
 
-// ─── Collapsible section wrapper ───
-function Section({ title, icon, children, defaultOpen = true }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
+// ─── Collapsible section (Linear-style) ───
+function Section({ title, icon, children, defaultOpen = true, badge }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean; badge?: string }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <Card>
-        <CollapsibleTrigger asChild>
-          <button className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors rounded-t-lg">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              {icon} {title}
-            </h3>
-            <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", open && "rotate-180")} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <CardContent className="px-5 pb-5 pt-0">
-            {children}
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
+      <CollapsibleTrigger asChild>
+        <button className="w-full flex items-center gap-2 py-2.5 px-1 hover:bg-muted/30 transition-colors rounded-md group">
+          <ChevronRight className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", open && "rotate-90")} />
+          <span className="text-muted-foreground/70">{icon}</span>
+          <span className="text-xs font-semibold text-foreground uppercase tracking-wide">{title}</span>
+          {badge && <span className="text-[10px] font-medium text-muted-foreground ml-1">{badge}</span>}
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="pl-6 pb-2">
+          {children}
+        </div>
+      </CollapsibleContent>
     </Collapsible>
   );
 }
@@ -160,15 +155,15 @@ export default function JobDetail() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Job Detail" breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}>
-        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+      <AdminLayout title="Job" breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}>
+        <div className="flex items-center justify-center py-20"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       </AdminLayout>
     );
   }
 
   if (!project) {
     return (
-      <AdminLayout title="Job Detail" breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}>
+      <AdminLayout title="Job" breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}>
         <div className="text-center py-20 text-muted-foreground">Job not found</div>
       </AdminLayout>
     );
@@ -180,157 +175,167 @@ export default function JobDetail() {
 
   return (
     <AdminLayout
-      title={project.address || project.customer_name}
-      breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }, { label: project.address || project.customer_name }]}
+      title={project.address || project.customer_name || 'Job'}
+      breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }, { label: project.address || project.customer_name || 'Job' }]}
     >
-      <div className="max-w-3xl mx-auto space-y-4 pb-10">
+      <div className="max-w-3xl mx-auto pb-10">
 
-        {/* ═══ HEADER: Back + Status + Actions ═══ */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" onClick={() => navigate('/admin/jobs')}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="min-w-0">
-              <h1 className="text-lg font-bold text-foreground leading-tight truncate">
-                {project.address || project.customer_name || 'New Job'}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">{project.project_type}</p>
-            </div>
+        {/* ═══ HEADER ═══ */}
+        <div className="flex items-center gap-3 mb-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-foreground" onClick={() => navigate('/admin/jobs')}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-foreground leading-tight truncate">
+              {project.address || project.customer_name || 'New Job'}
+            </h1>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => setProposalOpen(true)}>
+          <Select value={project.project_status} onValueChange={handleStatusChange}>
+            <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs font-semibold border-border/60 rounded-md gap-1.5 bg-card">
+              <span className={cn("w-2 h-2 rounded-full flex-shrink-0", currentStatus.dot)} />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  <span className="flex items-center gap-2">
+                    <span className={cn("w-2 h-2 rounded-full", s.dot)} />
+                    {s.label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Sub-header: type + actions */}
+        <div className="flex items-center justify-between ml-11 mb-4">
+          <p className="text-sm text-muted-foreground">{project.project_type}</p>
+          <div className="flex items-center gap-1.5">
+            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1" onClick={() => setProposalOpen(true)}>
               <FileText className="w-3.5 h-3.5" /> Proposal
             </Button>
-            <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => setDocsOpen(true)}>
+            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1" onClick={() => setDocsOpen(true)}>
               <FolderOpen className="w-3.5 h-3.5" /> Docs
             </Button>
-            <Select value={project.project_status} onValueChange={handleStatusChange}>
-              <SelectTrigger className={cn("h-8 w-auto min-w-[110px] text-xs font-semibold border rounded-full", currentStatus.color)}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
-        {/* ═══ FINANCIAL HEADER: Revenue / Cost / Margin / Payment ═══ */}
-        <JobFinancialHeader projectId={project.id} />
+        {/* ═══ FINANCIAL METRICS ═══ */}
+        <div className="mb-5">
+          <JobFinancialHeader projectId={project.id} />
+        </div>
 
         {/* ═══ NEXT ACTION BANNER ═══ */}
         {project.next_action && (
-          <Card className="border-2 border-primary/30 bg-primary/5">
-            <CardContent className="p-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Target className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Next Action</p>
-                <p className="text-sm font-medium text-foreground">{project.next_action}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center gap-3 px-3.5 py-2.5 mb-5 rounded-lg border border-primary/20 bg-primary/5">
+            <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <Target className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium text-foreground">{project.next_action}</span>
+            </div>
+          </div>
         )}
 
-        {/* ═══ 1. MATERIALS ═══ */}
-        <MaterialsSection projectId={project.id} />
+        {/* ═══ SECTIONS ═══ */}
+        <div className="space-y-1 divide-y divide-border/40">
+          {/* 1. Materials */}
+          <MaterialsSection projectId={project.id} />
 
-        {/* ═══ 2. LABOR ═══ */}
-        <LaborSection projectId={project.id} />
+          {/* 2. Labor */}
+          <LaborSection projectId={project.id} />
 
-        {/* ═══ 3. INVOICES & PAYMENTS ═══ */}
-        <Section title="Invoices & Payments" icon={<Receipt className="w-3.5 h-3.5" />}>
-          <InvoicesPaymentsSection projectId={project.id} />
-        </Section>
+          {/* 3. Invoices & Payments */}
+          <Section title="Invoices & Payments" icon={<Receipt className="w-3.5 h-3.5" />}>
+            <InvoicesPaymentsSection projectId={project.id} />
+          </Section>
 
-        {/* ═══ 4. PHOTOS / PROOF ═══ */}
-        <Section title="Photos" icon={<Camera className="w-3.5 h-3.5" />}>
-          <JobProofUploader projectId={project.id} />
-        </Section>
+          {/* 4. Photos */}
+          <Section title="Photos" icon={<Camera className="w-3.5 h-3.5" />}>
+            <JobProofUploader projectId={project.id} />
+          </Section>
 
-        {/* ═══ 5. NOTES ═══ */}
-        <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
-          <EditableField label="Project Notes" value={project.notes || ''} onSave={(v) => updateField('notes', v)} type="textarea" placeholder="Garage code, access info, special instructions..." />
-        </Section>
+          {/* 5. Notes */}
+          <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
+            <EditableField label="Project Notes" value={project.notes || ''} onSave={(v) => updateField('notes', v)} type="textarea" placeholder="Garage code, access info, special instructions..." />
+          </Section>
 
-        {/* ═══ 6. CLIENT ═══ */}
-        <Section title="Client" icon={<User className="w-3.5 h-3.5" />} defaultOpen={false}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-            <EditableField label="Name" value={project.customer_name} onSave={(v) => updateField('customer_name', v)} icon={<User className="w-4 h-4" />} placeholder="Customer name" />
-            <EditableField label="Phone" value={project.customer_phone} onSave={(v) => updateField('customer_phone', v)} icon={<Phone className="w-4 h-4" />} placeholder="Phone" />
-            <EditableField label="Email" value={project.customer_email || ''} onSave={(v) => updateField('customer_email', v)} icon={<Mail className="w-4 h-4" />} placeholder="Email" />
-            <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Address</label>
-              <AddressAutocomplete
-                value={project.address || ''}
-                onChange={(v) => updateField('address', v)}
-                onSelect={async (result) => {
-                  try {
-                    await supabase.from('projects').update({ address: result.full, city: result.city, zip_code: result.zip }).eq('id', project.id);
-                    refetch();
-                    toast.success('Address updated');
-                  } catch { toast.error('Failed to save address'); }
-                }}
-                placeholder="Start typing an address…"
-              />
+          {/* 6. Client */}
+          <Section title="Client" icon={<User className="w-3.5 h-3.5" />} defaultOpen={false}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
+              <EditableField label="Name" value={project.customer_name} onSave={(v) => updateField('customer_name', v)} icon={<User className="w-3.5 h-3.5" />} placeholder="Customer name" />
+              <EditableField label="Phone" value={project.customer_phone} onSave={(v) => updateField('customer_phone', v)} icon={<Phone className="w-3.5 h-3.5" />} placeholder="Phone" />
+              <EditableField label="Email" value={project.customer_email || ''} onSave={(v) => updateField('customer_email', v)} icon={<Mail className="w-3.5 h-3.5" />} placeholder="Email" />
+              <div className="space-y-1 px-2.5 py-2">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Address</label>
+                <AddressAutocomplete
+                  value={project.address || ''}
+                  onChange={(v) => updateField('address', v)}
+                  onSelect={async (result) => {
+                    try {
+                      await supabase.from('projects').update({ address: result.full, city: result.city, zip_code: result.zip }).eq('id', project.id);
+                      refetch();
+                      toast.success('Address updated');
+                    } catch { toast.error('Failed to save address'); }
+                  }}
+                  placeholder="Start typing an address…"
+                />
+              </div>
             </div>
-          </div>
-          {mapsUrl && (
-            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-3 text-xs text-primary font-medium hover:underline">
-              <Navigation className="w-3.5 h-3.5" /> Open in Google Maps
-            </a>
-          )}
-          <div className="flex gap-2 mt-3 pt-3 border-t border-dashed">
-            {project.customer_phone && (
-              <>
-                <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20">
-                  <Phone className="w-3 h-3" /> Call
+            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/30">
+              {mapsUrl && (
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted/50 text-muted-foreground text-[11px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+                  <Navigation className="w-3 h-3" /> Maps
                 </a>
-                <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-100 text-emerald-700 text-xs font-medium hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400">
-                  <MessageSquare className="w-3 h-3" /> SMS
+              )}
+              {project.customer_phone && (
+                <>
+                  <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted/50 text-muted-foreground text-[11px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+                    <Phone className="w-3 h-3" /> Call
+                  </a>
+                  <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted/50 text-muted-foreground text-[11px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+                    <MessageSquare className="w-3 h-3" /> SMS
+                  </a>
+                </>
+              )}
+              {project.customer_email && (
+                <a href={`mailto:${project.customer_email}`} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted/50 text-muted-foreground text-[11px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+                  <Mail className="w-3 h-3" /> Email
                 </a>
-              </>
-            )}
-            {project.customer_email && (
-              <a href={`mailto:${project.customer_email}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-100 text-blue-700 text-xs font-medium hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400">
-                <Mail className="w-3 h-3" /> Email
-              </a>
-            )}
-          </div>
-        </Section>
-
-        {/* ═══ 7. JOB INFO ═══ */}
-        <Section title="Job Info" icon={<Hammer className="w-3.5 h-3.5" />} defaultOpen={false}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-            <EditableField label="Service" value={project.project_type} onSave={(v) => updateField('project_type', v)} icon={<Hammer className="w-4 h-4" />} placeholder="e.g. Sand & Refinish" />
-            <EditableField label="Sqft" value={project.square_footage?.toString() || ''} onSave={(v) => updateField('square_footage', v ? parseFloat(v) : null)} type="number" icon={<Ruler className="w-4 h-4" />} placeholder="sqft" />
-            <EditableField label="Start" value={project.start_date || ''} onSave={(v) => updateField('start_date', v || null)} type="date" icon={<Calendar className="w-4 h-4" />} placeholder="Start date" />
-            <EditableField label="End" value={project.completion_date || ''} onSave={(v) => updateField('completion_date', v || null)} type="date" icon={<Calendar className="w-4 h-4" />} placeholder="End date" />
-            <EditableField label="Team Lead" value={project.team_lead || ''} onSave={(v) => updateField('team_lead', v || null)} icon={<User className="w-4 h-4" />} placeholder="Assign team lead" />
-            <EditableField label="Schedule" value={project.work_schedule || ''} onSave={(v) => updateField('work_schedule', v)} icon={<Clock className="w-4 h-4" />} placeholder="8:00 AM - 5:00 PM" />
-          </div>
-          {project.team_members && project.team_members.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-dashed">
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Members</label>
-              <div className="flex flex-wrap gap-1.5 mt-1.5">{project.team_members.map((m: string) => <Badge key={m} variant="secondary" className="text-xs">{m}</Badge>)}</div>
+              )}
             </div>
-          )}
-          {project.partner_name && (
-            <div className="mt-3 pt-3 border-t border-dashed">
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Partner</label>
-              <p className="text-sm font-medium mt-0.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-primary" /> {project.partner_name}</p>
-            </div>
-          )}
-        </Section>
+          </Section>
 
-        {/* ═══ 8. COMMENTS ═══ */}
-        <Section title="Comments" icon={<MessageSquare className="w-3.5 h-3.5" />} defaultOpen={false}>
-          <CommentsSection projectId={project.id} />
-        </Section>
+          {/* 7. Job Info */}
+          <Section title="Job Info" icon={<Hammer className="w-3.5 h-3.5" />} defaultOpen={false}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
+              <EditableField label="Service" value={project.project_type} onSave={(v) => updateField('project_type', v)} icon={<Hammer className="w-3.5 h-3.5" />} placeholder="e.g. Sand & Refinish" />
+              <EditableField label="Sqft" value={project.square_footage?.toString() || ''} onSave={(v) => updateField('square_footage', v ? parseFloat(v) : null)} type="number" icon={<Ruler className="w-3.5 h-3.5" />} placeholder="sqft" />
+              <EditableField label="Start" value={project.start_date || ''} onSave={(v) => updateField('start_date', v || null)} type="date" icon={<Calendar className="w-3.5 h-3.5" />} placeholder="Start date" />
+              <EditableField label="End" value={project.completion_date || ''} onSave={(v) => updateField('completion_date', v || null)} type="date" icon={<Calendar className="w-3.5 h-3.5" />} placeholder="End date" />
+              <EditableField label="Team Lead" value={project.team_lead || ''} onSave={(v) => updateField('team_lead', v || null)} icon={<User className="w-3.5 h-3.5" />} placeholder="Assign team lead" />
+              <EditableField label="Schedule" value={project.work_schedule || ''} onSave={(v) => updateField('work_schedule', v)} icon={<Clock className="w-3.5 h-3.5" />} placeholder="8:00 AM - 5:00 PM" />
+            </div>
+            {project.team_members && project.team_members.length > 0 && (
+              <div className="mt-3 pt-2 border-t border-border/30">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Members</label>
+                <div className="flex flex-wrap gap-1 mt-1">{project.team_members.map((m: string) => <Badge key={m} variant="secondary" className="text-[10px] h-5">{m}</Badge>)}</div>
+              </div>
+            )}
+            {project.partner_name && (
+              <div className="mt-3 pt-2 border-t border-border/30">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Partner</label>
+                <p className="text-sm font-medium mt-0.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-primary" /> {project.partner_name}</p>
+              </div>
+            )}
+          </Section>
+
+          {/* 8. Comments */}
+          <Section title="Comments" icon={<MessageSquare className="w-3.5 h-3.5" />} defaultOpen={false}>
+            <CommentsSection projectId={project.id} />
+          </Section>
+        </div>
       </div>
 
       {/* Proposal Sheet */}
@@ -414,48 +419,47 @@ function CommentsSection({ projectId }: { projectId: string }) {
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
-        <div className="flex-1 space-y-2">
-          <div className="flex gap-2">
-            <Input placeholder="Add a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} className="text-sm"
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }} />
-            <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageSelect} />
-            <Button variant="outline" size="icon" className="flex-shrink-0 h-9 w-9" onClick={() => fileInputRef.current?.click()}>
-              <ImagePlus className="w-4 h-4" />
-            </Button>
-            <Button size="icon" className="flex-shrink-0 h-9 w-9" disabled={isSubmitting || (!commentText.trim() && !commentImage)} onClick={handleSubmit}>
-              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            </Button>
-          </div>
-          {commentImagePreview && (
-            <div className="relative inline-block">
-              <img src={commentImagePreview} alt="Preview" className="h-20 rounded-lg border object-cover" />
-              <Button variant="destructive" size="icon" className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full" onClick={clearImage}><X className="w-3 h-3" /></Button>
-            </div>
-          )}
-        </div>
+      {/* Input */}
+      <div className="flex gap-2 mb-3">
+        <Input placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} className="text-sm h-8 bg-muted/30 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30"
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }} />
+        <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageSelect} />
+        <Button variant="ghost" size="icon" className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => fileInputRef.current?.click()}>
+          <ImagePlus className="w-3.5 h-3.5" />
+        </Button>
+        <Button size="icon" className="flex-shrink-0 h-8 w-8" disabled={isSubmitting || (!commentText.trim() && !commentImage)} onClick={handleSubmit}>
+          {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+        </Button>
       </div>
+      {commentImagePreview && (
+        <div className="relative inline-block mb-3">
+          <img src={commentImagePreview} alt="Preview" className="h-16 rounded-md border border-border/50 object-cover" />
+          <Button variant="destructive" size="icon" className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full" onClick={clearImage}><X className="w-2.5 h-2.5" /></Button>
+        </div>
+      )}
+
+      {/* List */}
       {isLoading ? (
-        <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-4 italic">No comments yet.</p>
+        <p className="text-[11px] text-muted-foreground text-center py-3 italic">No comments yet.</p>
       ) : (
-        <div className="space-y-3 max-h-[400px] overflow-y-auto">
+        <div className="space-y-1 max-h-[360px] overflow-y-auto">
           {comments.map((c: any) => (
-            <div key={c.id} className="group flex gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <User className="w-4 h-4 text-primary" />
+            <div key={c.id} className="group flex gap-2.5 p-2 rounded-md hover:bg-muted/30 transition-colors">
+              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                <User className="w-3 h-3 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-xs font-semibold">{c.author_name}</span>
+                  <span className="text-[11px] font-semibold text-foreground">{c.author_name}</span>
                   <span className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                  <Button variant="ghost" size="icon" className="h-5 w-5 ml-auto opacity-0 group-hover:opacity-100" onClick={() => handleDelete(c.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
+                  <Button variant="ghost" size="icon" className="h-5 w-5 ml-auto opacity-0 group-hover:opacity-100" onClick={() => handleDelete(c.id)}><Trash2 className="w-2.5 h-2.5 text-destructive" /></Button>
                 </div>
-                <p className="text-sm leading-relaxed">{c.content}</p>
+                <p className="text-sm text-foreground/90 leading-relaxed">{c.content}</p>
                 {c.image_url && (
-                  <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
-                    <img src={c.image_url} alt="Attachment" className="max-h-40 rounded-lg border object-cover hover:opacity-90" />
+                  <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
+                    <img src={c.image_url} alt="Attachment" className="max-h-32 rounded-md border border-border/50 object-cover hover:opacity-90" />
                   </a>
                 )}
               </div>
@@ -491,51 +495,50 @@ function MaterialsSection({ projectId }: { projectId: string }) {
   };
 
   return (
-    <Section title={`Materials${total > 0 ? ` · ${formatCurrency(total)}` : ''}`} icon={<Package className="w-3.5 h-3.5" />} defaultOpen={materials.length > 0}>
+    <Section title="Materials" icon={<Package className="w-3.5 h-3.5" />} defaultOpen={materials.length > 0} badge={total > 0 ? formatCurrency(total) : undefined}>
       {isLoading ? (
-        <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-3"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
       ) : (
         <>
           {materials.length > 0 && (
-            <div className="space-y-1.5 mb-3">
+            <div className="space-y-px mb-2">
               {materials.map((m) => (
-                <div key={m.id} className="group flex items-center justify-between p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                <div key={m.id} className="group flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/30 transition-colors">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{m.description}</p>
-                    <p className="text-xs text-muted-foreground">{m.supplier || 'No supplier'} · {m.purchase_date}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{m.description}</p>
+                    <p className="text-[11px] text-muted-foreground">{m.supplier || '—'} · {m.purchase_date || '—'}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-sm font-semibold">{formatCurrency(m.amount)}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(m.amount)}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                       onClick={() => deleteMaterial({ id: m.id, projectId })}>
-                      <Trash2 className="w-3 h-3 text-destructive" />
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
           )}
+
           {showForm ? (
-            <div className="space-y-2 p-3 rounded-lg border border-dashed">
-              <div className="grid grid-cols-2 gap-2">
-                <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="text-sm h-8" />
-                <Input placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} className="text-sm h-8" />
+            <div className="rounded-md border border-border/50 bg-muted/20 p-3 space-y-2">
+              <div className="grid grid-cols-3 gap-2">
+                <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="text-sm h-8 bg-card border-border/50 col-span-1" autoFocus />
+                <Input placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} className="text-sm h-8 bg-card border-border/50 col-span-1" />
+                <Input type="number" placeholder="$ Amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm h-8 bg-card border-border/50 col-span-1"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowForm(false); }} />
               </div>
-              <div className="flex gap-2">
-                <Input type="number" placeholder="Amount $" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm h-8"
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }} />
-                <Button size="sm" className="h-8" onClick={handleAdd} disabled={isAdding || !desc.trim() || !amount}>
-                  {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                </Button>
-                <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowForm(false)}>
-                  <X className="w-3 h-3" />
+              <div className="flex justify-end gap-1.5">
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => setShowForm(false)}>Cancel</Button>
+                <Button size="sm" className="h-7 text-xs" onClick={handleAdd} disabled={isAdding || !desc.trim() || !amount}>
+                  {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
                 </Button>
               </div>
             </div>
           ) : (
-            <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={() => setShowForm(true)}>
-              <Plus className="w-3 h-3" /> Add Material
-            </Button>
+            <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+              <Plus className="w-3 h-3" /> Add material
+            </button>
           )}
         </>
       )}
@@ -567,51 +570,50 @@ function LaborSection({ projectId }: { projectId: string }) {
   };
 
   return (
-    <Section title={`Labor${total > 0 ? ` · ${formatCurrency(total)}` : ''}`} icon={<HardHat className="w-3.5 h-3.5" />} defaultOpen={entries.length > 0}>
+    <Section title="Labor" icon={<HardHat className="w-3.5 h-3.5" />} defaultOpen={entries.length > 0} badge={total > 0 ? formatCurrency(total) : undefined}>
       {isLoading ? (
-        <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-3"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
       ) : (
         <>
           {entries.length > 0 && (
-            <div className="space-y-1.5 mb-3">
+            <div className="space-y-px mb-2">
               {entries.map((e) => (
-                <div key={e.id} className="group flex items-center justify-between p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                <div key={e.id} className="group flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/30 transition-colors">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{e.worker_name}</p>
-                    <p className="text-xs text-muted-foreground">{e.role} · {formatCurrency(e.daily_rate)}/day × {e.days_worked}d · {e.work_date}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{e.worker_name}</p>
+                    <p className="text-[11px] text-muted-foreground">{e.role || '—'} · {formatCurrency(e.daily_rate)}/d × {e.days_worked}d · {e.work_date || '—'}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-sm font-semibold">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                       onClick={() => deleteEntry({ id: e.id, projectId })}>
-                      <Trash2 className="w-3 h-3 text-destructive" />
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
           )}
+
           {showForm ? (
-            <div className="space-y-2 p-3 rounded-lg border border-dashed">
-              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm h-8" />
+            <div className="rounded-md border border-border/50 bg-muted/20 p-3 space-y-2">
+              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm h-8 bg-card border-border/50" autoFocus />
               <div className="grid grid-cols-2 gap-2">
-                <Input type="number" placeholder="Daily rate $" value={rate} onChange={(e) => setRate(e.target.value)} className="text-sm h-8" />
-                <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-sm h-8"
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }} />
+                <Input type="number" placeholder="Daily rate $" value={rate} onChange={(e) => setRate(e.target.value)} className="text-sm h-8 bg-card border-border/50" />
+                <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-sm h-8 bg-card border-border/50"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowForm(false); }} />
               </div>
-              <div className="flex gap-2">
-                <Button size="sm" className="h-8 flex-1" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
+              <div className="flex justify-end gap-1.5">
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => setShowForm(false)}>Cancel</Button>
+                <Button size="sm" className="h-7 text-xs" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
                   {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
-                </Button>
-                <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowForm(false)}>
-                  <X className="w-3 h-3" />
                 </Button>
               </div>
             </div>
           ) : (
-            <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={() => setShowForm(true)}>
-              <Plus className="w-3 h-3" /> Add Labor Entry
-            </Button>
+            <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+              <Plus className="w-3 h-3" /> Add labor entry
+            </button>
           )}
         </>
       )}

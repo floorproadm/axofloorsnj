@@ -3,8 +3,7 @@ import { useJobCost } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, AlertTriangle, CheckCircle2, Clock, FileX } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, CheckCircle2, Clock, FileX, TrendingUp, TrendingDown } from 'lucide-react';
 
 type PaymentStatus = 'no_invoice' | 'awaiting' | 'overdue' | 'paid';
 
@@ -47,11 +46,11 @@ function usePaymentStatus(projectId: string) {
   });
 }
 
-const PAYMENT_CONFIG: Record<PaymentStatus, { label: string; icon: React.ReactNode; className: string }> = {
-  no_invoice: { label: 'No Invoice', icon: <FileX className="w-3 h-3" />, className: 'text-muted-foreground bg-muted' },
-  awaiting: { label: 'Awaiting', icon: <Clock className="w-3 h-3" />, className: 'text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30' },
-  overdue: { label: 'Overdue', icon: <AlertTriangle className="w-3 h-3" />, className: 'text-destructive bg-red-100 dark:bg-red-900/30' },
-  paid: { label: 'Paid', icon: <CheckCircle2 className="w-3 h-3" />, className: 'text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30' },
+const PAYMENT_CONFIG: Record<PaymentStatus, { label: string; icon: React.ReactNode; dotColor: string }> = {
+  no_invoice: { label: 'No Invoice', icon: <FileX className="w-3.5 h-3.5" />, dotColor: 'bg-muted-foreground' },
+  awaiting: { label: 'Awaiting', icon: <Clock className="w-3.5 h-3.5" />, dotColor: 'bg-amber-500' },
+  overdue: { label: 'Overdue', icon: <AlertTriangle className="w-3.5 h-3.5" />, dotColor: 'bg-destructive' },
+  paid: { label: 'Paid', icon: <CheckCircle2 className="w-3.5 h-3.5" />, dotColor: 'bg-emerald-500' },
 };
 
 export function JobFinancialHeader({ projectId }: { projectId: string }) {
@@ -67,37 +66,50 @@ export function JobFinancialHeader({ projectId }: { projectId: string }) {
   const paymentCfg = PAYMENT_CONFIG[paymentStatus];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-muted/40 border">
-      <MetricBox label="Revenue" value={formatCurrency(revenue)} icon={<DollarSign className="w-3.5 h-3.5" />} />
-      <MetricBox label="Total Cost" value={formatCurrency(totalCost)} icon={<DollarSign className="w-3.5 h-3.5" />} />
-      <MetricBox 
-        label="Margin" 
-        value={`${margin.toFixed(1)}%`} 
-        className={cn(marginOk ? 'text-emerald-600' : margin > 0 ? 'text-amber-500' : 'text-destructive')}
-      />
-      <div className="flex flex-col items-start gap-1">
-        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Payment</span>
-        <Badge variant="outline" className={cn("gap-1 text-xs font-semibold border-0", paymentCfg.className)}>
-          {paymentCfg.icon}
-          {paymentCfg.label}
-        </Badge>
+    <div className="grid grid-cols-4 gap-px rounded-lg overflow-hidden border border-border/60 bg-border/60">
+      {/* Revenue */}
+      <div className="bg-card p-3 flex flex-col gap-1">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Revenue</span>
+        <span className="text-base font-bold tabular-nums text-foreground">{formatCurrency(revenue)}</span>
+      </div>
+
+      {/* Cost */}
+      <div className="bg-card p-3 flex flex-col gap-1">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Cost</span>
+        <span className="text-base font-bold tabular-nums text-foreground">{formatCurrency(totalCost)}</span>
+      </div>
+
+      {/* Margin */}
+      <div className="bg-card p-3 flex flex-col gap-1">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Margin</span>
+        <div className="flex items-center gap-1.5">
+          <span className={cn(
+            "text-base font-bold tabular-nums",
+            marginOk ? 'text-emerald-500' : margin > 0 ? 'text-amber-500' : 'text-muted-foreground'
+          )}>
+            {margin.toFixed(1)}%
+          </span>
+          {revenue > 0 && (
+            marginOk 
+              ? <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> 
+              : <TrendingDown className="w-3.5 h-3.5 text-amber-500" />
+          )}
+        </div>
+      </div>
+
+      {/* Payment */}
+      <div className="bg-card p-3 flex flex-col gap-1">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Payment</span>
+        <div className="flex items-center gap-1.5">
+          <span className={cn("w-2 h-2 rounded-full flex-shrink-0", paymentCfg.dotColor)} />
+          <span className="text-xs font-semibold text-foreground">{paymentCfg.label}</span>
+        </div>
         {paymentData && paymentData.balance > 0 && paymentStatus !== 'paid' && (
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[10px] text-muted-foreground tabular-nums">
             Due: {formatCurrency(paymentData.balance)}
           </span>
         )}
       </div>
-    </div>
-  );
-}
-
-function MetricBox({ label, value, icon, className }: { label: string; value: string; icon?: React.ReactNode; className?: string }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-        {icon} {label}
-      </span>
-      <span className={cn("text-lg font-bold tabular-nums", className)}>{value}</span>
     </div>
   );
 }
