@@ -53,27 +53,27 @@ function PropRow({ label, value, icon, onSave, type = 'text', placeholder }: {
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1.5 py-1">
+      <div className="flex items-center gap-2 py-1.5">
         <span className="text-muted-foreground/50 w-4 flex-shrink-0">{icon}</span>
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
-        <Input type={type} value={draft} onChange={(e) => setDraft(e.target.value)} className="text-xs h-8 px-2 bg-muted/40 border-border/50 flex-1"
+        <Input type={type} value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm h-8 px-2 bg-muted/40 border-border/50 flex-1"
           autoFocus onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setDraft(value); setEditing(false); } }} />
         <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-500" onClick={save} disabled={saving}>
-          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-2.5 h-2.5" />}
+          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
         </Button>
         <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground" onClick={() => { setDraft(value); setEditing(false); }}>
-          <X className="w-2.5 h-2.5" />
+          <X className="w-3.5 h-3.5" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="group flex items-center gap-1.5 py-1 cursor-pointer hover:bg-muted/20 rounded -mx-1 px-1 transition-colors" onClick={() => { setDraft(value); setEditing(true); }}>
+    <div className="group flex items-center gap-2 py-1.5 cursor-pointer hover:bg-muted/20 rounded -mx-1 px-1 transition-colors" onClick={() => { setDraft(value); setEditing(true); }}>
       <span className="text-muted-foreground/50 w-4 flex-shrink-0">{icon}</span>
       <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
-      <span className={cn("text-xs flex-1 truncate", value ? "text-foreground" : "text-muted-foreground/40 italic")}>{value || placeholder || '—'}</span>
-      <Pencil className="w-2.5 h-2.5 text-muted-foreground/0 group-hover:text-muted-foreground/40 flex-shrink-0 transition-opacity" />
+      <span className={cn("text-sm flex-1 truncate", value ? "text-foreground" : "text-muted-foreground/40 italic")}>{value || placeholder || '—'}</span>
+      <Pencil className="w-3 h-3 text-muted-foreground/0 group-hover:text-muted-foreground/40 flex-shrink-0 transition-opacity" />
     </div>
   );
 }
