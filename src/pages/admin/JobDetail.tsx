@@ -497,3 +497,155 @@ function CommentsSection({ projectId }: { projectId: string }) {
     </div>
   );
 }
+
+// ═══════════════════════════════════════
+// MATERIALS SECTION
+// ═══════════════════════════════════════
+function MaterialsSection({ projectId }: { projectId: string }) {
+  const { data: materials = [], isLoading } = useMaterialCosts(projectId);
+  const { mutateAsync: addMaterial, isPending: isAdding } = useAddMaterialCost();
+  const { mutateAsync: deleteMaterial } = useDeleteMaterialCost();
+  const [showForm, setShowForm] = useState(false);
+  const [desc, setDesc] = useState('');
+  const [supplier, setSupplier] = useState('');
+  const [amount, setAmount] = useState('');
+
+  const total = materials.reduce((s, m) => s + m.amount, 0);
+
+  const handleAdd = async () => {
+    if (!desc.trim() || !amount) return;
+    try {
+      await addMaterial({ project_id: projectId, description: desc, supplier: supplier || undefined, amount: parseFloat(amount) });
+      setDesc(''); setSupplier(''); setAmount(''); setShowForm(false);
+      toast.success('Material added');
+    } catch { toast.error('Error adding material'); }
+  };
+
+  return (
+    <Section title={`Materials${total > 0 ? ` · ${formatCurrency(total)}` : ''}`} icon={<Package className="w-3.5 h-3.5" />} defaultOpen={materials.length > 0}>
+      {isLoading ? (
+        <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
+      ) : (
+        <>
+          {materials.length > 0 && (
+            <div className="space-y-1.5 mb-3">
+              {materials.map((m) => (
+                <div key={m.id} className="group flex items-center justify-between p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{m.description}</p>
+                    <p className="text-xs text-muted-foreground">{m.supplier || 'No supplier'} · {m.purchase_date}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">{formatCurrency(m.amount)}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                      onClick={() => deleteMaterial({ id: m.id, projectId })}>
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {showForm ? (
+            <div className="space-y-2 p-3 rounded-lg border border-dashed">
+              <div className="grid grid-cols-2 gap-2">
+                <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="text-sm h-8" />
+                <Input placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} className="text-sm h-8" />
+              </div>
+              <div className="flex gap-2">
+                <Input type="number" placeholder="Amount $" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm h-8"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }} />
+                <Button size="sm" className="h-8" onClick={handleAdd} disabled={isAdding || !desc.trim() || !amount}>
+                  {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                </Button>
+                <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowForm(false)}>
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={() => setShowForm(true)}>
+              <Plus className="w-3 h-3" /> Add Material
+            </Button>
+          )}
+        </>
+      )}
+    </Section>
+  );
+}
+
+// ═══════════════════════════════════════
+// LABOR SECTION
+// ═══════════════════════════════════════
+function LaborSection({ projectId }: { projectId: string }) {
+  const { data: entries = [], isLoading } = useLaborEntries(projectId);
+  const { mutateAsync: addEntry, isPending: isAdding } = useAddLaborEntry();
+  const { mutateAsync: deleteEntry } = useDeleteLaborEntry();
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState('');
+  const [rate, setRate] = useState('');
+  const [days, setDays] = useState('1');
+
+  const total = entries.reduce((s, e) => s + (e.total_cost ?? e.daily_rate * e.days_worked), 0);
+
+  const handleAdd = async () => {
+    if (!name.trim() || !rate) return;
+    try {
+      await addEntry({ project_id: projectId, worker_name: name, daily_rate: parseFloat(rate), days_worked: parseFloat(days) || 1 });
+      setName(''); setRate(''); setDays('1'); setShowForm(false);
+      toast.success('Labor entry added');
+    } catch { toast.error('Error adding entry'); }
+  };
+
+  return (
+    <Section title={`Labor${total > 0 ? ` · ${formatCurrency(total)}` : ''}`} icon={<HardHat className="w-3.5 h-3.5" />} defaultOpen={entries.length > 0}>
+      {isLoading ? (
+        <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
+      ) : (
+        <>
+          {entries.length > 0 && (
+            <div className="space-y-1.5 mb-3">
+              {entries.map((e) => (
+                <div key={e.id} className="group flex items-center justify-between p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{e.worker_name}</p>
+                    <p className="text-xs text-muted-foreground">{e.role} · {formatCurrency(e.daily_rate)}/day × {e.days_worked}d · {e.work_date}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-sm font-semibold">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                      onClick={() => deleteEntry({ id: e.id, projectId })}>
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {showForm ? (
+            <div className="space-y-2 p-3 rounded-lg border border-dashed">
+              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm h-8" />
+              <div className="grid grid-cols-2 gap-2">
+                <Input type="number" placeholder="Daily rate $" value={rate} onChange={(e) => setRate(e.target.value)} className="text-sm h-8" />
+                <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-sm h-8"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }} />
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" className="h-8 flex-1" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
+                  {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
+                </Button>
+                <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowForm(false)}>
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={() => setShowForm(true)}>
+              <Plus className="w-3 h-3" /> Add Labor Entry
+            </Button>
+          )}
+        </>
+      )}
+    </Section>
+  );
+}
