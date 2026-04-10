@@ -230,7 +230,22 @@ export default function JobDetail() {
           </div>
         </div>
 
-        {/* ─── CLIENT ─── */}
+        {/* ─── NEXT ACTION BANNER ─── */}
+        {project.next_action && (
+          <Card className="border-2 border-primary/30 bg-primary/5">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Lightbulb className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Next Action</p>
+                <p className="text-sm font-medium text-foreground">{project.next_action}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
         <Section title="Client" icon={<User className="w-3.5 h-3.5" />}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             <EditableField label="Name" value={project.customer_name} onSave={(v) => updateField('customer_name', v)} icon={<User className="w-4 h-4" />} placeholder="Customer name" />
