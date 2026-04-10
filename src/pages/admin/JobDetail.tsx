@@ -444,7 +444,16 @@ function JobDetailsEditForm({ project, onSave, onCancel }: {
   return (
     <div className="space-y-3">
       <FormRow label="Service">
-        <Input value={fields.project_type} onChange={(e) => setFields(f => ({ ...f, project_type: e.target.value }))} placeholder="e.g. Sand & Refinish" />
+        <Select value={fields.project_type} onValueChange={(v) => setFields(f => ({ ...f, project_type: v }))}>
+          <SelectTrigger className="text-sm">
+            <SelectValue placeholder="Select service" />
+          </SelectTrigger>
+          <SelectContent>
+            {['Sanding & Finish', 'New Installation', 'Staircase', 'Repair', 'Vinyl Plank', 'Custom'].map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </FormRow>
       <FormRow label="Sqft">
         <Input type="number" value={fields.square_footage} onChange={(e) => setFields(f => ({ ...f, square_footage: e.target.value }))} placeholder="—" />
