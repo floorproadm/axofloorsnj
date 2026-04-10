@@ -240,28 +240,36 @@ export default function JobDetail() {
 
         {/* ═══ SECTIONS ═══ */}
         <div className="space-y-1 divide-y divide-border/40">
-          {/* 1. Materials */}
-          <MaterialsSection projectId={project.id} />
-
-          {/* 2. Labor */}
-          <LaborSection projectId={project.id} />
-
-          {/* 3. Invoices & Payments */}
-          <Section title="Invoices & Payments" icon={<Receipt className="w-3.5 h-3.5" />}>
-            <InvoicesPaymentsSection projectId={project.id} />
+          {/* 1. Job Info */}
+          <Section title="Job Info" icon={<Hammer className="w-3.5 h-3.5" />} defaultOpen>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
+              <EditableField label="Service" value={project.project_type} onSave={(v) => updateField('project_type', v)} icon={<Hammer className="w-3.5 h-3.5" />} placeholder="e.g. Sand & Refinish" />
+              <EditableField label="Sqft" value={project.square_footage?.toString() || ''} onSave={(v) => updateField('square_footage', v ? parseFloat(v) : null)} type="number" icon={<Ruler className="w-3.5 h-3.5" />} placeholder="sqft" />
+              <EditableField label="Start" value={project.start_date || ''} onSave={(v) => updateField('start_date', v || null)} type="date" icon={<Calendar className="w-3.5 h-3.5" />} placeholder="Start date" />
+              <EditableField label="End" value={project.completion_date || ''} onSave={(v) => updateField('completion_date', v || null)} type="date" icon={<Calendar className="w-3.5 h-3.5" />} placeholder="End date" />
+              <EditableField label="Team Lead" value={project.team_lead || ''} onSave={(v) => updateField('team_lead', v || null)} icon={<User className="w-3.5 h-3.5" />} placeholder="Assign team lead" />
+              <EditableField label="Schedule" value={project.work_schedule || ''} onSave={(v) => updateField('work_schedule', v)} icon={<Clock className="w-3.5 h-3.5" />} placeholder="8:00 AM - 5:00 PM" />
+            </div>
+            {project.team_members && project.team_members.length > 0 && (
+              <div className="mt-3 pt-2 border-t border-border/30">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Members</label>
+                <div className="flex flex-wrap gap-1 mt-1">{project.team_members.map((m: string) => <Badge key={m} variant="secondary" className="text-[10px] h-5">{m}</Badge>)}</div>
+              </div>
+            )}
+            {project.partner_name && (
+              <div className="mt-3 pt-2 border-t border-border/30">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Partner</label>
+                <p className="text-sm font-medium mt-0.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-primary" /> {project.partner_name}</p>
+              </div>
+            )}
           </Section>
 
-          {/* 4. Photos */}
-          <Section title="Photos" icon={<Camera className="w-3.5 h-3.5" />}>
-            <JobProofUploader projectId={project.id} />
+          {/* 2. Comments */}
+          <Section title="Comments" icon={<MessageSquare className="w-3.5 h-3.5" />} defaultOpen>
+            <CommentsSection projectId={project.id} />
           </Section>
 
-          {/* 5. Notes */}
-          <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
-            <EditableField label="Project Notes" value={project.notes || ''} onSave={(v) => updateField('notes', v)} type="textarea" placeholder="Garage code, access info, special instructions..." />
-          </Section>
-
-          {/* 6. Client */}
+          {/* 3. Client */}
           <Section title="Client" icon={<User className="w-3.5 h-3.5" />} defaultOpen={false}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
               <EditableField label="Name" value={project.customer_name} onSave={(v) => updateField('customer_name', v)} icon={<User className="w-3.5 h-3.5" />} placeholder="Customer name" />
@@ -307,33 +315,25 @@ export default function JobDetail() {
             </div>
           </Section>
 
-          {/* 7. Job Info */}
-          <Section title="Job Info" icon={<Hammer className="w-3.5 h-3.5" />} defaultOpen={false}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
-              <EditableField label="Service" value={project.project_type} onSave={(v) => updateField('project_type', v)} icon={<Hammer className="w-3.5 h-3.5" />} placeholder="e.g. Sand & Refinish" />
-              <EditableField label="Sqft" value={project.square_footage?.toString() || ''} onSave={(v) => updateField('square_footage', v ? parseFloat(v) : null)} type="number" icon={<Ruler className="w-3.5 h-3.5" />} placeholder="sqft" />
-              <EditableField label="Start" value={project.start_date || ''} onSave={(v) => updateField('start_date', v || null)} type="date" icon={<Calendar className="w-3.5 h-3.5" />} placeholder="Start date" />
-              <EditableField label="End" value={project.completion_date || ''} onSave={(v) => updateField('completion_date', v || null)} type="date" icon={<Calendar className="w-3.5 h-3.5" />} placeholder="End date" />
-              <EditableField label="Team Lead" value={project.team_lead || ''} onSave={(v) => updateField('team_lead', v || null)} icon={<User className="w-3.5 h-3.5" />} placeholder="Assign team lead" />
-              <EditableField label="Schedule" value={project.work_schedule || ''} onSave={(v) => updateField('work_schedule', v)} icon={<Clock className="w-3.5 h-3.5" />} placeholder="8:00 AM - 5:00 PM" />
-            </div>
-            {project.team_members && project.team_members.length > 0 && (
-              <div className="mt-3 pt-2 border-t border-border/30">
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Members</label>
-                <div className="flex flex-wrap gap-1 mt-1">{project.team_members.map((m: string) => <Badge key={m} variant="secondary" className="text-[10px] h-5">{m}</Badge>)}</div>
-              </div>
-            )}
-            {project.partner_name && (
-              <div className="mt-3 pt-2 border-t border-border/30">
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Partner</label>
-                <p className="text-sm font-medium mt-0.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-primary" /> {project.partner_name}</p>
-              </div>
-            )}
+          {/* 4. Notes */}
+          <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
+            <EditableField label="Project Notes" value={project.notes || ''} onSave={(v) => updateField('notes', v)} type="textarea" placeholder="Garage code, access info, special instructions..." />
           </Section>
 
-          {/* 8. Comments */}
-          <Section title="Comments" icon={<MessageSquare className="w-3.5 h-3.5" />} defaultOpen={false}>
-            <CommentsSection projectId={project.id} />
+          {/* 5. Materials */}
+          <MaterialsSection projectId={project.id} />
+
+          {/* 6. Labor */}
+          <LaborSection projectId={project.id} />
+
+          {/* 7. Invoices & Payments */}
+          <Section title="Invoices & Payments" icon={<Receipt className="w-3.5 h-3.5" />}>
+            <InvoicesPaymentsSection projectId={project.id} />
+          </Section>
+
+          {/* 8. Photos */}
+          <Section title="Photos" icon={<Camera className="w-3.5 h-3.5" />}>
+            <JobProofUploader projectId={project.id} />
           </Section>
         </div>
       </div>
