@@ -214,7 +214,7 @@ export default function JobDetail() {
         {project.next_action && (
           <div className="flex items-center gap-2 px-3 py-2 mt-3 rounded-md border border-primary/20 bg-primary/5">
             <Target className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-            <span className="text-xs font-medium text-foreground">{project.next_action}</span>
+            <span className="text-sm font-medium text-foreground">{project.next_action}</span>
           </div>
         )}
 
@@ -476,11 +476,11 @@ function CommentsSection({ projectId }: { projectId: string }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold">{c.author_name}</span>
+                  <span className="text-xs font-semibold text-foreground">{c.author_name}</span>
                   <span className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                   <Button variant="ghost" size="icon" className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100" onClick={() => handleDelete(c.id)}><Trash2 className="w-2 h-2 text-destructive" /></Button>
                 </div>
-                <p className="text-xs text-foreground/85 leading-snug">{c.content}</p>
+                <p className="text-sm text-foreground/85 leading-snug">{c.content}</p>
                 {c.image_url && <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-1"><img src={c.image_url} alt="" className="max-h-24 rounded border border-border/40 object-cover" /></a>}
               </div>
             </div>
@@ -524,11 +524,11 @@ function MaterialsSection({ projectId }: { projectId: string }) {
               {materials.map((m) => (
                 <div key={m.id} className="group flex items-center justify-between py-1 px-1 rounded hover:bg-muted/20 transition-colors">
                   <div className="min-w-0">
-                    <span className="text-xs font-medium text-foreground">{m.description}</span>
+                    <span className="text-sm font-medium text-foreground">{m.description}</span>
                     <span className="text-xs text-muted-foreground ml-2">{m.supplier || ''}</span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-xs font-semibold tabular-nums">{formatCurrency(m.amount)}</span>
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(m.amount)}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                       onClick={() => deleteMaterial({ id: m.id, projectId })}><Trash2 className="w-2.5 h-2.5" /></Button>
                   </div>
@@ -595,11 +595,11 @@ function LaborSection({ projectId }: { projectId: string }) {
               {entries.map((e) => (
                 <div key={e.id} className="group flex items-center justify-between py-1 px-1 rounded hover:bg-muted/20 transition-colors">
                   <div className="min-w-0">
-                    <span className="text-xs font-medium text-foreground">{e.worker_name}</span>
+                    <span className="text-sm font-medium text-foreground">{e.worker_name}</span>
                     <span className="text-xs text-muted-foreground ml-2">{formatCurrency(e.daily_rate)}/d × {e.days_worked}d</span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-xs font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                       onClick={() => deleteEntry({ id: e.id, projectId })}><Trash2 className="w-2.5 h-2.5" /></Button>
                   </div>
