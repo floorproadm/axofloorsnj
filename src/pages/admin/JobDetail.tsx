@@ -105,8 +105,8 @@ export default function JobDetail() {
 
   return (
     <AdminLayout
-      title={project.customer_name || 'Job'}
-      breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }, { label: project.customer_name || 'Job' }]}
+      title=""
+      breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}
     >
       <div className="max-w-3xl mx-auto pb-16 space-y-6">
 
