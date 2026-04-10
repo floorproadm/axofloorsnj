@@ -87,10 +87,10 @@ function Section({ title, icon, children, defaultOpen = true, badge, className }
   return (
     <Collapsible open={open} onOpenChange={setOpen} className={className}>
       <CollapsibleTrigger asChild>
-        <button className="w-full flex items-center gap-1.5 py-2 px-0.5 hover:bg-muted/20 transition-colors rounded group">
-          <ChevronRight className={cn("w-3.5 h-3.5 text-muted-foreground/50 transition-transform", open && "rotate-90")} />
+        <button className="w-full flex items-center gap-2 py-2.5 px-0.5 hover:bg-muted/20 transition-colors rounded group">
+          <ChevronRight className={cn("w-4 h-4 text-muted-foreground/50 transition-transform", open && "rotate-90")} />
           <span className="text-muted-foreground/60">{icon}</span>
-          <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">{title}</span>
+          <span className="text-sm font-semibold text-foreground/80">{title}</span>
           {badge && <span className="text-xs font-medium text-muted-foreground tabular-nums ml-auto mr-1">{badge}</span>}
         </button>
       </CollapsibleTrigger>
