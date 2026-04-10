@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from "react";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
+import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -298,6 +299,9 @@ export default function JobsManager() {
                 List
               </button>
             </div>
+            <Button onClick={() => setNewJobOpen(true)} size="sm" className="gap-1.5">
+              <span className="text-lg leading-none">+</span> New Job
+            </Button>
           </div>
         </div>
 
