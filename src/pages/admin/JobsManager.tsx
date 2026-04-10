@@ -200,6 +200,7 @@ export default function JobsManager() {
   const [activeFilter, setActiveFilter] = useState<"all" | ProjectStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"board" | "list">("board");
+  const [newJobOpen, setNewJobOpen] = useState(false);
 
   const filteredProjects = useMemo(() => {
     let list = projects || [];
@@ -531,6 +532,7 @@ export default function JobsManager() {
           onRefresh={() => refetch()}
         />
       )}
+      <NewJobDialog open={newJobOpen} onOpenChange={setNewJobOpen} />
     </AdminLayout>
   );
 }
