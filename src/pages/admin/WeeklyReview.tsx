@@ -4,19 +4,20 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  startOfWeek, endOfWeek, subWeeks, format, parseISO,
-  isWithinInterval, addWeeks
+  startOfWeek, endOfWeek, subWeeks, format, addWeeks
 } from "date-fns";
 import {
   DollarSign, TrendingUp, Briefcase, Users, ChevronLeft,
-  ChevronRight, CheckCircle2, AlertTriangle, Clock, BarChart3,
-  Target, ArrowUp, ArrowDown, Minus
+  ChevronRight, CheckCircle2, Clock, BarChart3,
+  Target, ArrowUp, ArrowDown, Minus, Lock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { cn } from "@/lib/utils";
+import { useWeeklyReview, useUpsertWeeklyReview, useWeeklyReviewHistory } from "@/hooks/useWeeklyReviews";
+import { toast } from "sonner";
 
 const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -32,11 +33,20 @@ const marginLabel = (m: number) =>
 
 export default function WeeklyReview() {
   const [weekOffset, setWeekOffset] = useState(0);
+  const [reviewNotes, setReviewNotes] = useState('');
+  const [actionItems, setActionItems] = useState('');
 
   const baseDate = subWeeks(new Date(), weekOffset);
   const weekStart = startOfWeek(baseDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(baseDate, { weekStartsOn: 0 });
   const isCurrentWeek = weekOffset === 0;
+  const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+  const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
+
+  const { data: weekReview } = useWeeklyReview(weekStartStr);
+  const { data: reviewHistory = [] } = useWeeklyReviewHistory();
+  const { mutateAsync: upsertReview, isPending: isSaving } = useUpsertWeeklyReview();
+  const isWeekClosed = weekReview?.status === 'closed';
 
   const weekLabel = isCurrentWeek
     ? "This Week"
@@ -369,6 +379,122 @@ export default function WeeklyReview() {
                         </div>
                       );
                     })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Close Week + Notes */}
+            <Card className="border-border/50">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {isWeekClosed ? '✅ Week Closed' : 'Week Notes & Close'}
+                  </p>
+                  {isWeekClosed && weekReview?.closed_at && (
+                    <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Lock className="w-3 h-3" /> Closed {new Date(weekReview.closed_at).toLocaleDateString()}
+                    </Badge>
+                  )}
+                </div>
+                <Textarea
+                  placeholder="Notes about this week (wins, issues, observations)..."
+                  value={reviewNotes || weekReview?.notes || ''}
+                  onChange={(e) => setReviewNotes(e.target.value)}
+                  className="text-sm min-h-[60px]"
+                  disabled={isWeekClosed}
+                />
+                <Textarea
+                  placeholder="Action items for next week..."
+                  value={actionItems || weekReview?.action_items || ''}
+                  onChange={(e) => setActionItems(e.target.value)}
+                  className="text-sm min-h-[60px]"
+                  disabled={isWeekClosed}
+                />
+                {!isWeekClosed && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      disabled={isSaving}
+                      onClick={async () => {
+                        try {
+                          await upsertReview({
+                            week_start: weekStartStr,
+                            week_end: weekEndStr,
+                            total_revenue: totalRevenue,
+                            total_profit: totalProfit,
+                            avg_margin: avgMargin,
+                            jobs_completed: completedCount,
+                            leads_won: wonLeads,
+                            notes: reviewNotes || weekReview?.notes || '',
+                            action_items: actionItems || weekReview?.action_items || '',
+                            status: 'open',
+                          });
+                          toast.success('Notes saved');
+                        } catch { toast.error('Error saving'); }
+                      }}
+                    >
+                      Save Notes
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1 gap-1"
+                      disabled={isSaving}
+                      onClick={async () => {
+                        try {
+                          await upsertReview({
+                            week_start: weekStartStr,
+                            week_end: weekEndStr,
+                            total_revenue: totalRevenue,
+                            total_profit: totalProfit,
+                            avg_margin: avgMargin,
+                            jobs_completed: completedCount,
+                            leads_won: wonLeads,
+                            notes: reviewNotes || weekReview?.notes || '',
+                            action_items: actionItems || weekReview?.action_items || '',
+                            status: 'closed',
+                          });
+                          toast.success('Week closed ✓');
+                        } catch { toast.error('Error closing week'); }
+                      }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Close Week
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* History */}
+            {reviewHistory.length > 0 && (
+              <Card className="border-border/50">
+                <CardContent className="p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    Past Reviews ({reviewHistory.length})
+                  </p>
+                  <div className="space-y-1.5">
+                    {reviewHistory.map((r) => (
+                      <div key={r.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors cursor-pointer"
+                        onClick={() => {
+                          const weekDate = new Date(r.week_start + 'T12:00:00');
+                          const now = new Date();
+                          const diffWeeks = Math.round((now.getTime() - weekDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+                          setWeekOffset(Math.max(0, diffWeeks));
+                        }}>
+                        <div>
+                          <p className="text-sm font-medium">Week of {format(new Date(r.week_start + 'T12:00:00'), 'MMM d')}</p>
+                          <p className="text-xs text-muted-foreground">{r.jobs_completed} jobs · {r.leads_won} leads won</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold">${r.total_revenue.toLocaleString()}</p>
+                          <p className={cn("text-xs font-medium", r.avg_margin >= 30 ? "text-emerald-500" : r.avg_margin >= 15 ? "text-amber-500" : "text-red-500")}>
+                            {r.avg_margin.toFixed(1)}% margin
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

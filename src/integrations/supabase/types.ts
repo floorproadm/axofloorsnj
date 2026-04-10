@@ -1069,6 +1069,73 @@ export type Database = {
           },
         ]
       }
+      labor_entries: {
+        Row: {
+          created_at: string | null
+          daily_rate: number
+          days_worked: number
+          id: string
+          is_paid: boolean | null
+          notes: string | null
+          organization_id: string
+          project_id: string
+          role: string | null
+          total_cost: number | null
+          work_date: string | null
+          worker_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          daily_rate?: number
+          days_worked?: number
+          id?: string
+          is_paid?: boolean | null
+          notes?: string | null
+          organization_id: string
+          project_id: string
+          role?: string | null
+          total_cost?: number | null
+          work_date?: string | null
+          worker_name: string
+        }
+        Update: {
+          created_at?: string | null
+          daily_rate?: number
+          days_worked?: number
+          id?: string
+          is_paid?: boolean | null
+          notes?: string | null
+          organization_id?: string
+          project_id?: string
+          role?: string | null
+          total_cost?: number | null
+          work_date?: string | null
+          worker_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "labor_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labor_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labor_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       lead_notes: {
         Row: {
           attachment_name: string | null
@@ -1256,6 +1323,73 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "partners"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_costs: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string
+          id: string
+          is_paid: boolean | null
+          notes: string | null
+          organization_id: string
+          project_id: string
+          purchase_date: string | null
+          receipt_url: string | null
+          supplier: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          description?: string
+          id?: string
+          is_paid?: boolean | null
+          notes?: string | null
+          organization_id: string
+          project_id: string
+          purchase_date?: string | null
+          receipt_url?: string | null
+          supplier?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string
+          id?: string
+          is_paid?: boolean | null
+          notes?: string | null
+          organization_id?: string
+          project_id?: string
+          purchase_date?: string | null
+          receipt_url?: string | null
+          supplier?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_costs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_costs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_costs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
           },
         ]
       }
@@ -2043,6 +2177,8 @@ export type Database = {
           customer_phone: string
           estimated_cost: number | null
           id: string
+          next_action: string | null
+          next_action_date: string | null
           notes: string | null
           organization_id: string
           project_status: string
@@ -2069,6 +2205,8 @@ export type Database = {
           customer_phone: string
           estimated_cost?: number | null
           id?: string
+          next_action?: string | null
+          next_action_date?: string | null
           notes?: string | null
           organization_id: string
           project_status?: string
@@ -2095,6 +2233,8 @@ export type Database = {
           customer_phone?: string
           estimated_cost?: number | null
           id?: string
+          next_action?: string | null
+          next_action_date?: string | null
           notes?: string | null
           organization_id?: string
           project_status?: string
@@ -2895,6 +3035,108 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_review_projects: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          weekly_review_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          weekly_review_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          weekly_review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_review_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_review_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "weekly_review_projects_weekly_review_id_fkey"
+            columns: ["weekly_review_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_reviews: {
+        Row: {
+          action_items: string | null
+          avg_margin: number | null
+          closed_at: string | null
+          created_at: string | null
+          id: string
+          jobs_completed: number | null
+          leads_won: number | null
+          notes: string | null
+          organization_id: string
+          status: string | null
+          total_profit: number | null
+          total_revenue: number | null
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          action_items?: string | null
+          avg_margin?: number | null
+          closed_at?: string | null
+          created_at?: string | null
+          id?: string
+          jobs_completed?: number | null
+          leads_won?: number | null
+          notes?: string | null
+          organization_id: string
+          status?: string | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          action_items?: string | null
+          avg_margin?: number | null
+          closed_at?: string | null
+          created_at?: string | null
+          id?: string
+          jobs_completed?: number | null
+          leads_won?: number | null
+          notes?: string | null
+          organization_id?: string
+          status?: string | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_reviews_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       leads_estimate_scheduled_stale: {
@@ -3010,6 +3252,10 @@ export type Database = {
           project_id: string
           total_cost: number
         }[]
+      }
+      compute_project_next_action: {
+        Args: { p_project_id: string }
+        Returns: undefined
       }
       convert_lead_to_project: {
         Args: { p_lead_id: string; p_project_type: string }
