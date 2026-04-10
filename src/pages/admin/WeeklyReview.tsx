@@ -33,11 +33,20 @@ const marginLabel = (m: number) =>
 
 export default function WeeklyReview() {
   const [weekOffset, setWeekOffset] = useState(0);
+  const [reviewNotes, setReviewNotes] = useState('');
+  const [actionItems, setActionItems] = useState('');
 
   const baseDate = subWeeks(new Date(), weekOffset);
   const weekStart = startOfWeek(baseDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(baseDate, { weekStartsOn: 0 });
   const isCurrentWeek = weekOffset === 0;
+  const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+  const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
+
+  const { data: weekReview } = useWeeklyReview(weekStartStr);
+  const { data: reviewHistory = [] } = useWeeklyReviewHistory();
+  const { mutateAsync: upsertReview, isPending: isSaving } = useUpsertWeeklyReview();
+  const isWeekClosed = weekReview?.status === 'closed';
 
   const weekLabel = isCurrentWeek
     ? "This Week"
