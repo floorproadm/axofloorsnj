@@ -17,9 +17,10 @@ import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import {
-  CheckCircle, Clock, DollarSign, MapPin,
-  AlertTriangle, Loader2, User, Trash2, Phone, Mail,
-  X, LayoutGrid, List, ExternalLink, Navigation
+  CheckCircle, Clock, DollarSign, MapPin, Hammer,
+  AlertTriangle, Loader2, User, Trash2, Phone, Mail, Ruler,
+  X, LayoutGrid, List, ExternalLink, Navigation, Users,
+  StickyNote, MessageSquare, ImagePlus, Send
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
