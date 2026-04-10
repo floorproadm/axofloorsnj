@@ -417,6 +417,14 @@ function MetricCard({ label, value, sub, icon, accent }: {
 function JobDetailsEditForm({ project, onSave, onCancel }: {
   project: any; onSave: (fields: Record<string, any>) => Promise<void>; onCancel: () => void;
 }) {
+  const { data: crewMembers = [] } = useQuery({
+    queryKey: ['crew-members-select'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('profiles').select('id, full_name, role').order('full_name');
+      if (error) throw error;
+      return (data ?? []).filter((p: any) => p.full_name);
+    },
+  });
   const [fields, setFields] = useState({
     project_type: project.project_type || '',
     square_footage: project.square_footage?.toString() || '',
