@@ -342,7 +342,13 @@ export default function JobDetail() {
           <JobCostEditor projectId={project.id} />
         </Section>
 
-        {/* ─── NOTES ─── */}
+        {/* ─── MATERIALS ─── */}
+        <MaterialsSection projectId={project.id} />
+
+        {/* ─── LABOR ─── */}
+        <LaborSection projectId={project.id} />
+
+
         <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
           <EditableField label="Project Notes" value={project.notes || ''} onSave={(v) => updateField('notes', v)} type="textarea" placeholder="Garage code, access info, special instructions..." />
         </Section>
