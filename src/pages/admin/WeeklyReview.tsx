@@ -4,19 +4,20 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  startOfWeek, endOfWeek, subWeeks, format, parseISO,
-  isWithinInterval, addWeeks
+  startOfWeek, endOfWeek, subWeeks, format, addWeeks
 } from "date-fns";
 import {
   DollarSign, TrendingUp, Briefcase, Users, ChevronLeft,
-  ChevronRight, CheckCircle2, AlertTriangle, Clock, BarChart3,
-  Target, ArrowUp, ArrowDown, Minus
+  ChevronRight, CheckCircle2, Clock, BarChart3,
+  Target, ArrowUp, ArrowDown, Minus, Lock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { cn } from "@/lib/utils";
+import { useWeeklyReview, useUpsertWeeklyReview, useWeeklyReviewHistory } from "@/hooks/useWeeklyReviews";
+import { toast } from "sonner";
 
 const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
