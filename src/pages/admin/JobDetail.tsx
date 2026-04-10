@@ -108,7 +108,7 @@ export default function JobDetail() {
       title=""
       breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}
     >
-      <div className="max-w-3xl mx-auto pb-16 space-y-6">
+      <div className="max-w-5xl mx-auto pb-16 space-y-6">
 
         {/* ═══ OPERATIONAL HEADER ═══ */}
         <div className="space-y-4">
