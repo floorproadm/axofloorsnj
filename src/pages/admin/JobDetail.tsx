@@ -16,13 +16,16 @@ import { JobProofUploader } from '@/components/admin/JobProofUploader';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { useJobCost } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/hooks/useMaterialCosts';
+import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry } from '@/hooks/useLaborEntries';
 import { cn, formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Loader2, User, Phone, Mail, MapPin, Ruler, Calendar,
   Clock, Hammer, DollarSign, ChevronDown,
   Camera, Pencil, Check, X, Navigation, Send, Users,
-  Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen
+  Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
+  Package, HardHat, Plus, Lightbulb
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
