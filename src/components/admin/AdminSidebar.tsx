@@ -19,6 +19,7 @@ import {
   DollarSign,
   Zap,
   Truck,
+  FolderKanban,
 } from "lucide-react";
 import {
   Sidebar,
@@ -65,7 +66,7 @@ export function AdminSidebar() {
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
     { title: "Jobs", url: "/admin/jobs", icon: Building },
-    { title: "Projects", url: "/admin/projects", icon: Home },
+    { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: t("sidebar.pagamentos"), url: "/admin/payments", icon: DollarSign },
     { title: "Performance", url: "/admin/performance", icon: BarChart3 },
   ];
