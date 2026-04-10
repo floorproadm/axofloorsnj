@@ -1,38 +1,109 @@
 
+Objetivo: parar de “maquiar” a tela e transformar o Job Detail numa página realmente útil, com foco primeiro em funcionalidade real e só depois em visual.
 
-# Simplificação Radical — "Notion-like" Experience
+1. Diagnóstico do problema atual
+- Hoje a tela está tentando parecer “premium”, mas a experiência principal continua fraca:
+  - muita UI custom sem hierarquia operacional clara;
+  - ações importantes espalhadas entre cards e collapses;
+  - vários blocos fazem CRUD direto, mas sem sensação de fluxo robusto;
+  - parte do estado visual parece elegante, mas não comunica o que está salvo, pendente ou quebrado.
+- Encontrei também inconsistências técnicas que explicam a sensação de “não funciona de verdade”:
+  - o produto/documentação fala em `in_production`, mas há lógica nova usando `in_progress` em SQL;
+  - `job_costs` tem campos gerados no banco, porém a UI ainda tenta tratar custos como edição manual em alguns pontos;
+  - materiais e labor atualizam `job_costs` via trigger, mas o layout atual não deixa isso óbvio;
+  - invoices/payments no Job Detail são só um resumo com navegação para outra página, então a seção parece incompleta.
 
-## O Problema
-O app está cheio de gates, validações obrigatórias, progress bars, e 7 abas separadas. Para um crew de hardwood flooring, isso é overengineering. No Notion, você abre, escreve, e pronto. Precisamos dessa mesma fluidez.
+2. Direção de correção
+Vou refazer a tela com uma filosofia mais “operational control panel” e menos “showcase UI”:
+- menos cards decorativos;
+- mais estrutura fixa e previsível;
+- mais clareza de status, bloqueios e próximos passos;
+- menos edição inline espalhada;
+- mais ações com feedback explícito.
 
-## Status: ✅ Implementado
+3. O que vou implementar
+A. Reestruturar o topo da página
+- Transformar o header em um bloco operacional real:
+  - título do job;
+  - cliente + contato;
+  - status do projeto;
+  - next action;
+  - saúde financeira;
+  - ações rápidas relevantes.
+- Remover ruído visual e deixar o topo responder: “o que é esse job, em que estado está, o que falta fazer?”
 
-### Alinhamento com Modelo Notion (Abril 2026)
+B. Substituir edição inline excessiva por blocos mais confiáveis
+- Reduzir o uso de `EditableField` em massa.
+- Usar padrão híbrido:
+  - leitura clara por padrão;
+  - botões “Edit” por seção;
+  - campos agrupados e salvos com confirmação visível.
+- Isso melhora percepção de controle e reduz sensação de UI improvisada.
 
-Novas tabelas criadas:
-- **material_costs** — registros individuais de compra por projeto (description, supplier, amount, receipt_url, is_paid)
-- **labor_entries** — custo de mão de obra por job/dia (worker_name, role, daily_rate, days_worked, total_cost calculado)
-- **weekly_reviews** — entidade persistente para governança semanal (notes, action_items, status open/closed)
-- **weekly_review_projects** — tabela de junção projects ↔ weekly reviews
+C. Reorganizar a página por fluxo de operação
+Ordem planejada:
+1. Header operacional
+2. Client
+3. Job info
+4. Notes / Comments
+5. Materials
+6. Labor
+7. Financials / Invoices & Payments
+8. Photos / Proof
+- Cada seção terá um papel claro: dados, execução, financeiro, evidência.
 
-Triggers de sincronização:
-- material_costs → job_costs.material_cost (auto-sync)
-- labor_entries → job_costs.labor_cost (auto-sync)
-- compute_project_next_action() — calcula next_action inteligente
+D. Fazer as seções “trabalharem de verdade”
+- Materials:
+  - lista mais clara;
+  - formulário persistente e melhor validado;
+  - total visível e sincronizado com custos.
+- Labor:
+  - mesmo padrão de materials;
+  - custo total e composição mais legíveis.
+- Notes / Comments:
+  - separar melhor “nota estrutural do job” de “timeline/comentários”.
+- Invoices & Payments:
+  - deixar explícito que é um resumo operacional;
+  - exibir melhor saldo, últimos eventos e CTA útil.
+- Photos:
+  - destacar before/after e estado de completion gate.
 
-Colunas adicionadas em projects:
-- next_action (orientação automática)
-- next_action_date
+4. Correções funcionais prioritárias
+Antes de qualquer polish visual, vou alinhar a lógica:
+- revisar e corrigir inconsistência `in_production` vs `in_progress`;
+- garantir que “next action” e estados do projeto reflitam o status real do banco;
+- revisar invalidation/refetch nas mutações para evitar sensação de “não salvou”;
+- conferir se a tela usa corretamente os campos gerados de `job_costs` e não passa a impressão de edição manual indevida;
+- melhorar feedbacks de sucesso/erro nas ações principais.
 
-### JobDetail — Seções adicionadas
-- **Next Action Banner** no topo (quando existe orientação)
-- **Materials** — seção colapsável com lista + inline add/delete
-- **Labor** — seção colapsável com worker name, daily rate, days worked
+5. Resultado esperado
+Depois dessa refatoração, a tela deve:
+- parecer mais séria e menos “mock bonita”;
+- mostrar mais valor acima da dobra;
+- exigir menos scroll e menos interpretação;
+- deixar claro o que está salvo, o que falta e o que bloqueia o job;
+- recuperar confiança porque a UX vai refletir o backend real.
 
-### WeeklyReview — Persistência
-- Save Notes + Close Week (snapshot semanal persistido)
-- Histórico de semanas anteriores clicável
+6. Arquivos que pretendo mexer
+- `src/pages/admin/JobDetail.tsx`
+- `src/components/admin/job-detail/JobFinancialHeader.tsx`
+- `src/components/admin/job-detail/InvoicesPaymentsSection.tsx`
+- possivelmente hooks ligados à tela:
+  - `src/hooks/useJobCosts.ts`
+  - `src/hooks/useMaterialCosts.ts`
+  - `src/hooks/useLaborEntries.ts`
+- e, se necessário, uma correção backend/migration para alinhar status e regras operacionais.
 
-### JobCostEditor — Read-only auto-calculado
-- Material e Labor mostram totais auto-calculados das novas tabelas
-- Apenas Additional Costs e Revenue são editáveis manualmente
+7. Detalhes técnicos
+- Vou preservar os triggers existentes que sincronizam `material_costs` e `labor_entries` com `job_costs`.
+- Não vou editar os arquivos gerados da integração.
+- Se a inconsistência de status estiver realmente no backend, a correção certa é via migration, não gambiarra no frontend.
+- A meta não é “mais design”; é reduzir divergência entre UI, fluxo operacional e dados reais.
+
+8. Escopo recomendado
+Eu sugiro fazer em 2 passos:
+- Passo 1: funcionalidade + arquitetura da tela;
+- Passo 2: refinamento visual fino.
+Assim evitamos gastar mais créditos em maquiagem antes de estabilizar a experiência.
+
+Se você aprovar, eu sigo com uma refatoração objetiva do Job Detail focada em confiança operacional, não em enfeite.
