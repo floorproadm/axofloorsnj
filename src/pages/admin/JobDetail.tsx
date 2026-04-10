@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
@@ -20,23 +21,23 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Loader2, User, Phone, Mail, Ruler, Calendar,
-  Clock, Hammer, ChevronRight,
+  Clock, Hammer, ChevronDown, ChevronRight,
   Camera, Pencil, Check, X, Navigation, Send, Users,
   Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
-  Package, HardHat, Plus, Target, Receipt
+  Package, HardHat, Plus, Target, Receipt, MapPin, ExternalLink
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending', dot: 'bg-amber-500' },
-  { value: 'in_production', label: 'Active', dot: 'bg-blue-500' },
-  { value: 'completed', label: 'Done', dot: 'bg-emerald-500' },
+  { value: 'pending', label: 'Pending', dot: 'bg-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
+  { value: 'in_production', label: 'Active', dot: 'bg-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
+  { value: 'completed', label: 'Done', dot: 'bg-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
 ];
 
-// ─── Compact property row ───
-function PropRow({ label, value, icon, onSave, type = 'text', placeholder }: {
+// ─── Inline editable field ───
+function EditableField({ label, value, icon, onSave, type = 'text', placeholder }: {
   label: string; value: string; icon: React.ReactNode;
   onSave: (v: string) => Promise<void>; type?: 'text' | 'date' | 'number';
   placeholder?: string;
@@ -53,53 +54,64 @@ function PropRow({ label, value, icon, onSave, type = 'text', placeholder }: {
 
   if (editing) {
     return (
-      <div className="flex items-center gap-2 py-1.5">
-        <span className="text-muted-foreground/50 w-4 flex-shrink-0">{icon}</span>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
-        <Input type={type} value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm h-8 px-2 bg-muted/40 border-border/50 flex-1"
+      <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-muted/30">
+        <span className="text-muted-foreground w-5 flex-shrink-0">{icon}</span>
+        <span className="text-sm font-medium text-muted-foreground w-20 flex-shrink-0">{label}</span>
+        <Input type={type} value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm h-9 flex-1"
           autoFocus onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setDraft(value); setEditing(false); } }} />
-        <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-500" onClick={save} disabled={saving}>
-          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+        <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-600" onClick={save} disabled={saving}>
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
         </Button>
-        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground" onClick={() => { setDraft(value); setEditing(false); }}>
-          <X className="w-3.5 h-3.5" />
+        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={() => { setDraft(value); setEditing(false); }}>
+          <X className="w-4 h-4" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="group flex items-center gap-2 py-1.5 cursor-pointer hover:bg-muted/20 rounded -mx-1 px-1 transition-colors" onClick={() => { setDraft(value); setEditing(true); }}>
-      <span className="text-muted-foreground/50 w-4 flex-shrink-0">{icon}</span>
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
-      <span className={cn("text-sm flex-1 truncate", value ? "text-foreground" : "text-muted-foreground/40 italic")}>{value || placeholder || '—'}</span>
-      <Pencil className="w-3 h-3 text-muted-foreground/0 group-hover:text-muted-foreground/40 flex-shrink-0 transition-opacity" />
+    <div className="group flex items-center gap-3 py-2.5 px-3 cursor-pointer hover:bg-muted/30 rounded-lg transition-colors" onClick={() => { setDraft(value); setEditing(true); }}>
+      <span className="text-muted-foreground w-5 flex-shrink-0">{icon}</span>
+      <span className="text-sm font-medium text-muted-foreground w-20 flex-shrink-0">{label}</span>
+      <span className={cn("text-sm font-medium flex-1 truncate", value ? "text-foreground" : "text-muted-foreground/40 italic")}>{value || placeholder || '—'}</span>
+      <Pencil className="w-3.5 h-3.5 text-muted-foreground/0 group-hover:text-muted-foreground/50 flex-shrink-0 transition-opacity" />
     </div>
   );
 }
 
-// ─── Collapsible section (compact) ───
-function Section({ title, icon, children, defaultOpen = true, badge, className }: {
+// ─── Section card ───
+function SectionCard({ title, icon, children, defaultOpen = true, badge, action }: {
   title: string; icon: React.ReactNode; children: React.ReactNode;
-  defaultOpen?: boolean; badge?: string; className?: string;
+  defaultOpen?: boolean; badge?: string; action?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className={className}>
-      <CollapsibleTrigger asChild>
-        <button className="w-full flex items-center gap-2 py-2.5 px-0.5 hover:bg-muted/20 transition-colors rounded group">
-          <ChevronRight className={cn("w-4 h-4 text-muted-foreground/50 transition-transform", open && "rotate-90")} />
-          <span className="text-muted-foreground/60">{icon}</span>
-          <span className="text-sm font-semibold text-foreground/80">{title}</span>
-          {badge && <span className="text-xs font-medium text-muted-foreground tabular-nums ml-auto mr-1">{badge}</span>}
-        </button>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="pl-5 pb-1.5">
-          {children}
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+    <Card className="overflow-hidden border-border/50 shadow-sm">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer hover:bg-muted/20 transition-colors py-3.5 px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground flex-shrink-0">
+                {icon}
+              </div>
+              <CardTitle className="text-base font-semibold text-foreground flex-1">{title}</CardTitle>
+              {badge && (
+                <Badge variant="secondary" className="text-xs font-bold tabular-nums px-2.5 py-0.5">
+                  {badge}
+                </Badge>
+              )}
+              {action && <div onClick={(e) => e.stopPropagation()}>{action}</div>}
+              <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", !open && "-rotate-90")} />
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className="pt-0 pb-4 px-4">
+            {children}
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   );
 }
 
@@ -149,7 +161,7 @@ export default function JobDetail() {
   if (isLoading) {
     return (
       <AdminLayout title="Job" breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}>
-        <div className="flex items-center justify-center py-20"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
       </AdminLayout>
     );
   }
@@ -157,7 +169,7 @@ export default function JobDetail() {
   if (!project) {
     return (
       <AdminLayout title="Job" breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }]}>
-        <div className="text-center py-20 text-muted-foreground">Job not found</div>
+        <div className="text-center py-20 text-muted-foreground text-lg">Job not found</div>
       </AdminLayout>
     );
   }
@@ -171,111 +183,136 @@ export default function JobDetail() {
       title={project.address || project.customer_name || 'Job'}
       breadcrumbs={[{ label: 'Jobs', href: '/admin/jobs' }, { label: project.address || project.customer_name || 'Job' }]}
     >
-      <div className="max-w-3xl mx-auto pb-10">
+      <div className="max-w-4xl mx-auto pb-12 space-y-5">
 
-        {/* ═══ ZONE 1: HEADER ═══ */}
-        <div className="flex items-center gap-2.5 mb-3">
-          <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 text-muted-foreground" onClick={() => navigate('/admin/jobs')}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <h1 className="text-lg font-bold text-foreground leading-tight truncate flex-1">
-            {project.address || project.customer_name || 'New Job'}
-          </h1>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1" onClick={() => setProposalOpen(true)}>
-              <FileText className="w-3 h-3" /> Proposal
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1" onClick={() => setDocsOpen(true)}>
-              <FolderOpen className="w-3 h-3" /> Docs
-            </Button>
-            <Select value={project.project_status} onValueChange={handleStatusChange}>
-              <SelectTrigger className="h-6 w-auto min-w-[90px] text-xs font-bold border-border/40 rounded gap-1 bg-card px-2">
-                <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", currentStatus.dot)} />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    <span className="flex items-center gap-2">
-                      <span className={cn("w-1.5 h-1.5 rounded-full", s.dot)} />
-                      {s.label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* ═══ HERO HEADER ═══ */}
+        <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
+          <div className="p-5 sm:p-6">
+            {/* Top row: back + actions */}
+            <div className="flex items-center justify-between mb-4">
+              <Button variant="ghost" size="sm" className="h-9 px-3 text-sm text-muted-foreground hover:text-foreground gap-2" onClick={() => navigate('/admin/jobs')}>
+                <ArrowLeft className="w-4 h-4" /> Back
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-9 text-sm gap-2" onClick={() => setProposalOpen(true)}>
+                  <FileText className="w-4 h-4" /> Proposal
+                </Button>
+                <Button variant="outline" size="sm" className="h-9 text-sm gap-2" onClick={() => setDocsOpen(true)}>
+                  <FolderOpen className="w-4 h-4" /> Docs
+                </Button>
+              </div>
+            </div>
+
+            {/* Title + Status */}
+            <div className="flex flex-col sm:flex-row sm:items-start gap-3 mb-4">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+                  {project.address || project.customer_name || 'New Job'}
+                </h1>
+                {project.customer_name && project.address && (
+                  <p className="text-base text-muted-foreground mt-1 flex items-center gap-1.5">
+                    <User className="w-4 h-4" />
+                    {project.customer_name}
+                    {project.customer_phone && (
+                      <span className="text-muted-foreground/60">· {project.customer_phone}</span>
+                    )}
+                  </p>
+                )}
+                {addressFull && mapsUrl && (
+                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer" 
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 mt-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {addressFull}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+              <Select value={project.project_status} onValueChange={handleStatusChange}>
+                <SelectTrigger className={cn(
+                  "h-10 w-auto min-w-[130px] text-sm font-bold rounded-lg gap-2 px-4 border",
+                  currentStatus.bg
+                )}>
+                  <span className={cn("w-2.5 h-2.5 rounded-full flex-shrink-0", currentStatus.dot)} />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      <span className="flex items-center gap-2 text-sm">
+                        <span className={cn("w-2 h-2 rounded-full", s.dot)} />
+                        {s.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Next Action Banner */}
+            {project.next_action && (
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 mb-4">
+                <Target className="w-5 h-5 text-primary flex-shrink-0" />
+                <span className="text-sm font-semibold text-foreground">{project.next_action}</span>
+              </div>
+            )}
+
+            {/* Partner badge */}
+            {project.partner_name && (
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="outline" className="text-sm gap-1.5 px-3 py-1">
+                  <Users className="w-3.5 h-3.5 text-primary" />
+                  Partner: {project.partner_name}
+                </Badge>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ═══ ZONE 2: FINANCIAL METRICS (dense) ═══ */}
+        {/* ═══ FINANCIAL METRICS ═══ */}
         <JobFinancialHeader projectId={project.id} />
 
-        {/* ═══ ZONE 3: NEXT ACTION ═══ */}
-        {project.next_action && (
-          <div className="flex items-center gap-2 px-3 py-2 mt-3 rounded-md border border-primary/20 bg-primary/5">
-            <Target className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-            <span className="text-sm font-medium text-foreground">{project.next_action}</span>
+        {/* ═══ JOB DETAILS ═══ */}
+        <SectionCard title="Job Details" icon={<Hammer className="w-4 h-4" />} defaultOpen={true}>
+          <div className="divide-y divide-border/30">
+            <EditableField label="Service" value={project.project_type} icon={<Hammer className="w-4 h-4" />} onSave={(v) => updateField('project_type', v)} placeholder="e.g. Sand & Refinish" />
+            <EditableField label="Sqft" value={project.square_footage?.toString() || ''} icon={<Ruler className="w-4 h-4" />} onSave={(v) => updateField('square_footage', v ? parseFloat(v) : null)} type="number" placeholder="—" />
+            <EditableField label="Start Date" value={project.start_date || ''} icon={<Calendar className="w-4 h-4" />} onSave={(v) => updateField('start_date', v || null)} type="date" placeholder="—" />
+            <EditableField label="End Date" value={project.completion_date || ''} icon={<Calendar className="w-4 h-4" />} onSave={(v) => updateField('completion_date', v || null)} type="date" placeholder="—" />
+            <EditableField label="Team Lead" value={project.team_lead || ''} icon={<User className="w-4 h-4" />} onSave={(v) => updateField('team_lead', v || null)} placeholder="Assign team lead" />
+            <EditableField label="Schedule" value={project.work_schedule || ''} icon={<Clock className="w-4 h-4" />} onSave={(v) => updateField('work_schedule', v)} placeholder="8:00 AM - 5:00 PM" />
           </div>
-        )}
+        </SectionCard>
 
-        {/* ═══ ZONE 4: JOB PROPERTIES (inline grid, always visible) ═══ */}
-        <div className="mt-4 mb-1 px-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-            <PropRow label="Service" value={project.project_type} icon={<Hammer className="w-3 h-3" />} onSave={(v) => updateField('project_type', v)} placeholder="e.g. Sand & Refinish" />
-            <PropRow label="Sqft" value={project.square_footage?.toString() || ''} icon={<Ruler className="w-3 h-3" />} onSave={(v) => updateField('square_footage', v ? parseFloat(v) : null)} type="number" placeholder="—" />
-            <PropRow label="Start" value={project.start_date || ''} icon={<Calendar className="w-3 h-3" />} onSave={(v) => updateField('start_date', v || null)} type="date" placeholder="—" />
-            <PropRow label="End" value={project.completion_date || ''} icon={<Calendar className="w-3 h-3" />} onSave={(v) => updateField('completion_date', v || null)} type="date" placeholder="—" />
-            <PropRow label="Lead" value={project.team_lead || ''} icon={<User className="w-3 h-3" />} onSave={(v) => updateField('team_lead', v || null)} placeholder="Assign" />
-            <PropRow label="Hours" value={project.work_schedule || ''} icon={<Clock className="w-3 h-3" />} onSave={(v) => updateField('work_schedule', v)} placeholder="8-5 PM" />
-          </div>
-          {project.partner_name && (
-            <div className="flex items-center gap-1.5 py-1 mt-0.5 text-xs">
-              <Users className="w-3 h-3 text-primary" />
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16">Partner</span>
-              <span className="text-foreground">{project.partner_name}</span>
-            </div>
-          )}
-        </div>
+        {/* ═══ COMMENTS ═══ */}
+        <SectionCard title="Team Comments" icon={<MessageSquare className="w-4 h-4" />} defaultOpen={true}>
+          <CommentsSection projectId={project.id} />
+        </SectionCard>
 
-        {/* ═══ ZONE 5: COMMENTS (always open, prominent) ═══ */}
-        <div className="mt-3 mb-2 rounded-lg border border-border/40 bg-card/50">
-          <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border/30">
-            <MessageSquare className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">Comments</span>
-          </div>
-          <div className="px-3 py-2">
-            <CommentsSection projectId={project.id} />
-          </div>
-        </div>
+        {/* ═══ CLIENT ═══ */}
+        <SectionCard title="Client Info" icon={<User className="w-4 h-4" />} defaultOpen={false}>
+          <ClientSection project={project} updateField={updateField} refetch={refetch} mapsUrl={mapsUrl} />
+        </SectionCard>
 
-        {/* ═══ ZONE 6: COLLAPSIBLE SECTIONS ═══ */}
-        <div className="mt-2 space-y-0 divide-y divide-border/30">
-          {/* Client */}
-          <Section title="Client" icon={<User className="w-3.5 h-3.5" />} defaultOpen={false}>
-            <ClientSection project={project} updateField={updateField} refetch={refetch} mapsUrl={mapsUrl} />
-          </Section>
+        {/* ═══ NOTES ═══ */}
+        <SectionCard title="Notes" icon={<StickyNote className="w-4 h-4" />} defaultOpen={true}>
+          <NotesSection value={project.notes || ''} onSave={(v) => updateField('notes', v)} />
+        </SectionCard>
 
-          {/* Notes */}
-          <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
-            <NotesSection value={project.notes || ''} onSave={(v) => updateField('notes', v)} />
-          </Section>
+        {/* ═══ MATERIALS ═══ */}
+        <MaterialsSection projectId={project.id} />
 
-          {/* Materials */}
-          <MaterialsSection projectId={project.id} />
+        {/* ═══ LABOR ═══ */}
+        <LaborSection projectId={project.id} />
 
-          {/* Labor */}
-          <LaborSection projectId={project.id} />
+        {/* ═══ INVOICES & PAYMENTS ═══ */}
+        <SectionCard title="Invoices & Payments" icon={<Receipt className="w-4 h-4" />} defaultOpen={true}>
+          <InvoicesPaymentsSection projectId={project.id} />
+        </SectionCard>
 
-          {/* Invoices & Payments */}
-          <Section title="Invoices & Payments" icon={<Receipt className="w-3.5 h-3.5" />}>
-            <InvoicesPaymentsSection projectId={project.id} />
-          </Section>
-
-          {/* Photos */}
-          <Section title="Photos" icon={<Camera className="w-3.5 h-3.5" />}>
-            <JobProofUploader projectId={project.id} />
-          </Section>
-        </div>
+        {/* ═══ PHOTOS ═══ */}
+        <SectionCard title="Photos & Proof" icon={<Camera className="w-4 h-4" />} defaultOpen={true}>
+          <JobProofUploader projectId={project.id} />
+        </SectionCard>
       </div>
 
       {/* Sheets */}
@@ -300,52 +337,50 @@ export default function JobDetail() {
 // ═══════════════════════════════════════
 function ClientSection({ project, updateField, refetch, mapsUrl }: any) {
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-        <PropRow label="Name" value={project.customer_name} icon={<User className="w-3 h-3" />} onSave={(v) => updateField('customer_name', v)} placeholder="Customer" />
-        <PropRow label="Phone" value={project.customer_phone} icon={<Phone className="w-3 h-3" />} onSave={(v) => updateField('customer_phone', v)} placeholder="Phone" />
-        <PropRow label="Email" value={project.customer_email || ''} icon={<Mail className="w-3 h-3" />} onSave={(v) => updateField('customer_email', v)} placeholder="Email" />
+    <div className="space-y-2">
+      <div className="divide-y divide-border/30">
+        <EditableField label="Name" value={project.customer_name} icon={<User className="w-4 h-4" />} onSave={(v) => updateField('customer_name', v)} placeholder="Customer name" />
+        <EditableField label="Phone" value={project.customer_phone} icon={<Phone className="w-4 h-4" />} onSave={(v) => updateField('customer_phone', v)} placeholder="Phone number" />
+        <EditableField label="Email" value={project.customer_email || ''} icon={<Mail className="w-4 h-4" />} onSave={(v) => updateField('customer_email', v)} placeholder="Email address" />
       </div>
-      <div className="mt-1 mb-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Address</span>
-        <div className="mt-0.5">
-          <AddressAutocomplete
-            value={project.address || ''}
-            onChange={(v) => updateField('address', v)}
-            onSelect={async (result) => {
-              try {
-                await supabase.from('projects').update({ address: result.full, city: result.city, zip_code: result.zip }).eq('id', project.id);
-                refetch();
-                toast.success('Address updated');
-              } catch { toast.error('Failed'); }
-            }}
-            placeholder="Start typing…"
-          />
-        </div>
+      <div className="pt-3">
+        <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Address</label>
+        <AddressAutocomplete
+          value={project.address || ''}
+          onChange={(v) => updateField('address', v)}
+          onSelect={async (result) => {
+            try {
+              await supabase.from('projects').update({ address: result.full, city: result.city, zip_code: result.zip }).eq('id', project.id);
+              refetch();
+              toast.success('Address updated');
+            } catch { toast.error('Failed'); }
+          }}
+          placeholder="Start typing address…"
+        />
       </div>
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap pt-2">
         {mapsUrl && (
-          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
-            <Navigation className="w-2.5 h-2.5" /> Maps
+          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 text-sm text-muted-foreground font-medium hover:bg-muted hover:text-foreground transition-colors">
+            <Navigation className="w-3.5 h-3.5" /> Maps
           </a>
         )}
         {project.customer_phone && (
           <>
-            <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
-              <Phone className="w-2.5 h-2.5" /> Call
+            <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 text-sm text-muted-foreground font-medium hover:bg-muted hover:text-foreground transition-colors">
+              <Phone className="w-3.5 h-3.5" /> Call
             </a>
-            <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
-              <MessageSquare className="w-2.5 h-2.5" /> SMS
+            <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 text-sm text-muted-foreground font-medium hover:bg-muted hover:text-foreground transition-colors">
+              <MessageSquare className="w-3.5 h-3.5" /> SMS
             </a>
           </>
         )}
         {project.customer_email && (
-          <a href={`mailto:${project.customer_email}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
-            <Mail className="w-2.5 h-2.5" /> Email
+          <a href={`mailto:${project.customer_email}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 text-sm text-muted-foreground font-medium hover:bg-muted hover:text-foreground transition-colors">
+            <Mail className="w-3.5 h-3.5" /> Email
           </a>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -365,12 +400,12 @@ function NotesSection({ value, onSave }: { value: string; onSave: (v: string) =>
 
   if (editing) {
     return (
-      <div className="space-y-1.5">
-        <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm min-h-[72px] bg-muted/30 border-border/40" autoFocus />
-        <div className="flex justify-end gap-1">
-          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setDraft(value); setEditing(false); }}>Cancel</Button>
-          <Button size="sm" className="h-7 text-xs" onClick={save} disabled={saving}>
-            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+      <div className="space-y-3">
+        <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm min-h-[100px]" autoFocus />
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="ghost" className="h-9 text-sm" onClick={() => { setDraft(value); setEditing(false); }}>Cancel</Button>
+          <Button size="sm" className="h-9 text-sm" onClick={save} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
           </Button>
         </div>
       </div>
@@ -378,8 +413,8 @@ function NotesSection({ value, onSave }: { value: string; onSave: (v: string) =>
   }
 
   return (
-    <div className="group cursor-pointer rounded px-1 py-1 hover:bg-muted/20 transition-colors -mx-1" onClick={() => { setDraft(value); setEditing(true); }}>
-      <p className={cn("text-xs leading-relaxed", value ? "text-foreground/80" : "text-muted-foreground/40 italic")}>
+    <div className="group cursor-pointer rounded-lg px-3 py-3 hover:bg-muted/20 transition-colors -mx-1" onClick={() => { setDraft(value); setEditing(true); }}>
+      <p className={cn("text-sm leading-relaxed whitespace-pre-wrap", value ? "text-foreground" : "text-muted-foreground/40 italic")}>
         {value || 'Click to add notes…'}
       </p>
     </div>
@@ -446,42 +481,62 @@ function CommentsSection({ projectId }: { projectId: string }) {
 
   return (
     <div>
-      <div className="flex gap-1.5 mb-2">
-        <Input placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} className="text-sm h-8 bg-muted/20 border-border/30 flex-1"
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }} />
-        <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageSelect} />
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => fileInputRef.current?.click()}>
-          <ImagePlus className="w-3 h-3" />
-        </Button>
-        <Button size="icon" className="h-7 w-7" disabled={isSubmitting || (!commentText.trim() && !commentImage)} onClick={handleSubmit}>
-          {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-        </Button>
-      </div>
-      {commentImagePreview && (
-        <div className="relative inline-block mb-2">
-          <img src={commentImagePreview} alt="" className="h-12 rounded border border-border/40 object-cover" />
-          <Button variant="destructive" size="icon" className="absolute -top-1 -right-1 h-4 w-4 rounded-full" onClick={clearImage}><X className="w-2 h-2" /></Button>
+      {/* Comment input */}
+      <div className="flex gap-2 mb-4">
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <User className="w-4 h-4 text-primary" />
         </div>
-      )}
+        <div className="flex-1 space-y-2">
+          <Input placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} className="text-sm h-10"
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }} />
+          {commentImagePreview && (
+            <div className="relative inline-block">
+              <img src={commentImagePreview} alt="" className="h-16 rounded-lg border border-border/40 object-cover" />
+              <Button variant="destructive" size="icon" className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full" onClick={clearImage}><X className="w-3 h-3" /></Button>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageSelect} />
+            <Button variant="ghost" size="sm" className="h-8 text-sm text-muted-foreground gap-1.5" onClick={() => fileInputRef.current?.click()}>
+              <ImagePlus className="w-4 h-4" /> Photo
+            </Button>
+            <Button size="sm" className="h-8 text-sm ml-auto gap-1.5" disabled={isSubmitting || (!commentText.trim() && !commentImage)} onClick={handleSubmit}>
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-3.5 h-3.5" /> Send</>}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Comments list */}
       {isLoading ? (
-        <div className="flex justify-center py-2"><Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-muted-foreground/50 text-center py-2 italic">No comments yet</p>
+        <p className="text-sm text-muted-foreground/50 text-center py-4 italic">No comments yet — start the conversation</p>
       ) : (
-        <div className="space-y-0.5 max-h-[280px] overflow-y-auto">
+        <div className="space-y-1 max-h-[350px] overflow-y-auto">
           {comments.map((c: any) => (
-            <div key={c.id} className="group flex gap-2 py-1.5 rounded hover:bg-muted/20 transition-colors">
-              <div className="w-5 h-5 rounded-full bg-muted/60 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <User className="w-2.5 h-2.5 text-muted-foreground" />
+            <div key={c.id} className="group flex gap-3 py-3 px-2 rounded-lg hover:bg-muted/20 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold text-foreground">{c.author_name}</span>
-                  <span className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                  <Button variant="ghost" size="icon" className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100" onClick={() => handleDelete(c.id)}><Trash2 className="w-2 h-2 text-destructive" /></Button>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground">{c.author_name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {' · '}
+                    {new Date(c.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto opacity-0 group-hover:opacity-100" onClick={() => handleDelete(c.id)}>
+                    <Trash2 className="w-3 h-3 text-destructive" />
+                  </Button>
                 </div>
-                <p className="text-sm text-foreground/85 leading-snug">{c.content}</p>
-                {c.image_url && <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-1"><img src={c.image_url} alt="" className="max-h-24 rounded border border-border/40 object-cover" /></a>}
+                <p className="text-sm text-foreground/90 leading-relaxed mt-0.5">{c.content}</p>
+                {c.image_url && (
+                  <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
+                    <img src={c.image_url} alt="" className="max-h-32 rounded-lg border border-border/40 object-cover" />
+                  </a>
+                )}
               </div>
             </div>
           ))}
@@ -514,51 +569,55 @@ function MaterialsSection({ projectId }: { projectId: string }) {
   };
 
   return (
-    <Section title="Materials" icon={<Package className="w-3.5 h-3.5" />} defaultOpen={materials.length > 0} badge={total > 0 ? formatCurrency(total) : undefined}>
+    <SectionCard title="Materials" icon={<Package className="w-4 h-4" />} defaultOpen={materials.length > 0}
+      badge={total > 0 ? formatCurrency(total) : undefined}
+      action={
+        <Button variant="ghost" size="sm" className="h-8 text-sm gap-1.5 text-muted-foreground" onClick={() => setShowForm(true)}>
+          <Plus className="w-3.5 h-3.5" /> Add
+        </Button>
+      }>
       {isLoading ? (
-        <div className="flex justify-center py-2"><Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : (
         <>
-          {materials.length > 0 && (
-            <div className="space-y-0 mb-1.5">
+          {materials.length > 0 ? (
+            <div className="divide-y divide-border/20">
               {materials.map((m) => (
-                <div key={m.id} className="group flex items-center justify-between py-1 px-1 rounded hover:bg-muted/20 transition-colors">
+                <div key={m.id} className="group flex items-center justify-between py-2.5 px-1 rounded hover:bg-muted/20 transition-colors">
                   <div className="min-w-0">
-                    <span className="text-sm font-medium text-foreground">{m.description}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{m.supplier || ''}</span>
+                    <p className="text-sm font-medium text-foreground">{m.description}</p>
+                    {m.supplier && <p className="text-xs text-muted-foreground">{m.supplier}</p>}
                   </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(m.amount)}</span>
-                    <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteMaterial({ id: m.id, projectId })}><Trash2 className="w-2.5 h-2.5" /></Button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-sm font-bold tabular-nums">{formatCurrency(m.amount)}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                      onClick={() => deleteMaterial({ id: m.id, projectId })}><Trash2 className="w-3.5 h-3.5" /></Button>
                   </div>
                 </div>
               ))}
             </div>
+          ) : !showForm && (
+            <p className="text-sm text-muted-foreground/50 text-center py-3 italic">No materials logged yet</p>
           )}
-          {showForm ? (
-            <div className="rounded border border-border/40 bg-muted/10 p-2 space-y-1.5">
-              <div className="grid grid-cols-3 gap-1.5">
-                <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="text-sm h-8 bg-card border-border/40" autoFocus />
-                <Input placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} className="text-sm h-8 bg-card border-border/40" />
-                <Input type="number" placeholder="$ Amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm h-8 bg-card border-border/40"
+          {showForm && (
+            <div className="rounded-xl border border-border/50 bg-muted/20 p-4 space-y-3 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="text-sm h-10" autoFocus />
+                <Input placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} className="text-sm h-10" />
+                <Input type="number" placeholder="$ Amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm h-10"
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowForm(false); }} />
               </div>
-              <div className="flex justify-end gap-1">
-                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button size="sm" className="h-7 text-xs" onClick={handleAdd} disabled={isAdding || !desc.trim() || !amount}>
-                  {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
+              <div className="flex justify-end gap-2">
+                <Button size="sm" variant="ghost" className="h-9 text-sm" onClick={() => setShowForm(false)}>Cancel</Button>
+                <Button size="sm" className="h-9 text-sm" onClick={handleAdd} disabled={isAdding || !desc.trim() || !amount}>
+                  {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add Material'}
                 </Button>
               </div>
             </div>
-          ) : (
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5">
-              <Plus className="w-2.5 h-2.5" /> Add material
-            </button>
           )}
         </>
       )}
-    </Section>
+    </SectionCard>
   );
 }
 
@@ -585,50 +644,54 @@ function LaborSection({ projectId }: { projectId: string }) {
   };
 
   return (
-    <Section title="Labor" icon={<HardHat className="w-3.5 h-3.5" />} defaultOpen={entries.length > 0} badge={total > 0 ? formatCurrency(total) : undefined}>
+    <SectionCard title="Labor" icon={<HardHat className="w-4 h-4" />} defaultOpen={entries.length > 0}
+      badge={total > 0 ? formatCurrency(total) : undefined}
+      action={
+        <Button variant="ghost" size="sm" className="h-8 text-sm gap-1.5 text-muted-foreground" onClick={() => setShowForm(true)}>
+          <Plus className="w-3.5 h-3.5" /> Add
+        </Button>
+      }>
       {isLoading ? (
-        <div className="flex justify-center py-2"><Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : (
         <>
-          {entries.length > 0 && (
-            <div className="space-y-0 mb-1.5">
+          {entries.length > 0 ? (
+            <div className="divide-y divide-border/20">
               {entries.map((e) => (
-                <div key={e.id} className="group flex items-center justify-between py-1 px-1 rounded hover:bg-muted/20 transition-colors">
+                <div key={e.id} className="group flex items-center justify-between py-2.5 px-1 rounded hover:bg-muted/20 transition-colors">
                   <div className="min-w-0">
-                    <span className="text-sm font-medium text-foreground">{e.worker_name}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{formatCurrency(e.daily_rate)}/d × {e.days_worked}d</span>
+                    <p className="text-sm font-medium text-foreground">{e.worker_name}</p>
+                    <p className="text-xs text-muted-foreground">{formatCurrency(e.daily_rate)}/day × {e.days_worked} days</p>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
-                    <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteEntry({ id: e.id, projectId })}><Trash2 className="w-2.5 h-2.5" /></Button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-sm font-bold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                      onClick={() => deleteEntry({ id: e.id, projectId })}><Trash2 className="w-3.5 h-3.5" /></Button>
                   </div>
                 </div>
               ))}
             </div>
+          ) : !showForm && (
+            <p className="text-sm text-muted-foreground/50 text-center py-3 italic">No labor entries yet</p>
           )}
-          {showForm ? (
-            <div className="rounded border border-border/40 bg-muted/10 p-2 space-y-1.5">
-              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm h-8 bg-card border-border/40" autoFocus />
-              <div className="grid grid-cols-2 gap-1.5">
-                <Input type="number" placeholder="Rate $/day" value={rate} onChange={(e) => setRate(e.target.value)} className="text-sm h-8 bg-card border-border/40" />
-                <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-sm h-8 bg-card border-border/40"
+          {showForm && (
+            <div className="rounded-xl border border-border/50 bg-muted/20 p-4 space-y-3 mt-2">
+              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm h-10" autoFocus />
+              <div className="grid grid-cols-2 gap-3">
+                <Input type="number" placeholder="Rate $/day" value={rate} onChange={(e) => setRate(e.target.value)} className="text-sm h-10" />
+                <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-sm h-10"
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowForm(false); }} />
               </div>
-              <div className="flex justify-end gap-1">
-                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button size="sm" className="h-7 text-xs" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
-                  {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
+              <div className="flex justify-end gap-2">
+                <Button size="sm" variant="ghost" className="h-9 text-sm" onClick={() => setShowForm(false)}>Cancel</Button>
+                <Button size="sm" className="h-9 text-sm" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
+                  {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add Entry'}
                 </Button>
               </div>
             </div>
-          ) : (
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5">
-              <Plus className="w-2.5 h-2.5" /> Add labor entry
-            </button>
           )}
         </>
       )}
-    </Section>
+    </SectionCard>
   );
 }
