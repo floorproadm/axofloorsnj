@@ -473,7 +473,17 @@ function JobDetailsEditForm({ project, onSave, onCancel }: {
         <Input type="date" value={fields.completion_date} onChange={(e) => setFields(f => ({ ...f, completion_date: e.target.value }))} />
       </FormRow>
       <FormRow label="Team Lead">
-        <Input value={fields.team_lead} onChange={(e) => setFields(f => ({ ...f, team_lead: e.target.value }))} placeholder="Assign" />
+        <Select value={fields.team_lead} onValueChange={(v) => setFields(f => ({ ...f, team_lead: v }))}>
+          <SelectTrigger className="text-sm">
+            <SelectValue placeholder="Select crew member" />
+          </SelectTrigger>
+          <SelectContent>
+            {crewMembers.map((m: any) => (
+              <SelectItem key={m.id} value={m.full_name}>{m.full_name}{m.role ? ` · ${m.role}` : ''}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormRow>
       </FormRow>
       <FormRow label="Schedule">
         <Input value={fields.work_schedule} onChange={(e) => setFields(f => ({ ...f, work_schedule: e.target.value }))} placeholder="8:00 AM - 5:00 PM" />
