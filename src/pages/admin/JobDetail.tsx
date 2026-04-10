@@ -484,7 +484,6 @@ function JobDetailsEditForm({ project, onSave, onCancel }: {
           </SelectContent>
         </Select>
       </FormRow>
-      </FormRow>
       <FormRow label="Schedule">
         <Input value={fields.work_schedule} onChange={(e) => setFields(f => ({ ...f, work_schedule: e.target.value }))} placeholder="8:00 AM - 5:00 PM" />
       </FormRow>
