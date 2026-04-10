@@ -69,22 +69,22 @@ export function JobFinancialHeader({ projectId }: { projectId: string }) {
     <div className="grid grid-cols-4 gap-px rounded-lg overflow-hidden border border-border/60 bg-border/60">
       {/* Revenue */}
       <div className="bg-card p-3 flex flex-col gap-1">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Revenue</span>
-        <span className="text-base font-bold tabular-nums text-foreground">{formatCurrency(revenue)}</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Revenue</span>
+        <span className="text-lg font-bold tabular-nums text-foreground">{formatCurrency(revenue)}</span>
       </div>
 
       {/* Cost */}
       <div className="bg-card p-3 flex flex-col gap-1">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Cost</span>
-        <span className="text-base font-bold tabular-nums text-foreground">{formatCurrency(totalCost)}</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Cost</span>
+        <span className="text-lg font-bold tabular-nums text-foreground">{formatCurrency(totalCost)}</span>
       </div>
 
       {/* Margin */}
       <div className="bg-card p-3 flex flex-col gap-1">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Margin</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Margin</span>
         <div className="flex items-center gap-1.5">
           <span className={cn(
-            "text-base font-bold tabular-nums",
+            "text-lg font-bold tabular-nums",
             marginOk ? 'text-emerald-500' : margin > 0 ? 'text-amber-500' : 'text-muted-foreground'
           )}>
             {margin.toFixed(1)}%
@@ -99,13 +99,13 @@ export function JobFinancialHeader({ projectId }: { projectId: string }) {
 
       {/* Payment */}
       <div className="bg-card p-3 flex flex-col gap-1">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Payment</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Payment</span>
         <div className="flex items-center gap-1.5">
           <span className={cn("w-2 h-2 rounded-full flex-shrink-0", paymentCfg.dotColor)} />
-          <span className="text-xs font-semibold text-foreground">{paymentCfg.label}</span>
+          <span className="text-sm font-semibold text-foreground">{paymentCfg.label}</span>
         </div>
         {paymentData && paymentData.balance > 0 && paymentStatus !== 'paid' && (
-          <span className="text-[10px] text-muted-foreground tabular-nums">
+          <span className="text-xs text-muted-foreground tabular-nums">
             Due: {formatCurrency(paymentData.balance)}
           </span>
         )}
