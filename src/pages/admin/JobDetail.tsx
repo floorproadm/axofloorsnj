@@ -53,27 +53,27 @@ function PropRow({ label, value, icon, onSave, type = 'text', placeholder }: {
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1.5 py-1">
+      <div className="flex items-center gap-2 py-1.5">
         <span className="text-muted-foreground/50 w-4 flex-shrink-0">{icon}</span>
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
-        <Input type={type} value={draft} onChange={(e) => setDraft(e.target.value)} className="text-xs h-6 px-2 bg-muted/40 border-border/50 flex-1"
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
+        <Input type={type} value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm h-8 px-2 bg-muted/40 border-border/50 flex-1"
           autoFocus onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setDraft(value); setEditing(false); } }} />
-        <Button size="icon" variant="ghost" className="h-5 w-5 text-emerald-500" onClick={save} disabled={saving}>
-          {saving ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Check className="w-2.5 h-2.5" />}
+        <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-500" onClick={save} disabled={saving}>
+          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
         </Button>
-        <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground" onClick={() => { setDraft(value); setEditing(false); }}>
-          <X className="w-2.5 h-2.5" />
+        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground" onClick={() => { setDraft(value); setEditing(false); }}>
+          <X className="w-3.5 h-3.5" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="group flex items-center gap-1.5 py-1 cursor-pointer hover:bg-muted/20 rounded -mx-1 px-1 transition-colors" onClick={() => { setDraft(value); setEditing(true); }}>
+    <div className="group flex items-center gap-2 py-1.5 cursor-pointer hover:bg-muted/20 rounded -mx-1 px-1 transition-colors" onClick={() => { setDraft(value); setEditing(true); }}>
       <span className="text-muted-foreground/50 w-4 flex-shrink-0">{icon}</span>
-      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
-      <span className={cn("text-xs flex-1 truncate", value ? "text-foreground" : "text-muted-foreground/40 italic")}>{value || placeholder || '—'}</span>
-      <Pencil className="w-2.5 h-2.5 text-muted-foreground/0 group-hover:text-muted-foreground/40 flex-shrink-0 transition-opacity" />
+      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
+      <span className={cn("text-sm flex-1 truncate", value ? "text-foreground" : "text-muted-foreground/40 italic")}>{value || placeholder || '—'}</span>
+      <Pencil className="w-3 h-3 text-muted-foreground/0 group-hover:text-muted-foreground/40 flex-shrink-0 transition-opacity" />
     </div>
   );
 }
@@ -87,11 +87,11 @@ function Section({ title, icon, children, defaultOpen = true, badge, className }
   return (
     <Collapsible open={open} onOpenChange={setOpen} className={className}>
       <CollapsibleTrigger asChild>
-        <button className="w-full flex items-center gap-1.5 py-2 px-0.5 hover:bg-muted/20 transition-colors rounded group">
-          <ChevronRight className={cn("w-3 h-3 text-muted-foreground/50 transition-transform", open && "rotate-90")} />
+        <button className="w-full flex items-center gap-2 py-2.5 px-0.5 hover:bg-muted/20 transition-colors rounded group">
+          <ChevronRight className={cn("w-4 h-4 text-muted-foreground/50 transition-transform", open && "rotate-90")} />
           <span className="text-muted-foreground/60">{icon}</span>
-          <span className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">{title}</span>
-          {badge && <span className="text-[10px] font-medium text-muted-foreground tabular-nums ml-auto mr-1">{badge}</span>}
+          <span className="text-sm font-semibold text-foreground/80">{title}</span>
+          {badge && <span className="text-xs font-medium text-muted-foreground tabular-nums ml-auto mr-1">{badge}</span>}
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -182,14 +182,14 @@ export default function JobDetail() {
             {project.address || project.customer_name || 'New Job'}
           </h1>
           <div className="flex items-center gap-1 flex-shrink-0">
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground gap-1" onClick={() => setProposalOpen(true)}>
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1" onClick={() => setProposalOpen(true)}>
               <FileText className="w-3 h-3" /> Proposal
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground gap-1" onClick={() => setDocsOpen(true)}>
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1" onClick={() => setDocsOpen(true)}>
               <FolderOpen className="w-3 h-3" /> Docs
             </Button>
             <Select value={project.project_status} onValueChange={handleStatusChange}>
-              <SelectTrigger className="h-6 w-auto min-w-[90px] text-[10px] font-bold border-border/40 rounded gap-1 bg-card px-2">
+              <SelectTrigger className="h-6 w-auto min-w-[90px] text-xs font-bold border-border/40 rounded gap-1 bg-card px-2">
                 <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", currentStatus.dot)} />
                 <SelectValue />
               </SelectTrigger>
@@ -214,7 +214,7 @@ export default function JobDetail() {
         {project.next_action && (
           <div className="flex items-center gap-2 px-3 py-2 mt-3 rounded-md border border-primary/20 bg-primary/5">
             <Target className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-            <span className="text-xs font-medium text-foreground">{project.next_action}</span>
+            <span className="text-sm font-medium text-foreground">{project.next_action}</span>
           </div>
         )}
 
@@ -231,7 +231,7 @@ export default function JobDetail() {
           {project.partner_name && (
             <div className="flex items-center gap-1.5 py-1 mt-0.5 text-xs">
               <Users className="w-3 h-3 text-primary" />
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider w-16">Partner</span>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16">Partner</span>
               <span className="text-foreground">{project.partner_name}</span>
             </div>
           )}
@@ -241,7 +241,7 @@ export default function JobDetail() {
         <div className="mt-3 mb-2 rounded-lg border border-border/40 bg-card/50">
           <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border/30">
             <MessageSquare className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <span className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">Comments</span>
+            <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">Comments</span>
           </div>
           <div className="px-3 py-2">
             <CommentsSection projectId={project.id} />
@@ -307,7 +307,7 @@ function ClientSection({ project, updateField, refetch, mapsUrl }: any) {
         <PropRow label="Email" value={project.customer_email || ''} icon={<Mail className="w-3 h-3" />} onSave={(v) => updateField('customer_email', v)} placeholder="Email" />
       </div>
       <div className="mt-1 mb-2">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Address</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Address</span>
         <div className="mt-0.5">
           <AddressAutocomplete
             value={project.address || ''}
@@ -325,22 +325,22 @@ function ClientSection({ project, updateField, refetch, mapsUrl }: any) {
       </div>
       <div className="flex items-center gap-1.5 flex-wrap">
         {mapsUrl && (
-          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-[10px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
             <Navigation className="w-2.5 h-2.5" /> Maps
           </a>
         )}
         {project.customer_phone && (
           <>
-            <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-[10px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+            <a href={`tel:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
               <Phone className="w-2.5 h-2.5" /> Call
             </a>
-            <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-[10px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+            <a href={`sms:${project.customer_phone}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
               <MessageSquare className="w-2.5 h-2.5" /> SMS
             </a>
           </>
         )}
         {project.customer_email && (
-          <a href={`mailto:${project.customer_email}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-[10px] font-medium hover:bg-muted hover:text-foreground transition-colors">
+          <a href={`mailto:${project.customer_email}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/40 text-muted-foreground text-xs font-medium hover:bg-muted hover:text-foreground transition-colors">
             <Mail className="w-2.5 h-2.5" /> Email
           </a>
         )}
@@ -366,10 +366,10 @@ function NotesSection({ value, onSave }: { value: string; onSave: (v: string) =>
   if (editing) {
     return (
       <div className="space-y-1.5">
-        <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="text-xs min-h-[60px] bg-muted/30 border-border/40" autoFocus />
+        <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm min-h-[72px] bg-muted/30 border-border/40" autoFocus />
         <div className="flex justify-end gap-1">
-          <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => { setDraft(value); setEditing(false); }}>Cancel</Button>
-          <Button size="sm" className="h-6 text-[10px]" onClick={save} disabled={saving}>
+          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setDraft(value); setEditing(false); }}>Cancel</Button>
+          <Button size="sm" className="h-7 text-xs" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
           </Button>
         </div>
@@ -447,7 +447,7 @@ function CommentsSection({ projectId }: { projectId: string }) {
   return (
     <div>
       <div className="flex gap-1.5 mb-2">
-        <Input placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} className="text-xs h-7 bg-muted/20 border-border/30 flex-1"
+        <Input placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} className="text-sm h-8 bg-muted/20 border-border/30 flex-1"
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }} />
         <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageSelect} />
         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => fileInputRef.current?.click()}>
@@ -466,7 +466,7 @@ function CommentsSection({ projectId }: { projectId: string }) {
       {isLoading ? (
         <div className="flex justify-center py-2"><Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" /></div>
       ) : comments.length === 0 ? (
-        <p className="text-[10px] text-muted-foreground/50 text-center py-2 italic">No comments yet</p>
+        <p className="text-xs text-muted-foreground/50 text-center py-2 italic">No comments yet</p>
       ) : (
         <div className="space-y-0.5 max-h-[280px] overflow-y-auto">
           {comments.map((c: any) => (
@@ -476,11 +476,11 @@ function CommentsSection({ projectId }: { projectId: string }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-semibold">{c.author_name}</span>
-                  <span className="text-[9px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  <span className="text-xs font-semibold text-foreground">{c.author_name}</span>
+                  <span className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                   <Button variant="ghost" size="icon" className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100" onClick={() => handleDelete(c.id)}><Trash2 className="w-2 h-2 text-destructive" /></Button>
                 </div>
-                <p className="text-xs text-foreground/85 leading-snug">{c.content}</p>
+                <p className="text-sm text-foreground/85 leading-snug">{c.content}</p>
                 {c.image_url && <a href={c.image_url} target="_blank" rel="noopener noreferrer" className="block mt-1"><img src={c.image_url} alt="" className="max-h-24 rounded border border-border/40 object-cover" /></a>}
               </div>
             </div>
@@ -524,11 +524,11 @@ function MaterialsSection({ projectId }: { projectId: string }) {
               {materials.map((m) => (
                 <div key={m.id} className="group flex items-center justify-between py-1 px-1 rounded hover:bg-muted/20 transition-colors">
                   <div className="min-w-0">
-                    <span className="text-xs font-medium text-foreground">{m.description}</span>
-                    <span className="text-[10px] text-muted-foreground ml-2">{m.supplier || ''}</span>
+                    <span className="text-sm font-medium text-foreground">{m.description}</span>
+                    <span className="text-xs text-muted-foreground ml-2">{m.supplier || ''}</span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-xs font-semibold tabular-nums">{formatCurrency(m.amount)}</span>
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(m.amount)}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                       onClick={() => deleteMaterial({ id: m.id, projectId })}><Trash2 className="w-2.5 h-2.5" /></Button>
                   </div>
@@ -539,20 +539,20 @@ function MaterialsSection({ projectId }: { projectId: string }) {
           {showForm ? (
             <div className="rounded border border-border/40 bg-muted/10 p-2 space-y-1.5">
               <div className="grid grid-cols-3 gap-1.5">
-                <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="text-xs h-7 bg-card border-border/40" autoFocus />
-                <Input placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} className="text-xs h-7 bg-card border-border/40" />
-                <Input type="number" placeholder="$ Amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-xs h-7 bg-card border-border/40"
+                <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} className="text-sm h-8 bg-card border-border/40" autoFocus />
+                <Input placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} className="text-sm h-8 bg-card border-border/40" />
+                <Input type="number" placeholder="$ Amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm h-8 bg-card border-border/40"
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowForm(false); }} />
               </div>
               <div className="flex justify-end gap-1">
-                <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button size="sm" className="h-6 text-[10px]" onClick={handleAdd} disabled={isAdding || !desc.trim() || !amount}>
+                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowForm(false)}>Cancel</Button>
+                <Button size="sm" className="h-7 text-xs" onClick={handleAdd} disabled={isAdding || !desc.trim() || !amount}>
                   {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
                 </Button>
               </div>
             </div>
           ) : (
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors py-0.5">
+            <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5">
               <Plus className="w-2.5 h-2.5" /> Add material
             </button>
           )}
@@ -595,11 +595,11 @@ function LaborSection({ projectId }: { projectId: string }) {
               {entries.map((e) => (
                 <div key={e.id} className="group flex items-center justify-between py-1 px-1 rounded hover:bg-muted/20 transition-colors">
                   <div className="min-w-0">
-                    <span className="text-xs font-medium text-foreground">{e.worker_name}</span>
-                    <span className="text-[10px] text-muted-foreground ml-2">{formatCurrency(e.daily_rate)}/d × {e.days_worked}d</span>
+                    <span className="text-sm font-medium text-foreground">{e.worker_name}</span>
+                    <span className="text-xs text-muted-foreground ml-2">{formatCurrency(e.daily_rate)}/d × {e.days_worked}d</span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-xs font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                       onClick={() => deleteEntry({ id: e.id, projectId })}><Trash2 className="w-2.5 h-2.5" /></Button>
                   </div>
@@ -609,21 +609,21 @@ function LaborSection({ projectId }: { projectId: string }) {
           )}
           {showForm ? (
             <div className="rounded border border-border/40 bg-muted/10 p-2 space-y-1.5">
-              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-xs h-7 bg-card border-border/40" autoFocus />
+              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm h-8 bg-card border-border/40" autoFocus />
               <div className="grid grid-cols-2 gap-1.5">
-                <Input type="number" placeholder="Rate $/day" value={rate} onChange={(e) => setRate(e.target.value)} className="text-xs h-7 bg-card border-border/40" />
-                <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-xs h-7 bg-card border-border/40"
+                <Input type="number" placeholder="Rate $/day" value={rate} onChange={(e) => setRate(e.target.value)} className="text-sm h-8 bg-card border-border/40" />
+                <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-sm h-8 bg-card border-border/40"
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowForm(false); }} />
               </div>
               <div className="flex justify-end gap-1">
-                <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button size="sm" className="h-6 text-[10px]" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
+                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowForm(false)}>Cancel</Button>
+                <Button size="sm" className="h-7 text-xs" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
                   {isAdding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
                 </Button>
               </div>
             </div>
           ) : (
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors py-0.5">
+            <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5">
               <Plus className="w-2.5 h-2.5" /> Add labor entry
             </button>
           )}
