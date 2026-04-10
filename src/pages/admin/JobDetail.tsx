@@ -10,12 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { JobCostEditor } from '@/components/admin/JobCostEditor';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { JobProofUploader } from '@/components/admin/JobProofUploader';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
-import { useJobCost } from '@/hooks/useJobCosts';
-import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { JobFinancialHeader } from '@/components/admin/job-detail/JobFinancialHeader';
+import { InvoicesPaymentsSection } from '@/components/admin/job-detail/InvoicesPaymentsSection';
 import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/hooks/useMaterialCosts';
 import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry } from '@/hooks/useLaborEntries';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -25,15 +24,12 @@ import {
   Clock, Hammer, DollarSign, ChevronDown,
   Camera, Pencil, Check, X, Navigation, Send, Users,
   Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
-  Package, HardHat, Plus, Lightbulb
+  Package, HardHat, Plus, Lightbulb, Receipt, Target
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
+  Sheet, SheetContent, SheetHeader, SheetTitle,
 } from '@/components/ui/sheet';
 
 const STATUS_OPTIONS = [
@@ -132,8 +128,7 @@ export default function JobDetail() {
       if (!jobId) return null;
       const { data, error } = await supabase.from('projects').select('*').eq('id', jobId).single();
       if (error) throw error;
-      const [costsRes, proofRes, partnerRes] = await Promise.all([
-        supabase.from('job_costs').select('*').eq('project_id', jobId).maybeSingle(),
+      const [proofRes, partnerRes] = await Promise.all([
         supabase.from('job_proof').select('id, project_id, before_image_url, after_image_url').eq('project_id', jobId),
         data.referred_by_partner_id
           ? supabase.from('partners').select('id, company_name, contact_name').eq('id', data.referred_by_partner_id).maybeSingle()
@@ -144,16 +139,12 @@ export default function JobDetail() {
         team_lead: data.team_lead || null,
         team_members: data.team_members || [],
         work_schedule: data.work_schedule || '8:00 AM - 5:00 PM',
-        job_costs: costsRes.data || null,
         job_proof: proofRes.data || [],
         partner_name: partnerRes.data ? ((partnerRes.data as any).contact_name || (partnerRes.data as any).company_name) : null,
       };
     },
     enabled: !!jobId,
   });
-
-  const { data: jobCost } = useJobCost(jobId || '');
-  const { marginMinPercent } = useCompanySettings();
 
   const updateField = async (field: string, value: any) => {
     if (!jobId) return;
@@ -184,9 +175,6 @@ export default function JobDetail() {
   }
 
   const currentStatus = STATUS_OPTIONS.find(s => s.value === project.project_status) || STATUS_OPTIONS[0];
-  const currentMargin = jobCost?.margin_percent ?? 0;
-  const marginOk = !!(jobCost && currentMargin >= marginMinPercent && (jobCost.estimated_revenue ?? 0) > 0);
-  const hasCosts = !!(jobCost && (jobCost.labor_cost > 0 || jobCost.material_cost > 0));
   const addressFull = [project.address, project.city, project.zip_code].filter(Boolean).join(', ');
   const mapsUrl = addressFull ? `https://maps.google.com/?q=${encodeURIComponent(addressFull)}` : null;
 
@@ -197,7 +185,7 @@ export default function JobDetail() {
     >
       <div className="max-w-3xl mx-auto space-y-4 pb-10">
 
-        {/* ─── Header: Back + Status + Actions ─── */}
+        {/* ═══ HEADER: Back + Status + Actions ═══ */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" onClick={() => navigate('/admin/jobs')}>
@@ -230,12 +218,15 @@ export default function JobDetail() {
           </div>
         </div>
 
-        {/* ─── NEXT ACTION BANNER ─── */}
+        {/* ═══ FINANCIAL HEADER: Revenue / Cost / Margin / Payment ═══ */}
+        <JobFinancialHeader projectId={project.id} />
+
+        {/* ═══ NEXT ACTION BANNER ═══ */}
         {project.next_action && (
           <Card className="border-2 border-primary/30 bg-primary/5">
             <CardContent className="p-3 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Lightbulb className="w-4 h-4 text-primary" />
+                <Target className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Next Action</p>
@@ -245,8 +236,29 @@ export default function JobDetail() {
           </Card>
         )}
 
+        {/* ═══ 1. MATERIALS ═══ */}
+        <MaterialsSection projectId={project.id} />
 
-        <Section title="Client" icon={<User className="w-3.5 h-3.5" />}>
+        {/* ═══ 2. LABOR ═══ */}
+        <LaborSection projectId={project.id} />
+
+        {/* ═══ 3. INVOICES & PAYMENTS ═══ */}
+        <Section title="Invoices & Payments" icon={<Receipt className="w-3.5 h-3.5" />}>
+          <InvoicesPaymentsSection projectId={project.id} />
+        </Section>
+
+        {/* ═══ 4. PHOTOS / PROOF ═══ */}
+        <Section title="Photos" icon={<Camera className="w-3.5 h-3.5" />}>
+          <JobProofUploader projectId={project.id} />
+        </Section>
+
+        {/* ═══ 5. NOTES ═══ */}
+        <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
+          <EditableField label="Project Notes" value={project.notes || ''} onSave={(v) => updateField('notes', v)} type="textarea" placeholder="Garage code, access info, special instructions..." />
+        </Section>
+
+        {/* ═══ 6. CLIENT ═══ */}
+        <Section title="Client" icon={<User className="w-3.5 h-3.5" />} defaultOpen={false}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             <EditableField label="Name" value={project.customer_name} onSave={(v) => updateField('customer_name', v)} icon={<User className="w-4 h-4" />} placeholder="Customer name" />
             <EditableField label="Phone" value={project.customer_phone} onSave={(v) => updateField('customer_phone', v)} icon={<Phone className="w-4 h-4" />} placeholder="Phone" />
@@ -291,8 +303,8 @@ export default function JobDetail() {
           </div>
         </Section>
 
-        {/* ─── JOB INFO ─── */}
-        <Section title="Job Info" icon={<Hammer className="w-3.5 h-3.5" />}>
+        {/* ═══ 7. JOB INFO ═══ */}
+        <Section title="Job Info" icon={<Hammer className="w-3.5 h-3.5" />} defaultOpen={false}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             <EditableField label="Service" value={project.project_type} onSave={(v) => updateField('project_type', v)} icon={<Hammer className="w-4 h-4" />} placeholder="e.g. Sand & Refinish" />
             <EditableField label="Sqft" value={project.square_footage?.toString() || ''} onSave={(v) => updateField('square_footage', v ? parseFloat(v) : null)} type="number" icon={<Ruler className="w-4 h-4" />} placeholder="sqft" />
@@ -315,56 +327,13 @@ export default function JobDetail() {
           )}
         </Section>
 
-        {/* ─── COSTS ─── */}
-        <Section title="Costs" icon={<DollarSign className="w-3.5 h-3.5" />} defaultOpen={hasCosts}>
-          {hasCosts && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 p-3 rounded-lg bg-muted/30">
-              <div>
-                <p className="text-[11px] text-muted-foreground uppercase">Revenue</p>
-                <p className="text-base font-bold">{formatCurrency(jobCost?.estimated_revenue ?? 0)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-muted-foreground uppercase">Cost</p>
-                <p className="text-base font-bold">{formatCurrency(jobCost?.total_cost ?? 0)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-muted-foreground uppercase">Profit</p>
-                <p className="text-base font-bold text-emerald-600">{formatCurrency(jobCost?.profit_amount ?? 0)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-muted-foreground uppercase">Margin</p>
-                <p className={cn("text-base font-bold", marginOk ? "text-emerald-600" : currentMargin > 0 ? "text-amber-500" : "text-destructive")}>
-                  {currentMargin.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-          )}
-          <JobCostEditor projectId={project.id} />
-        </Section>
-
-        {/* ─── MATERIALS ─── */}
-        <MaterialsSection projectId={project.id} />
-
-        {/* ─── LABOR ─── */}
-        <LaborSection projectId={project.id} />
-
-
-        <Section title="Notes" icon={<StickyNote className="w-3.5 h-3.5" />}>
-          <EditableField label="Project Notes" value={project.notes || ''} onSave={(v) => updateField('notes', v)} type="textarea" placeholder="Garage code, access info, special instructions..." />
-        </Section>
-
-        {/* ─── PHOTOS ─── */}
-        <Section title="Photos" icon={<Camera className="w-3.5 h-3.5" />}>
-          <JobProofUploader projectId={project.id} />
-        </Section>
-
-        {/* ─── COMMENTS ─── */}
-        <Section title="Comments" icon={<MessageSquare className="w-3.5 h-3.5" />}>
+        {/* ═══ 8. COMMENTS ═══ */}
+        <Section title="Comments" icon={<MessageSquare className="w-3.5 h-3.5" />} defaultOpen={false}>
           <CommentsSection projectId={project.id} />
         </Section>
       </div>
 
-      {/* ─── Proposal Sheet ─── */}
+      {/* Proposal Sheet */}
       <Sheet open={proposalOpen} onOpenChange={setProposalOpen}>
         <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader><SheetTitle>Proposal</SheetTitle></SheetHeader>
@@ -372,7 +341,7 @@ export default function JobDetail() {
         </SheetContent>
       </Sheet>
 
-      {/* ─── Documents Sheet ─── */}
+      {/* Documents Sheet */}
       <Sheet open={docsOpen} onOpenChange={setDocsOpen}>
         <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader><SheetTitle>Documents</SheetTitle></SheetHeader>
