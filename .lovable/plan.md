@@ -1,53 +1,69 @@
 
 
-# Unificar Campos de Endereço com Autocomplete
+# Simplificação Radical — "Notion-like" Experience
 
-## Problema
-A página Job Detail tem 3 campos separados (Address, City, Zip Code) — redundante. O usuário quer um campo único com autocomplete estilo Google Places, como nos sites públicos.
+## O Problema
+O app está cheio de gates, validações obrigatórias, progress bars, e 7 abas separadas. Para um crew de hardwood flooring, isso é overengineering. No Notion, você abre, escreve, e pronto. Precisamos dessa mesma fluidez.
 
-## Solução
+## Mudanças Propostas
 
-### 1. Campo único "Address" com autocomplete via Google Places API
-- Remover campos separados de City e Zip Code do formulário
-- Criar um componente `AddressAutocomplete` que usa a **Google Places Autocomplete API**
-- Quando o usuário digita, suggestions aparecem em dropdown
-- Ao selecionar, preenche automaticamente o campo `address` com endereço completo e salva `city` e `zip_code` nos campos do banco em background (parse automático dos componentes)
+### 1. Job Detail — Tudo em uma página, sem abas
+Eliminar as 7 abas. Tudo aparece em scroll vertical numa única página, como um "doc" do Notion:
 
-### 2. Configuração necessária
-- Precisa de uma **Google Maps API Key** com Places API habilitada
-- A key será armazenada como secret (`GOOGLE_MAPS_API_KEY`) e exposta via `VITE_GOOGLE_MAPS_API_KEY`
-- Script do Google Maps carregado dinamicamente no componente
-
-### 3. Componente `AddressAutocomplete`
-- Novo arquivo: `src/components/admin/AddressAutocomplete.tsx`
-- Input com autocomplete dropdown nativo do Google Places
-- Restrição geográfica: US (foco em NJ)
-- Ao selecionar endereço: extrai `street`, `city`, `state`, `zip` dos `address_components`
-- Callback `onSelect({ full, city, zip })` permite salvar tudo de uma vez
-
-### 4. Mudanças no JobDetail
-- Substituir os 3 `EditableField` (Address, City, Zip Code) por um único `AddressAutocomplete`
-- Ao selecionar endereço, salva `address` (completo), `city`, e `zip_code` automaticamente no banco
-- Manter o link "Open in Google Maps"
-- Manter edição manual como fallback (se digitar sem selecionar suggestion)
-
-### 5. Reutilização
-- O componente pode ser reutilizado em `NewJobDialog`, `NewLeadDialog`, formulários públicos
-
-## Detalhes Técnicos
-
-### Arquivos
-1. `src/components/admin/AddressAutocomplete.tsx` — novo componente
-2. `src/pages/admin/JobDetail.tsx` — substituir 3 campos por 1
-3. Secret: `VITE_GOOGLE_MAPS_API_KEY` — precisa ser configurada
-
-### Fluxo
 ```text
-User types "11 Kath..."
-  → Google Places suggestions dropdown
-  → Seleciona "11 Katharine Pl, Washington Twp, NJ 07676"
-  → Salva: address="11 Katharine Pl", city="Washington Township", zip_code="07676"
+┌─────────────────────────────────┐
+│ ← Back     [Status: Active ▼]  │
+│ 11 Katharine Pl  📍 Maps        │
+│─────────────────────────────────│
+│ CLIENT                          │
+│ Name: John Doe  📞 Call  💬 SMS │
+│ Phone: (201) 555-1234           │
+│ Email: john@email.com           │
+│─────────────────────────────────│
+│ JOB INFO                        │
+│ Service: Sand & Refinish        │
+│ Sqft: 1,200    Start: 04/15     │
+│ Team Lead: Carlos               │
+│─────────────────────────────────│
+│ COSTS (inline, collapsible)     │
+│ Labor: $2,400  Material: $800   │
+│ Revenue: $5,500  Margin: 42% ✓ │
+│─────────────────────────────────│
+│ NOTES (textarea, always visible)│
+│ Garage code: 1234, dog in yard  │
+│─────────────────────────────────│
+│ PHOTOS  [+ Add]                 │
+│ 🖼️ 🖼️ 🖼️ (grid thumbnails)     │
+│─────────────────────────────────│
+│ COMMENTS                        │
+│ Admin: "Started sanding today"  │
+│ [Type a comment...] [Send]      │
+└─────────────────────────────────┘
 ```
 
-**Nota**: Vou precisar que você forneça uma Google Maps API Key com a Places API habilitada para o autocomplete funcionar.
+### 2. Remover bloqueios e progress bar
+- Eliminar a progress bar com checklist obrigatória
+- Remover a aba "Checklist" separada
+- Status muda livremente (Pending → Active → Done) sem gates
+- Margin warning vira apenas um indicador visual (amarelo/vermelho), não bloqueia nada
+
+### 3. Seções colapsáveis em vez de abas
+Cada seção (Client, Job Info, Costs, Notes, Photos, Documents) fica em cards colapsáveis na mesma página. Tudo visível por padrão, pode fechar o que não interessa.
+
+### 4. Proposal e Documents — acesso por botões
+- "Proposal" e "Documents" viram botões de ação no topo, não abas. Abrem em sheet/modal quando necessário, mas não ocupam espaço permanente.
+
+### 5. NewJobDialog — mínimo absoluto
+Criar job com apenas: **Address + Service type**. Tudo o resto é opcional e pode ser editado depois no detalhe.
+
+## Arquivos a Editar
+
+1. **`src/pages/admin/JobDetail.tsx`** — Reescrever: single-scroll, sem tabs, seções colapsáveis, sem progress bar obrigatória
+2. **`src/components/admin/NewJobDialog.tsx`** — Simplificar: só address + service, resto opcional
+
+## O Que NÃO Muda
+- A edição inline (click-to-edit) permanece — é boa
+- AddressAutocomplete permanece
+- Os componentes internos (JobCostEditor, ProposalGenerator, JobProofUploader) continuam existindo, só mudam de contexto (inline/modal em vez de tabs)
+- Dados no banco não mudam
 
