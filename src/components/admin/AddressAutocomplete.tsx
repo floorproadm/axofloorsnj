@@ -26,7 +26,7 @@ interface AddressAutocompleteProps {
   disabled?: boolean;
 }
 
-const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyC9vGugukW-Mk45rT6QOK3Nx_1O39u6HjM";
 
 let googleScriptLoaded = false;
 let googleScriptLoading = false;
