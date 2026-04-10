@@ -7,30 +7,21 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useJobCost, useMarginValidation } from "@/hooks/useJobCosts";
+import { useJobCost } from "@/hooks/useJobCosts";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
-import { JobCostEditor } from "@/components/admin/JobCostEditor";
-import { ProposalGenerator } from "@/components/admin/ProposalGenerator";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import {
-  Hammer, CheckCircle, Clock, DollarSign, MapPin,
-  AlertTriangle, Camera, FileText, Calculator, ChevronRight,
-  Ban, Loader2, User, FolderOpen, Trash2, Phone, Mail,
-  CalendarDays, TrendingUp, MessageSquare, Ruler,
-  Send, ImagePlus, X, StickyNote, LayoutGrid, List, Users, ExternalLink,
-  Navigation
+  CheckCircle, Clock, DollarSign, MapPin,
+  AlertTriangle, Loader2, User, Trash2, Phone, Mail,
+  X, LayoutGrid, List, ExternalLink, Navigation
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
-import { JobChecklist } from "@/components/admin/JobChecklist";
 import { toast } from "sonner";
 type ProjectStatus = "pending" | "in_production" | "completed";
 
