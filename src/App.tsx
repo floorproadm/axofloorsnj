@@ -53,6 +53,7 @@ import WeeklyReview from './pages/admin/WeeklyReview';
 import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
 import AdminProposals from './pages/admin/Proposals';
+import ProjectsHub from './pages/admin/ProjectsHub';
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/admin/AdminAuth";
 import Campaign from "./pages/Campaign";
@@ -238,6 +239,11 @@ const App = () => {
             <Route path="/admin/proposals" element={
               <ProtectedRoute>
                 <AdminProposals />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/projects" element={
+              <ProtectedRoute>
+                <ProjectsHub />
               </ProtectedRoute>
             } />
             {/* Collaborator Portal */}
