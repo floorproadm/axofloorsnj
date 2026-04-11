@@ -66,7 +66,7 @@ export default function ProjectsHub() {
   ];
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Projects">
       <div className="space-y-4 p-4 md:p-6 max-w-7xl mx-auto">
         {/* KPI Strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
