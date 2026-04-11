@@ -1,92 +1,51 @@
 
 
-# Alinhamento AXO OS ↔ Notion: Gestão de Projetos como Cockpit Operacional
+# Rewrite ProjectsHub: Kings OS Simplicity for AXO OS
 
-## O que você descreveu vs o que existe hoje
+## The Problem
+The current AXO OS ProjectsHub is a bloated 460-line "cockpit" with 9 collapsible sections, flow guides, and scattered widgets. The Kings OS equivalent is ~130 lines — focused, objective, and actually usable.
 
-Seu Notion funciona como um **cockpit de página única** para "Gestão de Projetos" — tudo visível num scroll vertical com blocos colapsáveis. O AXO OS atual tem a funcionalidade espalhada em **12+ páginas separadas** (Jobs, Payments, Performance, Measurements, Crews, Weekly Review, etc.), sem uma visão unificada estilo cockpit.
+## What Kings OS Does Right
+- **4 KPI cards** at the top (Active, Pipeline $, Completed, Revenue)
+- **Controls bar**: New Project button + Board/List toggle + Search + Status filter
+- **Board view**: Drag-and-drop Kanban with clean cards (title, client, value, date)
+- **List view**: Table-style rows with status badges
+- **Detail panel**: Side sheet with status selector, KPI bar (Value/Costs/Profit/Margin/Balance), and 3 tabs (Measurements, Costs, Invoices)
 
-### Mapeamento: Notion Bloco → AXO OS Atual
+No collapsible sections. No flow guides. No tasks widget. No materials/workforce/weekly review blocks. Just projects.
 
-| Bloco Notion | AXO OS Status |
+## Plan
+
+### 1. Rewrite `src/pages/admin/ProjectsHub.tsx` (~130 lines)
+Replace the entire 460-line file with the Kings OS pattern adapted for AXO data:
+- **KPI strip**: Active Jobs, Pipeline Revenue, Completed, Total Revenue (using existing `useProjectsHub` data)
+- **Controls bar**: "New Job" button, Board/List toggle, search input, status filter dropdown
+- **Board view**: New component `ProjectPipelineBoard` with drag-and-drop columns (Planning, In Progress, Completed, Awaiting Payment, Paid)
+- **List view**: New component `ProjectListView` with responsive table/card layout
+- **Detail panel**: Side sheet with project header, status selector, KPI bar, and 3 tabs
+
+### 2. Create 4 new component files under `src/components/admin/projects/`
+- `ProjectPipelineBoard.tsx` — Kanban board with drag-drop (adapted from Kings OS, using AXO data fields: address as primary, customer_name, project_type, job_costs)
+- `ProjectListView.tsx` — Responsive list with desktop table + mobile cards
+- `ProjectDetailPanel.tsx` — Sheet with sticky header, KPI bar, and tabs for operational data
+- `ProjectKPIBar.tsx` — Compact 5-cell KPI bar (Value, Costs, Profit, Margin%, Balance)
+
+### 3. Adapt data layer
+Keep existing `useProjectsHub.ts` for the list page queries. Add status update mutation (already exists in AXO's project update flows). The detail panel will use existing hooks (`useJobCosts`, `useMeasurements`, etc.) scoped to the selected project.
+
+### 4. What gets removed
+- All 9 collapsible sections (Quick Actions, Proposals, Tasks, Measurements, Materials, Workforce, Weekly Review, Flow Guide)
+- The bloated `Section`, `Row`, `ViewAllLink`, `Empty`, `StatusDot` internal components
+- ~330 lines of code
+
+### Files
+| Action | File |
 |---|---|
-| Quick Actions | Não existe como hub centralizado |
-| Approved Proposals → Projects | Não existe (proposals e jobs são páginas separadas) |
-| Project Stage Pipeline (Kanban) | ✅ Existe em `/admin/jobs` (Board view) |
-| Tasks | Parcial — tasks existem mas não no contexto de projetos |
-| Measurements & Site Data | ✅ Existe em `/admin/measurements` (separado) |
-| Materials & Costs | ✅ Existe dentro de cada job detail |
-| Workforce Compensation (Crews + Payroll) | ✅ Existe em `/admin/crews` (separado) |
-| Weekly Review & KPIs | ✅ Existe em `/admin/weekly-review` (separado) |
-| Documentation & Media | Parcial — dentro de job detail |
-| Issues & Warranty | ❌ Não existe |
-| Invoices & Payments | ✅ Existe em `/admin/payments` (separado) |
+| Rewrite | `src/pages/admin/ProjectsHub.tsx` |
+| Create | `src/components/admin/projects/ProjectPipelineBoard.tsx` |
+| Create | `src/components/admin/projects/ProjectListView.tsx` |
+| Create | `src/components/admin/projects/ProjectDetailPanel.tsx` |
+| Create | `src/components/admin/projects/ProjectKPIBar.tsx` |
 
-### O problema central
-O Notion agrega tudo numa página com views embutidas. O AXO OS fragmenta em rotas separadas, forçando o usuário a navegar constantemente.
-
----
-
-## Plano de Implementação
-
-### Fase 1: Criar página "Gestão de Projetos" (cockpit unificado)
-
-Criar uma nova rota `/admin/projects` que funciona como o cockpit do Notion — uma página vertical com seções colapsáveis, cada uma mostrando uma view compacta dos dados relevantes.
-
-**Arquivo novo:** `src/pages/admin/ProjectsHub.tsx`
-
-**Estrutura da página (scroll vertical, seções toggle):**
-
-1. **Quick Actions** — Grid de botões: New Job, New Measurement, Register Materials, New Invoice, Partners, Crews
-2. **Approved Proposals → Projects** — Lista de proposals com status `accepted` que ainda não têm `project_id` vinculado ou projetos pendentes de ação
-3. **Project Stage Pipeline** — Kanban compacto (reutilizar lógica do JobsManager Board view) com colunas: Planning | In Progress | Completed | Awaiting Payment | Paid
-4. **Tasks** — Mini-lista de tasks abertas filtradas por projetos ativos
-5. **Measurements & Site Data** — Tabela compacta das últimas medições com link pro detalhe
-6. **Materials & Costs** — Tabela agregada de custos materiais recentes (últimas entradas)
-7. **Workforce Compensation** — Mini-view de Crews + Labor entries recentes
-8. **Weekly Review & KPIs** — Snapshot da semana atual com semáforo de margem
-9. **Documentation & Media** — Grid de mídias recentes dos projetos
-10. **Project Flow Guide** — Callout colapsável com o runbook do ciclo operacional
-
-**Cada seção:**
-- Header com título + ícone + toggle collapse
-- Conteúdo compacto (max 5-8 items, com "Ver todos →" linkando pra página dedicada)
-- Dados puxados dos hooks já existentes
-
-### Fase 2: Ajustar navegação
-
-- Adicionar "Projects" no sidebar (entre Jobs e Payments)
-- A rota `/admin/projects` aponta pro cockpit
-- Manter `/admin/jobs` como a view dedicada do pipeline (Board/List)
-- Manter `/admin/jobs/:id` como detalhe operacional do job
-
-### Fase 3: Issues & Warranty (novo módulo)
-
-Criar tabela `issues_warranty` no banco:
-- `id`, `project_id` (FK), `customer_id` (FK nullable), `organization_id`
-- `title`, `description`, `severity` (low/medium/high/critical)
-- `is_warranty_claim` (boolean), `warranty_expiry_date`
-- `repair_cost`, `status` (open/in_progress/resolved/closed)
-- `photos` (jsonb array), `resolution_notes`
-- `created_at`, `updated_at`
-
-Com RLS por organization_id.
-
----
-
-## Arquivos a criar/modificar
-
-| Ação | Arquivo |
-|---|---|
-| Criar | `src/pages/admin/ProjectsHub.tsx` |
-| Criar | `src/hooks/useProjectsHub.ts` (dados agregados) |
-| Modificar | `src/App.tsx` (nova rota) |
-| Modificar | `src/components/admin/AdminSidebar.tsx` (nav item) |
-| Migração | Tabela `issues_warranty` + RLS |
-
-## Escopo recomendado
-
-**Step 1** (este ciclo): Cockpit de Projetos (Fases 1 + 2) — a página hub com seções colapsáveis reusando hooks existentes.
-
-**Step 2** (próximo ciclo): Issues & Warranty + refinamentos visuais.
+No database changes needed. No routing changes needed. Same `/admin/projects` URL.
 
