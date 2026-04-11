@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LayoutGrid, List, Plus, Briefcase, DollarSign, CheckCircle2, TrendingUp } from "lucide-react";
+import { Plus, Briefcase, DollarSign, CheckCircle2, TrendingUp } from "lucide-react";
 import { useProjectsHub } from "@/hooks/useProjectsHub";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
 import { ProjectListView } from "@/components/admin/projects/ProjectListView";
@@ -22,7 +22,7 @@ function fmt(n: number) {
 export default function ProjectsHub() {
   const { projects, pipeline, isLoading } = useProjectsHub();
   const qc = useQueryClient();
-  const [view, setView] = useState<"board" | "list">("board");
+  
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<HubProject | null>(null);
@@ -91,24 +91,7 @@ export default function ProjectsHub() {
             <Plus className="h-3.5 w-3.5" /> New Job
           </Button>
 
-          <div className="flex items-center rounded-md border bg-muted p-0.5 ml-auto">
-            <Button
-              variant={view === "board" ? "default" : "ghost"}
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setView("board")}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant={view === "list" ? "default" : "ghost"}
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setView("list")}
-            >
-              <List className="h-3.5 w-3.5" />
-            </Button>
-          </div>
+          <div className="ml-auto" />
 
           <Input
             placeholder="Search..."
@@ -133,10 +116,8 @@ export default function ProjectsHub() {
         {/* View */}
         {isLoading ? (
           <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">Loading projects...</div>
-        ) : view === "board" ? (
-          <ProjectPipelineBoard projects={filtered} onSelect={setSelected} onStatusChange={handleStatusChange} />
         ) : (
-          <ProjectListView projects={filtered} onSelect={setSelected} />
+          <ProjectPipelineBoard projects={filtered} onSelect={setSelected} onStatusChange={handleStatusChange} />
         )}
 
         {/* Detail Panel */}
