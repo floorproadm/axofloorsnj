@@ -36,7 +36,20 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const { data: measurements } = useMeasurements(project?.id);
   const { data: materials } = useMaterialCosts(project?.id);
   const { data: labor } = useLaborEntries(project?.id);
-  const { data: invoices } = useInvoicesByProject(project?.id);
+  const { data: invoices } = useQuery({
+    queryKey: ['project-invoices', project?.id],
+    queryFn: async () => {
+      if (!project?.id) return [];
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, status, amount, total_amount, due_date')
+        .eq('project_id', project.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!project?.id,
+  });
 
   const totalCosts = (materials ?? []).reduce((s, m) => s + m.amount, 0) + (labor ?? []).reduce((s, l) => s + l.total_cost, 0);
   const revenue = jobCost?.estimated_revenue ?? project?.job_costs?.estimated_revenue ?? 0;
