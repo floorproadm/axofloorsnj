@@ -1,129 +1,150 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MapPin, User } from "lucide-react";
+import { format } from "date-fns";
 import type { HubProject } from "@/hooks/useProjectsHub";
 
 const COLUMNS = [
-  { key: "pending", label: "Pending", color: "border-l-[hsl(var(--state-risk))]" },
-  { key: "in_progress", label: "Active", color: "border-l-[hsl(var(--state-success))]" },
-  { key: "completed", label: "Done", color: "border-l-[hsl(var(--state-neutral))]" },
+  { key: "planning", label: "Planning", color: "bg-amber-500", text: "text-amber-500" },
+  { key: "in_progress", label: "In Progress", color: "bg-blue-500", text: "text-blue-500" },
+  { key: "completed", label: "Completed", color: "bg-emerald-500", text: "text-emerald-500" },
+  { key: "awaiting_payment", label: "Awaiting Payment", color: "bg-orange-400", text: "text-orange-400" },
+  { key: "paid", label: "Paid", color: "bg-red-400", text: "text-red-400" },
 ] as const;
 
 function matchColumn(status: string): string {
   if (status === "in_production" || status === "in_progress") return "in_progress";
-  if (status === "completed" || status === "paid") return "completed";
-  return "pending";
+  if (status === "completed") return "completed";
+  if (status === "awaiting_payment") return "awaiting_payment";
+  if (status === "paid") return "paid";
+  return "planning"; // pending, planning, etc
 }
 
 function fmt(n: number) {
-  return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
+  if (n === 0) return "$0.00";
+  return n >= 1000 ? `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${n.toFixed(2)}`;
 }
 
 interface Props {
   projects: HubProject[];
   onSelect: (p: HubProject) => void;
   onStatusChange?: (id: string, status: string) => void;
+  onNewProject?: () => void;
 }
 
-export function ProjectPipelineBoard({ projects, onSelect, onStatusChange }: Props) {
-  const [dragId, setDragId] = useState<string | null>(null);
-
-  const grouped = COLUMNS.map((col) => ({
-    ...col,
-    items: projects.filter((p) => matchColumn(p.project_status) === col.key),
-    total: projects
-      .filter((p) => matchColumn(p.project_status) === col.key)
-      .reduce((s, p) => s + (p.job_costs?.estimated_revenue ?? 0), 0),
-  }));
+export function ProjectPipelineBoard({ projects, onSelect, onStatusChange, onNewProject }: Props) {
+  const grouped = useMemo(() => {
+    const map: Record<string, { items: HubProject[]; total: number }> = {};
+    for (const col of COLUMNS) {
+      map[col.key] = { items: [], total: 0 };
+    }
+    for (const p of projects) {
+      const key = matchColumn(p.project_status);
+      if (map[key]) {
+        map[key].items.push(p);
+        map[key].total += p.job_costs?.estimated_revenue ?? 0;
+      }
+    }
+    return map;
+  }, [projects]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      {grouped.map((col) => (
-        <div
-          key={col.key}
-          className="flex flex-col gap-2"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={() => {
-            if (dragId && onStatusChange) {
-              const statusMap: Record<string, string> = { pending: "pending", in_progress: "in_production", completed: "completed" };
-              onStatusChange(dragId, statusMap[col.key] ?? col.key);
-            }
-            setDragId(null);
-          }}
-        >
-          {/* Column header */}
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{col.label}</span>
-              <Badge variant="secondary" className="text-[10px] h-5 px-1.5">{col.items.length}</Badge>
-            </div>
-            <span className="text-xs font-mono text-muted-foreground">{fmt(col.total)}</span>
-          </div>
-
-          {/* Cards */}
-          <div className="flex flex-col gap-1.5 min-h-[120px]">
-            {col.items.map((p) => (
-              <Card
-                key={p.id}
-                draggable
-                onDragStart={() => setDragId(p.id)}
-                onClick={() => onSelect(p)}
-                className={cn(
-                  "border-l-[3px] p-3 cursor-pointer hover:bg-muted/50 transition-colors",
-                  col.color
-                )}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate flex items-center gap-1.5">
-                      <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
-                      {p.address || "No address"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                      <User className="h-3 w-3 shrink-0" />
-                      {p.customer_name || <em>Pending info</em>}
-                    </p>
-                  </div>
-                  {p.job_costs?.estimated_revenue ? (
-                    <span className="text-xs font-mono font-semibold shrink-0">
-                      {fmt(p.job_costs.estimated_revenue)}
-                    </span>
-                  ) : null}
-                </div>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Badge variant="outline" className="text-[10px] h-4 px-1">
-                    {p.project_type}
-                  </Badge>
-                  {p.square_footage ? (
-                    <span className="text-[10px] text-muted-foreground">{p.square_footage} sqft</span>
-                  ) : null}
-                  {p.job_costs?.margin_percent != null && (
-                    <span
-                      className={cn(
-                        "text-[10px] font-mono font-semibold ml-auto",
-                        p.job_costs.margin_percent >= 30
-                          ? "text-[hsl(var(--state-success))]"
-                          : p.job_costs.margin_percent >= 15
-                            ? "text-[hsl(var(--state-risk))]"
-                            : "text-[hsl(var(--state-blocked))]"
-                      )}
-                    >
-                      {p.job_costs.margin_percent.toFixed(0)}%
-                    </span>
-                  )}
-                </div>
-              </Card>
-            ))}
-            {col.items.length === 0 && (
-              <div className="flex items-center justify-center h-20 rounded-lg border border-dashed text-xs text-muted-foreground">
-                No projects
+    <div className="flex-1 overflow-x-auto pb-4">
+      <div className="flex gap-3 min-w-max">
+        {COLUMNS.map((col) => {
+          const group = grouped[col.key];
+          return (
+            <div
+              key={col.key}
+              className="flex flex-col w-[260px] sm:w-[280px] shrink-0"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                const dragId = sessionStorage.getItem("drag-project-id");
+                if (dragId && onStatusChange) {
+                  const statusMap: Record<string, string> = {
+                    planning: "pending",
+                    in_progress: "in_production",
+                    completed: "completed",
+                    awaiting_payment: "awaiting_payment",
+                    paid: "paid",
+                  };
+                  onStatusChange(dragId, statusMap[col.key] ?? col.key);
+                  sessionStorage.removeItem("drag-project-id");
+                }
+              }}
+            >
+              {/* Column Header */}
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className={cn("text-[11px] font-semibold px-2 py-0.5 rounded", col.color, "text-white border-0")}>
+                  {col.label}
+                </Badge>
+                <span className={cn("text-sm font-mono font-medium", col.text)}>
+                  {fmt(group.total)}
+                </span>
               </div>
-            )}
-          </div>
-        </div>
-      ))}
+
+              {/* Cards */}
+              <div className="flex flex-col gap-2">
+                {group.items.map((p) => (
+                  <ProjectCard key={p.id} project={p} onClick={() => onSelect(p)} />
+                ))}
+
+                {/* New page button */}
+                <button
+                  onClick={onNewProject}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground py-2 px-1 transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  New page
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
+  );
+}
+
+function ProjectCard({ project, onClick }: { project: HubProject; onClick: () => void }) {
+  const dateStr = project.start_date || project.created_at;
+  const formattedDate = dateStr
+    ? format(new Date(dateStr), "dd/MM/yyyy h:mm a")
+    : null;
+
+  return (
+    <button
+      draggable
+      onDragStart={() => sessionStorage.setItem("drag-project-id", project.id)}
+      onDragEnd={() => sessionStorage.removeItem("drag-project-id")}
+      onClick={onClick}
+      className="w-full text-left p-3 rounded-lg bg-card border border-border/60 hover:border-border hover:shadow-sm transition-all space-y-1.5"
+    >
+      {/* Address */}
+      <p className="text-sm font-semibold text-foreground leading-snug">
+        {project.address || "No address"}
+      </p>
+
+      {/* Customer */}
+      <p className="text-xs text-muted-foreground">
+        {project.customer_name}
+      </p>
+
+      {/* Date */}
+      {formattedDate && (
+        <p className="text-xs text-muted-foreground/70">
+          {formattedDate}
+        </p>
+      )}
+
+      {/* Service type */}
+      {project.project_type && (
+        <p className="text-xs text-muted-foreground">
+          {project.project_type}
+          {project.square_footage ? ` · ${project.square_footage} sqft` : ""}
+        </p>
+      )}
+    </button>
   );
 }
