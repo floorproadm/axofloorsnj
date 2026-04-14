@@ -35,7 +35,7 @@ import honeyImg from '@/assets/stains/honey.jpg';
 import jacobeanImg from '@/assets/stains/jacobean.jpg';
 import mahoganyImg from '@/assets/stains/mahogany.jpg';
 import mediumBrownImg from '@/assets/stains/medium-brown.jpg';
-import naturalImg from '@/assets/stains/natural.jpg';
+
 import neutralImg from '@/assets/stains/neutral.jpg';
 import nutmegImg from '@/assets/stains/nutmeg.jpg';
 import provincialImg from '@/assets/stains/provincial.jpg';
@@ -71,7 +71,7 @@ const StainGallery = () => {
     'Coffee Brown', 'Colonial Maple', 'Country White', 'Dark Gray', 'Dark Walnut',
     'Early American', 'Ebony', 'English Chestnut', 'Espresso', 'Fruitwood',
     'Golden Brown', 'Golden Oak', 'Golden Pecan', 'Gunstock', 'Heritage Brown',
-    'Honey', 'Jacobean', 'Mahogany', 'Medium Brown', 'Natural', 'Neutral',
+    'Honey', 'Jacobean', 'Mahogany', 'Medium Brown', 'Neutral',
     'Nutmeg', 'Provincial', 'Red Mahogany', 'Red Oak', 'Rosewood',
     'Royal Mahogany', 'Rustic Beige', 'Sedona Red', 'Silvered Gray',
     'Special Walnut', 'Spice Brown', 'True Black', 'Warm Gray', 'Weathered Oak'
@@ -143,7 +143,6 @@ const StainGallery = () => {
     { name: 'Jacobean', image: jacobeanImg },
     { name: 'Mahogany', image: mahoganyImg },
     { name: 'Medium Brown', image: mediumBrownImg },
-    { name: 'Natural', image: naturalImg },
     { name: 'Neutral', image: neutralImg },
     { name: 'Nutmeg', image: nutmegImg },
     { name: 'Provincial', image: provincialImg },
@@ -185,7 +184,7 @@ const StainGallery = () => {
     { name: 'Jacobean', image: jacobeanImg },
     { name: 'Mahogany', image: mahoganyImg },
     { name: 'Medium Brown', image: mediumBrownImg },
-    { name: 'Natural', image: naturalImg },
+    
     { name: 'Neutral', image: neutralImg },
     { name: 'Nutmeg', image: nutmegImg },
     { name: 'Provincial', image: provincialImg },
