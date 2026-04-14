@@ -356,7 +356,7 @@ const StainGallery = () => {
                         Stop Guessing About Color
                       </h3>
                       <p className="text-lg mb-6 opacity-90">
-                        See exactly how each stain will look on your floors. Free in-home color testing with no obligation to purchase.
+                        Looks like just a color choice — but I've seen this go sideways. In your light, it can turn into something completely different. Let's sample it first so you actually see it.
                       </p>
                       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
