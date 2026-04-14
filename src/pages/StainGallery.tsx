@@ -35,7 +35,7 @@ import honeyImg from '@/assets/stains/honey.jpg';
 import jacobeanImg from '@/assets/stains/jacobean.jpg';
 import mahoganyImg from '@/assets/stains/mahogany.jpg';
 import mediumBrownImg from '@/assets/stains/medium-brown.jpg';
-import naturalImg from '@/assets/stains/natural.jpg';
+
 import neutralImg from '@/assets/stains/neutral.jpg';
 import nutmegImg from '@/assets/stains/nutmeg.jpg';
 import provincialImg from '@/assets/stains/provincial.jpg';
