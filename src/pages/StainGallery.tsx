@@ -52,6 +52,44 @@ import trueBlackImg from '@/assets/stains/true-black.jpg';
 import warmGrayImg from '@/assets/stains/warm-gray.jpg';
 import weatheredOakImg from '@/assets/stains/weathered-oak.jpg';
 
+// Import Red Oak stain images
+import roAgedBarrelImg from '@/assets/stains/red-oak/aged-barrel.png';
+import roAntiqueBrownImg from '@/assets/stains/red-oak/antique-brown.png';
+import roCherryImg from '@/assets/stains/red-oak/cherry.png';
+import roChestnutImg from '@/assets/stains/red-oak/chestnut.png';
+import roClassicGrayImg from '@/assets/stains/red-oak/classic-gray.png';
+import roCoffeeBrownImg from '@/assets/stains/red-oak/coffee-brown.png';
+import roColonialMapleImg from '@/assets/stains/red-oak/colonial-maple.png';
+import roCountryWhiteImg from '@/assets/stains/red-oak/country-white.png';
+import roDarkGrayImg from '@/assets/stains/red-oak/dark-gray.png';
+import roDarkWalnutImg from '@/assets/stains/red-oak/dark-walnut.png';
+import roEarlyAmericanImg from '@/assets/stains/red-oak/early-american.png';
+import roEbonyImg from '@/assets/stains/red-oak/ebony.png';
+import roEnglishChestnutImg from '@/assets/stains/red-oak/english-chestnut.png';
+import roEspressoImg from '@/assets/stains/red-oak/espresso.png';
+import roFruitwoodImg from '@/assets/stains/red-oak/fruitwood.png';
+import roGoldenBrownImg from '@/assets/stains/red-oak/golden-brown.png';
+import roGoldenOakImg from '@/assets/stains/red-oak/golden-oak.png';
+import roGoldenPecanImg from '@/assets/stains/red-oak/golden-pecan.png';
+import roGunstockImg from '@/assets/stains/red-oak/gunstock.png';
+import roHeritageBrownImg from '@/assets/stains/red-oak/heritage-brown.png';
+import roJacobeanImg from '@/assets/stains/red-oak/jacobean.png';
+import roMediumBrownImg from '@/assets/stains/red-oak/medium-brown.png';
+import roNeutralImg from '@/assets/stains/red-oak/neutral.png';
+import roNutmegImg from '@/assets/stains/red-oak/nutmeg.png';
+import roProvincialImg from '@/assets/stains/red-oak/provincial.png';
+import roRedMahoganyImg from '@/assets/stains/red-oak/red-mahogany.png';
+import roRosewoodImg from '@/assets/stains/red-oak/rosewood.png';
+import roRoyalMahoganyImg from '@/assets/stains/red-oak/royal-mahogany.png';
+import roRusticBeigeImg from '@/assets/stains/red-oak/rustic-beige.png';
+import roSedonaRedImg from '@/assets/stains/red-oak/sedona-red.png';
+import roSilveredGrayImg from '@/assets/stains/red-oak/silvered-gray.png';
+import roSpecialWalnutImg from '@/assets/stains/red-oak/special-walnut.png';
+import roSpiceBrownImg from '@/assets/stains/red-oak/spice-brown.png';
+import roTrueBlackImg from '@/assets/stains/red-oak/true-black.png';
+import roWarmGrayImg from '@/assets/stains/red-oak/warm-gray.png';
+import roWeatheredOakImg from '@/assets/stains/red-oak/weathered-oak.png';
+
 // Import process image
 import stainProcessImg from '@/assets/stain-process-work.jpg';
 const StainGallery = () => {
