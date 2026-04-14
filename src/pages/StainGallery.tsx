@@ -273,12 +273,9 @@ const StainGallery = () => {
         <section className="bg-gradient-subtle py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-heading font-bold text-navy mb-4">
+              <h1 className="text-4xl md:text-5xl font-heading font-bold text-navy mb-6">
                 Stain Gallery
               </h1>
-              <p className="text-lg md:text-xl text-gold font-medium italic mb-6">
-                "You're not choosing a color — you're choosing how this floor will look in your light."
-              </p>
               
               <div className="bg-white border-l-4 border-gold p-6 rounded-lg shadow-soft">
                 <p className="text-grey italic">
@@ -352,6 +349,9 @@ const StainGallery = () => {
                       <img src={stainProcessImg} alt="AXO Floors professional applying stain colors on hardwood flooring" className="w-full h-full object-cover" />
                     </div>
                     <div className="p-8 flex flex-col justify-center text-center lg:text-left">
+                      <p className="text-gold italic text-sm mb-3 font-medium">
+                        "You're not choosing a color — you're choosing how this floor will look in your light."
+                      </p>
                       <h3 className="text-2xl font-heading font-bold mb-4">
                         Stop Guessing About Color
                       </h3>
