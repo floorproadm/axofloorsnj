@@ -65,6 +65,7 @@ import ReviewRequest from "./pages/ReviewRequest";
 import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
 import PublicInvoice from "./pages/PublicInvoice";
+import Links from "./pages/Links";
 
 import CollaboratorLayout from "./components/collaborator/CollaboratorLayout";
 import CollaboratorDashboard from "./pages/collaborator/CollaboratorDashboard";
