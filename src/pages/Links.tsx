@@ -41,7 +41,7 @@ const Links = () => (
         transition={{ duration: 0.5, delay: 0.3 }}
       >
         <img src={axoLogo} alt="AXO Floors" className="h-12 mx-auto" />
-        <p className="text-gold text-sm font-medium mt-1">Premium Hardwood Flooring in NJ, NY & PA</p>
+        <p className="text-gold text-sm font-medium mt-1">Premium Flooring Services in NJ, NY & PA</p>
       </motion.div>
     </div>
 
