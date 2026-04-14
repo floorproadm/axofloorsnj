@@ -52,6 +52,44 @@ import trueBlackImg from '@/assets/stains/true-black.jpg';
 import warmGrayImg from '@/assets/stains/warm-gray.jpg';
 import weatheredOakImg from '@/assets/stains/weathered-oak.jpg';
 
+// Import Red Oak stain images
+import roAgedBarrelImg from '@/assets/stains/red-oak/aged-barrel.png';
+import roAntiqueBrownImg from '@/assets/stains/red-oak/antique-brown.png';
+import roCherryImg from '@/assets/stains/red-oak/cherry.png';
+import roChestnutImg from '@/assets/stains/red-oak/chestnut.png';
+import roClassicGrayImg from '@/assets/stains/red-oak/classic-gray.png';
+import roCoffeeBrownImg from '@/assets/stains/red-oak/coffee-brown.png';
+import roColonialMapleImg from '@/assets/stains/red-oak/colonial-maple.png';
+import roCountryWhiteImg from '@/assets/stains/red-oak/country-white.png';
+import roDarkGrayImg from '@/assets/stains/red-oak/dark-gray.png';
+import roDarkWalnutImg from '@/assets/stains/red-oak/dark-walnut.png';
+import roEarlyAmericanImg from '@/assets/stains/red-oak/early-american.png';
+import roEbonyImg from '@/assets/stains/red-oak/ebony.png';
+import roEnglishChestnutImg from '@/assets/stains/red-oak/english-chestnut.png';
+import roEspressoImg from '@/assets/stains/red-oak/espresso.png';
+import roFruitwoodImg from '@/assets/stains/red-oak/fruitwood.png';
+import roGoldenBrownImg from '@/assets/stains/red-oak/golden-brown.png';
+import roGoldenOakImg from '@/assets/stains/red-oak/golden-oak.png';
+import roGoldenPecanImg from '@/assets/stains/red-oak/golden-pecan.png';
+import roGunstockImg from '@/assets/stains/red-oak/gunstock.png';
+import roHeritageBrownImg from '@/assets/stains/red-oak/heritage-brown.png';
+import roJacobeanImg from '@/assets/stains/red-oak/jacobean.png';
+import roMediumBrownImg from '@/assets/stains/red-oak/medium-brown.png';
+import roNeutralImg from '@/assets/stains/red-oak/neutral.png';
+import roNutmegImg from '@/assets/stains/red-oak/nutmeg.png';
+import roProvincialImg from '@/assets/stains/red-oak/provincial.png';
+import roRedMahoganyImg from '@/assets/stains/red-oak/red-mahogany.png';
+import roRosewoodImg from '@/assets/stains/red-oak/rosewood.png';
+import roRoyalMahoganyImg from '@/assets/stains/red-oak/royal-mahogany.png';
+import roRusticBeigeImg from '@/assets/stains/red-oak/rustic-beige.png';
+import roSedonaRedImg from '@/assets/stains/red-oak/sedona-red.png';
+import roSilveredGrayImg from '@/assets/stains/red-oak/silvered-gray.png';
+import roSpecialWalnutImg from '@/assets/stains/red-oak/special-walnut.png';
+import roSpiceBrownImg from '@/assets/stains/red-oak/spice-brown.png';
+import roTrueBlackImg from '@/assets/stains/red-oak/true-black.png';
+import roWarmGrayImg from '@/assets/stains/red-oak/warm-gray.png';
+import roWeatheredOakImg from '@/assets/stains/red-oak/weathered-oak.png';
+
 // Import process image
 import stainProcessImg from '@/assets/stain-process-work.jpg';
 const StainGallery = () => {
@@ -160,46 +198,42 @@ const StainGallery = () => {
     { name: 'Weathered Oak', image: weatheredOakImg },
   ];
   const redOakStains = [
-    { name: 'Aged Barrel', image: agedBarrelImg },
-    { name: 'Antique Brown', image: antiqueBrownImg },
-    { name: 'Cherry', image: cherryImg },
-    { name: 'Chestnut', image: chestnutImg },
-    { name: 'Classic Gray', image: classicGrayImg },
-    { name: 'Coffee Brown', image: coffeeBrownImg },
-    { name: 'Colonial Maple', image: colonialMapleImg },
-    { name: 'Country White', image: countryWhiteImg },
-    { name: 'Dark Gray', image: darkGrayImg },
-    { name: 'Dark Walnut', image: darkWalnutImg },
-    { name: 'Early American', image: earlyAmericanImg },
-    { name: 'Ebony', image: ebonyImg },
-    { name: 'English Chestnut', image: englishChestnutImg },
-    { name: 'Espresso', image: espressoImg },
-    { name: 'Fruitwood', image: fruitwoodImg },
-    { name: 'Golden Brown', image: goldenBrownImg },
-    { name: 'Golden Oak', image: goldenOakImg },
-    { name: 'Golden Pecan', image: goldenPecanImg },
-    { name: 'Gunstock', image: gunstockImg },
-    { name: 'Heritage Brown', image: heritageBrownImg },
-    { name: 'Honey', image: honeyImg },
-    { name: 'Jacobean', image: jacobeanImg },
-    { name: 'Mahogany', image: mahoganyImg },
-    { name: 'Medium Brown', image: mediumBrownImg },
-    
-    { name: 'Neutral', image: neutralImg },
-    { name: 'Nutmeg', image: nutmegImg },
-    { name: 'Provincial', image: provincialImg },
-    { name: 'Red Mahogany', image: redMahoganyImg },
-    { name: 'Red Oak', image: redOakImg },
-    { name: 'Rosewood', image: rosewoodImg },
-    { name: 'Royal Mahogany', image: royalMahoganyImg },
-    { name: 'Rustic Beige', image: rusticBeigeImg },
-    { name: 'Sedona Red', image: sedonaRedImg },
-    { name: 'Silvered Gray', image: silveredGrayImg },
-    { name: 'Special Walnut', image: specialWalnutImg },
-    { name: 'Spice Brown', image: spiceBrownImg },
-    { name: 'True Black', image: trueBlackImg },
-    { name: 'Warm Gray', image: warmGrayImg },
-    { name: 'Weathered Oak', image: weatheredOakImg },
+    { name: 'Aged Barrel', image: roAgedBarrelImg },
+    { name: 'Antique Brown', image: roAntiqueBrownImg },
+    { name: 'Cherry', image: roCherryImg },
+    { name: 'Chestnut', image: roChestnutImg },
+    { name: 'Classic Gray', image: roClassicGrayImg },
+    { name: 'Coffee Brown', image: roCoffeeBrownImg },
+    { name: 'Colonial Maple', image: roColonialMapleImg },
+    { name: 'Country White', image: roCountryWhiteImg },
+    { name: 'Dark Gray', image: roDarkGrayImg },
+    { name: 'Dark Walnut', image: roDarkWalnutImg },
+    { name: 'Early American', image: roEarlyAmericanImg },
+    { name: 'Ebony', image: roEbonyImg },
+    { name: 'English Chestnut', image: roEnglishChestnutImg },
+    { name: 'Espresso', image: roEspressoImg },
+    { name: 'Fruitwood', image: roFruitwoodImg },
+    { name: 'Golden Brown', image: roGoldenBrownImg },
+    { name: 'Golden Oak', image: roGoldenOakImg },
+    { name: 'Golden Pecan', image: roGoldenPecanImg },
+    { name: 'Gunstock', image: roGunstockImg },
+    { name: 'Heritage Brown', image: roHeritageBrownImg },
+    { name: 'Jacobean', image: roJacobeanImg },
+    { name: 'Medium Brown', image: roMediumBrownImg },
+    { name: 'Neutral', image: roNeutralImg },
+    { name: 'Nutmeg', image: roNutmegImg },
+    { name: 'Provincial', image: roProvincialImg },
+    { name: 'Red Mahogany', image: roRedMahoganyImg },
+    { name: 'Rosewood', image: roRosewoodImg },
+    { name: 'Royal Mahogany', image: roRoyalMahoganyImg },
+    { name: 'Rustic Beige', image: roRusticBeigeImg },
+    { name: 'Sedona Red', image: roSedonaRedImg },
+    { name: 'Silvered Gray', image: roSilveredGrayImg },
+    { name: 'Special Walnut', image: roSpecialWalnutImg },
+    { name: 'Spice Brown', image: roSpiceBrownImg },
+    { name: 'True Black', image: roTrueBlackImg },
+    { name: 'Warm Gray', image: roWarmGrayImg },
+    { name: 'Weathered Oak', image: roWeatheredOakImg },
   ];
   const toggleWoodType = (woodType: string) => {
     setExpandedWoodType(expandedWoodType === woodType ? '' : woodType);
