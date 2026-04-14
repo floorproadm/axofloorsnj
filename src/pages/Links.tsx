@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Calendar, Phone, Wrench, Images, Palette, ClipboardCheck, Star, Gift } from "lucide-react";
 import axoLogo from "@/assets/axo-logo-official.png";
-import woodyMascot from "@/assets/woody-mascot.png";
+import woodyMascot from "@/assets/woody-mascot.jpg";
 
 const links = [
   { label: "Get Your Free Estimate", to: "/contact", icon: Calendar, primary: true },
