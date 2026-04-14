@@ -1,42 +1,31 @@
 
 
-# Create AXO Floors /links Page (Linktree-style)
+# Add Missing DuraSeal Stain Colors
 
 ## Overview
-Replicate the Kings OS `/links` page for AXO Floors — a mobile-first, Linktree-style page with hero image, animated links, and social icons. Adapted with AXO branding (navy/gold), content, and phone number.
+Add all 16 missing DuraSeal stain colors to the Stain Gallery. This requires downloading images from DuraSeal's website and adding them to the codebase.
+
+## Missing Colors (16)
+Dark Gray, Early American, Fruitwood, Golden Brown, Golden Pecan, Gunstock, Heritage Brown, Medium Brown, Neutral, Red Mahogany, Rosewood, Rustic Beige, Silvered Gray, Spice Brown, True Black, Warm Gray
 
 ## Implementation
 
-### 1. Create `src/pages/Links.tsx`
-Same structure as Kings OS version, adapted for AXO:
+### 1. Download 16 stain images
+Download the White Oak version of each missing color from DuraSeal's website and save as JPG in `src/assets/stains/`. File names: `dark-gray.jpg`, `early-american.jpg`, `fruitwood.jpg`, `golden-brown.jpg`, `golden-pecan.jpg`, `gunstock.jpg`, `heritage-brown.jpg`, `medium-brown.jpg`, `neutral.jpg`, `red-mahogany.jpg`, `rosewood.jpg`, `rustic-beige.jpg`, `silvered-gray.jpg`, `spice-brown.jpg`, `true-black.jpg`, `warm-gray.jpg`
 
-- **Hero**: Use `axo-work-photo.jpg` as a static image (no video). Full-width with gradient blend into background.
-- **Brand overlay**: "AXO Floors" heading + "Premium Hardwood Flooring in NJ, NY & PA" subtitle.
-- **Links** (with gold/navy styling):
-  - "Get Your Free Estimate" → `/contact` (primary, Calendar icon)
-  - "Call Us — (732) 351-8653" → `tel:+17323518653` (primary, Phone icon)
-  - "Our Services" → `/hardwood-flooring` (Wrench icon)
-  - "See Our Work" → `/gallery` (Images icon)
-  - "Stain Gallery" → `/stain-gallery` (Palette icon)
-  - "Floor Diagnostic Quiz" → `/floor-diagnostic` (ClipboardCheck icon)
-  - "Google Reviews" → Google reviews link (Star icon, external)
-  - "Referral Program" → `/referral-program` (Gift icon)
-- **Social icons**: Instagram, Facebook (using AXO's actual social URLs)
-- **Footer**: "© 2026 AXO Floors"
-- **Animations**: Framer Motion stagger (same as Kings OS)
+### 2. Update `src/pages/StainGallery.tsx`
+- Add 16 new image imports
+- Add 16 new entries to `whiteOakStains` array (alphabetically sorted)
+- Add 16 new entries to `redOakStains` array (alphabetically sorted)
+- Add 16 new entries to the `stainColors` array (for the form dropdowns)
+- Keep existing 4 custom colors (Honey, Mahogany, Natural, Red Oak)
 
-### 2. Add route in `src/App.tsx`
-Add `<Route path="/links" element={<Links />} />` to the public routes.
-
-### Technical Notes
-- Uses existing `framer-motion` dependency
-- No Header/Footer wrappers (standalone page like Kings OS)
-- Responsive: `max-w-lg` hero, `max-w-sm` links
-- AXO design tokens: gold gradients, navy text via Tailwind classes
+### Result
+Gallery goes from 24 to 40 stain colors, matching the full DuraSeal catalog plus AXO's custom additions.
 
 ### Files
 | Action | File |
 |---|---|
-| Create | `src/pages/Links.tsx` |
-| Edit | `src/App.tsx` (add route) |
+| Create (16) | `src/assets/stains/{new-color}.jpg` |
+| Edit | `src/pages/StainGallery.tsx` |
 
