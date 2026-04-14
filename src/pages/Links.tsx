@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Calendar, Phone, Wrench, Images, Palette, ClipboardCheck, Star, Gift } from "lucide-react";
+import axoLogo from "@/assets/axo-logo-official.png";
 
 const links = [
   { label: "Get Your Free Estimate", to: "/contact", icon: Calendar, primary: true },
@@ -30,7 +31,7 @@ const Links = () => (
       />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[hsl(var(--navy-primary))]" />
       <div className="absolute bottom-6 left-0 right-0 text-center text-white px-4">
-        <h1 className="text-3xl font-heading font-bold tracking-tight">AXO Floors</h1>
+        <img src={axoLogo} alt="AXO Floors" className="h-12 mx-auto" />
         <p className="text-gold text-sm font-medium mt-1">Premium Hardwood Flooring in NJ, NY & PA</p>
       </div>
     </div>
