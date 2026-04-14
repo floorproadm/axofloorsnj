@@ -10,8 +10,7 @@ const links = [
   { label: "Our Services", to: "/", icon: Wrench },
   { label: "See Our Work", to: "/gallery", icon: Images },
   { label: "Stain Gallery", to: "/stain-gallery", icon: Palette },
-  { label: "Floor Diagnostic Quiz", to: "/floor-diagnostic", icon: ClipboardCheck },
-  { label: "Google Reviews", to: "https://g.page/r/axofloors/review", icon: Star, external: true },
+  { label: "About Us", to: "/about", icon: ClipboardCheck },
   { label: "Referral Program", to: "/referral-program", icon: Gift },
 ];
 
