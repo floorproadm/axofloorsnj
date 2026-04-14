@@ -7,10 +7,10 @@ import woodyMascot from "@/assets/woody-mascot.jpg";
 const links = [
   { label: "Get Your Free Estimate", to: "/contact", icon: Calendar, primary: true },
   { label: "Call Us — (732) 351-8653", to: "tel:+17323518653", icon: Phone, primary: true, external: true },
+  { label: "About Us", to: "/about", icon: ClipboardCheck },
   { label: "Our Services", to: "/", icon: Wrench },
   { label: "See Our Work", to: "/gallery", icon: Images },
   { label: "Stain Gallery", to: "/stain-gallery", icon: Palette },
-  { label: "About Us", to: "/about", icon: ClipboardCheck },
   
 ];
 
