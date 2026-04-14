@@ -349,6 +349,9 @@ const StainGallery = () => {
                       <img src={stainProcessImg} alt="AXO Floors professional applying stain colors on hardwood flooring" className="w-full h-full object-cover" />
                     </div>
                     <div className="p-8 flex flex-col justify-center text-center lg:text-left">
+                      <p className="text-gold italic text-sm mb-3 font-medium">
+                        "You're not choosing a color — you're choosing how this floor will look in your light."
+                      </p>
                       <h3 className="text-2xl font-heading font-bold mb-4">
                         Stop Guessing About Color
                       </h3>
