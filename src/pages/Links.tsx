@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Calendar, Phone, Wrench, Images, Palette, ClipboardCheck, Star, Gift } from "lucide-react";
 import axoLogo from "@/assets/axo-logo-official.png";
+import woodyMascot from "@/assets/woody-mascot.png";
 
 const links = [
   { label: "Get Your Free Estimate", to: "/contact", icon: Calendar, primary: true },
@@ -23,17 +24,25 @@ const item = {
 const Links = () => (
   <div className="min-h-screen bg-navy flex flex-col items-center">
     {/* Hero */}
-    <div className="relative w-full max-w-lg mx-auto aspect-[4/3] overflow-hidden">
-      <img
-        src="/lovable-uploads/0b786478-e182-4437-884a-81e37656e51e.png"
-        alt="AXO Floors work"
-        className="w-full h-full object-cover"
+    <div className="relative w-full max-w-lg mx-auto aspect-[3/4] overflow-hidden">
+      <motion.img
+        src={woodyMascot}
+        alt="Woody — AXO Floors mascot"
+        className="w-full h-full object-cover object-top"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[hsl(var(--navy-primary))]" />
-      <div className="absolute bottom-6 left-0 right-0 text-center text-white px-4">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-40% to-[hsl(var(--navy-primary))]" />
+      <motion.div
+        className="absolute bottom-6 left-0 right-0 text-center text-white px-4"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
         <img src={axoLogo} alt="AXO Floors" className="h-12 mx-auto" />
         <p className="text-gold text-sm font-medium mt-1">Premium Hardwood Flooring in NJ, NY & PA</p>
-      </div>
+      </motion.div>
     </div>
 
     {/* Links */}
