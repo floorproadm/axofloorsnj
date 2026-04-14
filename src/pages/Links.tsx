@@ -11,7 +11,7 @@ const links = [
   { label: "See Our Work", to: "/gallery", icon: Images },
   { label: "Stain Gallery", to: "/stain-gallery", icon: Palette },
   { label: "About Us", to: "/about", icon: ClipboardCheck },
-  { label: "Referral Program", to: "/referral-program", icon: Gift },
+  
 ];
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
