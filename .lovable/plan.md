@@ -1,31 +1,28 @@
 
 
-# Add Missing DuraSeal Stain Colors
+# Fix Red Oak Stain Images -- Use Correct DuraSeal Red Oak Photos
 
-## Overview
-Add all 16 missing DuraSeal stain colors to the Stain Gallery. This requires downloading images from DuraSeal's website and adding them to the codebase.
-
-## Missing Colors (16)
-Dark Gray, Early American, Fruitwood, Golden Brown, Golden Pecan, Gunstock, Heritage Brown, Medium Brown, Neutral, Red Mahogany, Rosewood, Rustic Beige, Silvered Gray, Spice Brown, True Black, Warm Gray
+## Problem
+The Red Oak section currently uses the exact same images as White Oak. DuraSeal has separate Red Oak images (uploaded April 2025, PNG format) that show how each stain looks specifically on Red Oak wood.
 
 ## Implementation
 
-### 1. Download 16 stain images
-Download the White Oak version of each missing color from DuraSeal's website and save as JPG in `src/assets/stains/`. File names: `dark-gray.jpg`, `early-american.jpg`, `fruitwood.jpg`, `golden-brown.jpg`, `golden-pecan.jpg`, `gunstock.jpg`, `heritage-brown.jpg`, `medium-brown.jpg`, `neutral.jpg`, `red-mahogany.jpg`, `rosewood.jpg`, `rustic-beige.jpg`, `silvered-gray.jpg`, `spice-brown.jpg`, `true-black.jpg`, `warm-gray.jpg`
+### 1. Download 35 Red Oak images from DuraSeal
+Download the full-size Red Oak version of each color from DuraSeal's April 2025 uploads and save as PNG in `src/assets/stains/red-oak/`. Source URLs follow the pattern: `https://www.duraseal.com/wp-content/uploads/2025/04/{Color-Name}.png`
+
+Colors (35 total -- all DuraSeal colors, no AXO custom): Aged Barrel, Antique Brown, Cherry, Chestnut, Classic Gray, Coffee Brown, Colonial Maple, Country White, Dark Gray, Dark Walnut, Early American, Ebony, English Chestnut, Espresso, Fruitwood, Golden Brown, Golden Oak, Golden Pecan, Gunstock, Heritage Brown, Jacobean, Medium Brown, Neutral, Nutmeg, Provincial, Red Mahogany, Rosewood, Royal Mahogany, Rustic Beige, Sedona Red, Silvered Gray, Special Walnut, Spice Brown, True Black, Warm Gray, Weathered Oak
 
 ### 2. Update `src/pages/StainGallery.tsx`
-- Add 16 new image imports
-- Add 16 new entries to `whiteOakStains` array (alphabetically sorted)
-- Add 16 new entries to `redOakStains` array (alphabetically sorted)
-- Add 16 new entries to the `stainColors` array (for the form dropdowns)
-- Keep existing 4 custom colors (Honey, Mahogany, Natural, Red Oak)
+- Add 35 new imports for Red Oak images (from `@/assets/stains/red-oak/` folder)
+- Update `redOakStains` array to use the Red Oak-specific images instead of the White Oak ones
+- Remove the 3 AXO custom colors (Honey, Mahogany, Red Oak) from `redOakStains` since DuraSeal doesn't have Red Oak versions for those -- OR keep them with White Oak images as placeholders (will ask)
 
-### Result
-Gallery goes from 24 to 40 stain colors, matching the full DuraSeal catalog plus AXO's custom additions.
+### 3. Sequence verification
+Both arrays already match DuraSeal's alphabetical order. No reordering needed.
 
 ### Files
 | Action | File |
 |---|---|
-| Create (16) | `src/assets/stains/{new-color}.jpg` |
+| Create (35) | `src/assets/stains/red-oak/{color}.png` |
 | Edit | `src/pages/StainGallery.tsx` |
 
