@@ -192,7 +192,7 @@ const Contact = () => {
             
           </div>
           <blockquote className="text-grey max-w-4xl mx-auto text-base sm:text-lg italic">
-            "Eduardo gave me a quote the same day, finished my project in 4 days, and saved me $3,200 vs. replacement. Amazing team!"
+            "Eduardo gave me a quote the same day, finished my project in 3 days, and saved me $3,200 vs. replacement. Amazing team!"
           </blockquote>
           <cite className="text-gold font-medium mt-2 block">— Laura M., NJ</cite>
         </div>
