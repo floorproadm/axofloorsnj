@@ -546,7 +546,12 @@ function PropRow({ label, value, action }: { label: string; value: string | null
    FINANCIAL SNAPSHOT (replaces JobFinancialHeader)
    ═══════════════════════════════════════════════ */
 
-function FinancialSnapshot({ projectId }: { projectId: string }) {
+function FinancialSnapshot({ projectId, onSetRevenue, onAddCost, onCreateInvoice }: {
+  projectId: string;
+  onSetRevenue?: () => void;
+  onAddCost?: () => void;
+  onCreateInvoice?: () => void;
+}) {
   const { data: jobCost } = useJobCost(projectId);
   const { marginMinPercent } = useCompanySettings();
 
@@ -575,8 +580,18 @@ function FinancialSnapshot({ projectId }: { projectId: string }) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <MetricCard label="Revenue" value={formatCurrency(revenue)} icon={<DollarSign className="w-4 h-4" />} />
-      <MetricCard label="Cost" value={formatCurrency(totalCost)} icon={<Package className="w-4 h-4" />} />
+      <MetricCard
+        label="Revenue"
+        value={formatCurrency(revenue)}
+        icon={<DollarSign className="w-4 h-4" />}
+        emptyCta={revenue === 0 && onSetRevenue ? { label: 'Set revenue', onClick: onSetRevenue } : undefined}
+      />
+      <MetricCard
+        label="Cost"
+        value={formatCurrency(totalCost)}
+        icon={<Package className="w-4 h-4" />}
+        emptyCta={totalCost === 0 && onAddCost ? { label: '+ Add first cost', onClick: onAddCost } : undefined}
+      />
       <MetricCard
         label="Margin"
         value={`${margin.toFixed(1)}%`}
@@ -598,11 +613,11 @@ function FinancialSnapshot({ projectId }: { projectId: string }) {
           <DollarSign className="w-4 h-4" />
         }
         accent={paymentInfo?.allPaid ? 'emerald' : paymentInfo?.hasOverdue ? 'red' : undefined}
+        emptyCta={!paymentInfo?.hasInvoices && onCreateInvoice ? { label: '+ Create invoice', onClick: onCreateInvoice } : undefined}
       />
     </div>
   );
 }
-
 function MetricCard({ label, value, sub, icon, accent }: {
   label: string; value: string; sub?: string; icon: React.ReactNode;
   accent?: 'emerald' | 'amber' | 'red';
