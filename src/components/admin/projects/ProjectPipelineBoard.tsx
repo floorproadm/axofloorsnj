@@ -81,7 +81,7 @@ export function ProjectPipelineBoard({ projects, signals, onSelect, onStatusChan
                 <Badge className={cn("text-[11px] font-semibold px-2 py-0.5 rounded", col.color, "text-white border-0")}>
                   {col.label}
                 </Badge>
-                <span className={cn("text-sm font-mono font-medium", col.text)}>
+                <span className={cn("text-sm font-bold", col.text)}>
                   {fmt(group.total)}
                 </span>
               </div>
