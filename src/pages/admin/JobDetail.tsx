@@ -621,6 +621,7 @@ function FinancialSnapshot({ projectId, onSetRevenue, onAddCost, onCreateInvoice
 function MetricCard({ label, value, sub, icon, accent }: {
   label: string; value: string; sub?: string; icon: React.ReactNode;
   accent?: 'emerald' | 'amber' | 'red';
+  emptyCta?: { label: string; onClick: () => void };
 }) {
   const accentColor = accent === 'emerald' ? 'text-emerald-600' : accent === 'amber' ? 'text-amber-600' : accent === 'red' ? 'text-red-600' : 'text-foreground';
   return (
@@ -631,9 +632,19 @@ function MetricCard({ label, value, sub, icon, accent }: {
       </div>
       <p className={cn("text-lg font-bold tabular-nums", accentColor)}>{value}</p>
       {sub && <p className="text-xs text-muted-foreground tabular-nums">{sub}</p>}
+      {emptyCta && (
+        <button
+          type="button"
+          onClick={emptyCta.onClick}
+          className="text-xs text-primary hover:underline font-medium"
+        >
+          {emptyCta.label}
+        </button>
+      )}
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════
    JOB DETAILS EDIT FORM
