@@ -24,7 +24,7 @@ const FOLDER_TYPE_LABELS: Record<string, { label: string; icon: typeof Camera }>
 
 const FEED_PAGE_SIZE = 20;
 
-export default function CompanyFeed() {
+export default function CompanyFeed({ embedded = false }: { embedded?: boolean } = {}) {
   const [search, setSearch] = useState("");
   const [feedPage, setFeedPage] = useState(0);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
@@ -97,8 +97,8 @@ export default function CompanyFeed() {
     ? [{ label: "Jobs", href: "/admin/jobs" }, { label: projectInfo.customer_name }, { label: "Feed" }]
     : [{ label: "Feed" }];
 
-  return (
-    <AdminLayout title={projectId ? "Projeto — Feed" : "Company Feed"} breadcrumbs={breadcrumbs}>
+  const body = (
+    <>
       <div className="space-y-4 animate-fade-in max-w-2xl mx-auto">
 
         {/* Project context header */}
