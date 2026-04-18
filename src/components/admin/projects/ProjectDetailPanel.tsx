@@ -51,6 +51,9 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [measurementOpen, setMeasurementOpen] = useState(false);
+  const [costsOpen, setCostsOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const { data: jobCost } = useJobCost(project?.id);
   const { data: measurements } = useMeasurements(project?.id);
