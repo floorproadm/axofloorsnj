@@ -37,13 +37,13 @@ export default function FeedPostDetail() {
   const handleConfirmStep2 = () => {
     setShowStep2(false);
     deleteMutation.mutate(postId!, {
-      onSuccess: () => navigate("/admin/feed"),
+      onSuccess: () => navigate("/admin/gallery"),
     });
   };
 
   if (isLoading) {
     return (
-      <AdminLayout title="Carregando..." breadcrumbs={[{ label: "Feed", href: "/admin/feed" }, { label: "Post" }]}>
+      <AdminLayout title="Carregando..." breadcrumbs={[{ label: "Gallery", href: "/admin/gallery" }, { label: "Post" }]}>
         <div className="py-16 text-center text-muted-foreground text-sm">Carregando post...</div>
       </AdminLayout>
     );
@@ -51,11 +51,11 @@ export default function FeedPostDetail() {
 
   if (!post) {
     return (
-      <AdminLayout title="Post não encontrado" breadcrumbs={[{ label: "Feed", href: "/admin/feed" }, { label: "Post" }]}>
+      <AdminLayout title="Post não encontrado" breadcrumbs={[{ label: "Gallery", href: "/admin/gallery" }, { label: "Post" }]}>
         <div className="py-16 text-center">
           <p className="text-muted-foreground text-sm">Post não encontrado</p>
-          <Button variant="outline" onClick={() => navigate("/admin/feed")} className="mt-4">
-            Voltar ao Feed
+          <Button variant="outline" onClick={() => navigate("/admin/gallery")} className="mt-4">
+            Voltar à Gallery
           </Button>
         </div>
       </AdminLayout>
@@ -65,12 +65,12 @@ export default function FeedPostDetail() {
   return (
     <AdminLayout
       title={post.title || "Post"}
-      breadcrumbs={[{ label: "Feed", href: "/admin/feed" }, { label: post.title || "Post" }]}
+      breadcrumbs={[{ label: "Gallery", href: "/admin/gallery" }, { label: post.title || "Post" }]}
     >
       <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
         {/* Top actions */}
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/feed")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/gallery")}>
             <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
           </Button>
           <div className="flex items-center gap-2">

@@ -62,7 +62,7 @@ export default function FeedPostEdit() {
 
   if (!isNew && isLoading) {
     return (
-      <AdminLayout title="Carregando..." breadcrumbs={[{ label: "Feed", href: "/admin/feed" }, { label: "Editar" }]}>
+      <AdminLayout title="Carregando..." breadcrumbs={[{ label: "Gallery", href: "/admin/gallery" }, { label: "Editar" }]}>
         <div className="py-16 text-center text-muted-foreground text-sm">Preparando...</div>
       </AdminLayout>
     );
@@ -93,12 +93,12 @@ export default function FeedPostEdit() {
     <AdminLayout
       title={isNew ? "Novo Post" : "Editar Post"}
       breadcrumbs={[
-        { label: "Feed", href: "/admin/feed" },
+        { label: "Gallery", href: "/admin/gallery" },
         { label: isNew ? "Novo" : "Editar" },
       ]}
     >
       <div className="max-w-2xl mx-auto space-y-4 animate-fade-in pb-24">
-        <Button variant="ghost" size="sm" onClick={() => navigate(isNew ? "/admin/feed" : `/admin/feed/${postId}`)}>
+        <Button variant="ghost" size="sm" onClick={() => navigate(isNew ? "/admin/gallery" : `/admin/feed/${postId}`)}>
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
         </Button>
         <FeedPostForm
