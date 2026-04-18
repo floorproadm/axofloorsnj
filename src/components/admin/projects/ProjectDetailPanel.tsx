@@ -1,7 +1,20 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ProjectKPIBar } from "./ProjectKPIBar";
 import { useJobCost } from "@/hooks/useJobCosts";
 import { useMeasurements } from "@/hooks/useMeasurements";
@@ -9,8 +22,9 @@ import { useMaterialCosts } from "@/hooks/useMaterialCosts";
 import { useLaborEntries } from "@/hooks/useLaborEntries";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, User, Ruler, DollarSign, FileText } from "lucide-react";
+import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import type { HubProject } from "@/hooks/useProjectsHub";
 
 const STATUSES = [
@@ -32,6 +46,9 @@ interface Props {
 
 export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { data: jobCost } = useJobCost(project?.id);
   const { data: measurements } = useMeasurements(project?.id);
   const { data: materials } = useMaterialCosts(project?.id);
@@ -60,6 +77,21 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
     qc.invalidateQueries({ queryKey: ["hub-projects"] });
   }
 
+  async function handleDelete() {
+    if (!project) return;
+    setDeleting(true);
+    const { error } = await supabase.from("projects").delete().eq("id", project.id);
+    setDeleting(false);
+    if (error) {
+      toast.error("Could not delete project", { description: error.message });
+      return;
+    }
+    toast.success("Project deleted");
+    setConfirmDelete(false);
+    qc.invalidateQueries({ queryKey: ["hub-projects"] });
+    onClose();
+  }
+
   if (!project) return null;
 
   return (
@@ -68,15 +100,54 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
         {/* Header */}
         <div className="sticky top-0 z-10 bg-background border-b p-4 space-y-3">
           <SheetHeader className="p-0">
-            <SheetTitle className="flex items-center gap-2 text-base">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              {project.address || "No address"}
-            </SheetTitle>
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <User className="h-3 w-3" /> {project.customer_name}
-              <span className="mx-1">·</span>
-              <Badge variant="outline" className="text-[10px]">{project.project_type}</Badge>
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <SheetTitle className="flex items-center gap-2 text-base">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="truncate">{project.address || "No address"}</span>
+                </SheetTitle>
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
+                  <User className="h-3 w-3" /> {project.customer_name}
+                  <span className="mx-1">·</span>
+                  <Badge variant="outline" className="text-[10px]">{project.project_type}</Badge>
+                </p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  title="Open full project"
+                  onClick={() => {
+                    navigate(`/admin/jobs/${project.id}`);
+                    onClose();
+                  }}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  title="Edit project"
+                  onClick={() => {
+                    navigate(`/admin/jobs/${project.id}?edit=1`);
+                    onClose();
+                  }}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  title="Delete project"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
           </SheetHeader>
 
           <Select defaultValue={project.project_status} onValueChange={handleStatusChange}>
@@ -184,6 +255,31 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
           </TabsContent>
         </Tabs>
       </SheetContent>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{project.address || project.customer_name}</strong> will be permanently removed.
+              Linked costs, measurements, invoices and chat history may also be deleted. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete project"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
