@@ -30,7 +30,6 @@ import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import AdminDashboard from './pages/admin/Dashboard';
 
-import CompanyFeed from './pages/admin/CompanyFeed';
 import FeedPostDetail from './pages/admin/FeedPostDetail';
 import FeedPostEdit from './pages/admin/FeedPostEdit';
 import GalleryHub from './pages/admin/GalleryHub';
@@ -131,11 +130,6 @@ const App = () => {
             <Route path="/admin/gallery" element={
               <ProtectedRoute>
                 <GalleryHub />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/feed" element={
-              <ProtectedRoute>
-                <CompanyFeed />
               </ProtectedRoute>
             } />
             <Route path="/admin/feed/:postId" element={
