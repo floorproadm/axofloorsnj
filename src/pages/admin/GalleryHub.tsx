@@ -1,30 +1,12 @@
-import { lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Camera, Globe } from "lucide-react";
+import { Camera, Globe } from "lucide-react";
 import { GalleryFeedPanel } from "@/components/admin/gallery/GalleryFeedPanel";
 import { GalleryPublicPanel } from "@/components/admin/gallery/GalleryPublicPanel";
 
-const CompanyFeed = lazy(() => import("./CompanyFeed"));
-
-const Fallback = () => (
-  <div className="flex items-center justify-center py-20">
-    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-  </div>
-);
-
 export default function GalleryHub() {
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // Project context bypasses the tab shell — render legacy Feed directly
-  if (searchParams.get("project")) {
-    return (
-      <Suspense fallback={<Fallback />}>
-        <CompanyFeed />
-      </Suspense>
-    );
-  }
 
   const tab = searchParams.get("tab") === "public" ? "public" : "feed";
 
