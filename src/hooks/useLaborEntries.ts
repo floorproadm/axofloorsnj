@@ -37,7 +37,16 @@ export function useLaborEntries(projectId: string | undefined) {
 export function useAddLaborEntry() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { project_id: string; worker_name: string; role?: string; daily_rate: number; days_worked?: number; work_date?: string }) => {
+    mutationFn: async (input: {
+      project_id: string;
+      worker_name: string;
+      role?: string;
+      daily_rate: number;
+      days_worked?: number;
+      work_date?: string;
+      is_paid?: boolean;
+      notes?: string;
+    }) => {
       const { data, error } = await supabase
         .from('labor_entries')
         .insert({
@@ -48,6 +57,8 @@ export function useAddLaborEntry() {
           daily_rate: input.daily_rate,
           days_worked: input.days_worked || 1,
           work_date: input.work_date || new Date().toISOString().split('T')[0],
+          is_paid: input.is_paid ?? false,
+          notes: input.notes || null,
         })
         .select()
         .single();

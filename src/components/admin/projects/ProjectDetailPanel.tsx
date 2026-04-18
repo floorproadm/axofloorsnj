@@ -4,7 +4,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -17,14 +16,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ProjectKPIBar } from "./ProjectKPIBar";
+import { FullMeasurementDialog } from "./FullMeasurementDialog";
+import { FullCostsDialog } from "./FullCostsDialog";
+import { NewInvoiceDialog } from "@/components/admin/payments/NewInvoiceDialog";
 import { useJobCost } from "@/hooks/useJobCosts";
-import { useMeasurements, useCreateMeasurement } from "@/hooks/useMeasurements";
-import { useMaterialCosts, useAddMaterialCost } from "@/hooks/useMaterialCosts";
-import { useLaborEntries, useAddLaborEntry } from "@/hooks/useLaborEntries";
-import { useCreateInvoice, generateInvoiceNumber } from "@/hooks/useInvoices";
+import { useMeasurements } from "@/hooks/useMeasurements";
+import { useMaterialCosts } from "@/hooks/useMaterialCosts";
+import { useLaborEntries } from "@/hooks/useLaborEntries";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink, Plus, X, Check } from "lucide-react";
+import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import type { HubProject } from "@/hooks/useProjectsHub";
@@ -50,6 +51,9 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [measurementOpen, setMeasurementOpen] = useState(false);
+  const [costsOpen, setCostsOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const { data: jobCost } = useJobCost(project?.id);
   const { data: measurements } = useMeasurements(project?.id);
@@ -181,7 +185,14 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
           </TabsList>
 
           <TabsContent value="measurements" className="mt-3 space-y-2">
-            <InlineMeasurementForm projectId={project.id} />
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              onClick={() => setMeasurementOpen(true)}
+            >
+              <Plus className="h-3 w-3" /> New full measurement
+            </Button>
             {(measurements ?? []).length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-3">No measurements yet</p>
             ) : (
@@ -195,9 +206,15 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
                   className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition text-left"
                 >
                   <div>
-                    <p className="text-sm font-medium">{m.total_sqft} sqft</p>
+                    <p className="text-sm font-medium">
+                      {m.total_sqft > 0 && `${m.total_sqft} sqft`}
+                      {m.total_sqft > 0 && m.total_linear_ft > 0 && " · "}
+                      {m.total_linear_ft > 0 && `${m.total_linear_ft} lf`}
+                      {m.total_sqft === 0 && m.total_linear_ft === 0 && "Measurement"}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {m.measurement_date ? format(new Date(m.measurement_date), "MMM d, yyyy") : "No date"}
+                      {m.service_type && ` · ${m.service_type}`}
                     </p>
                   </div>
                   <Badge variant="outline" className="text-[10px]">{m.status}</Badge>
@@ -206,15 +223,22 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
             )}
           </TabsContent>
 
-          <TabsContent value="costs" className="mt-3 space-y-4">
-            {/* Materials */}
+          <TabsContent value="costs" className="mt-3 space-y-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              onClick={() => setCostsOpen(true)}
+            >
+              <Plus className="h-3 w-3" /> Manage costs (materials, labor, margin)
+            </Button>
+
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Materials</p>
-              <InlineMaterialForm projectId={project.id} />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Materials</p>
               {(materials ?? []).length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-2">No materials</p>
+                <p className="text-xs text-muted-foreground py-1">No materials</p>
               ) : (
-                (materials ?? []).map((m) => (
+                (materials ?? []).slice(0, 5).map((m) => (
                   <div key={m.id} className="flex items-center justify-between py-1.5 border-b last:border-0">
                     <div>
                       <p className="text-sm">{m.description}</p>
@@ -224,15 +248,17 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
                   </div>
                 ))
               )}
+              {(materials?.length ?? 0) > 5 && (
+                <p className="text-[10px] text-muted-foreground text-center pt-1">+{(materials?.length ?? 0) - 5} more</p>
+              )}
             </div>
-            {/* Labor */}
+
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Labor</p>
-              <InlineLaborForm projectId={project.id} />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Labor</p>
               {(labor ?? []).length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-2">No labor entries</p>
+                <p className="text-xs text-muted-foreground py-1">No labor entries</p>
               ) : (
-                (labor ?? []).map((l) => (
+                (labor ?? []).slice(0, 5).map((l) => (
                   <div key={l.id} className="flex items-center justify-between py-1.5 border-b last:border-0">
                     <div>
                       <p className="text-sm">{l.worker_name}</p>
@@ -242,11 +268,21 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
                   </div>
                 ))
               )}
+              {(labor?.length ?? 0) > 5 && (
+                <p className="text-[10px] text-muted-foreground text-center pt-1">+{(labor?.length ?? 0) - 5} more</p>
+              )}
             </div>
           </TabsContent>
 
           <TabsContent value="invoices" className="mt-3 space-y-2">
-            <InlineInvoiceForm projectId={project.id} customerId={(project as any).customer_id ?? null} />
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              onClick={() => setInvoiceOpen(true)}
+            >
+              <Plus className="h-3 w-3" /> New full invoice
+            </Button>
             {(invoices ?? []).length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-3">No invoices yet</p>
             ) : (
@@ -300,293 +336,22 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FullMeasurementDialog
+        open={measurementOpen}
+        onOpenChange={setMeasurementOpen}
+        projectId={project.id}
+      />
+      <FullCostsDialog
+        open={costsOpen}
+        onOpenChange={setCostsOpen}
+        projectId={project.id}
+      />
+      <NewInvoiceDialog
+        open={invoiceOpen}
+        onOpenChange={setInvoiceOpen}
+        defaultProjectId={project.id}
+      />
     </Sheet>
-  );
-}
-
-/* ============================================================
-   Inline Mini-Forms
-   ============================================================ */
-
-function InlineMeasurementForm({ projectId }: { projectId: string }) {
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [sqft, setSqft] = useState("");
-  const create = useCreateMeasurement();
-
-  async function handleSave() {
-    const result = await create.mutateAsync({
-      project_id: projectId,
-      measurement_date: new Date(date).toISOString(),
-      status: "scheduled",
-    });
-    // Optionally insert a single area if sqft provided
-    if (sqft && Number(sqft) > 0) {
-      await supabase.from("measurement_areas").insert({
-        measurement_id: result.id,
-        room_name: "Main area",
-        area_sqft: Number(sqft),
-      });
-      await supabase.from("project_measurements")
-        .update({ total_sqft: Number(sqft) })
-        .eq("id", result.id);
-    }
-    setSqft("");
-    setOpen(false);
-  }
-
-  if (!open) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full h-8 text-xs gap-1"
-        onClick={() => setOpen(true)}
-      >
-        <Plus className="h-3 w-3" /> Add measurement
-      </Button>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border bg-muted/30 p-2 space-y-2">
-      <div className="flex gap-2">
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-8 text-xs flex-1" />
-        <Input
-          type="number"
-          placeholder="sqft"
-          value={sqft}
-          onChange={(e) => setSqft(e.target.value)}
-          className="h-8 text-xs w-20"
-        />
-      </div>
-      <div className="flex gap-1 justify-end">
-        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setOpen(false)}>
-          <X className="h-3 w-3" />
-        </Button>
-        <Button size="sm" className="h-7 px-3 text-xs gap-1" onClick={handleSave} disabled={create.isPending}>
-          <Check className="h-3 w-3" /> Save
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function InlineMaterialForm({ projectId }: { projectId: string }) {
-  const [open, setOpen] = useState(false);
-  const [description, setDescription] = useState("");
-  const [supplier, setSupplier] = useState("");
-  const [amount, setAmount] = useState("");
-  const add = useAddMaterialCost();
-
-  async function handleSave() {
-    if (!description || !amount) {
-      toast.error("Description and amount required");
-      return;
-    }
-    await add.mutateAsync({
-      project_id: projectId,
-      description,
-      supplier: supplier || undefined,
-      amount: Number(amount),
-    });
-    setDescription("");
-    setSupplier("");
-    setAmount("");
-    setOpen(false);
-  }
-
-  if (!open) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full h-7 text-xs gap-1 mb-2"
-        onClick={() => setOpen(true)}
-      >
-        <Plus className="h-3 w-3" /> Add material
-      </Button>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border bg-muted/30 p-2 space-y-2 mb-2">
-      <Input
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="h-8 text-xs"
-      />
-      <div className="flex gap-2">
-        <Input
-          placeholder="Supplier"
-          value={supplier}
-          onChange={(e) => setSupplier(e.target.value)}
-          className="h-8 text-xs flex-1"
-        />
-        <Input
-          type="number"
-          placeholder="$"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="h-8 text-xs w-24"
-        />
-      </div>
-      <div className="flex gap-1 justify-end">
-        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setOpen(false)}>
-          <X className="h-3 w-3" />
-        </Button>
-        <Button size="sm" className="h-7 px-3 text-xs gap-1" onClick={handleSave} disabled={add.isPending}>
-          <Check className="h-3 w-3" /> Save
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function InlineLaborForm({ projectId }: { projectId: string }) {
-  const [open, setOpen] = useState(false);
-  const [worker, setWorker] = useState("");
-  const [days, setDays] = useState("1");
-  const [rate, setRate] = useState("");
-  const add = useAddLaborEntry();
-
-  async function handleSave() {
-    if (!worker || !rate) {
-      toast.error("Worker and daily rate required");
-      return;
-    }
-    await add.mutateAsync({
-      project_id: projectId,
-      worker_name: worker,
-      daily_rate: Number(rate),
-      days_worked: Number(days) || 1,
-    });
-    setWorker("");
-    setDays("1");
-    setRate("");
-    setOpen(false);
-  }
-
-  if (!open) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full h-7 text-xs gap-1 mb-2"
-        onClick={() => setOpen(true)}
-      >
-        <Plus className="h-3 w-3" /> Add labor
-      </Button>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border bg-muted/30 p-2 space-y-2 mb-2">
-      <Input
-        placeholder="Worker name"
-        value={worker}
-        onChange={(e) => setWorker(e.target.value)}
-        className="h-8 text-xs"
-      />
-      <div className="flex gap-2">
-        <Input
-          type="number"
-          placeholder="Days"
-          value={days}
-          onChange={(e) => setDays(e.target.value)}
-          className="h-8 text-xs w-20"
-        />
-        <Input
-          type="number"
-          placeholder="Daily rate $"
-          value={rate}
-          onChange={(e) => setRate(e.target.value)}
-          className="h-8 text-xs flex-1"
-        />
-      </div>
-      <div className="flex gap-1 justify-end">
-        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setOpen(false)}>
-          <X className="h-3 w-3" />
-        </Button>
-        <Button size="sm" className="h-7 px-3 text-xs gap-1" onClick={handleSave} disabled={add.isPending}>
-          <Check className="h-3 w-3" /> Save
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function InlineInvoiceForm({ projectId, customerId }: { projectId: string; customerId: string | null }) {
-  const [open, setOpen] = useState(false);
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [dueDate, setDueDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 14);
-    return d.toISOString().split("T")[0];
-  });
-  const create = useCreateInvoice();
-  const qc = useQueryClient();
-
-  async function handleSave() {
-    if (!description || !amount) {
-      toast.error("Description and amount required");
-      return;
-    }
-    await create.mutateAsync({
-      project_id: projectId,
-      customer_id: customerId,
-      invoice_number: generateInvoiceNumber(),
-      due_date: dueDate,
-      status: "draft",
-      items: [{ description, quantity: 1, unit_price: Number(amount) }],
-    });
-    qc.invalidateQueries({ queryKey: ["project-invoices", projectId] });
-    setDescription("");
-    setAmount("");
-    setOpen(false);
-  }
-
-  if (!open) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full h-8 text-xs gap-1"
-        onClick={() => setOpen(true)}
-      >
-        <Plus className="h-3 w-3" /> New invoice
-      </Button>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border bg-muted/30 p-2 space-y-2">
-      <Input
-        placeholder="Description (line item)"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="h-8 text-xs"
-      />
-      <div className="flex gap-2">
-        <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="h-8 text-xs flex-1" />
-        <Input
-          type="number"
-          placeholder="$"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="h-8 text-xs w-24"
-        />
-      </div>
-      <div className="flex gap-1 justify-end">
-        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setOpen(false)}>
-          <X className="h-3 w-3" />
-        </Button>
-        <Button size="sm" className="h-7 px-3 text-xs gap-1" onClick={handleSave} disabled={create.isPending}>
-          <Check className="h-3 w-3" /> Save
-        </Button>
-      </div>
-    </div>
   );
 }

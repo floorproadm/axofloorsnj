@@ -39,11 +39,12 @@ const DEFAULT_PHASES: PaymentPhase[] = [
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultProjectId?: string;
 }
 
-export function NewInvoiceDialog({ open, onOpenChange }: Props) {
+export function NewInvoiceDialog({ open, onOpenChange, defaultProjectId }: Props) {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState(defaultProjectId ?? "");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<LineItem[]>([{ description: "", detail: "", quantity: 1, unit_price: 0 }]);
@@ -78,8 +79,10 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
       const defaultDate = new Date();
       defaultDate.setDate(defaultDate.getDate() + 30);
       setDueDate(defaultDate.toISOString().split("T")[0]);
+
+      if (defaultProjectId) setSelectedProjectId(defaultProjectId);
     }
-  }, [open]);
+  }, [open, defaultProjectId]);
 
   const addItem = () => setItems([...items, { description: "", detail: "", quantity: 1, unit_price: 0 }]);
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
@@ -153,19 +156,21 @@ export function NewInvoiceDialog({ open, onOpenChange }: Props) {
 
         <div className="space-y-4">
           {/* Project */}
-          <div>
-            <Label>Project</Label>
-            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-              <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
-              <SelectContent>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.customer_name} — {p.project_type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!defaultProjectId && (
+            <div>
+              <Label>Project</Label>
+              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.customer_name} — {p.project_type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Due date */}
           <div>
