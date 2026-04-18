@@ -5,14 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import { useProjectsHub } from "@/hooks/useProjectsHub";
+import { useProjectSignals } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
 import { ProjectListView } from "@/components/admin/projects/ProjectListView";
 import { ProjectDetailPanel } from "@/components/admin/projects/ProjectDetailPanel";
+import { ProjectsHubHeader } from "@/components/admin/projects/ProjectsHubHeader";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
 
 export default function ProjectsHub() {
   const { projects, pipeline, isLoading } = useProjectsHub();
