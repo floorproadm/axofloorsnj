@@ -1,48 +1,45 @@
 
-User wants to unify /admin/jobs and /admin/projects since they're essentially the same thing. Let me check both quickly.
+User wants further UI/UX improvements on /admin/projects. Already implemented: KPI header, risk dots, NRA badges, 5-column pipeline. Let me think about what's still weak from a senior operator UX standpoint at 1065px viewport.
 
-Both reference `projects` table. JobsManager is the older heavy version (Kanban + list, KanbanCard, JobControlModal, ProjectNotesSection inline ~1079 lines). ProjectsHub is the newer cleaner cockpit (5-column pipeline + ProjectDetailPanel side sheet, ~115 lines) — already noted in memory as "Projects Hub Cockpit".
+Looking at current state:
+- Header: 4 KPI cards (good but static)
+- Controls row: New button + search + status select + view toggle (functional but generic)
+- Board: 5 columns × 260-280px = ~1400px → forces horizontal scroll at 1065px (PAIN POINT)
+- Cards: dense but no quick actions, no hover preview, must click → side panel
+- No smart filters (At Risk, Need Photos, Overdue chips)
+- No "Awaiting Conversion" surfacing of accepted proposals
+- No keyboard shortcuts / command palette
+- Status filter dropdown duplicates what columns already show
+- View toggle (Board/List) is fine but list view is plain
 
-ProjectsHub is clearly the modern version. Per memory `mem://features/management/projects-hub-cockpit`, this is the canonical cockpit. JobsManager is legacy duplication.
+Real friction points at 1065px:
+1. Horizontal scroll on board — 5 columns don't fit. Operator loses context.
+2. KPI header takes vertical space but doesn't drive action (no click-to-filter)
+3. No way to see "what needs me NOW" without scanning all 5 columns
+4. Smart filter chips missing (mentioned in prior recs but not built)
+5. Cards have no quick action (e.g. mark paid, open chat) — every interaction = side panel
+6. Status filter select is redundant with columns
+7. No empty state coaching when filtered to zero
+8. List view is bare — no risk/NRA signals there
 
-Plan: Keep ProjectsHub as the SSOT, redirect /admin/jobs to /admin/projects, delete JobsManager.
+Top improvements ranked by ROI for a 1065px senior operator:
 
-Need to check sidebar/nav references and detail routes.
+**A. KPI cards become filter chips** — click "At Risk" → board filters to risk projects only. Removes the redundant status select, makes header actionable.
 
-# Unify /admin/jobs and /admin/projects
+**B. Compact column layout for narrow viewports** — at <1280px, columns become 220px (fits 4-5 visible) OR collapse "Paid" column into a footer summary since paid = archive.
 
-Both routes manage the same `projects` table. `/admin/projects` (ProjectsHub) is the modern cockpit (115 lines, 5-column pipeline, side panel). `/admin/jobs` (JobsManager) is the legacy duplicate (~1079 lines, inline modal, redundant features). Consolidate into one.
+**C. Smart filter bar (chips row)** — At Risk · Need Photos · Overdue · No Proposal · This Week · Mine. Multi-select.
 
-## Decision
-Keep **`/admin/projects`** (ProjectsHub) as the canonical hub. Detail page stays at **`/admin/jobs/:id`** (JobDetail) — that's the operational detail and is referenced everywhere. Only the listing pages get unified.
+**D. Card hover quick-actions** — chat icon (jumps to chat tab), $ icon (mark paid), camera icon (upload proof). Reduces clicks.
 
-## Changes
+**E. Awaiting Conversion ribbon** — thin banner above board showing "3 accepted proposals awaiting project creation" with one-click convert (uses pendingProposals already loaded but unused).
 
-**1. Redirect legacy list route**
-- `src/App.tsx`: change `/admin/jobs` route from `JobsManager` → `<Navigate to="/admin/projects" replace />`
-- Keep `/admin/jobs/:id` → `JobDetail` untouched (used by every link in the system)
+**F. List view parity** — add risk dot column + NRA badges + unread chat count to list view.
 
-**2. Update navigation**
-- `src/components/admin/AdminSidebar.tsx`: replace any "Jobs" link pointing to `/admin/jobs` with "Projects" → `/admin/projects` (or remove if duplicated)
-- `src/components/admin/MobileBottomNav.tsx`: same — point Jobs tab to `/admin/projects`
-- Verify `ProjectPipelineBoard` / `ProjectDetailPanel` "Open full details" buttons navigate to `/admin/jobs/:id` (they should already)
+**G. Empty state coaching** — when filter returns 0, show helpful message + clear filters CTA.
 
-**3. Port any unique value from JobsManager → ProjectsHub (if missing)**
-Quick audit of JobsManager features vs ProjectsHub:
-- Summary bar (deals/pending/active/done/revenue counters) → ProjectsHub already has filter counts, good enough
-- KanbanCard health indicators (margin/proof badges) → already in ProjectPipelineBoard cards
-- Inline ProjectNotesSection / JobControlModal → redundant, JobDetail page handles it
+**H. Keyboard shortcuts** — `/` focus search, `n` new project, `b/l` toggle board/list, `esc` close panel.
 
-If anything is missing after delete, port it into `ProjectPipelineBoard` or `ProjectDetailPanel`.
+I'll propose A+C+E+F as the next tier (highest impact, doesn't require huge refactor), with B as conditional. Skip D/H for a later round to keep scope tight.
 
-**4. Delete legacy file**
-- Delete `src/pages/admin/JobsManager.tsx`
-
-**5. Memory update**
-- Update `mem://features/management/projects-hub-cockpit` to note `/admin/jobs` redirects to `/admin/projects`; only `/admin/jobs/:id` remains as detail route.
-
-## Result
-- Single list route: `/admin/projects` (Projects Hub)
-- Single detail route: `/admin/jobs/:id` (Job Detail) — unchanged
-- ~1000 lines of legacy code removed
-- No broken links (redirect handles old bookmarks)
+Keep plan concise.
