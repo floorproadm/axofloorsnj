@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Settings as SettingsIcon, Palette, Users, Images, Globe } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -11,9 +11,8 @@ import { Label } from "@/components/ui/label";
 const GeneralSettings = lazy(() => import("@/components/admin/settings/GeneralSettings"));
 const BrandingSettings = lazy(() => import("@/components/admin/settings/BrandingSettings"));
 const TeamSettings = lazy(() => import("@/components/admin/settings/TeamSettings"));
-const GalleryManager = lazy(() => import("./GalleryManager"));
 
-type Section = "general" | "branding" | "team" | "gallery" | "language";
+type Section = "general" | "branding" | "team" | "language";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
@@ -58,7 +57,6 @@ export default function Settings() {
     { id: "general", label: t("settings.geral"), description: t("settings.geralDesc"), icon: SettingsIcon },
     { id: "branding", label: "Branding", description: t("settings.brandingDesc"), icon: Palette },
     { id: "team", label: t("settings.equipe"), description: t("settings.equipeDesc"), icon: Users },
-    { id: "gallery", label: "Marketing Gallery", description: t("settings.galleryDesc"), icon: Images },
     { id: "language", label: t("settings.idioma"), description: t("settings.idiomaDesc"), icon: Globe },
   ];
 
@@ -118,7 +116,6 @@ export default function Settings() {
               {active === "general" && <GeneralSettings />}
               {active === "branding" && <BrandingSettings />}
               {active === "team" && <TeamSettings />}
-              {active === "gallery" && <GalleryManager embedded />}
               {active === "language" && <LanguageSettings />}
             </Suspense>
           </div>
