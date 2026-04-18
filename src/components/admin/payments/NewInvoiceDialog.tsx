@@ -79,8 +79,10 @@ export function NewInvoiceDialog({ open, onOpenChange, defaultProjectId }: Props
       const defaultDate = new Date();
       defaultDate.setDate(defaultDate.getDate() + 30);
       setDueDate(defaultDate.toISOString().split("T")[0]);
+
+      if (defaultProjectId) setSelectedProjectId(defaultProjectId);
     }
-  }, [open]);
+  }, [open, defaultProjectId]);
 
   const addItem = () => setItems([...items, { description: "", detail: "", quantity: 1, unit_price: 0 }]);
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
