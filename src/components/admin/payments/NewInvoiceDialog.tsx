@@ -39,11 +39,12 @@ const DEFAULT_PHASES: PaymentPhase[] = [
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultProjectId?: string;
 }
 
-export function NewInvoiceDialog({ open, onOpenChange }: Props) {
+export function NewInvoiceDialog({ open, onOpenChange, defaultProjectId }: Props) {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState(defaultProjectId ?? "");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<LineItem[]>([{ description: "", detail: "", quantity: 1, unit_price: 0 }]);
