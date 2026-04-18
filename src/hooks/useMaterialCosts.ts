@@ -37,7 +37,16 @@ export function useMaterialCosts(projectId: string | undefined) {
 export function useAddMaterialCost() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { project_id: string; description: string; supplier?: string; amount: number; purchase_date?: string }) => {
+    mutationFn: async (input: {
+      project_id: string;
+      description: string;
+      supplier?: string;
+      amount: number;
+      purchase_date?: string;
+      receipt_url?: string;
+      is_paid?: boolean;
+      notes?: string;
+    }) => {
       const { data, error } = await supabase
         .from('material_costs')
         .insert({
@@ -47,6 +56,9 @@ export function useAddMaterialCost() {
           supplier: input.supplier || null,
           amount: input.amount,
           purchase_date: input.purchase_date || new Date().toISOString().split('T')[0],
+          receipt_url: input.receipt_url || null,
+          is_paid: input.is_paid ?? false,
+          notes: input.notes || null,
         })
         .select()
         .single();
