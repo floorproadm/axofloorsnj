@@ -156,19 +156,21 @@ export function NewInvoiceDialog({ open, onOpenChange, defaultProjectId }: Props
 
         <div className="space-y-4">
           {/* Project */}
-          <div>
-            <Label>Project</Label>
-            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-              <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
-              <SelectContent>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.customer_name} — {p.project_type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!defaultProjectId && (
+            <div>
+              <Label>Project</Label>
+              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.customer_name} — {p.project_type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Due date */}
           <div>
