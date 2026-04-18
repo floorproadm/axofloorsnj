@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { JobProofUploader } from '@/components/admin/JobProofUploader';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
@@ -16,6 +24,7 @@ import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/h
 import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry } from '@/hooks/useLaborEntries';
 import { useJobCost } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { useProjectSignals, computeRisk } from '@/hooks/useProjectSignals';
 import { cn, formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
@@ -23,7 +32,8 @@ import {
   Clock, Hammer, Camera, Pencil, Check, X, Navigation, Send, Users,
   Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
   Package, HardHat, Plus, Target, Receipt, MapPin, ExternalLink,
-  DollarSign, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2
+  DollarSign, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
+  MoreVertical, Link2, CalendarPlus
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
@@ -42,6 +52,8 @@ export default function JobDetail() {
   const [proposalOpen, setProposalOpen] = useState(false);
   const [docsOpen, setDocsOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { data: project, isLoading, refetch } = useQuery({
     queryKey: ['job-detail', jobId],
@@ -67,6 +79,19 @@ export default function JobDetail() {
     enabled: !!jobId,
   });
 
+  // Risk + signals (reuses pipeline engine)
+  const { data: signals } = useProjectSignals(jobId ? [jobId] : []);
+  const { data: jobCostForRisk } = useJobCost(jobId || '');
+  const hasMissingProof = jobId ? signals?.missingProof.has(jobId) ?? false : false;
+  const hasOverdueInvoice = jobId ? signals?.overdueInvoice.has(jobId) ?? false : false;
+  const risk = computeRisk({
+    marginPercent: jobCostForRisk?.margin_percent ?? null,
+    hasMissingProof,
+    hasOverdueInvoice,
+    status: project?.project_status || 'pending',
+  });
+  const riskColor = risk.level === 'risk' ? 'bg-red-500' : risk.level === 'watch' ? 'bg-amber-500' : 'bg-emerald-500';
+
   const updateField = async (field: string, value: any) => {
     if (!jobId) return;
     const { error } = await supabase.from('projects').update({ [field]: value }).eq('id', jobId);
@@ -81,6 +106,32 @@ export default function JobDetail() {
     if (error) { toast.error('Failed to save'); throw error; }
     toast.success('Saved');
     refetch();
+  };
+
+  const handleDelete = async () => {
+    if (!jobId) return;
+    setDeleting(true);
+    const { error } = await supabase.from('projects').delete().eq('id', jobId);
+    setDeleting(false);
+    setConfirmDelete(false);
+    if (error) {
+      toast.error('Failed to delete job');
+      return;
+    }
+    toast.success('Job deleted');
+    queryClient.invalidateQueries({ queryKey: ['hub-projects'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-data'] });
+    navigate('/admin/projects');
+  };
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Link copied');
+  };
+
+  const scrollToId = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   if (isLoading) {
@@ -124,6 +175,30 @@ export default function JobDetail() {
               <Button variant="outline" size="sm" className="gap-2" onClick={() => setDocsOpen(true)}>
                 <FolderOpen className="w-4 h-4" /> Docs
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-9 w-9" aria-label="More actions">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  {mapsUrl && (
+                    <DropdownMenuItem onClick={() => window.open(mapsUrl, '_blank')}>
+                      <Navigation className="w-4 h-4 mr-2" /> Open in Maps
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={copyLink}>
+                    <Link2 className="w-4 h-4 mr-2" /> Copy link
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setConfirmDelete(true)}
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete job
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -131,9 +206,15 @@ export default function JobDetail() {
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h1 className="text-xl font-bold text-foreground leading-tight truncate">
-                  {project.address || project.customer_name || 'New Job'}
-                </h1>
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={cn("w-2.5 h-2.5 rounded-full flex-shrink-0", riskColor)}
+                    title={risk.reasons.length ? risk.reasons.join(' · ') : 'Healthy'}
+                  />
+                  <h1 className="text-xl font-bold text-foreground leading-tight truncate">
+                    {project.address || project.customer_name || 'New Job'}
+                  </h1>
+                </div>
                 <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground flex-wrap">
                   {project.customer_name && (
                     <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> {project.customer_name}</span>
@@ -171,12 +252,24 @@ export default function JobDetail() {
               </Select>
             </div>
 
-            {/* Partner */}
-            {project.partner_name && (
-              <Badge variant="outline" className="text-xs gap-1.5 font-normal">
-                <Users className="w-3 h-3 text-primary" /> Partner: {project.partner_name}
-              </Badge>
-            )}
+            {/* Risk / signal badges */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {project.partner_name && (
+                <Badge variant="outline" className="text-xs gap-1.5 font-normal">
+                  <Users className="w-3 h-3 text-primary" /> Partner: {project.partner_name}
+                </Badge>
+              )}
+              {hasOverdueInvoice && (
+                <Badge variant="outline" className="text-xs gap-1.5 font-normal border-red-500/30 bg-red-500/5 text-red-700 dark:text-red-400">
+                  <AlertTriangle className="w-3 h-3" /> Overdue invoice
+                </Badge>
+              )}
+              {hasMissingProof && (project.project_status === 'completed' || project.project_status === 'in_production') && (
+                <Badge variant="outline" className="text-xs gap-1.5 font-normal border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400">
+                  <Camera className="w-3 h-3" /> Need photos
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Next Action */}
@@ -186,13 +279,64 @@ export default function JobDetail() {
               <span className="font-medium text-foreground">{project.next_action}</span>
             </div>
           )}
+
+          {/* Quick Action Bar */}
+          <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1 pb-1">
+            <QuickAction icon={<CalendarPlus className="w-3.5 h-3.5" />} label="Schedule" onClick={() => navigate(`/admin/schedule?project=${project.id}`)} />
+            <QuickAction icon={<Package className="w-3.5 h-3.5" />} label="Add Cost" onClick={() => scrollToId('section-materials')} />
+            <QuickAction icon={<Receipt className="w-3.5 h-3.5" />} label="New Invoice" onClick={() => scrollToId('section-invoices')} />
+            <QuickAction icon={<Camera className="w-3.5 h-3.5" />} label="Upload Proof" onClick={() => scrollToId('section-photos')} />
+            {project.project_status !== 'completed' && (
+              <QuickAction
+                icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                label="Mark Complete"
+                onClick={() => updateField('project_status', 'completed')}
+                accent
+              />
+            )}
+          </div>
         </div>
 
         {/* ═══ FINANCIAL SNAPSHOT ═══ */}
-        <FinancialSnapshot projectId={project.id} />
+        <FinancialSnapshot
+          projectId={project.id}
+          onSetRevenue={() => scrollToId('section-materials')}
+          onAddCost={() => scrollToId('section-materials')}
+          onCreateInvoice={() => scrollToId('section-invoices')}
+        />
 
-        {/* ═══ JOB INFO ═══ */}
-        <Section title="Job Details" icon={<Hammer className="w-4 h-4" />}>
+        {/* ═══ PHOTOS — operational priority (blocks completion) ═══ */}
+        <div id="section-photos">
+          <Section title="Photos & Proof" icon={<Camera className="w-4 h-4" />}>
+            <JobProofUploader projectId={project.id} />
+          </Section>
+        </div>
+
+        {/* ═══ MATERIALS ═══ */}
+        <div id="section-materials"><MaterialsBlock projectId={project.id} /></div>
+
+        {/* ═══ LABOR ═══ */}
+        <LaborBlock projectId={project.id} />
+
+        {/* ═══ INVOICES & PAYMENTS ═══ */}
+        <div id="section-invoices">
+          <Section title="Invoices & Payments" icon={<Receipt className="w-4 h-4" />}>
+            <InvoicesPaymentsSection projectId={project.id} />
+          </Section>
+        </div>
+
+        {/* ═══ JOB INFO (compact, empty fields collapsed) ═══ */}
+        <Section
+          title="Job Details"
+          icon={<Hammer className="w-4 h-4" />}
+          action={
+            editingSection !== 'job' && (
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => setEditingSection('job')}>
+                <Pencil className="w-3.5 h-3.5" />
+              </Button>
+            )
+          }
+        >
           {editingSection === 'job' ? (
             <JobDetailsEditForm
               project={project}
@@ -200,24 +344,32 @@ export default function JobDetail() {
               onCancel={() => setEditingSection(null)}
             />
           ) : (
-            <div className="space-y-0">
-              <PropRow label="Service" value={project.project_type} />
-              <PropRow label="Sqft" value={project.square_footage ? `${project.square_footage} sqft` : null} />
-              <PropRow label="Start" value={project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null} />
-              <PropRow label="End" value={project.completion_date ? new Date(project.completion_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null} />
-              <PropRow label="Team Lead" value={project.team_lead} />
-              <PropRow label="Schedule" value={project.work_schedule} />
-              <div className="pt-2">
-                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1" onClick={() => setEditingSection('job')}>
-                  <Pencil className="w-3 h-3" /> Edit
-                </Button>
-              </div>
-            </div>
+            <CompactJobDetails project={project} onEditEmpty={() => setEditingSection('job')} />
           )}
         </Section>
 
+        {/* ═══ NOTES ═══ */}
+        <Section title="Notes" icon={<StickyNote className="w-4 h-4" />}>
+          <NotesBlock value={project.notes || ''} onSave={(v) => updateField('notes', v)} />
+        </Section>
+
+        {/* ═══ COMMENTS ═══ */}
+        <Section title="Comments" icon={<MessageSquare className="w-4 h-4" />}>
+          <CommentsBlock projectId={project.id} />
+        </Section>
+
         {/* ═══ CLIENT ═══ */}
-        <Section title="Client" icon={<User className="w-4 h-4" />}>
+        <Section
+          title="Client"
+          icon={<User className="w-4 h-4" />}
+          action={
+            editingSection !== 'client' && (
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => setEditingSection('client')}>
+                <Pencil className="w-3.5 h-3.5" />
+              </Button>
+            )
+          }
+        >
           {editingSection === 'client' ? (
             <ClientEditForm
               project={project}
@@ -248,39 +400,8 @@ export default function JobDetail() {
               <PropRow label="Address" value={addressFull || null} action={
                 mapsUrl ? <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-0.5"><Navigation className="w-3 h-3" /> Maps</a> : null
               } />
-              <div className="pt-2">
-                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1" onClick={() => setEditingSection('client')}>
-                  <Pencil className="w-3 h-3" /> Edit
-                </Button>
-              </div>
             </div>
           )}
-        </Section>
-
-        {/* ═══ NOTES ═══ */}
-        <Section title="Notes" icon={<StickyNote className="w-4 h-4" />}>
-          <NotesBlock value={project.notes || ''} onSave={(v) => updateField('notes', v)} />
-        </Section>
-
-        {/* ═══ COMMENTS ═══ */}
-        <Section title="Comments" icon={<MessageSquare className="w-4 h-4" />}>
-          <CommentsBlock projectId={project.id} />
-        </Section>
-
-        {/* ═══ MATERIALS ═══ */}
-        <MaterialsBlock projectId={project.id} />
-
-        {/* ═══ LABOR ═══ */}
-        <LaborBlock projectId={project.id} />
-
-        {/* ═══ INVOICES & PAYMENTS ═══ */}
-        <Section title="Invoices & Payments" icon={<Receipt className="w-4 h-4" />}>
-          <InvoicesPaymentsSection projectId={project.id} />
-        </Section>
-
-        {/* ═══ PHOTOS ═══ */}
-        <Section title="Photos & Proof" icon={<Camera className="w-4 h-4" />}>
-          <JobProofUploader projectId={project.id} />
         </Section>
       </div>
 
@@ -297,7 +418,96 @@ export default function JobDetail() {
           <div className="mt-4"><ProjectDocumentsManager projectId={project.id} /></div>
         </SheetContent>
       </Sheet>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this job?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove <span className="font-semibold text-foreground">{project.address || project.customer_name || 'the project'}</span> and all related costs, invoices, photos, and chat history. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   QUICK ACTION CHIP
+   ═══════════════════════════════════════════════ */
+function QuickAction({ icon, label, onClick, accent }: {
+  icon: React.ReactNode; label: string; onClick: () => void; accent?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0",
+        accent
+          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
+          : "border-border/60 bg-card hover:bg-muted/40 text-foreground"
+      )}
+    >
+      {icon} {label}
+    </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPACT JOB DETAILS — only filled fields + empty footer
+   ═══════════════════════════════════════════════ */
+function CompactJobDetails({ project, onEditEmpty }: { project: any; onEditEmpty: () => void }) {
+  const fields = [
+    { key: 'project_type', label: 'Service', value: project.project_type },
+    { key: 'square_footage', label: 'Sqft', value: project.square_footage ? `${project.square_footage} sqft` : null },
+    { key: 'start_date', label: 'Start', value: project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null },
+    { key: 'completion_date', label: 'End', value: project.completion_date ? new Date(project.completion_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null },
+    { key: 'team_lead', label: 'Team Lead', value: project.team_lead },
+    { key: 'work_schedule', label: 'Schedule', value: project.work_schedule },
+  ];
+  const filled = fields.filter(f => f.value);
+  const empty = fields.filter(f => !f.value);
+
+  if (filled.length === 0) {
+    return (
+      <button
+        type="button"
+        onClick={onEditEmpty}
+        className="w-full text-left text-sm text-muted-foreground/60 italic hover:text-foreground transition-colors py-1"
+      >
+        No details yet — click to add service, sqft, dates, team lead…
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-0">
+      {filled.map(f => <PropRow key={f.key} label={f.label} value={f.value as string} />)}
+      {empty.length > 0 && (
+        <button
+          type="button"
+          onClick={onEditEmpty}
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-2 pt-2 border-t border-border/20 w-full text-left"
+        >
+          <span className="text-muted-foreground/60">{empty.length} empty</span>
+          {' · '}
+          <span className="text-primary hover:underline">+ Add {empty.map(e => e.label).join(', ')}</span>
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -336,7 +546,12 @@ function PropRow({ label, value, action }: { label: string; value: string | null
    FINANCIAL SNAPSHOT (replaces JobFinancialHeader)
    ═══════════════════════════════════════════════ */
 
-function FinancialSnapshot({ projectId }: { projectId: string }) {
+function FinancialSnapshot({ projectId, onSetRevenue, onAddCost, onCreateInvoice }: {
+  projectId: string;
+  onSetRevenue?: () => void;
+  onAddCost?: () => void;
+  onCreateInvoice?: () => void;
+}) {
   const { data: jobCost } = useJobCost(projectId);
   const { marginMinPercent } = useCompanySettings();
 
@@ -365,8 +580,18 @@ function FinancialSnapshot({ projectId }: { projectId: string }) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <MetricCard label="Revenue" value={formatCurrency(revenue)} icon={<DollarSign className="w-4 h-4" />} />
-      <MetricCard label="Cost" value={formatCurrency(totalCost)} icon={<Package className="w-4 h-4" />} />
+      <MetricCard
+        label="Revenue"
+        value={formatCurrency(revenue)}
+        icon={<DollarSign className="w-4 h-4" />}
+        emptyCta={revenue === 0 && onSetRevenue ? { label: 'Set revenue', onClick: onSetRevenue } : undefined}
+      />
+      <MetricCard
+        label="Cost"
+        value={formatCurrency(totalCost)}
+        icon={<Package className="w-4 h-4" />}
+        emptyCta={totalCost === 0 && onAddCost ? { label: '+ Add first cost', onClick: onAddCost } : undefined}
+      />
       <MetricCard
         label="Margin"
         value={`${margin.toFixed(1)}%`}
@@ -388,14 +613,15 @@ function FinancialSnapshot({ projectId }: { projectId: string }) {
           <DollarSign className="w-4 h-4" />
         }
         accent={paymentInfo?.allPaid ? 'emerald' : paymentInfo?.hasOverdue ? 'red' : undefined}
+        emptyCta={!paymentInfo?.hasInvoices && onCreateInvoice ? { label: '+ Create invoice', onClick: onCreateInvoice } : undefined}
       />
     </div>
   );
 }
-
-function MetricCard({ label, value, sub, icon, accent }: {
+function MetricCard({ label, value, sub, icon, accent, emptyCta }: {
   label: string; value: string; sub?: string; icon: React.ReactNode;
   accent?: 'emerald' | 'amber' | 'red';
+  emptyCta?: { label: string; onClick: () => void };
 }) {
   const accentColor = accent === 'emerald' ? 'text-emerald-600' : accent === 'amber' ? 'text-amber-600' : accent === 'red' ? 'text-red-600' : 'text-foreground';
   return (
@@ -406,9 +632,19 @@ function MetricCard({ label, value, sub, icon, accent }: {
       </div>
       <p className={cn("text-lg font-bold tabular-nums", accentColor)}>{value}</p>
       {sub && <p className="text-xs text-muted-foreground tabular-nums">{sub}</p>}
+      {emptyCta && (
+        <button
+          type="button"
+          onClick={emptyCta.onClick}
+          className="text-xs text-primary hover:underline font-medium"
+        >
+          {emptyCta.label}
+        </button>
+      )}
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════
    JOB DETAILS EDIT FORM
