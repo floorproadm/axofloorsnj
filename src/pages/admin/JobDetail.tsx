@@ -618,7 +618,7 @@ function FinancialSnapshot({ projectId, onSetRevenue, onAddCost, onCreateInvoice
     </div>
   );
 }
-function MetricCard({ label, value, sub, icon, accent }: {
+function MetricCard({ label, value, sub, icon, accent, emptyCta }: {
   label: string; value: string; sub?: string; icon: React.ReactNode;
   accent?: 'emerald' | 'amber' | 'red';
   emptyCta?: { label: string; onClick: () => void };
