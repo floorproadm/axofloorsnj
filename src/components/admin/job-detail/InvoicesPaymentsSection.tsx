@@ -82,7 +82,7 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
             const displayStatus = isOverdue ? 'overdue' : inv.status;
             return (
               <div key={inv.id} className="group flex items-center justify-between py-2 px-1 rounded hover:bg-muted/30 transition-colors cursor-pointer"
-                onClick={() => navigate('/admin/payments')}>
+                onClick={() => navigate(`/admin/payments?invoice=${inv.id}`)}>
                 <div className="min-w-0 flex items-center gap-2">
                   <Receipt className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                   <div>
