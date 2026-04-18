@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { JobProofUploader } from '@/components/admin/JobProofUploader';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
@@ -16,6 +24,7 @@ import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/h
 import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry } from '@/hooks/useLaborEntries';
 import { useJobCost } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { useProjectSignals, computeRisk } from '@/hooks/useProjectSignals';
 import { cn, formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
@@ -23,7 +32,8 @@ import {
   Clock, Hammer, Camera, Pencil, Check, X, Navigation, Send, Users,
   Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
   Package, HardHat, Plus, Target, Receipt, MapPin, ExternalLink,
-  DollarSign, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2
+  DollarSign, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
+  MoreVertical, Link2, CalendarPlus
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
