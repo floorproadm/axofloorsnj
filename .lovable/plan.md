@@ -1,77 +1,30 @@
 
+User wants inline creation directly from the ProjectDetailPanel side sheet. Currently each tab shows "No measurements yet" / "No materials" / "No invoices yet" as dead-end empty states. He wants to create them right there without navigating away.
 
-# Refatoração `/admin/jobs/:id` — densidade + ações destrutivas
+Let me check existing hooks/components for reuse:
+- `useMeasurements` has `useCreateMeasurement` + `useUpsertArea`
+- `useMaterialCosts` likely has create mutations
+- `useLaborEntries` likely has create mutations  
+- `useInvoices` has `useCreateInvoice`
+- `InlineInvoiceForm` already exists in `InvoicesPaymentsSection` (from JobDetail)
 
-## Problemas observados (no screenshot)
-1. **Sem Delete** — operador fica preso, precisa voltar ao board
-2. Job Details mostra 6 linhas com "—" → desperdício vertical brutal
-3. Edit em ghost discreto por seção → descobribilidade ruim
-4. Notes + Comments duplicam função
-5. Photos & Proof (que **bloqueia conclusão**) está no rodapé
-6. Header sem risk/priority indicator
-7. Financial cards todos $0 sem call-to-action
+Strategy: keep the side sheet lightweight. Don't dump full forms in there — that breaks the "quick preview" pattern. Instead use compact inline mini-forms (1-2 line inputs) that capture the essentials, with "Open full form" link for advanced cases.
 
-## Mudanças propostas
+Let me design the 3 quick-add patterns:
 
-### 1. Header com menu de ações + Delete
-Adicionar `DropdownMenu` (kebab) ao lado do status select com:
-- **Open in Maps**, **Copy link**, **Duplicate job**, **Archive**, **Delete job** (destrutivo)
-- Delete abre `AlertDialog` de confirmação (mesmo padrão do `ProjectDetailPanel`)
-- Após delete: toast + `navigate('/admin/projects')` + invalidate `hub-projects`
+**Measurements tab:**
+- Top: `+ Add measurement` button → reveals inline row: [date input] [sqft input] [Save]
+- Creates a `project_measurement` with status='draft', then user can open full editor later
+- Already-listed measurements stay clickable to navigate to MeasurementsManager
 
-### 2. Quick Action Bar (sticky abaixo do header)
-Linha compacta com 4-5 chips de ação contextuais:
-`📅 Schedule` · `💵 Add Cost` · `🧾 New Invoice` · `📷 Upload Proof` · `✅ Mark Complete`
+**Costs tab (split Materials + Labor):**
+- Materials: `+ Add material` → reveals inline row: [description] [supplier] [$amount] [Save]
+- Labor: `+ Add labor` → reveals: [worker name] [days] [daily rate] [Save]
+- Both create directly via existing hooks
 
-Cada uma scrolla até a seção correspondente OU abre side sheet. Reduz scroll-fadiga.
+**Invoices tab:**
+- `+ New invoice` → inline mini-form: [description (single line item)] [amount] [due date] [Save]
+- Auto-generates invoice_number, status='draft', creates 1 line item
+- For complex invoices with phases/multiple items, link to "Open full invoice" after creation
 
-### 3. Job Details — colapsar campos vazios
-Em vez de 6 linhas com "—", mostrar **só campos preenchidos** + footer:
-
-> 4 fields empty · [+ Add Sqft, Start, End, Team Lead]
-
-Click expande inline para edit. Ganha ~120px verticais.
-
-### 4. Unificar Notes + Comments em "Activity"
-Tab única com:
-- Notes pin no topo (campo livre)
-- Timeline cronológica de comments + uploads + status changes
-- Mesma UX do Notion/Linear
-
-### 5. Reordenar seções por prioridade operacional
-Atual: Job > Client > Notes > Comments > Materials > Labor > Invoices > **Photos**
-Nova: Job > **Photos & Proof** > Materials > Labor > Invoices > Activity (Notes+Comments) > Client
-
-Por quê: Photos bloqueia conclusão; Client raramente muda depois de criar.
-
-### 6. Financial Snapshot acionável
-Quando $0 ou vazio, cada card vira CTA:
-- `Revenue $0` → "Set revenue" (abre inline edit)
-- `Cost $0` → "Add first material/labor"
-- `No Invoice` → "Create invoice" (abre inline form)
-
-### 7. Risk + Priority no header
-Reusar o `useProjectSignals` que já criamos. Mostrar:
-- Risk dot ao lado do título (🟢/🟡/🔴)
-- Badge "Need photos" se completed sem proof
-- Badge "Overdue invoice" se aplicável
-
-### 8. Edit por seção mais visível
-Substituir botão ghost por hover-reveal de **ícone Pencil no canto direito do header da Section** (padrão Notion). Sempre visível em mobile.
-
-## Arquivos a editar
-- `src/pages/admin/JobDetail.tsx` — header com menu + delete dialog, quick action bar, reordenar seções, colapsar empty fields, financial CTAs
-- Reusar `useProjectSignals` existente para risk/NRA badges
-- Sem novos arquivos; tudo inline na refatoração de `JobDetail.tsx`
-
-## Fora de escopo
-- Activity timeline unificada (#4) — refatoração maior, fica para próxima rodada
-- Duplicate / Archive — só Delete agora (Archive precisa de coluna na DB)
-
-## Resultado
-- **Delete disponível** com confirmação destrutiva
-- ~30% menos scroll vertical (empty fields colapsados, seções reordenadas)
-- Ações operacionais a 1 clique (quick bar)
-- Header com sinais de risco visuais
-- Edit descoberto naturalmente
-
+Need to verify hooks exist:
