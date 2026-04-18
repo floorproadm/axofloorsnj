@@ -50,20 +50,7 @@ export function FolderHubGrid({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {hasUnfiled && (
-        <Card
-          className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow border-dashed border-border/60"
-          onClick={onOpenUnfiled}
-        >
-          <div className="aspect-square bg-muted/40 flex items-center justify-center">
-            <FolderOpen className="w-10 h-10 text-muted-foreground/50" />
-          </div>
-          <CardContent className="p-2.5">
-            <p className="text-xs font-semibold truncate">Sem pasta</p>
-            <p className="text-[11px] text-muted-foreground">{unfiledCount} item(s)</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* "Sem pasta" pseudo-folder removed per user request */}
 
       {folders.map((folder) => (
         <Card
