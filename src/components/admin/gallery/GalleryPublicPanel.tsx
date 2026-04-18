@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, FolderOpen, Star, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
