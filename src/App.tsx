@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
@@ -35,7 +35,6 @@ import FeedPostEdit from './pages/admin/FeedPostEdit';
 import GalleryHub from './pages/admin/GalleryHub';
 import AdminLeadsManager from './pages/admin/LeadsManager';
 import LeadDetail from './pages/admin/LeadDetail';
-import AdminJobsManager from './pages/admin/JobsManager';
 import JobDetail from './pages/admin/JobDetail';
 import AdminIntake from './pages/admin/Intake';
 import AdminSettings from './pages/admin/Settings';
@@ -157,11 +156,7 @@ const App = () => {
                 <JobDetail />
               </ProtectedRoute>
             } />
-            <Route path="/admin/jobs" element={
-              <ProtectedRoute>
-                <AdminJobsManager />
-              </ProtectedRoute>
-            } />
+            <Route path="/admin/jobs" element={<Navigate to="/admin/projects" replace />} />
             <Route path="/admin/intake" element={
               <ProtectedRoute>
                 <AdminIntake />

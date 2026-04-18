@@ -81,7 +81,7 @@ export function MobileBottomNav() {
   // Universal words stay in English
   const navItems = [
     { label: "Home", icon: Home, path: "/admin/dashboard" },
-    { label: "Jobs", icon: Briefcase, path: "/admin/jobs" },
+    { label: "Projects", icon: Briefcase, path: "/admin/projects" },
     { label: null, icon: Plus, path: null },
     { label: "Gallery", icon: Camera, path: "/admin/gallery" },
     { label: "Stats", icon: BarChart3, path: "/admin/performance" },
@@ -215,8 +215,9 @@ export function MobileBottomNav() {
 
             const isActive =
               location.pathname === item.path ||
-              (item.path === "/admin/jobs" &&
-                location.pathname.startsWith("/admin/jobs"));
+              (item.path === "/admin/projects" &&
+                (location.pathname.startsWith("/admin/projects") ||
+                  location.pathname.startsWith("/admin/jobs")));
 
             return (
               <NavLink
