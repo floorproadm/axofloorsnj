@@ -1,30 +1,30 @@
 
-User wants inline creation directly from the ProjectDetailPanel side sheet. Currently each tab shows "No measurements yet" / "No materials" / "No invoices yet" as dead-end empty states. He wants to create them right there without navigating away.
 
-Let me check existing hooks/components for reuse:
-- `useMeasurements` has `useCreateMeasurement` + `useUpsertArea`
-- `useMaterialCosts` likely has create mutations
-- `useLaborEntries` likely has create mutations  
-- `useInvoices` has `useCreateInvoice`
-- `InlineInvoiceForm` already exists in `InvoicesPaymentsSection` (from JobDetail)
+## Problema
+1. Click numa invoice no `ProjectDetailPanel` navega para `/admin/payments?invoice=<id>` — **mas a página Payments ignora esse param**. A sheet de detalhes nunca abre.
+2. Faltam relações cruzadas:
+   - Hub de Payments → não tem botão "Abrir Job" para navegar ao projeto da invoice
+   - JobDetail (Invoices section) → também deveria deep-linkar para a invoice no hub
 
-Strategy: keep the side sheet lightweight. Don't dump full forms in there — that breaks the "quick preview" pattern. Instead use compact inline mini-forms (1-2 line inputs) that capture the essentials, with "Open full form" link for advanced cases.
+## Mudanças
 
-Let me design the 3 quick-add patterns:
+**1. `src/pages/admin/Payments.tsx`** — consumir query params
+- Adicionar `useSearchParams`
+- `useEffect`: quando `?invoice=<id>` presente e `invoices` carregado → setar `selectedInvoice` e ativar tab `invoices`
+- Idem para `?payment=<id>` (futuro-proof, mesmo padrão)
+- Limpar param da URL ao fechar a sheet
 
-**Measurements tab:**
-- Top: `+ Add measurement` button → reveals inline row: [date input] [sqft input] [Save]
-- Creates a `project_measurement` with status='draft', then user can open full editor later
-- Already-listed measurements stay clickable to navigate to MeasurementsManager
+**2. `src/components/admin/payments/InvoiceDetailsSheet.tsx`** — adicionar link para o Job
+- No header da sheet, ao lado do invoice number, botão ghost "Open Job" (ícone `ExternalLink`) → navega para `/admin/jobs/<project_id>`
 
-**Costs tab (split Materials + Labor):**
-- Materials: `+ Add material` → reveals inline row: [description] [supplier] [$amount] [Save]
-- Labor: `+ Add labor` → reveals: [worker name] [days] [daily rate] [Save]
-- Both create directly via existing hooks
+**3. `src/components/admin/job-detail/InvoicesPaymentsSection.tsx`** — click na invoice abre sheet
+- Hoje o card de invoice provavelmente é estático. Tornar clicável → navega para `/admin/payments?invoice=<id>` (mesma rota; agora vai funcionar com a fix #1)
 
-**Invoices tab:**
-- `+ New invoice` → inline mini-form: [description (single line item)] [amount] [due date] [Save]
-- Auto-generates invoice_number, status='draft', creates 1 line item
-- For complex invoices with phases/multiple items, link to "Open full invoice" after creation
+## Resultado
+- Fluxo completo: criar invoice inline no painel → clicar → abre sheet de detalhes em Payments → "Open Job" volta ao projeto
+- Invoice é entidade **navegável** entre os 3 contextos (Project Panel, Payments Hub, Job Detail)
 
-Need to verify hooks exist:
+## Fora de escopo
+- Refatorar `InvoiceDetailsSheet` (já está OK)
+- Mudar layout do `NewInvoiceDialog`
+
