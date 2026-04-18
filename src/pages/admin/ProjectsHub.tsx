@@ -24,6 +24,9 @@ export default function ProjectsHub() {
   const [selected, setSelected] = useState<HubProject | null>(null);
   const [showNewJob, setShowNewJob] = useState(false);
 
+  const projectIds = useMemo(() => projects.map((p) => p.id), [projects]);
+  const { data: signals } = useProjectSignals(projectIds);
+
   const filtered = useMemo(() => {
     let list = projects;
     if (search) {
@@ -52,6 +55,9 @@ export default function ProjectsHub() {
   return (
     <AdminLayout title="Projects">
       <div className="space-y-4 p-4 md:p-6 max-w-[1600px] mx-auto">
+        {/* Executive KPI Header */}
+        <ProjectsHubHeader projects={projects} signals={signals} />
+
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={() => setShowNewJob(true)} className="gap-1.5">
@@ -103,6 +109,7 @@ export default function ProjectsHub() {
         ) : view === "board" ? (
           <ProjectPipelineBoard
             projects={filtered}
+            signals={signals}
             onSelect={setSelected}
             onStatusChange={handleStatusChange}
             onNewProject={() => setShowNewJob(true)}
