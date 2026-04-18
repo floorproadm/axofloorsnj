@@ -267,6 +267,13 @@ export default function CompanyFeed({ embedded = false }: { embedded?: boolean }
         folders={folders}
         categories={categories}
       />
+    </>
+  );
+
+  if (embedded) return body;
+  return (
+    <AdminLayout title={projectId ? "Projeto — Feed" : "Company Feed"} breadcrumbs={breadcrumbs}>
+      {body}
     </AdminLayout>
   );
 }
