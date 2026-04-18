@@ -48,8 +48,7 @@ export default function GalleryHub() {
 
           <TabsContent value="feed" className="mt-4">
             <Suspense fallback={<Fallback />}>
-              {/* CompanyFeed renders its own AdminLayout wrapper — render bare */}
-              <CompanyFeedEmbed />
+              <CompanyFeed embedded />
             </Suspense>
           </TabsContent>
 
@@ -64,7 +63,4 @@ export default function GalleryHub() {
   );
 }
 
-// Wrap CompanyFeed without its outer AdminLayout to avoid double-wrap
-function CompanyFeedEmbed() {
-  return <CompanyFeed />;
 }
