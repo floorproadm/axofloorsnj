@@ -5,14 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import { useProjectsHub } from "@/hooks/useProjectsHub";
+import { useProjectSignals } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
 import { ProjectListView } from "@/components/admin/projects/ProjectListView";
 import { ProjectDetailPanel } from "@/components/admin/projects/ProjectDetailPanel";
+import { ProjectsHubHeader } from "@/components/admin/projects/ProjectsHubHeader";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
 
 export default function ProjectsHub() {
   const { projects, pipeline, isLoading } = useProjectsHub();
@@ -22,6 +23,9 @@ export default function ProjectsHub() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<HubProject | null>(null);
   const [showNewJob, setShowNewJob] = useState(false);
+
+  const projectIds = useMemo(() => projects.map((p) => p.id), [projects]);
+  const { data: signals } = useProjectSignals(projectIds);
 
   const filtered = useMemo(() => {
     let list = projects;
@@ -51,6 +55,9 @@ export default function ProjectsHub() {
   return (
     <AdminLayout title="Projects">
       <div className="space-y-4 p-4 md:p-6 max-w-[1600px] mx-auto">
+        {/* Executive KPI Header */}
+        <ProjectsHubHeader projects={projects} signals={signals} />
+
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={() => setShowNewJob(true)} className="gap-1.5">
@@ -102,6 +109,7 @@ export default function ProjectsHub() {
         ) : view === "board" ? (
           <ProjectPipelineBoard
             projects={filtered}
+            signals={signals}
             onSelect={setSelected}
             onStatusChange={handleStatusChange}
             onNewProject={() => setShowNewJob(true)}
