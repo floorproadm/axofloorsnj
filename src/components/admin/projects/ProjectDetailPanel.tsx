@@ -1,7 +1,20 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ProjectKPIBar } from "./ProjectKPIBar";
 import { useJobCost } from "@/hooks/useJobCosts";
 import { useMeasurements } from "@/hooks/useMeasurements";
@@ -9,8 +22,9 @@ import { useMaterialCosts } from "@/hooks/useMaterialCosts";
 import { useLaborEntries } from "@/hooks/useLaborEntries";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, User, Ruler, DollarSign, FileText } from "lucide-react";
+import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import type { HubProject } from "@/hooks/useProjectsHub";
 
 const STATUSES = [
