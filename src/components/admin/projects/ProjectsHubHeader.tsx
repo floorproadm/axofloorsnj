@@ -129,29 +129,25 @@ export function ProjectsHubHeader({ projects, signals, activeFilter, onFilterCha
             type={c.clickable ? "button" : undefined}
             onClick={c.clickable ? () => onFilterChange(isActive ? null : c.key) : undefined}
             className={cn(
-              "rounded-lg border bg-card p-3 flex items-center gap-3 text-left transition-all",
+              "rounded-lg border border-border/40 bg-muted/30 p-3 text-left transition-all relative",
               c.clickable && "hover:border-foreground/30 cursor-pointer",
               isActive && "border-primary bg-primary/5 ring-1 ring-primary/30",
             )}
           >
-            <div
-              className={cn(
-                "h-8 w-8 rounded-md flex items-center justify-center shrink-0",
-                isActive ? "bg-primary/15" : "bg-muted",
-              )}
-            >
-              <c.icon
-                className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
                 {c.label}
               </p>
-              <p className={cn("text-base font-mono font-semibold leading-tight", c.tone)}>
-                {c.value}
-              </p>
+              <c.icon
+                className={cn(
+                  "h-3.5 w-3.5 shrink-0",
+                  isActive ? "text-primary" : "text-muted-foreground/60",
+                )}
+              />
             </div>
+            <p className={cn("text-2xl font-bold leading-tight mt-0.5", c.tone)}>
+              {c.value}
+            </p>
           </Element>
         );
       })}
