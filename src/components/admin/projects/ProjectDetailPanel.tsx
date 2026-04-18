@@ -4,7 +4,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -17,14 +16,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ProjectKPIBar } from "./ProjectKPIBar";
+import { FullMeasurementDialog } from "./FullMeasurementDialog";
+import { FullCostsDialog } from "./FullCostsDialog";
+import { NewInvoiceDialog } from "@/components/admin/payments/NewInvoiceDialog";
 import { useJobCost } from "@/hooks/useJobCosts";
-import { useMeasurements, useCreateMeasurement } from "@/hooks/useMeasurements";
-import { useMaterialCosts, useAddMaterialCost } from "@/hooks/useMaterialCosts";
-import { useLaborEntries, useAddLaborEntry } from "@/hooks/useLaborEntries";
-import { useCreateInvoice, generateInvoiceNumber } from "@/hooks/useInvoices";
+import { useMeasurements } from "@/hooks/useMeasurements";
+import { useMaterialCosts } from "@/hooks/useMaterialCosts";
+import { useLaborEntries } from "@/hooks/useLaborEntries";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink, Plus, X, Check } from "lucide-react";
+import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import type { HubProject } from "@/hooks/useProjectsHub";
