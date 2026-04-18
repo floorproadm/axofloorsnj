@@ -83,7 +83,7 @@ export function MobileBottomNav() {
     { label: "Home", icon: Home, path: "/admin/dashboard" },
     { label: "Jobs", icon: Briefcase, path: "/admin/jobs" },
     { label: null, icon: Plus, path: null },
-    { label: "Feed", icon: Camera, path: "/admin/feed" },
+    { label: "Gallery", icon: Camera, path: "/admin/gallery" },
     { label: "Stats", icon: BarChart3, path: "/admin/performance" },
   ];
 
@@ -137,7 +137,7 @@ export function MobileBottomNav() {
         setNewEstimateOpen(true);
         break;
       case "photo":
-        navigate("/admin/feed");
+        navigate("/admin/gallery");
         break;
       case "partner":
         setNewPartnerOpen(true);
