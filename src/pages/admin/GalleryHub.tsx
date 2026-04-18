@@ -2,10 +2,11 @@ import { lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Camera, Images } from "lucide-react";
+import { Loader2, Camera, Globe } from "lucide-react";
+import { GalleryFeedPanel } from "@/components/admin/gallery/GalleryFeedPanel";
+import { GalleryPublicPanel } from "@/components/admin/gallery/GalleryPublicPanel";
 
 const CompanyFeed = lazy(() => import("./CompanyFeed"));
-const GalleryManager = lazy(() => import("./GalleryManager"));
 
 const Fallback = () => (
   <div className="flex items-center justify-center py-20">
@@ -15,7 +16,8 @@ const Fallback = () => (
 
 export default function GalleryHub() {
   const [searchParams, setSearchParams] = useSearchParams();
-  // Project context bypasses the tab shell — render Feed directly
+
+  // Project context bypasses the tab shell — render legacy Feed directly
   if (searchParams.get("project")) {
     return (
       <Suspense fallback={<Fallback />}>
@@ -35,27 +37,29 @@ export default function GalleryHub() {
 
   return (
     <AdminLayout title="Gallery" breadcrumbs={[{ label: "Gallery" }]}>
-      <div className="max-w-5xl mx-auto space-y-4 animate-fade-in">
+      <div className="max-w-3xl mx-auto space-y-4 animate-fade-in pb-12">
         <Tabs value={tab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="feed" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
-              <Camera className="w-4 h-4" /> Feed
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger
+              value="feed"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+            >
+              <Camera className="w-4 h-4" /> Feed Interno
             </TabsTrigger>
-            <TabsTrigger value="public" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
-              <Images className="w-4 h-4" /> Public Gallery
+            <TabsTrigger
+              value="public"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+            >
+              <Globe className="w-4 h-4" /> Galeria Publica
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="feed" className="mt-4">
-            <Suspense fallback={<Fallback />}>
-              <CompanyFeed embedded />
-            </Suspense>
+            <GalleryFeedPanel />
           </TabsContent>
 
           <TabsContent value="public" className="mt-4">
-            <Suspense fallback={<Fallback />}>
-              <GalleryManager embedded />
-            </Suspense>
+            <GalleryPublicPanel />
           </TabsContent>
         </Tabs>
       </div>

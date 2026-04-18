@@ -66,6 +66,9 @@ export function GalleryFeedPanel() {
       ? allPosts.filter((p) => !p.folder_id)
       : allPosts;
 
+  // Hoisted to top to keep hook order stable across early returns
+  const unfiledCount = useMemo(() => allPosts.filter((p) => !p.folder_id).length, [allPosts]);
+
   /** Create a draft post + upload media into it under the current folder selection */
   const handleUpload = async (file: File, kind: "image" | "video", onProgress: (p: number) => void) => {
     // Use the folder selected in upload picker, OR active folder if drilled in
@@ -172,8 +175,6 @@ export function GalleryFeedPanel() {
   }
 
   // ===== Folder hub (default) =====
-  const unfiledCount = useMemo(() => allPosts.filter((p) => !p.folder_id).length, [allPosts]);
-
   return (
     <div className="space-y-4">
       <MediaQuickUpload
