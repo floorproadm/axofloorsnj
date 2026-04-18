@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   CheckCircle, Send, XCircle, Trash2, Edit3, Plus,
-  Printer, Share2, Mail, Link2, Copy, Check, Loader2, X, Calendar, Eye
+  Printer, Share2, Mail, Link2, Copy, Check, Loader2, X, Calendar, Eye, ExternalLink
 } from "lucide-react";
 import { Invoice, InvoiceItem, InvoicePaymentPhase, useInvoiceItems, useInvoicePaymentSchedule, useUpdateInvoiceStatus, useDeleteInvoice } from "@/hooks/useInvoices";
 import { supabase } from "@/integrations/supabase/client";
@@ -312,6 +313,7 @@ ${invoice.notes ? `<div class="notes-box"><strong>Notes:</strong> ${invoice.note
 
 // ── Main Sheet ────────────────────────────────────────────────────────────────
 export function InvoiceDetailsSheet({ invoice, open, onOpenChange }: Props) {
+  const navigate = useNavigate();
   const { data: items = [] } = useInvoiceItems(invoice?.id ?? null);
   const { data: phases = [] } = useInvoicePaymentSchedule(invoice?.id ?? null);
   const updateStatus = useUpdateInvoiceStatus();
@@ -341,9 +343,22 @@ export function InvoiceDetailsSheet({ invoice, open, onOpenChange }: Props) {
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
+            <SheetTitle className="flex items-center gap-2 flex-wrap">
               <span>{invoice.invoice_number}</span>
               <Badge variant={sc.variant}>{sc.label}</Badge>
+              {invoice.project_id && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-auto"
+                  onClick={() => {
+                    onOpenChange(false);
+                    navigate(`/admin/jobs/${invoice.project_id}`);
+                  }}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Open Job
+                </Button>
+              )}
             </SheetTitle>
           </SheetHeader>
 

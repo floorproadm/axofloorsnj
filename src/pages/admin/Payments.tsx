@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,6 +65,7 @@ const fmt = (v: number) =>
 export default function Payments() {
   const { data: invoices = [], isLoading: invoicesLoading } = useInvoices();
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("payments");
   const [invoiceFilter, setInvoiceFilter] = useState("all");
@@ -145,6 +147,34 @@ export default function Payments() {
     if (invoiceFilter === "all") return invoices;
     return invoices.filter((i) => i.status === invoiceFilter);
   }, [invoices, invoiceFilter]);
+
+  /* ── Deep-link from URL params ── */
+  useEffect(() => {
+    const invoiceId = searchParams.get("invoice");
+    if (invoiceId && invoices.length > 0 && !selectedInvoice) {
+      const found = invoices.find((i) => i.id === invoiceId);
+      if (found) {
+        setActiveTab("invoices");
+        setSelectedInvoice(found);
+      }
+    }
+    const paymentId = searchParams.get("payment");
+    if (paymentId && payments.length > 0 && !selectedPayment) {
+      const found = payments.find((p) => p.id === paymentId);
+      if (found) {
+        setActiveTab("payments");
+        setSelectedPayment(found);
+      }
+    }
+  }, [searchParams, invoices, payments]);
+
+  const clearUrlParam = (key: "invoice" | "payment") => {
+    if (searchParams.has(key)) {
+      const next = new URLSearchParams(searchParams);
+      next.delete(key);
+      setSearchParams(next, { replace: true });
+    }
+  };
 
   const handleActionSelect = (type: "income" | "expense" | "payroll") => {
     setPaymentDefaultCategory(type === "income" ? "received" : type === "payroll" ? "labor" : "material");
@@ -448,12 +478,22 @@ export default function Payments() {
       <InvoiceDetailsSheet
         invoice={selectedInvoice}
         open={!!selectedInvoice}
-        onOpenChange={(open) => !open && setSelectedInvoice(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedInvoice(null);
+            clearUrlParam("invoice");
+          }
+        }}
       />
       <PaymentDetailsSheet
         payment={selectedPayment}
         open={!!selectedPayment}
-        onOpenChange={(open) => !open && setSelectedPayment(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedPayment(null);
+            clearUrlParam("payment");
+          }
+        }}
       />
       <PLPreviewDialog
         open={plPreviewOpen}
