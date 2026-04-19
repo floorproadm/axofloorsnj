@@ -305,27 +305,7 @@ export default function JobDetail() {
           onCreateInvoice={() => scrollToId('section-invoices')}
         />
 
-        {/* ═══ PHOTOS — operational priority (blocks completion) ═══ */}
-        <div id="section-photos">
-          <Section title="Photos & Proof" icon={<Camera className="w-4 h-4" />}>
-            <JobProofUploader projectId={project.id} />
-          </Section>
-        </div>
-
-        {/* ═══ MATERIALS ═══ */}
-        <div id="section-materials"><MaterialsBlock projectId={project.id} /></div>
-
-        {/* ═══ LABOR ═══ */}
-        <LaborBlock projectId={project.id} />
-
-        {/* ═══ INVOICES & PAYMENTS ═══ */}
-        <div id="section-invoices">
-          <Section title="Invoices & Payments" icon={<Receipt className="w-4 h-4" />}>
-            <InvoicesPaymentsSection projectId={project.id} />
-          </Section>
-        </div>
-
-        {/* ═══ JOB INFO (compact, empty fields collapsed) ═══ */}
+        {/* ═══ JOB DETAILS ═══ */}
         <Section
           title="Job Details"
           icon={<Hammer className="w-4 h-4" />}
@@ -346,16 +326,6 @@ export default function JobDetail() {
           ) : (
             <CompactJobDetails project={project} onEditEmpty={() => setEditingSection('job')} />
           )}
-        </Section>
-
-        {/* ═══ NOTES ═══ */}
-        <Section title="Notes" icon={<StickyNote className="w-4 h-4" />}>
-          <NotesBlock value={project.notes || ''} onSave={(v) => updateField('notes', v)} />
-        </Section>
-
-        {/* ═══ COMMENTS ═══ */}
-        <Section title="Comments" icon={<MessageSquare className="w-4 h-4" />}>
-          <CommentsBlock projectId={project.id} />
         </Section>
 
         {/* ═══ CLIENT ═══ */}
@@ -403,6 +373,36 @@ export default function JobDetail() {
             </div>
           )}
         </Section>
+
+        {/* ═══ NOTES ═══ */}
+        <Section title="Notes" icon={<StickyNote className="w-4 h-4" />}>
+          <NotesBlock value={project.notes || ''} onSave={(v) => updateField('notes', v)} />
+        </Section>
+
+        {/* ═══ COMMENTS ═══ */}
+        <Section title="Comments" icon={<MessageSquare className="w-4 h-4" />}>
+          <CommentsBlock projectId={project.id} />
+        </Section>
+
+        {/* ═══ MATERIALS + LABOR (side by side on md+) ═══ */}
+        <div id="section-materials" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <MaterialsBlock projectId={project.id} />
+          <LaborBlock projectId={project.id} />
+        </div>
+
+        {/* ═══ INVOICES & PAYMENTS ═══ */}
+        <div id="section-invoices">
+          <Section title="Invoices & Payments" icon={<Receipt className="w-4 h-4" />}>
+            <InvoicesPaymentsSection projectId={project.id} />
+          </Section>
+        </div>
+
+        {/* ═══ PHOTOS & PROOF ═══ */}
+        <div id="section-photos">
+          <Section title="Photos & Proof" icon={<Camera className="w-4 h-4" />}>
+            <JobProofUploader projectId={project.id} />
+          </Section>
+        </div>
       </div>
 
       {/* Sheets */}
