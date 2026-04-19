@@ -176,6 +176,7 @@ const FloorDiagnostic = () => {
         notes: `
           DIAGNOSTIC APPLICATION
           ----------------------
+          Service Interest: ${formData.serviceInterest}
           Property: ${formData.propertyType}
           Location: ${formData.location}
           Floor Area: ${formData.floorArea} sq ft
