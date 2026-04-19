@@ -570,15 +570,37 @@ Questions? Call Eduardo: (862) 216-4658`;
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            {step === 1 && "Step 1 of 3 — Job info & rates"}
+            {step === 1 && "Step 1 of 3 — Job info & pricing mode"}
             {step === 2 && "Step 2 of 3 — Add-ons"}
-            {step === 3 && "Step 3 of 3 — Choose tier"}
+            {step === 3 && (pricingMode === "tiers" ? "Step 3 of 3 — Choose tier" : "Step 3 of 3 — Set price")}
           </p>
         </SheetHeader>
 
         {/* ── Step 1: Job Info + Rate Table ── */}
         {step === 1 && (
           <div className="space-y-5">
+            {/* Pricing Mode Toggle */}
+            <div className="rounded-lg border-2 border-amber-200 bg-amber-50/50 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Pricing Mode</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {pricingMode === "tiers"
+                      ? "Generate Good / Better / Best tiers"
+                      : "Skip tiers — set a single direct price"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-xs font-medium", pricingMode === "tiers" ? "text-foreground" : "text-muted-foreground")}>Tiers</span>
+                  <Switch
+                    checked={pricingMode === "direct"}
+                    onCheckedChange={(v) => setPricingMode(v ? "direct" : "tiers")}
+                  />
+                  <span className={cn("text-xs font-medium", pricingMode === "direct" ? "text-foreground" : "text-muted-foreground")}>Direct</span>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label>Square footage</Label>
               <Input
