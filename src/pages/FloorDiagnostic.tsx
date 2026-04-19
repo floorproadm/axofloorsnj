@@ -717,55 +717,59 @@ const FloorDiagnostic = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium mb-3 block">Current Floor Condition</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {[
-                            { value: "worn", label: "Worn / Dull", desc: "Surface wear, needs refreshing" },
-                            { value: "damaged", label: "Damaged", desc: "Scratches, dents, or water damage" },
-                            { value: "outdated", label: "Outdated", desc: "Dated appearance or color" },
-                            { value: "unknown", label: "Not Sure", desc: "Need professional assessment" }
-                          ].map(option => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => handleFieldChange('floorCondition', option.value)}
-                              className={`p-4 rounded-lg border-2 text-left transition-all ${
-                                formData.floorCondition === option.value
-                                  ? 'border-gold bg-gold/10'
-                                  : 'border-muted hover:border-gold/50'
-                              }`}
-                            >
-                              <span className="font-medium text-sm block">{option.label}</span>
-                              <span className="text-xs text-muted-foreground">{option.desc}</span>
-                            </button>
-                          ))}
+                      {formData.serviceInterest !== "new-installation" && (
+                        <div>
+                          <Label className="text-sm font-medium mb-3 block">Current Floor Condition</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {[
+                              { value: "worn", label: "Worn / Dull", desc: "Surface wear, needs refreshing" },
+                              { value: "damaged", label: "Damaged", desc: "Scratches, dents, or water damage" },
+                              { value: "outdated", label: "Outdated", desc: "Dated appearance or color" },
+                              { value: "unknown", label: "Not Sure", desc: "Need professional assessment" }
+                            ].map(option => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => handleFieldChange('floorCondition', option.value)}
+                                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                                  formData.floorCondition === option.value
+                                    ? 'border-gold bg-gold/10'
+                                    : 'border-muted hover:border-gold/50'
+                                }`}
+                              >
+                                <span className="font-medium text-sm block">{option.label}</span>
+                                <span className="text-xs text-muted-foreground">{option.desc}</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
-                      <div>
-                        <Label className="text-sm font-medium mb-3 block">Has this floor been refinished before?</Label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {[
-                            { value: "yes", label: "Yes" },
-                            { value: "no", label: "No" },
-                            { value: "unsure", label: "Not Sure" }
-                          ].map(option => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => handleFieldChange('previousWork', option.value)}
-                              className={`p-3 rounded-lg border-2 text-center transition-all ${
-                                formData.previousWork === option.value
-                                  ? 'border-gold bg-gold/10'
-                                  : 'border-muted hover:border-gold/50'
-                              }`}
-                            >
-                              <span className="font-medium text-sm">{option.label}</span>
-                            </button>
-                          ))}
+                      {(formData.serviceInterest === "refinish" || formData.serviceInterest === "stairs" || formData.serviceInterest === "not-sure") && (
+                        <div>
+                          <Label className="text-sm font-medium mb-3 block">Has this floor been refinished before?</Label>
+                          <div className="grid grid-cols-3 gap-3">
+                            {[
+                              { value: "yes", label: "Yes" },
+                              { value: "no", label: "No" },
+                              { value: "unsure", label: "Not Sure" }
+                            ].map(option => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => handleFieldChange('previousWork', option.value)}
+                                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                                  formData.previousWork === option.value
+                                    ? 'border-gold bg-gold/10'
+                                    : 'border-muted hover:border-gold/50'
+                                }`}
+                              >
+                                <span className="font-medium text-sm">{option.label}</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <div>
                         <Label className="text-sm font-medium mb-3 block">Primary Concern</Label>
