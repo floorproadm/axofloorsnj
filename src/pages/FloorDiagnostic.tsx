@@ -49,6 +49,7 @@ const FloorDiagnostic = () => {
 
   const [formData, setFormData] = useState({
     // Step 1: Property
+    serviceInterest: "",
     propertyType: "",
     location: "",
     floorArea: "",
