@@ -373,6 +373,36 @@ export default function JobDetail() {
             </div>
           )}
         </Section>
+
+        {/* ═══ NOTES ═══ */}
+        <Section title="Notes" icon={<StickyNote className="w-4 h-4" />}>
+          <NotesBlock value={project.notes || ''} onSave={(v) => updateField('notes', v)} />
+        </Section>
+
+        {/* ═══ COMMENTS ═══ */}
+        <Section title="Comments" icon={<MessageSquare className="w-4 h-4" />}>
+          <CommentsBlock projectId={project.id} />
+        </Section>
+
+        {/* ═══ MATERIALS + LABOR (side by side on md+) ═══ */}
+        <div id="section-materials" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <MaterialsBlock projectId={project.id} />
+          <LaborBlock projectId={project.id} />
+        </div>
+
+        {/* ═══ INVOICES & PAYMENTS ═══ */}
+        <div id="section-invoices">
+          <Section title="Invoices & Payments" icon={<Receipt className="w-4 h-4" />}>
+            <InvoicesPaymentsSection projectId={project.id} />
+          </Section>
+        </div>
+
+        {/* ═══ PHOTOS & PROOF ═══ */}
+        <div id="section-photos">
+          <Section title="Photos & Proof" icon={<Camera className="w-4 h-4" />}>
+            <JobProofUploader projectId={project.id} />
+          </Section>
+        </div>
       </div>
 
       {/* Sheets */}
