@@ -228,6 +228,14 @@ export function QuickQuoteSheet({ lead, open, onClose, onSuccess }: QuickQuoteSh
   const [saving, setSaving] = useState(false);
   const [showRateOverrides, setShowRateOverrides] = useState(false);
 
+  // Pricing mode: 'tiers' (Good/Better/Best) or 'direct' (single price)
+  const [pricingMode, setPricingMode] = useState<"tiers" | "direct">("tiers");
+
+  // Direct price mode state
+  const [directPrice, setDirectPrice] = useState<number>(0);
+  const [directCost, setDirectCost] = useState<number>(0);
+  const [directLabel, setDirectLabel] = useState<string>("Custom Quote");
+
   // Step 1 — Job info
   const [sqft, setSqft] = useState(500);
   const [serviceType, setServiceType] = useState<string>("refinishing");
