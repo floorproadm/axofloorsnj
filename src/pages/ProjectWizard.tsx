@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput, useFieldValidation } from "@/utils/validation";
 import { AXO_ORG_ID } from "@/lib/constants";
-import AddressAutocomplete from "@/components/admin/AddressAutocomplete";
+import { AddressAutocomplete } from "@/components/admin/AddressAutocomplete";
 import SEOHead from "@/components/shared/SEOHead";
 
 type ServiceType = "refinishing" | "new-installation" | "repair" | "";
