@@ -239,7 +239,7 @@ const FloorDiagnostic = () => {
   const nextStep = () => {
     // Step validations
     if (currentStep === 1) {
-      if (!formData.propertyType || !formData.location || !formData.floorArea) {
+      if (!formData.serviceInterest || !formData.propertyType || !formData.location || !formData.floorArea) {
         toast({ title: "Please complete all fields", variant: "destructive" });
         return;
       }
@@ -255,9 +255,12 @@ const FloorDiagnostic = () => {
         return;
       }
     }
-    if (currentStep === 2 && (!formData.floorCondition || !formData.primaryConcern)) {
-      toast({ title: "Please complete all fields", variant: "destructive" });
-      return;
+    if (currentStep === 2) {
+      const isNewInstall = formData.serviceInterest === "new-installation";
+      if (!formData.primaryConcern || (!isNewInstall && !formData.floorCondition)) {
+        toast({ title: "Please complete all fields", variant: "destructive" });
+        return;
+      }
     }
     if (currentStep === 3) {
       if (!formData.completionTimeline || !formData.homeReady) {
