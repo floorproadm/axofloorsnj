@@ -628,82 +628,85 @@ Questions? Call Eduardo: (862) 216-4658`;
               </Select>
             </div>
 
-            {/* Rate Table Preview */}
-            <div className="rounded-lg border bg-card">
-              <div className="px-3 py-2 border-b bg-muted/50">
-                <p className="text-xs font-semibold">Rate Table — {SERVICE_LABELS[serviceType]}</p>
-              </div>
-              <div className="divide-y">
-                {["good", "better", "best"].map(tierId => {
-                  const rate = RATE_TABLES[serviceType]?.[tierId];
-                  if (!rate) return null;
-                  const meta = TIER_META.find(t => t.id === tierId)!;
-                  return (
-                    <div key={tierId} className="px-3 py-2 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[9px] h-4">{meta.label}</Badge>
-                      </div>
-                      <div className="flex gap-4 text-muted-foreground">
-                        <span>Price: <span className="text-foreground font-medium">{fmtDec(rate.pricePerSqft)}/sqft</span></span>
-                        <span>Cost: <span className="text-foreground font-medium">{fmtDec(rate.costPerSqft)}/sqft</span></span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Rate Overrides */}
-            <button
-              onClick={() => setShowRateOverrides(!showRateOverrides)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {showRateOverrides ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              Override rates manually
-            </button>
-
-            {showRateOverrides && (
-              <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
-                {TIER_META.map(t => {
-                  const rate = RATE_TABLES[serviceType]?.[t.id];
-                  if (!rate) return null;
-                  return (
-                    <div key={t.id} className="space-y-1">
-                      <p className="text-xs font-medium">{t.label} Tier</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-[10px]">Price/sqft</Label>
-                          <Input
-                            type="number"
-                            step={0.1}
-                            placeholder={rate.pricePerSqft.toString()}
-                            value={overridePricePerSqft[t.id] ?? ""}
-                            onChange={e => setOverridePricePerSqft(prev => ({
-                              ...prev,
-                              [t.id]: e.target.value ? Number(e.target.value) : null,
-                            }))}
-                            className="h-7 text-xs"
-                          />
+            {/* Rate Table Preview — only in tiers mode */}
+            {pricingMode === "tiers" && (
+              <>
+                <div className="rounded-lg border bg-card">
+                  <div className="px-3 py-2 border-b bg-muted/50">
+                    <p className="text-xs font-semibold">Rate Table — {SERVICE_LABELS[serviceType]}</p>
+                  </div>
+                  <div className="divide-y">
+                    {["good", "better", "best"].map(tierId => {
+                      const rate = RATE_TABLES[serviceType]?.[tierId];
+                      if (!rate) return null;
+                      const meta = TIER_META.find(t => t.id === tierId)!;
+                      return (
+                        <div key={tierId} className="px-3 py-2 flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[9px] h-4">{meta.label}</Badge>
+                          </div>
+                          <div className="flex gap-4 text-muted-foreground">
+                            <span>Price: <span className="text-foreground font-medium">{fmtDec(rate.pricePerSqft)}/sqft</span></span>
+                            <span>Cost: <span className="text-foreground font-medium">{fmtDec(rate.costPerSqft)}/sqft</span></span>
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-[10px]">Cost/sqft</Label>
-                          <Input
-                            type="number"
-                            step={0.1}
-                            placeholder={rate.costPerSqft.toString()}
-                            value={overrideCostPerSqft[t.id] ?? ""}
-                            onChange={e => setOverrideCostPerSqft(prev => ({
-                              ...prev,
-                              [t.id]: e.target.value ? Number(e.target.value) : null,
-                            }))}
-                            className="h-7 text-xs"
-                          />
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowRateOverrides(!showRateOverrides)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showRateOverrides ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  Override rates manually
+                </button>
+
+                {showRateOverrides && (
+                  <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+                    {TIER_META.map(t => {
+                      const rate = RATE_TABLES[serviceType]?.[t.id];
+                      if (!rate) return null;
+                      return (
+                        <div key={t.id} className="space-y-1">
+                          <p className="text-xs font-medium">{t.label} Tier</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <Label className="text-[10px]">Price/sqft</Label>
+                              <Input
+                                type="number"
+                                step={0.1}
+                                placeholder={rate.pricePerSqft.toString()}
+                                value={overridePricePerSqft[t.id] ?? ""}
+                                onChange={e => setOverridePricePerSqft(prev => ({
+                                  ...prev,
+                                  [t.id]: e.target.value ? Number(e.target.value) : null,
+                                }))}
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-[10px]">Cost/sqft</Label>
+                              <Input
+                                type="number"
+                                step={0.1}
+                                placeholder={rate.costPerSqft.toString()}
+                                value={overrideCostPerSqft[t.id] ?? ""}
+                                onChange={e => setOverrideCostPerSqft(prev => ({
+                                  ...prev,
+                                  [t.id]: e.target.value ? Number(e.target.value) : null,
+                                }))}
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
 
             {/* Duration estimate */}
