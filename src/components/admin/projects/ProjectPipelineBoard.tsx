@@ -1,10 +1,32 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Camera, FileWarning, MessageCircle } from "lucide-react";
+import { Plus, Camera, FileWarning, MessageCircle, User, Calendar, StickyNote, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { computeRisk, type ProjectSignals } from "@/hooks/useProjectSignals";
+
+function computeNextAction(project: HubProject, signals?: ProjectSignals): string | null {
+  if (project.next_action) return project.next_action;
+  const hasMissingProof = signals?.missingProof.has(project.id) ?? false;
+  const hasOverdueInvoice = signals?.overdueInvoice.has(project.id) ?? false;
+  switch (project.project_status) {
+    case "pending":
+    case "planning":
+      return project.start_date ? "Confirm crew & materials" : "Schedule start date";
+    case "in_progress":
+    case "in_production":
+      return "Continue execution";
+    case "completed":
+      return hasMissingProof ? "Upload before/after photos" : "Send final invoice";
+    case "awaiting_payment":
+      return hasOverdueInvoice ? "Follow up on overdue invoice" : "Collect payment";
+    case "paid":
+      return "Request review";
+    default:
+      return null;
+  }
+}
 
 const COLUMNS = [
   { key: "planning", label: "Planning", color: "bg-amber-500", text: "text-amber-500" },
@@ -59,7 +81,7 @@ export function ProjectPipelineBoard({ projects, signals, onSelect, onStatusChan
           return (
             <div
               key={col.key}
-              className="flex flex-col w-[260px] sm:w-[280px] shrink-0"
+              className="flex flex-col w-[280px] sm:w-[300px] shrink-0"
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => {
                 const dragId = sessionStorage.getItem("drag-project-id");
@@ -118,7 +140,7 @@ function ProjectCard({
   onClick: () => void;
 }) {
   const dateStr = project.start_date || project.created_at;
-  const formattedDate = dateStr ? format(new Date(dateStr), "dd/MM/yyyy h:mm a") : null;
+  const formattedDate = dateStr ? format(new Date(dateStr), "MMM d, yyyy") : null;
 
   const hasMissingProof = signals?.missingProof.has(project.id) ?? false;
   const hasOverdueInvoice = signals?.overdueInvoice.has(project.id) ?? false;
@@ -138,7 +160,6 @@ function ProjectCard({
         ? "bg-[hsl(var(--state-risk))]"
         : "bg-[hsl(var(--state-success))]";
 
-  // Show proof badge only when status is past in-progress
   const showProofBadge =
     hasMissingProof &&
     (project.project_status === "completed" ||
@@ -146,6 +167,9 @@ function ProjectCard({
       project.project_status === "paid");
 
   const margin = project.job_costs?.margin_percent;
+  const revenue = project.job_costs?.estimated_revenue ?? 0;
+  const nextAction = computeNextAction(project, signals);
+  const notesPreview = project.notes?.trim().split("\n")[0] ?? null;
 
   return (
     <button
@@ -154,14 +178,24 @@ function ProjectCard({
       onDragEnd={() => sessionStorage.removeItem("drag-project-id")}
       onClick={onClick}
       title={risk.reasons.join(" · ") || "Healthy"}
-      className="w-full text-left p-3 rounded-lg bg-card border border-border/60 hover:border-border hover:shadow-sm transition-all space-y-1.5"
+      className="w-full text-left p-3 rounded-lg bg-card border border-border/60 hover:border-border hover:shadow-md hover:-translate-y-px transition-all space-y-2"
     >
-      {/* Top row: risk dot + address + unread chat */}
+      {/* Header: risk dot + address + revenue */}
       <div className="flex items-start gap-2">
         <span className={cn("h-2 w-2 rounded-full mt-1.5 shrink-0", dotColor)} />
         <p className="text-sm font-semibold text-foreground leading-snug flex-1 min-w-0">
           {project.address || "No address"}
         </p>
+        {revenue > 0 && (
+          <span className="text-xs font-mono font-bold text-[hsl(var(--gold))] shrink-0 tabular-nums">
+            ${(revenue / 1000).toFixed(1)}k
+          </span>
+        )}
+      </div>
+
+      {/* Customer + unread chat */}
+      <div className="flex items-center gap-2 pl-4">
+        <p className="text-xs text-muted-foreground flex-1 truncate">{project.customer_name}</p>
         {unreadCount > 0 && (
           <span className="flex items-center gap-0.5 text-[10px] font-mono font-semibold text-[hsl(var(--state-success))] shrink-0">
             <MessageCircle className="h-3 w-3" />
@@ -170,25 +204,45 @@ function ProjectCard({
         )}
       </div>
 
-      {/* Customer */}
-      <p className="text-xs text-muted-foreground pl-4">{project.customer_name}</p>
+      {/* Meta lines: Partner, Date, Notes */}
+      <div className="space-y-1 pl-4">
+        {project.partner_name && (
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <User className="h-3 w-3 shrink-0" />
+            <span className="truncate">{project.partner_name}</span>
+          </div>
+        )}
+        {formattedDate && (
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Calendar className="h-3 w-3 shrink-0" />
+            <span>{formattedDate}</span>
+            {project.project_type && (
+              <span className="text-muted-foreground/60">
+                · {project.project_type}
+                {project.square_footage ? ` · ${project.square_footage}sf` : ""}
+              </span>
+            )}
+          </div>
+        )}
+        {notesPreview && (
+          <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground/80 italic">
+            <StickyNote className="h-3 w-3 shrink-0 mt-0.5" />
+            <span className="line-clamp-1">{notesPreview}</span>
+          </div>
+        )}
+      </div>
 
-      {/* Date */}
-      {formattedDate && (
-        <p className="text-xs text-muted-foreground/70 pl-4">{formattedDate}</p>
+      {/* Next Action banner */}
+      {nextAction && (
+        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-[hsl(var(--gold))]/10 border border-[hsl(var(--gold))]/20">
+          <ArrowRight className="h-3 w-3 text-[hsl(var(--gold))] shrink-0" />
+          <span className="text-[11px] font-medium text-foreground/90 truncate">{nextAction}</span>
+        </div>
       )}
 
-      {/* Service type */}
-      {project.project_type && (
-        <p className="text-xs text-muted-foreground pl-4">
-          {project.project_type}
-          {project.square_footage ? ` · ${project.square_footage} sqft` : ""}
-        </p>
-      )}
-
-      {/* Footer badges */}
+      {/* Footer alert chips */}
       {(showProofBadge || hasOverdueInvoice || (margin != null && margin < 15)) && (
-        <div className="flex flex-wrap items-center gap-1 pt-1 pl-4">
+        <div className="flex flex-wrap items-center gap-1 pt-0.5">
           {margin != null && margin < 15 && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[hsl(var(--state-blocked-bg))] text-[hsl(var(--state-blocked))]">
               {margin.toFixed(0)}% margin
