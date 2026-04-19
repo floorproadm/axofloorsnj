@@ -792,8 +792,8 @@ Questions? Call Eduardo: (862) 216-4658`;
           </div>
         )}
 
-        {/* ── Step 3: Tiers with Breakdown ── */}
-        {step === 3 && (
+        {/* ── Step 3: Tiers Mode ── */}
+        {step === 3 && pricingMode === "tiers" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
@@ -837,7 +837,6 @@ Questions? Call Eduardo: (862) 216-4658`;
 
                   <Separator />
 
-                  {/* Cost Breakdown */}
                   <CostBreakdown
                     laborCost={tier.laborCost}
                     materialCost={tier.materialCost}
@@ -883,6 +882,126 @@ Questions? Call Eduardo: (862) 216-4658`;
             </Button>
           </div>
         )}
+
+        {/* ── Step 3: Direct Price Mode ── */}
+        {step === 3 && pricingMode === "direct" && (() => {
+          const totalCost = directCost + addonTotal;
+          const finalPrice = directPrice + addonTotal;
+          const profit = finalPrice - totalCost;
+          const margin = finalPrice > 0 ? (profit / finalPrice) * 100 : 0;
+          const blocked = directCost > 0 && margin < MIN_MARGIN;
+          const pricePerSqft = sqft > 0 ? directPrice / sqft : 0;
+
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Set a direct price for <strong>{lead.name}</strong>.
+                </p>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  {durationDays}d
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl border-2 border-amber-400 bg-amber-50 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Quote label (optional)</Label>
+                  <Input
+                    value={directLabel}
+                    onChange={(e) => setDirectLabel(e.target.value)}
+                    placeholder="e.g. Custom Quote"
+                    className="h-9"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Client price (USD) *</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={50}
+                    value={directPrice || ""}
+                    onChange={(e) => setDirectPrice(Number(e.target.value))}
+                    placeholder="0"
+                    className="text-2xl font-bold h-14"
+                  />
+                  {pricePerSqft > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      ≈ {fmtDec(pricePerSqft)}/sqft
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Estimated cost (optional, for margin check)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={50}
+                    value={directCost || ""}
+                    onChange={(e) => setDirectCost(Number(e.target.value))}
+                    placeholder="Leave 0 to skip margin validation"
+                    className="h-9"
+                  />
+                </div>
+
+                {(directPrice > 0 || addonTotal > 0) && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Quote</span>
+                        <span>{fmt(directPrice)}</span>
+                      </div>
+                      {addonTotal > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Add-ons</span>
+                          <span>{fmt(addonTotal)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-primary font-bold text-base pt-1 border-t">
+                        <span>Final Price</span>
+                        <span>{fmt(finalPrice)}</span>
+                      </div>
+                      {directCost > 0 && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Cost</span>
+                            <span>{fmt(totalCost)}</span>
+                          </div>
+                          <div className="flex justify-between text-green-600">
+                            <span>Profit</span>
+                            <span>{fmt(profit)}</span>
+                          </div>
+                          <MarginGauge margin={margin} minMargin={MIN_MARGIN} />
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <Button
+                  className="w-full gap-2"
+                  disabled={saving || directPrice <= 0 || blocked}
+                  onClick={handleSaveDirect}
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : blocked ? (
+                    <><AlertTriangle className="w-4 h-4" /> Margin below minimum</>
+                  ) : (
+                    <><Check className="w-4 h-4" /> Create Quote {finalPrice > 0 && `— ${fmt(finalPrice)}`}</>
+                  )}
+                </Button>
+              </div>
+
+              <Button variant="ghost" className="w-full" onClick={() => setStep(2)}>
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              </Button>
+            </div>
+          );
+        })()}
       </SheetContent>
     </Sheet>
   );
