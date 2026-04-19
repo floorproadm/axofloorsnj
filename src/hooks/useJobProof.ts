@@ -61,7 +61,8 @@ export const useJobProof = (projectId: string) => {
 
   const uploadImage = async (
     file: File,
-    type: 'before' | 'after'
+    type: 'before' | 'after',
+    extraMetadata?: { stain_color?: string; wood_species?: string }
   ): Promise<string | null> => {
     setIsUploading(true);
     
@@ -91,7 +92,7 @@ export const useJobProof = (projectId: string) => {
           .from('media')
           .upload(mediaPath, file);
 
-        // Insert into media_files
+        // Insert into media_files with enriched metadata
         await supabase
           .from('media_files')
           .insert({
@@ -101,7 +102,11 @@ export const useJobProof = (projectId: string) => {
             folder_type: 'before_after',
             file_type: 'image',
             storage_path: mediaPath,
-            metadata: { phase: type },
+            metadata: {
+              phase: type,
+              ...(extraMetadata?.stain_color ? { stain_color: extraMetadata.stain_color } : {}),
+              ...(extraMetadata?.wood_species ? { wood_species: extraMetadata.wood_species } : {}),
+            },
           });
       } catch (dualWriteError) {
         // Non-blocking: log but don't fail the operation
