@@ -83,6 +83,7 @@ const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.C
   'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp, url: '/gallery' },
   'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
   'quick_quote': { label: 'Quick Quote', type: 'Ação Rápida', icon: Zap },
+  'project_wizard': { label: 'Project Wizard', type: 'Qualificador', icon: CheckCircle, url: '/project-wizard' },
 };
 
 const normalizeSource = (source: string): string => {
