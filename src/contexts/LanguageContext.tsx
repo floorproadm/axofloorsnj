@@ -24,7 +24,7 @@ const translations = {
   "sidebar.verSite": { pt: "Ver Site", en: "View Site" },
   "sidebar.sair": { pt: "Sair do Sistema", en: "Sign Out" },
   "sidebar.sistemaOperacional": { pt: "Sistema Operacional", en: "Operating System" },
-  "sidebar.pagamentos": { pt: "Pagamentos", en: "Payments" },
+  "sidebar.pagamentos": { pt: "Pagamentose & Invoices", en: "Payments & Invoices" },
 
   // Layout / Header
   "layout.notificacoes": { pt: "Notificações", en: "Notifications" },
