@@ -334,7 +334,109 @@ Questions? Call Eduardo: (862) 216-4658`;
       setOverridePricePerSqft({ good: null, better: null, best: null });
       setOverrideCostPerSqft({ good: null, better: null, best: null });
       setAddons(Object.fromEntries(ADDONS.map(a => [a.id, { enabled: false, qty: 1 }])));
+      setPricingMode("tiers");
+      setDirectPrice(0);
+      setDirectCost(0);
+      setDirectLabel("Custom Quote");
       onClose();
+    }
+  }
+
+  // ─── Save Direct Price proposal (single tier) ───────────────────────────
+  async function handleSaveDirect() {
+    if (!lead) return;
+    if (directPrice <= 0) {
+      toast.error("Please enter a valid price");
+      return;
+    }
+
+    const totalCost = directCost + addonTotal;
+    const finalPrice = directPrice + addonTotal;
+    const margin = finalPrice > 0 ? ((finalPrice - totalCost) / finalPrice) * 100 : 0;
+
+    if (directCost > 0 && margin < MIN_MARGIN) {
+      toast.error(`BLOCKED: Margin ${margin.toFixed(1)}% < minimum ${MIN_MARGIN}%`);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const validUntil = new Date();
+      validUntil.setDate(validUntil.getDate() + 30);
+
+      const { data: customer, error: custErr } = await supabase
+        .from("customers")
+        .insert({
+          organization_id: AXO_ORG_ID,
+          full_name: lead.name,
+          phone: lead.phone || null,
+          email: lead.email || null,
+          city: lead.city || null,
+        })
+        .select("id")
+        .single();
+      if (custErr) throw custErr;
+
+      const { data: project, error: projErr } = await supabase
+        .from("projects")
+        .insert({
+          organization_id: AXO_ORG_ID,
+          customer_id: customer.id,
+          customer_name: lead.name,
+          customer_email: lead.email || '',
+          customer_phone: lead.phone,
+          project_type: serviceType,
+          project_status: 'pending',
+          square_footage: sqft,
+          city: lead.city || null,
+        })
+        .select("id")
+        .single();
+      if (projErr) throw projErr;
+
+      await supabase.from("job_costs").insert({
+        project_id: project.id,
+        labor_cost: directCost * 0.6,
+        material_cost: directCost * 0.4,
+        additional_costs: addonTotal,
+        estimated_revenue: finalPrice,
+      });
+
+      // Direct price stored as a single tier (all 3 columns equal so legacy display works)
+      const { error: propErr } = await supabase.from("proposals").insert({
+        organization_id: AXO_ORG_ID,
+        project_id: project.id,
+        customer_id: customer.id,
+        good_price:    finalPrice,
+        better_price:  finalPrice,
+        best_price:    finalPrice,
+        margin_good:   Math.round(margin),
+        margin_better: Math.round(margin),
+        margin_best:   Math.round(margin),
+        selected_tier: "good",
+        status: "sent",
+        valid_until: validUntil.toISOString().slice(0, 10),
+        proposal_number: `QQ-${Date.now().toString(36).toUpperCase()}`,
+      });
+      if (propErr) throw propErr;
+
+      await supabase
+        .from("leads")
+        .update({ customer_id: customer.id, converted_to_project_id: project.id })
+        .eq("id", lead.id);
+
+      await supabase
+        .from("leads")
+        .update({ status: "proposal_sent", status_changed_at: new Date().toISOString() })
+        .eq("id", lead.id);
+
+      toast.success(`Direct quote ${fmt(finalPrice)} created and lead moved to Proposal Sent`);
+      handleOpenChange(false);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || "Error saving quote");
+    } finally {
+      setSaving(false);
     }
   }
 
