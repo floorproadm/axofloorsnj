@@ -1,63 +1,51 @@
 
 
-User quer um formulário **separado** baseado no mindmap do MindMeister, não fundir com o Floor Diagnostic atual. Vou criar uma nova rota dedicada que segue exatamente a estrutura visual do mindmap original.
+User quer foco: **só JobProof**, sem mexer em StainGallery agora. Apenas adicionar **filtro/seleção de cor de stain** no momento do upload das fotos para deixar tudo organizado e categorizado para o futuro.
 
-**Nome:** `AXO Project Wizard` na rota `/project-wizard`
+## Escopo enxuto
 
-**Estrutura do formulário (4 steps, conforme mindmap):**
+**O que faço:**
 
-```text
-Step 1: Service Type
-  ├─ Refinishing
-  ├─ New Installation
-  └─ Repair/Other
+1. **Mini-form de metadados no upload do JobProof** (após escolher arquivo, antes de salvar):
+   - **Stain Color**: dropdown com as 40 cores DuraSeal (lista compartilhada com `/stain-gallery` — White Oak + Red Oak + Custom)
+   - **Wood Species**: White Oak / Red Oak / Maple / Other
+   - **Phase**: Before / After (já existe)
+   - Campos opcionais — não bloqueiam o upload
 
-Step 2A (Refinishing path):
-  ├─ Floor Area (sqft)
-  ├─ Wood Species (Oak, Maple, Pine, Other)
-  ├─ Current Condition (Good, Worn, Damaged)
-  └─ Color Change Intent (Same, Lighter, Darker → linka Stain Gallery)
+2. **Persistência em `media_files.metadata`** (jsonb já existe):
+   ```json
+   { "phase": "after", "stain_color": "Honey", "wood_species": "White Oak" }
+   ```
+   Mantém compatibilidade total com o sistema atual de dual-write.
 
-Step 2B (New Installation path):
-  ├─ Floor Area (sqft)
-  ├─ Material Type (Hardwood, Engineered, Laminate, Vinyl)
-  ├─ Subfloor Ready? (Yes/No/Not sure)
-  └─ Budget Range ($3.5k-$7k, $7k-$15k, $15k+)
+3. **Visualização no card do JobProof**: badge pequeno mostrando a cor aplicada (ex: "Honey · White Oak") nas thumbnails After.
 
-Step 2C (Repair path):
-  ├─ Issue Description (textarea)
-  ├─ Affected Area (small/medium/large)
-  └─ Photos (optional upload)
-
-Step 3: Property & Timeline
-  ├─ Property Type (House, Condo, Commercial)
-  ├─ Project Address (Google Places autocomplete)
-  └─ Timeline (ASAP, 1 month, 1-3 months, planning)
-
-Step 4: Contact & Submit
-  ├─ Name, Email, Phone
-  └─ Submit → leads table + Notion sync + follow-up email
-```
-
-**Diferenças vs Floor Diagnostic atual:**
-- Floor Diagnostic = funil de qualificação/disqualificação ($1.8k+ refinish, $3.5k+ install) com tela de rejeição
-- Project Wizard = formulário consultivo completo, captura todos os dados sem rejeitar (qualifica internamente via lead score/notes)
-
-**Implementação:**
-1. Criar `src/pages/ProjectWizard.tsx` (componente novo, isolado)
-2. Adicionar rota `/project-wizard` em `src/App.tsx`
-3. Reutilizar: `AddressAutocomplete`, `validateField`, `sanitizeInput`, schema Supabase `leads`
-4. Salvar campos extras (wood species, color intent, material type, etc.) em `notes` JSON estruturado para preservar dados sem alterar schema
-5. Integração com Notion via edge function `send-to-notion` já existente
-6. Email de follow-up via `send-follow-up`
+4. **Lista de cores centralizada**: criar `src/lib/stainColors.ts` com as 40 cores DuraSeal exportadas como constante (reutilizável depois pelo StainGallery futuro).
 
 **O que NÃO faço:**
-- Não toco no Floor Diagnostic (continua existindo paralelamente)
-- Não crio nova tabela Supabase (uso `leads` existente)
-- Não adiciono link no Header (você decide onde linkar depois)
-- Sem dark mode (segue padrão das páginas públicas)
+- Não mexo em `/stain-gallery` (fica para o futuro)
+- Não crio "Real Jobs in this Color" agora
+- Não toco em Gallery pública
+- Não migro fotos antigas (apenas novos uploads ganham metadados)
 
-**Linguagem:** Inglês (público americano, conforme constraint do projeto).
+## Arquivos afetados
 
-**Design:** Light mode, Navy/Gold AXO brand, mobile-first 430px, progress indicator no topo, cards selecionáveis grandes (touch-friendly).
+- `src/lib/stainColors.ts` (novo) — lista de cores DuraSeal
+- `src/hooks/useJobProof.ts` — `uploadImage` aceita parâmetro `metadata` extra
+- `src/components/admin/JobProofUploader.tsx` — adicionar mini-form (Stain + Wood Species) após selecionar arquivo, antes de submeter; badge de cor nas thumbnails
+
+## Fluxo do usuário
+
+```text
+1. Click "Registrar foto After"
+2. Seleciona arquivo
+3. Mini-form aparece: 
+   - Stain Color [dropdown 40 opções]  ← opcional
+   - Wood Species [White Oak/Red Oak/Maple/Other]  ← opcional
+4. Click "Salvar"
+5. Upload + metadata persistido
+6. Thumbnail mostra badge "Honey · White Oak"
+```
+
+Tudo fica catalogado e quando você quiser ativar StainGallery dinâmico no futuro, é só fazer query em `media_files.metadata->>'stain_color'`.
 
