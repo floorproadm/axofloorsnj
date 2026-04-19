@@ -50,6 +50,7 @@ const FloorDiagnostic = () => {
   const [formData, setFormData] = useState({
     // Step 1: Property
     serviceInterest: "",
+    refinishSubType: "",
     propertyType: "",
     location: "",
     floorArea: "",
@@ -176,7 +177,7 @@ const FloorDiagnostic = () => {
         notes: `
           DIAGNOSTIC APPLICATION
           ----------------------
-          Service Interest: ${formData.serviceInterest}
+          Service Interest: ${formData.serviceInterest}${formData.refinishSubType ? ` (${formData.refinishSubType})` : ''}
           Property: ${formData.propertyType}
           Location: ${formData.location}
           Floor Area: ${formData.floorArea} sq ft
@@ -241,6 +242,10 @@ const FloorDiagnostic = () => {
     if (currentStep === 1) {
       if (!formData.serviceInterest || !formData.propertyType || !formData.location || !formData.floorArea) {
         toast({ title: "Please complete all fields", variant: "destructive" });
+        return;
+      }
+      if (formData.serviceInterest === "refinish" && !formData.refinishSubType) {
+        toast({ title: "Please select your refinish type", variant: "destructive" });
         return;
       }
       // Immediate disqualification checks
@@ -610,13 +615,17 @@ const FloorDiagnostic = () => {
                             { value: "new-installation", label: "New Hardwood Installation", desc: "Install brand-new floors" },
                             { value: "vinyl-plank", label: "Vinyl Plank Flooring", desc: "Waterproof LVP installation" },
                             { value: "stairs", label: "Staircase Work", desc: "Refinish or rebuild stairs" },
-                            { value: "repair", label: "Repair / Board Replacement", desc: "Fix damaged sections" },
                             { value: "not-sure", label: "Not Sure Yet", desc: "Need professional guidance" }
                           ].map(option => (
                             <button
                               key={option.value}
                               type="button"
-                              onClick={() => handleFieldChange('serviceInterest', option.value)}
+                              onClick={() => {
+                                handleFieldChange('serviceInterest', option.value);
+                                if (option.value !== 'refinish') {
+                                  handleFieldChange('refinishSubType', '');
+                                }
+                              }}
                               className={`p-4 rounded-lg border-2 text-left transition-all ${
                                 formData.serviceInterest === option.value
                                   ? 'border-gold bg-gold/10'
@@ -629,6 +638,48 @@ const FloorDiagnostic = () => {
                           ))}
                         </div>
                       </div>
+
+                      {formData.serviceInterest === "refinish" && (
+                        <div className="rounded-lg border-2 border-gold/30 bg-gold/5 p-4">
+                          <Label className="text-sm font-medium mb-1 block">Which type of refinish do you need?</Label>
+                          <p className="text-xs text-muted-foreground mb-3">
+                            There's a meaningful difference — this helps us scope the right service.
+                          </p>
+                          <div className="grid grid-cols-1 gap-3">
+                            {[
+                              {
+                                value: "full-sand-refinish",
+                                label: "Full Sand & Refinish",
+                                desc: "Sand down to bare wood, optional stain, then 3 coats of finish. Removes scratches, dents, and old finish."
+                              },
+                              {
+                                value: "recoat-only",
+                                label: "Recoat Only (Refinish)",
+                                desc: "Light buff + 1 fresh coat of finish. No deep sanding. For floors in good shape that need a refresh."
+                              },
+                              {
+                                value: "not-sure-refinish",
+                                label: "Not Sure — Need Diagnosis",
+                                desc: "We'll determine the right approach during the Diagnostic visit."
+                              }
+                            ].map(option => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => handleFieldChange('refinishSubType', option.value)}
+                                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                                  formData.refinishSubType === option.value
+                                    ? 'border-gold bg-gold/10'
+                                    : 'border-muted bg-background hover:border-gold/50'
+                                }`}
+                              >
+                                <span className="font-medium text-sm block">{option.label}</span>
+                                <span className="text-xs text-muted-foreground">{option.desc}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       <div>
                         <Label className="text-sm font-medium mb-3 block">Property Type</Label>
