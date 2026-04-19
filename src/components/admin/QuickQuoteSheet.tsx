@@ -228,6 +228,14 @@ export function QuickQuoteSheet({ lead, open, onClose, onSuccess }: QuickQuoteSh
   const [saving, setSaving] = useState(false);
   const [showRateOverrides, setShowRateOverrides] = useState(false);
 
+  // Pricing mode: 'tiers' (Good/Better/Best) or 'direct' (single price)
+  const [pricingMode, setPricingMode] = useState<"tiers" | "direct">("tiers");
+
+  // Direct price mode state
+  const [directPrice, setDirectPrice] = useState<number>(0);
+  const [directCost, setDirectCost] = useState<number>(0);
+  const [directLabel, setDirectLabel] = useState<string>("Custom Quote");
+
   // Step 1 — Job info
   const [sqft, setSqft] = useState(500);
   const [serviceType, setServiceType] = useState<string>("refinishing");
@@ -326,7 +334,109 @@ Questions? Call Eduardo: (862) 216-4658`;
       setOverridePricePerSqft({ good: null, better: null, best: null });
       setOverrideCostPerSqft({ good: null, better: null, best: null });
       setAddons(Object.fromEntries(ADDONS.map(a => [a.id, { enabled: false, qty: 1 }])));
+      setPricingMode("tiers");
+      setDirectPrice(0);
+      setDirectCost(0);
+      setDirectLabel("Custom Quote");
       onClose();
+    }
+  }
+
+  // ─── Save Direct Price proposal (single tier) ───────────────────────────
+  async function handleSaveDirect() {
+    if (!lead) return;
+    if (directPrice <= 0) {
+      toast.error("Please enter a valid price");
+      return;
+    }
+
+    const totalCost = directCost + addonTotal;
+    const finalPrice = directPrice + addonTotal;
+    const margin = finalPrice > 0 ? ((finalPrice - totalCost) / finalPrice) * 100 : 0;
+
+    if (directCost > 0 && margin < MIN_MARGIN) {
+      toast.error(`BLOCKED: Margin ${margin.toFixed(1)}% < minimum ${MIN_MARGIN}%`);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const validUntil = new Date();
+      validUntil.setDate(validUntil.getDate() + 30);
+
+      const { data: customer, error: custErr } = await supabase
+        .from("customers")
+        .insert({
+          organization_id: AXO_ORG_ID,
+          full_name: lead.name,
+          phone: lead.phone || null,
+          email: lead.email || null,
+          city: lead.city || null,
+        })
+        .select("id")
+        .single();
+      if (custErr) throw custErr;
+
+      const { data: project, error: projErr } = await supabase
+        .from("projects")
+        .insert({
+          organization_id: AXO_ORG_ID,
+          customer_id: customer.id,
+          customer_name: lead.name,
+          customer_email: lead.email || '',
+          customer_phone: lead.phone,
+          project_type: serviceType,
+          project_status: 'pending',
+          square_footage: sqft,
+          city: lead.city || null,
+        })
+        .select("id")
+        .single();
+      if (projErr) throw projErr;
+
+      await supabase.from("job_costs").insert({
+        project_id: project.id,
+        labor_cost: directCost * 0.6,
+        material_cost: directCost * 0.4,
+        additional_costs: addonTotal,
+        estimated_revenue: finalPrice,
+      });
+
+      // Direct price stored as a single tier (all 3 columns equal so legacy display works)
+      const { error: propErr } = await supabase.from("proposals").insert({
+        organization_id: AXO_ORG_ID,
+        project_id: project.id,
+        customer_id: customer.id,
+        good_price:    finalPrice,
+        better_price:  finalPrice,
+        best_price:    finalPrice,
+        margin_good:   Math.round(margin),
+        margin_better: Math.round(margin),
+        margin_best:   Math.round(margin),
+        selected_tier: "good",
+        status: "sent",
+        valid_until: validUntil.toISOString().slice(0, 10),
+        proposal_number: `QQ-${Date.now().toString(36).toUpperCase()}`,
+      });
+      if (propErr) throw propErr;
+
+      await supabase
+        .from("leads")
+        .update({ customer_id: customer.id, converted_to_project_id: project.id })
+        .eq("id", lead.id);
+
+      await supabase
+        .from("leads")
+        .update({ status: "proposal_sent", status_changed_at: new Date().toISOString() })
+        .eq("id", lead.id);
+
+      toast.success(`Direct quote ${fmt(finalPrice)} created and lead moved to Proposal Sent`);
+      handleOpenChange(false);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || "Error saving quote");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -460,15 +570,37 @@ Questions? Call Eduardo: (862) 216-4658`;
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            {step === 1 && "Step 1 of 3 — Job info & rates"}
+            {step === 1 && "Step 1 of 3 — Job info & pricing mode"}
             {step === 2 && "Step 2 of 3 — Add-ons"}
-            {step === 3 && "Step 3 of 3 — Choose tier"}
+            {step === 3 && (pricingMode === "tiers" ? "Step 3 of 3 — Choose tier" : "Step 3 of 3 — Set price")}
           </p>
         </SheetHeader>
 
         {/* ── Step 1: Job Info + Rate Table ── */}
         {step === 1 && (
           <div className="space-y-5">
+            {/* Pricing Mode Toggle */}
+            <div className="rounded-lg border-2 border-amber-200 bg-amber-50/50 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Pricing Mode</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {pricingMode === "tiers"
+                      ? "Generate Good / Better / Best tiers"
+                      : "Skip tiers — set a single direct price"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-xs font-medium", pricingMode === "tiers" ? "text-foreground" : "text-muted-foreground")}>Tiers</span>
+                  <Switch
+                    checked={pricingMode === "direct"}
+                    onCheckedChange={(v) => setPricingMode(v ? "direct" : "tiers")}
+                  />
+                  <span className={cn("text-xs font-medium", pricingMode === "direct" ? "text-foreground" : "text-muted-foreground")}>Direct</span>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label>Square footage</Label>
               <Input
@@ -496,82 +628,85 @@ Questions? Call Eduardo: (862) 216-4658`;
               </Select>
             </div>
 
-            {/* Rate Table Preview */}
-            <div className="rounded-lg border bg-card">
-              <div className="px-3 py-2 border-b bg-muted/50">
-                <p className="text-xs font-semibold">Rate Table — {SERVICE_LABELS[serviceType]}</p>
-              </div>
-              <div className="divide-y">
-                {["good", "better", "best"].map(tierId => {
-                  const rate = RATE_TABLES[serviceType]?.[tierId];
-                  if (!rate) return null;
-                  const meta = TIER_META.find(t => t.id === tierId)!;
-                  return (
-                    <div key={tierId} className="px-3 py-2 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[9px] h-4">{meta.label}</Badge>
-                      </div>
-                      <div className="flex gap-4 text-muted-foreground">
-                        <span>Price: <span className="text-foreground font-medium">{fmtDec(rate.pricePerSqft)}/sqft</span></span>
-                        <span>Cost: <span className="text-foreground font-medium">{fmtDec(rate.costPerSqft)}/sqft</span></span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Rate Overrides */}
-            <button
-              onClick={() => setShowRateOverrides(!showRateOverrides)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {showRateOverrides ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              Override rates manually
-            </button>
-
-            {showRateOverrides && (
-              <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
-                {TIER_META.map(t => {
-                  const rate = RATE_TABLES[serviceType]?.[t.id];
-                  if (!rate) return null;
-                  return (
-                    <div key={t.id} className="space-y-1">
-                      <p className="text-xs font-medium">{t.label} Tier</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-[10px]">Price/sqft</Label>
-                          <Input
-                            type="number"
-                            step={0.1}
-                            placeholder={rate.pricePerSqft.toString()}
-                            value={overridePricePerSqft[t.id] ?? ""}
-                            onChange={e => setOverridePricePerSqft(prev => ({
-                              ...prev,
-                              [t.id]: e.target.value ? Number(e.target.value) : null,
-                            }))}
-                            className="h-7 text-xs"
-                          />
+            {/* Rate Table Preview — only in tiers mode */}
+            {pricingMode === "tiers" && (
+              <>
+                <div className="rounded-lg border bg-card">
+                  <div className="px-3 py-2 border-b bg-muted/50">
+                    <p className="text-xs font-semibold">Rate Table — {SERVICE_LABELS[serviceType]}</p>
+                  </div>
+                  <div className="divide-y">
+                    {["good", "better", "best"].map(tierId => {
+                      const rate = RATE_TABLES[serviceType]?.[tierId];
+                      if (!rate) return null;
+                      const meta = TIER_META.find(t => t.id === tierId)!;
+                      return (
+                        <div key={tierId} className="px-3 py-2 flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[9px] h-4">{meta.label}</Badge>
+                          </div>
+                          <div className="flex gap-4 text-muted-foreground">
+                            <span>Price: <span className="text-foreground font-medium">{fmtDec(rate.pricePerSqft)}/sqft</span></span>
+                            <span>Cost: <span className="text-foreground font-medium">{fmtDec(rate.costPerSqft)}/sqft</span></span>
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-[10px]">Cost/sqft</Label>
-                          <Input
-                            type="number"
-                            step={0.1}
-                            placeholder={rate.costPerSqft.toString()}
-                            value={overrideCostPerSqft[t.id] ?? ""}
-                            onChange={e => setOverrideCostPerSqft(prev => ({
-                              ...prev,
-                              [t.id]: e.target.value ? Number(e.target.value) : null,
-                            }))}
-                            className="h-7 text-xs"
-                          />
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowRateOverrides(!showRateOverrides)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showRateOverrides ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  Override rates manually
+                </button>
+
+                {showRateOverrides && (
+                  <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+                    {TIER_META.map(t => {
+                      const rate = RATE_TABLES[serviceType]?.[t.id];
+                      if (!rate) return null;
+                      return (
+                        <div key={t.id} className="space-y-1">
+                          <p className="text-xs font-medium">{t.label} Tier</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <Label className="text-[10px]">Price/sqft</Label>
+                              <Input
+                                type="number"
+                                step={0.1}
+                                placeholder={rate.pricePerSqft.toString()}
+                                value={overridePricePerSqft[t.id] ?? ""}
+                                onChange={e => setOverridePricePerSqft(prev => ({
+                                  ...prev,
+                                  [t.id]: e.target.value ? Number(e.target.value) : null,
+                                }))}
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-[10px]">Cost/sqft</Label>
+                              <Input
+                                type="number"
+                                step={0.1}
+                                placeholder={rate.costPerSqft.toString()}
+                                value={overrideCostPerSqft[t.id] ?? ""}
+                                onChange={e => setOverrideCostPerSqft(prev => ({
+                                  ...prev,
+                                  [t.id]: e.target.value ? Number(e.target.value) : null,
+                                }))}
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
 
             {/* Duration estimate */}
@@ -657,8 +792,8 @@ Questions? Call Eduardo: (862) 216-4658`;
           </div>
         )}
 
-        {/* ── Step 3: Tiers with Breakdown ── */}
-        {step === 3 && (
+        {/* ── Step 3: Tiers Mode ── */}
+        {step === 3 && pricingMode === "tiers" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
@@ -702,7 +837,6 @@ Questions? Call Eduardo: (862) 216-4658`;
 
                   <Separator />
 
-                  {/* Cost Breakdown */}
                   <CostBreakdown
                     laborCost={tier.laborCost}
                     materialCost={tier.materialCost}
@@ -748,6 +882,126 @@ Questions? Call Eduardo: (862) 216-4658`;
             </Button>
           </div>
         )}
+
+        {/* ── Step 3: Direct Price Mode ── */}
+        {step === 3 && pricingMode === "direct" && (() => {
+          const totalCost = directCost + addonTotal;
+          const finalPrice = directPrice + addonTotal;
+          const profit = finalPrice - totalCost;
+          const margin = finalPrice > 0 ? (profit / finalPrice) * 100 : 0;
+          const blocked = directCost > 0 && margin < MIN_MARGIN;
+          const pricePerSqft = sqft > 0 ? directPrice / sqft : 0;
+
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Set a direct price for <strong>{lead.name}</strong>.
+                </p>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  {durationDays}d
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl border-2 border-amber-400 bg-amber-50 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Quote label (optional)</Label>
+                  <Input
+                    value={directLabel}
+                    onChange={(e) => setDirectLabel(e.target.value)}
+                    placeholder="e.g. Custom Quote"
+                    className="h-9"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Client price (USD) *</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={50}
+                    value={directPrice || ""}
+                    onChange={(e) => setDirectPrice(Number(e.target.value))}
+                    placeholder="0"
+                    className="text-2xl font-bold h-14"
+                  />
+                  {pricePerSqft > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      ≈ {fmtDec(pricePerSqft)}/sqft
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Estimated cost (optional, for margin check)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={50}
+                    value={directCost || ""}
+                    onChange={(e) => setDirectCost(Number(e.target.value))}
+                    placeholder="Leave 0 to skip margin validation"
+                    className="h-9"
+                  />
+                </div>
+
+                {(directPrice > 0 || addonTotal > 0) && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Quote</span>
+                        <span>{fmt(directPrice)}</span>
+                      </div>
+                      {addonTotal > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Add-ons</span>
+                          <span>{fmt(addonTotal)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-primary font-bold text-base pt-1 border-t">
+                        <span>Final Price</span>
+                        <span>{fmt(finalPrice)}</span>
+                      </div>
+                      {directCost > 0 && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Cost</span>
+                            <span>{fmt(totalCost)}</span>
+                          </div>
+                          <div className="flex justify-between text-green-600">
+                            <span>Profit</span>
+                            <span>{fmt(profit)}</span>
+                          </div>
+                          <MarginGauge margin={margin} minMargin={MIN_MARGIN} />
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <Button
+                  className="w-full gap-2"
+                  disabled={saving || directPrice <= 0 || blocked}
+                  onClick={handleSaveDirect}
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : blocked ? (
+                    <><AlertTriangle className="w-4 h-4" /> Margin below minimum</>
+                  ) : (
+                    <><Check className="w-4 h-4" /> Create Quote {finalPrice > 0 && `— ${fmt(finalPrice)}`}</>
+                  )}
+                </Button>
+              </div>
+
+              <Button variant="ghost" className="w-full" onClick={() => setStep(2)}>
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              </Button>
+            </div>
+          );
+        })()}
       </SheetContent>
     </Sheet>
   );
