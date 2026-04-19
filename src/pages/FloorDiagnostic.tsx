@@ -49,6 +49,7 @@ const FloorDiagnostic = () => {
 
   const [formData, setFormData] = useState({
     // Step 1: Property
+    serviceInterest: "",
     propertyType: "",
     location: "",
     floorArea: "",
@@ -175,6 +176,7 @@ const FloorDiagnostic = () => {
         notes: `
           DIAGNOSTIC APPLICATION
           ----------------------
+          Service Interest: ${formData.serviceInterest}
           Property: ${formData.propertyType}
           Location: ${formData.location}
           Floor Area: ${formData.floorArea} sq ft
@@ -237,7 +239,7 @@ const FloorDiagnostic = () => {
   const nextStep = () => {
     // Step validations
     if (currentStep === 1) {
-      if (!formData.propertyType || !formData.location || !formData.floorArea) {
+      if (!formData.serviceInterest || !formData.propertyType || !formData.location || !formData.floorArea) {
         toast({ title: "Please complete all fields", variant: "destructive" });
         return;
       }
@@ -253,9 +255,12 @@ const FloorDiagnostic = () => {
         return;
       }
     }
-    if (currentStep === 2 && (!formData.floorCondition || !formData.primaryConcern)) {
-      toast({ title: "Please complete all fields", variant: "destructive" });
-      return;
+    if (currentStep === 2) {
+      const isNewInstall = formData.serviceInterest === "new-installation";
+      if (!formData.primaryConcern || (!isNewInstall && !formData.floorCondition)) {
+        toast({ title: "Please complete all fields", variant: "destructive" });
+        return;
+      }
     }
     if (currentStep === 3) {
       if (!formData.completionTimeline || !formData.homeReady) {
@@ -598,6 +603,34 @@ const FloorDiagnostic = () => {
 
                     <div className="space-y-4">
                       <div>
+                        <Label className="text-sm font-medium mb-3 block">Service Interest</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {[
+                            { value: "refinish", label: "Sanding & Refinish", desc: "Restore existing hardwood" },
+                            { value: "new-installation", label: "New Hardwood Installation", desc: "Install brand-new floors" },
+                            { value: "vinyl-plank", label: "Vinyl Plank Flooring", desc: "Waterproof LVP installation" },
+                            { value: "stairs", label: "Staircase Work", desc: "Refinish or rebuild stairs" },
+                            { value: "repair", label: "Repair / Board Replacement", desc: "Fix damaged sections" },
+                            { value: "not-sure", label: "Not Sure Yet", desc: "Need professional guidance" }
+                          ].map(option => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => handleFieldChange('serviceInterest', option.value)}
+                              className={`p-4 rounded-lg border-2 text-left transition-all ${
+                                formData.serviceInterest === option.value
+                                  ? 'border-gold bg-gold/10'
+                                  : 'border-muted hover:border-gold/50'
+                              }`}
+                            >
+                              <span className="font-medium text-sm block">{option.label}</span>
+                              <span className="text-xs text-muted-foreground">{option.desc}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
                         <Label className="text-sm font-medium mb-3 block">Property Type</Label>
                         <div className="grid grid-cols-2 gap-3">
                           {[
@@ -684,55 +717,59 @@ const FloorDiagnostic = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium mb-3 block">Current Floor Condition</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {[
-                            { value: "worn", label: "Worn / Dull", desc: "Surface wear, needs refreshing" },
-                            { value: "damaged", label: "Damaged", desc: "Scratches, dents, or water damage" },
-                            { value: "outdated", label: "Outdated", desc: "Dated appearance or color" },
-                            { value: "unknown", label: "Not Sure", desc: "Need professional assessment" }
-                          ].map(option => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => handleFieldChange('floorCondition', option.value)}
-                              className={`p-4 rounded-lg border-2 text-left transition-all ${
-                                formData.floorCondition === option.value
-                                  ? 'border-gold bg-gold/10'
-                                  : 'border-muted hover:border-gold/50'
-                              }`}
-                            >
-                              <span className="font-medium text-sm block">{option.label}</span>
-                              <span className="text-xs text-muted-foreground">{option.desc}</span>
-                            </button>
-                          ))}
+                      {formData.serviceInterest !== "new-installation" && (
+                        <div>
+                          <Label className="text-sm font-medium mb-3 block">Current Floor Condition</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {[
+                              { value: "worn", label: "Worn / Dull", desc: "Surface wear, needs refreshing" },
+                              { value: "damaged", label: "Damaged", desc: "Scratches, dents, or water damage" },
+                              { value: "outdated", label: "Outdated", desc: "Dated appearance or color" },
+                              { value: "unknown", label: "Not Sure", desc: "Need professional assessment" }
+                            ].map(option => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => handleFieldChange('floorCondition', option.value)}
+                                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                                  formData.floorCondition === option.value
+                                    ? 'border-gold bg-gold/10'
+                                    : 'border-muted hover:border-gold/50'
+                                }`}
+                              >
+                                <span className="font-medium text-sm block">{option.label}</span>
+                                <span className="text-xs text-muted-foreground">{option.desc}</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
-                      <div>
-                        <Label className="text-sm font-medium mb-3 block">Has this floor been refinished before?</Label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {[
-                            { value: "yes", label: "Yes" },
-                            { value: "no", label: "No" },
-                            { value: "unsure", label: "Not Sure" }
-                          ].map(option => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => handleFieldChange('previousWork', option.value)}
-                              className={`p-3 rounded-lg border-2 text-center transition-all ${
-                                formData.previousWork === option.value
-                                  ? 'border-gold bg-gold/10'
-                                  : 'border-muted hover:border-gold/50'
-                              }`}
-                            >
-                              <span className="font-medium text-sm">{option.label}</span>
-                            </button>
-                          ))}
+                      {(formData.serviceInterest === "refinish" || formData.serviceInterest === "stairs" || formData.serviceInterest === "not-sure") && (
+                        <div>
+                          <Label className="text-sm font-medium mb-3 block">Has this floor been refinished before?</Label>
+                          <div className="grid grid-cols-3 gap-3">
+                            {[
+                              { value: "yes", label: "Yes" },
+                              { value: "no", label: "No" },
+                              { value: "unsure", label: "Not Sure" }
+                            ].map(option => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => handleFieldChange('previousWork', option.value)}
+                                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                                  formData.previousWork === option.value
+                                    ? 'border-gold bg-gold/10'
+                                    : 'border-muted hover:border-gold/50'
+                                }`}
+                              >
+                                <span className="font-medium text-sm">{option.label}</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <div>
                         <Label className="text-sm font-medium mb-3 block">Primary Concern</Label>
