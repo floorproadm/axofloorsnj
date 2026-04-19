@@ -603,6 +603,34 @@ const FloorDiagnostic = () => {
 
                     <div className="space-y-4">
                       <div>
+                        <Label className="text-sm font-medium mb-3 block">Service Interest</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {[
+                            { value: "refinish", label: "Sanding & Refinish", desc: "Restore existing hardwood" },
+                            { value: "new-installation", label: "New Hardwood Installation", desc: "Install brand-new floors" },
+                            { value: "vinyl-plank", label: "Vinyl Plank Flooring", desc: "Waterproof LVP installation" },
+                            { value: "stairs", label: "Staircase Work", desc: "Refinish or rebuild stairs" },
+                            { value: "repair", label: "Repair / Board Replacement", desc: "Fix damaged sections" },
+                            { value: "not-sure", label: "Not Sure Yet", desc: "Need professional guidance" }
+                          ].map(option => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => handleFieldChange('serviceInterest', option.value)}
+                              className={`p-4 rounded-lg border-2 text-left transition-all ${
+                                formData.serviceInterest === option.value
+                                  ? 'border-gold bg-gold/10'
+                                  : 'border-muted hover:border-gold/50'
+                              }`}
+                            >
+                              <span className="font-medium text-sm block">{option.label}</span>
+                              <span className="text-xs text-muted-foreground">{option.desc}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
                         <Label className="text-sm font-medium mb-3 block">Property Type</Label>
                         <div className="grid grid-cols-2 gap-3">
                           {[
