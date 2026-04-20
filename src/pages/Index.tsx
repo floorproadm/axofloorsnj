@@ -2,7 +2,7 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import Hero from "@/components/shared/Hero";
 import Portfolio from "@/components/shared/Portfolio";
-import ContactSection from "@/components/shared/ContactSection";
+
 import ReviewsSection from "@/components/shared/ReviewsSection";
 import GoogleBusinessIntegration from "@/components/shared/GoogleBusinessIntegration";
 import SEOHead from "@/components/shared/SEOHead";
@@ -257,8 +257,37 @@ const Index = () => {
 
 
 
-      {/* Contact Form Section */}
-      <ContactSection />
+      {/* Project Wizard CTA */}
+      <section className="spacing-mobile-md bg-gradient-subtle border-t border-border/50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 mb-6">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-accent">Personalized Estimate</span>
+            </div>
+            <h2 className="text-mobile-3xl font-bold font-heading mb-4">
+              Ready to Transform <span className="text-gradient-gold">Your Floors?</span>
+            </h2>
+            <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+              Tell us about your project in under 2 minutes. Our specialists will reach out within 24 hours with a tailored plan — no generic quotes.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+              <Button asChild size="lg" className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 py-5 h-auto min-h-[52px] text-black font-semibold w-full sm:w-auto">
+                <Link to="/project-wizard" className="flex items-center justify-center gap-2 text-black">
+                  Start My Project
+                  <ArrowRight className="w-5 h-5 text-black" />
+                </Link>
+              </Button>
+              <a href="tel:(732) 351-8653" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                Or call <span className="font-semibold underline">(732) 351-8653</span>
+              </a>
+            </div>
+            <p className="text-xs text-muted-foreground mt-6">
+              ⚡ 4 quick steps · 📍 NJ · NY · PA · 🛡️ Licensed & insured
+            </p>
+          </div>
+        </div>
+      </section>
 
 
       <Footer />
