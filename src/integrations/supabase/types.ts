@@ -2273,11 +2273,75 @@ export type Database = {
           },
         ]
       }
+      proposal_signatures: {
+        Row: {
+          client_note: string | null
+          created_at: string
+          id: string
+          ip_address: unknown
+          organization_id: string
+          payment_method: string
+          proposal_id: string
+          selected_tier: string | null
+          signature_url: string
+          signed_at: string
+          signer_email: string | null
+          signer_name: string
+          user_agent: string | null
+        }
+        Insert: {
+          client_note?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          organization_id: string
+          payment_method?: string
+          proposal_id: string
+          selected_tier?: string | null
+          signature_url: string
+          signed_at?: string
+          signer_email?: string | null
+          signer_name: string
+          user_agent?: string | null
+        }
+        Update: {
+          client_note?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          organization_id?: string
+          payment_method?: string
+          proposal_id?: string
+          selected_tier?: string | null
+          signature_url?: string
+          signed_at?: string
+          signer_email?: string | null
+          signer_name?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_signatures_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposal_signatures_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proposals: {
         Row: {
           accepted_at: string | null
           best_price: number
           better_price: number
+          client_note: string | null
           created_at: string
           customer_id: string
           flat_price: number | null
@@ -2292,15 +2356,18 @@ export type Database = {
           proposal_number: string
           selected_tier: string | null
           sent_at: string | null
+          share_token: string | null
           status: string
           updated_at: string
           use_tiers: boolean
           valid_until: string
+          viewed_at: string | null
         }
         Insert: {
           accepted_at?: string | null
           best_price: number
           better_price: number
+          client_note?: string | null
           created_at?: string
           customer_id: string
           flat_price?: number | null
@@ -2315,15 +2382,18 @@ export type Database = {
           proposal_number: string
           selected_tier?: string | null
           sent_at?: string | null
+          share_token?: string | null
           status?: string
           updated_at?: string
           use_tiers?: boolean
           valid_until: string
+          viewed_at?: string | null
         }
         Update: {
           accepted_at?: string | null
           best_price?: number
           better_price?: number
+          client_note?: string | null
           created_at?: string
           customer_id?: string
           flat_price?: number | null
@@ -2338,10 +2408,12 @@ export type Database = {
           proposal_number?: string
           selected_tier?: string | null
           sent_at?: string | null
+          share_token?: string | null
           status?: string
           updated_at?: string
           use_tiers?: boolean
           valid_until?: string
+          viewed_at?: string | null
         }
         Relationships: [
           {
