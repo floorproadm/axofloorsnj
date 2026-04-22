@@ -1,12 +1,14 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useProposalGeneration, DEFAULT_TIER_MARGINS } from '@/hooks/useProposalGeneration';
 import { ProposalData, ProposalTier } from '@/types/proposal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ProposalGeneratorProps {
   projectId: string;
@@ -21,11 +23,42 @@ interface ProposalGeneratorProps {
 export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps) {
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
+  const [shareToken, setShareToken] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async () => {
     const data = await fetchProjectData(projectId);
     if (data) setProposal(data);
+  };
+
+  // When proposal is loaded, fetch the share_token from DB (most recent for project)
+  useEffect(() => {
+    if (!proposal?.proposal_id) {
+      setShareToken(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from('proposals')
+        .select('share_token')
+        .eq('id', proposal.proposal_id!)
+        .maybeSingle();
+      if (data?.share_token) setShareToken(data.share_token);
+    })();
+  }, [proposal?.proposal_id]);
+
+  const handleCopyLink = async () => {
+    if (!shareToken) {
+      toast.error('Public link is being generated. Try again in a moment.');
+      return;
+    }
+    const url = `${window.location.origin}/proposal/${shareToken}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Public proposal link copied to clipboard');
+    } catch {
+      window.prompt('Copy this link:', url);
+    }
   };
 
   const handlePrint = () => {
@@ -148,6 +181,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setProposal(null)}>Back</Button>
+          <Button variant="outline" onClick={handleCopyLink} disabled={!shareToken}>
+            <Link2 className="h-4 w-4 mr-2" />
+            Copy Public Link
+          </Button>
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print / Save PDF
