@@ -181,6 +181,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setProposal(null)}>Back</Button>
+          <Button variant="outline" onClick={handleCopyLink} disabled={!shareToken}>
+            <Link2 className="h-4 w-4 mr-2" />
+            Copy Public Link
+          </Button>
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print / Save PDF
