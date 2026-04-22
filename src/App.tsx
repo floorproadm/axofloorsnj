@@ -116,6 +116,7 @@ const App = () => {
             <Route path="/review-request" element={<ReviewRequest />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/invoice/:token" element={<PublicInvoice />} />
+            <Route path="/proposal/:token" element={<PublicProposal />} />
             <Route path="/hub" element={<Links />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/auth" element={<AdminAuth />} />
