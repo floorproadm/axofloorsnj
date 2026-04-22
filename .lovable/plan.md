@@ -1,51 +1,128 @@
 
 
-User quer foco: **só JobProof**, sem mexer em StainGallery agora. Apenas adicionar **filtro/seleção de cor de stain** no momento do upload das fotos para deixar tudo organizado e categorizado para o futuro.
+# Análise DripJobs → AXO OS: O Que Aplicar
 
-## Escopo enxuto
+## Estado Atual (o que já temos)
+- ✅ **Lead capture forms** (`/project-wizard`, `/floor-diagnostic`, `/quiz`)
+- ✅ **Sales Pipeline** 10 estágios com Kanban (`/admin/leads`)
+- ✅ **Proposals** com 3 tiers (Good/Better/Best) + share token
+- ✅ **Public Invoice** (`/invoice/:token`) com view tracking
+- ✅ **Internal Chat** por projeto (colaborador↔admin)
+- ❌ **Public Proposal page** (existe `shareToken` mas não rota pública dedicada com aceitação)
+- ❌ **E-signature + deposit online**
+- ❌ **Client Portal** unificado (cliente vê suas propostas/invoices/agenda visita)
+- ❌ **Two-way SMS Inbox** (cliente↔empresa)
 
-**O que faço:**
+---
 
-1. **Mini-form de metadados no upload do JobProof** (após escolher arquivo, antes de salvar):
-   - **Stain Color**: dropdown com as 40 cores DuraSeal (lista compartilhada com `/stain-gallery` — White Oak + Red Oak + Custom)
-   - **Wood Species**: White Oak / Red Oak / Maple / Other
-   - **Phase**: Before / After (já existe)
-   - Campos opcionais — não bloqueiam o upload
+## Análise das 5 Telas DripJobs
 
-2. **Persistência em `media_files.metadata`** (jsonb já existe):
-   ```json
-   { "phase": "after", "stain_color": "Honey", "wood_species": "White Oak" }
-   ```
-   Mantém compatibilidade total com o sistema atual de dual-write.
+| # | Tela DripJobs | Status no AXO | Veredito |
+|---|---------------|---------------|----------|
+| 1 | **Booking Form** público (request appt) | Temos `/project-wizard` (mais qualificador, melhor) | ⚠️ Já temos algo superior — não copiar |
+| 2 | **Branded Proposal** público (cliente abre link) | Temos token mas só PDF/print no admin | 🟢 **APLICAR** |
+| 3 | **E-Sign & Pay** (assinar + pagar deposit online) | Não existe | 🟢 **APLICAR (alto ROI)** |
+| 4 | **Client Portal** (Proposals/Invoices/Appts/Reviews) | Pulverizado em links separados | 🟡 Aplicar versão enxuta |
+| 5 | **Two-Way SMS Inbox** | Só chat interno colaborador | 🔴 Adiar (custo Twilio + 10DLC complexo) |
 
-3. **Visualização no card do JobProof**: badge pequeno mostrando a cor aplicada (ex: "Honey · White Oak") nas thumbnails After.
+---
 
-4. **Lista de cores centralizada**: criar `src/lib/stainColors.ts` com as 40 cores DuraSeal exportadas como constante (reutilizável depois pelo StainGallery futuro).
+## Plano Recomendado — 3 Fases
 
-**O que NÃO faço:**
-- Não mexo em `/stain-gallery` (fica para o futuro)
-- Não crio "Real Jobs in this Color" agora
-- Não toco em Gallery pública
-- Não migro fotos antigas (apenas novos uploads ganham metadados)
+### **FASE 1 (P0) — Public Proposal + E-Sign + Deposit** ⭐
+*Maior impacto em conversão. Fecha o loop "proposta enviada → projeto aprovado" sem fricção.*
 
-## Arquivos afetados
+**Entregas:**
+1. **Rota `/proposal/:token`** — página pública branded (header navy/gold AXO, logo, badge "Awaiting Approval/Approved/Expired")
+   - Mostra: cliente, endereço, 3 tiers ou tier único, validade, "Note from AXO"
+   - Trust badges: "Premium Materials · DuraSeal", "Expert Craftsmen · 10+ years", "Fully Insured · $2M coverage"
+   - Auto-marca `viewed_at` no DB (já temos pattern em PublicInvoice)
+2. **Aceitação inline** — botão "Approve & Sign":
+   - Seleciona tier (se 3-tier)
+   - Canvas de assinatura (`react-signature-canvas`) — salva PNG no Supabase Storage
+   - Marca proposta como `accepted` + cria registro em `proposal_signatures` (nova tabela)
+   - Trigger DB cria automaticamente o **Project + Job Costs** (já temos `convert_lead_to_project`, adaptar)
+3. **Deposit opcional via Stripe** (modo MVP):
+   - Botão "Pay Deposit" → Stripe Checkout (link mode, sem precisar Stripe Connect)
+   - Webhook marca `deposit_paid_at` + cria invoice 30% automaticamente
+   - **Decisão**: começar **sem Stripe** (botão "I'll pay by Check/Zelle" + instruções) e adicionar Stripe na Fase 2 — evita bloquear pela complexidade de onboarding
 
-- `src/lib/stainColors.ts` (novo) — lista de cores DuraSeal
-- `src/hooks/useJobProof.ts` — `uploadImage` aceita parâmetro `metadata` extra
-- `src/components/admin/JobProofUploader.tsx` — adicionar mini-form (Stain + Wood Species) após selecionar arquivo, antes de submeter; badge de cor nas thumbnails
+**Tabelas novas:**
+- `proposal_signatures` (proposal_id, signature_url, signer_name, signed_at, ip, payment_method_chosen)
 
-## Fluxo do usuário
+**Microcopy (US/AXO):**
+- ✅ "Approve & Sign — Lock In Your Project"
+- ❌ "🎉 Proposal Approved!" (sem emojis — Senior Operator aesthetic)
+- ✅ "Project confirmed. We'll text you within 24h to schedule kickoff."
 
-```text
-1. Click "Registrar foto After"
-2. Seleciona arquivo
-3. Mini-form aparece: 
-   - Stain Color [dropdown 40 opções]  ← opcional
-   - Wood Species [White Oak/Red Oak/Maple/Other]  ← opcional
-4. Click "Salvar"
-5. Upload + metadata persistido
-6. Thumbnail mostra badge "Honey · White Oak"
+---
+
+### **FASE 2 (P1) — Client Portal Enxuto**
+*Reduz "Onde está minha proposta?" / "Quando começa?"*
+
+**Rota `/portal/:customer_token`** (sidebar mobile-first, light mode):
+- **My Proposals** — lista com status badges (Awaiting Approval / Approved / Expired)
+- **My Invoices** — Payment Due / Paid + botão "Pay Now"
+- **Project Status** — timeline visual (Approved → Scheduled → In Progress → Completed)
+- **Request Visit** — formulário curto (já temos infra)
+- ❌ **NÃO incluir** "Reviews" como item separado — já temos `/review-request` enviado por SMS pós-job
+
+Token gerado por customer (não login) — mesmo padrão do PublicInvoice. Sem auth = zero fricção.
+
+---
+
+### **FASE 3 (P2) — Two-Way SMS Inbox** *(Adiar)*
+**Por quê adiar:**
+- Twilio + **10DLC registration** (A2P compliance) leva 2-4 semanas
+- Custo recorrente ($1-15/mês + $0.0079/SMS)
+- AXO já usa SMS via `sms:` link nativo (suficiente para volume atual)
+
+**Quando reativar:** quando volume > 50 leads/mês ou contratar SDR.
+
+---
+
+## O Que NÃO Copiar do DripJobs
+
+| Elemento DripJobs | Por quê descartar |
+|---|---|
+| Tema verde fluo + emojis 🎉 | Conflita com Senior Operator (navy/gold, sem hype) |
+| "Booking Form" simples | `/project-wizard` qualifica melhor (rejeita budgets <$1.8k) |
+| "Package Pricing" público | Estratégia AXO é consultiva — preço só após diagnóstico |
+| Sidebar "Email Settings" no portal | Over-engineering para o estágio atual |
+
+---
+
+## Detalhes Técnicos
+
+**Stack adicional Fase 1:**
+- `react-signature-canvas` (~15KB) para assinatura digital
+- Storage bucket novo: `proposal-signatures` (privado, signed URLs)
+- Edge function: `accept-proposal` (valida token, salva signature, cria project, dispara notificação admin)
+
+**Banco de dados:**
+```sql
+CREATE TABLE proposal_signatures (
+  id uuid PK,
+  proposal_id uuid FK,
+  signer_name text,
+  signature_url text,
+  signed_at timestamptz,
+  ip_address inet,
+  user_agent text,
+  payment_method text  -- 'check' | 'zelle' | 'stripe' (futuro)
+);
+
+ALTER TABLE proposals ADD COLUMN
+  accepted_at timestamptz,
+  selected_tier text,
+  client_note text;  -- "Note from AXO" mostrado na public page
 ```
 
-Tudo fica catalogado e quando você quiser ativar StainGallery dinâmico no futuro, é só fazer query em `media_files.metadata->>'stain_color'`.
+**RLS:** policy pública via token (igual `PublicInvoice`).
+
+---
+
+## Pergunta Antes de Implementar
+
+Quer que eu execute apenas a **Fase 1 (Public Proposal + E-Sign sem Stripe)** agora, ou prefere também já incluir o **Client Portal mínimo (Fase 2)** no mesmo bloco?
 
