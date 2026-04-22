@@ -23,11 +23,42 @@ interface ProposalGeneratorProps {
 export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps) {
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
+  const [shareToken, setShareToken] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async () => {
     const data = await fetchProjectData(projectId);
     if (data) setProposal(data);
+  };
+
+  // When proposal is loaded, fetch the share_token from DB (most recent for project)
+  useEffect(() => {
+    if (!proposal?.proposal_id) {
+      setShareToken(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from('proposals')
+        .select('share_token')
+        .eq('id', proposal.proposal_id!)
+        .maybeSingle();
+      if (data?.share_token) setShareToken(data.share_token);
+    })();
+  }, [proposal?.proposal_id]);
+
+  const handleCopyLink = async () => {
+    if (!shareToken) {
+      toast.error('Public link is being generated. Try again in a moment.');
+      return;
+    }
+    const url = `${window.location.origin}/proposal/${shareToken}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Public proposal link copied to clipboard');
+    } catch {
+      window.prompt('Copy this link:', url);
+    }
   };
 
   const handlePrint = () => {
