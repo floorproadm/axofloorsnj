@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle } from "lucide-react";
+import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox } from "lucide-react";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Customer {
   id: string;
@@ -58,12 +59,28 @@ const formatMoney = (n: number | null | undefined) =>
   n == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
 const proposalBadge = (p: Proposal) => {
-  if (p.status === "accepted") return <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">Approved</Badge>;
-  if (p.status === "rejected") return <Badge variant="destructive">Declined</Badge>;
+  if (p.status === "accepted") return (
+    <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white gap-1">
+      <CheckCircle2 className="w-3 h-3" /> Approved
+    </Badge>
+  );
+  if (p.status === "rejected") return (
+    <Badge variant="destructive" className="gap-1">
+      <AlertCircle className="w-3 h-3" /> Declined
+    </Badge>
+  );
   if (p.valid_until && new Date(p.valid_until) < new Date()) {
-    return <Badge variant="outline" className="border-amber-400 text-amber-700">Expired</Badge>;
+    return (
+      <Badge variant="outline" className="border-amber-400 text-amber-700 gap-1">
+        <Clock className="w-3 h-3" /> Expired
+      </Badge>
+    );
   }
-  return <Badge className="bg-amber-500 hover:bg-amber-500 text-white">Awaiting Approval</Badge>;
+  return (
+    <Badge className="bg-amber-500 hover:bg-amber-500 text-white gap-1">
+      <Clock className="w-3 h-3" /> Awaiting Approval
+    </Badge>
+  );
 };
 
 const proposalAmount = (p: Proposal) => {
@@ -161,8 +178,40 @@ export default function PublicPortal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+      <div className="min-h-screen bg-slate-50">
+        <header className="bg-[#0f1b3d] text-white">
+          <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-9 h-9 rounded-md bg-white/10" />
+              <div className="space-y-1.5">
+                <Skeleton className="h-2.5 w-16 bg-white/10" />
+                <Skeleton className="h-3 w-24 bg-white/10" />
+              </div>
+            </div>
+            <Skeleton className="h-3 w-28 bg-white/10" />
+          </div>
+        </header>
+        <main className="max-w-3xl mx-auto px-4 py-6">
+          <div className="mb-5 space-y-2">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-12 w-full rounded-md mb-4" />
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-white border rounded-lg p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                  <Skeleton className="h-8 w-16 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -171,10 +220,18 @@ export default function PublicPortal() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
         <div className="text-center max-w-sm">
-          <h1 className="text-xl font-bold text-slate-900">Portal not found</h1>
+          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-7 h-7 text-amber-600" />
+          </div>
+          <h1 className="text-xl font-bold text-slate-900">Portal Link Invalid</h1>
           <p className="text-sm text-slate-600 mt-2">
-            The link you used is invalid or expired. Please contact us at {COMPANY_PHONE}.
+            This link is invalid or has expired. Please contact us and we'll send you a fresh link.
           </p>
+          <Button asChild className="mt-5 bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
+            <a href={`tel:${COMPANY_PHONE_TEL}`}>
+              <Phone className="w-4 h-4 mr-2" /> Call {COMPANY_PHONE}
+            </a>
+          </Button>
         </div>
       </div>
     );
@@ -230,7 +287,11 @@ export default function PublicPortal() {
           {/* PROPOSALS */}
           <TabsContent value="proposals" className="space-y-3 mt-4">
             {proposals.length === 0 ? (
-              <EmptyState text="No proposals yet. We'll notify you when one is ready." />
+              <EmptyState
+                icon={FileText}
+                title="No proposals yet"
+                description="Once we send your proposal, it will appear here for review and approval."
+              />
             ) : (
               proposals.map((p) => {
                 const amount = proposalAmount(p);
@@ -270,7 +331,11 @@ export default function PublicPortal() {
           {/* INVOICES */}
           <TabsContent value="invoices" className="space-y-3 mt-4">
             {invoices.length === 0 ? (
-              <EmptyState text="No invoices yet." />
+              <EmptyState
+                icon={Receipt}
+                title="No invoices yet"
+                description="Invoices will appear here once your project is approved and scheduled."
+              />
             ) : (
               invoices.map((inv) => {
                 const isPaid = inv.status === "paid" || !!inv.paid_at;
@@ -280,9 +345,17 @@ export default function PublicPortal() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         {isPaid ? (
-                          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">Paid</Badge>
+                          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Paid
+                          </Badge>
+                        ) : new Date(inv.due_date) < new Date() ? (
+                          <Badge variant="destructive" className="gap-1">
+                            <AlertCircle className="w-3 h-3" /> Past Due
+                          </Badge>
                         ) : (
-                          <Badge className="bg-amber-500 hover:bg-amber-500 text-white">Payment Due</Badge>
+                          <Badge className="bg-amber-500 hover:bg-amber-500 text-white gap-1">
+                            <Clock className="w-3 h-3" /> Payment Due
+                          </Badge>
                         )}
                         <span className="text-xs text-slate-500">#{inv.invoice_number}</span>
                       </div>
@@ -307,7 +380,11 @@ export default function PublicPortal() {
           {/* STATUS */}
           <TabsContent value="status" className="space-y-3 mt-4">
             {projects.length === 0 ? (
-              <EmptyState text="No active projects yet." />
+              <EmptyState
+                icon={Activity}
+                title="No active projects yet"
+                description="Your project timeline will appear here as soon as work is scheduled."
+              />
             ) : (
               projects.map((proj) => {
                 const idx = statusIndex(proj.project_status);
@@ -397,10 +474,24 @@ export default function PublicPortal() {
   );
 }
 
-function EmptyState({ text }: { text: string }) {
+function EmptyState({
+  icon: Icon = Inbox,
+  title,
+  description,
+}: {
+  icon?: typeof Inbox;
+  title: string;
+  description?: string;
+}) {
   return (
-    <div className="bg-white border border-dashed rounded-lg p-8 text-center text-sm text-slate-500">
-      {text}
+    <div className="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+        <Icon className="w-6 h-6 text-slate-400" />
+      </div>
+      <div className="text-sm font-semibold text-slate-700">{title}</div>
+      {description && (
+        <div className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">{description}</div>
+      )}
     </div>
   );
 }
