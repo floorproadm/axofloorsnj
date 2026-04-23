@@ -375,9 +375,17 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                 {STAGE_LABELS[stage]}
               </Badge>
               {hasProject && (
-                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300">
-                  Projeto ✓
-                </Badge>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate(`/admin/jobs/${lead.converted_to_project_id}`);
+                    onClose();
+                  }}
+                  title="Abrir projeto vinculado"
+                  className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400 transition-colors"
+                >
+                  Projeto ✓ <ExternalLink className="w-3 h-3" />
+                </button>
               )}
               {proposal && <ProposalStatusBadge status={proposal.status as ProposalStatus} />}
               {isStale && !isTerminal && (
