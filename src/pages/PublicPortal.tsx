@@ -287,7 +287,11 @@ export default function PublicPortal() {
           {/* PROPOSALS */}
           <TabsContent value="proposals" className="space-y-3 mt-4">
             {proposals.length === 0 ? (
-              <EmptyState text="No proposals yet. We'll notify you when one is ready." />
+              <EmptyState
+                icon={FileText}
+                title="No proposals yet"
+                description="Once we send your proposal, it will appear here for review and approval."
+              />
             ) : (
               proposals.map((p) => {
                 const amount = proposalAmount(p);
@@ -327,7 +331,11 @@ export default function PublicPortal() {
           {/* INVOICES */}
           <TabsContent value="invoices" className="space-y-3 mt-4">
             {invoices.length === 0 ? (
-              <EmptyState text="No invoices yet." />
+              <EmptyState
+                icon={Receipt}
+                title="No invoices yet"
+                description="Invoices will appear here once your project is approved and scheduled."
+              />
             ) : (
               invoices.map((inv) => {
                 const isPaid = inv.status === "paid" || !!inv.paid_at;
@@ -337,9 +345,17 @@ export default function PublicPortal() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         {isPaid ? (
-                          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">Paid</Badge>
+                          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Paid
+                          </Badge>
+                        ) : new Date(inv.due_date) < new Date() ? (
+                          <Badge variant="destructive" className="gap-1">
+                            <AlertCircle className="w-3 h-3" /> Past Due
+                          </Badge>
                         ) : (
-                          <Badge className="bg-amber-500 hover:bg-amber-500 text-white">Payment Due</Badge>
+                          <Badge className="bg-amber-500 hover:bg-amber-500 text-white gap-1">
+                            <Clock className="w-3 h-3" /> Payment Due
+                          </Badge>
                         )}
                         <span className="text-xs text-slate-500">#{inv.invoice_number}</span>
                       </div>
@@ -364,7 +380,11 @@ export default function PublicPortal() {
           {/* STATUS */}
           <TabsContent value="status" className="space-y-3 mt-4">
             {projects.length === 0 ? (
-              <EmptyState text="No active projects yet." />
+              <EmptyState
+                icon={Activity}
+                title="No active projects yet"
+                description="Your project timeline will appear here as soon as work is scheduled."
+              />
             ) : (
               projects.map((proj) => {
                 const idx = statusIndex(proj.project_status);
@@ -454,10 +474,24 @@ export default function PublicPortal() {
   );
 }
 
-function EmptyState({ text }: { text: string }) {
+function EmptyState({
+  icon: Icon = Inbox,
+  title,
+  description,
+}: {
+  icon?: typeof Inbox;
+  title: string;
+  description?: string;
+}) {
   return (
-    <div className="bg-white border border-dashed rounded-lg p-8 text-center text-sm text-slate-500">
-      {text}
+    <div className="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+        <Icon className="w-6 h-6 text-slate-400" />
+      </div>
+      <div className="text-sm font-semibold text-slate-700">{title}</div>
+      {description && (
+        <div className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">{description}</div>
+      )}
     </div>
   );
 }
