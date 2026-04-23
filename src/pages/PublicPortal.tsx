@@ -518,6 +518,16 @@ export default function PublicPortal() {
           AXO Floors · Tri-State Hardwood Specialists
         </p>
       </main>
+
+      {changeReqProposal && customer && (
+        <ChangeRequestDialog
+          open={!!changeReqProposal}
+          onOpenChange={(v) => !v && setChangeReqProposal(null)}
+          proposalId={changeReqProposal.id}
+          customerId={customer.id}
+          organizationId={changeReqProposal.organization_id}
+        />
+      )}
     </div>
   );
 }
