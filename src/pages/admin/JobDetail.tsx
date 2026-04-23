@@ -61,10 +61,13 @@ export default function JobDetail() {
       if (!jobId) return null;
       const { data, error } = await supabase.from('projects').select('*').eq('id', jobId).single();
       if (error) throw error;
-      const [proofRes, partnerRes] = await Promise.all([
+      const [proofRes, partnerRes, customerRes] = await Promise.all([
         supabase.from('job_proof').select('id, project_id, before_image_url, after_image_url').eq('project_id', jobId),
         data.referred_by_partner_id
           ? supabase.from('partners').select('id, company_name, contact_name').eq('id', data.referred_by_partner_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+        data.customer_id
+          ? supabase.from('customers').select('id, portal_token').eq('id', data.customer_id).maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
       return {
@@ -74,6 +77,7 @@ export default function JobDetail() {
         work_schedule: data.work_schedule || '',
         job_proof: proofRes.data || [],
         partner_name: partnerRes.data ? ((partnerRes.data as any).contact_name || (partnerRes.data as any).company_name) : null,
+        customer_portal_token: customerRes.data ? (customerRes.data as any).portal_token : null,
       };
     },
     enabled: !!jobId,
@@ -254,6 +258,30 @@ export default function JobDetail() {
 
             {/* Risk / signal badges */}
             <div className="flex items-center gap-2 flex-wrap">
+              {project.customer_portal_token && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1.5 border-emerald-500/40 bg-emerald-500/5 text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 dark:text-emerald-400"
+                    onClick={() => window.open(`/portal/${project.customer_portal_token}`, '_blank')}
+                  >
+                    <ExternalLink className="w-3 h-3" /> Open Customer Portal
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs gap-1.5"
+                    onClick={async () => {
+                      const url = `${window.location.origin}/portal/${project.customer_portal_token}`;
+                      await navigator.clipboard.writeText(url);
+                      toast.success('Portal link copied');
+                    }}
+                  >
+                    <Link2 className="w-3 h-3" /> Copy link
+                  </Button>
+                </>
+              )}
               {project.partner_name && (
                 <Badge variant="outline" className="text-xs gap-1.5 font-normal">
                   <Users className="w-3 h-3 text-primary" /> Partner: {project.partner_name}
