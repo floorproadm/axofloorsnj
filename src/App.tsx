@@ -66,6 +66,7 @@ import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
 import PublicInvoice from "./pages/PublicInvoice";
 import PublicProposal from "./pages/PublicProposal";
+import PublicPortal from "./pages/PublicPortal";
 import Links from "./pages/Links";
 
 import CollaboratorLayout from "./components/collaborator/CollaboratorLayout";
@@ -117,6 +118,7 @@ const App = () => {
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/invoice/:token" element={<PublicInvoice />} />
             <Route path="/proposal/:token" element={<PublicProposal />} />
+            <Route path="/portal/:token" element={<PublicPortal />} />
             <Route path="/hub" element={<Links />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/auth" element={<AdminAuth />} />
