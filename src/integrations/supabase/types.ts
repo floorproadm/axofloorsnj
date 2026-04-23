@@ -402,6 +402,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           phone: string | null
+          portal_token: string | null
           updated_at: string
           zip_code: string | null
         }
@@ -415,6 +416,7 @@ export type Database = {
           notes?: string | null
           organization_id: string
           phone?: string | null
+          portal_token?: string | null
           updated_at?: string
           zip_code?: string | null
         }
@@ -428,6 +430,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           phone?: string | null
+          portal_token?: string | null
           updated_at?: string
           zip_code?: string | null
         }
