@@ -59,12 +59,28 @@ const formatMoney = (n: number | null | undefined) =>
   n == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
 const proposalBadge = (p: Proposal) => {
-  if (p.status === "accepted") return <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">Approved</Badge>;
-  if (p.status === "rejected") return <Badge variant="destructive">Declined</Badge>;
+  if (p.status === "accepted") return (
+    <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white gap-1">
+      <CheckCircle2 className="w-3 h-3" /> Approved
+    </Badge>
+  );
+  if (p.status === "rejected") return (
+    <Badge variant="destructive" className="gap-1">
+      <AlertCircle className="w-3 h-3" /> Declined
+    </Badge>
+  );
   if (p.valid_until && new Date(p.valid_until) < new Date()) {
-    return <Badge variant="outline" className="border-amber-400 text-amber-700">Expired</Badge>;
+    return (
+      <Badge variant="outline" className="border-amber-400 text-amber-700 gap-1">
+        <Clock className="w-3 h-3" /> Expired
+      </Badge>
+    );
   }
-  return <Badge className="bg-amber-500 hover:bg-amber-500 text-white">Awaiting Approval</Badge>;
+  return (
+    <Badge className="bg-amber-500 hover:bg-amber-500 text-white gap-1">
+      <Clock className="w-3 h-3" /> Awaiting Approval
+    </Badge>
+  );
 };
 
 const proposalAmount = (p: Proposal) => {
