@@ -18,10 +18,12 @@ interface Proposal {
   id: string;
   share_token: string | null;
   status: string;
-  total_good: number | null;
-  total_better: number | null;
-  total_best: number | null;
-  flat_total: number | null;
+  good_price: number | null;
+  better_price: number | null;
+  best_price: number | null;
+  flat_price: number | null;
+  use_tiers: boolean | null;
+  selected_tier: string | null;
   valid_until: string | null;
   created_at: string;
   accepted_at: string | null;
@@ -65,8 +67,10 @@ const proposalBadge = (p: Proposal) => {
 };
 
 const proposalAmount = (p: Proposal) => {
-  if (p.flat_total) return p.flat_total;
-  return p.total_better ?? p.total_good ?? p.total_best ?? null;
+  if (!p.use_tiers && p.flat_price) return p.flat_price;
+  if (p.selected_tier === "good") return p.good_price;
+  if (p.selected_tier === "best") return p.best_price;
+  return p.better_price ?? p.good_price ?? p.best_price ?? p.flat_price ?? null;
 };
 
 const STATUS_FLOW: { key: string; label: string }[] = [
@@ -120,7 +124,7 @@ export default function PublicPortal() {
       const [{ data: props }, { data: projs }] = await Promise.all([
         supabase
           .from("proposals")
-          .select("id, share_token, status, total_good, total_better, total_best, flat_total, valid_until, created_at, accepted_at")
+          .select("id, share_token, status, good_price, better_price, best_price, flat_price, use_tiers, selected_tier, valid_until, created_at, accepted_at")
           .eq("customer_id", cust.id)
           .order("created_at", { ascending: false }),
         supabase
