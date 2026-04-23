@@ -1754,6 +1754,48 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_users: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          organization_id: string
+          partner_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organization_id: string
+          partner_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organization_id?: string
+          partner_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_users_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: {
           birthday: string | null
@@ -3397,6 +3439,8 @@ export type Database = {
       get_dashboard_metrics: { Args: never; Returns: Json }
       get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
       get_leads_nra_batch: { Args: { p_lead_ids: string[] }; Returns: Json }
+      get_partner_id_for_user: { Args: never; Returns: string }
+      get_partner_org_for_user: { Args: never; Returns: string }
       get_user_org_id: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -3404,6 +3448,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      link_partner_user: {
+        Args: { p_partner_id: string; p_user_id: string }
+        Returns: string
       }
       run_sla_engine: { Args: never; Returns: Json }
       supply_has_access: { Args: { p_org_id: string }; Returns: boolean }

@@ -77,6 +77,9 @@ import CollaboratorDocs from "./pages/collaborator/CollaboratorDocs";
 import CollaboratorProfile from "./pages/collaborator/CollaboratorProfile";
 import CollaboratorChat from "./pages/collaborator/CollaboratorChat";
 
+import PartnerAuth from "./pages/partner/PartnerAuth";
+import PartnerDashboard from "./pages/partner/PartnerDashboard";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -261,6 +264,11 @@ const App = () => {
               <Route path="profile" element={<CollaboratorProfile />} />
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
+
+            {/* Partner Portal */}
+            <Route path="/partner/auth" element={<PartnerAuth />} />
+            <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+            <Route path="/partner" element={<Navigate to="/partner/dashboard" replace />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -27,6 +27,7 @@ import {
   ArrowUpRight,
   Loader2,
   Trash2,
+  KeyRound,
 } from "lucide-react";
 import {
   Partner,
@@ -35,6 +36,7 @@ import {
   PARTNER_STATUSES,
   SERVICE_ZONES,
 } from "@/hooks/admin/usePartnersData";
+import { InvitePartnerDialog } from "./InvitePartnerDialog";
 
 interface Props {
   partner: Partner | null;
@@ -54,6 +56,7 @@ export function PartnerDetailModal({ partner, open, onOpenChange }: Props) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Partner>>({});
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   if (!partner) return null;
 
@@ -278,10 +281,24 @@ export function PartnerDetailModal({ partner, open, onOpenChange }: Props) {
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
+              <Button
+                onClick={() => setInviteOpen(true)}
+                variant="outline"
+                className="w-full border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <KeyRound className="w-4 h-4 mr-2" /> Manage Partner Portal Access
+              </Button>
             </>
           )}
         </div>
       </DialogContent>
+      <InvitePartnerDialog
+        partnerId={partner.id}
+        partnerName={partner.company_name}
+        partnerEmail={partner.email}
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+      />
     </Dialog>
   );
 }
