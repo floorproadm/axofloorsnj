@@ -61,10 +61,13 @@ export default function JobDetail() {
       if (!jobId) return null;
       const { data, error } = await supabase.from('projects').select('*').eq('id', jobId).single();
       if (error) throw error;
-      const [proofRes, partnerRes] = await Promise.all([
+      const [proofRes, partnerRes, customerRes] = await Promise.all([
         supabase.from('job_proof').select('id, project_id, before_image_url, after_image_url').eq('project_id', jobId),
         data.referred_by_partner_id
           ? supabase.from('partners').select('id, company_name, contact_name').eq('id', data.referred_by_partner_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+        data.customer_id
+          ? supabase.from('customers').select('id, portal_token').eq('id', data.customer_id).maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
       return {
@@ -74,6 +77,7 @@ export default function JobDetail() {
         work_schedule: data.work_schedule || '',
         job_proof: proofRes.data || [],
         partner_name: partnerRes.data ? ((partnerRes.data as any).contact_name || (partnerRes.data as any).company_name) : null,
+        customer_portal_token: customerRes.data ? (customerRes.data as any).portal_token : null,
       };
     },
     enabled: !!jobId,
