@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,8 @@ const TIER_LABELS: Record<TierKey, { name: string; tag: string }> = {
 
 export default function PublicProposal() {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const printMode = searchParams.get("print") === "1";
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
@@ -43,6 +45,13 @@ export default function PublicProposal() {
   const [error, setError] = useState<string | null>(null);
   const [signOpen, setSignOpen] = useState(false);
   const [pickedTier, setPickedTier] = useState<TierKey | "flat" | null>(null);
+
+  useEffect(() => {
+    if (printMode && !loading && proposal) {
+      const t = setTimeout(() => window.print(), 600);
+      return () => clearTimeout(t);
+    }
+  }, [printMode, loading, proposal]);
 
   useEffect(() => {
     if (!token) return;

@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox } from "lucide-react";
+import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
 
 interface Customer {
   id: string;
@@ -28,6 +29,7 @@ interface Proposal {
   valid_until: string | null;
   created_at: string;
   accepted_at: string | null;
+  organization_id: string;
 }
 interface Project {
   id: string;
@@ -114,6 +116,7 @@ export default function PublicPortal() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [changeReqProposal, setChangeReqProposal] = useState<Proposal | null>(null);
 
   useEffect(() => {
     document.title = "Your AXO Portal — Proposals, Invoices & Project Updates";
@@ -141,7 +144,7 @@ export default function PublicPortal() {
       const [{ data: props }, { data: projs }] = await Promise.all([
         supabase
           .from("proposals")
-          .select("id, share_token, status, good_price, better_price, best_price, flat_price, use_tiers, selected_tier, valid_until, created_at, accepted_at")
+          .select("id, share_token, status, good_price, better_price, best_price, flat_price, use_tiers, selected_tier, valid_until, created_at, accepted_at, organization_id")
           .eq("customer_id", cust.id)
           .order("created_at", { ascending: false }),
         supabase
@@ -295,32 +298,77 @@ export default function PublicPortal() {
             ) : (
               proposals.map((p) => {
                 const amount = proposalAmount(p);
+                const isAccepted = p.status === "accepted";
+                const isExpired = !!p.valid_until && new Date(p.valid_until) < new Date() && !isAccepted;
+                const isDeclined = p.status === "rejected";
+                const canAct = !!p.share_token && !isAccepted && !isExpired && !isDeclined;
                 return (
-                  <div key={p.id} className="bg-white border rounded-lg p-4 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {proposalBadge(p)}
-                        <span className="text-xs text-slate-500">
-                          {format(new Date(p.created_at), "MMM d, yyyy")}
-                        </span>
-                      </div>
-                      <div className="text-base font-semibold text-slate-900 mt-1">
-                        {formatMoney(amount)}
-                      </div>
-                      {p.valid_until && (
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          Valid until {format(new Date(p.valid_until), "MMM d, yyyy")}
+                  <div key={p.id} className="bg-white border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {proposalBadge(p)}
+                          <span className="text-xs text-slate-500">
+                            {format(new Date(p.created_at), "MMM d, yyyy")}
+                          </span>
                         </div>
+                        <div className="text-base font-semibold text-slate-900 mt-1">
+                          {formatMoney(amount)}
+                        </div>
+                        {p.valid_until && (
+                          <div className="text-[11px] text-slate-500 mt-0.5">
+                            Valid until {format(new Date(p.valid_until), "MMM d, yyyy")}
+                          </div>
+                        )}
+                      </div>
+                      {p.share_token ? (
+                        <Button asChild size="sm" variant="outline">
+                          <Link to={`/proposal/${p.share_token}`}>
+                            View <ExternalLink className="w-3 h-3 ml-1" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Badge variant="outline">No link</Badge>
                       )}
                     </div>
-                    {p.share_token ? (
-                      <Button asChild size="sm" className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
-                        <Link to={`/proposal/${p.share_token}`}>
-                          View <ExternalLink className="w-3 h-3 ml-1" />
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Badge variant="outline">No link</Badge>
+
+                    {p.share_token && (
+                      <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100">
+                        <Button
+                          asChild={canAct}
+                          size="sm"
+                          disabled={!canAct}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-100 disabled:text-slate-400"
+                        >
+                          {canAct ? (
+                            <Link to={`/proposal/${p.share_token}`}>
+                              <ThumbsUp className="w-3.5 h-3.5 mr-1" />
+                              <span className="text-xs">Accept</span>
+                            </Link>
+                          ) : (
+                            <span>
+                              <ThumbsUp className="w-3.5 h-3.5 mr-1" />
+                              <span className="text-xs">{isAccepted ? "Accepted" : "Accept"}</span>
+                            </span>
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isAccepted || isDeclined}
+                          onClick={() => setChangeReqProposal(p)}
+                          className="border-slate-300"
+                        >
+                          <MessageSquareText className="w-3.5 h-3.5 mr-1" />
+                          <span className="text-xs">Changes</span>
+                        </Button>
+                        <Button asChild size="sm" variant="outline" className="border-slate-300">
+                          <a href={`/proposal/${p.share_token}?print=1`} target="_blank" rel="noopener noreferrer">
+                            <Download className="w-3.5 h-3.5 mr-1" />
+                            <span className="text-xs">PDF</span>
+                          </a>
+                        </Button>
+                      </div>
                     )}
                   </div>
                 );
@@ -470,6 +518,16 @@ export default function PublicPortal() {
           AXO Floors · Tri-State Hardwood Specialists
         </p>
       </main>
+
+      {changeReqProposal && customer && (
+        <ChangeRequestDialog
+          open={!!changeReqProposal}
+          onOpenChange={(v) => !v && setChangeReqProposal(null)}
+          proposalId={changeReqProposal.id}
+          customerId={customer.id}
+          organizationId={changeReqProposal.organization_id}
+        />
+      )}
     </div>
   );
 }
