@@ -178,8 +178,40 @@ export default function PublicPortal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+      <div className="min-h-screen bg-slate-50">
+        <header className="bg-[#0f1b3d] text-white">
+          <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-9 h-9 rounded-md bg-white/10" />
+              <div className="space-y-1.5">
+                <Skeleton className="h-2.5 w-16 bg-white/10" />
+                <Skeleton className="h-3 w-24 bg-white/10" />
+              </div>
+            </div>
+            <Skeleton className="h-3 w-28 bg-white/10" />
+          </div>
+        </header>
+        <main className="max-w-3xl mx-auto px-4 py-6">
+          <div className="mb-5 space-y-2">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-12 w-full rounded-md mb-4" />
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-white border rounded-lg p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                  <Skeleton className="h-8 w-16 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -188,10 +220,18 @@ export default function PublicPortal() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
         <div className="text-center max-w-sm">
-          <h1 className="text-xl font-bold text-slate-900">Portal not found</h1>
+          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-7 h-7 text-amber-600" />
+          </div>
+          <h1 className="text-xl font-bold text-slate-900">Portal Link Invalid</h1>
           <p className="text-sm text-slate-600 mt-2">
-            The link you used is invalid or expired. Please contact us at {COMPANY_PHONE}.
+            This link is invalid or has expired. Please contact us and we'll send you a fresh link.
           </p>
+          <Button asChild className="mt-5 bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
+            <a href={`tel:${COMPANY_PHONE_TEL}`}>
+              <Phone className="w-4 h-4 mr-2" /> Call {COMPANY_PHONE}
+            </a>
+          </Button>
         </div>
       </div>
     );
