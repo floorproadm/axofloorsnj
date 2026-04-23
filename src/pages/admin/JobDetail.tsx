@@ -258,6 +258,30 @@ export default function JobDetail() {
 
             {/* Risk / signal badges */}
             <div className="flex items-center gap-2 flex-wrap">
+              {project.customer_portal_token && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1.5 border-emerald-500/40 bg-emerald-500/5 text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 dark:text-emerald-400"
+                    onClick={() => window.open(`/portal/${project.customer_portal_token}`, '_blank')}
+                  >
+                    <ExternalLink className="w-3 h-3" /> Open Customer Portal
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs gap-1.5"
+                    onClick={async () => {
+                      const url = `${window.location.origin}/portal/${project.customer_portal_token}`;
+                      await navigator.clipboard.writeText(url);
+                      toast.success('Portal link copied');
+                    }}
+                  >
+                    <Link2 className="w-3 h-3" /> Copy link
+                  </Button>
+                </>
+              )}
               {project.partner_name && (
                 <Badge variant="outline" className="text-xs gap-1.5 font-normal">
                   <Users className="w-3 h-3 text-primary" /> Partner: {project.partner_name}
