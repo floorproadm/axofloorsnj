@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox } from "lucide-react";
+import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
 
 interface Customer {
   id: string;
@@ -28,6 +29,7 @@ interface Proposal {
   valid_until: string | null;
   created_at: string;
   accepted_at: string | null;
+  organization_id: string;
 }
 interface Project {
   id: string;
@@ -141,7 +143,7 @@ export default function PublicPortal() {
       const [{ data: props }, { data: projs }] = await Promise.all([
         supabase
           .from("proposals")
-          .select("id, share_token, status, good_price, better_price, best_price, flat_price, use_tiers, selected_tier, valid_until, created_at, accepted_at")
+          .select("id, share_token, status, good_price, better_price, best_price, flat_price, use_tiers, selected_tier, valid_until, created_at, accepted_at, organization_id")
           .eq("customer_id", cust.id)
           .order("created_at", { ascending: false }),
         supabase
