@@ -1321,7 +1321,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       </div>
 
       {/* Active Filter Chip */}
-      {(statusFilter || searchQuery || needsActionOnly) && (
+      {(statusFilter || searchQuery || needsActionOnly || partnerOnly) && (
         <div className="flex items-center gap-2 flex-wrap">
           {statusFilter && (
             <Badge variant="secondary" className={cn(
@@ -1342,6 +1342,19 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           {searchQuery && (
             <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
               Busca: "{searchQuery}" ({filteredSalesLeads.length})
+            </Badge>
+          )}
+          {partnerOnly && (
+            <Badge variant="default" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
+              <Handshake className="w-3 h-3" />
+              Leads de Parceiros
+              <button
+                onClick={() => setPartnerOnly(false)}
+                className="ml-1 rounded-full hover:bg-primary-foreground/20 p-0.5 transition-colors"
+                aria-label="Limpar filtro de parceiros"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {needsActionOnly && (
