@@ -1225,7 +1225,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </div>
         )}
 
-        {/* Row 2: Search + Needs Action Toggle */}
+        {/* Row 2: Search + Needs Action Toggle + Partner Toggle */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -1244,6 +1244,18 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
               </button>
             )}
           </div>
+          <Button
+            size="sm"
+            variant={partnerOnly ? "default" : "outline"}
+            className={cn(
+              "text-xs h-8 flex-shrink-0 gap-1.5",
+              partnerOnly && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => setPartnerOnly(!partnerOnly)}
+          >
+            <Handshake className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Parceiros</span>
+          </Button>
           <Button
             size="sm"
             variant={needsActionOnly ? "default" : "outline"}
