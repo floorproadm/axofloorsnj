@@ -449,10 +449,10 @@ const Quiz = () => {
             {/* Header */}
             <div className="text-center mb-8 sm:mb-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4">
-                Does Your Floor Add or Subtract Value From Your Home?
+                Get a Fast Flooring Estimate in 60 Seconds
               </h1>
               <p className="text-lg sm:text-xl text-grey mb-6">
-                Discover in 30 seconds how to transform your floors into a high-impact differentiator for your home.
+                Answer a few quick questions about your project — we'll send tailored options and a price range.
               </p>
               <div className="flex justify-center items-center gap-2 text-sm text-grey">
                 {Array.from({ length: getTotalSteps() }, (_, i) => (
