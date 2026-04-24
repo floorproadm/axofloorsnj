@@ -140,12 +140,60 @@ const Quiz = () => {
     { value: "need-consultation", label: "Need Consultation", description: "Professional recommendation" }
   ];
 
-  const getTotalSteps = () => {
-    // Each path: service + path-specific qs + operational (subfloor or living) + area + timeline + budget + contact
-    if (formData.serviceType === "new-installation") return 8; // 1 svc, 2 floorType, 3 location, 4 subfloor/grade, 5 area, 6 timeline, 7 budget, 8 contact
-    if (formData.serviceType === "floor-refinish") return 9;   // 1 svc, 2 cond, 3 wood, 4 living, 5 area, 6 colorChange, 7 timeline, 8 budget, 9 contact
-    return 9;
+  // Build the ordered list of step keys for the active path.
+  // Keys: service, finishScope, floorType, condition, wood, location,
+  //       subfloorGrade, livingDuringRefinish, area, colorChange, timeline, budget, contact
+  const getStepKeys = (): string[] => {
+    const keys: string[] = ['service'];
+
+    // Top-level "not sure" → short consult path
+    if (formData.serviceType === 'not-sure') {
+      return [...keys, 'area', 'timeline', 'budget', 'contact'];
+    }
+
+    // Pure new installation
+    if (formData.serviceType === 'new-installation') {
+      return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+    }
+
+    // Pure refinish
+    if (formData.serviceType === 'floor-refinish') {
+      return [...keys, 'condition', 'wood', 'livingDuringRefinish', 'area', 'colorChange', 'timeline', 'budget', 'contact'];
+    }
+
+    // Install + Refinish: pivot on finishScope
+    if (formData.serviceType === 'install-plus-refinish') {
+      keys.push('finishScope');
+
+      if (formData.finishScope === 'new-floor') {
+        return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+      }
+      if (formData.finishScope === 'existing') {
+        return [...keys, 'condition', 'wood', 'livingDuringRefinish', 'area', 'colorChange', 'timeline', 'budget', 'contact'];
+      }
+      if (formData.finishScope === 'both') {
+        // Hybrid: install track + condition of existing floors
+        return [...keys, 'floorType', 'location', 'subfloorGrade', 'condition', 'area', 'timeline', 'budget', 'contact'];
+      }
+      if (formData.finishScope === 'not-sure') {
+        // Short consult path inside the combo route
+        return [...keys, 'area', 'timeline', 'budget', 'contact'];
+      }
+      // finishScope not yet chosen — only show service + scope
+      return keys;
+    }
+
+    // No service chosen yet
+    return keys;
   };
+
+  const getTotalSteps = () => getStepKeys().length;
+  const getCurrentStepKey = () => getStepKeys()[currentStep - 1] ?? 'service';
+
+  // True when this lead must be flagged for human consultation
+  const needsConsultation = () =>
+    formData.serviceType === 'not-sure' ||
+    (formData.serviceType === 'install-plus-refinish' && formData.finishScope === 'not-sure');
 
   const getRecommendedService = () => {
     if (formData.serviceType === "new-installation") {
