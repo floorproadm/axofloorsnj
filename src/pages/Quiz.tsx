@@ -39,7 +39,8 @@ const Quiz = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState({
-    serviceType: "", // "new-installation" or "floor-refinish"
+    serviceType: "", // "new-installation" | "floor-refinish" | "install-plus-refinish" | "not-sure"
+    finishScope: "", // for install-plus-refinish: new-floor | existing | both | not-sure
     floorType: "", // for new installation
     currentCondition: "", // for refinish
     woodType: "", // for refinish
@@ -79,7 +80,16 @@ const Quiz = () => {
 
   const serviceTypes = [
     { value: "new-installation", label: "New Installation", description: "Installing new flooring" },
-    { value: "floor-refinish", label: "Floor Refinish", description: "Refinishing existing floors" }
+    { value: "floor-refinish", label: "Refinishing (Sand & Finish)", description: "Refinishing existing floors" },
+    { value: "install-plus-refinish", label: "Installation + Refinishing", description: "Both — install new and refinish" },
+    { value: "not-sure", label: "Not sure / Need guidance", description: "Talk to an expert first" },
+  ];
+
+  const finishScopeOptions = [
+    { value: "new-floor", label: "For the new floor being installed", description: "Finish only the floor we'll install" },
+    { value: "existing", label: "For existing floors", description: "Refinish floors already in place" },
+    { value: "both", label: "Both", description: "New install + refinish existing areas" },
+    { value: "not-sure", label: "Not sure", description: "We'll inspect and recommend" },
   ];
 
   const floorTypes = [
@@ -130,12 +140,60 @@ const Quiz = () => {
     { value: "need-consultation", label: "Need Consultation", description: "Professional recommendation" }
   ];
 
-  const getTotalSteps = () => {
-    // Each path: service + path-specific qs + operational (subfloor or living) + area + timeline + budget + contact
-    if (formData.serviceType === "new-installation") return 8; // 1 svc, 2 floorType, 3 location, 4 subfloor/grade, 5 area, 6 timeline, 7 budget, 8 contact
-    if (formData.serviceType === "floor-refinish") return 9;   // 1 svc, 2 cond, 3 wood, 4 living, 5 area, 6 colorChange, 7 timeline, 8 budget, 9 contact
-    return 9;
+  // Build the ordered list of step keys for the active path.
+  // Keys: service, finishScope, floorType, condition, wood, location,
+  //       subfloorGrade, livingDuringRefinish, area, colorChange, timeline, budget, contact
+  const getStepKeys = (): string[] => {
+    const keys: string[] = ['service'];
+
+    // Top-level "not sure" → short consult path
+    if (formData.serviceType === 'not-sure') {
+      return [...keys, 'area', 'timeline', 'budget', 'contact'];
+    }
+
+    // Pure new installation
+    if (formData.serviceType === 'new-installation') {
+      return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+    }
+
+    // Pure refinish
+    if (formData.serviceType === 'floor-refinish') {
+      return [...keys, 'condition', 'wood', 'livingDuringRefinish', 'area', 'colorChange', 'timeline', 'budget', 'contact'];
+    }
+
+    // Install + Refinish: pivot on finishScope
+    if (formData.serviceType === 'install-plus-refinish') {
+      keys.push('finishScope');
+
+      if (formData.finishScope === 'new-floor') {
+        return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+      }
+      if (formData.finishScope === 'existing') {
+        return [...keys, 'condition', 'wood', 'livingDuringRefinish', 'area', 'colorChange', 'timeline', 'budget', 'contact'];
+      }
+      if (formData.finishScope === 'both') {
+        // Hybrid: install track + condition of existing floors
+        return [...keys, 'floorType', 'location', 'subfloorGrade', 'condition', 'area', 'timeline', 'budget', 'contact'];
+      }
+      if (formData.finishScope === 'not-sure') {
+        // Short consult path inside the combo route
+        return [...keys, 'area', 'timeline', 'budget', 'contact'];
+      }
+      // finishScope not yet chosen — only show service + scope
+      return keys;
+    }
+
+    // No service chosen yet
+    return keys;
   };
+
+  const getTotalSteps = () => getStepKeys().length;
+  const getCurrentStepKey = () => getStepKeys()[currentStep - 1] ?? 'service';
+
+  // True when this lead must be flagged for human consultation
+  const needsConsultation = () =>
+    formData.serviceType === 'not-sure' ||
+    (formData.serviceType === 'install-plus-refinish' && formData.finishScope === 'not-sure');
 
   const getRecommendedService = () => {
     if (formData.serviceType === "new-installation") {
@@ -258,7 +316,7 @@ const Quiz = () => {
             city: quizData.city,
             priority: quizData.priority,
             status: 'cold_lead',
-            notes: `Quiz submission - Service: ${formData.serviceType}, Square Footage: ${formData.squareFootage || 'Not specified'}, Timeline: ${formData.timeline || 'Not specified'}, Wood Type: ${formData.woodType || 'Not specified'}, Condition: ${formData.currentCondition || 'Not specified'}, Color Change: ${formData.colorChange || 'Not specified'}, Subfloor: ${formData.subfloor || 'N/A'}, Below Grade: ${formData.belowGrade || 'N/A'}, Living During Refinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs Included: ${formData.stairsIncluded || 'N/A'}`
+            notes: `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs: ${formData.stairsIncluded || 'N/A'}${needsConsultation() ? ' | NEEDS_CONSULTATION' : ''}`
           }
         });
         console.log('Quiz lead sent to Notion successfully');
@@ -347,96 +405,63 @@ const Quiz = () => {
   };
 
   const nextStep = () => {
-    // Step 1: service type
-    if (currentStep === 1 && !formData.serviceType) {
-      toast({ title: "Please select a service type", variant: "destructive" });
-      return;
-    }
+    const key = getCurrentStepKey();
 
-    // Step 2: floorType (new) | currentCondition (refinish)
-    if (currentStep === 2) {
-      if (formData.serviceType === "new-installation" && !formData.floorType) {
-        toast({ title: "Please select a flooring type", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.currentCondition) {
-        toast({ title: "Please select the current condition", variant: "destructive" });
-        return;
-      }
-    }
+    const fail = (title: string, description?: string) => {
+      toast({ title, description, variant: 'destructive' });
+    };
 
-    // Step 3: location (new) | woodType (refinish)
-    if (currentStep === 3) {
-      if (formData.serviceType === "new-installation" && !formData.location) {
-        toast({ title: "Please select the location type", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.woodType) {
-        toast({ title: "Please select your wood type", variant: "destructive" });
-        return;
-      }
-    }
-
-    // Step 4: subfloor + below-grade (new) | living-during-refinish (refinish)
-    if (currentStep === 4) {
-      if (formData.serviceType === "new-installation") {
+    switch (key) {
+      case 'service':
+        if (!formData.serviceType) return fail('Please select a service type');
+        break;
+      case 'finishScope':
+        if (!formData.finishScope) return fail('Please tell us what the finish is for');
+        break;
+      case 'floorType':
+        if (!formData.floorType) return fail('Please select a flooring type');
+        break;
+      case 'condition':
+        if (!formData.currentCondition) return fail('Please select the current condition');
+        break;
+      case 'wood':
+        if (!formData.woodType) return fail('Please select your wood type');
+        break;
+      case 'location':
+        if (!formData.location) return fail('Please select the location type');
+        break;
+      case 'subfloorGrade':
         if (!formData.subfloor || !formData.belowGrade) {
-          toast({
-            title: "Please answer both questions",
-            description: "Subfloor type and basement (below grade) help us scope the job correctly.",
-            variant: "destructive",
-          });
-          return;
+          return fail(
+            'Please answer both questions',
+            'Subfloor type and basement (below grade) help us scope the job correctly.',
+          );
         }
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.livingDuringRefinish) {
-        toast({
-          title: "Please answer the question",
-          description: "Whether you'll be living in the home affects scheduling and prep.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    // Step 5: square footage (both paths)
-    if (currentStep === 5 && (!formData.squareFootage || formData.squareFootage === '0')) {
-      toast({
-        title: "Please specify the area size",
-        description: "Enter the square footage or select a preset size",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Step 6: timeline (new) | colorChange (refinish)
-    if (currentStep === 6) {
-      if (formData.serviceType === "new-installation" && !formData.timeline) {
-        toast({ title: "Please select a timeline", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.colorChange) {
-        toast({ title: "Please specify color preference", variant: "destructive" });
-        return;
-      }
-    }
-
-    // Step 7: budget (new) | timeline (refinish)
-    if (currentStep === 7) {
-      if (formData.serviceType === "new-installation" && !formData.budget) {
-        toast({ title: "Please select a budget range", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.timeline) {
-        toast({ title: "Please select a timeline", variant: "destructive" });
-        return;
-      }
-    }
-
-    // Step 8: budget (refinish only)
-    if (currentStep === 8 && formData.serviceType === "floor-refinish" && !formData.budget) {
-      toast({ title: "Please select a budget range", variant: "destructive" });
-      return;
+        break;
+      case 'livingDuringRefinish':
+        if (!formData.livingDuringRefinish) {
+          return fail(
+            'Please answer the question',
+            "Whether you'll be living in the home affects scheduling and prep.",
+          );
+        }
+        break;
+      case 'area':
+        if (!formData.squareFootage || formData.squareFootage === '0') {
+          return fail('Please specify the area size', 'Enter the square footage or select a preset size');
+        }
+        break;
+      case 'colorChange':
+        if (!formData.colorChange) return fail('Please specify color preference');
+        break;
+      case 'timeline':
+        if (!formData.timeline) return fail('Please select a timeline');
+        break;
+      case 'budget':
+        if (!formData.budget) return fail('Please select a budget range');
+        break;
+      default:
+        break;
     }
 
     const newStep = Math.min(currentStep + 1, getTotalSteps());
@@ -447,6 +472,9 @@ const Quiz = () => {
     const newStep = Math.max(currentStep - 1, 1);
     setCurrentStep(newStep);
   };
+
+  const stepKey = getCurrentStepKey();
+  const totalSteps = getTotalSteps();
 
   return (
     <div className="min-h-screen bg-background">
@@ -464,7 +492,7 @@ const Quiz = () => {
                 Answer a few quick questions about your project — we'll send tailored options and a price range.
               </p>
               <div className="flex justify-center items-center gap-2 text-sm text-grey">
-                {Array.from({ length: getTotalSteps() }, (_, i) => (
+                {Array.from({ length: totalSteps }, (_, i) => (
                   <span key={i} className={`w-8 h-1 rounded ${currentStep >= i + 1 ? 'bg-gold' : 'bg-grey/30'}`}></span>
                 ))}
               </div>
@@ -473,13 +501,13 @@ const Quiz = () => {
             <Card className="bg-white border-2 border-gold/20 shadow-elegant">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl font-heading text-navy">
-                  Step {currentStep} of {getTotalSteps()}
+                  Step {currentStep} of {totalSteps}
                 </CardTitle>
               </CardHeader>
 
               <CardContent className="p-6 sm:p-8">
-                {/* Step 1: Service Type Selection */}
-                {currentStep === 1 && (
+                {/* Step: Service Type Selection */}
+                {stepKey === 'service' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -490,14 +518,19 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {serviceTypes.map((service) => (
-                        <Card 
+                        <Card
                           key={service.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.serviceType === service.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.serviceType === service.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
-                          onClick={() => setFormData(prev => ({ ...prev, serviceType: service.value }))}
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            serviceType: service.value,
+                            // reset finishScope when switching away from combo
+                            finishScope: service.value === 'install-plus-refinish' ? prev.finishScope : '',
+                          }))}
                         >
                           <CardContent className="p-6 text-center">
                             <h4 className="font-semibold text-navy mb-2">{service.label}</h4>
@@ -509,8 +542,39 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 2: Floor Type (New Installation) or Current Condition (Refinish) */}
-                {currentStep === 2 && formData.serviceType === "new-installation" && (
+                {/* Step: Finish Scope (Install + Refinish path) */}
+                {stepKey === 'finishScope' && (
+                  <div className="space-y-6">
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
+                        Is this finish for new wood we'll install, or for existing floors?
+                      </h3>
+                      <p className="text-grey">This decides which checks we need to run</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {finishScopeOptions.map((opt) => (
+                        <Card
+                          key={opt.value}
+                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                            formData.finishScope === opt.value
+                              ? 'border-gold bg-gold/10'
+                              : 'border-grey/20 hover:border-gold/50'
+                          }`}
+                          onClick={() => setFormData(prev => ({ ...prev, finishScope: opt.value }))}
+                        >
+                          <CardContent className="p-4 text-center">
+                            <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
+                            <p className="text-sm text-grey">{opt.description}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Step: Floor Type (Install paths) */}
+                {stepKey === 'floorType' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -521,11 +585,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {floorTypes.map((floor) => (
-                        <Card 
+                        <Card
                           key={floor.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.floorType === floor.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.floorType === floor.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, floorType: floor.value }))}
@@ -540,7 +604,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {currentStep === 2 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Current Condition (Refinish paths) */}
+                {stepKey === 'condition' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -551,11 +616,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {currentConditions.map((condition) => (
-                        <Card 
+                        <Card
                           key={condition.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.currentCondition === condition.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.currentCondition === condition.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, currentCondition: condition.value }))}
@@ -570,8 +635,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 3: Location (New Install) or Wood Type (Refinish) */}
-                {currentStep === 3 && formData.serviceType === "new-installation" && (
+                {/* Step: Location (Install paths) */}
+                {stepKey === 'location' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -582,11 +647,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 gap-4">
                       {locations.map((location) => (
-                        <Card 
+                        <Card
                           key={location.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.location === location.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.location === location.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, location: location.value }))}
@@ -600,7 +665,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {currentStep === 3 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Wood Type (Refinish paths) */}
+                {stepKey === 'wood' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -611,11 +677,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {woodTypes.map((wood) => (
-                        <Card 
+                        <Card
                           key={wood.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.woodType === wood.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.woodType === wood.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, woodType: wood.value }))}
@@ -629,8 +695,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 4: Operational — Subfloor + Below Grade (New Install) */}
-                {currentStep === 4 && formData.serviceType === "new-installation" && (
+                {/* Step: Subfloor + Below Grade (Install paths) */}
+                {stepKey === 'subfloorGrade' && (
                   <div className="space-y-8">
                     <div className="text-center mb-2">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -639,25 +705,24 @@ const Quiz = () => {
                       <p className="text-grey">Two short questions that decide method, prep and warranty</p>
                     </div>
 
-                    {/* Subfloor */}
                     <div>
                       <Label className="text-navy font-semibold block mb-3 text-center">
                         What's under this floor?
                       </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {[
-                          { value: "concrete", label: "Concrete slab" },
-                          { value: "wood", label: "Plywood / wood" },
-                          { value: "not-sure", label: "Not sure" },
+                          { value: 'concrete', label: 'Concrete slab' },
+                          { value: 'wood', label: 'Plywood / wood' },
+                          { value: 'not-sure', label: 'Not sure' },
                         ].map((opt) => (
                           <Card
                             key={opt.value}
                             className={`cursor-pointer transition-all hover:shadow-md border-2 ${
                               formData.subfloor === opt.value
-                                ? "border-gold bg-gold/10"
-                                : "border-grey/20 hover:border-gold/50"
+                                ? 'border-gold bg-gold/10'
+                                : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData((prev) => ({ ...prev, subfloor: opt.value }))}
+                            onClick={() => setFormData(prev => ({ ...prev, subfloor: opt.value }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -667,25 +732,24 @@ const Quiz = () => {
                       </div>
                     </div>
 
-                    {/* Below grade */}
                     <div>
                       <Label className="text-navy font-semibold block mb-3 text-center">
                         Is this space below grade (basement)?
                       </Label>
                       <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
                         {[
-                          { value: "yes", label: "Yes" },
-                          { value: "no", label: "No" },
-                          { value: "not-sure", label: "Not sure" },
+                          { value: 'yes', label: 'Yes' },
+                          { value: 'no', label: 'No' },
+                          { value: 'not-sure', label: 'Not sure' },
                         ].map((opt) => (
                           <Card
                             key={opt.value}
                             className={`cursor-pointer transition-all hover:shadow-md border-2 ${
                               formData.belowGrade === opt.value
-                                ? "border-gold bg-gold/10"
-                                : "border-grey/20 hover:border-gold/50"
+                                ? 'border-gold bg-gold/10'
+                                : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData((prev) => ({ ...prev, belowGrade: opt.value }))}
+                            onClick={() => setFormData(prev => ({ ...prev, belowGrade: opt.value }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -697,8 +761,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 4: Living during refinish (Refinish path) */}
-                {currentStep === 4 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Living during refinish (Refinish paths) */}
+                {stepKey === 'livingDuringRefinish' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -709,18 +773,18 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
                       {[
-                        { value: "yes", label: "Yes", description: "We'll plan low-VOC finishes & ventilation" },
-                        { value: "no", label: "No", description: "Faster cure & full prep window" },
-                        { value: "not-sure", label: "Not sure", description: "We'll discuss options" },
+                        { value: 'yes', label: 'Yes', description: "We'll plan low-VOC finishes & ventilation" },
+                        { value: 'no', label: 'No', description: 'Faster cure & full prep window' },
+                        { value: 'not-sure', label: 'Not sure', description: "We'll discuss options" },
                       ].map((opt) => (
                         <Card
                           key={opt.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
                             formData.livingDuringRefinish === opt.value
-                              ? "border-gold bg-gold/10"
-                              : "border-grey/20 hover:border-gold/50"
+                              ? 'border-gold bg-gold/10'
+                              : 'border-grey/20 hover:border-gold/50'
                           }`}
-                          onClick={() => setFormData((prev) => ({ ...prev, livingDuringRefinish: opt.value }))}
+                          onClick={() => setFormData(prev => ({ ...prev, livingDuringRefinish: opt.value }))}
                         >
                           <CardContent className="p-4 text-center">
                             <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
@@ -732,29 +796,28 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 5: Square Footage (both paths) + Stairs toggle */}
-                {currentStep === 5 && (
+                {/* Step: Square Footage + Stairs */}
+                {stepKey === 'area' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        What's the approximate area to be {formData.serviceType === "new-installation" ? "covered" : "refinished"}?
+                        What's the approximate area for this project?
                       </h3>
                       <p className="text-grey">Choose from common sizes or enter a custom amount</p>
                     </div>
 
-                    {/* Quick Size Options */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                       {[
-                        { label: "Small Room", value: "200", subtitle: "~200 sq ft" },
-                        { label: "Medium Room", value: "400", subtitle: "~400 sq ft" },
-                        { label: "Large Room", value: "600", subtitle: "~600 sq ft" },
-                        { label: "Whole Floor", value: "1200", subtitle: "1200+ sq ft" }
+                        { label: 'Small Room', value: '200', subtitle: '~200 sq ft' },
+                        { label: 'Medium Room', value: '400', subtitle: '~400 sq ft' },
+                        { label: 'Large Room', value: '600', subtitle: '~600 sq ft' },
+                        { label: 'Whole Floor', value: '1200', subtitle: '1200+ sq ft' },
                       ].map((size) => (
-                        <Card 
+                        <Card
                           key={size.value}
                           className={`cursor-pointer transition-all hover:shadow-md border-2 p-3 text-center ${
-                            formData.squareFootage === size.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.squareFootage === size.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, squareFootage: size.value }))}
@@ -765,7 +828,6 @@ const Quiz = () => {
                       ))}
                     </div>
 
-                    {/* Custom Input */}
                     <div className="max-w-md mx-auto">
                       <Label htmlFor="squareFootage" className="text-navy font-medium">
                         Or enter custom square footage
@@ -785,24 +847,23 @@ const Quiz = () => {
                       </div>
                     </div>
 
-                    {/* Stairs scope toggle */}
                     <div className="max-w-md mx-auto pt-2">
                       <Label className="text-navy font-medium block mb-2 text-center">
                         Any stairs included in this project?
                       </Label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { value: "yes", label: "Yes" },
-                          { value: "no", label: "No" },
+                          { value: 'yes', label: 'Yes' },
+                          { value: 'no', label: 'No' },
                         ].map((opt) => (
                           <Card
                             key={opt.value}
                             className={`cursor-pointer transition-all hover:shadow-md border-2 ${
                               formData.stairsIncluded === opt.value
-                                ? "border-gold bg-gold/10"
-                                : "border-grey/20 hover:border-gold/50"
+                                ? 'border-gold bg-gold/10'
+                                : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData((prev) => ({ ...prev, stairsIncluded: opt.value }))}
+                            onClick={() => setFormData(prev => ({ ...prev, stairsIncluded: opt.value }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -812,7 +873,6 @@ const Quiz = () => {
                       </div>
                     </div>
 
-                    {/* Area Calculator Helper */}
                     <div className="text-center">
                       <details className="inline-block text-left">
                         <summary className="cursor-pointer text-sm text-gold hover:text-gold/80 font-medium">
@@ -829,37 +889,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 6: Timeline (New Install) | Color Change (Refinish) */}
-                {currentStep === 6 && formData.serviceType === "new-installation" && (
-                  <div className="space-y-6">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        When would you like to start the project?
-                      </h3>
-                      <p className="text-grey">This helps us schedule and prepare</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {timelines.map((timeline) => (
-                        <Card 
-                          key={timeline.value}
-                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.timeline === timeline.value 
-                              ? 'border-gold bg-gold/10' 
-                              : 'border-grey/20 hover:border-gold/50'
-                          }`}
-                          onClick={() => setFormData(prev => ({ ...prev, timeline: timeline.value }))}
-                        >
-                          <CardContent className="p-4 text-center">
-                            <h4 className="font-semibold text-navy">{timeline.label}</h4>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {currentStep === 6 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Color Change (Refinish paths) */}
+                {stepKey === 'colorChange' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -870,11 +901,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {colorOptions.map((color) => (
-                        <Card 
+                        <Card
                           key={color.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.colorChange === color.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.colorChange === color.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, colorChange: color.value }))}
@@ -889,37 +920,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 7: Budget (New Install) | Timeline (Refinish) */}
-                {currentStep === 7 && formData.serviceType === "new-installation" && (
-                  <div className="space-y-6">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        What's your budget range for this project?
-                      </h3>
-                      <p className="text-grey">This helps us provide accurate recommendations</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {budgetRanges.map((budget) => (
-                        <Card 
-                          key={budget.value}
-                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.budget === budget.value 
-                              ? 'border-gold bg-gold/10' 
-                              : 'border-grey/20 hover:border-gold/50'
-                          }`}
-                          onClick={() => setFormData(prev => ({ ...prev, budget: budget.value }))}
-                        >
-                          <CardContent className="p-4 text-center">
-                            <h4 className="font-semibold text-navy">{budget.label}</h4>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {currentStep === 7 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Timeline */}
+                {stepKey === 'timeline' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -930,11 +932,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {timelines.map((timeline) => (
-                        <Card 
+                        <Card
                           key={timeline.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.timeline === timeline.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.timeline === timeline.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, timeline: timeline.value }))}
@@ -948,8 +950,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 8: Budget (Refinish only) */}
-                {currentStep === 8 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Budget */}
+                {stepKey === 'budget' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -960,11 +962,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {budgetRanges.map((budget) => (
-                        <Card 
+                        <Card
                           key={budget.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.budget === budget.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.budget === budget.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, budget: budget.value }))}
@@ -979,13 +981,23 @@ const Quiz = () => {
                 )}
 
                 {/* Final Step: Contact Info */}
-                {currentStep === getTotalSteps() && (
+                {stepKey === 'contact' && (
                   <div className="space-y-6">
                     {/* Visual separator */}
                     <div className="py-8">
                       <div className="w-24 h-px bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-8"></div>
                     </div>
-                    
+
+                    {needsConsultation() && (
+                      <Alert className="border-gold/40 bg-gold/10">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-navy">
+                          <strong>Heads up:</strong> Based on your answers, we'll schedule a quick on-site consultation
+                          to give you accurate options before quoting.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         Get Your Personalized Recommendations
@@ -1084,21 +1096,21 @@ const Quiz = () => {
 
                 {/* Navigation */}
                 <div className={`flex mt-8 pt-6 border-t border-grey/20 ${
-                  currentStep === getTotalSteps() ? 'justify-center' : 'justify-between'
+                  stepKey === 'contact' ? 'justify-center' : 'justify-between'
                 }`}>
-                  {currentStep > 1 && currentStep < getTotalSteps() && (
-                    <Button 
-                      variant="outline" 
+                  {currentStep > 1 && stepKey !== 'contact' && (
+                    <Button
+                      variant="outline"
                       onClick={prevStep}
                       className="border-grey/30 text-grey hover:border-gold hover:text-gold"
                     >
                       Back
                     </Button>
                   )}
-                  
-                  <div className={currentStep === getTotalSteps() ? '' : 'ml-auto'}>
-                    {currentStep < getTotalSteps() ? (
-                      <Button 
+
+                  <div className={stepKey === 'contact' ? '' : 'ml-auto'}>
+                    {stepKey !== 'contact' ? (
+                      <Button
                         onClick={nextStep}
                         className="gold-gradient text-black font-semibold"
                       >
@@ -1106,14 +1118,14 @@ const Quiz = () => {
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
-                      <Button 
+                      <Button
                         onClick={handleSubmit}
                         disabled={
-                          isLoading || 
-                          Object.values(formErrors).some(error => error !== '') || 
-                          !formData.name || 
-                          !formData.email || 
-                          !formData.phone || 
+                          isLoading ||
+                          Object.values(formErrors).some(error => error !== '') ||
+                          !formData.name ||
+                          !formData.email ||
+                          !formData.phone ||
                           !formData.city
                         }
                         className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
