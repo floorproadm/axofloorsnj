@@ -1096,21 +1096,21 @@ const Quiz = () => {
 
                 {/* Navigation */}
                 <div className={`flex mt-8 pt-6 border-t border-grey/20 ${
-                  currentStep === getTotalSteps() ? 'justify-center' : 'justify-between'
+                  stepKey === 'contact' ? 'justify-center' : 'justify-between'
                 }`}>
-                  {currentStep > 1 && currentStep < getTotalSteps() && (
-                    <Button 
-                      variant="outline" 
+                  {currentStep > 1 && stepKey !== 'contact' && (
+                    <Button
+                      variant="outline"
                       onClick={prevStep}
                       className="border-grey/30 text-grey hover:border-gold hover:text-gold"
                     >
                       Back
                     </Button>
                   )}
-                  
-                  <div className={currentStep === getTotalSteps() ? '' : 'ml-auto'}>
-                    {currentStep < getTotalSteps() ? (
-                      <Button 
+
+                  <div className={stepKey === 'contact' ? '' : 'ml-auto'}>
+                    {stepKey !== 'contact' ? (
+                      <Button
                         onClick={nextStep}
                         className="gold-gradient text-black font-semibold"
                       >
@@ -1118,14 +1118,14 @@ const Quiz = () => {
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
-                      <Button 
+                      <Button
                         onClick={handleSubmit}
                         disabled={
-                          isLoading || 
-                          Object.values(formErrors).some(error => error !== '') || 
-                          !formData.name || 
-                          !formData.email || 
-                          !formData.phone || 
+                          isLoading ||
+                          Object.values(formErrors).some(error => error !== '') ||
+                          !formData.name ||
+                          !formData.email ||
+                          !formData.phone ||
                           !formData.city
                         }
                         className="gold-gradient text-black font-semibold px-8 py-3 text-base min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
