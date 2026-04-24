@@ -405,96 +405,63 @@ const Quiz = () => {
   };
 
   const nextStep = () => {
-    // Step 1: service type
-    if (currentStep === 1 && !formData.serviceType) {
-      toast({ title: "Please select a service type", variant: "destructive" });
-      return;
-    }
+    const key = getCurrentStepKey();
 
-    // Step 2: floorType (new) | currentCondition (refinish)
-    if (currentStep === 2) {
-      if (formData.serviceType === "new-installation" && !formData.floorType) {
-        toast({ title: "Please select a flooring type", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.currentCondition) {
-        toast({ title: "Please select the current condition", variant: "destructive" });
-        return;
-      }
-    }
+    const fail = (title: string, description?: string) => {
+      toast({ title, description, variant: 'destructive' });
+    };
 
-    // Step 3: location (new) | woodType (refinish)
-    if (currentStep === 3) {
-      if (formData.serviceType === "new-installation" && !formData.location) {
-        toast({ title: "Please select the location type", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.woodType) {
-        toast({ title: "Please select your wood type", variant: "destructive" });
-        return;
-      }
-    }
-
-    // Step 4: subfloor + below-grade (new) | living-during-refinish (refinish)
-    if (currentStep === 4) {
-      if (formData.serviceType === "new-installation") {
+    switch (key) {
+      case 'service':
+        if (!formData.serviceType) return fail('Please select a service type');
+        break;
+      case 'finishScope':
+        if (!formData.finishScope) return fail('Please tell us what the finish is for');
+        break;
+      case 'floorType':
+        if (!formData.floorType) return fail('Please select a flooring type');
+        break;
+      case 'condition':
+        if (!formData.currentCondition) return fail('Please select the current condition');
+        break;
+      case 'wood':
+        if (!formData.woodType) return fail('Please select your wood type');
+        break;
+      case 'location':
+        if (!formData.location) return fail('Please select the location type');
+        break;
+      case 'subfloorGrade':
         if (!formData.subfloor || !formData.belowGrade) {
-          toast({
-            title: "Please answer both questions",
-            description: "Subfloor type and basement (below grade) help us scope the job correctly.",
-            variant: "destructive",
-          });
-          return;
+          return fail(
+            'Please answer both questions',
+            'Subfloor type and basement (below grade) help us scope the job correctly.',
+          );
         }
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.livingDuringRefinish) {
-        toast({
-          title: "Please answer the question",
-          description: "Whether you'll be living in the home affects scheduling and prep.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    // Step 5: square footage (both paths)
-    if (currentStep === 5 && (!formData.squareFootage || formData.squareFootage === '0')) {
-      toast({
-        title: "Please specify the area size",
-        description: "Enter the square footage or select a preset size",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Step 6: timeline (new) | colorChange (refinish)
-    if (currentStep === 6) {
-      if (formData.serviceType === "new-installation" && !formData.timeline) {
-        toast({ title: "Please select a timeline", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.colorChange) {
-        toast({ title: "Please specify color preference", variant: "destructive" });
-        return;
-      }
-    }
-
-    // Step 7: budget (new) | timeline (refinish)
-    if (currentStep === 7) {
-      if (formData.serviceType === "new-installation" && !formData.budget) {
-        toast({ title: "Please select a budget range", variant: "destructive" });
-        return;
-      }
-      if (formData.serviceType === "floor-refinish" && !formData.timeline) {
-        toast({ title: "Please select a timeline", variant: "destructive" });
-        return;
-      }
-    }
-
-    // Step 8: budget (refinish only)
-    if (currentStep === 8 && formData.serviceType === "floor-refinish" && !formData.budget) {
-      toast({ title: "Please select a budget range", variant: "destructive" });
-      return;
+        break;
+      case 'livingDuringRefinish':
+        if (!formData.livingDuringRefinish) {
+          return fail(
+            'Please answer the question',
+            "Whether you'll be living in the home affects scheduling and prep.",
+          );
+        }
+        break;
+      case 'area':
+        if (!formData.squareFootage || formData.squareFootage === '0') {
+          return fail('Please specify the area size', 'Enter the square footage or select a preset size');
+        }
+        break;
+      case 'colorChange':
+        if (!formData.colorChange) return fail('Please specify color preference');
+        break;
+      case 'timeline':
+        if (!formData.timeline) return fail('Please select a timeline');
+        break;
+      case 'budget':
+        if (!formData.budget) return fail('Please select a budget range');
+        break;
+      default:
+        break;
     }
 
     const newStep = Math.min(currentStep + 1, getTotalSteps());
