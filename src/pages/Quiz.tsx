@@ -44,6 +44,10 @@ const Quiz = () => {
     currentCondition: "", // for refinish
     woodType: "", // for refinish
     location: "", // residential, apartment, commercial
+    subfloor: "", // concrete | wood | not-sure (new install)
+    belowGrade: "", // yes | no | not-sure (new install)
+    livingDuringRefinish: "", // yes | no | not-sure (refinish)
+    stairsIncluded: "", // yes | no
     squareFootage: "",
     timeline: "",
     budget: "",
