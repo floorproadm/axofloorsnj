@@ -468,7 +468,7 @@ const Quiz = () => {
     setCurrentStep(newStep);
   };
 
-  const prevStep = () => {
+  const stepKey = getCurrentStepKey();
     const newStep = Math.max(currentStep - 1, 1);
     setCurrentStep(newStep);
   };
