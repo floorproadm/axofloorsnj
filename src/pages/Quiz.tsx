@@ -318,7 +318,7 @@ const Quiz = () => {
             city: quizData.city,
             priority: quizData.priority,
             status: 'cold_lead',
-            notes: `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs: ${formData.stairsIncluded || 'N/A'}${needsConsultation() ? ' | NEEDS_CONSULTATION' : ''}`
+            notes: `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}${needsConsultation() ? ' | NEEDS_CONSULTATION' : ''}`
           }
         });
         console.log('Quiz lead sent to Notion successfully');
