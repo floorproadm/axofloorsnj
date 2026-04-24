@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight, Home, DollarSign, Wrench, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,6 +50,7 @@ const Quiz = () => {
     belowGrade: "", // yes | no | not-sure (new install)
     livingDuringRefinish: "", // yes | no | not-sure (refinish)
     stairsIncluded: "", // yes | no
+    stairsCount: "", // 1-5 | 6-10 | 11-15 | 16-20 | 20-plus
     squareFootage: "",
     timeline: "",
     budget: "",
@@ -316,7 +318,7 @@ const Quiz = () => {
             city: quizData.city,
             priority: quizData.priority,
             status: 'cold_lead',
-            notes: `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs: ${formData.stairsIncluded || 'N/A'}${needsConsultation() ? ' | NEEDS_CONSULTATION' : ''}`
+            notes: `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}${needsConsultation() ? ' | NEEDS_CONSULTATION' : ''}`
           }
         });
         console.log('Quiz lead sent to Notion successfully');
@@ -863,7 +865,11 @@ const Quiz = () => {
                                 ? 'border-gold bg-gold/10'
                                 : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData(prev => ({ ...prev, stairsIncluded: opt.value }))}
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              stairsIncluded: opt.value,
+                              stairsCount: opt.value === 'no' ? '' : prev.stairsCount
+                            }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -871,6 +877,29 @@ const Quiz = () => {
                           </Card>
                         ))}
                       </div>
+
+                      {formData.stairsIncluded === 'yes' && (
+                        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <Label className="text-navy font-medium block mb-2 text-center">
+                            How many steps?
+                          </Label>
+                          <Select
+                            value={formData.stairsCount}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, stairsCount: value }))}
+                          >
+                            <SelectTrigger className="w-full max-w-xs mx-auto text-center">
+                              <SelectValue placeholder="Select step count" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1-5">1 – 5 steps</SelectItem>
+                              <SelectItem value="6-10">6 – 10 steps</SelectItem>
+                              <SelectItem value="11-15">11 – 15 steps</SelectItem>
+                              <SelectItem value="16-20">16 – 20 steps</SelectItem>
+                              <SelectItem value="20-plus">20+ steps</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-center">
