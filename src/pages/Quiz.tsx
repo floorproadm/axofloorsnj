@@ -981,13 +981,23 @@ const Quiz = () => {
                 )}
 
                 {/* Final Step: Contact Info */}
-                {currentStep === getTotalSteps() && (
+                {stepKey === 'contact' && (
                   <div className="space-y-6">
                     {/* Visual separator */}
                     <div className="py-8">
                       <div className="w-24 h-px bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-8"></div>
                     </div>
-                    
+
+                    {needsConsultation() && (
+                      <Alert className="border-gold/40 bg-gold/10">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-navy">
+                          <strong>Heads up:</strong> Based on your answers, we'll schedule a quick on-site consultation
+                          to give you accurate options before quoting.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         Get Your Personalized Recommendations
