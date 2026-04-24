@@ -1116,7 +1116,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     return nra && (nra.severity === 'critical' || nra.severity === 'blocked');
   };
 
-  if (allSalesLeads.length === 0 && !searchQuery) {
+  if (allSalesLeads.length === 0 && !searchQuery && !partnerOnly) {
     return (
       <>
         <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
@@ -1130,6 +1130,23 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </Button>
         </div>
         <QuickNewLeadModal open={showNewLeadModal} onOpenChange={setShowNewLeadModal} onSuccess={onRefresh} />
+      </>
+    );
+  }
+
+  if (allSalesLeads.length === 0 && partnerOnly) {
+    return (
+      <>
+        <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
+          <Handshake className="w-12 h-12 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground">Nenhum lead de parceiros no funil.</h3>
+          <p className="text-sm text-muted-foreground/70 mt-2">
+            Seus parceiros ainda não enviaram leads ou eles já avançaram para produção.
+          </p>
+          <Button onClick={() => setPartnerOnly(false)} variant="outline" className="mt-4">
+            Ver todos os leads
+          </Button>
+        </div>
       </>
     );
   }
