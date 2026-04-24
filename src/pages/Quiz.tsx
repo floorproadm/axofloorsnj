@@ -492,7 +492,7 @@ const Quiz = () => {
                 Answer a few quick questions about your project — we'll send tailored options and a price range.
               </p>
               <div className="flex justify-center items-center gap-2 text-sm text-grey">
-                {Array.from({ length: getTotalSteps() }, (_, i) => (
+                {Array.from({ length: totalSteps }, (_, i) => (
                   <span key={i} className={`w-8 h-1 rounded ${currentStep >= i + 1 ? 'bg-gold' : 'bg-grey/30'}`}></span>
                 ))}
               </div>
@@ -501,7 +501,7 @@ const Quiz = () => {
             <Card className="bg-white border-2 border-gold/20 shadow-elegant">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl font-heading text-navy">
-                  Step {currentStep} of {getTotalSteps()}
+                  Step {currentStep} of {totalSteps}
                 </CardTitle>
               </CardHeader>
 
