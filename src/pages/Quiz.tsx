@@ -39,7 +39,8 @@ const Quiz = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState({
-    serviceType: "", // "new-installation" or "floor-refinish"
+    serviceType: "", // "new-installation" | "floor-refinish" | "install-plus-refinish" | "not-sure"
+    finishScope: "", // for install-plus-refinish: new-floor | existing | both | not-sure
     floorType: "", // for new installation
     currentCondition: "", // for refinish
     woodType: "", // for refinish
