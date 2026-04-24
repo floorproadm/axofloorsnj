@@ -506,8 +506,8 @@ const Quiz = () => {
               </CardHeader>
 
               <CardContent className="p-6 sm:p-8">
-                {/* Step 1: Service Type Selection */}
-                {currentStep === 1 && (
+                {/* Step: Service Type Selection */}
+                {stepKey === 'service' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -518,14 +518,19 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {serviceTypes.map((service) => (
-                        <Card 
+                        <Card
                           key={service.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.serviceType === service.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.serviceType === service.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
-                          onClick={() => setFormData(prev => ({ ...prev, serviceType: service.value }))}
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            serviceType: service.value,
+                            // reset finishScope when switching away from combo
+                            finishScope: service.value === 'install-plus-refinish' ? prev.finishScope : '',
+                          }))}
                         >
                           <CardContent className="p-6 text-center">
                             <h4 className="font-semibold text-navy mb-2">{service.label}</h4>
@@ -537,8 +542,39 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 2: Floor Type (New Installation) or Current Condition (Refinish) */}
-                {currentStep === 2 && formData.serviceType === "new-installation" && (
+                {/* Step: Finish Scope (Install + Refinish path) */}
+                {stepKey === 'finishScope' && (
+                  <div className="space-y-6">
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
+                        Is this finish for new wood we'll install, or for existing floors?
+                      </h3>
+                      <p className="text-grey">This decides which checks we need to run</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {finishScopeOptions.map((opt) => (
+                        <Card
+                          key={opt.value}
+                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                            formData.finishScope === opt.value
+                              ? 'border-gold bg-gold/10'
+                              : 'border-grey/20 hover:border-gold/50'
+                          }`}
+                          onClick={() => setFormData(prev => ({ ...prev, finishScope: opt.value }))}
+                        >
+                          <CardContent className="p-4 text-center">
+                            <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
+                            <p className="text-sm text-grey">{opt.description}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Step: Floor Type (Install paths) */}
+                {stepKey === 'floorType' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -549,11 +585,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {floorTypes.map((floor) => (
-                        <Card 
+                        <Card
                           key={floor.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.floorType === floor.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.floorType === floor.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, floorType: floor.value }))}
@@ -568,7 +604,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {currentStep === 2 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Current Condition (Refinish paths) */}
+                {stepKey === 'condition' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -579,11 +616,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {currentConditions.map((condition) => (
-                        <Card 
+                        <Card
                           key={condition.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.currentCondition === condition.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.currentCondition === condition.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, currentCondition: condition.value }))}
@@ -598,8 +635,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 3: Location (New Install) or Wood Type (Refinish) */}
-                {currentStep === 3 && formData.serviceType === "new-installation" && (
+                {/* Step: Location (Install paths) */}
+                {stepKey === 'location' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -610,11 +647,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 gap-4">
                       {locations.map((location) => (
-                        <Card 
+                        <Card
                           key={location.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.location === location.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.location === location.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, location: location.value }))}
@@ -628,7 +665,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {currentStep === 3 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Wood Type (Refinish paths) */}
+                {stepKey === 'wood' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -639,11 +677,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {woodTypes.map((wood) => (
-                        <Card 
+                        <Card
                           key={wood.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.woodType === wood.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.woodType === wood.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, woodType: wood.value }))}
@@ -657,8 +695,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 4: Operational — Subfloor + Below Grade (New Install) */}
-                {currentStep === 4 && formData.serviceType === "new-installation" && (
+                {/* Step: Subfloor + Below Grade (Install paths) */}
+                {stepKey === 'subfloorGrade' && (
                   <div className="space-y-8">
                     <div className="text-center mb-2">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -667,25 +705,24 @@ const Quiz = () => {
                       <p className="text-grey">Two short questions that decide method, prep and warranty</p>
                     </div>
 
-                    {/* Subfloor */}
                     <div>
                       <Label className="text-navy font-semibold block mb-3 text-center">
                         What's under this floor?
                       </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {[
-                          { value: "concrete", label: "Concrete slab" },
-                          { value: "wood", label: "Plywood / wood" },
-                          { value: "not-sure", label: "Not sure" },
+                          { value: 'concrete', label: 'Concrete slab' },
+                          { value: 'wood', label: 'Plywood / wood' },
+                          { value: 'not-sure', label: 'Not sure' },
                         ].map((opt) => (
                           <Card
                             key={opt.value}
                             className={`cursor-pointer transition-all hover:shadow-md border-2 ${
                               formData.subfloor === opt.value
-                                ? "border-gold bg-gold/10"
-                                : "border-grey/20 hover:border-gold/50"
+                                ? 'border-gold bg-gold/10'
+                                : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData((prev) => ({ ...prev, subfloor: opt.value }))}
+                            onClick={() => setFormData(prev => ({ ...prev, subfloor: opt.value }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -695,25 +732,24 @@ const Quiz = () => {
                       </div>
                     </div>
 
-                    {/* Below grade */}
                     <div>
                       <Label className="text-navy font-semibold block mb-3 text-center">
                         Is this space below grade (basement)?
                       </Label>
                       <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
                         {[
-                          { value: "yes", label: "Yes" },
-                          { value: "no", label: "No" },
-                          { value: "not-sure", label: "Not sure" },
+                          { value: 'yes', label: 'Yes' },
+                          { value: 'no', label: 'No' },
+                          { value: 'not-sure', label: 'Not sure' },
                         ].map((opt) => (
                           <Card
                             key={opt.value}
                             className={`cursor-pointer transition-all hover:shadow-md border-2 ${
                               formData.belowGrade === opt.value
-                                ? "border-gold bg-gold/10"
-                                : "border-grey/20 hover:border-gold/50"
+                                ? 'border-gold bg-gold/10'
+                                : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData((prev) => ({ ...prev, belowGrade: opt.value }))}
+                            onClick={() => setFormData(prev => ({ ...prev, belowGrade: opt.value }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -725,8 +761,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 4: Living during refinish (Refinish path) */}
-                {currentStep === 4 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Living during refinish (Refinish paths) */}
+                {stepKey === 'livingDuringRefinish' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -737,18 +773,18 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
                       {[
-                        { value: "yes", label: "Yes", description: "We'll plan low-VOC finishes & ventilation" },
-                        { value: "no", label: "No", description: "Faster cure & full prep window" },
-                        { value: "not-sure", label: "Not sure", description: "We'll discuss options" },
+                        { value: 'yes', label: 'Yes', description: "We'll plan low-VOC finishes & ventilation" },
+                        { value: 'no', label: 'No', description: 'Faster cure & full prep window' },
+                        { value: 'not-sure', label: 'Not sure', description: "We'll discuss options" },
                       ].map((opt) => (
                         <Card
                           key={opt.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
                             formData.livingDuringRefinish === opt.value
-                              ? "border-gold bg-gold/10"
-                              : "border-grey/20 hover:border-gold/50"
+                              ? 'border-gold bg-gold/10'
+                              : 'border-grey/20 hover:border-gold/50'
                           }`}
-                          onClick={() => setFormData((prev) => ({ ...prev, livingDuringRefinish: opt.value }))}
+                          onClick={() => setFormData(prev => ({ ...prev, livingDuringRefinish: opt.value }))}
                         >
                           <CardContent className="p-4 text-center">
                             <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
@@ -760,29 +796,28 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 5: Square Footage (both paths) + Stairs toggle */}
-                {currentStep === 5 && (
+                {/* Step: Square Footage + Stairs */}
+                {stepKey === 'area' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        What's the approximate area to be {formData.serviceType === "new-installation" ? "covered" : "refinished"}?
+                        What's the approximate area for this project?
                       </h3>
                       <p className="text-grey">Choose from common sizes or enter a custom amount</p>
                     </div>
 
-                    {/* Quick Size Options */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                       {[
-                        { label: "Small Room", value: "200", subtitle: "~200 sq ft" },
-                        { label: "Medium Room", value: "400", subtitle: "~400 sq ft" },
-                        { label: "Large Room", value: "600", subtitle: "~600 sq ft" },
-                        { label: "Whole Floor", value: "1200", subtitle: "1200+ sq ft" }
+                        { label: 'Small Room', value: '200', subtitle: '~200 sq ft' },
+                        { label: 'Medium Room', value: '400', subtitle: '~400 sq ft' },
+                        { label: 'Large Room', value: '600', subtitle: '~600 sq ft' },
+                        { label: 'Whole Floor', value: '1200', subtitle: '1200+ sq ft' },
                       ].map((size) => (
-                        <Card 
+                        <Card
                           key={size.value}
                           className={`cursor-pointer transition-all hover:shadow-md border-2 p-3 text-center ${
-                            formData.squareFootage === size.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.squareFootage === size.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, squareFootage: size.value }))}
@@ -793,7 +828,6 @@ const Quiz = () => {
                       ))}
                     </div>
 
-                    {/* Custom Input */}
                     <div className="max-w-md mx-auto">
                       <Label htmlFor="squareFootage" className="text-navy font-medium">
                         Or enter custom square footage
@@ -813,24 +847,23 @@ const Quiz = () => {
                       </div>
                     </div>
 
-                    {/* Stairs scope toggle */}
                     <div className="max-w-md mx-auto pt-2">
                       <Label className="text-navy font-medium block mb-2 text-center">
                         Any stairs included in this project?
                       </Label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { value: "yes", label: "Yes" },
-                          { value: "no", label: "No" },
+                          { value: 'yes', label: 'Yes' },
+                          { value: 'no', label: 'No' },
                         ].map((opt) => (
                           <Card
                             key={opt.value}
                             className={`cursor-pointer transition-all hover:shadow-md border-2 ${
                               formData.stairsIncluded === opt.value
-                                ? "border-gold bg-gold/10"
-                                : "border-grey/20 hover:border-gold/50"
+                                ? 'border-gold bg-gold/10'
+                                : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData((prev) => ({ ...prev, stairsIncluded: opt.value }))}
+                            onClick={() => setFormData(prev => ({ ...prev, stairsIncluded: opt.value }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -840,7 +873,6 @@ const Quiz = () => {
                       </div>
                     </div>
 
-                    {/* Area Calculator Helper */}
                     <div className="text-center">
                       <details className="inline-block text-left">
                         <summary className="cursor-pointer text-sm text-gold hover:text-gold/80 font-medium">
@@ -857,37 +889,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 6: Timeline (New Install) | Color Change (Refinish) */}
-                {currentStep === 6 && formData.serviceType === "new-installation" && (
-                  <div className="space-y-6">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        When would you like to start the project?
-                      </h3>
-                      <p className="text-grey">This helps us schedule and prepare</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {timelines.map((timeline) => (
-                        <Card 
-                          key={timeline.value}
-                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.timeline === timeline.value 
-                              ? 'border-gold bg-gold/10' 
-                              : 'border-grey/20 hover:border-gold/50'
-                          }`}
-                          onClick={() => setFormData(prev => ({ ...prev, timeline: timeline.value }))}
-                        >
-                          <CardContent className="p-4 text-center">
-                            <h4 className="font-semibold text-navy">{timeline.label}</h4>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {currentStep === 6 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Color Change (Refinish paths) */}
+                {stepKey === 'colorChange' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -898,11 +901,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {colorOptions.map((color) => (
-                        <Card 
+                        <Card
                           key={color.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.colorChange === color.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.colorChange === color.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, colorChange: color.value }))}
@@ -917,37 +920,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 7: Budget (New Install) | Timeline (Refinish) */}
-                {currentStep === 7 && formData.serviceType === "new-installation" && (
-                  <div className="space-y-6">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
-                        What's your budget range for this project?
-                      </h3>
-                      <p className="text-grey">This helps us provide accurate recommendations</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {budgetRanges.map((budget) => (
-                        <Card 
-                          key={budget.value}
-                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.budget === budget.value 
-                              ? 'border-gold bg-gold/10' 
-                              : 'border-grey/20 hover:border-gold/50'
-                          }`}
-                          onClick={() => setFormData(prev => ({ ...prev, budget: budget.value }))}
-                        >
-                          <CardContent className="p-4 text-center">
-                            <h4 className="font-semibold text-navy">{budget.label}</h4>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {currentStep === 7 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Timeline */}
+                {stepKey === 'timeline' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -958,11 +932,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {timelines.map((timeline) => (
-                        <Card 
+                        <Card
                           key={timeline.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.timeline === timeline.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.timeline === timeline.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, timeline: timeline.value }))}
@@ -976,8 +950,8 @@ const Quiz = () => {
                   </div>
                 )}
 
-                {/* Step 8: Budget (Refinish only) */}
-                {currentStep === 8 && formData.serviceType === "floor-refinish" && (
+                {/* Step: Budget */}
+                {stepKey === 'budget' && (
                   <div className="space-y-6">
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
@@ -988,11 +962,11 @@ const Quiz = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {budgetRanges.map((budget) => (
-                        <Card 
+                        <Card
                           key={budget.value}
                           className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                            formData.budget === budget.value 
-                              ? 'border-gold bg-gold/10' 
+                            formData.budget === budget.value
+                              ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, budget: budget.value }))}
