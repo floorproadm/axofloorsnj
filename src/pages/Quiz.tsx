@@ -131,9 +131,10 @@ const Quiz = () => {
   ];
 
   const getTotalSteps = () => {
-    if (formData.serviceType === "new-installation") return 7; // +1 subfloor/below-grade
-    if (formData.serviceType === "floor-refinish") return 8; // +1 living-during-refinish
-    return 8; // default
+    // Each path: service + path-specific qs + operational (subfloor or living) + area + timeline + budget + contact
+    if (formData.serviceType === "new-installation") return 8; // 1 svc, 2 floorType, 3 location, 4 subfloor/grade, 5 area, 6 timeline, 7 budget, 8 contact
+    if (formData.serviceType === "floor-refinish") return 9;   // 1 svc, 2 cond, 3 wood, 4 living, 5 area, 6 colorChange, 7 timeline, 8 budget, 9 contact
+    return 9;
   };
 
   const getRecommendedService = () => {
