@@ -936,6 +936,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const [viewMode, setViewMode] = useState<ViewMode>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [needsActionOnly, setNeedsActionOnly] = useState(false);
+  const [partnerOnly, setPartnerOnly] = useState(false);
 
   // Quick-action modal states
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
