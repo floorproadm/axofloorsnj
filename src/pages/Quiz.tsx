@@ -347,89 +347,98 @@ const Quiz = () => {
   };
 
   const nextStep = () => {
-    
-    // Validation logic based on current step and service type
+    // Step 1: service type
     if (currentStep === 1 && !formData.serviceType) {
-      toast({
-        title: "Please select a service type",
-        variant: "destructive"
-      });
+      toast({ title: "Please select a service type", variant: "destructive" });
       return;
     }
-    
+
+    // Step 2: floorType (new) | currentCondition (refinish)
     if (currentStep === 2) {
       if (formData.serviceType === "new-installation" && !formData.floorType) {
-        toast({
-          title: "Please select a flooring type",
-          variant: "destructive"
-        });
+        toast({ title: "Please select a flooring type", variant: "destructive" });
         return;
       }
       if (formData.serviceType === "floor-refinish" && !formData.currentCondition) {
-        toast({
-          title: "Please select the current condition",
-          variant: "destructive"
-        });
+        toast({ title: "Please select the current condition", variant: "destructive" });
         return;
       }
     }
-    
+
+    // Step 3: location (new) | woodType (refinish)
     if (currentStep === 3) {
-      if (formData.serviceType === "floor-refinish" && !formData.woodType) {
-        toast({
-          title: "Please select your wood type",
-          variant: "destructive"
-        });
+      if (formData.serviceType === "new-installation" && !formData.location) {
+        toast({ title: "Please select the location type", variant: "destructive" });
         return;
       }
-      if (formData.serviceType === "new-installation" && !formData.location) {
+      if (formData.serviceType === "floor-refinish" && !formData.woodType) {
+        toast({ title: "Please select your wood type", variant: "destructive" });
+        return;
+      }
+    }
+
+    // Step 4: subfloor + below-grade (new) | living-during-refinish (refinish)
+    if (currentStep === 4) {
+      if (formData.serviceType === "new-installation") {
+        if (!formData.subfloor || !formData.belowGrade) {
+          toast({
+            title: "Please answer both questions",
+            description: "Subfloor type and basement (below grade) help us scope the job correctly.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      if (formData.serviceType === "floor-refinish" && !formData.livingDuringRefinish) {
         toast({
-          title: "Please select the location type",
-          variant: "destructive"
+          title: "Please answer the question",
+          description: "Whether you'll be living in the home affects scheduling and prep.",
+          variant: "destructive",
         });
         return;
       }
     }
-    
-    // Validação para metragem quadrada (Step 4)
-    if (currentStep === 4 && (!formData.squareFootage || formData.squareFootage === '0')) {
+
+    // Step 5: square footage (both paths)
+    if (currentStep === 5 && (!formData.squareFootage || formData.squareFootage === '0')) {
       toast({
         title: "Please specify the area size",
         description: "Enter the square footage or select a preset size",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
-    // Validação para timeline 
-    if ((currentStep === 5 && formData.serviceType === "new-installation" && !formData.timeline) ||
-        (currentStep === 6 && formData.serviceType === "floor-refinish" && !formData.timeline)) {
-      toast({
-        title: "Please select a timeline",
-        variant: "destructive"
-      });
+
+    // Step 6: timeline (new) | colorChange (refinish)
+    if (currentStep === 6) {
+      if (formData.serviceType === "new-installation" && !formData.timeline) {
+        toast({ title: "Please select a timeline", variant: "destructive" });
+        return;
+      }
+      if (formData.serviceType === "floor-refinish" && !formData.colorChange) {
+        toast({ title: "Please specify color preference", variant: "destructive" });
+        return;
+      }
+    }
+
+    // Step 7: budget (new) | timeline (refinish)
+    if (currentStep === 7) {
+      if (formData.serviceType === "new-installation" && !formData.budget) {
+        toast({ title: "Please select a budget range", variant: "destructive" });
+        return;
+      }
+      if (formData.serviceType === "floor-refinish" && !formData.timeline) {
+        toast({ title: "Please select a timeline", variant: "destructive" });
+        return;
+      }
+    }
+
+    // Step 8: budget (refinish only)
+    if (currentStep === 8 && formData.serviceType === "floor-refinish" && !formData.budget) {
+      toast({ title: "Please select a budget range", variant: "destructive" });
       return;
     }
-    
-    // Validação para orçamento
-    if ((currentStep === 6 && formData.serviceType === "new-installation" && !formData.budget) ||
-        (currentStep === 7 && formData.serviceType === "floor-refinish" && !formData.budget)) {
-      toast({
-        title: "Please select a budget range",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Validação para mudança de cor (apenas refinish)
-    if (currentStep === 5 && formData.serviceType === "floor-refinish" && !formData.colorChange) {
-      toast({
-        title: "Please specify color preference",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+
     const newStep = Math.min(currentStep + 1, getTotalSteps());
     setCurrentStep(newStep);
   };
