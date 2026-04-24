@@ -258,7 +258,7 @@ const Quiz = () => {
             city: quizData.city,
             priority: quizData.priority,
             status: 'cold_lead',
-            notes: `Quiz submission - Service: ${formData.serviceType}, Square Footage: ${formData.squareFootage || 'Not specified'}, Timeline: ${formData.timeline || 'Not specified'}, Wood Type: ${formData.woodType || 'Not specified'}, Condition: ${formData.currentCondition || 'Not specified'}, Color Change: ${formData.colorChange || 'Not specified'}`
+            notes: `Quiz submission - Service: ${formData.serviceType}, Square Footage: ${formData.squareFootage || 'Not specified'}, Timeline: ${formData.timeline || 'Not specified'}, Wood Type: ${formData.woodType || 'Not specified'}, Condition: ${formData.currentCondition || 'Not specified'}, Color Change: ${formData.colorChange || 'Not specified'}, Subfloor: ${formData.subfloor || 'N/A'}, Below Grade: ${formData.belowGrade || 'N/A'}, Living During Refinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs Included: ${formData.stairsIncluded || 'N/A'}`
           }
         });
         console.log('Quiz lead sent to Notion successfully');
