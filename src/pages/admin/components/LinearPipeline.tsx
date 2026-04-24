@@ -973,10 +973,13 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   }, [leads, searchQuery, partnerOnly]);
 
   // Unfiltered sales leads for stats (funnel bar uses all data)
-  const allSalesLeads = useMemo(() => 
-    leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)),
-    [leads]
-  );
+  const allSalesLeads = useMemo(() => {
+    let filtered = leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage));
+    if (partnerOnly) {
+      filtered = filtered.filter(l => l.lead_source === 'partner_referral');
+    }
+    return filtered;
+  }, [leads, partnerOnly]);
 
   const activeLeadIds = useMemo(() => 
     allSalesLeads
