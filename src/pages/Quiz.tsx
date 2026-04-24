@@ -468,10 +468,13 @@ const Quiz = () => {
     setCurrentStep(newStep);
   };
 
-  const stepKey = getCurrentStepKey();
+  const prevStep = () => {
     const newStep = Math.max(currentStep - 1, 1);
     setCurrentStep(newStep);
   };
+
+  const stepKey = getCurrentStepKey();
+  const totalSteps = getTotalSteps();
 
   return (
     <div className="min-h-screen bg-background">
