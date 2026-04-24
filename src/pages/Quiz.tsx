@@ -865,7 +865,11 @@ const Quiz = () => {
                                 ? 'border-gold bg-gold/10'
                                 : 'border-grey/20 hover:border-gold/50'
                             }`}
-                            onClick={() => setFormData(prev => ({ ...prev, stairsIncluded: opt.value }))}
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              stairsIncluded: opt.value,
+                              stairsCount: opt.value === 'no' ? '' : prev.stairsCount
+                            }))}
                           >
                             <CardContent className="p-3 text-center">
                               <span className="font-medium text-navy text-sm">{opt.label}</span>
@@ -873,6 +877,29 @@ const Quiz = () => {
                           </Card>
                         ))}
                       </div>
+
+                      {formData.stairsIncluded === 'yes' && (
+                        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <Label className="text-navy font-medium block mb-2 text-center">
+                            How many steps?
+                          </Label>
+                          <Select
+                            value={formData.stairsCount}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, stairsCount: value }))}
+                          >
+                            <SelectTrigger className="w-full max-w-xs mx-auto text-center">
+                              <SelectValue placeholder="Select step count" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1-5">1 – 5 steps</SelectItem>
+                              <SelectItem value="6-10">6 – 10 steps</SelectItem>
+                              <SelectItem value="11-15">11 – 15 steps</SelectItem>
+                              <SelectItem value="16-20">16 – 20 steps</SelectItem>
+                              <SelectItem value="20-plus">20+ steps</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-center">
