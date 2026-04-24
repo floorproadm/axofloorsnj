@@ -80,7 +80,16 @@ const Quiz = () => {
 
   const serviceTypes = [
     { value: "new-installation", label: "New Installation", description: "Installing new flooring" },
-    { value: "floor-refinish", label: "Floor Refinish", description: "Refinishing existing floors" }
+    { value: "floor-refinish", label: "Refinishing (Sand & Finish)", description: "Refinishing existing floors" },
+    { value: "install-plus-refinish", label: "Installation + Refinishing", description: "Both — install new and refinish" },
+    { value: "not-sure", label: "Not sure / Need guidance", description: "Talk to an expert first" },
+  ];
+
+  const finishScopeOptions = [
+    { value: "new-floor", label: "For the new floor being installed", description: "Finish only the floor we'll install" },
+    { value: "existing", label: "For existing floors", description: "Refinish floors already in place" },
+    { value: "both", label: "Both", description: "New install + refinish existing areas" },
+    { value: "not-sure", label: "Not sure", description: "We'll inspect and recommend" },
   ];
 
   const floorTypes = [
