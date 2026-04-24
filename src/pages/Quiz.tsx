@@ -50,6 +50,7 @@ const Quiz = () => {
     belowGrade: "", // yes | no | not-sure (new install)
     livingDuringRefinish: "", // yes | no | not-sure (refinish)
     stairsIncluded: "", // yes | no
+    stairsCount: "", // 1-5 | 6-10 | 11-15 | 16-20 | 20-plus
     squareFootage: "",
     timeline: "",
     budget: "",
