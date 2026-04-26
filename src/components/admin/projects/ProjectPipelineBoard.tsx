@@ -323,6 +323,6 @@ function ProjectCard({
           )}
         </div>
       )}
-    </button>
+    </div>
   );
 }
