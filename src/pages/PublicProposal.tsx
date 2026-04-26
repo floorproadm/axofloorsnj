@@ -96,12 +96,21 @@ export default function PublicProposal() {
             .eq("share_token", token);
         }
 
-        const [projRes, custRes] = await Promise.all([
+        const [projRes, custRes, companyRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle(),
+          supabase.from("company_settings").select("*").limit(1).maybeSingle(),
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
+        setCompany(companyRes.data);
+        const logoPath = (companyRes.data as any)?.logo_url;
+        if (logoPath) {
+          const { data: signed } = await supabase.storage
+            .from("media")
+            .createSignedUrl(logoPath, 3600);
+          if (signed?.signedUrl) setLogoUrl(signed.signedUrl);
+        }
       } catch (e: any) {
         setError(e.message || "Failed to load proposal");
       } finally {
