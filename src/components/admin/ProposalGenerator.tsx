@@ -441,15 +441,15 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* CTA */}
           <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
-            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>Ready to Transform Your Floors?</h3>
-            <p style={{ fontSize: 14, opacity: 0.9 }}>Contact Eduardo to discuss your project and choose the best option for your home.</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>(732) 351-8653</p>
+            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>Ready to move forward?</h3>
+            <p style={{ fontSize: 14, opacity: 0.9 }}>Contact us to discuss your project and choose the best option for your home.</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>{brand.phone}</p>
           </div>
 
           {/* Footer */}
           <div style={{ textAlign: 'center', paddingTop: 20, borderTop: '1px solid #e5e7eb', color: '#888', fontSize: 11 }}>
-            <p>AXO Floors — Professional Flooring Services</p>
-            <p>www.axofloors.com | info@axofloors.com</p>
+            <p>{brand.name} — {brand.tagline}</p>
+            <p>{[brand.website, brand.email].filter(Boolean).join(' | ')}</p>
             <p style={{ marginTop: 4 }}>Generated: {format(new Date(proposal.created_at), 'MMM d, yyyy h:mm a')}</p>
           </div>
         </div>
