@@ -190,7 +190,32 @@ export default function BrandingSettings() {
         </CardContent>
       </Card>
 
-      {/* Card 2: Paleta de Cores */}
+      {/* Card 2: Informações de Contato */}
+      <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Phone className="w-5 h-5 text-emerald-500" />
+            Informações de Contato
+          </CardTitle>
+          <CardDescription>Exibido em propostas, faturas e materiais públicos.</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-4 max-w-lg">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Telefone</Label>
+            <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(732) 351-8653" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@empresa.com" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="website">Website</Label>
+            <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="www.empresa.com" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 3: Paleta de Cores */}
       <Card className="border-l-4 border-l-[hsl(var(--gold-warm))] shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
