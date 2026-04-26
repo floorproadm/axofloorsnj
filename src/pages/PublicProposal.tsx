@@ -332,14 +332,15 @@ export default function PublicProposal() {
             Questions?
           </p>
           <p className="text-sm mt-1 opacity-90">
-            Call or text Eduardo — happy to walk you through any tier.
+            Call or text us — happy to walk you through any tier.
           </p>
           <a
-            href="tel:7323518653"
-            className="mt-3 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-[#0f1b3d] font-semibold rounded-md py-2.5"
+            href={`tel:${phoneTel}`}
+            className="mt-3 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 font-semibold rounded-md py-2.5"
+            style={{ color: brand.secondary }}
           >
             <Phone className="w-4 h-4" />
-            (732) 351-8653
+            {brand.phone}
           </a>
         </Card>
 
