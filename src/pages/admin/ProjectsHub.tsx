@@ -87,6 +87,24 @@ export default function ProjectsHub() {
     };
   }, [flagged]);
 
+  const facets = useMemo(() => {
+    const partners = new Map<string, string>();
+    const services = new Set<string>();
+    const cities = new Set<string>();
+    for (const p of projects) {
+      if (p.referred_by_partner_id && p.partner_name) {
+        partners.set(p.referred_by_partner_id, p.partner_name);
+      }
+      if (p.project_type) services.add(p.project_type);
+      if (p.city) cities.add(p.city);
+    }
+    return {
+      partners: Array.from(partners.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+      services: Array.from(services).sort(),
+      cities: Array.from(cities).sort(),
+    };
+  }, [projects]);
+
   const filtered = useMemo(() => {
     let list = flagged;
     if (search) {
@@ -111,6 +129,19 @@ export default function ProjectsHub() {
           isThisWeek(f.p.start_date),
       );
     }
+    if (partnerFilter !== "all") {
+      if (partnerFilter === "__none__") {
+        list = list.filter((f) => !f.p.referred_by_partner_id);
+      } else {
+        list = list.filter((f) => f.p.referred_by_partner_id === partnerFilter);
+      }
+    }
+    if (serviceFilter !== "all") {
+      list = list.filter((f) => f.p.project_type === serviceFilter);
+    }
+    if (cityFilter !== "all") {
+      list = list.filter((f) => f.p.city === cityFilter);
+    }
     if (chips.size > 0) {
       list = list.filter((f) => {
         if (chips.has("at_risk") && !f.atRisk) return false;
@@ -121,10 +152,35 @@ export default function ProjectsHub() {
         return true;
       });
     }
-    return list.map((f) => f.p);
-  }, [flagged, search, kpiFilter, chips]);
 
-  const hasFilters = !!search || kpiFilter !== null || chips.size > 0;
+    const sorted = [...list];
+    if (sortBy === "revenue_desc") {
+      sorted.sort(
+        (a, b) =>
+          (b.p.job_costs?.estimated_revenue ?? 0) - (a.p.job_costs?.estimated_revenue ?? 0),
+      );
+    } else if (sortBy === "margin_asc") {
+      sorted.sort(
+        (a, b) =>
+          (a.p.job_costs?.margin_percent ?? 999) - (b.p.job_costs?.margin_percent ?? 999),
+      );
+    } else if (sortBy === "start_asc") {
+      sorted.sort((a, b) => {
+        const ad = a.p.start_date ? new Date(a.p.start_date).getTime() : Infinity;
+        const bd = b.p.start_date ? new Date(b.p.start_date).getTime() : Infinity;
+        return ad - bd;
+      });
+    }
+    return sorted.map((f) => f.p);
+  }, [flagged, search, kpiFilter, chips, partnerFilter, serviceFilter, cityFilter, sortBy]);
+
+  const hasFilters =
+    !!search ||
+    kpiFilter !== null ||
+    chips.size > 0 ||
+    partnerFilter !== "all" ||
+    serviceFilter !== "all" ||
+    cityFilter !== "all";
 
   function toggleChip(k: SmartFilter) {
     setChips((prev) => {
