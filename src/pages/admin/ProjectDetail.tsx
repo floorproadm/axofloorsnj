@@ -107,27 +107,15 @@ export default function ProjectDetail() {
       ]}
     >
       <div className="space-y-6">
-        {/* Back + Status + Delete */}
+        {/* Back + Status */}
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-1.5" />
             Voltar
           </Button>
-          <div className="flex items-center gap-2">
-            <Badge className={statusColors[project.project_status] || 'bg-muted'}>
-              {project.project_status}
-            </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => setConfirmDelete(true)}
-              title="Delete project"
-            >
-              <Trash2 className="h-4 w-4 mr-1.5" />
-              Delete
-            </Button>
-          </div>
+          <Badge className={statusColors[project.project_status] || 'bg-muted'}>
+            {project.project_status}
+          </Badge>
         </div>
 
         <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
@@ -202,6 +190,35 @@ export default function ProjectDetail() {
                     <p className="text-sm">{project.notes}</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Danger Zone */}
+            <Card className="mt-6 border-destructive/30">
+              <CardHeader>
+                <CardTitle className="text-sm text-destructive flex items-center gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Danger Zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="text-sm font-medium">Apagar projeto</p>
+                    <p className="text-xs text-muted-foreground">
+                      Custos, medições, faturas e chat vinculados serão removidos. Ação irreversível.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1.5" />
+                    Delete project
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
