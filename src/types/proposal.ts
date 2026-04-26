@@ -13,6 +13,14 @@ export interface ProposalTier {
   features: string[];
 }
 
+export type ProposalMode = 'tiers' | 'direct';
+
+export interface ProposalLineItem {
+  description: string;
+  category: string;
+  amount: number;
+}
+
 export interface ProposalData {
   project_id: string;
   proposal_id?: string;
@@ -24,7 +32,11 @@ export interface ProposalData {
   address: string;
   project_type: string;
   square_footage: number;
+  mode: ProposalMode;
   tiers: ProposalTier[];
+  flat_price?: number;
+  flat_margin_percent?: number;
+  line_items?: ProposalLineItem[];
   created_at: string;
   valid_until: string;
   base_cost: number; // Total cost (labor + material + additional)

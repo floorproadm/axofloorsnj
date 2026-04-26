@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -24,10 +26,26 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
+  const [flatPriceInput, setFlatPriceInput] = useState<string>('');
   const printRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async () => {
-    const data = await fetchProjectData(projectId);
+    if (!mode) {
+      toast.error('Choose a proposal mode first.');
+      return;
+    }
+    if (mode === 'direct') {
+      const price = Number(flatPriceInput);
+      if (!price || price <= 0) {
+        toast.error('Enter a valid price for Direct mode.');
+        return;
+      }
+      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: price });
+      if (data) setProposal(data);
+      return;
+    }
+    const data = await fetchProjectData(projectId, { mode: 'tiers' });
     if (data) setProposal(data);
   };
 
@@ -137,13 +155,75 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             Generate Proposal
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div className="text-sm text-muted-foreground">
-            <p>This will generate a professional 3-tier proposal (Good / Better / Best).</p>
-            <p className="mt-2 font-medium">Requirements:</p>
-            <ul className="list-disc ml-5 mt-1">
+            <p className="font-medium text-foreground mb-2">Choose proposal mode</p>
+            <p>Pick how you want to present pricing to this client.</p>
+          </div>
+
+          {/* Mode toggle */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setMode('tiers')}
+              className={`text-left rounded-lg border-2 p-4 transition-all ${
+                mode === 'tiers'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Layers className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm">Tiers (Good/Better/Best)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                3 options with progressive scope. Best for refinishing where upsell is possible.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMode('direct')}
+              className={`text-left rounded-lg border-2 p-4 transition-all ${
+                mode === 'direct'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm">Direct (single price)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                One price + line items breakdown. Best for install, stairs, repairs, baseboards.
+              </p>
+            </button>
+          </div>
+
+          {/* Direct mode price input */}
+          {mode === 'direct' && (
+            <div className="space-y-2 p-3 bg-muted/30 rounded-lg border">
+              <Label htmlFor="flat-price" className="text-sm">Final price ($)</Label>
+              <Input
+                id="flat-price"
+                type="number"
+                inputMode="decimal"
+                placeholder="e.g. 4500"
+                value={flatPriceInput}
+                onChange={(e) => setFlatPriceInput(e.target.value)}
+                className="text-lg font-semibold"
+              />
+              <p className="text-xs text-muted-foreground">
+                Margin is calculated automatically against job costs and validated against company minimum.
+              </p>
+            </div>
+          )}
+
+          <div className="text-xs text-muted-foreground border-t pt-3">
+            <p className="font-medium text-foreground mb-1">Requirements</p>
+            <ul className="list-disc ml-5 space-y-0.5">
               <li>Job costs must be calculated</li>
-              <li>All tiers must meet minimum margin</li>
+              <li>Margin must meet company minimum</li>
             </ul>
           </div>
 
@@ -155,7 +235,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           )}
 
           <div className="flex gap-2">
-            <Button onClick={handleGenerate} disabled={isLoading}>
+            <Button
+              onClick={handleGenerate}
+              disabled={isLoading || !mode || (mode === 'direct' && !flatPriceInput)}
+            >
               {isLoading ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
               ) : (
@@ -196,14 +279,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       <Card className="bg-muted/50">
         <CardContent className="py-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Tier Margins:</span>
+            <span className="font-medium">
+              {proposal.mode === 'direct' ? 'Margin:' : 'Tier Margins:'}
+            </span>
             <div className="flex gap-4">
-              {proposal.tiers.map((tier) => (
-                <span key={tier.id} className="flex items-center gap-1">
+              {proposal.mode === 'direct' ? (
+                <span className="flex items-center gap-1">
                   <Check className="h-3 w-3 text-green-500" />
-                  {tier.name}: {tier.margin_percent}%
+                  {formatCurrency(proposal.flat_price ?? 0)} · {proposal.flat_margin_percent}%
                 </span>
-              ))}
+              ) : (
+                proposal.tiers.map((tier) => (
+                  <span key={tier.id} className="flex items-center gap-1">
+                    <Check className="h-3 w-3 text-green-500" />
+                    {tier.name}: {tier.margin_percent}%
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </CardContent>
@@ -236,9 +328,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           <div style={{ marginBottom: 25 }}>
             <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Site Assessment</h2>
             <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
-              Based on our evaluation of your {proposal.square_footage} sqft {proposal.project_type} project, 
-              we've prepared three tailored options. Each tier uses professional-grade materials and our proven 
-              AXO Transformation Method to ensure lasting results.
+              {proposal.mode === 'direct'
+                ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
+                : `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`}
             </p>
           </div>
 
@@ -266,12 +358,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             Valid until: <strong>{format(new Date(proposal.valid_until), 'MMMM d, yyyy')}</strong>
           </div>
 
-          {/* Tier Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
-            {proposal.tiers.map((tier, index) => (
-              <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} />
-            ))}
-          </div>
+          {/* Pricing — Tiers OR Direct (single card with line items) */}
+          {proposal.mode === 'direct' ? (
+            <div style={{ marginBottom: 30 }}>
+              <PrintDirectCard
+                price={proposal.flat_price ?? 0}
+                lineItems={proposal.line_items ?? []}
+                projectType={proposal.project_type}
+                formatCurrency={formatCurrency}
+              />
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
+              {proposal.tiers.map((tier, index) => (
+                <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} />
+              ))}
+            </div>
+          )}
 
           {/* Timeline */}
           <div style={{ marginBottom: 25 }}>
@@ -359,6 +462,83 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
+  price: number;
+  lineItems: { description: string; category: string; amount: number }[];
+  projectType: string;
+  formatCurrency: (v: number) => string;
+}) {
+  const grouped = lineItems.reduce<Record<string, { description: string; amount: number }[]>>((acc, item) => {
+    const key = item.category || 'other';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push({ description: item.description, amount: item.amount });
+    return acc;
+  }, {});
+
+  const categoryLabels: Record<string, string> = {
+    labor: 'Labor',
+    material: 'Materials',
+    materials: 'Materials',
+    equipment: 'Equipment',
+    additional: 'Additional Services',
+    other: 'Other',
+  };
+
+  return (
+    <div style={{
+      border: '2px solid #d97706',
+      borderRadius: 12,
+      padding: 28,
+      background: '#fffbeb',
+    }}>
+      <div style={{
+        display: 'inline-block',
+        background: '#d97706',
+        color: '#fff',
+        fontSize: 9,
+        padding: '3px 10px',
+        borderRadius: 10,
+        textTransform: 'uppercase' as const,
+        letterSpacing: 1,
+        marginBottom: 12,
+      }}>
+        Total Project Investment
+      </div>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: '#1e3a5f', marginBottom: 4 }}>
+        {projectType}
+      </h3>
+      <p style={{ fontSize: 42, fontWeight: 700, color: '#d97706', margin: '6px 0 18px 0' }}>
+        {formatCurrency(price)}
+      </p>
+
+      {lineItems.length > 0 ? (
+        <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #f0e2c7' }}>
+          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: '#1e3a5f', marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+            Scope Breakdown
+          </h4>
+          {Object.entries(grouped).map(([cat, items]) => (
+            <div key={cat} style={{ marginBottom: 10 }}>
+              <p style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>
+                {categoryLabels[cat] || cat}
+              </p>
+              {items.map((it, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: i < items.length - 1 ? '1px dashed #eee' : 'none' }}>
+                  <span style={{ color: '#444' }}>{it.description}</span>
+                  <span style={{ color: '#666', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(it.amount)}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style={{ fontSize: 13, color: '#666', fontStyle: 'italic' }}>
+          Includes all labor, materials, and equipment required to complete this project per the agreed scope.
+        </p>
+      )}
     </div>
   );
 }
