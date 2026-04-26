@@ -331,9 +331,18 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       <div ref={printRef} className="bg-white rounded-lg border overflow-hidden">
         <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40 }}>
           {/* Hero */}
-          <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: '3px solid var(--brand-secondary)', marginBottom: 30 }}>
-            <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: brand.secondary, marginBottom: 8 }}>AXO Floors</h1>
-            <p style={{ color: brand.primary, fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>Professional Flooring Services</p>
+          <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: `3px solid ${brand.secondary}`, marginBottom: 30 }}>
+            {brand.logoUrl ? (
+              <img
+                src={brand.logoUrl}
+                alt={brand.name}
+                style={{ maxHeight: 64, maxWidth: 240, objectFit: 'contain', margin: '0 auto 10px', display: 'block' }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: brand.secondary, marginBottom: 8 }}>{brand.name}</h1>
+            )}
+            <p style={{ color: brand.primary, fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>{brand.tagline}</p>
             {proposal.proposal_number && (
               <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>#{proposal.proposal_number}</p>
             )}
