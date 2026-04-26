@@ -92,20 +92,20 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
   const handleConfirmUpload = async () => {
     if (!pendingFile || !pendingType) return;
 
-    const url = await uploadImage(pendingFile, pendingType, {
+    const result = await uploadImage(pendingFile, pendingType, {
       stain_color: stainColor || undefined,
       wood_species: woodSpecies || undefined,
     });
 
-    if (!url) {
+    if (!result) {
       closeDialog();
       return;
     }
 
     if (pendingType === 'before') {
-      await addProof(url, null);
+      await addProof(result.url, null);
     } else {
-      await addProof(null, url);
+      await addProof(null, result.url);
     }
 
     closeDialog();
