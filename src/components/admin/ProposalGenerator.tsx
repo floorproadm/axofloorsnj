@@ -458,11 +458,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   );
 }
 
-function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
+type Brand = {
+  name: string;
+  tagline: string;
+  primary: string;
+  secondary: string;
+  phone: string;
+  email: string;
+  website: string;
+  logoUrl: string;
+};
+
+function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
   tier: ProposalTier;
   isRecommended: boolean;
   formatCurrency: (v: number) => string;
   sqft: number;
+  brand: Brand;
 }) {
   const pricePerSqft = sqft > 0 ? (tier.price / sqft).toFixed(2) : '0';
   return (
