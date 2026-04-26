@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LayoutGrid, List, Plus, Inbox } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LayoutGrid, List, Plus, Inbox, ArrowUpDown } from "lucide-react";
 import { useProjectsHub } from "@/hooks/useProjectsHub";
 import { useProjectSignals, computeRisk } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
@@ -15,6 +16,8 @@ import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+
+type SortKey = "recent" | "revenue_desc" | "margin_asc" | "start_asc";
 
 function isThisWeek(dateStr: string | null) {
   if (!dateStr) return false;
