@@ -119,28 +119,28 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         body { font-family: 'Roboto', Arial, sans-serif; color: #1a1a2e; background: #fff; }
         h1, h2, h3, h4, h5 { font-family: 'Montserrat', sans-serif; }
         .print-page { max-width: 800px; margin: 0 auto; padding: 40px; }
-        .hero-section { text-align: center; padding: 40px 20px; border-bottom: 3px solid #1e3a5f; margin-bottom: 30px; }
-        .hero-section h1 { font-size: 32px; color: #1e3a5f; margin-bottom: 8px; }
-        .hero-section .subtitle { color: #d97706; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+        .hero-section { text-align: center; padding: 40px 20px; border-bottom: 3px solid var(--brand-secondary); margin-bottom: 30px; }
+        .hero-section h1 { font-size: 32px; color: var(--brand-secondary); margin-bottom: 8px; }
+        .hero-section .subtitle { color: var(--brand-primary); font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
         .hero-section .proposal-num { color: #888; font-size: 12px; margin-top: 8px; }
         .section { margin-bottom: 30px; }
-        .section-title { font-size: 18px; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #d97706; }
+        .section-title { font-size: 18px; color: var(--brand-secondary); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-primary); }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .info-item { font-size: 14px; }
         .info-item .label { color: #888; font-size: 12px; }
         .info-item .value { font-weight: 500; }
         .method-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         .method-step { text-align: center; padding: 15px 10px; border: 1px solid #e5e7eb; border-radius: 8px; }
-        .method-step .step-num { display: inline-block; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; background: #1e3a5f; color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-        .method-step h4 { font-size: 13px; color: #1e3a5f; margin-bottom: 4px; }
+        .method-step .step-num { display: inline-block; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; background: var(--brand-secondary); color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .method-step h4 { font-size: 13px; color: var(--brand-secondary); margin-bottom: 4px; }
         .method-step p { font-size: 11px; color: #666; }
         .tiers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .tier-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; }
-        .tier-card.recommended { border-color: #d97706; background: #fffbeb; }
-        .tier-card .tier-badge { display: inline-block; background: #1e3a5f; color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .tier-card.recommended .tier-badge { background: #d97706; }
-        .tier-card .tier-name { font-size: 20px; font-weight: 700; color: #1e3a5f; }
-        .tier-card .tier-price { font-size: 32px; font-weight: 700; color: #d97706; margin: 10px 0; }
+        .tier-card.recommended { border-color: var(--brand-primary); background: #fffbeb; }
+        .tier-card .tier-badge { display: inline-block; background: var(--brand-secondary); color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .tier-card.recommended .tier-badge { background: var(--brand-primary); }
+        .tier-card .tier-name { font-size: 20px; font-weight: 700; color: var(--brand-secondary); }
+        .tier-card .tier-price { font-size: 32px; font-weight: 700; color: var(--brand-primary); margin: 10px 0; }
         .tier-card .tier-sqft { font-size: 12px; color: #888; margin-bottom: 12px; }
         .tier-card .tier-desc { font-size: 12px; color: #666; margin-bottom: 12px; }
         .tier-card .feature-list { list-style: none; text-align: left; }
@@ -148,14 +148,14 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         .tier-card .feature-list li:before { content: "✓"; color: #22c55e; position: absolute; left: 0; font-weight: 700; }
         .guarantee-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .guarantee-card { text-align: center; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; }
-        .guarantee-card .guarantee-period { font-size: 28px; font-weight: 700; color: #d97706; }
+        .guarantee-card .guarantee-period { font-size: 28px; font-weight: 700; color: var(--brand-primary); }
         .guarantee-card .guarantee-type { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .guarantee-card p { font-size: 12px; color: #666; margin-top: 6px; }
         .valid-until { background: #fef3c7; padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; margin-bottom: 20px; }
-        .cta-section { background: #1e3a5f; color: #fff; padding: 25px; border-radius: 12px; text-align: center; }
-        .cta-section h3 { color: #d97706; margin-bottom: 8px; }
+        .cta-section { background: var(--brand-secondary); color: #fff; padding: 25px; border-radius: 12px; text-align: center; }
+        .cta-section h3 { color: var(--brand-primary); margin-bottom: 8px; }
         .cta-section p { font-size: 14px; opacity: 0.9; }
-        .cta-section .phone { font-size: 20px; font-weight: 700; color: #d97706; margin-top: 10px; }
+        .cta-section .phone { font-size: 20px; font-weight: 700; color: var(--brand-primary); margin-top: 10px; }
         .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb; margin-top: 30px; color: #888; font-size: 11px; }
         @media print {
           body { padding: 0; }
@@ -331,7 +331,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       <div ref={printRef} className="bg-white rounded-lg border overflow-hidden">
         <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40 }}>
           {/* Hero */}
-          <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: '3px solid #1e3a5f', marginBottom: 30 }}>
+          <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: '3px solid var(--brand-secondary)', marginBottom: 30 }}>
             <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: brand.secondary, marginBottom: 8 }}>AXO Floors</h1>
             <p style={{ color: brand.primary, fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>Professional Flooring Services</p>
             {proposal.proposal_number && (
@@ -341,7 +341,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Customer Info */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Prepared For</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Prepared For</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <div><span style={{ color: '#888', fontSize: 12 }}>Client</span><br/><strong>{proposal.customer_name}</strong></div>
               <div><span style={{ color: '#888', fontSize: 12 }}>Address</span><br/>{proposal.address}</div>
@@ -352,7 +352,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Site Assessment */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Site Assessment</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Site Assessment</h2>
             <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
               {proposal.mode === 'direct'
                 ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
@@ -362,7 +362,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* AXO Transformation Method */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>The AXO Transformation Method</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>The AXO Transformation Method</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
                 { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
@@ -404,7 +404,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Timeline */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Estimated Timeline</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Estimated Timeline</h2>
             <p style={{ fontSize: 14, color: '#444' }}>
               Based on {proposal.square_footage} sqft, we estimate <strong>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
               Our crew works 8AM–5PM with full area protection.
@@ -413,7 +413,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Woody's Guarantee */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Woody's Guarantee</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Woody's Guarantee</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {[
                 { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
@@ -516,7 +516,7 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
 
   return (
     <div style={{
-      border: '2px solid #d97706',
+      border: '2px solid var(--brand-primary)',
       borderRadius: 12,
       padding: 28,
       background: '#fffbeb',
