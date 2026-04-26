@@ -25,7 +25,7 @@ interface ProofMetadata {
 export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUploaderProps) => {
   const [proofs, setProofs] = useState<JobProof[]>([]);
   const [validation, setValidation] = useState<ProofValidation | null>(null);
-  const [metadataMap, setMetadataMap] = useState<Record<string, { stain_color?: string; wood_species?: string }>>({});
+  const [metadataMap, setMetadataMap] = useState<Record<string, { stain_color?: string; wood_species?: string; media_type?: string }>>({});
   const { fetchProofs, validateCompletion, uploadImage, addProof, isUploading } = useJobProof(projectId);
 
   // Pending file flow (mini-form before submit)
@@ -35,6 +35,8 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
   const [woodSpecies, setWoodSpecies] = useState<string>('');
   const beforeInputRef = useRef<HTMLInputElement>(null);
   const afterInputRef = useRef<HTMLInputElement>(null);
+
+  const isVideoUrl = (url: string) => /\.(mp4|mov|webm|m4v|avi|qt)(\?|$)/i.test(url);
 
   const loadData = async () => {
     const [proofsData, validationData] = await Promise.all([
