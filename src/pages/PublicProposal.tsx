@@ -41,10 +41,25 @@ export default function PublicProposal() {
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
+  const [company, setCompany] = useState<any>(null);
+  const [logoUrl, setLogoUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [signOpen, setSignOpen] = useState(false);
   const [pickedTier, setPickedTier] = useState<TierKey | "flat" | null>(null);
+
+  // White-label brand with safe fallbacks
+  const brand = {
+    name: company?.trade_name || company?.company_name || "AXO Floors",
+    tagline: company?.tagline || "Professional Flooring · NJ",
+    phone: company?.phone || "(732) 351-8653",
+    email: company?.email || "info@axofloors.com",
+    website: company?.website || "axofloorsnj.com",
+    primary: company?.primary_color || "#d97706",
+    secondary: company?.secondary_color || "#0f1b3d",
+    logoUrl,
+  };
+  const phoneTel = brand.phone.replace(/\D/g, "");
 
   useEffect(() => {
     if (printMode && !loading && proposal) {
