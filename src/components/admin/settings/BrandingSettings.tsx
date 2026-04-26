@@ -92,8 +92,12 @@ export default function BrandingSettings() {
         .from("company_settings")
         .update({
           trade_name: tradeName.trim(),
+          tagline: tagline.trim() || null,
           primary_color: primaryColor,
           secondary_color: secondaryColor,
+          phone: phone.trim() || null,
+          email: email.trim() || null,
+          website: website.trim() || null,
           logo_url: logoPath || null,
           updated_at: new Date().toISOString(),
         } as any)
