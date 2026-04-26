@@ -102,9 +102,23 @@ export function useProjectsHub() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, customer_name, project_type, project_status, address, city, square_footage, start_date, created_at, notes, next_action, next_action_date, referred_by_partner_id, job_costs(estimated_revenue, total_cost, margin_percent), partners:referred_by_partner_id(contact_name, company_name), project_members(user_id, role, profiles:user_id(full_name, avatar_url))")
+        .select("id, customer_name, project_type, project_status, address, city, square_footage, start_date, created_at, notes, next_action, next_action_date, referred_by_partner_id, job_costs(estimated_revenue, total_cost, margin_percent), partners:referred_by_partner_id(contact_name, company_name), project_members(user_id, role)")
         .order("created_at", { ascending: false });
       if (error) throw error;
+
+      // Fetch profiles separately (no FK from project_members.user_id to profiles)
+      const userIds = Array.from(
+        new Set((data ?? []).flatMap((p: any) => (p.project_members ?? []).map((m: any) => m.user_id)).filter(Boolean))
+      );
+      let profileMap = new Map<string, { full_name: string | null; avatar_url: string | null }>();
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, avatar_url")
+          .in("user_id", userIds);
+        profileMap = new Map((profs ?? []).map((pr: any) => [pr.user_id, { full_name: pr.full_name, avatar_url: pr.avatar_url }]));
+      }
+
       return (data ?? []).map((p: any) => ({
         ...p,
         job_costs: Array.isArray(p.job_costs) ? p.job_costs[0] ?? null : p.job_costs,
@@ -112,8 +126,8 @@ export function useProjectsHub() {
         members: (p.project_members ?? []).map((m: any) => ({
           user_id: m.user_id,
           role: m.role,
-          full_name: m.profiles?.full_name ?? null,
-          avatar_url: m.profiles?.avatar_url ?? null,
+          full_name: profileMap.get(m.user_id)?.full_name ?? null,
+          avatar_url: profileMap.get(m.user_id)?.avatar_url ?? null,
         })),
       })) as HubProject[];
     },
