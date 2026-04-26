@@ -241,19 +241,71 @@ export default function ProjectsHub() {
             className="h-8 w-56 text-xs"
           />
 
+          {facets.partners.length > 0 && (
+            <Select value={partnerFilter} onValueChange={setPartnerFilter}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="Partner" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All partners</SelectItem>
+                <SelectItem value="__none__" className="text-xs">No partner</SelectItem>
+                {facets.partners.map(([id, name]) => (
+                  <SelectItem key={id} value={id} className="text-xs">{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {facets.services.length > 0 && (
+            <Select value={serviceFilter} onValueChange={setServiceFilter}>
+              <SelectTrigger className="h-8 w-[130px] text-xs">
+                <SelectValue placeholder="Service" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All services</SelectItem>
+                {facets.services.map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {facets.cities.length > 0 && (
+            <Select value={cityFilter} onValueChange={setCityFilter}>
+              <SelectTrigger className="h-8 w-[120px] text-xs">
+                <SelectValue placeholder="City" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All cities</SelectItem>
+                {facets.cities.map((c) => (
+                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+            <SelectTrigger className="h-8 w-[140px] text-xs gap-1">
+              <ArrowUpDown className="h-3 w-3" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent" className="text-xs">Most recent</SelectItem>
+              <SelectItem value="revenue_desc" className="text-xs">Revenue (high → low)</SelectItem>
+              <SelectItem value="margin_asc" className="text-xs">Margin (low → high)</SelectItem>
+              <SelectItem value="start_asc" className="text-xs">Start date (soonest)</SelectItem>
+            </SelectContent>
+          </Select>
+
           <span className="text-[11px] text-muted-foreground">
             {filtered.length} of {projects.length}
           </span>
 
-          <div className="flex items-center rounded-md border bg-muted p-0.5 ml-auto">
-            <Button
-              variant={view === "board" ? "default" : "ghost"}
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setView("board")}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
+          {hasFilters && (
+            <Button variant="ghost" size="sm" className="h-7 text-[11px]" onClick={clearAll}>
+              Clear filters
             </Button>
+          )}
             <Button
               variant={view === "list" ? "default" : "ghost"}
               size="icon"
