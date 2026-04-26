@@ -1,8 +1,12 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Camera, FileWarning, MessageCircle, User, Calendar, StickyNote, ArrowRight } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Camera, FileWarning, MessageCircle, User, Calendar, StickyNote, ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { computeRisk, type ProjectSignals } from "@/hooks/useProjectSignals";
 
