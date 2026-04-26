@@ -135,8 +135,16 @@ export async function getCompanySettingsWithDefaults(): Promise<Omit<CompanySett
 
   return {
     company_name: settings.company_name,
+    trade_name: settings.trade_name,
+    tagline: settings.tagline,
     default_margin_min_percent: settings.default_margin_min_percent,
     labor_pricing_model: settings.labor_pricing_model,
     default_labor_rate: settings.default_labor_rate,
+    logo_url: settings.logo_url,
+    primary_color: settings.primary_color,
+    secondary_color: settings.secondary_color,
+    phone: settings.phone,
+    email: settings.email,
+    website: settings.website,
   };
 }
