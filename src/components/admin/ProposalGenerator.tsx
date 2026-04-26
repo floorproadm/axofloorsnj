@@ -328,9 +328,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           <div style={{ marginBottom: 25 }}>
             <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Site Assessment</h2>
             <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
-              Based on our evaluation of your {proposal.square_footage} sqft {proposal.project_type} project, 
-              we've prepared three tailored options. Each tier uses professional-grade materials and our proven 
-              AXO Transformation Method to ensure lasting results.
+              {proposal.mode === 'direct'
+                ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
+                : `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`}
             </p>
           </div>
 
