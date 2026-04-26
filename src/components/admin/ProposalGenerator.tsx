@@ -539,7 +539,7 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand 
 
   return (
     <div style={{
-      border: '2px solid var(--brand-primary)',
+      border: `2px solid ${brand.primary}`,
       borderRadius: 12,
       padding: 28,
       background: '#fffbeb',
