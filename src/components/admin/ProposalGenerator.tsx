@@ -26,10 +26,26 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
+  const [flatPriceInput, setFlatPriceInput] = useState<string>('');
   const printRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async () => {
-    const data = await fetchProjectData(projectId);
+    if (!mode) {
+      toast.error('Choose a proposal mode first.');
+      return;
+    }
+    if (mode === 'direct') {
+      const price = Number(flatPriceInput);
+      if (!price || price <= 0) {
+        toast.error('Enter a valid price for Direct mode.');
+        return;
+      }
+      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: price });
+      if (data) setProposal(data);
+      return;
+    }
+    const data = await fetchProjectData(projectId, { mode: 'tiers' });
     if (data) setProposal(data);
   };
 
