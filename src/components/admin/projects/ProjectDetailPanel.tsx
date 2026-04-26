@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -23,10 +24,11 @@ import { useJobCost } from "@/hooks/useJobCosts";
 import { useMeasurements } from "@/hooks/useMeasurements";
 import { useMaterialCosts } from "@/hooks/useMaterialCosts";
 import { useLaborEntries } from "@/hooks/useLaborEntries";
+import { useProjectActivity, useProjectOpenTasks } from "@/hooks/useProjectActivity";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink, Plus } from "lucide-react";
-import { format } from "date-fns";
+import { MapPin, User, Ruler, DollarSign, FileText, Pencil, Trash2, ExternalLink, Plus, LayoutDashboard, Users, MessageSquare, CheckSquare, ImageIcon, Receipt, ArrowRight, CheckCircle2 } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import type { HubProject } from "@/hooks/useProjectsHub";
 
