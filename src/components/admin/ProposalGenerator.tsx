@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProposalGeneration, DEFAULT_TIER_MARGINS } from '@/hooks/useProposalGeneration';
+import { useCompanySettings, resolveLogoUrl } from '@/hooks/useCompanySettings';
 import { ProposalData, ProposalTier } from '@/types/proposal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,16 +20,40 @@ interface ProposalGeneratorProps {
 
 /**
  * PROPOSAL GENERATOR
- * Generates 3-tier proposal (Good/Better/Best)
- * Professional print document with AXO branding
+ * Generates Tiers (Good/Better/Best) OR Direct (single-price) proposal
+ * Branding (logo, name, colors, contact) is white-label from company_settings
  */
 export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps) {
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
+  const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
   const [flatPriceInput, setFlatPriceInput] = useState<string>('');
+  const [logoSignedUrl, setLogoSignedUrl] = useState<string>('');
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Resolve company logo to a signed URL once settings load
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const url = await resolveLogoUrl(settings?.logo_url);
+      if (!cancelled) setLogoSignedUrl(url);
+    })();
+    return () => { cancelled = true; };
+  }, [settings?.logo_url]);
+
+  // White-label branding with safe fallbacks
+  const brand = {
+    name: settings?.trade_name || settings?.company_name || 'AXO Floors',
+    tagline: settings?.tagline || 'Professional Flooring Services',
+    primary: settings?.primary_color || '#d97706',
+    secondary: settings?.secondary_color || '#1e3a5f',
+    phone: settings?.phone || '(732) 351-8653',
+    email: settings?.email || 'info@axofloors.com',
+    website: settings?.website || 'www.axofloors.com',
+    logoUrl: logoSignedUrl,
+  };
 
   const handleGenerate = async () => {
     if (!mode) {
