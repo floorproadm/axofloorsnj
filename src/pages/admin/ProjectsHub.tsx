@@ -38,6 +38,10 @@ export default function ProjectsHub() {
   const [search, setSearch] = useState("");
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>(null);
   const [chips, setChips] = useState<Set<SmartFilter>>(new Set());
+  const [partnerFilter, setPartnerFilter] = useState<string>("all");
+  const [serviceFilter, setServiceFilter] = useState<string>("all");
+  const [cityFilter, setCityFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<SortKey>("recent");
   const [selected, setSelected] = useState<HubProject | null>(null);
   const [showNewJob, setShowNewJob] = useState(false);
 
