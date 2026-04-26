@@ -152,6 +152,12 @@ export default function BrandingSettings() {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="tagline">Tagline / Slogan</Label>
+            <Input id="tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Professional Flooring Services" />
+            <p className="text-xs text-muted-foreground">Frase curta exibida abaixo do nome em propostas e materiais.</p>
+          </div>
+
+          <div className="space-y-2">
             <Label>Logo da Empresa</Label>
             <div className="flex items-center gap-4">
               {logoDisplayUrl ? (
