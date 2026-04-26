@@ -279,14 +279,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       <Card className="bg-muted/50">
         <CardContent className="py-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Tier Margins:</span>
+            <span className="font-medium">
+              {proposal.mode === 'direct' ? 'Margin:' : 'Tier Margins:'}
+            </span>
             <div className="flex gap-4">
-              {proposal.tiers.map((tier) => (
-                <span key={tier.id} className="flex items-center gap-1">
+              {proposal.mode === 'direct' ? (
+                <span className="flex items-center gap-1">
                   <Check className="h-3 w-3 text-green-500" />
-                  {tier.name}: {tier.margin_percent}%
+                  {formatCurrency(proposal.flat_price ?? 0)} · {proposal.flat_margin_percent}%
                 </span>
-              ))}
+              ) : (
+                proposal.tiers.map((tier) => (
+                  <span key={tier.id} className="flex items-center gap-1">
+                    <Check className="h-3 w-3 text-green-500" />
+                    {tier.name}: {tier.margin_percent}%
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </CardContent>
