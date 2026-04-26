@@ -208,10 +208,13 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="measurements" className="p-4">
+        <Tabs defaultValue="overview" className="p-4">
           <TabsList className="w-full">
+            <TabsTrigger value="overview" className="flex-1 text-xs gap-1">
+              <LayoutDashboard className="h-3 w-3" /> Overview
+            </TabsTrigger>
             <TabsTrigger value="measurements" className="flex-1 text-xs gap-1">
-              <Ruler className="h-3 w-3" /> Measurements
+              <Ruler className="h-3 w-3" /> Measure
             </TabsTrigger>
             <TabsTrigger value="costs" className="flex-1 text-xs gap-1">
               <DollarSign className="h-3 w-3" /> Costs
@@ -220,6 +223,145 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
               <FileText className="h-3 w-3" /> Invoices
             </TabsTrigger>
           </TabsList>
+
+          {/* OVERVIEW: crew, next action, open tasks, recent activity */}
+          <TabsContent value="overview" className="mt-3 space-y-4">
+            {/* Next Action */}
+            {project.next_action && (
+              <div className="rounded-lg border border-[hsl(var(--gold))]/30 bg-[hsl(var(--gold))]/10 p-3">
+                <div className="flex items-start gap-2">
+                  <ArrowRight className="h-4 w-4 text-[hsl(var(--gold))] shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--gold))]">Next Action</p>
+                    <p className="text-sm font-medium text-foreground mt-0.5">{project.next_action}</p>
+                    {project.next_action_date && (
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Due {format(new Date(project.next_action_date), "MMM d, yyyy")}
+                      </p>
+                    )}
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={handleClearNextAction}>
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Done
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Crew */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Crew & Team
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-[10px]"
+                  onClick={() => {
+                    navigate(`/admin/jobs/${project.id}?tab=team`);
+                    onClose();
+                  }}
+                >
+                  Manage
+                </Button>
+              </div>
+              {(project.members ?? []).length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">No crew assigned yet</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {project.members.map((m) => (
+                    <div key={m.user_id} className="flex items-center gap-2 py-1">
+                      <Avatar className="h-7 w-7">
+                        {m.avatar_url && <AvatarImage src={m.avatar_url} />}
+                        <AvatarFallback className="text-[10px] font-semibold bg-muted">
+                          {initials(m.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{m.full_name ?? "Unknown"}</p>
+                        <p className="text-[10px] text-muted-foreground capitalize">{m.role}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Open Tasks */}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                <CheckSquare className="h-3 w-3" /> Open Tasks ({(openTasks ?? []).length})
+              </p>
+              {(openTasks ?? []).length === 0 ? (
+                <p className="text-xs text-muted-foreground py-1">No open tasks</p>
+              ) : (
+                <div className="space-y-1">
+                  {(openTasks ?? []).map((t) => (
+                    <div key={t.id} className="flex items-start gap-2 rounded border p-2 hover:bg-muted/40 transition">
+                      <button
+                        onClick={() => handleCompleteTask(t.id)}
+                        className="h-4 w-4 rounded border border-muted-foreground/40 hover:border-[hsl(var(--state-success))] hover:bg-[hsl(var(--state-success))]/10 mt-0.5 shrink-0 flex items-center justify-center"
+                        title="Mark complete"
+                      >
+                        <CheckCircle2 className="h-3 w-3 text-[hsl(var(--state-success))] opacity-0 hover:opacity-100" />
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{t.title}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {t.due_date ? `Due ${format(new Date(t.due_date), "MMM d")}` : t.priority}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Recent Activity Timeline */}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" /> Recent Activity
+              </p>
+              {(activity ?? []).length === 0 ? (
+                <p className="text-xs text-muted-foreground py-1">No activity yet</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {(activity ?? []).slice(0, 8).map((a) => {
+                    const Icon =
+                      a.kind === "comment" ? MessageSquare
+                      : a.kind === "task" ? CheckSquare
+                      : a.kind === "media" ? ImageIcon
+                      : Receipt;
+                    return (
+                      <div key={a.id} className="flex items-start gap-2 text-xs">
+                        <Icon className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-foreground/90 truncate">{a.title}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {a.subtitle && `${a.subtitle} · `}
+                            {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Quick link to full job */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              onClick={() => {
+                navigate(`/admin/jobs/${project.id}`);
+                onClose();
+              }}
+            >
+              <ExternalLink className="h-3 w-3" /> Open full project page
+            </Button>
+          </TabsContent>
 
           <TabsContent value="measurements" className="mt-3 space-y-2">
             <Button
