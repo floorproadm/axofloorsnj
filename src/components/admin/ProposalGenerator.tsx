@@ -514,11 +514,12 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
   );
 }
 
-function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
+function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand }: {
   price: number;
   lineItems: { description: string; category: string; amount: number }[];
   projectType: string;
   formatCurrency: (v: number) => string;
+  brand: Brand;
 }) {
   const grouped = lineItems.reduce<Record<string, { description: string; amount: number }[]>>((acc, item) => {
     const key = item.category || 'other';
