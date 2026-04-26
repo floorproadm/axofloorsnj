@@ -34,6 +34,7 @@ function isThisWeek(dateStr: string | null) {
 export default function ProjectsHub() {
   const { projects, pendingProposals, isLoading } = useProjectsHub();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [view, setView] = useState<"board" | "list">("board");
   const [search, setSearch] = useState("");
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>(null);
@@ -42,8 +43,9 @@ export default function ProjectsHub() {
   const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortKey>("recent");
-  const [selected, setSelected] = useState<HubProject | null>(null);
   const [showNewJob, setShowNewJob] = useState(false);
+
+  const openProject = (p: HubProject) => navigate(`/admin/projects/${p.id}`);
 
   const projectIds = useMemo(() => projects.map((p) => p.id), [projects]);
   const { data: signals } = useProjectSignals(projectIds);
