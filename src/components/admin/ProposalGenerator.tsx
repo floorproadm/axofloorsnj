@@ -47,8 +47,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const brand = {
     name: settings?.trade_name || settings?.company_name || 'AXO Floors',
     tagline: settings?.tagline || 'Professional Flooring Services',
-    primary: settings?.primary_color || '#d97706',
-    secondary: settings?.secondary_color || '#1e3a5f',
+    primary: settings?.primary_color || brand.primary,
+    secondary: settings?.secondary_color || brand.secondary,
     phone: settings?.phone || '(732) 351-8653',
     email: settings?.email || 'info@axofloors.com',
     website: settings?.website || 'www.axofloors.com',
@@ -332,8 +332,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40 }}>
           {/* Hero */}
           <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: '3px solid #1e3a5f', marginBottom: 30 }}>
-            <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: '#1e3a5f', marginBottom: 8 }}>AXO Floors</h1>
-            <p style={{ color: '#d97706', fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>Professional Flooring Services</p>
+            <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: brand.secondary, marginBottom: 8 }}>AXO Floors</h1>
+            <p style={{ color: brand.primary, fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>Professional Flooring Services</p>
             {proposal.proposal_number && (
               <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>#{proposal.proposal_number}</p>
             )}
@@ -341,7 +341,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Customer Info */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Prepared For</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Prepared For</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <div><span style={{ color: '#888', fontSize: 12 }}>Client</span><br/><strong>{proposal.customer_name}</strong></div>
               <div><span style={{ color: '#888', fontSize: 12 }}>Address</span><br/>{proposal.address}</div>
@@ -352,7 +352,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Site Assessment */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Site Assessment</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Site Assessment</h2>
             <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
               {proposal.mode === 'direct'
                 ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
@@ -362,7 +362,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* AXO Transformation Method */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>The AXO Transformation Method</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>The AXO Transformation Method</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
                 { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
@@ -371,8 +371,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
               ].map(step => (
                 <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: '1px solid #e5e7eb', borderRadius: 8 }}>
-                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: '#1e3a5f', color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
-                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: '#1e3a5f', marginBottom: 4 }}>{step.title}</h4>
+                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
+                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: brand.secondary, marginBottom: 4 }}>{step.title}</h4>
                   <p style={{ fontSize: 11, color: '#666' }}>{step.desc}</p>
                 </div>
               ))}
@@ -404,7 +404,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Timeline */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Estimated Timeline</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Estimated Timeline</h2>
             <p style={{ fontSize: 14, color: '#444' }}>
               Based on {proposal.square_footage} sqft, we estimate <strong>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
               Our crew works 8AM–5PM with full area protection.
@@ -413,7 +413,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Woody's Guarantee */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Woody's Guarantee</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Woody's Guarantee</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {[
                 { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
@@ -421,7 +421,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
               ].map(g => (
                 <div key={g.type} style={{ textAlign: 'center', padding: 15, border: '1px solid #e5e7eb', borderRadius: 8 }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{g.period}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
                   <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
                   <p style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{g.desc}</p>
                 </div>
@@ -430,10 +430,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
 
           {/* CTA */}
-          <div style={{ background: '#1e3a5f', color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
-            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#d97706', marginBottom: 8, fontSize: 18 }}>Ready to Transform Your Floors?</h3>
+          <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
+            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>Ready to Transform Your Floors?</h3>
             <p style={{ fontSize: 14, opacity: 0.9 }}>Contact Eduardo to discuss your project and choose the best option for your home.</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: '#d97706', marginTop: 10 }}>(732) 351-8653</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>(732) 351-8653</p>
           </div>
 
           {/* Footer */}
@@ -457,7 +457,7 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
   const pricePerSqft = sqft > 0 ? (tier.price / sqft).toFixed(2) : '0';
   return (
     <div style={{
-      border: `2px solid ${isRecommended ? '#d97706' : '#e5e7eb'}`,
+      border: `2px solid ${isRecommended ? brand.primary : '#e5e7eb'}`,
       borderRadius: 12,
       padding: 20,
       textAlign: 'center',
@@ -465,7 +465,7 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
     }}>
       <div style={{
         display: 'inline-block',
-        background: isRecommended ? '#d97706' : '#1e3a5f',
+        background: isRecommended ? brand.primary : brand.secondary,
         color: '#fff',
         fontSize: 9,
         padding: '3px 8px',
@@ -476,8 +476,8 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
       }}>
         {isRecommended ? 'Recommended' : tier.name}
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: '#1e3a5f' }}>{tier.name}</h3>
-      <p style={{ fontSize: 32, fontWeight: 700, color: '#d97706', margin: '10px 0' }}>{formatCurrency(tier.price)}</p>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: brand.secondary }}>{tier.name}</h3>
+      <p style={{ fontSize: 32, fontWeight: 700, color: brand.primary, margin: '10px 0' }}>{formatCurrency(tier.price)}</p>
       <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>${pricePerSqft}/sqft</p>
       <p style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>{tier.short_description}</p>
       <ul style={{ listStyle: 'none', textAlign: 'left', padding: 0 }}>
@@ -523,7 +523,7 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
     }}>
       <div style={{
         display: 'inline-block',
-        background: '#d97706',
+        background: brand.primary,
         color: '#fff',
         fontSize: 9,
         padding: '3px 10px',
@@ -534,16 +534,16 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
       }}>
         Total Project Investment
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: '#1e3a5f', marginBottom: 4 }}>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: brand.secondary, marginBottom: 4 }}>
         {projectType}
       </h3>
-      <p style={{ fontSize: 42, fontWeight: 700, color: '#d97706', margin: '6px 0 18px 0' }}>
+      <p style={{ fontSize: 42, fontWeight: 700, color: brand.primary, margin: '6px 0 18px 0' }}>
         {formatCurrency(price)}
       </p>
 
       {lineItems.length > 0 ? (
         <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #f0e2c7' }}>
-          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: '#1e3a5f', marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: brand.secondary, marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
             Scope Breakdown
           </h4>
           {Object.entries(grouped).map(([cat, items]) => (
