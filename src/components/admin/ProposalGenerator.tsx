@@ -47,8 +47,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const brand = {
     name: settings?.trade_name || settings?.company_name || 'AXO Floors',
     tagline: settings?.tagline || 'Professional Flooring Services',
-    primary: settings?.primary_color || brand.primary,
-    secondary: settings?.secondary_color || brand.secondary,
+    primary: settings?.primary_color || '#d97706',
+    secondary: settings?.secondary_color || '#1e3a5f',
     phone: settings?.phone || '(732) 351-8653',
     email: settings?.email || 'info@axofloors.com',
     website: settings?.website || 'www.axofloors.com',
