@@ -113,6 +113,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     printWindow.document.write(`<!DOCTYPE html><html><head>
       <title>Proposal - ${proposal?.customer_name}</title>
       <style>
+        :root { --brand-primary: ${brand.primary}; --brand-secondary: ${brand.secondary}; }
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Roboto', Arial, sans-serif; color: #1a1a2e; background: #fff; }
