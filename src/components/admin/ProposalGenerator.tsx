@@ -407,7 +407,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           <div style={{ background: '#1e3a5f', color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
             <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#d97706', marginBottom: 8, fontSize: 18 }}>Ready to Transform Your Floors?</h3>
             <p style={{ fontSize: 14, opacity: 0.9 }}>Contact Eduardo to discuss your project and choose the best option for your home.</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: '#d97706', marginTop: 10 }}>(862) 216-4658</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: '#d97706', marginTop: 10 }}>(732) 351-8653</p>
           </div>
 
           {/* Footer */}
