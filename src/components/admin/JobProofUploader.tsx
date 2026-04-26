@@ -243,7 +243,7 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
 
             {/* After Media */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium">After ({afterImages.length})</h4>
+              <h4 className="text-sm font-medium flex items-center gap-1.5">After ({afterImages.length}) <span className="text-[10px] font-normal text-[hsl(var(--state-blocked))]">obrigatório</span></h4>
               <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                 <Upload className="h-6 w-6 text-muted-foreground mb-2" />
                 <span className="text-xs text-muted-foreground text-center">
