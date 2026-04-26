@@ -347,15 +347,14 @@ export default function ProjectsHub() {
           <ProjectPipelineBoard
             projects={filtered}
             signals={signals}
-            onSelect={setSelected}
+            onSelect={openProject}
             onStatusChange={handleStatusChange}
             onNewProject={() => setShowNewJob(true)}
           />
         ) : (
-          <ProjectListView projects={filtered} signals={signals} onSelect={setSelected} />
+          <ProjectListView projects={filtered} signals={signals} onSelect={openProject} />
         )}
 
-        <ProjectDetailPanel project={selected} open={!!selected} onClose={() => setSelected(null)} />
         <NewJobDialog open={showNewJob} onOpenChange={setShowNewJob} />
       </div>
     </AdminLayout>
