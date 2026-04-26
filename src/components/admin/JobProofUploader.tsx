@@ -143,15 +143,15 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Camera className="h-4 w-4" />
-            JobProof — Obrigatorio antes de concluir
+            JobProof — After obrigatório · Before opcional
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Validation Status */}
           {validation && (
             <div className={`p-3 rounded-lg border ${
-              validation.can_complete 
-                ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800' 
+              validation.can_complete
+                ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800'
                 : 'bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800'
             }`}>
               <div className="flex items-center gap-2 text-sm">
@@ -159,14 +159,16 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
                   <>
                     <Check className="h-4 w-4 text-green-600" />
                     <span className="text-green-700 dark:text-green-400">
-                      Pronto para completar projeto
+                      {validation.has_before_image
+                        ? 'Pronto: Before + After ok'
+                        : 'Pronto para concluir (sem Before)'}
                     </span>
                   </>
                 ) : (
                   <>
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
                     <span className="text-amber-700 dark:text-amber-400">
-                      Requisitos pendentes
+                      Falta foto AFTER para concluir
                     </span>
                   </>
                 )}
@@ -174,11 +176,11 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
               <div className="flex gap-3 mt-2">
                 <Badge variant={validation.has_before_image ? 'default' : 'outline'} className="text-xs">
                   {validation.has_before_image ? <Check className="h-3 w-3 mr-1" /> : <X className="h-3 w-3 mr-1" />}
-                  Before
+                  Before <span className="ml-1 opacity-60">(opcional)</span>
                 </Badge>
-                <Badge variant={validation.has_after_image ? 'default' : 'outline'} className="text-xs">
+                <Badge variant={validation.has_after_image ? 'default' : 'destructive'} className="text-xs">
                   {validation.has_after_image ? <Check className="h-3 w-3 mr-1" /> : <X className="h-3 w-3 mr-1" />}
-                  After
+                  After <span className="ml-1 opacity-80">(obrigatório)</span>
                 </Badge>
               </div>
             </div>
