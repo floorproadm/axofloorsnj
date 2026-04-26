@@ -63,15 +63,17 @@ export const useJobProof = (projectId: string) => {
     file: File,
     type: 'before' | 'after',
     extraMetadata?: { stain_color?: string; wood_species?: string }
-  ): Promise<string | null> => {
+  ): Promise<{ url: string; mediaType: 'image' | 'video' } | null> => {
     setIsUploading(true);
-    
+
     try {
+      const isVideo = file.type.startsWith('video/');
+      const mediaType: 'image' | 'video' = isVideo ? 'video' : 'image';
       const fileExt = file.name.split('.').pop();
       const timestamp = Date.now();
       const random = Math.random().toString(36).slice(2, 8);
 
-      // Upload to LEGACY bucket (job-proof)
+      // Upload to LEGACY bucket (job-proof) — keep for back-compat (used for both image+video URLs)
       const legacyFileName = `${projectId}/${type}-${timestamp}.${fileExt}`;
       const { error: legacyUploadError } = await supabase.storage
         .from('job-proof')
@@ -100,25 +102,25 @@ export const useJobProof = (projectId: string) => {
             source_type: 'admin_upload',
             visibility: 'internal',
             folder_type: 'before_after',
-            file_type: 'image',
+            file_type: mediaType,
             storage_path: mediaPath,
             metadata: {
               phase: type,
+              media_type: mediaType,
               ...(extraMetadata?.stain_color ? { stain_color: extraMetadata.stain_color } : {}),
               ...(extraMetadata?.wood_species ? { wood_species: extraMetadata.wood_species } : {}),
             },
           });
       } catch (dualWriteError) {
-        // Non-blocking: log but don't fail the operation
         console.warn('Dual-write to media_files failed (non-blocking):', dualWriteError);
       }
 
-      return publicUrl;
+      return { url: publicUrl, mediaType };
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
         title: 'Erro no upload',
-        description: 'Não foi possível enviar a imagem',
+        description: 'Não foi possível enviar o arquivo',
         variant: 'destructive'
       });
       return null;
