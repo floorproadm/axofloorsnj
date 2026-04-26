@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 import { JobCostEditor } from '@/components/admin/JobCostEditor';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { JobProofUploader } from '@/components/admin/JobProofUploader';
@@ -14,6 +20,7 @@ import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
 import {
   Loader2,
   ArrowLeft,
+  Trash2,
   User,
   Phone,
   Mail,
@@ -28,6 +35,22 @@ import { ptBR } from 'date-fns/locale';
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!projectId) return;
+    setDeleting(true);
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    setDeleting(false);
+    if (error) {
+      toast.error('Could not delete project', { description: error.message });
+      return;
+    }
+    toast.success('Project deleted');
+    setConfirmDelete(false);
+    navigate('/admin/projects');
+  }
 
   const { data: project, isLoading } = useQuery({
     queryKey: ['project-detail', projectId],
@@ -84,16 +107,49 @@ export default function ProjectDetail() {
       ]}
     >
       <div className="space-y-6">
-        {/* Back + Status */}
+        {/* Back + Status + Delete */}
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-1.5" />
             Voltar
           </Button>
-          <Badge className={statusColors[project.project_status] || 'bg-muted'}>
-            {project.project_status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={statusColors[project.project_status] || 'bg-muted'}>
+              {project.project_status}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setConfirmDelete(true)}
+              title="Delete project"
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Delete
+            </Button>
+          </div>
         </div>
+
+        <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Linked costs, measurements, invoices and chat history may also be deleted. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => { e.preventDefault(); handleDelete(); }}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? 'Deleting...' : 'Delete project'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="w-full">
