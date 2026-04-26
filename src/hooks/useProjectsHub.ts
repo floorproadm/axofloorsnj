@@ -2,6 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
 
+export interface HubProjectMember {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string;
+}
+
 export interface HubProject {
   id: string;
   customer_name: string;
@@ -17,6 +24,7 @@ export interface HubProject {
   next_action_date: string | null;
   referred_by_partner_id: string | null;
   partner_name: string | null;
+  members: HubProjectMember[];
   job_costs: {
     estimated_revenue: number;
     total_cost: number | null;
