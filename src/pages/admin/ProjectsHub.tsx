@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,6 @@ import { useProjectsHub } from "@/hooks/useProjectsHub";
 import { useProjectSignals, computeRisk } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
 import { ProjectListView } from "@/components/admin/projects/ProjectListView";
-import { ProjectDetailPanel } from "@/components/admin/projects/ProjectDetailPanel";
 import { ProjectsHubHeader, type KpiFilter } from "@/components/admin/projects/ProjectsHubHeader";
 import { SmartFilterChips, type SmartFilter } from "@/components/admin/projects/SmartFilterChips";
 import { AwaitingConversionBanner } from "@/components/admin/projects/AwaitingConversionBanner";
@@ -34,6 +34,7 @@ function isThisWeek(dateStr: string | null) {
 export default function ProjectsHub() {
   const { projects, pendingProposals, isLoading } = useProjectsHub();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [view, setView] = useState<"board" | "list">("board");
   const [search, setSearch] = useState("");
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>(null);
@@ -42,8 +43,9 @@ export default function ProjectsHub() {
   const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortKey>("recent");
-  const [selected, setSelected] = useState<HubProject | null>(null);
   const [showNewJob, setShowNewJob] = useState(false);
+
+  const openProject = (p: HubProject) => navigate(`/admin/projects/${p.id}`);
 
   const projectIds = useMemo(() => projects.map((p) => p.id), [projects]);
   const { data: signals } = useProjectSignals(projectIds);
@@ -345,15 +347,14 @@ export default function ProjectsHub() {
           <ProjectPipelineBoard
             projects={filtered}
             signals={signals}
-            onSelect={setSelected}
+            onSelect={openProject}
             onStatusChange={handleStatusChange}
             onNewProject={() => setShowNewJob(true)}
           />
         ) : (
-          <ProjectListView projects={filtered} signals={signals} onSelect={setSelected} />
+          <ProjectListView projects={filtered} signals={signals} onSelect={openProject} />
         )}
 
-        <ProjectDetailPanel project={selected} open={!!selected} onClose={() => setSelected(null)} />
         <NewJobDialog open={showNewJob} onOpenChange={setShowNewJob} />
       </div>
     </AdminLayout>
