@@ -373,7 +373,7 @@ export default function PublicProposal() {
         )}
 
         <p className="text-center text-[11px] text-slate-400 pt-4">
-          AXO Floors · axofloorsnj.com
+          {brand.name} · {brand.website}
         </p>
       </main>
 
