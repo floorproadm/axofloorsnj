@@ -465,3 +465,80 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
     </div>
   );
 }
+
+function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
+  price: number;
+  lineItems: { description: string; category: string; amount: number }[];
+  projectType: string;
+  formatCurrency: (v: number) => string;
+}) {
+  const grouped = lineItems.reduce<Record<string, { description: string; amount: number }[]>>((acc, item) => {
+    const key = item.category || 'other';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push({ description: item.description, amount: item.amount });
+    return acc;
+  }, {});
+
+  const categoryLabels: Record<string, string> = {
+    labor: 'Labor',
+    material: 'Materials',
+    materials: 'Materials',
+    equipment: 'Equipment',
+    additional: 'Additional Services',
+    other: 'Other',
+  };
+
+  return (
+    <div style={{
+      border: '2px solid #d97706',
+      borderRadius: 12,
+      padding: 28,
+      background: '#fffbeb',
+    }}>
+      <div style={{
+        display: 'inline-block',
+        background: '#d97706',
+        color: '#fff',
+        fontSize: 9,
+        padding: '3px 10px',
+        borderRadius: 10,
+        textTransform: 'uppercase' as const,
+        letterSpacing: 1,
+        marginBottom: 12,
+      }}>
+        Total Project Investment
+      </div>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: '#1e3a5f', marginBottom: 4 }}>
+        {projectType}
+      </h3>
+      <p style={{ fontSize: 42, fontWeight: 700, color: '#d97706', margin: '6px 0 18px 0' }}>
+        {formatCurrency(price)}
+      </p>
+
+      {lineItems.length > 0 ? (
+        <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #f0e2c7' }}>
+          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: '#1e3a5f', marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+            Scope Breakdown
+          </h4>
+          {Object.entries(grouped).map(([cat, items]) => (
+            <div key={cat} style={{ marginBottom: 10 }}>
+              <p style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>
+                {categoryLabels[cat] || cat}
+              </p>
+              {items.map((it, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: i < items.length - 1 ? '1px dashed #eee' : 'none' }}>
+                  <span style={{ color: '#444' }}>{it.description}</span>
+                  <span style={{ color: '#666', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(it.amount)}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style={{ fontSize: 13, color: '#666', fontStyle: 'italic' }}>
+          Includes all labor, materials, and equipment required to complete this project per the agreed scope.
+        </p>
+      )}
+    </div>
+  );
+}
