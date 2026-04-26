@@ -60,10 +60,15 @@ export const DEFAULT_TIER_MARGINS = {
   best: 45,
 };
 
+interface FetchOptions {
+  mode?: 'tiers' | 'direct';
+  flatPrice?: number; // required when mode='direct'
+}
+
 interface UseProposalGenerationReturn {
   generateTiers: (baseCost: number, minMargin: number) => ProposalTier[];
   validateAllTiers: (tiers: ProposalTier[], minMargin: number) => ProposalValidation;
-  fetchProjectData: (projectId: string) => Promise<ProposalData | null>;
+  fetchProjectData: (projectId: string, options?: FetchOptions) => Promise<ProposalData | null>;
   isLoading: boolean;
   error: string | null;
 }
