@@ -150,8 +150,8 @@ export default function PublicProposal() {
           <p className="text-lg font-semibold text-slate-700">Proposal Not Found</p>
           <p className="text-sm text-slate-500 mt-1">
             This link may have expired or is invalid. Please contact us at{" "}
-            <a href="tel:7323518653" className="text-primary font-medium">
-              (732) 351-8653
+            <a href={`tel:${phoneTel}`} className="text-primary font-medium">
+              {brand.phone}
             </a>
             .
           </p>
