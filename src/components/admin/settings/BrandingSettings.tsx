@@ -18,8 +18,12 @@ export default function BrandingSettings() {
   const [saving, setSaving] = useState(false);
 
   const [tradeName, setTradeName] = useState("");
+  const [tagline, setTagline] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#d97706");
   const [secondaryColor, setSecondaryColor] = useState("#1e3a5f");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [website, setWebsite] = useState("");
   const [logoPath, setLogoPath] = useState("");
   const [logoDisplayUrl, setLogoDisplayUrl] = useState("");
   const [uploading, setUploading] = useState(false);
