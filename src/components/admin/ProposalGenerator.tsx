@@ -155,13 +155,75 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             Generate Proposal
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div className="text-sm text-muted-foreground">
-            <p>This will generate a professional 3-tier proposal (Good / Better / Best).</p>
-            <p className="mt-2 font-medium">Requirements:</p>
-            <ul className="list-disc ml-5 mt-1">
+            <p className="font-medium text-foreground mb-2">Choose proposal mode</p>
+            <p>Pick how you want to present pricing to this client.</p>
+          </div>
+
+          {/* Mode toggle */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setMode('tiers')}
+              className={`text-left rounded-lg border-2 p-4 transition-all ${
+                mode === 'tiers'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Layers className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm">Tiers (Good/Better/Best)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                3 options with progressive scope. Best for refinishing where upsell is possible.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMode('direct')}
+              className={`text-left rounded-lg border-2 p-4 transition-all ${
+                mode === 'direct'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm">Direct (single price)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                One price + line items breakdown. Best for install, stairs, repairs, baseboards.
+              </p>
+            </button>
+          </div>
+
+          {/* Direct mode price input */}
+          {mode === 'direct' && (
+            <div className="space-y-2 p-3 bg-muted/30 rounded-lg border">
+              <Label htmlFor="flat-price" className="text-sm">Final price ($)</Label>
+              <Input
+                id="flat-price"
+                type="number"
+                inputMode="decimal"
+                placeholder="e.g. 4500"
+                value={flatPriceInput}
+                onChange={(e) => setFlatPriceInput(e.target.value)}
+                className="text-lg font-semibold"
+              />
+              <p className="text-xs text-muted-foreground">
+                Margin is calculated automatically against job costs and validated against company minimum.
+              </p>
+            </div>
+          )}
+
+          <div className="text-xs text-muted-foreground border-t pt-3">
+            <p className="font-medium text-foreground mb-1">Requirements</p>
+            <ul className="list-disc ml-5 space-y-0.5">
               <li>Job costs must be calculated</li>
-              <li>All tiers must meet minimum margin</li>
+              <li>Margin must meet company minimum</li>
             </ul>
           </div>
 
@@ -173,7 +235,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           )}
 
           <div className="flex gap-2">
-            <Button onClick={handleGenerate} disabled={isLoading}>
+            <Button
+              onClick={handleGenerate}
+              disabled={isLoading || !mode || (mode === 'direct' && !flatPriceInput)}
+            >
               {isLoading ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
               ) : (
