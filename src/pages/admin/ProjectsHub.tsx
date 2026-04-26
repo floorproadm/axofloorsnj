@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,6 @@ import { useProjectsHub } from "@/hooks/useProjectsHub";
 import { useProjectSignals, computeRisk } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
 import { ProjectListView } from "@/components/admin/projects/ProjectListView";
-import { ProjectDetailPanel } from "@/components/admin/projects/ProjectDetailPanel";
 import { ProjectsHubHeader, type KpiFilter } from "@/components/admin/projects/ProjectsHubHeader";
 import { SmartFilterChips, type SmartFilter } from "@/components/admin/projects/SmartFilterChips";
 import { AwaitingConversionBanner } from "@/components/admin/projects/AwaitingConversionBanner";
