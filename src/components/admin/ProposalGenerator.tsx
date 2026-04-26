@@ -358,12 +358,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             Valid until: <strong>{format(new Date(proposal.valid_until), 'MMMM d, yyyy')}</strong>
           </div>
 
-          {/* Tier Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
-            {proposal.tiers.map((tier, index) => (
-              <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} />
-            ))}
-          </div>
+          {/* Pricing — Tiers OR Direct (single card with line items) */}
+          {proposal.mode === 'direct' ? (
+            <div style={{ marginBottom: 30 }}>
+              <PrintDirectCard
+                price={proposal.flat_price ?? 0}
+                lineItems={proposal.line_items ?? []}
+                projectType={proposal.project_type}
+                formatCurrency={formatCurrency}
+              />
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
+              {proposal.tiers.map((tier, index) => (
+                <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} />
+              ))}
+            </div>
+          )}
 
           {/* Timeline */}
           <div style={{ marginBottom: 25 }}>
