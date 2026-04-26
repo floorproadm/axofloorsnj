@@ -193,34 +193,16 @@ export default function ProjectDetail() {
               </CardContent>
             </Card>
 
-            {/* Danger Zone */}
-            <Card className="mt-6 border-destructive/30">
-              <CardHeader>
-                <CardTitle className="text-sm text-destructive flex items-center gap-2">
-                  <Trash2 className="h-4 w-4" />
-                  Danger Zone
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <p className="text-sm font-medium">Apagar projeto</p>
-                    <p className="text-xs text-muted-foreground">
-                      Custos, medições, faturas e chat vinculados serão removidos. Ação irreversível.
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => setConfirmDelete(true)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1.5" />
-                    Delete project
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Subtle delete link */}
+            <div className="mt-8 pt-4 border-t border-border/40 flex justify-end">
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="text-xs text-muted-foreground/60 hover:text-destructive transition-colors inline-flex items-center gap-1.5"
+              >
+                <Trash2 className="h-3 w-3" />
+                Apagar projeto
+              </button>
+            </div>
           </TabsContent>
 
           {/* JOB COSTS */}
