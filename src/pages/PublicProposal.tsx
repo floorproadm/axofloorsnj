@@ -168,13 +168,18 @@ export default function PublicProposal() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Branded Header */}
-      <header className="bg-[#0f1b3d] text-white">
+      <header style={{ backgroundColor: brand.secondary }} className="text-white">
         <div className="max-w-3xl mx-auto px-5 py-7 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">AXO Floors</h1>
-            <p className="text-[11px] uppercase tracking-[2px] text-amber-400 mt-0.5">
-              Professional Flooring · NJ
-            </p>
+          <div className="flex items-center gap-3">
+            {brand.logoUrl && (
+              <img src={brand.logoUrl} alt={brand.name} className="h-10 max-w-[140px] object-contain" />
+            )}
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">{brand.name}</h1>
+              <p className="text-[11px] uppercase tracking-[2px] mt-0.5" style={{ color: brand.primary }}>
+                {brand.tagline}
+              </p>
+            </div>
           </div>
           <StatusBadge status={proposal.status} expired={isExpired} />
         </div>
