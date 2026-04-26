@@ -186,18 +186,23 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
 
           {/* Upload Sections */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Before Images */}
+            {/* Before Media */}
             <div className="space-y-2">
               <h4 className="text-sm font-medium">Before ({beforeImages.length})</h4>
               <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                 <Upload className="h-6 w-6 text-muted-foreground mb-2" />
-                <span className="text-xs text-muted-foreground">
-                  {isUploading ? 'Enviando...' : 'Registrar foto Before'}
+                <span className="text-xs text-muted-foreground text-center">
+                  {isUploading ? 'Enviando...' : 'Adicionar Before'}
+                </span>
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70 mt-1">
+                  <Camera className="h-3 w-3" /> foto
+                  <span className="opacity-50">·</span>
+                  <Video className="h-3 w-3" /> vídeo
                 </span>
                 <input
                   ref={beforeInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   className="hidden"
                   onChange={(e) => handleFileSelect(e, 'before')}
                   disabled={isUploading}
@@ -205,13 +210,25 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
               </label>
               {beforeImages.map((proof) => {
                 const meta = findMetadata('before', proof.created_at);
+                const url = proof.before_image_url!;
+                const video = isVideoUrl(url);
                 return (
-                  <div key={proof.id} className="relative aspect-video">
-                    <img
-                      src={proof.before_image_url!}
-                      alt="Before"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+                  <div key={proof.id} className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                    {video ? (
+                      <>
+                        <video
+                          src={url}
+                          className="w-full h-full object-cover"
+                          controls
+                          preload="metadata"
+                        />
+                        <Badge className="absolute top-1 right-1 text-[10px] bg-background/90 text-foreground border gap-0.5">
+                          <Video className="h-2.5 w-2.5" /> Video
+                        </Badge>
+                      </>
+                    ) : (
+                      <img src={url} alt="Before" className="w-full h-full object-cover" />
+                    )}
                     {meta && (meta.stain_color || meta.wood_species) && (
                       <Badge className="absolute bottom-1 left-1 text-[10px] bg-background/90 text-foreground border">
                         {[meta.stain_color, meta.wood_species].filter(Boolean).join(' · ')}
@@ -222,18 +239,23 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
               })}
             </div>
 
-            {/* After Images */}
+            {/* After Media */}
             <div className="space-y-2">
               <h4 className="text-sm font-medium">After ({afterImages.length})</h4>
               <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                 <Upload className="h-6 w-6 text-muted-foreground mb-2" />
-                <span className="text-xs text-muted-foreground">
-                  {isUploading ? 'Enviando...' : 'Registrar foto After'}
+                <span className="text-xs text-muted-foreground text-center">
+                  {isUploading ? 'Enviando...' : 'Adicionar After'}
+                </span>
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70 mt-1">
+                  <Camera className="h-3 w-3" /> foto
+                  <span className="opacity-50">·</span>
+                  <Video className="h-3 w-3" /> vídeo
                 </span>
                 <input
                   ref={afterInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   className="hidden"
                   onChange={(e) => handleFileSelect(e, 'after')}
                   disabled={isUploading}
@@ -241,13 +263,25 @@ export const JobProofUploader = ({ projectId, onValidationChange }: JobProofUplo
               </label>
               {afterImages.map((proof) => {
                 const meta = findMetadata('after', proof.created_at);
+                const url = proof.after_image_url!;
+                const video = isVideoUrl(url);
                 return (
-                  <div key={proof.id} className="relative aspect-video">
-                    <img
-                      src={proof.after_image_url!}
-                      alt="After"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+                  <div key={proof.id} className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                    {video ? (
+                      <>
+                        <video
+                          src={url}
+                          className="w-full h-full object-cover"
+                          controls
+                          preload="metadata"
+                        />
+                        <Badge className="absolute top-1 right-1 text-[10px] bg-background/90 text-foreground border gap-0.5">
+                          <Video className="h-2.5 w-2.5" /> Video
+                        </Badge>
+                      </>
+                    ) : (
+                      <img src={url} alt="After" className="w-full h-full object-cover" />
+                    )}
                     {meta && (meta.stain_color || meta.wood_species) && (
                       <Badge className="absolute bottom-1 left-1 text-[10px] bg-background/90 text-foreground border">
                         <Palette className="h-2.5 w-2.5 mr-1" />
