@@ -195,6 +195,10 @@ export default function ProjectsHub() {
     setSearch("");
     setKpiFilter(null);
     setChips(new Set());
+    setPartnerFilter("all");
+    setServiceFilter("all");
+    setCityFilter("all");
+    setSortBy("recent");
   }
 
   async function handleStatusChange(id: string, status: string) {
