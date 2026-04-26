@@ -401,12 +401,13 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 lineItems={proposal.line_items ?? []}
                 projectType={proposal.project_type}
                 formatCurrency={formatCurrency}
+                brand={brand}
               />
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
               {proposal.tiers.map((tier, index) => (
-                <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} />
+                <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} brand={brand} />
               ))}
             </div>
           )}
