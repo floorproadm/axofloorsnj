@@ -243,7 +243,7 @@ export default function BrandingSettings() {
           </div>
 
           <div className="space-y-2">
-            <Label>Preview</Label>
+            <Label>Swatch</Label>
             <div className="flex items-center gap-3 p-4 rounded-lg border bg-[hsl(var(--navy-primary))] text-white">
               {logoDisplayUrl && <img src={logoDisplayUrl} alt="Preview" className="w-10 h-10 object-contain" />}
               <span className="font-bold text-lg" style={{ color: primaryColor }}>{tradeName || "AXO Floors"}</span>
@@ -253,6 +253,83 @@ export default function BrandingSettings() {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 4: Live Preview - Proposta */}
+      <Card className="border-l-4 border-l-[hsl(var(--navy-primary))] shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Palette className="w-5 h-5 text-[hsl(var(--navy-primary))]" />
+            Pré-visualização ao Vivo
+          </CardTitle>
+          <CardDescription>Como sua marca aparecerá em propostas e materiais públicos. Atualiza em tempo real conforme você edita acima.</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="rounded-lg border overflow-hidden bg-white shadow-sm">
+            {/* Header da proposta simulada */}
+            <div
+              className="px-6 py-5 flex items-center justify-between"
+              style={{ backgroundColor: secondaryColor, color: '#ffffff' }}
+            >
+              <div className="flex items-center gap-3">
+                {logoDisplayUrl ? (
+                  <div className="w-12 h-12 rounded bg-white/10 backdrop-blur p-1 flex items-center justify-center">
+                    <img src={logoDisplayUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded flex items-center justify-center font-bold text-xl" style={{ backgroundColor: primaryColor, color: '#ffffff' }}>
+                    {(tradeName || 'A').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div className="font-bold text-lg leading-tight">{tradeName || 'Your Company'}</div>
+                  {tagline && <div className="text-xs opacity-80 mt-0.5">{tagline}</div>}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] uppercase tracking-wider opacity-70">Proposal</div>
+                <div className="text-sm font-mono" style={{ color: primaryColor }}>#PRO-2025-001</div>
+              </div>
+            </div>
+
+            {/* Corpo simulado */}
+            <div className="px-6 py-5 space-y-4 text-gray-800">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Customer</div>
+                <div className="font-semibold">John Smith — 123 Maple St, Newark NJ</div>
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex items-baseline justify-between">
+                  <div className="text-sm font-medium text-gray-700">Hardwood Refinishing — 850 sqft</div>
+                  <div className="text-2xl font-bold" style={{ color: primaryColor }}>$4,250</div>
+                </div>
+              </div>
+              <button
+                className="w-full py-2.5 rounded font-semibold text-sm text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: primaryColor }}
+                type="button"
+                disabled
+              >
+                Accept Proposal
+              </button>
+            </div>
+
+            {/* Footer com contato */}
+            <div className="px-6 py-3 border-t bg-gray-50 text-[11px] text-gray-600 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {phone && <span>📞 {phone}</span>}
+                {email && <span>✉ {email}</span>}
+                {website && <span>🌐 {website}</span>}
+                {!phone && !email && !website && <span className="italic text-gray-400">Adicione contato acima para exibir aqui</span>}
+              </div>
+              <div className="font-medium" style={{ color: secondaryColor }}>{tradeName || 'Your Company'}</div>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-3">
+            💡 Esta pré-visualização reflete o que clientes verão. Salve abaixo para aplicar em todas as propostas.
+          </p>
         </CardContent>
         <Separator />
         <CardFooter className="pt-4 flex items-center gap-4">
