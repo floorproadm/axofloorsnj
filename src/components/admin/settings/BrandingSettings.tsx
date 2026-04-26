@@ -37,8 +37,12 @@ export default function BrandingSettings() {
   useEffect(() => {
     if (!isLoading && settings) {
       setTradeName((settings as any).trade_name ?? "AXO Floors");
+      setTagline((settings as any).tagline ?? "");
       setPrimaryColor((settings as any).primary_color ?? "#d97706");
       setSecondaryColor((settings as any).secondary_color ?? "#1e3a5f");
+      setPhone((settings as any).phone ?? "");
+      setEmail((settings as any).email ?? "");
+      setWebsite((settings as any).website ?? "");
       const storedPath = (settings as any).logo_url ?? "";
       setLogoPath(storedPath);
       generateSignedUrl(storedPath);
