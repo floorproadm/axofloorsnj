@@ -2,6 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
 
+export interface HubProjectMember {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string;
+}
+
 export interface HubProject {
   id: string;
   customer_name: string;
@@ -17,6 +24,7 @@ export interface HubProject {
   next_action_date: string | null;
   referred_by_partner_id: string | null;
   partner_name: string | null;
+  members: HubProjectMember[];
   job_costs: {
     estimated_revenue: number;
     total_cost: number | null;
@@ -94,13 +102,19 @@ export function useProjectsHub() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, customer_name, project_type, project_status, address, city, square_footage, start_date, created_at, notes, next_action, next_action_date, referred_by_partner_id, job_costs(estimated_revenue, total_cost, margin_percent), partners:referred_by_partner_id(contact_name, company_name)")
+        .select("id, customer_name, project_type, project_status, address, city, square_footage, start_date, created_at, notes, next_action, next_action_date, referred_by_partner_id, job_costs(estimated_revenue, total_cost, margin_percent), partners:referred_by_partner_id(contact_name, company_name), project_members(user_id, role, profiles:user_id(full_name, avatar_url))")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []).map((p: any) => ({
         ...p,
         job_costs: Array.isArray(p.job_costs) ? p.job_costs[0] ?? null : p.job_costs,
         partner_name: p.partners?.contact_name || p.partners?.company_name || null,
+        members: (p.project_members ?? []).map((m: any) => ({
+          user_id: m.user_id,
+          role: m.role,
+          full_name: m.profiles?.full_name ?? null,
+          avatar_url: m.profiles?.avatar_url ?? null,
+        })),
       })) as HubProject[];
     },
     staleTime: 60_000,

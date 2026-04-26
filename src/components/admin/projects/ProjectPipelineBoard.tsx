@@ -1,8 +1,12 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Camera, FileWarning, MessageCircle, User, Calendar, StickyNote, ArrowRight } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Camera, FileWarning, MessageCircle, User, Calendar, StickyNote, ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { computeRisk, type ProjectSignals } from "@/hooks/useProjectSignals";
 
@@ -139,6 +143,7 @@ function ProjectCard({
   signals?: ProjectSignals;
   onClick: () => void;
 }) {
+  const qc = useQueryClient();
   const dateStr = project.start_date || project.created_at;
   const formattedDate = dateStr ? format(new Date(dateStr), "MMM d, yyyy") : null;
 
@@ -170,15 +175,45 @@ function ProjectCard({
   const revenue = project.job_costs?.estimated_revenue ?? 0;
   const nextAction = computeNextAction(project, signals);
   const notesPreview = project.notes?.trim().split("\n")[0] ?? null;
+  const members = project.members ?? [];
+  const isManualNextAction = !!project.next_action;
+
+  async function handleCompleteAction(e: React.MouseEvent) {
+    e.stopPropagation();
+    const { error } = await supabase
+      .from("projects")
+      .update({ next_action: null, next_action_date: null })
+      .eq("id", project.id);
+    if (error) {
+      toast.error("Could not clear action", { description: error.message });
+      return;
+    }
+    toast.success("Action marked done");
+    qc.invalidateQueries({ queryKey: ["hub-projects"] });
+  }
+
+  function initials(name: string | null) {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((s) => s[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }
 
   return (
-    <button
+    <div
       draggable
       onDragStart={() => sessionStorage.setItem("drag-project-id", project.id)}
       onDragEnd={() => sessionStorage.removeItem("drag-project-id")}
       onClick={onClick}
       title={risk.reasons.join(" · ") || "Healthy"}
-      className="w-full text-left p-3 rounded-lg bg-card border border-border/60 hover:border-border hover:shadow-md hover:-translate-y-px transition-all space-y-2"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onClick()}
+      className="w-full text-left p-3 rounded-lg bg-card border border-border/60 hover:border-border hover:shadow-md hover:-translate-y-px transition-all space-y-2 cursor-pointer"
     >
       {/* Header: risk dot + address + revenue */}
       <div className="flex items-start gap-2">
@@ -193,9 +228,26 @@ function ProjectCard({
         )}
       </div>
 
-      {/* Customer + unread chat */}
+      {/* Customer + crew avatars + unread chat */}
       <div className="flex items-center gap-2 pl-4">
         <p className="text-xs text-muted-foreground flex-1 truncate">{project.customer_name}</p>
+        {members.length > 0 && (
+          <div className="flex -space-x-1.5 shrink-0" title={members.map((m) => m.full_name).filter(Boolean).join(", ")}>
+            {members.slice(0, 3).map((m) => (
+              <Avatar key={m.user_id} className="h-5 w-5 border border-card">
+                {m.avatar_url && <AvatarImage src={m.avatar_url} />}
+                <AvatarFallback className="text-[9px] font-semibold bg-muted">
+                  {initials(m.full_name)}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+            {members.length > 3 && (
+              <span className="h-5 w-5 rounded-full bg-muted border border-card text-[9px] font-semibold flex items-center justify-center text-muted-foreground">
+                +{members.length - 3}
+              </span>
+            )}
+          </div>
+        )}
         {unreadCount > 0 && (
           <span className="flex items-center gap-0.5 text-[10px] font-mono font-semibold text-[hsl(var(--state-success))] shrink-0">
             <MessageCircle className="h-3 w-3" />
@@ -232,11 +284,20 @@ function ProjectCard({
         )}
       </div>
 
-      {/* Next Action banner */}
+      {/* Next Action banner — clickable check to mark done (only when manual) */}
       {nextAction && (
         <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-[hsl(var(--gold))]/10 border border-[hsl(var(--gold))]/20">
           <ArrowRight className="h-3 w-3 text-[hsl(var(--gold))] shrink-0" />
-          <span className="text-[11px] font-medium text-foreground/90 truncate">{nextAction}</span>
+          <span className="text-[11px] font-medium text-foreground/90 truncate flex-1">{nextAction}</span>
+          {isManualNextAction && (
+            <button
+              onClick={handleCompleteAction}
+              title="Mark action as done"
+              className="h-5 w-5 rounded flex items-center justify-center hover:bg-[hsl(var(--gold))]/20 shrink-0"
+            >
+              <Check className="h-3 w-3 text-[hsl(var(--gold))]" />
+            </button>
+          )}
         </div>
       )}
 
@@ -262,6 +323,6 @@ function ProjectCard({
           )}
         </div>
       )}
-    </button>
+    </div>
   );
 }

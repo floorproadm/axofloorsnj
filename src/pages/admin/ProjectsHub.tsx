@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LayoutGrid, List, Plus, Inbox } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LayoutGrid, List, Plus, Inbox, ArrowUpDown } from "lucide-react";
 import { useProjectsHub } from "@/hooks/useProjectsHub";
 import { useProjectSignals, computeRisk } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
@@ -15,6 +16,8 @@ import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+
+type SortKey = "recent" | "revenue_desc" | "margin_asc" | "start_asc";
 
 function isThisWeek(dateStr: string | null) {
   if (!dateStr) return false;
@@ -35,6 +38,10 @@ export default function ProjectsHub() {
   const [search, setSearch] = useState("");
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>(null);
   const [chips, setChips] = useState<Set<SmartFilter>>(new Set());
+  const [partnerFilter, setPartnerFilter] = useState<string>("all");
+  const [serviceFilter, setServiceFilter] = useState<string>("all");
+  const [cityFilter, setCityFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<SortKey>("recent");
   const [selected, setSelected] = useState<HubProject | null>(null);
   const [showNewJob, setShowNewJob] = useState(false);
 
@@ -80,6 +87,24 @@ export default function ProjectsHub() {
     };
   }, [flagged]);
 
+  const facets = useMemo(() => {
+    const partners = new Map<string, string>();
+    const services = new Set<string>();
+    const cities = new Set<string>();
+    for (const p of projects) {
+      if (p.referred_by_partner_id && p.partner_name) {
+        partners.set(p.referred_by_partner_id, p.partner_name);
+      }
+      if (p.project_type) services.add(p.project_type);
+      if (p.city) cities.add(p.city);
+    }
+    return {
+      partners: Array.from(partners.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+      services: Array.from(services).sort(),
+      cities: Array.from(cities).sort(),
+    };
+  }, [projects]);
+
   const filtered = useMemo(() => {
     let list = flagged;
     if (search) {
@@ -104,6 +129,19 @@ export default function ProjectsHub() {
           isThisWeek(f.p.start_date),
       );
     }
+    if (partnerFilter !== "all") {
+      if (partnerFilter === "__none__") {
+        list = list.filter((f) => !f.p.referred_by_partner_id);
+      } else {
+        list = list.filter((f) => f.p.referred_by_partner_id === partnerFilter);
+      }
+    }
+    if (serviceFilter !== "all") {
+      list = list.filter((f) => f.p.project_type === serviceFilter);
+    }
+    if (cityFilter !== "all") {
+      list = list.filter((f) => f.p.city === cityFilter);
+    }
     if (chips.size > 0) {
       list = list.filter((f) => {
         if (chips.has("at_risk") && !f.atRisk) return false;
@@ -114,10 +152,35 @@ export default function ProjectsHub() {
         return true;
       });
     }
-    return list.map((f) => f.p);
-  }, [flagged, search, kpiFilter, chips]);
 
-  const hasFilters = !!search || kpiFilter !== null || chips.size > 0;
+    const sorted = [...list];
+    if (sortBy === "revenue_desc") {
+      sorted.sort(
+        (a, b) =>
+          (b.p.job_costs?.estimated_revenue ?? 0) - (a.p.job_costs?.estimated_revenue ?? 0),
+      );
+    } else if (sortBy === "margin_asc") {
+      sorted.sort(
+        (a, b) =>
+          (a.p.job_costs?.margin_percent ?? 999) - (b.p.job_costs?.margin_percent ?? 999),
+      );
+    } else if (sortBy === "start_asc") {
+      sorted.sort((a, b) => {
+        const ad = a.p.start_date ? new Date(a.p.start_date).getTime() : Infinity;
+        const bd = b.p.start_date ? new Date(b.p.start_date).getTime() : Infinity;
+        return ad - bd;
+      });
+    }
+    return sorted.map((f) => f.p);
+  }, [flagged, search, kpiFilter, chips, partnerFilter, serviceFilter, cityFilter, sortBy]);
+
+  const hasFilters =
+    !!search ||
+    kpiFilter !== null ||
+    chips.size > 0 ||
+    partnerFilter !== "all" ||
+    serviceFilter !== "all" ||
+    cityFilter !== "all";
 
   function toggleChip(k: SmartFilter) {
     setChips((prev) => {
@@ -132,6 +195,10 @@ export default function ProjectsHub() {
     setSearch("");
     setKpiFilter(null);
     setChips(new Set());
+    setPartnerFilter("all");
+    setServiceFilter("all");
+    setCityFilter("all");
+    setSortBy("recent");
   }
 
   async function handleStatusChange(id: string, status: string) {
@@ -174,9 +241,71 @@ export default function ProjectsHub() {
             className="h-8 w-56 text-xs"
           />
 
+          {facets.partners.length > 0 && (
+            <Select value={partnerFilter} onValueChange={setPartnerFilter}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="Partner" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All partners</SelectItem>
+                <SelectItem value="__none__" className="text-xs">No partner</SelectItem>
+                {facets.partners.map(([id, name]) => (
+                  <SelectItem key={id} value={id} className="text-xs">{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {facets.services.length > 0 && (
+            <Select value={serviceFilter} onValueChange={setServiceFilter}>
+              <SelectTrigger className="h-8 w-[130px] text-xs">
+                <SelectValue placeholder="Service" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All services</SelectItem>
+                {facets.services.map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {facets.cities.length > 0 && (
+            <Select value={cityFilter} onValueChange={setCityFilter}>
+              <SelectTrigger className="h-8 w-[120px] text-xs">
+                <SelectValue placeholder="City" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All cities</SelectItem>
+                {facets.cities.map((c) => (
+                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+            <SelectTrigger className="h-8 w-[140px] text-xs gap-1">
+              <ArrowUpDown className="h-3 w-3" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent" className="text-xs">Most recent</SelectItem>
+              <SelectItem value="revenue_desc" className="text-xs">Revenue (high → low)</SelectItem>
+              <SelectItem value="margin_asc" className="text-xs">Margin (low → high)</SelectItem>
+              <SelectItem value="start_asc" className="text-xs">Start date (soonest)</SelectItem>
+            </SelectContent>
+          </Select>
+
           <span className="text-[11px] text-muted-foreground">
             {filtered.length} of {projects.length}
           </span>
+
+          {hasFilters && (
+            <Button variant="ghost" size="sm" className="h-7 text-[11px]" onClick={clearAll}>
+              Clear filters
+            </Button>
+          )}
 
           <div className="flex items-center rounded-md border bg-muted p-0.5 ml-auto">
             <Button
