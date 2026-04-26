@@ -61,6 +61,8 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const { data: measurements } = useMeasurements(project?.id);
   const { data: materials } = useMaterialCosts(project?.id);
   const { data: labor } = useLaborEntries(project?.id);
+  const { data: activity } = useProjectActivity(project?.id);
+  const { data: openTasks } = useProjectOpenTasks(project?.id);
   const { data: invoices } = useQuery({
     queryKey: ['project-invoices', project?.id],
     queryFn: async () => {
