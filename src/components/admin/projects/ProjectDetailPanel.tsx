@@ -139,7 +139,7 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0">
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-background border-b p-4 space-y-3">
           <SheetHeader className="p-0">
