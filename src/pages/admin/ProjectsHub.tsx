@@ -306,6 +306,16 @@ export default function ProjectsHub() {
               Clear filters
             </Button>
           )}
+
+          <div className="flex items-center rounded-md border bg-muted p-0.5 ml-auto">
+            <Button
+              variant={view === "board" ? "default" : "ghost"}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setView("board")}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
             <Button
               variant={view === "list" ? "default" : "ghost"}
               size="icon"
