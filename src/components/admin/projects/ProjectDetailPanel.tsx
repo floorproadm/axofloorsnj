@@ -87,6 +87,39 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
     qc.invalidateQueries({ queryKey: ["hub-projects"] });
   }
 
+  async function handleCompleteTask(taskId: string) {
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", taskId);
+    if (error) {
+      toast.error("Could not complete task", { description: error.message });
+      return;
+    }
+    toast.success("Task completed");
+    qc.invalidateQueries({ queryKey: ["project-open-tasks", project?.id] });
+    qc.invalidateQueries({ queryKey: ["project-activity", project?.id] });
+  }
+
+  async function handleClearNextAction() {
+    if (!project) return;
+    const { error } = await supabase
+      .from("projects")
+      .update({ next_action: null, next_action_date: null })
+      .eq("id", project.id);
+    if (error) {
+      toast.error("Could not clear action", { description: error.message });
+      return;
+    }
+    toast.success("Action cleared");
+    qc.invalidateQueries({ queryKey: ["hub-projects"] });
+  }
+
+  function initials(name: string | null) {
+    if (!name) return "?";
+    return name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  }
+
   async function handleDelete() {
     if (!project) return;
     setDeleting(true);
