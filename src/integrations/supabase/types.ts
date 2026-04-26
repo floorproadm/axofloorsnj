@@ -338,48 +338,60 @@ export type Database = {
           created_at: string
           default_labor_rate: number
           default_margin_min_percent: number
+          email: string | null
           id: string
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url: string | null
           organization_id: string | null
+          phone: string | null
           primary_color: string | null
           referral_commission_percent: number
           secondary_color: string | null
           singleton_key: boolean
+          tagline: string | null
           trade_name: string | null
           updated_at: string
+          website: string | null
         }
         Insert: {
           company_name?: string
           created_at?: string
           default_labor_rate?: number
           default_margin_min_percent?: number
+          email?: string | null
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           organization_id?: string | null
+          phone?: string | null
           primary_color?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
+          tagline?: string | null
           trade_name?: string | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
           company_name?: string
           created_at?: string
           default_labor_rate?: number
           default_margin_min_percent?: number
+          email?: string | null
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           organization_id?: string | null
+          phone?: string | null
           primary_color?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
+          tagline?: string | null
           trade_name?: string | null
           updated_at?: string
+          website?: string | null
         }
         Relationships: [
           {

@@ -41,10 +41,25 @@ export default function PublicProposal() {
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
+  const [company, setCompany] = useState<any>(null);
+  const [logoUrl, setLogoUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [signOpen, setSignOpen] = useState(false);
   const [pickedTier, setPickedTier] = useState<TierKey | "flat" | null>(null);
+
+  // White-label brand with safe fallbacks
+  const brand = {
+    name: company?.trade_name || company?.company_name || "AXO Floors",
+    tagline: company?.tagline || "Professional Flooring · NJ",
+    phone: company?.phone || "(732) 351-8653",
+    email: company?.email || "info@axofloors.com",
+    website: company?.website || "axofloorsnj.com",
+    primary: company?.primary_color || "#d97706",
+    secondary: company?.secondary_color || "#0f1b3d",
+    logoUrl,
+  };
+  const phoneTel = brand.phone.replace(/\D/g, "");
 
   useEffect(() => {
     if (printMode && !loading && proposal) {
@@ -81,12 +96,21 @@ export default function PublicProposal() {
             .eq("share_token", token);
         }
 
-        const [projRes, custRes] = await Promise.all([
+        const [projRes, custRes, companyRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle(),
+          supabase.from("company_settings").select("*").limit(1).maybeSingle(),
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
+        setCompany(companyRes.data);
+        const logoPath = (companyRes.data as any)?.logo_url;
+        if (logoPath) {
+          const { data: signed } = await supabase.storage
+            .from("media")
+            .createSignedUrl(logoPath, 3600);
+          if (signed?.signedUrl) setLogoUrl(signed.signedUrl);
+        }
       } catch (e: any) {
         setError(e.message || "Failed to load proposal");
       } finally {
@@ -126,8 +150,8 @@ export default function PublicProposal() {
           <p className="text-lg font-semibold text-slate-700">Proposal Not Found</p>
           <p className="text-sm text-slate-500 mt-1">
             This link may have expired or is invalid. Please contact us at{" "}
-            <a href="tel:7323518653" className="text-primary font-medium">
-              (732) 351-8653
+            <a href={`tel:${phoneTel}`} className="text-primary font-medium">
+              {brand.phone}
             </a>
             .
           </p>
@@ -144,13 +168,18 @@ export default function PublicProposal() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Branded Header */}
-      <header className="bg-[#0f1b3d] text-white">
+      <header style={{ backgroundColor: brand.secondary }} className="text-white">
         <div className="max-w-3xl mx-auto px-5 py-7 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">AXO Floors</h1>
-            <p className="text-[11px] uppercase tracking-[2px] text-amber-400 mt-0.5">
-              Professional Flooring · NJ
-            </p>
+          <div className="flex items-center gap-3">
+            {brand.logoUrl && (
+              <img src={brand.logoUrl} alt={brand.name} className="h-10 max-w-[140px] object-contain" />
+            )}
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">{brand.name}</h1>
+              <p className="text-[11px] uppercase tracking-[2px] mt-0.5" style={{ color: brand.primary }}>
+                {brand.tagline}
+              </p>
+            </div>
           </div>
           <StatusBadge status={proposal.status} expired={isExpired} />
         </div>
@@ -303,14 +332,15 @@ export default function PublicProposal() {
             Questions?
           </p>
           <p className="text-sm mt-1 opacity-90">
-            Call or text Eduardo — happy to walk you through any tier.
+            Call or text us — happy to walk you through any tier.
           </p>
           <a
-            href="tel:7323518653"
-            className="mt-3 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-[#0f1b3d] font-semibold rounded-md py-2.5"
+            href={`tel:${phoneTel}`}
+            className="mt-3 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 font-semibold rounded-md py-2.5"
+            style={{ color: brand.secondary }}
           >
             <Phone className="w-4 h-4" />
-            (732) 351-8653
+            {brand.phone}
           </a>
         </Card>
 
@@ -343,7 +373,7 @@ export default function PublicProposal() {
         )}
 
         <p className="text-center text-[11px] text-slate-400 pt-4">
-          AXO Floors · axofloorsnj.com
+          {brand.name} · {brand.website}
         </p>
       </main>
 

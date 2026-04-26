@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush } from "lucide-react";
+import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush, Phone } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -18,8 +18,12 @@ export default function BrandingSettings() {
   const [saving, setSaving] = useState(false);
 
   const [tradeName, setTradeName] = useState("");
+  const [tagline, setTagline] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#d97706");
   const [secondaryColor, setSecondaryColor] = useState("#1e3a5f");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [website, setWebsite] = useState("");
   const [logoPath, setLogoPath] = useState("");
   const [logoDisplayUrl, setLogoDisplayUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -33,8 +37,12 @@ export default function BrandingSettings() {
   useEffect(() => {
     if (!isLoading && settings) {
       setTradeName((settings as any).trade_name ?? "AXO Floors");
+      setTagline((settings as any).tagline ?? "");
       setPrimaryColor((settings as any).primary_color ?? "#d97706");
       setSecondaryColor((settings as any).secondary_color ?? "#1e3a5f");
+      setPhone((settings as any).phone ?? "");
+      setEmail((settings as any).email ?? "");
+      setWebsite((settings as any).website ?? "");
       const storedPath = (settings as any).logo_url ?? "";
       setLogoPath(storedPath);
       generateSignedUrl(storedPath);
@@ -84,8 +92,12 @@ export default function BrandingSettings() {
         .from("company_settings")
         .update({
           trade_name: tradeName.trim(),
+          tagline: tagline.trim() || null,
           primary_color: primaryColor,
           secondary_color: secondaryColor,
+          phone: phone.trim() || null,
+          email: email.trim() || null,
+          website: website.trim() || null,
           logo_url: logoPath || null,
           updated_at: new Date().toISOString(),
         } as any)
@@ -140,6 +152,12 @@ export default function BrandingSettings() {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="tagline">Tagline / Slogan</Label>
+            <Input id="tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Professional Flooring Services" />
+            <p className="text-xs text-muted-foreground">Frase curta exibida abaixo do nome em propostas e materiais.</p>
+          </div>
+
+          <div className="space-y-2">
             <Label>Logo da Empresa</Label>
             <div className="flex items-center gap-4">
               {logoDisplayUrl ? (
@@ -172,7 +190,32 @@ export default function BrandingSettings() {
         </CardContent>
       </Card>
 
-      {/* Card 2: Paleta de Cores */}
+      {/* Card 2: Informações de Contato */}
+      <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Phone className="w-5 h-5 text-emerald-500" />
+            Informações de Contato
+          </CardTitle>
+          <CardDescription>Exibido em propostas, faturas e materiais públicos.</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-4 max-w-lg">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Telefone</Label>
+            <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(732) 351-8653" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@empresa.com" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="website">Website</Label>
+            <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="www.empresa.com" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 3: Paleta de Cores */}
       <Card className="border-l-4 border-l-[hsl(var(--gold-warm))] shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">

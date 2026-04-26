@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProposalGeneration, DEFAULT_TIER_MARGINS } from '@/hooks/useProposalGeneration';
+import { useCompanySettings, resolveLogoUrl } from '@/hooks/useCompanySettings';
 import { ProposalData, ProposalTier } from '@/types/proposal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,16 +20,40 @@ interface ProposalGeneratorProps {
 
 /**
  * PROPOSAL GENERATOR
- * Generates 3-tier proposal (Good/Better/Best)
- * Professional print document with AXO branding
+ * Generates Tiers (Good/Better/Best) OR Direct (single-price) proposal
+ * Branding (logo, name, colors, contact) is white-label from company_settings
  */
 export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps) {
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
+  const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
   const [flatPriceInput, setFlatPriceInput] = useState<string>('');
+  const [logoSignedUrl, setLogoSignedUrl] = useState<string>('');
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Resolve company logo to a signed URL once settings load
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const url = await resolveLogoUrl(settings?.logo_url);
+      if (!cancelled) setLogoSignedUrl(url);
+    })();
+    return () => { cancelled = true; };
+  }, [settings?.logo_url]);
+
+  // White-label branding with safe fallbacks
+  const brand = {
+    name: settings?.trade_name || settings?.company_name || 'AXO Floors',
+    tagline: settings?.tagline || 'Professional Flooring Services',
+    primary: settings?.primary_color || '#d97706',
+    secondary: settings?.secondary_color || '#1e3a5f',
+    phone: settings?.phone || '(732) 351-8653',
+    email: settings?.email || 'info@axofloors.com',
+    website: settings?.website || 'www.axofloors.com',
+    logoUrl: logoSignedUrl,
+  };
 
   const handleGenerate = async () => {
     if (!mode) {
@@ -88,33 +113,34 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     printWindow.document.write(`<!DOCTYPE html><html><head>
       <title>Proposal - ${proposal?.customer_name}</title>
       <style>
+        :root { --brand-primary: ${brand.primary}; --brand-secondary: ${brand.secondary}; }
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Roboto', Arial, sans-serif; color: #1a1a2e; background: #fff; }
         h1, h2, h3, h4, h5 { font-family: 'Montserrat', sans-serif; }
         .print-page { max-width: 800px; margin: 0 auto; padding: 40px; }
-        .hero-section { text-align: center; padding: 40px 20px; border-bottom: 3px solid #1e3a5f; margin-bottom: 30px; }
-        .hero-section h1 { font-size: 32px; color: #1e3a5f; margin-bottom: 8px; }
-        .hero-section .subtitle { color: #d97706; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+        .hero-section { text-align: center; padding: 40px 20px; border-bottom: 3px solid var(--brand-secondary); margin-bottom: 30px; }
+        .hero-section h1 { font-size: 32px; color: var(--brand-secondary); margin-bottom: 8px; }
+        .hero-section .subtitle { color: var(--brand-primary); font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
         .hero-section .proposal-num { color: #888; font-size: 12px; margin-top: 8px; }
         .section { margin-bottom: 30px; }
-        .section-title { font-size: 18px; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #d97706; }
+        .section-title { font-size: 18px; color: var(--brand-secondary); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-primary); }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .info-item { font-size: 14px; }
         .info-item .label { color: #888; font-size: 12px; }
         .info-item .value { font-weight: 500; }
         .method-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         .method-step { text-align: center; padding: 15px 10px; border: 1px solid #e5e7eb; border-radius: 8px; }
-        .method-step .step-num { display: inline-block; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; background: #1e3a5f; color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-        .method-step h4 { font-size: 13px; color: #1e3a5f; margin-bottom: 4px; }
+        .method-step .step-num { display: inline-block; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; background: var(--brand-secondary); color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .method-step h4 { font-size: 13px; color: var(--brand-secondary); margin-bottom: 4px; }
         .method-step p { font-size: 11px; color: #666; }
         .tiers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .tier-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; }
-        .tier-card.recommended { border-color: #d97706; background: #fffbeb; }
-        .tier-card .tier-badge { display: inline-block; background: #1e3a5f; color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .tier-card.recommended .tier-badge { background: #d97706; }
-        .tier-card .tier-name { font-size: 20px; font-weight: 700; color: #1e3a5f; }
-        .tier-card .tier-price { font-size: 32px; font-weight: 700; color: #d97706; margin: 10px 0; }
+        .tier-card.recommended { border-color: var(--brand-primary); background: #fffbeb; }
+        .tier-card .tier-badge { display: inline-block; background: var(--brand-secondary); color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .tier-card.recommended .tier-badge { background: var(--brand-primary); }
+        .tier-card .tier-name { font-size: 20px; font-weight: 700; color: var(--brand-secondary); }
+        .tier-card .tier-price { font-size: 32px; font-weight: 700; color: var(--brand-primary); margin: 10px 0; }
         .tier-card .tier-sqft { font-size: 12px; color: #888; margin-bottom: 12px; }
         .tier-card .tier-desc { font-size: 12px; color: #666; margin-bottom: 12px; }
         .tier-card .feature-list { list-style: none; text-align: left; }
@@ -122,14 +148,14 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         .tier-card .feature-list li:before { content: "✓"; color: #22c55e; position: absolute; left: 0; font-weight: 700; }
         .guarantee-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .guarantee-card { text-align: center; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; }
-        .guarantee-card .guarantee-period { font-size: 28px; font-weight: 700; color: #d97706; }
+        .guarantee-card .guarantee-period { font-size: 28px; font-weight: 700; color: var(--brand-primary); }
         .guarantee-card .guarantee-type { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .guarantee-card p { font-size: 12px; color: #666; margin-top: 6px; }
         .valid-until { background: #fef3c7; padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; margin-bottom: 20px; }
-        .cta-section { background: #1e3a5f; color: #fff; padding: 25px; border-radius: 12px; text-align: center; }
-        .cta-section h3 { color: #d97706; margin-bottom: 8px; }
+        .cta-section { background: var(--brand-secondary); color: #fff; padding: 25px; border-radius: 12px; text-align: center; }
+        .cta-section h3 { color: var(--brand-primary); margin-bottom: 8px; }
         .cta-section p { font-size: 14px; opacity: 0.9; }
-        .cta-section .phone { font-size: 20px; font-weight: 700; color: #d97706; margin-top: 10px; }
+        .cta-section .phone { font-size: 20px; font-weight: 700; color: var(--brand-primary); margin-top: 10px; }
         .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb; margin-top: 30px; color: #888; font-size: 11px; }
         @media print {
           body { padding: 0; }
@@ -305,9 +331,18 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       <div ref={printRef} className="bg-white rounded-lg border overflow-hidden">
         <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40 }}>
           {/* Hero */}
-          <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: '3px solid #1e3a5f', marginBottom: 30 }}>
-            <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: '#1e3a5f', marginBottom: 8 }}>AXO Floors</h1>
-            <p style={{ color: '#d97706', fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>Professional Flooring Services</p>
+          <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: `3px solid ${brand.secondary}`, marginBottom: 30 }}>
+            {brand.logoUrl ? (
+              <img
+                src={brand.logoUrl}
+                alt={brand.name}
+                style={{ maxHeight: 64, maxWidth: 240, objectFit: 'contain', margin: '0 auto 10px', display: 'block' }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: brand.secondary, marginBottom: 8 }}>{brand.name}</h1>
+            )}
+            <p style={{ color: brand.primary, fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>{brand.tagline}</p>
             {proposal.proposal_number && (
               <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>#{proposal.proposal_number}</p>
             )}
@@ -315,7 +350,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Customer Info */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Prepared For</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Prepared For</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <div><span style={{ color: '#888', fontSize: 12 }}>Client</span><br/><strong>{proposal.customer_name}</strong></div>
               <div><span style={{ color: '#888', fontSize: 12 }}>Address</span><br/>{proposal.address}</div>
@@ -326,7 +361,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Site Assessment */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Site Assessment</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Site Assessment</h2>
             <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
               {proposal.mode === 'direct'
                 ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
@@ -336,7 +371,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* AXO Transformation Method */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>The AXO Transformation Method</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>The AXO Transformation Method</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
                 { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
@@ -345,8 +380,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
               ].map(step => (
                 <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: '1px solid #e5e7eb', borderRadius: 8 }}>
-                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: '#1e3a5f', color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
-                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: '#1e3a5f', marginBottom: 4 }}>{step.title}</h4>
+                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
+                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: brand.secondary, marginBottom: 4 }}>{step.title}</h4>
                   <p style={{ fontSize: 11, color: '#666' }}>{step.desc}</p>
                 </div>
               ))}
@@ -366,19 +401,20 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 lineItems={proposal.line_items ?? []}
                 projectType={proposal.project_type}
                 formatCurrency={formatCurrency}
+                brand={brand}
               />
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
               {proposal.tiers.map((tier, index) => (
-                <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} />
+                <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} brand={brand} />
               ))}
             </div>
           )}
 
           {/* Timeline */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Estimated Timeline</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Estimated Timeline</h2>
             <p style={{ fontSize: 14, color: '#444' }}>
               Based on {proposal.square_footage} sqft, we estimate <strong>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
               Our crew works 8AM–5PM with full area protection.
@@ -387,7 +423,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Woody's Guarantee */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: '#1e3a5f', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #d97706' }}>Woody's Guarantee</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Woody's Guarantee</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {[
                 { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
@@ -395,7 +431,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
               ].map(g => (
                 <div key={g.type} style={{ textAlign: 'center', padding: 15, border: '1px solid #e5e7eb', borderRadius: 8 }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{g.period}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
                   <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
                   <p style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{g.desc}</p>
                 </div>
@@ -404,16 +440,16 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
 
           {/* CTA */}
-          <div style={{ background: '#1e3a5f', color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
-            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#d97706', marginBottom: 8, fontSize: 18 }}>Ready to Transform Your Floors?</h3>
-            <p style={{ fontSize: 14, opacity: 0.9 }}>Contact Eduardo to discuss your project and choose the best option for your home.</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: '#d97706', marginTop: 10 }}>(732) 351-8653</p>
+          <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
+            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>Ready to move forward?</h3>
+            <p style={{ fontSize: 14, opacity: 0.9 }}>Contact us to discuss your project and choose the best option for your home.</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>{brand.phone}</p>
           </div>
 
           {/* Footer */}
           <div style={{ textAlign: 'center', paddingTop: 20, borderTop: '1px solid #e5e7eb', color: '#888', fontSize: 11 }}>
-            <p>AXO Floors — Professional Flooring Services</p>
-            <p>www.axofloors.com | info@axofloors.com</p>
+            <p>{brand.name} — {brand.tagline}</p>
+            <p>{[brand.website, brand.email].filter(Boolean).join(' | ')}</p>
             <p style={{ marginTop: 4 }}>Generated: {format(new Date(proposal.created_at), 'MMM d, yyyy h:mm a')}</p>
           </div>
         </div>
@@ -422,16 +458,28 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   );
 }
 
-function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
+type Brand = {
+  name: string;
+  tagline: string;
+  primary: string;
+  secondary: string;
+  phone: string;
+  email: string;
+  website: string;
+  logoUrl: string;
+};
+
+function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
   tier: ProposalTier;
   isRecommended: boolean;
   formatCurrency: (v: number) => string;
   sqft: number;
+  brand: Brand;
 }) {
   const pricePerSqft = sqft > 0 ? (tier.price / sqft).toFixed(2) : '0';
   return (
     <div style={{
-      border: `2px solid ${isRecommended ? '#d97706' : '#e5e7eb'}`,
+      border: `2px solid ${isRecommended ? brand.primary : '#e5e7eb'}`,
       borderRadius: 12,
       padding: 20,
       textAlign: 'center',
@@ -439,7 +487,7 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
     }}>
       <div style={{
         display: 'inline-block',
-        background: isRecommended ? '#d97706' : '#1e3a5f',
+        background: isRecommended ? brand.primary : brand.secondary,
         color: '#fff',
         fontSize: 9,
         padding: '3px 8px',
@@ -450,8 +498,8 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
       }}>
         {isRecommended ? 'Recommended' : tier.name}
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: '#1e3a5f' }}>{tier.name}</h3>
-      <p style={{ fontSize: 32, fontWeight: 700, color: '#d97706', margin: '10px 0' }}>{formatCurrency(tier.price)}</p>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: brand.secondary }}>{tier.name}</h3>
+      <p style={{ fontSize: 32, fontWeight: 700, color: brand.primary, margin: '10px 0' }}>{formatCurrency(tier.price)}</p>
       <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>${pricePerSqft}/sqft</p>
       <p style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>{tier.short_description}</p>
       <ul style={{ listStyle: 'none', textAlign: 'left', padding: 0 }}>
@@ -466,11 +514,12 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft }: {
   );
 }
 
-function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
+function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand }: {
   price: number;
   lineItems: { description: string; category: string; amount: number }[];
   projectType: string;
   formatCurrency: (v: number) => string;
+  brand: Brand;
 }) {
   const grouped = lineItems.reduce<Record<string, { description: string; amount: number }[]>>((acc, item) => {
     const key = item.category || 'other';
@@ -490,14 +539,14 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
 
   return (
     <div style={{
-      border: '2px solid #d97706',
+      border: `2px solid ${brand.primary}`,
       borderRadius: 12,
       padding: 28,
       background: '#fffbeb',
     }}>
       <div style={{
         display: 'inline-block',
-        background: '#d97706',
+        background: brand.primary,
         color: '#fff',
         fontSize: 9,
         padding: '3px 10px',
@@ -508,16 +557,16 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency }: {
       }}>
         Total Project Investment
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: '#1e3a5f', marginBottom: 4 }}>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: brand.secondary, marginBottom: 4 }}>
         {projectType}
       </h3>
-      <p style={{ fontSize: 42, fontWeight: 700, color: '#d97706', margin: '6px 0 18px 0' }}>
+      <p style={{ fontSize: 42, fontWeight: 700, color: brand.primary, margin: '6px 0 18px 0' }}>
         {formatCurrency(price)}
       </p>
 
       {lineItems.length > 0 ? (
         <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #f0e2c7' }}>
-          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: '#1e3a5f', marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: brand.secondary, marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
             Scope Breakdown
           </h4>
           {Object.entries(grouped).map(([cat, items]) => (
