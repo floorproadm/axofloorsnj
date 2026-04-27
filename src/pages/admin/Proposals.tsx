@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +21,7 @@ import {
   ChevronRight, DollarSign, TrendingUp, Star, Zap,
   MapPin, Phone, Mail, Calendar, Hash, Building2,
   Link2, Mail as MailIcon, MessageCircle,
-  LayoutGrid, List, Pencil, Save, X
+  LayoutGrid, List, Pencil, Save, X, Briefcase, ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProposalGeneration } from "@/hooks/useProposalGeneration";
@@ -650,6 +651,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
 export default function Proposals() {
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
   const [selected, setSelected] = useState<ProposalWithRelations | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
@@ -690,6 +692,17 @@ export default function Proposals() {
     return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length, pending };
   }, [proposals]);
 
+  // Unique projects for filter dropdown
+  const projectOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    proposals.forEach(p => {
+      if (p.project_id && p.projects?.customer_name) {
+        map.set(p.project_id, p.projects.customer_name);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [proposals]);
+
   // Filter
   const filtered = useMemo(() => {
     return proposals.filter(p => {
@@ -697,6 +710,7 @@ export default function Proposals() {
         p.projects?.customer_name.toLowerCase().includes(search.toLowerCase()) ||
         p.proposal_number.toLowerCase().includes(search.toLowerCase());
       if (!matchSearch) return false;
+      if (projectFilter !== "all" && p.project_id !== projectFilter) return false;
       if (tab === "all") return true;
       if (tab === "pending") return ["sent", "viewed"].includes(p.status);
       if (tab === "accepted") return p.status === "accepted";
@@ -704,7 +718,7 @@ export default function Proposals() {
       if (tab === "draft") return p.status === "draft";
       return true;
     });
-  }, [proposals, tab, search]);
+  }, [proposals, tab, search, projectFilter]);
 
   const TABS = [
     { id: "all",      label: "All",      count: proposals.length },
@@ -767,15 +781,49 @@ export default function Proposals() {
 
         {/* Search & Filters */}
         <div className="p-3 space-y-2 border-b border-border/50">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by client or proposal #..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-9"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by client or proposal #..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+            <Select value={projectFilter} onValueChange={setProjectFilter}>
+              <SelectTrigger className="h-9 w-[160px] gap-1 text-xs">
+                <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+                <SelectValue placeholder="All projects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All projects</SelectItem>
+                {projectOptions.map(opt => (
+                  <SelectItem key={opt.id} value={opt.id} className="text-xs">
+                    {opt.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+          {projectFilter !== "all" && (
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span>Filtered by job:</span>
+              <Link
+                to={`/admin/projects/${projectFilter}`}
+                className="inline-flex items-center gap-1 text-primary hover:underline font-medium"
+              >
+                {projectOptions.find(o => o.id === projectFilter)?.name}
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+              <button
+                onClick={() => setProjectFilter("all")}
+                className="ml-auto text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
           <Button onClick={() => setShowNew(true)} className="w-full h-9 gap-2" size="sm">
             <Plus className="w-4 h-4" /> New Proposal
           </Button>
@@ -836,25 +884,37 @@ export default function Proposals() {
                         : p.better_price;
 
                     return (
-                      <button key={p.id} onClick={() => setSelected(p)} className="w-full text-left group">
-                        <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg border transition-all",
-                          "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
-                          "border-border/50 bg-card"
-                        )}>
-                          <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
-                            <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
+                      <div key={p.id} className="group relative">
+                        <button onClick={() => setSelected(p)} className="w-full text-left">
+                          <div className={cn(
+                            "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                            "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
+                            "border-border/50 bg-card"
+                          )}>
+                            <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                              <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
+                            </div>
+                            {p.project_id && (
+                              <Link
+                                to={`/admin/projects/${p.project_id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="hidden md:inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 px-1.5 py-0.5 rounded-md transition-colors"
+                                title="Open Job"
+                              >
+                                <Briefcase className="w-3 h-3" /> Job
+                              </Link>
+                            )}
+                            <span className="text-[10px] text-muted-foreground font-mono hidden sm:block">{p.proposal_number}</span>
+                            <Badge className={cn("text-[10px] h-5 px-2 rounded-full border flex-shrink-0", displayStatus.bg, displayStatus.color, displayStatus.border)}>
+                              {isExpired ? "Expired" : displayStatus.label}
+                            </Badge>
+                            <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
                           </div>
-                          <span className="text-[10px] text-muted-foreground font-mono hidden sm:block">{p.proposal_number}</span>
-                          <Badge className={cn("text-[10px] h-5 px-2 rounded-full border flex-shrink-0", displayStatus.bg, displayStatus.color, displayStatus.border)}>
-                            {isExpired ? "Expired" : displayStatus.label}
-                          </Badge>
-                          <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
-                        </div>
-                      </button>
+                        </button>
+                      </div>
                     );
                   })
                 )}
