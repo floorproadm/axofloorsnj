@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useProposalGeneration, DEFAULT_TIER_MARGINS } from '@/hooks/useProposalGeneration';
 import { useCompanySettings, resolveLogoUrl } from '@/hooks/useCompanySettings';
 import { ProposalData, ProposalTier } from '@/types/proposal';
@@ -8,10 +8,29 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+/** Editable line item shape — extends the read-only one with qty + unit_price for live math */
+interface EditableLine {
+  id: string;
+  description: string;
+  category: string;
+  qty: number;
+  unit_price: number;
+}
+
+const CATEGORY_OPTIONS = [
+  { value: 'labor', label: 'Labor' },
+  { value: 'material', label: 'Materials' },
+  { value: 'equipment', label: 'Equipment' },
+  { value: 'additional', label: 'Additional Services' },
+  { value: 'other', label: 'Other' },
+];
+
+const uid = () => Math.random().toString(36).slice(2, 10);
 
 interface ProposalGeneratorProps {
   projectId: string;
