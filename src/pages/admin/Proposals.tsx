@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, isPast, parseISO } from "date-fns";
@@ -21,7 +22,8 @@ import {
   ChevronRight, DollarSign, TrendingUp, Star, Zap,
   MapPin, Phone, Mail, Calendar, Hash, Building2,
   Link2, Mail as MailIcon, MessageCircle,
-  LayoutGrid, List, Pencil, Save, X, Briefcase, ExternalLink
+  LayoutGrid, List, Pencil, Save, X, Briefcase, ExternalLink,
+  Download, FileSpreadsheet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProposalGeneration } from "@/hooks/useProposalGeneration";
@@ -310,6 +312,62 @@ function printProposal(proposal: ProposalWithRelations) {
   if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 500); }
 }
 
+// ─── Export Proposal as CSV ───────────────────────────────────────────────────
+function exportProposalCSV(proposal: ProposalWithRelations) {
+  const c = proposal.projects;
+  const address = [c?.address, c?.city, c?.zip_code].filter(Boolean).join(", ");
+  const esc = (v: any) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const rows: string[][] = [
+    ["Proposal Number", proposal.proposal_number],
+    ["Status", proposal.status],
+    ["Created", format(parseISO(proposal.created_at), "yyyy-MM-dd")],
+    ["Valid Until", format(parseISO(proposal.valid_until), "yyyy-MM-dd")],
+    ["Sent At", proposal.sent_at ? format(parseISO(proposal.sent_at), "yyyy-MM-dd") : ""],
+    ["Accepted At", proposal.accepted_at ? format(parseISO(proposal.accepted_at), "yyyy-MM-dd") : ""],
+    ["Selected Tier", proposal.selected_tier || ""],
+    [],
+    ["Customer Name", c?.customer_name || ""],
+    ["Customer Email", c?.customer_email || ""],
+    ["Customer Phone", c?.customer_phone || ""],
+    ["Address", address],
+    ["Project Type", c?.project_type || ""],
+    ["Square Footage", c?.square_footage ? String(c.square_footage) : ""],
+    [],
+    ["Pricing Mode", proposal.use_tiers ? "Tiers (Good/Better/Best)" : "Direct (Single Price)"],
+  ];
+
+  if (proposal.use_tiers) {
+    rows.push(
+      [],
+      ["Tier", "Price (USD)", "Margin (%)"],
+      ["Good", String(proposal.good_price), proposal.margin_good?.toFixed(2) ?? ""],
+      ["Better", String(proposal.better_price), proposal.margin_better?.toFixed(2) ?? ""],
+      ["Best", String(proposal.best_price), proposal.margin_best?.toFixed(2) ?? ""],
+    );
+  } else {
+    rows.push(
+      [],
+      ["Total Price (USD)", String(proposal.flat_price ?? proposal.better_price)],
+    );
+  }
+
+  const csv = rows.map(r => r.map(esc).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${proposal.proposal_number}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast.success("CSV exported");
+}
+
 // ─── Proposal Detail Sheet ────────────────────────────────────────────────────
 function ProposalDetailSheet({ proposal, open, onClose }: {
   proposal: ProposalWithRelations | null;
@@ -414,9 +472,29 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                     <Pencil className="w-3.5 h-3.5" /> Edit Draft
                   </Button>
                 )}
-                <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => printProposal(proposal)}>
-                  <Printer className="w-3.5 h-3.5" /> Print / PDF
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs">
+                      <Download className="w-3.5 h-3.5" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => printProposal(proposal)} className="gap-2 text-xs cursor-pointer">
+                      <Printer className="w-3.5 h-3.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">Download as PDF</span>
+                        <span className="text-[10px] text-muted-foreground">Opens print dialog → Save as PDF</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportProposalCSV(proposal)} className="gap-2 text-xs cursor-pointer">
+                      <FileSpreadsheet className="w-3.5 h-3.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">Download as CSV</span>
+                        <span className="text-[10px] text-muted-foreground">Spreadsheet with all data</span>
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
                   <Share2 className="w-3.5 h-3.5" /> Send to Client
                 </Button>
