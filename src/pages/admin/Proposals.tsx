@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
@@ -376,6 +380,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
 }) {
   const qc = useQueryClient();
   const [showShare, setShowShare] = useState(false);
+  const [showPdfConfirm, setShowPdfConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editUseTiers, setEditUseTiers] = useState(true);
   const [editFlatPrice, setEditFlatPrice] = useState("");
@@ -479,7 +484,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => printProposal(proposal)} className="gap-2 text-xs cursor-pointer">
+                    <DropdownMenuItem onClick={() => setShowPdfConfirm(true)} className="gap-2 text-xs cursor-pointer">
                       <Printer className="w-3.5 h-3.5" />
                       <div className="flex flex-col">
                         <span className="font-medium">Download as PDF</span>
@@ -715,6 +720,31 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
           </div>
         </SheetContent>
       </Sheet>
+
+      <AlertDialog open={showPdfConfirm} onOpenChange={setShowPdfConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Download proposal as PDF?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will open your browser's print dialog for proposal{" "}
+              <span className="font-semibold">{proposal.proposal_number}</span>.
+              Choose <span className="font-semibold">"Save as PDF"</span> as the destination to download the file.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowPdfConfirm(false);
+                printProposal(proposal);
+              }}
+              className="gap-1.5"
+            >
+              <Printer className="w-3.5 h-3.5" /> Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {showShare && (
         <ShareModal proposal={proposal} open={showShare} onClose={() => setShowShare(false)} />
