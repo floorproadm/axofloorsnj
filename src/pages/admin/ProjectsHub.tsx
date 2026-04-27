@@ -10,7 +10,7 @@ import { useProjectSignals, computeRisk } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
 import { ProjectListView } from "@/components/admin/projects/ProjectListView";
 import { ProjectsHubHeader, type KpiFilter } from "@/components/admin/projects/ProjectsHubHeader";
-import { SmartFilterChips, type SmartFilter } from "@/components/admin/projects/SmartFilterChips";
+import type { SmartFilter } from "@/components/admin/projects/SmartFilterChips";
 import { AwaitingConversionBanner } from "@/components/admin/projects/AwaitingConversionBanner";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import type { HubProject } from "@/hooks/useProjectsHub";
