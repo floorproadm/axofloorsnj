@@ -112,6 +112,88 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     })();
   }, [proposal?.proposal_id]);
 
+  // Hydrate editable lines from proposal.line_items (Direct mode only).
+  // Existing line items have only `amount` (total per row), so we seed qty=1, unit_price=amount.
+  useEffect(() => {
+    if (!proposal || proposal.mode !== 'direct') {
+      setEditableLines([]);
+      setLinesDirty(false);
+      return;
+    }
+    const seeded: EditableLine[] = (proposal.line_items ?? []).map((it) => ({
+      id: uid(),
+      description: it.description || it.category || 'Item',
+      category: it.category || 'other',
+      qty: 1,
+      unit_price: Number(it.amount) || 0,
+    }));
+    if (seeded.length === 0) {
+      seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0 });
+    }
+    setEditableLines(seeded);
+    setLinesDirty(false);
+  }, [proposal?.proposal_id]);
+
+  // Live totals derived from editable lines
+  const editedTotal = useMemo(
+    () => editableLines.reduce((s, l) => s + (Number(l.qty) || 0) * (Number(l.unit_price) || 0), 0),
+    [editableLines]
+  );
+  const editedMargin = useMemo(() => {
+    if (!proposal || editedTotal <= 0) return 0;
+    return Math.round(((editedTotal - (proposal.base_cost || 0)) / editedTotal) * 100);
+  }, [editedTotal, proposal]);
+
+  const addLine = () => {
+    setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0 }]);
+    setLinesDirty(true);
+  };
+  const updateLine = (id: string, patch: Partial<EditableLine>) => {
+    setEditableLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+    setLinesDirty(true);
+  };
+  const removeLine = (id: string) => {
+    setEditableLines((prev) => prev.filter((l) => l.id !== id));
+    setLinesDirty(true);
+  };
+
+  // Persist edited lines as the new flat_price on the proposal.
+  const saveLines = async () => {
+    if (!proposal?.proposal_id) return;
+    if (editedTotal <= 0) {
+      toast.error('Total must be greater than zero.');
+      return;
+    }
+    setSavingLines(true);
+    try {
+      const { error: upErr } = await supabase
+        .from('proposals')
+        .update({ flat_price: editedTotal })
+        .eq('id', proposal.proposal_id);
+      if (upErr) throw upErr;
+      setProposal((prev) =>
+        prev
+          ? {
+              ...prev,
+              flat_price: editedTotal,
+              flat_margin_percent: editedMargin,
+              line_items: editableLines.map((l) => ({
+                description: l.description || 'Item',
+                category: l.category,
+                amount: (Number(l.qty) || 0) * (Number(l.unit_price) || 0),
+              })),
+            }
+          : prev
+      );
+      setLinesDirty(false);
+      toast.success('Proposal updated');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to update proposal');
+    } finally {
+      setSavingLines(false);
+    }
+  };
+
   const handleCopyLink = async () => {
     if (!shareToken) {
       toast.error('Public link is being generated. Try again in a moment.');
