@@ -651,6 +651,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
 export default function Proposals() {
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
   const [selected, setSelected] = useState<ProposalWithRelations | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
