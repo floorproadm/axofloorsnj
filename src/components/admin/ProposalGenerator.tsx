@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -53,7 +53,44 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
+  });
   const printRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('proposal-preview-theme', previewTheme);
+  }, [previewTheme]);
+
+  // Theme palette used across the printable preview (so dark mode is readable).
+  const theme = previewTheme === 'dark'
+    ? {
+        page: '#0f1115',
+        surface: '#1a1d24',
+        surfaceAlt: '#22262f',
+        text: '#f5f6f8',
+        textMuted: '#a8aebb',
+        textDim: '#cfd3dc',
+        border: '#2a2f3a',
+        borderSoft: '#33394a',
+        accentBg: '#2a2410',     // soft warm tint instead of pure cream
+        validityBg: '#3a2f10',
+        validityText: '#fde68a',
+      }
+    : {
+        page: '#ffffff',
+        surface: '#ffffff',
+        surfaceAlt: '#fffbeb',
+        text: '#1a1714',
+        textMuted: '#6b7280',
+        textDim: '#374151',
+        border: '#e5e7eb',
+        borderSoft: '#f0e2c7',
+        accentBg: '#fffbeb',
+        validityBg: '#fef3c7',
+        validityText: '#78350f',
+      };
 
   // Resolve company logo to a signed URL once settings load
   useEffect(() => {
@@ -392,8 +429,31 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       {/* Controls */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setProposal(null)}>Back</Button>
+          {/* Light/Dark toggle for the preview */}
+          <div className="inline-flex items-center rounded-md border bg-background p-0.5">
+            <button
+              type="button"
+              onClick={() => setPreviewTheme('light')}
+              className={`h-8 px-2.5 text-xs rounded inline-flex items-center gap-1 transition-colors ${
+                previewTheme === 'light' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label="Light preview"
+            >
+              <Sun className="h-3.5 w-3.5" /> Light
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewTheme('dark')}
+              className={`h-8 px-2.5 text-xs rounded inline-flex items-center gap-1 transition-colors ${
+                previewTheme === 'dark' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label="Dark preview"
+            >
+              <Moon className="h-3.5 w-3.5" /> Dark
+            </button>
+          </div>
           <Button variant="outline" onClick={handleCopyLink} disabled={!shareToken}>
             <Link2 className="h-4 w-4 mr-2" />
             Copy Public Link
@@ -553,8 +613,12 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       )}
 
       {/* Printable Professional Document */}
-      <div ref={printRef} className="bg-white rounded-lg border overflow-hidden">
-        <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40 }}>
+      <div
+        ref={printRef}
+        className="rounded-lg border overflow-hidden"
+        style={{ background: theme.page, color: theme.text }}
+      >
+        <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40, color: theme.text }}>
           {/* Hero */}
           <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: `3px solid ${brand.secondary}`, marginBottom: 30 }}>
             {brand.logoUrl ? (
@@ -565,29 +629,29 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 crossOrigin="anonymous"
               />
             ) : (
-              <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: brand.secondary, marginBottom: 8 }}>{brand.name}</h1>
+              <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 8 }}>{brand.name}</h1>
             )}
             <p style={{ color: brand.primary, fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' as const }}>{brand.tagline}</p>
             {proposal.proposal_number && (
-              <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>#{proposal.proposal_number}</p>
+              <p style={{ color: theme.textMuted, fontSize: 12, marginTop: 8 }}>#{proposal.proposal_number}</p>
             )}
           </div>
 
           {/* Customer Info */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Prepared For</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Prepared For</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <div><span style={{ color: '#888', fontSize: 12 }}>Client</span><br/><strong>{proposal.customer_name}</strong></div>
-              <div><span style={{ color: '#888', fontSize: 12 }}>Address</span><br/>{proposal.address}</div>
-              <div><span style={{ color: '#888', fontSize: 12 }}>Contact</span><br/>{proposal.customer_email} | {proposal.customer_phone}</div>
-              <div><span style={{ color: '#888', fontSize: 12 }}>Project</span><br/>{proposal.project_type} — {proposal.square_footage} sqft</div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Client</span><br/><strong style={{ color: theme.text }}>{proposal.customer_name}</strong></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Address</span><br/><span style={{ color: theme.textDim }}>{proposal.address}</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Contact</span><br/><span style={{ color: theme.textDim }}>{proposal.customer_email} | {proposal.customer_phone}</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Project</span><br/><span style={{ color: theme.textDim }}>{proposal.project_type} — {proposal.square_footage} sqft</span></div>
             </div>
           </div>
 
           {/* Site Assessment */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Site Assessment</h2>
-            <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Site Assessment</h2>
+            <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6 }}>
               {proposal.mode === 'direct'
                 ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
                 : `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`}
@@ -596,7 +660,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* AXO Transformation Method */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>The AXO Transformation Method</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>The AXO Transformation Method</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
                 { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
@@ -604,17 +668,17 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 { num: 3, title: 'Execution', desc: 'Staining & finish application' },
                 { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
               ].map(step => (
-                <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: '1px solid #e5e7eb', borderRadius: 8 }}>
+                <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
                   <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
-                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: brand.secondary, marginBottom: 4 }}>{step.title}</h4>
-                  <p style={{ fontSize: 11, color: '#666' }}>{step.desc}</p>
+                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 4 }}>{step.title}</h4>
+                  <p style={{ fontSize: 11, color: theme.textMuted }}>{step.desc}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Valid Until */}
-          <div style={{ background: '#fef3c7', padding: 12, borderRadius: 8, textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
+          <div style={{ background: theme.validityBg, color: theme.validityText, padding: 12, borderRadius: 8, textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
             Valid until: <strong>{format(new Date(proposal.valid_until), 'MMMM d, yyyy')}</strong>
           </div>
 
@@ -627,38 +691,49 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 projectType={proposal.project_type}
                 formatCurrency={formatCurrency}
                 brand={brand}
+                theme={theme}
+                isDark={previewTheme === 'dark'}
               />
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
               {proposal.tiers.map((tier, index) => (
-                <PrintTierCard key={tier.id} tier={tier} isRecommended={index === 1} formatCurrency={formatCurrency} sqft={proposal.square_footage} brand={brand} />
+                <PrintTierCard
+                  key={tier.id}
+                  tier={tier}
+                  isRecommended={index === 1}
+                  formatCurrency={formatCurrency}
+                  sqft={proposal.square_footage}
+                  brand={brand}
+                  theme={theme}
+                  isDark={previewTheme === 'dark'}
+                />
               ))}
             </div>
           )}
 
           {/* Timeline */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Estimated Timeline</h2>
-            <p style={{ fontSize: 14, color: '#444' }}>
-              Based on {proposal.square_footage} sqft, we estimate <strong>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Estimated Timeline</h2>
+            <p style={{ fontSize: 14, color: theme.textDim }}>
+              Based on {proposal.square_footage} sqft, we estimate <strong style={{ color: theme.text }}>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
               Our crew works 8AM–5PM with full area protection.
             </p>
           </div>
 
           {/* Woody's Guarantee */}
           <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid var(--brand-primary)' }}>Woody's Guarantee</h2>
+            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Woody's Guarantee</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {[
                 { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
                 { period: '10', unit: 'Years', type: 'Structural', desc: 'Peeling, bubbling, or delamination covered.' },
                 { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
               ].map(g => (
-                <div key={g.type} style={{ textAlign: 'center', padding: 15, border: '1px solid #e5e7eb', borderRadius: 8 }}>
+                <div key={g.type} style={{ textAlign: 'center', padding: 15, border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
                   <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
-                  <div style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
-                  <p style={{ fontSize: 12, color: '#666', marginTop: 6 }}>{g.desc}</p>
+                  <div style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
+                  <p style={{ fontSize: 12, color: theme.textDim, marginTop: 6 }}>{g.desc}</p>
                 </div>
               ))}
             </div>
@@ -672,7 +747,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
 
           {/* Footer */}
-          <div style={{ textAlign: 'center', paddingTop: 20, borderTop: '1px solid #e5e7eb', color: '#888', fontSize: 11 }}>
+          <div style={{ textAlign: 'center', paddingTop: 20, borderTop: `1px solid ${theme.border}`, color: theme.textMuted, fontSize: 11 }}>
             <p>{brand.name} — {brand.tagline}</p>
             <p>{[brand.website, brand.email].filter(Boolean).join(' | ')}</p>
             <p style={{ marginTop: 4 }}>Generated: {format(new Date(proposal.created_at), 'MMM d, yyyy h:mm a')}</p>
@@ -694,21 +769,37 @@ type Brand = {
   logoUrl: string;
 };
 
-function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
+type PreviewTheme = {
+  page: string;
+  surface: string;
+  surfaceAlt: string;
+  text: string;
+  textMuted: string;
+  textDim: string;
+  border: string;
+  borderSoft: string;
+  accentBg: string;
+  validityBg: string;
+  validityText: string;
+};
+
+function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand, theme, isDark }: {
   tier: ProposalTier;
   isRecommended: boolean;
   formatCurrency: (v: number) => string;
   sqft: number;
   brand: Brand;
+  theme: PreviewTheme;
+  isDark: boolean;
 }) {
   const pricePerSqft = sqft > 0 ? (tier.price / sqft).toFixed(2) : '0';
   return (
     <div style={{
-      border: `2px solid ${isRecommended ? brand.primary : '#e5e7eb'}`,
+      border: `2px solid ${isRecommended ? brand.primary : theme.border}`,
       borderRadius: 12,
       padding: 20,
       textAlign: 'center',
-      background: isRecommended ? '#fffbeb' : '#fff',
+      background: isRecommended ? theme.surfaceAlt : theme.surface,
     }}>
       <div style={{
         display: 'inline-block',
@@ -723,13 +814,13 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
       }}>
         {isRecommended ? 'Recommended' : tier.name}
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: brand.secondary }}>{tier.name}</h3>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: isDark ? theme.text : brand.secondary }}>{tier.name}</h3>
       <p style={{ fontSize: 32, fontWeight: 700, color: brand.primary, margin: '10px 0' }}>{formatCurrency(tier.price)}</p>
-      <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>${pricePerSqft}/sqft</p>
-      <p style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>{tier.short_description}</p>
+      <p style={{ fontSize: 12, color: theme.textMuted, marginBottom: 12 }}>${pricePerSqft}/sqft</p>
+      <p style={{ fontSize: 12, color: theme.textDim, marginBottom: 12 }}>{tier.short_description}</p>
       <ul style={{ listStyle: 'none', textAlign: 'left', padding: 0 }}>
         {tier.features.map((f, i) => (
-          <li key={i} style={{ fontSize: 12, padding: '4px 0', paddingLeft: 18, position: 'relative' as const }}>
+          <li key={i} style={{ fontSize: 12, padding: '4px 0', paddingLeft: 18, position: 'relative' as const, color: theme.textDim }}>
             <span style={{ position: 'absolute' as const, left: 0, color: '#22c55e', fontWeight: 700 }}>✓</span>
             {f}
           </li>
@@ -739,12 +830,14 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
   );
 }
 
-function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand }: {
+function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand, theme, isDark }: {
   price: number;
   lineItems: { description: string; category: string; amount: number }[];
   projectType: string;
   formatCurrency: (v: number) => string;
   brand: Brand;
+  theme: PreviewTheme;
+  isDark: boolean;
 }) {
   const grouped = lineItems.reduce<Record<string, { description: string; amount: number }[]>>((acc, item) => {
     const key = item.category || 'other';
@@ -767,7 +860,7 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand 
       border: `2px solid ${brand.primary}`,
       borderRadius: 12,
       padding: 28,
-      background: '#fffbeb',
+      background: theme.surfaceAlt,
     }}>
       <div style={{
         display: 'inline-block',
@@ -782,7 +875,7 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand 
       }}>
         Total Project Investment
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: brand.secondary, marginBottom: 4 }}>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: isDark ? theme.text : brand.secondary, marginBottom: 4 }}>
         {projectType}
       </h3>
       <p style={{ fontSize: 42, fontWeight: 700, color: brand.primary, margin: '6px 0 18px 0' }}>
@@ -790,26 +883,26 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand 
       </p>
 
       {lineItems.length > 0 ? (
-        <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #f0e2c7' }}>
-          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: brand.secondary, marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+        <div style={{ background: theme.surface, borderRadius: 8, padding: 16, border: `1px solid ${theme.borderSoft}` }}>
+          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: isDark ? theme.text : brand.secondary, marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
             Scope Breakdown
           </h4>
           {Object.entries(grouped).map(([cat, items]) => (
             <div key={cat} style={{ marginBottom: 10 }}>
-              <p style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>
+              <p style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>
                 {categoryLabels[cat] || cat}
               </p>
               {items.map((it, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: i < items.length - 1 ? '1px dashed #eee' : 'none' }}>
-                  <span style={{ color: '#444' }}>{it.description}</span>
-                  <span style={{ color: '#666', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(it.amount)}</span>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: i < items.length - 1 ? `1px dashed ${theme.border}` : 'none' }}>
+                  <span style={{ color: theme.textDim }}>{it.description}</span>
+                  <span style={{ color: theme.text, fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(it.amount)}</span>
                 </div>
               ))}
             </div>
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 13, color: '#666', fontStyle: 'italic' }}>
+        <p style={{ fontSize: 13, color: theme.textDim, fontStyle: 'italic' }}>
           Includes all labor, materials, and equipment required to complete this project per the agreed scope.
         </p>
       )}
