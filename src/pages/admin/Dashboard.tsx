@@ -11,7 +11,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 
 import { MetricCard } from "@/components/admin/dashboard/MetricCard";
-import { MissionControl } from "@/components/admin/dashboard/MissionControl";
 import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
 
 const DAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -134,79 +133,7 @@ export default function Dashboard() {
     criticalAlerts.newLeadsNoContact24h.length +
     criticalAlerts.leadsStalled48h.length;
 
-  const priorityTasks = useMemo(() => {
-    const tasks: {
-      label: string;
-      color: "blocked" | "risk" | "success";
-      link: string;
-      type: "follow_up" | "new_lead" | "stalled" | "field_upload" | "sla_followup" | "sla_estimate" | "sla_auto_escalation";
-    }[] = [];
-
-    if (recentSystemActions.length > 0) {
-      tasks.push({
-        label: `${recentSystemActions.length} escalações automáticas (24h)`,
-        color: "risk",
-        link: "/admin/leads",
-        type: "sla_auto_escalation",
-      });
-    }
-
-    if (slaBreaches.followupOverdue.count > 0) {
-      tasks.push({
-        label: `${slaBreaches.followupOverdue.count} follow-ups atrasados`,
-        color: "blocked",
-        link: "/admin/leads?status=proposal_sent",
-        type: "sla_followup",
-      });
-    }
-
-    if (slaBreaches.estimateStale.count > 0) {
-      tasks.push({
-        label: `${slaBreaches.estimateStale.count} estimates parados > 3 dias`,
-        color: "risk",
-        link: "/admin/leads?status=estimate_scheduled",
-        type: "sla_estimate",
-      });
-    }
-
-    if (recentFieldUploads.length > 0) {
-      tasks.push({
-        label: `${recentFieldUploads.length} uploads recentes do campo`,
-        color: "success",
-        link: "/admin/jobs",
-        type: "field_upload",
-      });
-    }
-
-    criticalAlerts.proposalWithoutFollowUp.slice(0, 2).forEach((l) => {
-      tasks.push({
-        label: `Follow up – ${l.name}`,
-        color: "blocked",
-        link: "/admin/leads?status=proposal_sent",
-        type: "follow_up",
-      });
-    });
-
-    criticalAlerts.newLeadsNoContact24h.slice(0, 2).forEach((l) => {
-      tasks.push({
-        label: `${t("dashboard.respostaLead")} – ${l.name}`,
-        color: "risk",
-        link: "/admin/leads?status=cold_lead",
-        type: "new_lead",
-      });
-    });
-
-    criticalAlerts.leadsStalled48h.slice(0, 1).forEach((l) => {
-      tasks.push({
-        label: `${t("dashboard.leadParado48h")} – ${l.name}`,
-        color: "blocked",
-        link: "/admin/leads",
-        type: "stalled",
-      });
-    });
-
-    return tasks.slice(0, 7);
-  }, [criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, t]);
+  // Mission Control panel moved to /admin/mission-control — Home only shows entry banner.
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", {
@@ -345,21 +272,30 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Mission Control */}
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Mission Control
-            </h2>
+        {/* Mission Control entry point — full panel moved to /admin/mission-control */}
+        {totalUrgent > 0 && (
+          <section className="mb-8">
             <Link
-              to="/admin/leads"
-              className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline"
+              to="/admin/mission-control"
+              className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[hsl(var(--state-risk))]/30 bg-[hsl(var(--state-risk-bg))] hover:bg-[hsl(var(--state-risk-bg))]/80 transition-colors group"
             >
-              {t("dashboard.verTodos")}
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-[hsl(var(--state-risk))] flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-base font-bold">{totalUrgent}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Mission Control</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {totalUrgent} {totalUrgent !== 1 ? t("dashboard.acoesPendentes") : t("dashboard.acaoPendente")}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-semibold text-[hsl(var(--gold-warm))] group-hover:underline flex-shrink-0">
+                {t("dashboard.verTodos")} →
+              </span>
             </Link>
-          </div>
-          <MissionControl systemAlerts={priorityTasks} isLoadingAlerts={isLoading} />
-        </section>
+          </section>
+        )}
 
         {/* Today's Agenda with mini week calendar */}
         <section className="mb-8">

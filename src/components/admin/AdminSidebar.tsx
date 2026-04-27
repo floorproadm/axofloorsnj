@@ -20,6 +20,7 @@ import {
   Zap,
   Truck,
   FolderKanban,
+  Target,
 } from "lucide-react";
 import {
   Sidebar,
@@ -71,6 +72,7 @@ export function AdminSidebar() {
   ];
 
   const toolsItems = [
+    { title: "Mission Control", url: "/admin/mission-control", icon: Target },
     { title: t("sidebar.captacao"), url: "/admin/intake", icon: Inbox },
     { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
     { title: t("sidebar.medicoes"), url: "/admin/measurements", icon: Ruler },

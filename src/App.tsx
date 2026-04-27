@@ -53,6 +53,7 @@ import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
 import AdminProposals from './pages/admin/Proposals';
 import ProjectsHub from './pages/admin/ProjectsHub';
+import AdminMissionControl from './pages/admin/MissionControl';
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/admin/AdminAuth";
 import Campaign from "./pages/Campaign";
@@ -169,6 +170,11 @@ const App = () => {
             <Route path="/admin/intake" element={
               <ProtectedRoute>
                 <AdminIntake />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/mission-control" element={
+              <ProtectedRoute>
+                <AdminMissionControl />
               </ProtectedRoute>
             } />
             <Route path="/admin/settings" element={
