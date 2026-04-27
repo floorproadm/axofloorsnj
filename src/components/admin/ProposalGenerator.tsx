@@ -431,6 +431,127 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </CardContent>
       </Card>
 
+      {/* Inline Line Items Editor — Direct mode only */}
+      {proposal.mode === 'direct' && (
+        <Card>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Pencil className="h-4 w-4" /> Edit line items
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Adjust description, quantity and unit price. Total and margin recalc live.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={addLine}>
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add line
+              </Button>
+              <Button size="sm" onClick={saveLines} disabled={!linesDirty || savingLines || editedTotal <= 0}>
+                {savingLines ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+                Save
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {/* Header row */}
+            <div className="hidden md:grid grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div>Description</div>
+              <div>Category</div>
+              <div className="text-right">Qty</div>
+              <div className="text-right">Unit price</div>
+              <div className="text-right">Total</div>
+              <div></div>
+            </div>
+
+            {editableLines.map((line) => {
+              const total = (Number(line.qty) || 0) * (Number(line.unit_price) || 0);
+              return (
+                <div
+                  key={line.id}
+                  className="grid grid-cols-1 md:grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+                >
+                  <Input
+                    value={line.description}
+                    onChange={(e) => updateLine(line.id, { description: e.target.value })}
+                    placeholder="e.g. Sanding & 3 coats finish — living room"
+                    className="h-8 text-sm"
+                  />
+                  <select
+                    value={line.category}
+                    onChange={(e) => updateLine(line.id, { category: e.target.value })}
+                    className="h-8 text-sm bg-background border border-input rounded-md px-2"
+                  >
+                    {CATEGORY_OPTIONS.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={line.qty}
+                    min={0}
+                    step="0.01"
+                    onChange={(e) => updateLine(line.id, { qty: parseFloat(e.target.value) || 0 })}
+                    className="h-8 text-sm text-right tabular-nums"
+                  />
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={line.unit_price}
+                    min={0}
+                    step="0.01"
+                    onChange={(e) => updateLine(line.id, { unit_price: parseFloat(e.target.value) || 0 })}
+                    className="h-8 text-sm text-right tabular-nums"
+                  />
+                  <div className="text-sm text-right font-medium tabular-nums">
+                    {formatCurrency(total)}
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeLine(line.id)}
+                    aria-label="Remove line"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
+
+            {editableLines.length === 0 && (
+              <p className="text-xs text-muted-foreground italic px-2 py-3">
+                No lines yet. Click "Add line" to start building the scope.
+              </p>
+            )}
+
+            {/* Live totals footer */}
+            <div className="flex items-center justify-between border-t pt-3 mt-2 text-sm">
+              <div className="text-xs text-muted-foreground">
+                Base cost: <span className="tabular-nums">{formatCurrency(proposal.base_cost || 0)}</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-xs">
+                  Margin:{' '}
+                  <span className={editedMargin >= 30 ? 'text-emerald-600 font-medium' : 'text-amber-600 font-medium'}>
+                    {editedMargin}%
+                  </span>
+                </span>
+                <span className="font-semibold tabular-nums">
+                  Total: {formatCurrency(editedTotal)}
+                </span>
+                {linesDirty && (
+                  <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-600">
+                    Unsaved
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Printable Professional Document */}
       <div ref={printRef} className="bg-white rounded-lg border overflow-hidden">
         <div className="print-page" style={{ maxWidth: 800, margin: '0 auto', padding: 40 }}>
