@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useProposalGeneration, DEFAULT_TIER_MARGINS } from '@/hooks/useProposalGeneration';
 import { useCompanySettings, resolveLogoUrl } from '@/hooks/useCompanySettings';
 import { ProposalData, ProposalTier } from '@/types/proposal';
@@ -8,10 +8,29 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+/** Editable line item shape — extends the read-only one with qty + unit_price for live math */
+interface EditableLine {
+  id: string;
+  description: string;
+  category: string;
+  qty: number;
+  unit_price: number;
+}
+
+const CATEGORY_OPTIONS = [
+  { value: 'labor', label: 'Labor' },
+  { value: 'material', label: 'Materials' },
+  { value: 'equipment', label: 'Equipment' },
+  { value: 'additional', label: 'Additional Services' },
+  { value: 'other', label: 'Other' },
+];
+
+const uid = () => Math.random().toString(36).slice(2, 10);
 
 interface ProposalGeneratorProps {
   projectId: string;
@@ -31,6 +50,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
   const [flatPriceInput, setFlatPriceInput] = useState<string>('');
   const [logoSignedUrl, setLogoSignedUrl] = useState<string>('');
+  const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
+  const [linesDirty, setLinesDirty] = useState(false);
+  const [savingLines, setSavingLines] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   // Resolve company logo to a signed URL once settings load
@@ -89,6 +111,88 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       if (data?.share_token) setShareToken(data.share_token);
     })();
   }, [proposal?.proposal_id]);
+
+  // Hydrate editable lines from proposal.line_items (Direct mode only).
+  // Existing line items have only `amount` (total per row), so we seed qty=1, unit_price=amount.
+  useEffect(() => {
+    if (!proposal || proposal.mode !== 'direct') {
+      setEditableLines([]);
+      setLinesDirty(false);
+      return;
+    }
+    const seeded: EditableLine[] = (proposal.line_items ?? []).map((it) => ({
+      id: uid(),
+      description: it.description || it.category || 'Item',
+      category: it.category || 'other',
+      qty: 1,
+      unit_price: Number(it.amount) || 0,
+    }));
+    if (seeded.length === 0) {
+      seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0 });
+    }
+    setEditableLines(seeded);
+    setLinesDirty(false);
+  }, [proposal?.proposal_id]);
+
+  // Live totals derived from editable lines
+  const editedTotal = useMemo(
+    () => editableLines.reduce((s, l) => s + (Number(l.qty) || 0) * (Number(l.unit_price) || 0), 0),
+    [editableLines]
+  );
+  const editedMargin = useMemo(() => {
+    if (!proposal || editedTotal <= 0) return 0;
+    return Math.round(((editedTotal - (proposal.base_cost || 0)) / editedTotal) * 100);
+  }, [editedTotal, proposal]);
+
+  const addLine = () => {
+    setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0 }]);
+    setLinesDirty(true);
+  };
+  const updateLine = (id: string, patch: Partial<EditableLine>) => {
+    setEditableLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+    setLinesDirty(true);
+  };
+  const removeLine = (id: string) => {
+    setEditableLines((prev) => prev.filter((l) => l.id !== id));
+    setLinesDirty(true);
+  };
+
+  // Persist edited lines as the new flat_price on the proposal.
+  const saveLines = async () => {
+    if (!proposal?.proposal_id) return;
+    if (editedTotal <= 0) {
+      toast.error('Total must be greater than zero.');
+      return;
+    }
+    setSavingLines(true);
+    try {
+      const { error: upErr } = await supabase
+        .from('proposals')
+        .update({ flat_price: editedTotal })
+        .eq('id', proposal.proposal_id);
+      if (upErr) throw upErr;
+      setProposal((prev) =>
+        prev
+          ? {
+              ...prev,
+              flat_price: editedTotal,
+              flat_margin_percent: editedMargin,
+              line_items: editableLines.map((l) => ({
+                description: l.description || 'Item',
+                category: l.category,
+                amount: (Number(l.qty) || 0) * (Number(l.unit_price) || 0),
+              })),
+            }
+          : prev
+      );
+      setLinesDirty(false);
+      toast.success('Proposal updated');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to update proposal');
+    } finally {
+      setSavingLines(false);
+    }
+  };
 
   const handleCopyLink = async () => {
     if (!shareToken) {
@@ -326,6 +430,127 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
         </CardContent>
       </Card>
+
+      {/* Inline Line Items Editor — Direct mode only */}
+      {proposal.mode === 'direct' && (
+        <Card>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Pencil className="h-4 w-4" /> Edit line items
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Adjust description, quantity and unit price. Total and margin recalc live.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={addLine}>
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add line
+              </Button>
+              <Button size="sm" onClick={saveLines} disabled={!linesDirty || savingLines || editedTotal <= 0}>
+                {savingLines ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+                Save
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {/* Header row */}
+            <div className="hidden md:grid grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div>Description</div>
+              <div>Category</div>
+              <div className="text-right">Qty</div>
+              <div className="text-right">Unit price</div>
+              <div className="text-right">Total</div>
+              <div></div>
+            </div>
+
+            {editableLines.map((line) => {
+              const total = (Number(line.qty) || 0) * (Number(line.unit_price) || 0);
+              return (
+                <div
+                  key={line.id}
+                  className="grid grid-cols-1 md:grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+                >
+                  <Input
+                    value={line.description}
+                    onChange={(e) => updateLine(line.id, { description: e.target.value })}
+                    placeholder="e.g. Sanding & 3 coats finish — living room"
+                    className="h-8 text-sm"
+                  />
+                  <select
+                    value={line.category}
+                    onChange={(e) => updateLine(line.id, { category: e.target.value })}
+                    className="h-8 text-sm bg-background border border-input rounded-md px-2"
+                  >
+                    {CATEGORY_OPTIONS.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={line.qty}
+                    min={0}
+                    step="0.01"
+                    onChange={(e) => updateLine(line.id, { qty: parseFloat(e.target.value) || 0 })}
+                    className="h-8 text-sm text-right tabular-nums"
+                  />
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={line.unit_price}
+                    min={0}
+                    step="0.01"
+                    onChange={(e) => updateLine(line.id, { unit_price: parseFloat(e.target.value) || 0 })}
+                    className="h-8 text-sm text-right tabular-nums"
+                  />
+                  <div className="text-sm text-right font-medium tabular-nums">
+                    {formatCurrency(total)}
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeLine(line.id)}
+                    aria-label="Remove line"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
+
+            {editableLines.length === 0 && (
+              <p className="text-xs text-muted-foreground italic px-2 py-3">
+                No lines yet. Click "Add line" to start building the scope.
+              </p>
+            )}
+
+            {/* Live totals footer */}
+            <div className="flex items-center justify-between border-t pt-3 mt-2 text-sm">
+              <div className="text-xs text-muted-foreground">
+                Base cost: <span className="tabular-nums">{formatCurrency(proposal.base_cost || 0)}</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-xs">
+                  Margin:{' '}
+                  <span className={editedMargin >= 30 ? 'text-emerald-600 font-medium' : 'text-amber-600 font-medium'}>
+                    {editedMargin}%
+                  </span>
+                </span>
+                <span className="font-semibold tabular-nums">
+                  Total: {formatCurrency(editedTotal)}
+                </span>
+                {linesDirty && (
+                  <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-600">
+                    Unsaved
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Printable Professional Document */}
       <div ref={printRef} className="bg-white rounded-lg border overflow-hidden">
