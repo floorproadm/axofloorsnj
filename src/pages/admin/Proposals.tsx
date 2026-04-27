@@ -472,9 +472,29 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                     <Pencil className="w-3.5 h-3.5" /> Edit Draft
                   </Button>
                 )}
-                <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => printProposal(proposal)}>
-                  <Printer className="w-3.5 h-3.5" /> Print / PDF
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs">
+                      <Download className="w-3.5 h-3.5" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => printProposal(proposal)} className="gap-2 text-xs cursor-pointer">
+                      <Printer className="w-3.5 h-3.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">Download as PDF</span>
+                        <span className="text-[10px] text-muted-foreground">Opens print dialog → Save as PDF</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportProposalCSV(proposal)} className="gap-2 text-xs cursor-pointer">
+                      <FileSpreadsheet className="w-3.5 h-3.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">Download as CSV</span>
+                        <span className="text-[10px] text-muted-foreground">Spreadsheet with all data</span>
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
                   <Share2 className="w-3.5 h-3.5" /> Send to Client
                 </Button>
