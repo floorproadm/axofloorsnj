@@ -222,13 +222,7 @@ export default function ProjectsHub() {
         {/* Awaiting conversion banner */}
         <AwaitingConversionBanner proposals={pendingProposals} />
 
-        {/* Smart filter chips */}
-        <SmartFilterChips
-          active={chips}
-          counts={chipCounts}
-          onToggle={toggleChip}
-          onClear={() => setChips(new Set())}
-        />
+        {/* Smart filter chips removed per user request */}
 
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-2">
