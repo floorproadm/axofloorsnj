@@ -266,19 +266,7 @@ export default function ProjectsHub() {
             </Select>
           )}
 
-          {facets.cities.length > 0 && (
-            <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger className="h-8 w-[120px] text-xs">
-                <SelectValue placeholder="City" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs">All cities</SelectItem>
-                {facets.cities.map((c) => (
-                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          {/* All cities filter removed per user request */}
 
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
             <SelectTrigger className="h-8 w-[140px] text-xs gap-1">
