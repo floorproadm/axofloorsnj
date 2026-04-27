@@ -50,6 +50,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
   const [flatPriceInput, setFlatPriceInput] = useState<string>('');
   const [logoSignedUrl, setLogoSignedUrl] = useState<string>('');
+  const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
+  const [linesDirty, setLinesDirty] = useState(false);
+  const [savingLines, setSavingLines] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   // Resolve company logo to a signed URL once settings load
