@@ -692,6 +692,17 @@ export default function Proposals() {
     return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length, pending };
   }, [proposals]);
 
+  // Unique projects for filter dropdown
+  const projectOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    proposals.forEach(p => {
+      if (p.project_id && p.projects?.customer_name) {
+        map.set(p.project_id, p.projects.customer_name);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [proposals]);
+
   // Filter
   const filtered = useMemo(() => {
     return proposals.filter(p => {
@@ -699,6 +710,7 @@ export default function Proposals() {
         p.projects?.customer_name.toLowerCase().includes(search.toLowerCase()) ||
         p.proposal_number.toLowerCase().includes(search.toLowerCase());
       if (!matchSearch) return false;
+      if (projectFilter !== "all" && p.project_id !== projectFilter) return false;
       if (tab === "all") return true;
       if (tab === "pending") return ["sent", "viewed"].includes(p.status);
       if (tab === "accepted") return p.status === "accepted";
@@ -706,7 +718,7 @@ export default function Proposals() {
       if (tab === "draft") return p.status === "draft";
       return true;
     });
-  }, [proposals, tab, search]);
+  }, [proposals, tab, search, projectFilter]);
 
   const TABS = [
     { id: "all",      label: "All",      count: proposals.length },
