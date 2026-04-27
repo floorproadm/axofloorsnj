@@ -367,6 +367,7 @@ function exportProposalCSV(proposal: ProposalWithRelations) {
   toast.success("CSV exported");
 }
 
+// ─── Proposal Detail Sheet ────────────────────────────────────────────────────
 function ProposalDetailSheet({ proposal, open, onClose }: {
   proposal: ProposalWithRelations | null;
   open: boolean;
