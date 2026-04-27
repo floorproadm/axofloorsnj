@@ -36,8 +36,23 @@ import { ptBR } from 'date-fns/locale';
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    project_type: '',
+    square_footage: '' as string | number,
+    notes: '',
+  });
 
   async function handleDelete() {
     if (!projectId) return;
@@ -51,6 +66,33 @@ export default function ProjectDetail() {
     toast.success('Project deleted');
     setConfirmDelete(false);
     navigate('/admin/projects');
+  }
+
+  async function handleSave() {
+    if (!projectId) return;
+    setSaving(true);
+    const payload: any = {
+      customer_name: form.customer_name || null,
+      customer_phone: form.customer_phone || null,
+      customer_email: form.customer_email || null,
+      address: form.address || null,
+      city: form.city || null,
+      state: form.state || null,
+      zip: form.zip || null,
+      project_type: form.project_type || null,
+      square_footage: form.square_footage === '' ? null : Number(form.square_footage),
+      notes: form.notes || null,
+    };
+    const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
+    setSaving(false);
+    if (error) {
+      toast.error('Não foi possível salvar', { description: error.message });
+      return;
+    }
+    toast.success('Projeto atualizado');
+    setEditing(false);
+    qc.invalidateQueries({ queryKey: ['project-detail', projectId] });
+    qc.invalidateQueries({ queryKey: ['hub-projects'] });
   }
 
   const { data: project, isLoading } = useQuery({
