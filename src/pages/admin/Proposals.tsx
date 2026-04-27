@@ -884,25 +884,37 @@ export default function Proposals() {
                         : p.better_price;
 
                     return (
-                      <button key={p.id} onClick={() => setSelected(p)} className="w-full text-left group">
-                        <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg border transition-all",
-                          "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
-                          "border-border/50 bg-card"
-                        )}>
-                          <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
-                            <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
+                      <div key={p.id} className="group relative">
+                        <button onClick={() => setSelected(p)} className="w-full text-left">
+                          <div className={cn(
+                            "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                            "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
+                            "border-border/50 bg-card"
+                          )}>
+                            <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                              <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
+                            </div>
+                            {p.project_id && (
+                              <Link
+                                to={`/admin/projects/${p.project_id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="hidden md:inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 px-1.5 py-0.5 rounded-md transition-colors"
+                                title="Open Job"
+                              >
+                                <Briefcase className="w-3 h-3" /> Job
+                              </Link>
+                            )}
+                            <span className="text-[10px] text-muted-foreground font-mono hidden sm:block">{p.proposal_number}</span>
+                            <Badge className={cn("text-[10px] h-5 px-2 rounded-full border flex-shrink-0", displayStatus.bg, displayStatus.color, displayStatus.border)}>
+                              {isExpired ? "Expired" : displayStatus.label}
+                            </Badge>
+                            <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
                           </div>
-                          <span className="text-[10px] text-muted-foreground font-mono hidden sm:block">{p.proposal_number}</span>
-                          <Badge className={cn("text-[10px] h-5 px-2 rounded-full border flex-shrink-0", displayStatus.bg, displayStatus.color, displayStatus.border)}>
-                            {isExpired ? "Expired" : displayStatus.label}
-                          </Badge>
-                          <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
-                        </div>
-                      </button>
+                        </button>
+                      </div>
                     );
                   })
                 )}
