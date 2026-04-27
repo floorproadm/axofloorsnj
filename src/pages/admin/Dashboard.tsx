@@ -11,7 +11,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 
 import { MetricCard } from "@/components/admin/dashboard/MetricCard";
-import { MissionControl } from "@/components/admin/dashboard/MissionControl";
 import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
 
 const DAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -134,79 +133,7 @@ export default function Dashboard() {
     criticalAlerts.newLeadsNoContact24h.length +
     criticalAlerts.leadsStalled48h.length;
 
-  const priorityTasks = useMemo(() => {
-    const tasks: {
-      label: string;
-      color: "blocked" | "risk" | "success";
-      link: string;
-      type: "follow_up" | "new_lead" | "stalled" | "field_upload" | "sla_followup" | "sla_estimate" | "sla_auto_escalation";
-    }[] = [];
-
-    if (recentSystemActions.length > 0) {
-      tasks.push({
-        label: `${recentSystemActions.length} escalações automáticas (24h)`,
-        color: "risk",
-        link: "/admin/leads",
-        type: "sla_auto_escalation",
-      });
-    }
-
-    if (slaBreaches.followupOverdue.count > 0) {
-      tasks.push({
-        label: `${slaBreaches.followupOverdue.count} follow-ups atrasados`,
-        color: "blocked",
-        link: "/admin/leads?status=proposal_sent",
-        type: "sla_followup",
-      });
-    }
-
-    if (slaBreaches.estimateStale.count > 0) {
-      tasks.push({
-        label: `${slaBreaches.estimateStale.count} estimates parados > 3 dias`,
-        color: "risk",
-        link: "/admin/leads?status=estimate_scheduled",
-        type: "sla_estimate",
-      });
-    }
-
-    if (recentFieldUploads.length > 0) {
-      tasks.push({
-        label: `${recentFieldUploads.length} uploads recentes do campo`,
-        color: "success",
-        link: "/admin/jobs",
-        type: "field_upload",
-      });
-    }
-
-    criticalAlerts.proposalWithoutFollowUp.slice(0, 2).forEach((l) => {
-      tasks.push({
-        label: `Follow up – ${l.name}`,
-        color: "blocked",
-        link: "/admin/leads?status=proposal_sent",
-        type: "follow_up",
-      });
-    });
-
-    criticalAlerts.newLeadsNoContact24h.slice(0, 2).forEach((l) => {
-      tasks.push({
-        label: `${t("dashboard.respostaLead")} – ${l.name}`,
-        color: "risk",
-        link: "/admin/leads?status=cold_lead",
-        type: "new_lead",
-      });
-    });
-
-    criticalAlerts.leadsStalled48h.slice(0, 1).forEach((l) => {
-      tasks.push({
-        label: `${t("dashboard.leadParado48h")} – ${l.name}`,
-        color: "blocked",
-        link: "/admin/leads",
-        type: "stalled",
-      });
-    });
-
-    return tasks.slice(0, 7);
-  }, [criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, t]);
+  // Mission Control panel moved to /admin/mission-control — Home only shows entry banner.
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", {
