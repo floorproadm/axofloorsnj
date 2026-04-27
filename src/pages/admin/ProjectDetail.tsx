@@ -414,14 +414,35 @@ export default function ProjectDetail() {
   );
 }
 
-function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
-      <span className="text-muted-foreground mt-0.5">{icon}</span>
-      <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium">{value}</p>
-      </div>
+    <div className="space-y-1">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function ReadItem({
+  label,
+  value,
+  emptyHint,
+}: {
+  label: string;
+  value: string | null | undefined;
+  emptyHint?: string;
+}) {
+  const isEmpty = !value;
+  return (
+    <div className="p-3 bg-muted/30 rounded-lg">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      {isEmpty ? (
+        <p className="text-sm italic text-muted-foreground/70 mt-0.5">
+          {emptyHint || '—'}
+        </p>
+      ) : (
+        <p className="text-sm font-medium mt-0.5">{value}</p>
+      )}
     </div>
   );
 }
