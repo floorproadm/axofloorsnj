@@ -21,7 +21,8 @@ import {
   ChevronRight, DollarSign, TrendingUp, Star, Zap,
   MapPin, Phone, Mail, Calendar, Hash, Building2,
   Link2, Mail as MailIcon, MessageCircle,
-  LayoutGrid, List, Pencil, Save, X, Briefcase, ExternalLink
+  LayoutGrid, List, Pencil, Save, X, Briefcase, ExternalLink,
+  Download, FileSpreadsheet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProposalGeneration } from "@/hooks/useProposalGeneration";
