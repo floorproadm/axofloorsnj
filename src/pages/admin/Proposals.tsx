@@ -311,7 +311,62 @@ function printProposal(proposal: ProposalWithRelations) {
   if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 500); }
 }
 
-// ─── Proposal Detail Sheet ────────────────────────────────────────────────────
+// ─── Export Proposal as CSV ───────────────────────────────────────────────────
+function exportProposalCSV(proposal: ProposalWithRelations) {
+  const c = proposal.projects;
+  const address = [c?.address, c?.city, c?.zip_code].filter(Boolean).join(", ");
+  const esc = (v: any) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const rows: string[][] = [
+    ["Proposal Number", proposal.proposal_number],
+    ["Status", proposal.status],
+    ["Created", format(parseISO(proposal.created_at), "yyyy-MM-dd")],
+    ["Valid Until", format(parseISO(proposal.valid_until), "yyyy-MM-dd")],
+    ["Sent At", proposal.sent_at ? format(parseISO(proposal.sent_at), "yyyy-MM-dd") : ""],
+    ["Accepted At", proposal.accepted_at ? format(parseISO(proposal.accepted_at), "yyyy-MM-dd") : ""],
+    ["Selected Tier", proposal.selected_tier || ""],
+    [],
+    ["Customer Name", c?.customer_name || ""],
+    ["Customer Email", c?.customer_email || ""],
+    ["Customer Phone", c?.customer_phone || ""],
+    ["Address", address],
+    ["Project Type", c?.project_type || ""],
+    ["Square Footage", c?.square_footage ? String(c.square_footage) : ""],
+    [],
+    ["Pricing Mode", proposal.use_tiers ? "Tiers (Good/Better/Best)" : "Direct (Single Price)"],
+  ];
+
+  if (proposal.use_tiers) {
+    rows.push(
+      [],
+      ["Tier", "Price (USD)", "Margin (%)"],
+      ["Good", String(proposal.good_price), proposal.margin_good?.toFixed(2) ?? ""],
+      ["Better", String(proposal.better_price), proposal.margin_better?.toFixed(2) ?? ""],
+      ["Best", String(proposal.best_price), proposal.margin_best?.toFixed(2) ?? ""],
+    );
+  } else {
+    rows.push(
+      [],
+      ["Total Price (USD)", String(proposal.flat_price ?? proposal.better_price)],
+    );
+  }
+
+  const csv = rows.map(r => r.map(esc).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${proposal.proposal_number}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast.success("CSV exported");
+}
+
 function ProposalDetailSheet({ proposal, open, onClose }: {
   proposal: ProposalWithRelations | null;
   open: boolean;
