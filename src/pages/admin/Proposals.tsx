@@ -781,15 +781,49 @@ export default function Proposals() {
 
         {/* Search & Filters */}
         <div className="p-3 space-y-2 border-b border-border/50">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by client or proposal #..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-9"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by client or proposal #..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+            <Select value={projectFilter} onValueChange={setProjectFilter}>
+              <SelectTrigger className="h-9 w-[160px] gap-1 text-xs">
+                <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+                <SelectValue placeholder="All projects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All projects</SelectItem>
+                {projectOptions.map(opt => (
+                  <SelectItem key={opt.id} value={opt.id} className="text-xs">
+                    {opt.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+          {projectFilter !== "all" && (
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span>Filtered by job:</span>
+              <Link
+                to={`/admin/projects/${projectFilter}`}
+                className="inline-flex items-center gap-1 text-primary hover:underline font-medium"
+              >
+                {projectOptions.find(o => o.id === projectFilter)?.name}
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+              <button
+                onClick={() => setProjectFilter("all")}
+                className="ml-auto text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
           <Button onClick={() => setShowNew(true)} className="w-full h-9 gap-2" size="sm">
             <Plus className="w-4 h-4" /> New Proposal
           </Button>
