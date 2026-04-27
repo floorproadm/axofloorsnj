@@ -53,7 +53,44 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
+  });
   const printRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('proposal-preview-theme', previewTheme);
+  }, [previewTheme]);
+
+  // Theme palette used across the printable preview (so dark mode is readable).
+  const theme = previewTheme === 'dark'
+    ? {
+        page: '#0f1115',
+        surface: '#1a1d24',
+        surfaceAlt: '#22262f',
+        text: '#f5f6f8',
+        textMuted: '#a8aebb',
+        textDim: '#cfd3dc',
+        border: '#2a2f3a',
+        borderSoft: '#33394a',
+        accentBg: '#2a2410',     // soft warm tint instead of pure cream
+        validityBg: '#3a2f10',
+        validityText: '#fde68a',
+      }
+    : {
+        page: '#ffffff',
+        surface: '#ffffff',
+        surfaceAlt: '#fffbeb',
+        text: '#1a1714',
+        textMuted: '#6b7280',
+        textDim: '#374151',
+        border: '#e5e7eb',
+        borderSoft: '#f0e2c7',
+        accentBg: '#fffbeb',
+        validityBg: '#fef3c7',
+        validityText: '#78350f',
+      };
 
   // Resolve company logo to a signed URL once settings load
   useEffect(() => {
