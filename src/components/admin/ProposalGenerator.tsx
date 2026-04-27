@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
