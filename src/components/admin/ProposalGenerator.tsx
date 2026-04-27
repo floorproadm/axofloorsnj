@@ -429,8 +429,31 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       {/* Controls */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setProposal(null)}>Back</Button>
+          {/* Light/Dark toggle for the preview */}
+          <div className="inline-flex items-center rounded-md border bg-background p-0.5">
+            <button
+              type="button"
+              onClick={() => setPreviewTheme('light')}
+              className={`h-8 px-2.5 text-xs rounded inline-flex items-center gap-1 transition-colors ${
+                previewTheme === 'light' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label="Light preview"
+            >
+              <Sun className="h-3.5 w-3.5" /> Light
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewTheme('dark')}
+              className={`h-8 px-2.5 text-xs rounded inline-flex items-center gap-1 transition-colors ${
+                previewTheme === 'dark' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label="Dark preview"
+            >
+              <Moon className="h-3.5 w-3.5" /> Dark
+            </button>
+          </div>
           <Button variant="outline" onClick={handleCopyLink} disabled={!shareToken}>
             <Link2 className="h-4 w-4 mr-2" />
             Copy Public Link
