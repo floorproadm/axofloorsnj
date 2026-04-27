@@ -783,21 +783,23 @@ type PreviewTheme = {
   validityText: string;
 };
 
-function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
+function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand, theme, isDark }: {
   tier: ProposalTier;
   isRecommended: boolean;
   formatCurrency: (v: number) => string;
   sqft: number;
   brand: Brand;
+  theme: PreviewTheme;
+  isDark: boolean;
 }) {
   const pricePerSqft = sqft > 0 ? (tier.price / sqft).toFixed(2) : '0';
   return (
     <div style={{
-      border: `2px solid ${isRecommended ? brand.primary : '#e5e7eb'}`,
+      border: `2px solid ${isRecommended ? brand.primary : theme.border}`,
       borderRadius: 12,
       padding: 20,
       textAlign: 'center',
-      background: isRecommended ? '#fffbeb' : '#fff',
+      background: isRecommended ? theme.surfaceAlt : theme.surface,
     }}>
       <div style={{
         display: 'inline-block',
@@ -812,13 +814,13 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
       }}>
         {isRecommended ? 'Recommended' : tier.name}
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: brand.secondary }}>{tier.name}</h3>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 20, fontWeight: 700, color: isDark ? theme.text : brand.secondary }}>{tier.name}</h3>
       <p style={{ fontSize: 32, fontWeight: 700, color: brand.primary, margin: '10px 0' }}>{formatCurrency(tier.price)}</p>
-      <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>${pricePerSqft}/sqft</p>
-      <p style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>{tier.short_description}</p>
+      <p style={{ fontSize: 12, color: theme.textMuted, marginBottom: 12 }}>${pricePerSqft}/sqft</p>
+      <p style={{ fontSize: 12, color: theme.textDim, marginBottom: 12 }}>{tier.short_description}</p>
       <ul style={{ listStyle: 'none', textAlign: 'left', padding: 0 }}>
         {tier.features.map((f, i) => (
-          <li key={i} style={{ fontSize: 12, padding: '4px 0', paddingLeft: 18, position: 'relative' as const }}>
+          <li key={i} style={{ fontSize: 12, padding: '4px 0', paddingLeft: 18, position: 'relative' as const, color: theme.textDim }}>
             <span style={{ position: 'absolute' as const, left: 0, color: '#22c55e', fontWeight: 700 }}>✓</span>
             {f}
           </li>
@@ -828,12 +830,14 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand }: {
   );
 }
 
-function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand }: {
+function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand, theme, isDark }: {
   price: number;
   lineItems: { description: string; category: string; amount: number }[];
   projectType: string;
   formatCurrency: (v: number) => string;
   brand: Brand;
+  theme: PreviewTheme;
+  isDark: boolean;
 }) {
   const grouped = lineItems.reduce<Record<string, { description: string; amount: number }[]>>((acc, item) => {
     const key = item.category || 'other';
@@ -856,7 +860,7 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand 
       border: `2px solid ${brand.primary}`,
       borderRadius: 12,
       padding: 28,
-      background: '#fffbeb',
+      background: theme.surfaceAlt,
     }}>
       <div style={{
         display: 'inline-block',
@@ -871,7 +875,7 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand 
       }}>
         Total Project Investment
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: brand.secondary, marginBottom: 4 }}>
+      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: isDark ? theme.text : brand.secondary, marginBottom: 4 }}>
         {projectType}
       </h3>
       <p style={{ fontSize: 42, fontWeight: 700, color: brand.primary, margin: '6px 0 18px 0' }}>
@@ -879,26 +883,26 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand 
       </p>
 
       {lineItems.length > 0 ? (
-        <div style={{ background: '#fff', borderRadius: 8, padding: 16, border: '1px solid #f0e2c7' }}>
-          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: brand.secondary, marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+        <div style={{ background: theme.surface, borderRadius: 8, padding: 16, border: `1px solid ${theme.borderSoft}` }}>
+          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: isDark ? theme.text : brand.secondary, marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
             Scope Breakdown
           </h4>
           {Object.entries(grouped).map(([cat, items]) => (
             <div key={cat} style={{ marginBottom: 10 }}>
-              <p style={{ fontSize: 11, color: '#888', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>
+              <p style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>
                 {categoryLabels[cat] || cat}
               </p>
               {items.map((it, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: i < items.length - 1 ? '1px dashed #eee' : 'none' }}>
-                  <span style={{ color: '#444' }}>{it.description}</span>
-                  <span style={{ color: '#666', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(it.amount)}</span>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: i < items.length - 1 ? `1px dashed ${theme.border}` : 'none' }}>
+                  <span style={{ color: theme.textDim }}>{it.description}</span>
+                  <span style={{ color: theme.text, fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(it.amount)}</span>
                 </div>
               ))}
             </div>
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 13, color: '#666', fontStyle: 'italic' }}>
+        <p style={{ fontSize: 13, color: theme.textDim, fontStyle: 'italic' }}>
           Includes all labor, materials, and equipment required to complete this project per the agreed scope.
         </p>
       )}
