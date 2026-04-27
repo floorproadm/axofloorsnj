@@ -110,6 +110,24 @@ export default function ProjectDetail() {
     enabled: !!projectId,
   });
 
+  // Sync form state when project loads / editing toggles
+  useEffect(() => {
+    if (project) {
+      setForm({
+        customer_name: project.customer_name || '',
+        customer_phone: project.customer_phone || '',
+        customer_email: project.customer_email || '',
+        address: project.address || '',
+        city: project.city || '',
+        state: project.state || '',
+        zip: project.zip || '',
+        project_type: project.project_type || '',
+        square_footage: project.square_footage ?? '',
+        notes: project.notes || '',
+      });
+    }
+  }, [project, editing]);
+
   if (isLoading) {
     return (
       <AdminLayout title="Projeto" breadcrumbs={[{ label: 'Projetos', href: '/admin/leads' }]}>
