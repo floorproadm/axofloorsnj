@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -21,13 +25,10 @@ import {
   Loader2,
   ArrowLeft,
   Trash2,
-  User,
-  Phone,
-  Mail,
-  MapPin,
-  Calendar,
-  Briefcase,
   MessageCircle,
+  Save,
+  Pencil,
+  X,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,8 +36,22 @@ import { ptBR } from 'date-fns/locale';
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    address: '',
+    city: '',
+    zip_code: '',
+    project_type: '',
+    square_footage: '' as string | number,
+    notes: '',
+  });
 
   async function handleDelete() {
     if (!projectId) return;
@@ -50,6 +65,32 @@ export default function ProjectDetail() {
     toast.success('Project deleted');
     setConfirmDelete(false);
     navigate('/admin/projects');
+  }
+
+  async function handleSave() {
+    if (!projectId) return;
+    setSaving(true);
+    const payload: any = {
+      customer_name: form.customer_name || null,
+      customer_phone: form.customer_phone || null,
+      customer_email: form.customer_email || null,
+      address: form.address || null,
+      city: form.city || null,
+      zip_code: form.zip_code || null,
+      project_type: form.project_type || null,
+      square_footage: form.square_footage === '' ? null : Number(form.square_footage),
+      notes: form.notes || null,
+    };
+    const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
+    setSaving(false);
+    if (error) {
+      toast.error('Não foi possível salvar', { description: error.message });
+      return;
+    }
+    toast.success('Projeto atualizado');
+    setEditing(false);
+    qc.invalidateQueries({ queryKey: ['project-detail', projectId] });
+    qc.invalidateQueries({ queryKey: ['hub-projects'] });
   }
 
   const { data: project, isLoading } = useQuery({
@@ -66,6 +107,23 @@ export default function ProjectDetail() {
     },
     enabled: !!projectId,
   });
+
+  // Sync form state when project loads / editing toggles
+  useEffect(() => {
+    if (project) {
+      setForm({
+        customer_name: project.customer_name || '',
+        customer_phone: project.customer_phone || '',
+        customer_email: project.customer_email || '',
+        address: project.address || '',
+        city: project.city || '',
+        zip_code: project.zip_code || '',
+        project_type: project.project_type || '',
+        square_footage: project.square_footage ?? '',
+        notes: project.notes || '',
+      });
+    }
+  }, [project, editing]);
 
   if (isLoading) {
     return (
@@ -156,39 +214,136 @@ export default function ProjectDetail() {
           {/* OVERVIEW */}
           <TabsContent value="overview">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">Informações do Projeto</CardTitle>
+                {!editing ? (
+                  <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5">
+                    <Pencil className="h-3.5 w-3.5" />
+                    Editar
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving} className="gap-1.5">
+                      <X className="h-3.5 w-3.5" />
+                      Cancelar
+                    </Button>
+                    <Button size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
+                      {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                      Salvar
+                    </Button>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <InfoItem icon={<User className="w-4 h-4" />} label="Cliente" value={project.customer_name} />
-                  <InfoItem icon={<Phone className="w-4 h-4" />} label="Telefone" value={project.customer_phone} />
-                  <InfoItem icon={<Mail className="w-4 h-4" />} label="Email" value={project.customer_email} />
-                  <InfoItem icon={<Briefcase className="w-4 h-4" />} label="Tipo" value={project.project_type} />
-                  {project.address && (
-                    <InfoItem icon={<MapPin className="w-4 h-4" />} label="Endereço" value={`${project.address}${project.city ? `, ${project.city}` : ''}`} />
-                  )}
-                  {project.square_footage && (
-                    <InfoItem icon={<Briefcase className="w-4 h-4" />} label="Área" value={`${project.square_footage} sq ft`} />
-                  )}
-                  <InfoItem
-                    icon={<Calendar className="w-4 h-4" />}
-                    label="Criado em"
-                    value={format(new Date(project.created_at), 'dd/MM/yyyy', { locale: ptBR })}
-                  />
-                  {project.start_date && (
-                    <InfoItem
-                      icon={<Calendar className="w-4 h-4" />}
-                      label="Início"
-                      value={format(new Date(project.start_date), 'dd/MM/yyyy', { locale: ptBR })}
-                    />
-                  )}
-                </div>
-                {project.notes && (
-                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Notas</p>
-                    <p className="text-sm">{project.notes}</p>
+                {editing ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Cliente">
+                      <Input
+                        value={form.customer_name}
+                        onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                      />
+                    </Field>
+                    <Field label="Telefone">
+                      <Input
+                        value={form.customer_phone}
+                        onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+                      />
+                    </Field>
+                    <Field label="Email">
+                      <Input
+                        type="email"
+                        value={form.customer_email}
+                        onChange={(e) => setForm({ ...form, customer_email: e.target.value })}
+                      />
+                    </Field>
+                    <Field label="Tipo">
+                      <Input
+                        value={form.project_type}
+                        onChange={(e) => setForm({ ...form, project_type: e.target.value })}
+                      />
+                    </Field>
+                    <div className="sm:col-span-2">
+                      <Field label="Endereço">
+                        <AddressAutocomplete
+                          value={form.address}
+                          onChange={(v) => setForm({ ...form, address: v })}
+                          onSelect={(r) => setForm({
+                            ...form,
+                            address: r.street || r.full,
+                            city: r.city || form.city,
+                            zip_code: r.zip || form.zip_code,
+                          })}
+                          placeholder="Comece a digitar o endereço..."
+                        />
+                      </Field>
+                    </div>
+                    <Field label="Cidade">
+                      <Input
+                        value={form.city}
+                        onChange={(e) => setForm({ ...form, city: e.target.value })}
+                      />
+                    </Field>
+                    <Field label="CEP / Zip">
+                      <Input
+                        value={form.zip_code}
+                        onChange={(e) => setForm({ ...form, zip_code: e.target.value })}
+                      />
+                    </Field>
+                    <Field label="Área (sq ft)">
+                      <Input
+                        type="number"
+                        value={form.square_footage}
+                        onChange={(e) => setForm({ ...form, square_footage: e.target.value })}
+                      />
+                    </Field>
+                    <div className="sm:col-span-2">
+                      <Field label="Notas">
+                        <Textarea
+                          rows={3}
+                          value={form.notes}
+                          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                        />
+                      </Field>
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <ReadItem label="Cliente" value={project.customer_name} />
+                      <ReadItem label="Telefone" value={project.customer_phone} />
+                      <ReadItem label="Email" value={project.customer_email} />
+                      <ReadItem label="Tipo" value={project.project_type} />
+                      <ReadItem
+                        label="Endereço"
+                        value={
+                          project.address
+                            ? `${project.address}${project.city ? `, ${project.city}` : ''}`
+                            : null
+                        }
+                        emptyHint="Sem endereço — clique em Editar para adicionar"
+                      />
+                      <ReadItem
+                        label="Área"
+                        value={project.square_footage ? `${project.square_footage} sq ft` : null}
+                      />
+                      <ReadItem
+                        label="Criado em"
+                        value={format(new Date(project.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                      />
+                      {project.start_date && (
+                        <ReadItem
+                          label="Início"
+                          value={format(new Date(project.start_date), 'dd/MM/yyyy', { locale: ptBR })}
+                        />
+                      )}
+                    </div>
+                    {project.notes && (
+                      <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Notas</p>
+                        <p className="text-sm">{project.notes}</p>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -259,14 +414,35 @@ export default function ProjectDetail() {
   );
 }
 
-function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
-      <span className="text-muted-foreground mt-0.5">{icon}</span>
-      <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium">{value}</p>
-      </div>
+    <div className="space-y-1">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function ReadItem({
+  label,
+  value,
+  emptyHint,
+}: {
+  label: string;
+  value: string | null | undefined;
+  emptyHint?: string;
+}) {
+  const isEmpty = !value;
+  return (
+    <div className="p-3 bg-muted/30 rounded-lg">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      {isEmpty ? (
+        <p className="text-sm italic text-muted-foreground/70 mt-0.5">
+          {emptyHint || '—'}
+        </p>
+      ) : (
+        <p className="text-sm font-medium mt-0.5">{value}</p>
+      )}
     </div>
   );
 }
