@@ -49,10 +49,10 @@ const Portfolio = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-navy mb-4 sm:mb-6 px-2">
-            Take a Look at <span className="text-gradient-gold">Some of Our Work</span>
+            Real Homes. <span className="text-gradient-gold">Real Transformations.</span>
           </h2>
           <p className="text-base sm:text-lg text-grey max-w-3xl mx-auto leading-relaxed px-2">
-            Every project tells a story of transformation. See how we've helped homeowners across New Jersey create beautiful, lasting floors.
+            See how homeowners across New Jersey upgraded their space with AXO Floors.
           </p>
         </div>
 

@@ -9,7 +9,7 @@ import SEOHead from "@/components/shared/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles, BookOpen, Calculator, Palette } from "lucide-react";
+import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles, BookOpen, Calculator, Palette, Wind, Zap, Home, Trophy, ClipboardList, FileText, Hammer, BadgeCheck } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
 import serviceSanding from "@/assets/service-sanding.jpg";
 import serviceHardwood from "@/assets/service-hardwood.jpg";
@@ -52,45 +52,83 @@ const Index = () => {
     };
   }, [isMobile]);
   const services = [{
-    title: "Sanding & Finish",
-    description: "Restore your floors to their original beauty with professional refinishing services.",
+    title: "Sanding & Refinishing",
+    description: "Restore your floors to like-new condition with a dustless, precision process.",
     href: "/sanding-and-refinish",
-    features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
+    features: ["Full Restoration", "Dust-Free Sanding", "Fast Turnaround"],
     image: serviceSanding
   }, {
     title: "Hardwood Flooring",
-    description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
+    description: "Premium hardwood installation built to last for decades.",
     href: "/hardwood-flooring",
-    features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
+    features: ["High-End Materials", "Expert Craftsmanship", "Lifetime Structural Integrity"],
     image: serviceHardwood
   }, {
     title: "Vinyl Plank Flooring",
-    description: "Waterproof and durable luxury vinyl with the look of real hardwood.",
+    description: "The beauty of hardwood with modern durability and water resistance.",
     href: "/vinyl-plank-flooring",
-    features: ["100% Waterproof", "Easy Maintenance", "Realistic Wood Look"],
+    features: ["100% Waterproof", "Low Maintenance", "Perfect for Any Room"],
     image: serviceVinyl
   }, {
     title: "Staircase Renovation",
-    description: "Transform your staircase with custom hardwood steps and elegant railings.",
+    description: "Transform your staircase into a true centerpiece.",
     href: "/staircase",
-    features: ["Custom Design", "Safety First", "Premium Materials"],
+    features: ["Custom Design", "Safety-Focused Installation", "Premium Finishes"],
     image: serviceStaircase
   }];
   const benefits = [{
     icon: Users,
     title: "Expert Craftsmen",
-    description: "Professional installation team with years of experience",
+    description: "A father-and-son team with over a decade of hands-on experience.",
     stat: "10+ Years"
   }, {
     icon: Clock,
     title: "Quick Turnaround",
-    description: "Efficient project completion without compromising quality",
-    stat: "On Time"
+    description: "Most projects completed in 2–5 days — without compromising quality.",
+    stat: "2–5 Days"
   }, {
     icon: Shield,
-    title: "Quality Guarantee",
-    description: "100% satisfaction guarantee on all our work",
-    stat: "100%"
+    title: "10-Year Warranty",
+    description: "Backed by our written guarantee on workmanship and finish.",
+    stat: "10 Years"
+  }];
+  const differentials = [{
+    icon: Wind,
+    title: "Dustless Process",
+    description: "No mess, no cleanup nightmare."
+  }, {
+    icon: Zap,
+    title: "Fast Turnaround",
+    description: "Most projects completed in 2–5 days."
+  }, {
+    icon: Home,
+    title: "In-Home Service",
+    description: "No moving out, no disruption."
+  }, {
+    icon: Trophy,
+    title: "Limited Weekly Projects",
+    description: "We prioritize quality over volume."
+  }];
+  const processSteps = [{
+    icon: ClipboardList,
+    step: "01",
+    title: "In-Home Assessment",
+    description: "We visit your home, measure precisely, and listen to what you actually want."
+  }, {
+    icon: FileText,
+    step: "02",
+    title: "Custom Plan & Transparent Quote",
+    description: "A clear scope and a fixed price. No surprises, no hidden fees."
+  }, {
+    icon: Hammer,
+    step: "03",
+    title: "Precision Execution",
+    description: "Our craftsmen deliver the work on schedule, with daily updates."
+  }, {
+    icon: BadgeCheck,
+    step: "04",
+    title: "Final Walkthrough & Approval",
+    description: "We don't leave until every detail meets your standard — and ours."
   }];
   const testimonials = [{
     name: "Michelle Allen",
@@ -113,17 +151,50 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <Hero title="Your Flooring deserves the attention that only us can provide!" subtitle="Flooring Solutions in New Jersey and Beyond" description="Over time, flooring often fades and becomes damaged. However, with expert care and the right team by your side, this won't be a problem anymore." image={homeHero} showReviews={true} />
+      <Hero
+        title="Restore Your Floors in Days — Without Dust, Delays, or Disruption"
+        subtitle="Premium Flooring Solutions in New Jersey"
+        description="Expert hardwood refinishing and installation for homeowners who expect flawless results — without turning their home into a construction site."
+        image={homeHero}
+        ctaPrimary="Get My Free Estimate"
+        ctaSecondary="View Real Transformations"
+        ctaPrimaryHref="/contact"
+        ctaSecondaryHref="/gallery"
+        trustLine="500+ Homes Transformed • 10+ Years Experience • 10-Year Warranty"
+        showReviews={true}
+      />
+
+      {/* Emotional Hook Section */}
+      <section className="spacing-mobile-md bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-mobile-3xl font-bold font-heading mb-8">
+              Your Floors Shouldn't Be Something <span className="text-gradient-gold">You Apologize For</span>
+            </h2>
+            <div className="space-y-3 text-mobile-base text-muted-foreground leading-relaxed mb-8">
+              <p>Scratches that catch the light.</p>
+              <p>Stains that never come out.</p>
+              <p>Floors that quietly age your entire home.</p>
+            </div>
+            <p className="text-mobile-base text-foreground leading-relaxed mb-4">
+              Now imagine walking into a space that feels clean, refined, and worth every dollar you invested in it.
+            </p>
+            <p className="text-mobile-base font-semibold text-accent">
+              This is what we do — every single day.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Services Section */}
       <section className="spacing-mobile-md bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-mobile-3xl font-bold font-heading mb-6">
-              We have all the solutions you need to <span className="text-gradient-gold">renew your space!</span>
+              Complete Flooring Solutions — <span className="text-gradient-gold">Done Right the First Time</span>
             </h2>
             <p className="text-mobile-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              We offer a wide range of services, from installation to finishing touches, guaranteeing that you achieve the modern, sophisticated, and elegant aesthetics you desire for your home.
+              From restoration to installation, every service is delivered with the precision and care your home deserves.
             </p>
           </div>
 
@@ -163,7 +234,7 @@ const Index = () => {
                   
                   <Button asChild variant="outline" className={`w-full transition-all duration-300 font-semibold relative overflow-hidden ${isMobile && activeServiceIndex === index ? 'bg-accent text-accent-foreground border-accent' : 'group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent'}`}>
                     <Link to={service.href} className="flex items-center justify-center gap-2 relative z-10">
-                      <span className={`transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>Saiba Mais</span>
+                      <span className={`transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>Learn More</span>
                       <ArrowRight className={`w-4 h-4 transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-2' : 'group-hover:translate-x-2'}`} />
                       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ${isMobile && activeServiceIndex === index ? 'translate-x-[100%]' : 'translate-x-[-100%] group-hover:translate-x-[100%]'}`} />
                     </Link>
@@ -171,44 +242,104 @@ const Index = () => {
                 </CardContent>
               </Card>)}
           </div>
+
+          <div className="text-center mt-10 sm:mt-12">
+            <Button asChild variant="outline" className="min-h-[48px] px-6 sm:px-8 font-semibold">
+              <Link to="/sanding-and-refinish" className="flex items-center justify-center gap-2">
+                Explore Services
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Differential Section */}
       <section className="spacing-mobile-md bg-secondary">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-mobile-3xl font-bold font-heading mb-6">
-              Why Choose <span className="text-gradient-gold">AXO Floors?</span>
+              A Different Kind of <span className="text-gradient-gold">Flooring Experience</span>
             </h2>
+            <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Built around how you actually live in your home — not around how easy it is for the contractor.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 max-w-5xl mx-auto">
-            {benefits.map((benefit, index) => <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-card">
-                <CardContent className="p-6 md:p-10">
-                  <div className="inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 bg-accent/10 rounded-2xl mb-4 md:mb-6 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
-                    <benefit.icon className="w-7 h-7 md:w-10 md:h-10 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto">
+            {differentials.map((item, index) => (
+              <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-card">
+                <CardContent className="p-6 md:p-8">
+                  <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-accent/10 rounded-2xl mb-4 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
+                    <item.icon className="w-7 h-7 md:w-8 md:h-8 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
                   </div>
-                  
-                  <div className="text-2xl md:text-3xl font-bold font-heading text-accent mb-2 md:mb-3 group-hover:scale-105 transition-transform duration-300">
-                    {benefit.stat}
-                  </div>
-                  
-                  <h3 className="text-lg md:text-2xl font-heading font-semibold mb-3 md:mb-4 group-hover:text-accent transition-colors duration-300">
-                    {benefit.title}
+                  <h3 className="text-base md:text-lg font-heading font-semibold mb-2 group-hover:text-accent transition-colors duration-300">
+                    {item.title}
                   </h3>
-                  
-                  <p className="text-muted-foreground leading-relaxed text-sm md:text-lg">
-                    {benefit.description}
+                  <p className="text-muted-foreground leading-relaxed text-sm">
+                    {item.description}
                   </p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Portfolio Section */}
+      {/* Portfolio Section (Section 5 — Proof) */}
       <Portfolio />
+
+      {/* Authority Section */}
+      <section className="spacing-mobile-md bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-mobile-3xl font-bold font-heading mb-6">
+              Crafted by Experts Who <span className="text-gradient-gold">Treat Every Floor Like Their Own</span>
+            </h2>
+            <p className="text-mobile-base text-muted-foreground leading-relaxed mb-4">
+              AXO Floors is led by a father-and-son team with over a decade of hands-on experience delivering premium flooring results across NJ, NY, and PA.
+            </p>
+            <p className="text-mobile-base text-foreground leading-relaxed">
+              When you hire AXO, you're not hiring a crew — you're trusting craftsmen who take pride in every detail.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="spacing-mobile-md bg-secondary/40">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-mobile-3xl font-bold font-heading mb-4">
+              Simple. Clear. <span className="text-gradient-gold">Done Right.</span>
+            </h2>
+            <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto">
+              Four steps from first call to finished floor. No surprises along the way.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {processSteps.map((step, index) => (
+              <Card key={index} className="relative border-0 shadow-elegant bg-card hover:shadow-gold transition-all duration-300">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-accent/10 rounded-xl">
+                      <step.icon className="w-6 h-6 text-accent" />
+                    </div>
+                    <span className="text-3xl font-bold font-heading text-accent/30">{step.step}</span>
+                  </div>
+                  <h3 className="text-lg font-heading font-semibold mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed text-sm">
+                    {step.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Lead Magnets Section */}
       
@@ -225,10 +356,10 @@ const Index = () => {
               {[...Array(5)].map((_, i) => <Star key={i} className="w-6 h-6 fill-accent text-accent" />)}
             </div>
             <h2 className="text-mobile-3xl font-bold font-heading mb-6">
-              See What Our <span className="text-accent">Customers</span> Are Saying
+              See What <span className="text-accent">Homeowners</span> Are Saying
             </h2>
             <p className="text-mobile-base text-white/80 max-w-2xl mx-auto">
-              Don't just take our word for it - hear from satisfied homeowners across New Jersey
+              Real clients. Real results. No shortcuts.
             </p>
           </div>
 
@@ -266,10 +397,10 @@ const Index = () => {
               <span className="text-xs font-semibold uppercase tracking-wider text-accent">Personalized Estimate</span>
             </div>
             <h2 className="text-mobile-3xl font-bold font-heading mb-4">
-              Ready to Transform <span className="text-gradient-gold">Your Floors?</span>
+              Ready to Transform Your Floors — <span className="text-gradient-gold">The Right Way?</span>
             </h2>
             <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-              Tell us about your project in under 2 minutes. Our specialists will reach out within 24 hours with a tailored plan — no generic quotes.
+              Tell us about your project in under 2 minutes. We'll get back to you within 24 hours with a clear, personalized plan.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
               <Button asChild size="lg" className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 py-5 h-auto min-h-[52px] text-black font-semibold w-full sm:w-auto">
@@ -279,11 +410,11 @@ const Index = () => {
                 </Link>
               </Button>
               <a href="tel:(732) 351-8653" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                Or call <span className="font-semibold underline">(732) 351-8653</span>
+                Or Call <span className="font-semibold underline">(732) 351-8653</span>
               </a>
             </div>
             <p className="text-xs text-muted-foreground mt-6">
-              ⚡ 4 quick steps · 📍 NJ · NY · PA · 🛡️ Licensed & insured
+              No pressure. No obligation. · 📍 NJ · NY · PA · 🛡️ Licensed & insured
             </p>
           </div>
         </div>

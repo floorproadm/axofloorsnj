@@ -9,6 +9,9 @@ interface HeroProps {
   image: string;
   ctaPrimary?: string;
   ctaSecondary?: string;
+  ctaPrimaryHref?: string;
+  ctaSecondaryHref?: string;
+  trustLine?: string;
   showReviews?: boolean;
 }
 
@@ -19,8 +22,15 @@ const Hero = ({
   image, 
   ctaPrimary = "Get Free Quote", 
   ctaSecondary = "Call Now",
+  ctaPrimaryHref = "/contact",
+  ctaSecondaryHref = "tel:(732) 351-8653",
+  trustLine,
   showReviews = true 
 }: HeroProps) => {
+  const isSecondaryTel = ctaSecondaryHref.startsWith("tel:");
+  const isSecondaryExternal = /^https?:\/\//.test(ctaSecondaryHref);
+  const isPrimaryTel = ctaPrimaryHref.startsWith("tel:");
+  const isPrimaryExternal = /^https?:\/\//.test(ctaPrimaryHref);
   return (
     <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -54,17 +64,36 @@ const Hero = ({
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
-              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
-                {ctaPrimary}
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
-              </Link>
+              {isPrimaryTel || isPrimaryExternal ? (
+                <a href={ctaPrimaryHref} className="flex items-center justify-center gap-2 text-black">
+                  {ctaPrimary}
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+                </a>
+              ) : (
+                <Link to={ctaPrimaryHref} className="flex items-center justify-center gap-2 text-black">
+                  {ctaPrimary}
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+                </Link>
+              )}
             </Button>
             <Button variant="outline" asChild className="border-white text-black bg-white hover:bg-white hover:text-black text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold">
-              <a href="tel:(732) 351-8653" className="flex items-center justify-center gap-2 text-black">
-                {ctaSecondary}
-              </a>
+              {isSecondaryTel || isSecondaryExternal ? (
+                <a href={ctaSecondaryHref} className="flex items-center justify-center gap-2 text-black">
+                  {ctaSecondary}
+                </a>
+              ) : (
+                <Link to={ctaSecondaryHref} className="flex items-center justify-center gap-2 text-black">
+                  {ctaSecondary}
+                </Link>
+              )}
             </Button>
           </div>
+
+          {trustLine && (
+            <p className="mt-6 sm:mt-8 text-xs sm:text-sm text-white/80 font-medium tracking-wide px-2">
+              {trustLine}
+            </p>
+          )}
         </div>
       </div>
     </section>
