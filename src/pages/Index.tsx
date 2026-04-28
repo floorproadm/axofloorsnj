@@ -151,17 +151,50 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <Hero title="Your Flooring deserves the attention that only us can provide!" subtitle="Flooring Solutions in New Jersey and Beyond" description="Over time, flooring often fades and becomes damaged. However, with expert care and the right team by your side, this won't be a problem anymore." image={homeHero} showReviews={true} />
+      <Hero
+        title="Restore Your Floors in Days — Without Dust, Delays, or Disruption"
+        subtitle="Premium Flooring Solutions in New Jersey"
+        description="Expert hardwood refinishing and installation for homeowners who expect flawless results — without turning their home into a construction site."
+        image={homeHero}
+        ctaPrimary="Get My Free Estimate"
+        ctaSecondary="View Real Transformations"
+        ctaPrimaryHref="/contact"
+        ctaSecondaryHref="/gallery"
+        trustLine="500+ Homes Transformed • 10+ Years Experience • 10-Year Warranty"
+        showReviews={true}
+      />
+
+      {/* Emotional Hook Section */}
+      <section className="spacing-mobile-md bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-mobile-3xl font-bold font-heading mb-8">
+              Your Floors Shouldn't Be Something <span className="text-gradient-gold">You Apologize For</span>
+            </h2>
+            <div className="space-y-3 text-mobile-base text-muted-foreground leading-relaxed mb-8">
+              <p>Scratches that catch the light.</p>
+              <p>Stains that never come out.</p>
+              <p>Floors that quietly age your entire home.</p>
+            </div>
+            <p className="text-mobile-base text-foreground leading-relaxed mb-4">
+              Now imagine walking into a space that feels clean, refined, and worth every dollar you invested in it.
+            </p>
+            <p className="text-mobile-base font-semibold text-accent">
+              This is what we do — every single day.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Services Section */}
       <section className="spacing-mobile-md bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-mobile-3xl font-bold font-heading mb-6">
-              We have all the solutions you need to <span className="text-gradient-gold">renew your space!</span>
+              Complete Flooring Solutions — <span className="text-gradient-gold">Done Right the First Time</span>
             </h2>
             <p className="text-mobile-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              We offer a wide range of services, from installation to finishing touches, guaranteeing that you achieve the modern, sophisticated, and elegant aesthetics you desire for your home.
+              From restoration to installation, every service is delivered with the precision and care your home deserves.
             </p>
           </div>
 
