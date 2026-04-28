@@ -242,44 +242,104 @@ const Index = () => {
                 </CardContent>
               </Card>)}
           </div>
+
+          <div className="text-center mt-10 sm:mt-12">
+            <Button asChild variant="outline" className="min-h-[48px] px-6 sm:px-8 font-semibold">
+              <Link to="/sanding-and-refinish" className="flex items-center justify-center gap-2">
+                Explore Services
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Differential Section */}
       <section className="spacing-mobile-md bg-secondary">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-mobile-3xl font-bold font-heading mb-6">
-              Why Choose <span className="text-gradient-gold">AXO Floors?</span>
+              A Different Kind of <span className="text-gradient-gold">Flooring Experience</span>
             </h2>
+            <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Built around how you actually live in your home — not around how easy it is for the contractor.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 max-w-5xl mx-auto">
-            {benefits.map((benefit, index) => <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-card">
-                <CardContent className="p-6 md:p-10">
-                  <div className="inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 bg-accent/10 rounded-2xl mb-4 md:mb-6 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
-                    <benefit.icon className="w-7 h-7 md:w-10 md:h-10 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto">
+            {differentials.map((item, index) => (
+              <Card key={index} className="group text-center hover:shadow-gold transition-all duration-300 border-0 shadow-elegant hover:-translate-y-2 bg-card">
+                <CardContent className="p-6 md:p-8">
+                  <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-accent/10 rounded-2xl mb-4 group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
+                    <item.icon className="w-7 h-7 md:w-8 md:h-8 text-accent group-hover:text-accent-foreground transition-colors duration-300" />
                   </div>
-                  
-                  <div className="text-2xl md:text-3xl font-bold font-heading text-accent mb-2 md:mb-3 group-hover:scale-105 transition-transform duration-300">
-                    {benefit.stat}
-                  </div>
-                  
-                  <h3 className="text-lg md:text-2xl font-heading font-semibold mb-3 md:mb-4 group-hover:text-accent transition-colors duration-300">
-                    {benefit.title}
+                  <h3 className="text-base md:text-lg font-heading font-semibold mb-2 group-hover:text-accent transition-colors duration-300">
+                    {item.title}
                   </h3>
-                  
-                  <p className="text-muted-foreground leading-relaxed text-sm md:text-lg">
-                    {benefit.description}
+                  <p className="text-muted-foreground leading-relaxed text-sm">
+                    {item.description}
                   </p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Portfolio Section */}
+      {/* Portfolio Section (Section 5 — Proof) */}
       <Portfolio />
+
+      {/* Authority Section */}
+      <section className="spacing-mobile-md bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-mobile-3xl font-bold font-heading mb-6">
+              Crafted by Experts Who <span className="text-gradient-gold">Treat Every Floor Like Their Own</span>
+            </h2>
+            <p className="text-mobile-base text-muted-foreground leading-relaxed mb-4">
+              AXO Floors is led by a father-and-son team with over a decade of hands-on experience delivering premium flooring results across NJ, NY, and PA.
+            </p>
+            <p className="text-mobile-base text-foreground leading-relaxed">
+              When you hire AXO, you're not hiring a crew — you're trusting craftsmen who take pride in every detail.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="spacing-mobile-md bg-secondary/40">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-mobile-3xl font-bold font-heading mb-4">
+              Simple. Clear. <span className="text-gradient-gold">Done Right.</span>
+            </h2>
+            <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto">
+              Four steps from first call to finished floor. No surprises along the way.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {processSteps.map((step, index) => (
+              <Card key={index} className="relative border-0 shadow-elegant bg-card hover:shadow-gold transition-all duration-300">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-accent/10 rounded-xl">
+                      <step.icon className="w-6 h-6 text-accent" />
+                    </div>
+                    <span className="text-3xl font-bold font-heading text-accent/30">{step.step}</span>
+                  </div>
+                  <h3 className="text-lg font-heading font-semibold mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed text-sm">
+                    {step.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Lead Magnets Section */}
       
