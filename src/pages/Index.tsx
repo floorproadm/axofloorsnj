@@ -397,10 +397,10 @@ const Index = () => {
               <span className="text-xs font-semibold uppercase tracking-wider text-accent">Personalized Estimate</span>
             </div>
             <h2 className="text-mobile-3xl font-bold font-heading mb-4">
-              Ready to Transform <span className="text-gradient-gold">Your Floors?</span>
+              Ready to Transform Your Floors — <span className="text-gradient-gold">The Right Way?</span>
             </h2>
             <p className="text-mobile-base text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-              Tell us about your project in under 2 minutes. Our specialists will reach out within 24 hours with a tailored plan — no generic quotes.
+              Tell us about your project in under 2 minutes. We'll get back to you within 24 hours with a clear, personalized plan.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
               <Button asChild size="lg" className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-8 py-5 h-auto min-h-[52px] text-black font-semibold w-full sm:w-auto">
@@ -410,11 +410,11 @@ const Index = () => {
                 </Link>
               </Button>
               <a href="tel:(732) 351-8653" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                Or call <span className="font-semibold underline">(732) 351-8653</span>
+                Or Call <span className="font-semibold underline">(732) 351-8653</span>
               </a>
             </div>
             <p className="text-xs text-muted-foreground mt-6">
-              ⚡ 4 quick steps · 📍 NJ · NY · PA · 🛡️ Licensed & insured
+              No pressure. No obligation. · 📍 NJ · NY · PA · 🛡️ Licensed & insured
             </p>
           </div>
         </div>
