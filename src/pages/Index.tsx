@@ -52,45 +52,83 @@ const Index = () => {
     };
   }, [isMobile]);
   const services = [{
-    title: "Sanding & Finish",
-    description: "Restore your floors to their original beauty with professional refinishing services.",
+    title: "Sanding & Refinishing",
+    description: "Restore your floors to like-new condition with a dustless, precision process.",
     href: "/sanding-and-refinish",
-    features: ["Complete Restoration", "Dust-Free Process", "Quick Turnaround"],
+    features: ["Full Restoration", "Dust-Free Sanding", "Fast Turnaround"],
     image: serviceSanding
   }, {
     title: "Hardwood Flooring",
-    description: "Premium hardwood installation with expert craftsmanship and attention to detail.",
+    description: "Premium hardwood installation built to last for decades.",
     href: "/hardwood-flooring",
-    features: ["Premium Materials", "Expert Installation", "Lifetime Warranty"],
+    features: ["High-End Materials", "Expert Craftsmanship", "Lifetime Structural Integrity"],
     image: serviceHardwood
   }, {
     title: "Vinyl Plank Flooring",
-    description: "Waterproof and durable luxury vinyl with the look of real hardwood.",
+    description: "The beauty of hardwood with modern durability and water resistance.",
     href: "/vinyl-plank-flooring",
-    features: ["100% Waterproof", "Easy Maintenance", "Realistic Wood Look"],
+    features: ["100% Waterproof", "Low Maintenance", "Perfect for Any Room"],
     image: serviceVinyl
   }, {
     title: "Staircase Renovation",
-    description: "Transform your staircase with custom hardwood steps and elegant railings.",
+    description: "Transform your staircase into a true centerpiece.",
     href: "/staircase",
-    features: ["Custom Design", "Safety First", "Premium Materials"],
+    features: ["Custom Design", "Safety-Focused Installation", "Premium Finishes"],
     image: serviceStaircase
   }];
   const benefits = [{
     icon: Users,
     title: "Expert Craftsmen",
-    description: "Professional installation team with years of experience",
+    description: "A father-and-son team with over a decade of hands-on experience.",
     stat: "10+ Years"
   }, {
     icon: Clock,
     title: "Quick Turnaround",
-    description: "Efficient project completion without compromising quality",
-    stat: "On Time"
+    description: "Most projects completed in 2–5 days — without compromising quality.",
+    stat: "2–5 Days"
   }, {
     icon: Shield,
-    title: "Quality Guarantee",
-    description: "100% satisfaction guarantee on all our work",
-    stat: "100%"
+    title: "10-Year Warranty",
+    description: "Backed by our written guarantee on workmanship and finish.",
+    stat: "10 Years"
+  }];
+  const differentials = [{
+    icon: Wind,
+    title: "Dustless Process",
+    description: "No mess, no cleanup nightmare."
+  }, {
+    icon: Zap,
+    title: "Fast Turnaround",
+    description: "Most projects completed in 2–5 days."
+  }, {
+    icon: Home,
+    title: "In-Home Service",
+    description: "No moving out, no disruption."
+  }, {
+    icon: Trophy,
+    title: "Limited Weekly Projects",
+    description: "We prioritize quality over volume."
+  }];
+  const processSteps = [{
+    icon: ClipboardList,
+    step: "01",
+    title: "In-Home Assessment",
+    description: "We visit your home, measure precisely, and listen to what you actually want."
+  }, {
+    icon: FileText,
+    step: "02",
+    title: "Custom Plan & Transparent Quote",
+    description: "A clear scope and a fixed price. No surprises, no hidden fees."
+  }, {
+    icon: Hammer,
+    step: "03",
+    title: "Precision Execution",
+    description: "Our craftsmen deliver the work on schedule, with daily updates."
+  }, {
+    icon: BadgeCheck,
+    step: "04",
+    title: "Final Walkthrough & Approval",
+    description: "We don't leave until every detail meets your standard — and ours."
   }];
   const testimonials = [{
     name: "Michelle Allen",
