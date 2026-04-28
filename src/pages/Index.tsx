@@ -9,7 +9,7 @@ import SEOHead from "@/components/shared/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles, BookOpen, Calculator, Palette } from "lucide-react";
+import { CheckCircle, Star, ArrowRight, Award, Users, Clock, Shield, Sparkles, BookOpen, Calculator, Palette, Wind, Zap, Home, Trophy, ClipboardList, FileText, Hammer, BadgeCheck } from "lucide-react";
 import homeHero from "@/assets/home-hero.jpg";
 import serviceSanding from "@/assets/service-sanding.jpg";
 import serviceHardwood from "@/assets/service-hardwood.jpg";
