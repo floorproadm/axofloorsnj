@@ -9,6 +9,9 @@ interface HeroProps {
   image: string;
   ctaPrimary?: string;
   ctaSecondary?: string;
+  ctaPrimaryHref?: string;
+  ctaSecondaryHref?: string;
+  trustLine?: string;
   showReviews?: boolean;
 }
 
@@ -19,8 +22,15 @@ const Hero = ({
   image, 
   ctaPrimary = "Get Free Quote", 
   ctaSecondary = "Call Now",
+  ctaPrimaryHref = "/contact",
+  ctaSecondaryHref = "tel:(732) 351-8653",
+  trustLine,
   showReviews = true 
 }: HeroProps) => {
+  const isSecondaryTel = ctaSecondaryHref.startsWith("tel:");
+  const isSecondaryExternal = /^https?:\/\//.test(ctaSecondaryHref);
+  const isPrimaryTel = ctaPrimaryHref.startsWith("tel:");
+  const isPrimaryExternal = /^https?:\/\//.test(ctaPrimaryHref);
   return (
     <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center overflow-hidden">
       {/* Background Image with Overlay */}
