@@ -234,7 +234,7 @@ const Index = () => {
                   
                   <Button asChild variant="outline" className={`w-full transition-all duration-300 font-semibold relative overflow-hidden ${isMobile && activeServiceIndex === index ? 'bg-accent text-accent-foreground border-accent' : 'group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent'}`}>
                     <Link to={service.href} className="flex items-center justify-center gap-2 relative z-10">
-                      <span className={`transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>Saiba Mais</span>
+                      <span className={`transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>Learn More</span>
                       <ArrowRight className={`w-4 h-4 transition-transform duration-300 ${isMobile && activeServiceIndex === index ? 'translate-x-2' : 'group-hover:translate-x-2'}`} />
                       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ${isMobile && activeServiceIndex === index ? 'translate-x-[100%]' : 'translate-x-[-100%] group-hover:translate-x-[100%]'}`} />
                     </Link>
