@@ -249,34 +249,57 @@ const Gallery = () => {
       {/* Hero Section */}
       <section className="py-20 navy-gradient text-white">
         <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-gold text-gold" />
-              ))}
-            </div>
-            <span className="text-gold font-medium">35+ Google Reviews</span>
-          </div>
-          
-          <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
-            Our Project Gallery
-          </h1>
-          
-          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
-            Explore our albums organized by project type. Click to see the incredible transformations we create.
+          <p className="text-gold font-medium tracking-wide uppercase text-sm mb-4">
+            Real Projects · NJ · NY · PA
           </p>
-          
-          <div className="flex items-center justify-center gap-2 text-white/60">
-            <Eye className="w-5 h-5" />
-            <span>Over 500 successful projects completed</span>
+
+          <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
+            The Work Speaks for Itself
+          </h1>
+
+          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
+            Every photo on this page is a real home we've worked in. No stock images. No staged renders. Just hardwood floors, refinished and installed by AXO Floors.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
+              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
+                Get My Free Estimate
+                <ArrowRight className="w-5 h-5 text-black" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold border-white text-black bg-white hover:bg-white hover:text-black">
+              <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
+            </Button>
           </div>
         </div>
       </section>
 
+      {/* Authority Section */}
+      <section className="py-16 bg-background border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-5">
+              500+ Homes. 10+ Years. One Standard.
+            </h2>
+            <p className="text-lg text-grey leading-relaxed">
+              For over a decade, AXO Floors has been trusted by homeowners across New Jersey, New York, and Pennsylvania to refinish and install hardwood in some of the region's finest properties. Every project is led by an owner-operator, executed by a trained crew, and finished to a standard most contractors don't even attempt.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* Content Section */}
+      {/* Gallery Intro + Folders */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-4">
+              Browse Real <span className="text-gradient-gold">Transformations</span>
+            </h2>
+            <p className="text-grey leading-relaxed">
+              Albums organized by project type — refinishing, installations, staircases, and more. Click any album to see the full set of before-and-after photos.
+            </p>
+          </div>
           {isLoading ? (
             <div className="text-center py-20">
               <p className="text-grey text-lg">Loading gallery...</p>
