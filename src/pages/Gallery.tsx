@@ -297,7 +297,7 @@ const Gallery = () => {
               Browse Real <span className="text-gradient-gold">Transformations</span>
             </h2>
             <p className="text-grey leading-relaxed">
-              Albums organized by project type — refinishing, installations, staircases, and more. Click any album to see the full set of before-and-after photos.
+              Albums organized by project type — refinishing, installations, staircases, and more. Click any album to see the full set of photos.
             </p>
           </div>
           {isLoading ? (
