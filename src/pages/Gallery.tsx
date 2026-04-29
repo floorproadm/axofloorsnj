@@ -254,7 +254,7 @@ const Gallery = () => {
           </p>
 
           <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
-            The Work Speaks for Itself
+            See What Your Floors Could Look Like — In Just Days, Not Weeks
           </h1>
 
           <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
