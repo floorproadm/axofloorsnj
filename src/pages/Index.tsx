@@ -160,7 +160,7 @@ const Index = () => {
         ctaSecondary="View Real Transformations"
         ctaPrimaryHref="/contact"
         ctaSecondaryHref="/gallery"
-        trustLine="500+ Homes Transformed • 10+ Years Experience • 10-Year Warranty"
+        trustLine="500+ Homes Transformed • 10+ Years Experience"
         showReviews={true}
       />
 
