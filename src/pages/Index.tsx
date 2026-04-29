@@ -101,10 +101,6 @@ const Index = () => {
     title: "Fast Turnaround",
     description: "Most projects completed in 2–5 days."
   }, {
-    icon: Home,
-    title: "In-Home Service",
-    description: "No moving out, no disruption."
-  }, {
     icon: Trophy,
     title: "Limited Weekly Projects",
     description: "We prioritize quality over volume."
