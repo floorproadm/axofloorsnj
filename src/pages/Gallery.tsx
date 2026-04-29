@@ -655,10 +655,13 @@ const Gallery = () => {
       {/* Testimonial Section */}
       <section className="py-20 bg-grey-light">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-8">
-            What Our Customers Say
+          <h2 className="text-3xl md:text-5xl font-bold font-heading text-navy mb-4">
+            Ready to See Your Floors on This Page?
           </h2>
-          
+          <p className="text-grey max-w-2xl mx-auto mb-10 text-lg">
+            Tell us about your project in under 2 minutes. We'll respond within 24 hours with a clear, personalized plan — no pressure, no obligation.
+          </p>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {[
               {
