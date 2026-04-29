@@ -340,7 +340,76 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Public Feed Posts Section */}
+      {/* Transformation Explanation */}
+      <section className="py-20 bg-grey-light">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-4">
+                Why These Floors Look Different
+              </h2>
+              <p className="text-grey leading-relaxed max-w-2xl mx-auto">
+                The difference isn't luck. It's process, equipment, and craftsmanship — applied the same way on every job.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-heading font-semibold text-navy text-lg mb-2">Dust-Contained Sanding</h3>
+                  <p className="text-grey text-sm leading-relaxed">
+                    Industrial dust-containment systems keep your home clean while we work. No mess on your furniture, no white film on your walls.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-heading font-semibold text-navy text-lg mb-2">Controlled Finish Application</h3>
+                  <p className="text-grey text-sm leading-relaxed">
+                    Stains and sealers applied in thin, even coats — no streaks, no lap marks, no shortcuts. The grain stays sharp and the color stays true.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-heading font-semibold text-navy text-lg mb-2">Owner-Led Quality Control</h3>
+                  <p className="text-grey text-sm leading-relaxed">
+                    Every job is inspected before we leave. If something isn't right, we fix it before you ever see it.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="py-16 bg-background border-y border-border">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold font-heading text-navy text-center mb-8">
+              What You're Looking At
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { title: "No stock photos", text: "Every image is from a real AXO Floors project." },
+                { title: "Real client homes", text: "Photographed on-site, after final inspection." },
+                { title: "No shortcuts", text: "Same process on a $5K job and a $50K job." },
+                { title: "Consistent results", text: "What you see here is what we deliver — every time." },
+              ].map((item) => (
+                <div key={item.title} className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-heading font-semibold text-navy">{item.title}</p>
+                    <p className="text-grey text-sm leading-relaxed">{item.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {publicPosts.length > 0 && (
         <section className="py-20 bg-grey-light">
           <div className="container mx-auto px-4">
