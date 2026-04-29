@@ -249,34 +249,57 @@ const Gallery = () => {
       {/* Hero Section */}
       <section className="py-20 navy-gradient text-white">
         <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-gold text-gold" />
-              ))}
-            </div>
-            <span className="text-gold font-medium">35+ Google Reviews</span>
-          </div>
-          
-          <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
-            Our Project Gallery
-          </h1>
-          
-          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
-            Explore our albums organized by project type. Click to see the incredible transformations we create.
+          <p className="text-gold font-medium tracking-wide uppercase text-sm mb-4">
+            Real Projects · NJ · NY · PA
           </p>
-          
-          <div className="flex items-center justify-center gap-2 text-white/60">
-            <Eye className="w-5 h-5" />
-            <span>Over 500 successful projects completed</span>
+
+          <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
+            The Work Speaks for Itself
+          </h1>
+
+          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
+            Every photo on this page is a real home we've worked in. No stock images. No staged renders. Just hardwood floors, refinished and installed by AXO Floors.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
+              <Link to="/contact" className="flex items-center justify-center gap-2 text-black">
+                Get My Free Estimate
+                <ArrowRight className="w-5 h-5 text-black" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] font-semibold border-white text-black bg-white hover:bg-white hover:text-black">
+              <a href="tel:(732) 351-8653">Call (732) 351-8653</a>
+            </Button>
           </div>
         </div>
       </section>
 
+      {/* Authority Section */}
+      <section className="py-16 bg-background border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-5">
+              500+ Homes. 10+ Years. One Standard.
+            </h2>
+            <p className="text-lg text-grey leading-relaxed">
+              For over a decade, AXO Floors has been trusted by homeowners across New Jersey, New York, and Pennsylvania to refinish and install hardwood in some of the region's finest properties. Every project is led by an owner-operator, executed by a trained crew, and finished to a standard most contractors don't even attempt.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* Content Section */}
+      {/* Gallery Intro + Folders */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-4">
+              Browse Real <span className="text-gradient-gold">Transformations</span>
+            </h2>
+            <p className="text-grey leading-relaxed">
+              Albums organized by project type — refinishing, installations, staircases, and more. Click any album to see the full set of before-and-after photos.
+            </p>
+          </div>
           {isLoading ? (
             <div className="text-center py-20">
               <p className="text-grey text-lg">Loading gallery...</p>
@@ -317,7 +340,76 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Public Feed Posts Section */}
+      {/* Transformation Explanation */}
+      <section className="py-20 bg-grey-light">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-4">
+                Why These Floors Look Different
+              </h2>
+              <p className="text-grey leading-relaxed max-w-2xl mx-auto">
+                The difference isn't luck. It's process, equipment, and craftsmanship — applied the same way on every job.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-heading font-semibold text-navy text-lg mb-2">Dust-Contained Sanding</h3>
+                  <p className="text-grey text-sm leading-relaxed">
+                    Industrial dust-containment systems keep your home clean while we work. No mess on your furniture, no white film on your walls.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-heading font-semibold text-navy text-lg mb-2">Controlled Finish Application</h3>
+                  <p className="text-grey text-sm leading-relaxed">
+                    Stains and sealers applied in thin, even coats — no streaks, no lap marks, no shortcuts. The grain stays sharp and the color stays true.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-heading font-semibold text-navy text-lg mb-2">Owner-Led Quality Control</h3>
+                  <p className="text-grey text-sm leading-relaxed">
+                    Every job is inspected before we leave. If something isn't right, we fix it before you ever see it.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="py-16 bg-background border-y border-border">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold font-heading text-navy text-center mb-8">
+              What You're Looking At
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { title: "No stock photos", text: "Every image is from a real AXO Floors project." },
+                { title: "Real client homes", text: "Photographed on-site, after final inspection." },
+                { title: "No shortcuts", text: "Same process on a $5K job and a $50K job." },
+                { title: "Consistent results", text: "What you see here is what we deliver — every time." },
+              ].map((item) => (
+                <div key={item.title} className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-heading font-semibold text-navy">{item.title}</p>
+                    <p className="text-grey text-sm leading-relaxed">{item.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {publicPosts.length > 0 && (
         <section className="py-20 bg-grey-light">
           <div className="container mx-auto px-4">
@@ -563,10 +655,13 @@ const Gallery = () => {
       {/* Testimonial Section */}
       <section className="py-20 bg-grey-light">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold font-heading text-navy mb-8">
-            What Our Customers Say
+          <h2 className="text-3xl md:text-5xl font-bold font-heading text-navy mb-4">
+            Ready to See Your Floors on This Page?
           </h2>
-          
+          <p className="text-grey max-w-2xl mx-auto mb-10 text-lg">
+            Tell us about your project in under 2 minutes. We'll respond within 24 hours with a clear, personalized plan — no pressure, no obligation.
+          </p>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {[
               {
@@ -606,7 +701,7 @@ const Gallery = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold">
               <Link to="/contact" className="flex items-center gap-2">
-                Start Your Project
+                Get My Free Estimate
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
