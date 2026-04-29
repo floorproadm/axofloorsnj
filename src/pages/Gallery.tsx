@@ -249,9 +249,7 @@ const Gallery = () => {
       {/* Hero Section */}
       <section className="py-20 navy-gradient text-white">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gold font-medium tracking-wide uppercase text-sm mb-4">
-            Real Projects · NJ · NY · PA
-          </p>
+
 
           <h1 className="text-3xl md:text-5xl font-bold font-heading mb-6 leading-tight max-w-4xl mx-auto">
             See What Your Floors Could Look Like
