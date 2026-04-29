@@ -409,9 +409,6 @@ const Index = () => {
                 Or Call <span className="font-semibold underline">(732) 351-8653</span>
               </a>
             </div>
-            <p className="text-xs text-muted-foreground mt-6">
-              No pressure. No obligation. · 📍 NJ · NY · PA · 🛡️ Licensed & insured
-            </p>
           </div>
         </div>
       </section>
