@@ -253,8 +253,11 @@ const Gallery = () => {
             Real Projects · NJ · NY · PA
           </p>
 
-          <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">
-            See What Your Floors Could Look Like — In Just Days, Not Weeks
+          <h1 className="text-3xl md:text-5xl font-bold font-heading mb-6 leading-tight max-w-4xl mx-auto">
+            See What Your Floors Could Look Like
+            <span className="block bg-gradient-to-r from-gold via-yellow-300 to-gold bg-clip-text text-transparent mt-2">
+              In Just Days, Not Weeks
+            </span>
           </h1>
 
           <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
