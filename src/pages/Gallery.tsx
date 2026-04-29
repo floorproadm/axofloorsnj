@@ -275,19 +275,7 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Authority Section */}
-      <section className="py-16 bg-background border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold font-heading text-navy mb-5">
-              500+ Homes. 10+ Years. One Standard.
-            </h2>
-            <p className="text-lg text-grey leading-relaxed">
-              For over a decade, AXO Floors has been trusted by homeowners across New Jersey, New York, and Pennsylvania to refinish and install hardwood in some of the region's finest properties. Every project is led by an owner-operator, executed by a trained crew, and finished to a standard most contractors don't even attempt.
-            </p>
-          </div>
-        </div>
-      </section>
+
 
       {/* Gallery Intro + Folders */}
       <section className="py-20 bg-background">
