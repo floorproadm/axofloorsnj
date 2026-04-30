@@ -10,6 +10,7 @@ import { PartnerStageBar, PARTNER_LEAD_STAGES } from "@/components/partner/Partn
 import { PartnerLeadCard } from "@/components/partner/PartnerLeadCard";
 import { PartnerProfileTab } from "@/components/partner/PartnerProfileTab";
 import { PartnerBottomNav, type PartnerView } from "@/components/partner/PartnerBottomNav";
+import { PartnerPipelineBoard } from "@/components/partner/PartnerPipelineBoard";
 import { cn } from "@/lib/utils";
 
 interface Lead {
@@ -47,6 +48,15 @@ export default function PartnerDashboard() {
   const [activeStage, setActiveStage] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [view, setView] = useState<PartnerView>("pipeline");
+  const [pipelineMode, setPipelineMode] = useState<"list" | "board">(() => {
+    if (typeof window === "undefined") return "list";
+    return (localStorage.getItem("axo.partner.pipelineMode") as "list" | "board") || "list";
+  });
+
+  const updatePipelineMode = (m: "list" | "board") => {
+    setPipelineMode(m);
+    try { localStorage.setItem("axo.partner.pipelineMode", m); } catch {}
+  };
 
   const loadData = async () => {
     const { data: session } = await supabase.auth.getSession();
@@ -237,23 +247,49 @@ export default function PartnerDashboard() {
             )}
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground truncate">
                   {activeStage
                     ? `${PARTNER_LEAD_STAGES.find((s) => s.key === activeStage)?.label || ""} (${filteredLeads.length})`
                     : `Your Referrals (${filteredLeads.length})`}
                 </h2>
-                {(activeStage || search) && (
-                  <button
-                    onClick={() => {
-                      setActiveStage(null);
-                      setSearch("");
-                    }}
-                    className="text-xs text-muted-foreground hover:text-foreground underline"
-                  >
-                    Clear filters
-                  </button>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {(activeStage || search) && (
+                    <button
+                      onClick={() => {
+                        setActiveStage(null);
+                        setSearch("");
+                      }}
+                      className="text-xs text-muted-foreground hover:text-foreground underline"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
+                    <button
+                      onClick={() => updatePipelineMode("list")}
+                      className={cn(
+                        "px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors",
+                        pipelineMode === "list"
+                          ? "bg-foreground text-background"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      List
+                    </button>
+                    <button
+                      onClick={() => updatePipelineMode("board")}
+                      className={cn(
+                        "px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors",
+                        pipelineMode === "board"
+                          ? "bg-foreground text-background"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      Board
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {leads.length === 0 ? (
@@ -268,6 +304,8 @@ export default function PartnerDashboard() {
                 <Card className="p-6 text-center">
                   <p className="text-sm text-muted-foreground">No leads match this filter.</p>
                 </Card>
+              ) : pipelineMode === "board" ? (
+                <PartnerPipelineBoard leads={filteredLeads} commissionPercent={commissionPercent} />
               ) : (
                 <div className="space-y-4">
                   {Object.entries(groupedByMonth).map(([month, items]) => (
