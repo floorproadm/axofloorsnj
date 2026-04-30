@@ -4,12 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X } from "lucide-react";
+import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X, Trophy, CheckCircle2 } from "lucide-react";
 import { NewReferralSheet } from "@/components/partner/NewReferralSheet";
 import { PartnerStageBar, PARTNER_LEAD_STAGES } from "@/components/partner/PartnerStageBar";
 import { PartnerLeadCard } from "@/components/partner/PartnerLeadCard";
 import { PartnerProfileTab } from "@/components/partner/PartnerProfileTab";
+import { PartnerBottomNav, type PartnerView } from "@/components/partner/PartnerBottomNav";
 
 interface Lead {
   id: string;
