@@ -45,6 +45,7 @@ export default function PartnerDashboard() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeStage, setActiveStage] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<PartnerView>("pipeline");
 
   const loadData = async () => {
     const { data: session } = await supabase.auth.getSession();
