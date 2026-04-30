@@ -10,6 +10,7 @@ import { PartnerStageBar, PARTNER_LEAD_STAGES } from "@/components/partner/Partn
 import { PartnerLeadCard } from "@/components/partner/PartnerLeadCard";
 import { PartnerProfileTab } from "@/components/partner/PartnerProfileTab";
 import { PartnerBottomNav, type PartnerView } from "@/components/partner/PartnerBottomNav";
+import { cn } from "@/lib/utils";
 
 interface Lead {
   id: string;
