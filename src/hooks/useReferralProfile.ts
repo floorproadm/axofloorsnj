@@ -140,13 +140,9 @@ export function useReferralProfile() {
     if (data) setReferrals(data as unknown as Referral[]);
   };
 
-  const loadRewards = async (referrerId: string) => {
-    const { data } = await supabase
-      .from('referral_rewards')
-      .select('*')
-      .eq('referrer_id', referrerId)
-      .order('created_at', { ascending: false });
-    if (data) setRewards(data as unknown as ReferralReward[]);
+  // Deprecated: referral_rewards table removed. Kept as no-op to preserve hook API.
+  const loadRewards = async (_referrerId: string) => {
+    setRewards([]);
   };
 
   const addReferral = useCallback(async (name: string, phone: string, email?: string) => {
