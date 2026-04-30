@@ -149,37 +149,39 @@ export default function PartnerDashboard() {
     );
   }
 
+  const totalRefs = leads.length;
+  // Tier thresholds (Bronze < 5, Silver 5+, Gold 15+, Platinum 30+, Diamond 50+)
+  const tier =
+    totalRefs >= 50 ? { name: "Diamond", next: null, progress: 100 } :
+    totalRefs >= 30 ? { name: "Platinum", next: 50, progress: ((totalRefs - 30) / 20) * 100 } :
+    totalRefs >= 15 ? { name: "Gold", next: 30, progress: ((totalRefs - 15) / 15) * 100 } :
+    totalRefs >= 5  ? { name: "Silver", next: 15, progress: ((totalRefs - 5) / 10) * 100 } :
+                      { name: "Bronze", next: 5, progress: (totalRefs / 5) * 100 };
+
   return (
     <div className="min-h-screen bg-muted/20 pb-24">
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Handshake className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground leading-none">Welcome,</p>
-              <p className="text-sm font-semibold leading-tight">
-                {partner?.contact_name || partner?.company_name}
-              </p>
-            </div>
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-2">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Handshake className="w-5 h-5 text-primary" />
           </div>
-          <Button size="sm" onClick={() => setSheetOpen(true)}>
-            <Plus className="w-4 h-4 mr-1" /> New
-          </Button>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground leading-none">Welcome,</p>
+            <p className="text-sm font-semibold leading-tight truncate">
+              {partner?.contact_name || partner?.company_name}
+            </p>
+          </div>
+          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
+            {tier.name}
+          </span>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-4">
-        <Tabs defaultValue="pipeline" className="space-y-4">
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pipeline" className="space-y-4 mt-0">
-            {/* KPI Cards */}
+      <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+        {/* PIPELINE VIEW */}
+        {view === "pipeline" && (
+          <>
             <div className="grid grid-cols-3 gap-2">
               <Card className="p-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
@@ -204,14 +206,6 @@ export default function PartnerDashboard() {
               </Card>
             </div>
 
-            <Card className="p-3 bg-primary/5 border-primary/20">
-              <p className="text-xs text-muted-foreground">
-                Commission rate:{" "}
-                <span className="font-semibold text-foreground">{commissionPercent}%</span> on completed projects
-              </p>
-            </Card>
-
-            {/* Stage filter bar */}
             {leads.length > 0 && (
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
@@ -221,7 +215,6 @@ export default function PartnerDashboard() {
               </div>
             )}
 
-            {/* Search */}
             {leads.length > 0 && (
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -242,7 +235,6 @@ export default function PartnerDashboard() {
               </div>
             )}
 
-            {/* Leads list */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -296,20 +288,142 @@ export default function PartnerDashboard() {
                 </div>
               )}
             </div>
-          </TabsContent>
+          </>
+        )}
 
-          <TabsContent value="profile" className="mt-0">
-            {partner && (
-              <PartnerProfileTab
-                partner={partner}
-                email={authEmail}
-                onUpdated={loadData}
-                onLogout={handleLogout}
-              />
-            )}
-          </TabsContent>
-        </Tabs>
+        {/* EARNINGS VIEW */}
+        {view === "earnings" && (
+          <>
+            <Card className="p-5 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Total Earned</p>
+              <p className="text-4xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {commissionPercent}% commission on completed projects
+              </p>
+            </Card>
+
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Completed ({convertedLeads.length})
+              </h2>
+              {convertedLeads.length === 0 ? (
+                <Card className="p-6 text-center">
+                  <CheckCircle2 className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No completed projects yet.</p>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {convertedLeads.map((lead) => {
+                    const commission = ((lead.budget || 0) * commissionPercent) / 100;
+                    return (
+                      <Card key={lead.id} className="p-3 flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate">{lead.name}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {lead.city || "—"} · ${(lead.budget || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <span className="text-sm font-bold text-primary tabular-nums">
+                          +${commission.toFixed(0)}
+                        </span>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* REWARDS VIEW */}
+        {view === "rewards" && (
+          <>
+            <Card className="p-5 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Current Tier</p>
+                  <p className="text-3xl font-bold">{tier.name}</p>
+                </div>
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Trophy className="w-7 h-7 text-primary" />
+                </div>
+              </div>
+              {tier.next !== null ? (
+                <>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all"
+                      style={{ width: `${Math.min(100, tier.progress)}%` }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    {tier.next - totalRefs} more referrals to reach next tier
+                  </p>
+                </>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">Top tier reached. Keep going!</p>
+              )}
+            </Card>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Card className="p-4">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Total Referrals</p>
+                <p className="text-3xl font-bold tabular-nums mt-1">{totalRefs}</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Conversion</p>
+                <p className="text-3xl font-bold tabular-nums mt-1">{conversionRate}%</p>
+              </Card>
+            </div>
+
+            <Card className="p-4">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                Tier Ladder
+              </p>
+              <div className="space-y-1.5 text-sm">
+                {[
+                  { name: "Bronze", at: 0 },
+                  { name: "Silver", at: 5 },
+                  { name: "Gold", at: 15 },
+                  { name: "Platinum", at: 30 },
+                  { name: "Diamond", at: 50 },
+                ].map((t) => {
+                  const reached = totalRefs >= t.at;
+                  const current = t.name === tier.name;
+                  return (
+                    <div
+                      key={t.name}
+                      className={cn(
+                        "flex items-center justify-between py-1.5 px-2 rounded",
+                        current && "bg-primary/10"
+                      )}
+                    >
+                      <span className={cn("font-medium", reached ? "text-foreground" : "text-muted-foreground")}>
+                        {t.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {t.at}+ refs
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </>
+        )}
+
+        {/* PROFILE VIEW */}
+        {view === "profile" && partner && (
+          <PartnerProfileTab
+            partner={partner}
+            email={authEmail}
+            onUpdated={loadData}
+            onLogout={handleLogout}
+          />
+        )}
       </main>
+
+      <PartnerBottomNav active={view} onChange={setView} onNewReferral={() => setSheetOpen(true)} />
 
       <NewReferralSheet open={sheetOpen} onOpenChange={setSheetOpen} onCreated={loadData} />
     </div>
