@@ -2674,51 +2674,6 @@ export type Database = {
           },
         ]
       }
-      referral_rewards: {
-        Row: {
-          amount: number
-          created_at: string
-          description: string | null
-          id: string
-          referral_id: string | null
-          referrer_id: string
-          type: string
-        }
-        Insert: {
-          amount?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          referral_id?: string | null
-          referrer_id: string
-          type?: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          referral_id?: string | null
-          referrer_id?: string
-          type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "referral_rewards_referral_id_fkey"
-            columns: ["referral_id"]
-            isOneToOne: false
-            referencedRelation: "referrals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "referral_rewards_referrer_id_fkey"
-            columns: ["referrer_id"]
-            isOneToOne: false
-            referencedRelation: "referral_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       referrals: {
         Row: {
           created_at: string
