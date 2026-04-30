@@ -3466,6 +3466,20 @@ export type Database = {
         Returns: string
       }
       run_sla_engine: { Args: never; Returns: Json }
+      submit_partner_referral: {
+        Args: {
+          p_address?: string
+          p_city?: string
+          p_client_name: string
+          p_email?: string
+          p_notes?: string
+          p_phone: string
+          p_service_needed?: string
+          p_urgency?: string
+          p_zip_code?: string
+        }
+        Returns: string
+      }
       supply_has_access: { Args: { p_org_id: string }; Returns: boolean }
       transition_lead_status: {
         Args: { p_lead_id: string; p_new_status: string }
