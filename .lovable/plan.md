@@ -1,62 +1,73 @@
-# Plano — MASTER_DOSSIER_2026.md
 
-Gerar um documento de conhecimento exaustivo e auto-suficiente em `docs/MASTER_DOSSIER_2026.md` cobrindo as 17 seções solicitadas, baseado em auditoria real do codebase + introspecção do banco Supabase (não em memória/suposição).
+## Goal
 
-## Fase 1 — Coleta de Dados (read-only, sistemática)
+Bring the Partner portal mobile UX in line with the rest of the system (Admin / Collaborator) by replacing the top `Tabs` switcher with a fixed **bottom navigation bar** featuring a centered FAB to send a new referral.
 
-Vou rodar uma varredura completa antes de escrever uma única linha do dossier:
+## Why this pattern
 
-**Codebase (via `code--view` / `rg`):**
-- `src/App.tsx` integral → mapa de rotas (Seção 2)
-- `src/components/shared/ProtectedRoute.tsx`, `AuthContext.tsx`, todas páginas `auth` (Seção 6)
-- Todos os arquivos em `src/hooks/` (Seção 9 — ~40 hooks)
-- Todos os componentes em `src/components/{admin,collaborator,partner,portal,proposal}/` (Seção 10)
-- Todas as Edge Functions em `supabase/functions/*/index.ts` (Seção 8)
-- `src/pages/Public{Invoice,Proposal,Portal}.tsx`, `SharedPost.tsx` (Seção 7)
-- `src/components/admin/settings/*`, `useCompanySettings.ts` (Seção 12)
-- `src/hooks/useServiceCatalog.ts` + `ProposalGenerator.tsx` (Seção 14)
-- `.env`, `supabase/config.toml` (Seção 17)
+- Admin uses 5 items + center FAB (`MobileBottomNav`).
+- Collaborator uses 4 items, flat bar.
+- Partner currently uses a top `Tabs` component → inconsistent and wastes vertical space on 390px viewport.
 
-**Supabase (via `supabase--read_query` + `security--get_table_schema`):**
-- `information_schema.tables` + `columns` para todas as tabelas do schema `public`
-- `pg_policies` para todas as policies RLS
-- `pg_trigger` + `pg_proc` para triggers e funções (algumas já listadas no contexto, completar com restantes)
-- `storage.buckets` + `storage.objects` policies
-- Indexes via `pg_indexes`
+A bottom nav is thumb-reachable, frees the header, and the center FAB makes the partner's main action (send referral) one tap away from anywhere.
 
-## Fase 2 — Estruturação do Documento
+## Proposed Bar — 4 items + center FAB
 
-O dossier será gerado em **um único arquivo** seguindo exatamente as 17 seções pedidas + a seção final `## GAPS IDENTIFICADOS`. Convenções:
+```text
+┌─────────────────────────────────────────┐
+│  Pipeline   Earnings   ➕   Rewards  Profile │
+└─────────────────────────────────────────┘
+```
 
-- Tabelas markdown para dados estruturados (rotas, campos, RLS)
-- Blocos ```sql``` para fórmulas de generated columns, definições de policies e corpo de funções relevantes
-- Blocos ```ts``` para assinaturas de hooks e props de componentes
-- Marcadores: `💰 CRÍTICO` / `⚠️ VERIFICAR` / `🗑️ LEGADO`
-- Sem resumir: cada tabela/função/hook/componente recebe sua entrada própria
+| Slot | Icon | Label | Action |
+|---|---|---|---|
+| 1 | `Users` | Pipeline | Show pipeline view (default) |
+| 2 | `DollarSign` | Earnings | Show commissions/earned breakdown |
+| 3 | `Plus` (FAB, raised, gold) | — | Opens `NewReferralSheet` |
+| 4 | `Trophy` | Rewards | Show tier progress / weekly challenge |
+| 5 | `User` | Profile | Show profile tab |
 
-## Fase 3 — Tamanho e Entrega
+Active item: gold/primary color + filled icon. Inactive: `muted-foreground`.
+Center FAB: circular, `bg-primary`, `-top-4` raised, soft shadow — same style as `MobileBottomNav` admin.
 
-Estimativa: ~3.000-5.000 linhas de markdown (~150-250KB). Será escrito em um único `code--write` para `docs/MASTER_DOSSIER_2026.md`.
+## Implementation
 
-Como é volumoso, vou trabalhar em ordem de seção mas escrever o arquivo de uma vez no final, depois confirmar com `wc -l` e amostragem.
+### 1. New component `src/components/partner/PartnerBottomNav.tsx`
+- Props: `active: 'pipeline' | 'earnings' | 'rewards' | 'profile'`, `onChange`, `onNewReferral`.
+- Fixed bottom bar with `safe-area-inset-bottom` padding.
+- Mirrors styling of `MobileBottomNav.tsx` (raised FAB, max-w-lg, border-top, shadow).
 
-## Limitações Honestas (irão para "GAPS IDENTIFICADOS")
+### 2. Refactor `src/pages/partner/PartnerDashboard.tsx`
+- Remove the top `<Tabs>` / `<TabsList>` shell.
+- Replace with a `view` state (`useState<'pipeline'|'earnings'|'rewards'|'profile'>('pipeline')`).
+- Conditionally render the matching section.
+- Keep the existing **Pipeline** content (KPIs + stage filter + search + grouped leads).
+- Move the existing **Profile** tab content into the `profile` view.
+- Add two lightweight new views (placeholder cards reusing existing data):
+  - **Earnings**: Commission rate card + Earned total + list of converted leads with $ per lead.
+  - **Rewards**: Total referrals, conversion rate, weekly challenge counter (already tracked in DB), and tier badge using existing `ReferralTierBadge` if compatible — otherwise a simple progress card.
+- Header: simplified to logo + welcome text (drop the inline "New" button — replaced by the FAB).
+- Add `pb-24` to main wrapper so content doesn't sit under the bar (already present).
+- Mount `<PartnerBottomNav />` at the bottom of the page.
 
-Coisas que provavelmente exigirão marcação `⚠️ VERIFICAR`:
-- Estrutura exata do database do Notion (lado externo, não está no código)
-- Templates HTML do Resend (se forem inline em edge functions, capturo; se vierem do dashboard Resend, marco como gap)
-- Eventos exatos do Facebook CAPI além do que estiver hardcoded em `facebook-conversions/index.ts`
-- Tamanho máximo de upload por bucket (configurado no dashboard Supabase, não no código)
-- Cron schedules exatos (pg_cron tabela `cron.job` — tentarei consultar)
+### 3. Keep
+- `NewReferralSheet` (triggered by FAB).
+- All current data fetching in `loadData()`.
+- All existing partner pipeline cards / stage bar.
 
-## O Que NÃO Farei
+## Files touched
 
-- Não vou inventar campos ou políticas que não consigo confirmar
-- Não vou copiar conteúdo das memórias `mem://` como se fosse verdade atual — vou validar contra o codebase
-- Não vou criar/editar nenhum outro arquivo além de `docs/MASTER_DOSSIER_2026.md`
+- **NEW** `src/components/partner/PartnerBottomNav.tsx`
+- **EDIT** `src/pages/partner/PartnerDashboard.tsx` (remove Tabs, add view state + bottom nav)
 
-## Resultado Final
+## Out of scope
 
-Um único arquivo `docs/MASTER_DOSSIER_2026.md` pronto para ser consumido por agentes externos (Antigravity, Claude Code, etc.) sem precisar fazer perguntas básicas sobre o sistema.
+- No DB changes.
+- No changes to `/partner/auth` or other partner pages.
+- No changes to admin/collaborator nav.
 
-Aprove para eu sair do modo plan e executar.
+## Visual reference
+
+Design tokens reused: `bg-card`, `border-t`, `text-primary`, `bg-primary/10` for active pill, raised FAB matching admin (`w-12 h-12 rounded-full bg-primary shadow-lg -top-4`).
+
+After approval I'll implement the two files in one pass and verify on the 390px viewport.
