@@ -1,73 +1,58 @@
 
 ## Goal
 
-Bring the Partner portal mobile UX in line with the rest of the system (Admin / Collaborator) by replacing the top `Tabs` switcher with a fixed **bottom navigation bar** featuring a centered FAB to send a new referral.
+Add a **Board view** to the partner Pipeline tab, with a List ↔ Board toggle. List remains the default; Board offers a horizontal-scroll Kanban that mirrors the admin's pipeline aesthetic.
 
-## Why this pattern
+## What changes
 
-- Admin uses 5 items + center FAB (`MobileBottomNav`).
-- Collaborator uses 4 items, flat bar.
-- Partner currently uses a top `Tabs` component → inconsistent and wastes vertical space on 390px viewport.
+### 1. New component — `src/components/partner/PartnerPipelineBoard.tsx`
 
-A bottom nav is thumb-reachable, frees the header, and the center FAB makes the partner's main action (send referral) one tap away from anywhere.
+Read-only Kanban (parceiro não arrasta cards — quem move é o admin).
 
-## Proposed Bar — 4 items + center FAB
+- **Active columns**: New, Contacted, Est. Req., Scheduled, Drafting, Proposal, Production. Hide columns with 0 leads to reduce noise on mobile.
+- **Layout**: horizontal `overflow-x-auto snap-x snap-mandatory`, columns `w-[260px]`, gap-3. Bleeds to screen edge with `-mx-4 px-4` for native swipe feel.
+- **Column header**: colored dot + uppercase stage label + count badge (matches `PARTNER_LEAD_STAGES` colors).
+- **Card** (compact, denser than List version):
+  - Name (truncate)
+  - City or phone (truncate, 11px muted)
+  - Footer: created date · estimated value (formatted `$1.2k` style)
+- **Outcome summary** below the board: two cards — `Won` (count + total earned $) and `Lost` (count). Avoids burying active pipeline under 50 closed leads.
 
-```text
-┌─────────────────────────────────────────┐
-│  Pipeline   Earnings   ➕   Rewards  Profile │
-└─────────────────────────────────────────┘
-```
+### 2. Edit — `src/pages/partner/PartnerDashboard.tsx`
 
-| Slot | Icon | Label | Action |
-|---|---|---|---|
-| 1 | `Users` | Pipeline | Show pipeline view (default) |
-| 2 | `DollarSign` | Earnings | Show commissions/earned breakdown |
-| 3 | `Plus` (FAB, raised, gold) | — | Opens `NewReferralSheet` |
-| 4 | `Trophy` | Rewards | Show tier progress / weekly challenge |
-| 5 | `User` | Profile | Show profile tab |
+- Add state: `pipelineMode: 'list' | 'board'`, persisted in `localStorage` (`axo.partner.pipelineMode`).
+- Add toggle next to `Your Referrals (N)` header — two pills using existing token styles (`bg-foreground text-background` for active, `bg-card border` for inactive).
+- When `board` is selected, render `<PartnerPipelineBoard leads={filteredLeads} commissionPercent={...} />` instead of the month-grouped list.
+- `PartnerStageBar` and `Search` remain visible and continue to filter the data feeding either view.
+- "Clear filters" button preserved.
 
-Active item: gold/primary color + filled icon. Inactive: `muted-foreground`.
-Center FAB: circular, `bg-primary`, `-top-4` raised, soft shadow — same style as `MobileBottomNav` admin.
+### 3. Files
 
-## Implementation
-
-### 1. New component `src/components/partner/PartnerBottomNav.tsx`
-- Props: `active: 'pipeline' | 'earnings' | 'rewards' | 'profile'`, `onChange`, `onNewReferral`.
-- Fixed bottom bar with `safe-area-inset-bottom` padding.
-- Mirrors styling of `MobileBottomNav.tsx` (raised FAB, max-w-lg, border-top, shadow).
-
-### 2. Refactor `src/pages/partner/PartnerDashboard.tsx`
-- Remove the top `<Tabs>` / `<TabsList>` shell.
-- Replace with a `view` state (`useState<'pipeline'|'earnings'|'rewards'|'profile'>('pipeline')`).
-- Conditionally render the matching section.
-- Keep the existing **Pipeline** content (KPIs + stage filter + search + grouped leads).
-- Move the existing **Profile** tab content into the `profile` view.
-- Add two lightweight new views (placeholder cards reusing existing data):
-  - **Earnings**: Commission rate card + Earned total + list of converted leads with $ per lead.
-  - **Rewards**: Total referrals, conversion rate, weekly challenge counter (already tracked in DB), and tier badge using existing `ReferralTierBadge` if compatible — otherwise a simple progress card.
-- Header: simplified to logo + welcome text (drop the inline "New" button — replaced by the FAB).
-- Add `pb-24` to main wrapper so content doesn't sit under the bar (already present).
-- Mount `<PartnerBottomNav />` at the bottom of the page.
-
-### 3. Keep
-- `NewReferralSheet` (triggered by FAB).
-- All current data fetching in `loadData()`.
-- All existing partner pipeline cards / stage bar.
-
-## Files touched
-
-- **NEW** `src/components/partner/PartnerBottomNav.tsx`
-- **EDIT** `src/pages/partner/PartnerDashboard.tsx` (remove Tabs, add view state + bottom nav)
+- **NEW** `src/components/partner/PartnerPipelineBoard.tsx`
+- **EDIT** `src/pages/partner/PartnerDashboard.tsx` (toggle + conditional render + persistence)
 
 ## Out of scope
 
-- No DB changes.
-- No changes to `/partner/auth` or other partner pages.
-- No changes to admin/collaborator nav.
+- No drag-and-drop (parceiro não tem permissão para mover stages — RLS).
+- No backend changes.
+- No changes to admin / collaborator portals.
 
 ## Visual reference
 
-Design tokens reused: `bg-card`, `border-t`, `text-primary`, `bg-primary/10` for active pill, raised FAB matching admin (`w-12 h-12 rounded-full bg-primary shadow-lg -top-4`).
+```text
+Your Referrals (12)             [ List | Board ]
 
-After approval I'll implement the two files in one pass and verify on the 390px viewport.
+  ● NEW · 2     ● CONTACTED · 3    ● PROPOSAL · 4   →
+  ┌──────┐     ┌──────┐            ┌──────┐
+  │ John │     │ Mary │            │ Tom  │
+  │ NJ   │     │ NYC  │            │ Edison│
+  │ 14d $1.2k│ │ 7d $4k│           │ 2d $8k│
+  └──────┘     └──────┘            └──────┘
+
+  ┌──── Won ────┐  ┌──── Lost ────┐
+  │ 3           │  │ 1            │
+  │ +$1,400     │  │ Not converted│
+  └─────────────┘  └──────────────┘
+```
+
+After your approval I'll create the component and wire the toggle into `PartnerDashboard.tsx` in one pass, then verify on the 390px viewport.
