@@ -179,7 +179,7 @@ export function GalleryPublicPanel() {
 
         <MediaQuickUpload
           folders={folderItems}
-          folderId={isUnfiled ? null : (activeFolder as FolderHubItem).id}
+          folderId={uploadFolderId}
           onFolderChange={setUploadFolderId}
           onCreateFolder={() => setFolderDialogOpen(true)}
           onUpload={handleUpload}
