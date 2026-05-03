@@ -264,8 +264,8 @@ export function GalleryPublicPanel() {
         <FolderHubGrid
           folders={folderItems}
           unfiledCount={unfiledCount}
-          onOpenUnfiled={() => setActiveFolder("unfiled")}
-          onOpenFolder={(f) => setActiveFolder(f)}
+          onOpenUnfiled={handleOpenUnfiled}
+          onOpenFolder={handleOpenFolder}
         />
       )}
 
