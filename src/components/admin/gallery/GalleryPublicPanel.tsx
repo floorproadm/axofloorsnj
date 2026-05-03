@@ -29,6 +29,17 @@ export function GalleryPublicPanel() {
   const { toast } = useToast();
   const [activeFolder, setActiveFolder] = useState<FolderHubItem | "unfiled" | null>(null);
   const [uploadFolderId, setUploadFolderId] = useState<string | null>(null);
+
+  // When entering a folder, sync the upload target
+  const handleOpenFolder = (folder: FolderHubItem) => {
+    setActiveFolder(folder);
+    setUploadFolderId(folder.id);
+  };
+
+  const handleOpenUnfiled = () => {
+    setActiveFolder("unfiled");
+    setUploadFolderId(null);
+  };
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
 
   // Folders
@@ -168,7 +179,7 @@ export function GalleryPublicPanel() {
 
         <MediaQuickUpload
           folders={folderItems}
-          folderId={isUnfiled ? null : (activeFolder as FolderHubItem).id}
+          folderId={uploadFolderId}
           onFolderChange={setUploadFolderId}
           onCreateFolder={() => setFolderDialogOpen(true)}
           onUpload={handleUpload}
@@ -253,8 +264,8 @@ export function GalleryPublicPanel() {
         <FolderHubGrid
           folders={folderItems}
           unfiledCount={unfiledCount}
-          onOpenUnfiled={() => setActiveFolder("unfiled")}
-          onOpenFolder={(f) => setActiveFolder(f)}
+          onOpenUnfiled={handleOpenUnfiled}
+          onOpenFolder={handleOpenFolder}
         />
       )}
 
