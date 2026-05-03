@@ -157,6 +157,21 @@ export function GalleryPublicPanel() {
     qc.invalidateQueries({ queryKey: ["gallery-projects"] });
   };
 
+  const setCoverImage = async (p: GalleryProject) => {
+    if (!activeFolder || activeFolder === "unfiled") return;
+    const folderId = (activeFolder as FolderHubItem).id;
+    const { error } = await supabase
+      .from("gallery_folders")
+      .update({ cover_image_url: p.image_url })
+      .eq("id", folderId);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+    qc.invalidateQueries({ queryKey: ["gallery-folders"] });
+    toast({ title: "Capa atualizada" });
+  };
+
   // ===== Drilldown =====
   if (activeFolder) {
     const isUnfiled = activeFolder === "unfiled";
