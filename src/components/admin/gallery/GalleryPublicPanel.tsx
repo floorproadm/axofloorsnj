@@ -175,6 +175,9 @@ export function GalleryPublicPanel() {
   // ===== Drilldown =====
   if (activeFolder) {
     const isUnfiled = activeFolder === "unfiled";
+    const currentCoverUrl = !isUnfiled
+      ? folders.find((f: any) => f.id === (activeFolder as FolderHubItem).id)?.cover_image_url
+      : null;
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2">
@@ -210,31 +213,50 @@ export function GalleryPublicPanel() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {visibleProjects.map((p) => (
-              <Card key={p.id} className="overflow-hidden group relative">
-                <div className="aspect-square bg-muted/40">
-                  <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" loading="lazy" />
-                </div>
-                <CardContent className="p-2">
-                  <p className="text-xs font-semibold truncate">{p.title}</p>
-                  <div className="flex items-center justify-between mt-1">
-                    <button
-                      onClick={() => toggleFeatured(p)}
-                      className="text-[11px] text-muted-foreground hover:text-primary"
-                      aria-label="Destacar"
-                    >
-                      <Star className={`w-3.5 h-3.5 ${p.is_featured ? "fill-primary text-primary" : ""}`} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProject(p.id)}
-                      className="text-[11px] text-muted-foreground hover:text-destructive"
-                    >
-                      Excluir
-                    </button>
+            {visibleProjects.map((p) => {
+              const isCover = currentCoverUrl === p.image_url;
+              return (
+                <Card key={p.id} className="overflow-hidden group relative">
+                  <div className="aspect-square bg-muted/40 relative">
+                    <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" loading="lazy" />
+                    {isCover && (
+                      <div className="absolute top-1.5 left-1.5 bg-primary text-primary-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+                        <ImageIcon className="w-3 h-3" /> Cover
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardContent className="p-2">
+                    <p className="text-xs font-semibold truncate">{p.title}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleFeatured(p)}
+                          className="text-[11px] text-muted-foreground hover:text-primary"
+                          aria-label="Destacar"
+                        >
+                          <Star className={`w-3.5 h-3.5 ${p.is_featured ? "fill-primary text-primary" : ""}`} />
+                        </button>
+                        {!isUnfiled && !isCover && (
+                          <button
+                            onClick={() => setCoverImage(p)}
+                            className="text-[11px] text-muted-foreground hover:text-primary"
+                            aria-label="Definir como capa"
+                          >
+                            <ImageIcon className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteProject(p.id)}
+                        className="text-[11px] text-muted-foreground hover:text-destructive"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
 
