@@ -550,6 +550,15 @@ export default function PublicPortal() {
           organizationId={changeReqProposal.organization_id}
         />
       )}
+
+      {customer && (
+        <RequestAppointmentDialog
+          open={appointmentOpen}
+          onOpenChange={setAppointmentOpen}
+          customerId={customer.id}
+          organizationId={customer.organization_id}
+        />
+      )}
     </div>
   );
 }
