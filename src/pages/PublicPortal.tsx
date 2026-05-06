@@ -119,6 +119,7 @@ export default function PublicPortal() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [changeReqProposal, setChangeReqProposal] = useState<Proposal | null>(null);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
 
   useEffect(() => {
     document.title = "Your AXO Portal — Proposals, Invoices & Project Updates";
