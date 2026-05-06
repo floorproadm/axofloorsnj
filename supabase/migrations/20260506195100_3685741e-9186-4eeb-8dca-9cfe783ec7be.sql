@@ -1,0 +1,1 @@
+ALTER TABLE public.appointment_requests ADD COLUMN admin_notes text;

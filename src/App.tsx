@@ -63,6 +63,7 @@ import AxoMasterSystem from "./pages/AxoMasterSystem";
 import WowPack from "./pages/WowPack";
 import ProjectWizard from "./pages/ProjectWizard";
 import ReviewRequest from "./pages/ReviewRequest";
+import AppointmentRequests from "./pages/admin/AppointmentRequests";
 import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
 import PublicInvoice from "./pages/PublicInvoice";
@@ -255,6 +256,11 @@ const App = () => {
             <Route path="/admin/projects" element={
               <ProtectedRoute>
                 <ProjectsHub />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/appointment-requests" element={
+              <ProtectedRoute>
+                <AppointmentRequests />
               </ProtectedRoute>
             } />
             {/* Collaborator Portal */}
