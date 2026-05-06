@@ -258,6 +258,11 @@ const App = () => {
                 <ProjectsHub />
               </ProtectedRoute>
             } />
+            <Route path="/admin/appointment-requests" element={
+              <ProtectedRoute>
+                <AppointmentRequests />
+              </ProtectedRoute>
+            } />
             {/* Collaborator Portal */}
             <Route path="/collaborator" element={
               <ProtectedRoute requireAdmin={false}>
