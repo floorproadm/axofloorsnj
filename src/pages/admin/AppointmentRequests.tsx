@@ -107,7 +107,7 @@ export default function AppointmentRequests() {
         ) : (
           <div className="grid gap-3">
             {filtered.map((req: any) => {
-              const c = req.customers;
+              const c = req.customer;
               return (
                 <Card
                   key={req.id}
@@ -141,15 +141,15 @@ export default function AppointmentRequests() {
           {selected && (
             <div className="space-y-4">
               <div className="space-y-2 text-sm">
-                <p className="font-medium text-base">{selected.customers?.full_name}</p>
-                {selected.customers?.phone && (
-                  <p className="flex items-center gap-2 text-muted-foreground"><Phone className="w-3.5 h-3.5" />{selected.customers.phone}</p>
+                <p className="font-medium text-base">{selected.customer?.full_name}</p>
+                {selected.customer?.phone && (
+                  <p className="flex items-center gap-2 text-muted-foreground"><Phone className="w-3.5 h-3.5" />{selected.customer.phone}</p>
                 )}
-                {selected.customers?.email && (
-                  <p className="flex items-center gap-2 text-muted-foreground"><Mail className="w-3.5 h-3.5" />{selected.customers.email}</p>
+                {selected.customer?.email && (
+                  <p className="flex items-center gap-2 text-muted-foreground"><Mail className="w-3.5 h-3.5" />{selected.customer.email}</p>
                 )}
-                {selected.customers?.address && (
-                  <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{selected.customers.address}</p>
+                {selected.customer?.address && (
+                  <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{selected.customer.address}</p>
                 )}
                 <div className="flex gap-4 pt-1">
                   <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{format(new Date(selected.preferred_date), "MMM d, yyyy")}</span>
