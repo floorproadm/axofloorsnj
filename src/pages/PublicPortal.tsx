@@ -16,6 +16,7 @@ interface Customer {
   email: string | null;
   phone: string | null;
   portal_token: string;
+  organization_id: string;
 }
 interface Proposal {
   id: string;
