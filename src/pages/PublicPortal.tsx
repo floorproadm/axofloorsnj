@@ -497,8 +497,27 @@ export default function PublicPortal() {
           </TabsContent>
         </Tabs>
 
+        {/* Request Appointment CTA */}
+        <div className="mt-8 bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-slate-900">Need an appointment?</div>
+              <div className="text-xs text-slate-600 mt-0.5">
+                Request a visit and we'll confirm within 24 hours.
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setAppointmentOpen(true)}
+              className="bg-amber-500 hover:bg-amber-600 text-[#0f1b3d] shrink-0"
+            >
+              <CalendarPlus className="w-3.5 h-3.5 mr-1.5" /> Request
+            </Button>
+          </div>
+        </div>
+
         {/* Help footer */}
-        <div className="mt-8 bg-white border rounded-lg p-4 flex items-center justify-between">
+        <div className="mt-3 bg-white border rounded-lg p-4 flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold text-slate-900">Need help?</div>
             <div className="text-xs text-slate-500 mt-0.5">We typically reply within an hour.</div>
