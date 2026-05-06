@@ -132,7 +132,7 @@ export default function PublicPortal() {
       setLoading(true);
       const { data: cust } = await supabase
         .from("customers")
-        .select("id, full_name, email, phone, portal_token")
+        .select("id, full_name, email, phone, portal_token, organization_id")
         .eq("portal_token", token)
         .maybeSingle();
 
