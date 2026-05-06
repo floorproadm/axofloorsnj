@@ -69,7 +69,7 @@ export default function AppointmentRequests() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Appointment Requests">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
