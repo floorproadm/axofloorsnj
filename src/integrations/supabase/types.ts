@@ -50,6 +50,60 @@ export type Database = {
           },
         ]
       }
+      appointment_requests: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          notes: string | null
+          organization_id: string
+          preferred_date: string
+          preferred_time: string
+          service_type: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          preferred_date: string
+          preferred_time: string
+          service_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          preferred_date?: string
+          preferred_time?: string
+          service_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_date: string

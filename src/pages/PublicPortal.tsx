@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp } from "lucide-react";
+import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp, CalendarPlus } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
+import { RequestAppointmentDialog } from "@/components/portal/RequestAppointmentDialog";
 
 interface Customer {
   id: string;
@@ -15,6 +16,7 @@ interface Customer {
   email: string | null;
   phone: string | null;
   portal_token: string;
+  organization_id: string;
 }
 interface Proposal {
   id: string;
@@ -117,6 +119,7 @@ export default function PublicPortal() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [changeReqProposal, setChangeReqProposal] = useState<Proposal | null>(null);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
 
   useEffect(() => {
     document.title = "Your AXO Portal — Proposals, Invoices & Project Updates";
@@ -129,7 +132,7 @@ export default function PublicPortal() {
       setLoading(true);
       const { data: cust } = await supabase
         .from("customers")
-        .select("id, full_name, email, phone, portal_token")
+        .select("id, full_name, email, phone, portal_token, organization_id")
         .eq("portal_token", token)
         .maybeSingle();
 
@@ -494,8 +497,27 @@ export default function PublicPortal() {
           </TabsContent>
         </Tabs>
 
+        {/* Request Appointment CTA */}
+        <div className="mt-8 bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-slate-900">Need an appointment?</div>
+              <div className="text-xs text-slate-600 mt-0.5">
+                Request a visit and we'll confirm within 24 hours.
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setAppointmentOpen(true)}
+              className="bg-amber-500 hover:bg-amber-600 text-[#0f1b3d] shrink-0"
+            >
+              <CalendarPlus className="w-3.5 h-3.5 mr-1.5" /> Request
+            </Button>
+          </div>
+        </div>
+
         {/* Help footer */}
-        <div className="mt-8 bg-white border rounded-lg p-4 flex items-center justify-between">
+        <div className="mt-3 bg-white border rounded-lg p-4 flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold text-slate-900">Need help?</div>
             <div className="text-xs text-slate-500 mt-0.5">We typically reply within an hour.</div>
@@ -526,6 +548,15 @@ export default function PublicPortal() {
           proposalId={changeReqProposal.id}
           customerId={customer.id}
           organizationId={changeReqProposal.organization_id}
+        />
+      )}
+
+      {customer && (
+        <RequestAppointmentDialog
+          open={appointmentOpen}
+          onOpenChange={setAppointmentOpen}
+          customerId={customer.id}
+          organizationId={customer.organization_id}
         />
       )}
     </div>
