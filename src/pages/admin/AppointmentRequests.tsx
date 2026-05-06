@@ -35,12 +35,22 @@ export default function AppointmentRequests() {
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["appointment_requests"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: reqs, error } = await supabase
         .from("appointment_requests")
-        .select("*, customers(full_name, email, phone, address)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+
+      const customerIds = [...new Set(reqs.map((r: any) => r.customer_id))];
+      if (customerIds.length === 0) return reqs.map((r: any) => ({ ...r, customer: null }));
+
+      const { data: customers } = await supabase
+        .from("customers")
+        .select("id, full_name, email, phone, address")
+        .in("id", customerIds);
+
+      const cMap = Object.fromEntries((customers || []).map((c: any) => [c.id, c]));
+      return reqs.map((r: any) => ({ ...r, customer: cMap[r.customer_id] || null }));
     },
   });
 
