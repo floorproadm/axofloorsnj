@@ -130,6 +130,16 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  {displayStatus !== 'paid' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleSendInvoice(inv); }}
+                      disabled={sendingInvoiceId === inv.id}
+                      className="p-1 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors"
+                      title="Send invoice via email"
+                    >
+                      {sendingInvoiceId === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
                   <span className="text-sm font-semibold">{formatCurrency(inv.total_amount ?? inv.amount)}</span>
                   <Badge variant="outline" className={cn("text-[10px] border-0", STATUS_COLORS[displayStatus] || STATUS_COLORS.draft)}>
                     {displayStatus}
