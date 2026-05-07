@@ -94,6 +94,7 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
     }
   };
 
+  if (isLoading) {
     return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>;
   }
 
