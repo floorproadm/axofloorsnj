@@ -59,7 +59,41 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
     },
   });
 
-  if (isLoading) {
+  const handleSendInvoice = async (inv: any) => {
+    setSendingInvoiceId(inv.id);
+    try {
+      // Get project + customer info
+      const { data: proj } = await supabase
+        .from('projects')
+        .select('customer_email, customer_name')
+        .eq('id', projectId)
+        .maybeSingle();
+      if (!proj?.customer_email) {
+        toast.error('No customer email on this project');
+        return;
+      }
+      const invoiceLink = `${window.location.origin}/invoice/${inv.share_token || inv.id}`;
+      await sendGmailEmail('invoice_sent', {
+        recipient_email: proj.customer_email,
+        customer_name: proj.customer_name || 'Valued Customer',
+        invoice_number: inv.invoice_number,
+        amount: inv.total_amount ?? inv.amount,
+        due_date: inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '',
+        invoice_link: invoiceLink,
+        related_id: inv.id,
+        related_type: 'invoice',
+      });
+      // Update invoice status to sent
+      await supabase.from('invoices').update({ status: 'sent' }).eq('id', inv.id);
+      queryClient.invalidateQueries({ queryKey: ['project-invoices', projectId] });
+      toast.success('Invoice email sent!');
+    } catch (e: any) {
+      toast.error('Failed to send: ' + e.message);
+    } finally {
+      setSendingInvoiceId(null);
+    }
+  };
+
     return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>;
   }
 
