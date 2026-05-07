@@ -487,6 +487,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             <Link2 className="h-4 w-4 mr-2" />
             Copy Public Link
           </Button>
+          <Button variant="default" onClick={handleSendEmail} disabled={!shareToken || sendingEmail || !proposal?.customer_email}>
+            {sendingEmail ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+            Send to Client
+          </Button>
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print / Save PDF
