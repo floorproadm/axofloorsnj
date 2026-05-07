@@ -146,7 +146,10 @@ export default function AppointmentRequests() {
                         {req.service_type && <span>{req.service_type}</span>}
                       </div>
                     </div>
-                    <Badge variant="outline" className={statusColor(req.status)}>{req.status}</Badge>
+                    <div className="flex items-center gap-2">
+                      {req.status === "confirmed" && <Badge variant="outline" className="bg-blue-500/15 text-blue-400 border-blue-500/30 gap-1 text-[10px]"><Send className="w-2.5 h-2.5" />Email Sent</Badge>}
+                      <Badge variant="outline" className={statusColor(req.status)}>{req.status}</Badge>
+                    </div>
                   </CardContent>
                 </Card>
               );
