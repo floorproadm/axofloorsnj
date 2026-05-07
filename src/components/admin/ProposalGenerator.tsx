@@ -247,6 +247,33 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     }
   };
 
+  const handleSendEmail = async () => {
+    if (!proposal || !shareToken) return;
+    setSendingEmail(true);
+    try {
+      const proposalLink = `${window.location.origin}/proposal/${shareToken}`;
+      await sendGmailEmail('proposal_sent', {
+        recipient_email: proposal.customer_email || '',
+        customer_name: proposal.customer_name || 'Valued Customer',
+        proposal_number: proposal.proposal_number || proposal.proposal_id?.slice(0, 8) || '',
+        total: proposal.mode === 'direct' ? proposal.flat_price : '',
+        valid_until: proposal.valid_until || '',
+        proposal_link: proposalLink,
+        related_id: proposal.proposal_id,
+        related_type: 'proposal',
+      });
+      // Update proposal status to sent
+      if (proposal.proposal_id) {
+        await supabase.from('proposals').update({ status: 'sent' }).eq('id', proposal.proposal_id);
+      }
+      toast.success('Proposal email sent to client!');
+    } catch (e: any) {
+      toast.error('Failed to send email: ' + e.message);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const handlePrint = () => {
     if (!printRef.current) return;
     const printContent = printRef.current.innerHTML;
