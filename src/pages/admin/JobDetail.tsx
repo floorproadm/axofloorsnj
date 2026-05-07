@@ -36,6 +36,7 @@ import {
   MoreVertical, Link2, CalendarPlus
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
+import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
