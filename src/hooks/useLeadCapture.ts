@@ -52,7 +52,25 @@ export const useLeadCapture = () => {
         throw new Error(`Failed to save lead: ${saveError.message}`);
       }
 
-      // Send follow-up email
+      // Send Gmail follow-up email
+      try {
+        await supabase.functions.invoke('gmail-send', {
+          body: {
+            template: 'lead_followup',
+            data: {
+              recipient_email: leadData.email,
+              name: leadData.name,
+              services: leadData.category || '',
+              related_id: savedLead?.id,
+              related_type: 'lead',
+            }
+          }
+        });
+      } catch (emailError) {
+        console.warn('Failed to send Gmail follow-up:', emailError);
+      }
+
+      // Legacy follow-up (fallback)
       try {
         await supabase.functions.invoke('send-follow-up', {
           body: {
@@ -65,7 +83,6 @@ export const useLeadCapture = () => {
         });
       } catch (emailError) {
         console.warn('Failed to send follow-up email:', emailError);
-        // Don't fail the whole process for email errors
       }
 
       // Send admin notification
