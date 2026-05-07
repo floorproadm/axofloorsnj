@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send } from 'lucide-react';
+import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -47,6 +48,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
   const [flatPriceInput, setFlatPriceInput] = useState<string>('');
   const [logoSignedUrl, setLogoSignedUrl] = useState<string>('');
