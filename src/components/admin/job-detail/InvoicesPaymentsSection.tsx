@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ExternalLink, Receipt, Plus, Trash2, X } from 'lucide-react';
+import { Loader2, ExternalLink, Receipt, Plus, Trash2, X, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateInvoice, generateInvoiceNumber } from '@/hooks/useInvoices';
 import { toast } from 'sonner';
+import { sendGmailEmail } from '@/hooks/useEmailLogs';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
