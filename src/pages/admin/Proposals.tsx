@@ -197,12 +197,30 @@ function ShareModal({ proposal, open, onClose }: {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  const handleEmail = () => {
-    const name = client?.customer_name || "Valued Client";
-    const subject = `Your Proposal ${proposal.proposal_number} — AXO Floors NJ`;
-    const body = `Hi ${name.split(" ")[0]},\n\nYour proposal is ready for review:\n${publicUrl}\n\nProposal: ${proposal.proposal_number}\nValid until: ${format(parseISO(proposal.valid_until), "MMMM d, yyyy")}\n\nFeel free to reach out with any questions!\n\nBest,\nAXO Floors NJ\n(732) 351-8653`;
-    const to = client?.customer_email || "";
-    window.open(`mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
+  const [sending, setSending] = useState(false);
+  const handleEmail = async () => {
+    const to = client?.customer_email;
+    if (!to) { toast.error("Client has no email address"); return; }
+    setSending(true);
+    try {
+      await sendGmailEmail("proposal_sent", {
+        recipient_email: to,
+        customer_name: client?.customer_name || "Valued Client",
+        proposal_number: proposal.proposal_number,
+        total: selectedPrice?.toLocaleString("en-US", { minimumFractionDigits: 2 }) || "0.00",
+        proposal_link: publicUrl,
+        related_id: proposal.id,
+        related_type: "proposal",
+      });
+      // Mark proposal as sent
+      await supabase.from("proposals").update({ status: "sent" as any }).eq("id", proposal.id);
+      toast.success("Email sent successfully via Gmail");
+      onClose();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send email");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -226,8 +244,8 @@ function ShareModal({ proposal, open, onClose }: {
             <Button variant="outline" className="gap-2 text-sm" onClick={handleWhatsApp}>
               <MessageCircle className="w-4 h-4" /> WhatsApp
             </Button>
-            <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail}>
-              <MailIcon className="w-4 h-4" /> Email
+            <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail} disabled={sending}>
+              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MailIcon className="w-4 h-4" />} {sending ? "Sending..." : "Email"}
             </Button>
           </div>
           <p className="text-[11px] text-center text-muted-foreground">
