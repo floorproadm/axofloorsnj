@@ -37,107 +37,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;c
 </div></body></html>`;
 }
 
-// Email templates
-const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }> = {
-  lead_followup: (d) => ({
+// Interpolate {{variable}} placeholders in a template string
+function interpolate(tpl: string, data: Record<string, any>): string {
+  return tpl.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+    const val = data[key];
+    return val !== undefined && val !== null ? String(val) : '';
+  });
+}
+
+// Hardcoded fallback templates (used if DB has no entry)
+const FALLBACK_TEMPLATES: Record<string, { subject: string; body: string }> = {
+  lead_followup: {
     subject: "Thanks for reaching out – AXO Floors",
-    html: wrapHtml(`
-      <h2>Hi ${d.name},</h2>
-      <p>Thank you for reaching out to AXO Floors! We received your inquiry${d.services ? ` about <strong>${d.services}</strong>` : ''} and we're excited to help.</p>
-      <p>Our team will review your request and get back to you within 24 hours. In the meantime, you can schedule a consultation at your convenience:</p>
-      <p style="text-align:center"><a class="btn" href="https://axofloorsnj.com/floor-diagnostic">Schedule a Free Consultation</a></p>
-      <p>We look forward to transforming your floors!</p>
-      <p>Best regards,<br><strong>AXO Floors Team</strong></p>
-    `),
-  }),
-
-  proposal_sent: (d) => ({
-    subject: `Your AXO Floors Proposal is Ready – #${d.proposal_number}`,
-    html: wrapHtml(`
-      <h2>Hi ${d.customer_name},</h2>
-      <p>Great news! Your personalized proposal from AXO Floors is ready for review.</p>
-      <p><strong>Proposal #${d.proposal_number}</strong></p>
-      ${d.total ? `<p>Total: <strong>$${Number(d.total).toLocaleString()}</strong></p>` : ''}
-      ${d.valid_until ? `<p>Valid until: ${d.valid_until}</p>` : ''}
-      <p style="text-align:center"><a class="btn" href="${d.proposal_link}">View Your Proposal</a></p>
-      <p>You can review the details, select your preferred option, and sign digitally — all online.</p>
-      <p>Questions? Call us at (732) 351-8653.</p>
-      <p>Best,<br><strong>AXO Floors Team</strong></p>
-    `),
-  }),
-
-  appointment_confirmed: (d) => ({
+    body: '<h2>Hi {{name}},</h2><p>Thank you for reaching out to AXO Floors! We received your inquiry about <strong>{{services}}</strong> and we\'re excited to help.</p><p>Our team will review your request and get back to you within 24 hours.</p><p style="text-align:center"><a class="btn" href="{{cta_link}}">Schedule a Free Consultation</a></p><p>Best regards,<br><strong>AXO Floors Team</strong></p>',
+  },
+  proposal_sent: {
+    subject: "Your AXO Floors Proposal is Ready – #{{proposal_number}}",
+    body: '<h2>Hi {{customer_name}},</h2><p>Your proposal is ready.</p><p><strong>Proposal #{{proposal_number}}</strong> — Total: <strong>${{total}}</strong></p><p style="text-align:center"><a class="btn" href="{{proposal_link}}">View Your Proposal</a></p><p>Best,<br><strong>AXO Floors Team</strong></p>',
+  },
+  appointment_confirmed: {
     subject: "Your appointment is confirmed – AXO Floors",
-    html: wrapHtml(`
-      <h2>Hi ${d.name},</h2>
-      <p>Your appointment with AXO Floors has been <strong style="color:#16a34a">confirmed</strong>!</p>
-      <p><strong>📅 Date:</strong> ${d.date}<br>
-      <strong>🕐 Time:</strong> ${d.time}</p>
-      ${d.address ? `<p><strong>📍 Location:</strong> ${d.address}</p>` : ''}
-      <h3>How to Prepare:</h3>
-      <ul>
-        <li>Clear furniture from the area if possible</li>
-        <li>Note any specific concerns or areas of focus</li>
-        <li>Have photos of inspiration styles ready (optional)</li>
-      </ul>
-      <p>Need to reschedule? Call us at <strong>(732) 351-8653</strong>.</p>
-      <p>See you soon!<br><strong>AXO Floors Team</strong></p>
-    `),
-  }),
-
-  project_started: (d) => ({
+    body: '<h2>Hi {{name}},</h2><p>Your appointment is <strong style="color:#16a34a">confirmed</strong>!</p><p>📅 {{date}} at {{time}}</p><p>📍 {{address}}</p><p>See you soon!<br><strong>AXO Floors Team</strong></p>',
+  },
+  project_started: {
     subject: "Your project has started – AXO Floors",
-    html: wrapHtml(`
-      <h2>Hi ${d.customer_name},</h2>
-      <p>We're excited to let you know that your flooring project has officially <strong>started</strong>! 🎉</p>
-      ${d.address ? `<p><strong>📍 Project location:</strong> ${d.address}</p>` : ''}
-      <p><strong>What's next:</strong></p>
-      <ul>
-        <li>Our crew is on-site working on your floors</li>
-        <li>We'll keep you updated on progress</li>
-        <li>Estimated timeline will be shared by your project manager</li>
-      </ul>
-      <p>Questions? Call us at (732) 351-8653.</p>
-      <p>Best,<br><strong>AXO Floors Team</strong></p>
-    `),
-  }),
-
-  project_completed: (d) => ({
+    body: '<h2>Hi {{customer_name}},</h2><p>Your flooring project has officially <strong>started</strong>! 🎉</p><p>📍 {{address}}</p><p>Best,<br><strong>AXO Floors Team</strong></p>',
+  },
+  project_completed: {
     subject: "Your project is complete! – AXO Floors",
-    html: wrapHtml(`
-      <h2>Hi ${d.customer_name},</h2>
-      <p>Your flooring project is now <strong style="color:#16a34a">complete</strong>! ✨</p>
-      ${d.address ? `<p><strong>📍 Location:</strong> ${d.address}</p>` : ''}
-      <p>We hope you love your new floors! Here's what comes next:</p>
-      <ul>
-        <li>Final walkthrough and any touch-ups if needed</li>
-        <li>Care instructions for your new floors</li>
-        <li>We'd love your feedback — a review helps us a lot!</li>
-      </ul>
-      <p style="text-align:center"><a class="btn" href="https://axofloorsnj.com/review-request">Leave a Review</a></p>
-      <p>Thank you for choosing AXO Floors!<br><strong>The AXO Floors Team</strong></p>
-    `),
-  }),
-
-  invoice_sent: (d) => ({
-    subject: `Invoice #${d.invoice_number} from AXO Floors – $${Number(d.amount).toLocaleString()} due`,
-    html: wrapHtml(`
-      <h2>Hi ${d.customer_name},</h2>
-      <p>Here is your invoice from AXO Floors:</p>
-      <p><strong>Invoice #${d.invoice_number}</strong><br>
-      Amount Due: <strong>$${Number(d.amount).toLocaleString()}</strong>
-      ${d.due_date ? `<br>Due: ${d.due_date}` : ''}</p>
-      <p style="text-align:center"><a class="btn" href="${d.invoice_link}">View & Pay Invoice</a></p>
-      <p><strong>Payment Methods:</strong></p>
-      <ul>
-        <li>Online payment via the link above</li>
-        <li>Check payable to AXO Floors</li>
-        <li>Zelle to axofloorsnj@gmail.com</li>
-      </ul>
-      <p>Questions about this invoice? Call us at (732) 351-8653.</p>
-      <p>Thank you,<br><strong>AXO Floors Team</strong></p>
-    `),
-  }),
+    body: '<h2>Hi {{customer_name}},</h2><p>Your project is <strong style="color:#16a34a">complete</strong>! ✨</p><p style="text-align:center"><a class="btn" href="{{review_link}}">Leave a Review</a></p><p>Thank you!<br><strong>The AXO Floors Team</strong></p>',
+  },
+  invoice_sent: {
+    subject: "Invoice #{{invoice_number}} from AXO Floors – ${{amount}} due",
+    body: '<h2>Hi {{customer_name}},</h2><p>Invoice #{{invoice_number}} — Amount Due: <strong>${{amount}}</strong></p><p style="text-align:center"><a class="btn" href="{{invoice_link}}">View & Pay Invoice</a></p><p>Thank you,<br><strong>AXO Floors Team</strong></p>',
+  },
 };
 
 Deno.serve(async (req) => {
@@ -156,9 +89,10 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { template, data, organization_id } = await req.json();
+    const orgId = organization_id || "00000000-0000-0000-0000-000000000001";
 
-    if (!template || !TEMPLATES[template]) {
-      return new Response(JSON.stringify({ error: `Invalid template: ${template}` }), {
+    if (!template) {
+      return new Response(JSON.stringify({ error: "template required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -169,10 +103,35 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { subject, html } = TEMPLATES[template](data);
+    // 1. Try DB template first
+    let subjectTpl: string;
+    let bodyTpl: string;
+
+    const { data: dbTemplate } = await supabase
+      .from("email_templates")
+      .select("subject_template, body_template")
+      .eq("organization_id", orgId)
+      .eq("template_key", template)
+      .maybeSingle();
+
+    if (dbTemplate) {
+      subjectTpl = dbTemplate.subject_template;
+      bodyTpl = dbTemplate.body_template;
+    } else if (FALLBACK_TEMPLATES[template]) {
+      subjectTpl = FALLBACK_TEMPLATES[template].subject;
+      bodyTpl = FALLBACK_TEMPLATES[template].body;
+    } else {
+      return new Response(JSON.stringify({ error: `Unknown template: ${template}` }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // 2. Interpolate + wrap
+    const subject = interpolate(subjectTpl, data);
+    const html = wrapHtml(interpolate(bodyTpl, data));
     const raw = createRawEmail(data.recipient_email, subject, html);
 
-    // Send via Gmail API gateway
+    // 3. Send via Gmail
     const gmailRes = await fetch(`${GATEWAY_URL}/users/me/messages/send`, {
       method: "POST",
       headers: {
@@ -185,35 +144,23 @@ Deno.serve(async (req) => {
 
     const gmailData = await gmailRes.json();
 
-    if (!gmailRes.ok) {
-      // Log failure
-      await supabase.from("email_logs").insert({
-        organization_id: organization_id || "00000000-0000-0000-0000-000000000001",
-        type: template,
-        recipient: data.recipient_email,
-        subject,
-        body_preview: subject,
-        status: "failed",
-        error_message: JSON.stringify(gmailData),
-        related_id: data.related_id || null,
-        related_type: data.related_type || null,
-      });
-
-      throw new Error(`Gmail API error [${gmailRes.status}]: ${JSON.stringify(gmailData)}`);
-    }
-
-    // Log success
-    await supabase.from("email_logs").insert({
-      organization_id: organization_id || "00000000-0000-0000-0000-000000000001",
+    const logEntry = {
+      organization_id: orgId,
       type: template,
       recipient: data.recipient_email,
       subject,
       body_preview: subject,
-      status: "sent",
-      sent_at: new Date().toISOString(),
+      status: gmailRes.ok ? "sent" : "failed",
+      sent_at: gmailRes.ok ? new Date().toISOString() : null,
+      error_message: gmailRes.ok ? null : JSON.stringify(gmailData),
       related_id: data.related_id || null,
       related_type: data.related_type || null,
-    });
+    };
+    await supabase.from("email_logs").insert(logEntry);
+
+    if (!gmailRes.ok) {
+      throw new Error(`Gmail API error [${gmailRes.status}]: ${JSON.stringify(gmailData)}`);
+    }
 
     return new Response(JSON.stringify({ success: true, messageId: gmailData.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
