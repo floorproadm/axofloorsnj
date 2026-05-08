@@ -15,14 +15,10 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get all pending drip logs that are due
+    // Get all pending drip logs that are due (no joins - FKs not present)
     const { data: pendingDrips, error: fetchErr } = await supabase
       .from("automation_drip_logs")
-      .select(`
-        id, enrollment_id, drip_id, organization_id, scheduled_at,
-        automation_enrollments!inner(id, lead_id, sequence_id, status),
-        automation_drips!inner(id, channel, subject, message_template, delay_days, delay_hours)
-      `)
+      .select("id, enrollment_id, drip_id, organization_id, scheduled_at")
       .eq("status", "pending")
       .lte("scheduled_at", new Date().toISOString())
       .limit(50);
@@ -34,12 +30,41 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log(`Found ${pendingDrips.length} pending drips to process`);
+
+    // Batch-load enrollments and drips
+    const enrollmentIds = [...new Set(pendingDrips.map((d) => d.enrollment_id))];
+    const dripIds = [...new Set(pendingDrips.map((d) => d.drip_id))];
+
+    const [{ data: enrollments }, { data: drips }] = await Promise.all([
+      supabase
+        .from("automation_enrollments")
+        .select("id, lead_id, sequence_id, status")
+        .in("id", enrollmentIds),
+      supabase
+        .from("automation_drips")
+        .select("id, channel, subject, message_template, delay_days, delay_hours")
+        .in("id", dripIds),
+    ]);
+
+    const enrollmentMap = new Map((enrollments || []).map((e: any) => [e.id, e]));
+    const dripMap = new Map((drips || []).map((d: any) => [d.id, d]));
+
     let sent = 0;
     let failed = 0;
 
     for (const log of pendingDrips) {
-      const enrollment = log.automation_enrollments as any;
-      const drip = log.automation_drips as any;
+      const enrollment = enrollmentMap.get(log.enrollment_id);
+      const drip = dripMap.get(log.drip_id);
+
+      if (!enrollment || !drip) {
+        await supabase
+          .from("automation_drip_logs")
+          .update({ status: "failed", error_message: "Enrollment or drip not found" })
+          .eq("id", log.id);
+        failed++;
+        continue;
+      }
 
       // Skip if enrollment was cancelled
       if (enrollment.status !== "active") {
@@ -104,6 +129,8 @@ Deno.serve(async (req) => {
       const subject = interpolate(drip.subject || "Message from " + companyName);
       const body = interpolate(drip.message_template || "");
 
+      console.log(`Sending drip to ${lead.email}: "${subject}"`);
+
       // Call gmail-send edge function internally
       try {
         const gmailRes = await fetch(`${supabaseUrl}/functions/v1/gmail-send`, {
@@ -132,12 +159,15 @@ Deno.serve(async (req) => {
             .update({ status: "sent", sent_at: new Date().toISOString() })
             .eq("id", log.id);
           sent++;
+          console.log(`✅ Sent to ${lead.email}`);
         } else {
+          const errMsg = gmailResult.error || "Unknown error";
           await supabase
             .from("automation_drip_logs")
-            .update({ status: "failed", error_message: gmailResult.error || "Unknown error" })
+            .update({ status: "failed", error_message: errMsg })
             .eq("id", log.id);
           failed++;
+          console.log(`❌ Failed for ${lead.email}: ${errMsg}`);
         }
       } catch (e) {
         await supabase
@@ -145,11 +175,11 @@ Deno.serve(async (req) => {
           .update({ status: "failed", error_message: e.message })
           .eq("id", log.id);
         failed++;
+        console.log(`❌ Exception for ${lead.email}: ${e.message}`);
       }
     }
 
     // Mark enrollments as completed if all drips are done
-    const enrollmentIds = [...new Set(pendingDrips.map((d) => d.enrollment_id))];
     for (const eid of enrollmentIds) {
       const { data: remaining } = await supabase
         .from("automation_drip_logs")
@@ -165,6 +195,8 @@ Deno.serve(async (req) => {
           .eq("id", eid);
       }
     }
+
+    console.log(`Done: processed=${pendingDrips.length}, sent=${sent}, failed=${failed}`);
 
     return new Response(JSON.stringify({ processed: pendingDrips.length, sent, failed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
