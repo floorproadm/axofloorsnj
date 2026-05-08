@@ -87,19 +87,26 @@ export function TestAutomationDialog() {
 
       if (enrollErr) throw enrollErr;
 
-      // Schedule all drips immediately (now)
-      const logs = drips.map((d: any) => ({
-        enrollment_id: enrollment.id,
-        drip_id: d.id,
-        organization_id: AXO_ORG_ID,
-        scheduled_at: new Date().toISOString(),
-      }));
+      // Schedule drips respecting delay_days and delay_hours
+      const now = new Date();
+      const logs = drips.map((d: any) => {
+        const scheduled = new Date(now.getTime());
+        scheduled.setDate(scheduled.getDate() + (d.delay_days || 0));
+        scheduled.setHours(scheduled.getHours() + (d.delay_hours || 0));
+        return {
+          enrollment_id: enrollment.id,
+          drip_id: d.id,
+          organization_id: AXO_ORG_ID,
+          scheduled_at: scheduled.toISOString(),
+        };
+      });
 
       const { error: logErr } = await supabase.from("automation_drip_logs").insert(logs);
       if (logErr) throw logErr;
 
-      // Invoke engine immediately
-      toast.info(`Sending ${drips.length} drip(s)...`);
+      // Invoke engine immediately (will only send drips due now)
+      const immediateCount = logs.filter((l: any) => new Date(l.scheduled_at) <= new Date()).length;
+      toast.info(`Scheduled ${drips.length} drip(s). Sending ${immediateCount} now...`);
       const { data: engineResult, error: engineErr } = await supabase.functions.invoke("automation-engine");
       if (engineErr) {
         toast.warning(`Enrolled but engine failed: ${engineErr.message}`);
