@@ -240,6 +240,57 @@ export type Database = {
           },
         ]
       }
+      automation_drip_logs: {
+        Row: {
+          created_at: string
+          drip_id: string
+          enrollment_id: string
+          error_message: string | null
+          id: string
+          organization_id: string
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          drip_id: string
+          enrollment_id: string
+          error_message?: string | null
+          id?: string
+          organization_id: string
+          scheduled_at: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          drip_id?: string
+          enrollment_id?: string
+          error_message?: string | null
+          id?: string
+          organization_id?: string
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_drip_logs_drip_id_fkey"
+            columns: ["drip_id"]
+            isOneToOne: false
+            referencedRelation: "automation_drips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_drip_logs_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "automation_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_drips: {
         Row: {
           channel: string
@@ -293,6 +344,78 @@ export type Database = {
           },
           {
             foreignKeyName: "automation_drips_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "automation_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_enrollments: {
+        Row: {
+          created_at: string
+          current_drip_index: number
+          enrolled_at: string
+          id: string
+          lead_id: string
+          organization_id: string
+          sequence_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_drip_index?: number
+          enrolled_at?: string
+          id?: string
+          lead_id: string
+          organization_id: string
+          sequence_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_drip_index?: number
+          enrolled_at?: string
+          id?: string
+          lead_id?: string
+          organization_id?: string
+          sequence_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_enrollments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_enrollments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_estimate_scheduled_stale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_enrollments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_followup_overdue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_enrollments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "view_stage_aging"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "automation_enrollments_sequence_id_fkey"
             columns: ["sequence_id"]
             isOneToOne: false
             referencedRelation: "automation_sequences"
