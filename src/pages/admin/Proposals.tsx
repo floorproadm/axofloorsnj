@@ -30,6 +30,7 @@ import {
   Download, FileSpreadsheet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sendGmailEmail } from "@/hooks/useEmailLogs";
 import { useProposalGeneration } from "@/hooks/useProposalGeneration";
 import { ProposalData } from "@/types/proposal";
 import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipelineBoard";
