@@ -57,6 +57,7 @@ const STAGE_ICON_COLORS = [
 export function StageFlowList({
   stages,
   drips,
+  stats,
   onCreateSequence,
   onUpdateSequence,
   onDeleteSequence,
