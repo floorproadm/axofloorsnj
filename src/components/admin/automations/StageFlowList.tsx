@@ -111,7 +111,7 @@ export function StageFlowList({
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <p className="text-[11px] text-muted-foreground">
                       {stage.sequenceCount} seq · {stage.dripCount} drip{stage.dripCount !== 1 ? "s" : ""}
                     </p>
@@ -123,6 +123,32 @@ export function StageFlowList({
                         {channels.has("whatsapp") && <MessageSquare className="w-3 h-3 text-green-400/70" />}
                       </div>
                     )}
+                    {/* Sent stats */}
+                    {(() => {
+                      const seqIds = stage.sequences.map(s => s.id);
+                      const weekCount = seqIds.reduce((sum, sid) => sum + (stats?.weeklyBySeq[sid] || 0), 0);
+                      const lastSent = seqIds
+                        .map(sid => stats?.lastSentBySeq[sid])
+                        .filter(Boolean)
+                        .sort()
+                        .reverse()[0];
+                      return (
+                        <>
+                          {weekCount > 0 && (
+                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 gap-0.5">
+                              <Mail className="w-2.5 h-2.5" />
+                              {weekCount} this week
+                            </Badge>
+                          )}
+                          {lastSent && (
+                            <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
+                              <Clock className="w-2.5 h-2.5" />
+                              {formatDistanceToNow(new Date(lastSent), { addSuffix: true })}
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
