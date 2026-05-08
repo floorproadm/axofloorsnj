@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -12,8 +12,9 @@ const GeneralSettings = lazy(() => import("@/components/admin/settings/GeneralSe
 const BrandingSettings = lazy(() => import("@/components/admin/settings/BrandingSettings"));
 const TeamSettings = lazy(() => import("@/components/admin/settings/TeamSettings"));
 const EmailLogsSettings = lazy(() => import("@/components/admin/settings/EmailLogsSettings"));
+const EmailTemplateEditor = lazy(() => import("@/components/admin/settings/EmailTemplateEditor"));
 
-type Section = "general" | "branding" | "team" | "language" | "email_logs";
+type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
@@ -60,6 +61,7 @@ export default function Settings() {
     { id: "team", label: t("settings.equipe"), description: t("settings.equipeDesc"), icon: Users },
     { id: "language", label: t("settings.idioma"), description: t("settings.idiomaDesc"), icon: Globe },
     { id: "email_logs", label: "Email Logs", description: "Gmail email audit trail", icon: Mail },
+    { id: "email_templates", label: "Email Templates", description: "Edit email copy & CTAs", icon: FileEdit },
   ];
 
   return (
@@ -120,6 +122,7 @@ export default function Settings() {
               {active === "team" && <TeamSettings />}
               {active === "language" && <LanguageSettings />}
               {active === "email_logs" && <EmailLogsSettings />}
+              {active === "email_templates" && <EmailTemplateEditor />}
             </Suspense>
           </div>
         </div>
