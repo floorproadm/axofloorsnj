@@ -31,12 +31,23 @@ export function TestAutomationDialog() {
   const { data: sequences = [] } = useQuery({
     queryKey: ["sequences_for_test"],
     queryFn: async () => {
+      const STAGE_ORDER: Record<string, number> = {
+        cold_lead: 1,
+        warm_lead: 2,
+        estimate_requested: 3,
+        estimate_scheduled: 4,
+        in_draft: 5,
+        proposal_sent: 6,
+        proposal_rejected: 7,
+      };
       const { data } = await supabase
         .from("automation_sequences")
         .select("id, name, stage_key, is_active")
         .eq("is_active", true)
         .order("display_order");
-      return data || [];
+      return (data || []).sort(
+        (a: any, b: any) => (STAGE_ORDER[a.stage_key] ?? 99) - (STAGE_ORDER[b.stage_key] ?? 99)
+      );
     },
     enabled: open,
   });
