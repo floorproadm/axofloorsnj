@@ -3,9 +3,10 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StageFlowList } from "@/components/admin/automations/StageFlowList";
 import { TestAutomationDialog } from "@/components/admin/automations/TestAutomationDialog";
+import { DripLogsViewer } from "@/components/admin/automations/DripLogsViewer";
 import { useAutomationFlows } from "@/hooks/useAutomationFlows";
 import { useAutomationStats } from "@/hooks/useAutomationStats";
-import { Zap, Loader2, TrendingUp, Briefcase, Mail } from "lucide-react";
+import { Zap, Loader2, TrendingUp, Briefcase, Mail, ScrollText } from "lucide-react";
 
 export default function Automations() {
   const [pipeline, setPipeline] = useState<"sales" | "jobs">("sales");
