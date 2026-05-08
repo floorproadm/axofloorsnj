@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ExternalLink, Receipt, Plus, Trash2, X } from 'lucide-react';
+import { Loader2, ExternalLink, Receipt, Plus, Trash2, X, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateInvoice, generateInvoiceNumber } from '@/hooks/useInvoices';
 import { toast } from 'sonner';
+import { sendGmailEmail } from '@/hooks/useEmailLogs';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
@@ -29,6 +30,7 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [sendingInvoiceId, setSendingInvoiceId] = useState<string | null>(null);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['project-invoices', projectId],
@@ -56,6 +58,41 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
       return data || [];
     },
   });
+
+  const handleSendInvoice = async (inv: any) => {
+    setSendingInvoiceId(inv.id);
+    try {
+      // Get project + customer info
+      const { data: proj } = await supabase
+        .from('projects')
+        .select('customer_email, customer_name')
+        .eq('id', projectId)
+        .maybeSingle();
+      if (!proj?.customer_email) {
+        toast.error('No customer email on this project');
+        return;
+      }
+      const invoiceLink = `${window.location.origin}/invoice/${inv.share_token || inv.id}`;
+      await sendGmailEmail('invoice_sent', {
+        recipient_email: proj.customer_email,
+        customer_name: proj.customer_name || 'Valued Customer',
+        invoice_number: inv.invoice_number,
+        amount: inv.total_amount ?? inv.amount,
+        due_date: inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '',
+        invoice_link: invoiceLink,
+        related_id: inv.id,
+        related_type: 'invoice',
+      });
+      // Update invoice status to sent
+      await supabase.from('invoices').update({ status: 'sent' }).eq('id', inv.id);
+      queryClient.invalidateQueries({ queryKey: ['project-invoices', projectId] });
+      toast.success('Invoice email sent!');
+    } catch (e: any) {
+      toast.error('Failed to send: ' + e.message);
+    } finally {
+      setSendingInvoiceId(null);
+    }
+  };
 
   if (isLoading) {
     return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>;
@@ -93,6 +130,16 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  {displayStatus !== 'paid' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleSendInvoice(inv); }}
+                      disabled={sendingInvoiceId === inv.id}
+                      className="p-1 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors"
+                      title="Send invoice via email"
+                    >
+                      {sendingInvoiceId === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
                   <span className="text-sm font-semibold">{formatCurrency(inv.total_amount ?? inv.amount)}</span>
                   <Badge variant="outline" className={cn("text-[10px] border-0", STATUS_COLORS[displayStatus] || STATUS_COLORS.draft)}>
                     {displayStatus}

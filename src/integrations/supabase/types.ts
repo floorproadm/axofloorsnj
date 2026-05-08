@@ -513,6 +513,51 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          body_preview: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          organization_id: string
+          recipient: string
+          related_id: string | null
+          related_type: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          type: string
+        }
+        Insert: {
+          body_preview?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          organization_id?: string
+          recipient: string
+          related_id?: string | null
+          related_type?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          type: string
+        }
+        Update: {
+          body_preview?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          organization_id?: string
+          recipient?: string
+          related_id?: string | null
+          related_type?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          type?: string
+        }
+        Relationships: []
+      }
       feed_comments: {
         Row: {
           author_name: string

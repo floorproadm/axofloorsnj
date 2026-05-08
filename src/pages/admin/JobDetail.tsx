@@ -36,6 +36,7 @@ import {
   MoreVertical, Link2, CalendarPlus
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
+import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
@@ -102,6 +103,25 @@ export default function JobDetail() {
     if (error) { toast.error('Failed to save'); throw error; }
     toast.success('Saved');
     refetch();
+
+    // Send email on project status change
+    if (field === 'project_status' && project?.customer_email) {
+      const template = value === 'in_production' ? 'project_started' : value === 'completed' ? 'project_completed' : null;
+      if (template) {
+        try {
+          await sendGmailEmail(template, {
+            recipient_email: project.customer_email,
+            customer_name: project.customer_name || 'Valued Customer',
+            address: project.address || '',
+            related_id: jobId,
+            related_type: 'project',
+          });
+          toast.success('Status email sent to client');
+        } catch (e) {
+          console.warn('Status email failed:', e);
+        }
+      }
+    }
   };
 
   const updateMultipleFields = async (fields: Record<string, any>) => {

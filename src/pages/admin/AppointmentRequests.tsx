@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Calendar, Clock, Phone, Mail, MapPin, StickyNote, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Calendar, Clock, Phone, Mail, MapPin, StickyNote, CheckCircle2, XCircle, Loader2, Send } from "lucide-react";
+import { sendGmailEmail } from "@/hooks/useEmailLogs";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All" },
@@ -61,6 +62,28 @@ export default function AppointmentRequests() {
         .update({ status, admin_notes })
         .eq("id", id);
       if (error) throw error;
+
+      // Send email on confirm/cancel
+      if (status === "confirmed" || status === "cancelled") {
+        const req = requests.find((r: any) => r.id === id);
+        const email = req?.requester_email || req?.customer?.email;
+        if (email && status === "confirmed") {
+          try {
+            await sendGmailEmail("appointment_confirmed", {
+              recipient_email: email,
+              name: req?.customer?.full_name || "Valued Customer",
+              date: format(new Date(req.preferred_date), "MMMM d, yyyy"),
+              time: req.preferred_time,
+              address: req?.customer?.address || "",
+              related_id: id,
+              related_type: "appointment",
+            });
+            toast.success("Confirmation email sent!");
+          } catch (e: any) {
+            console.warn("Email failed:", e);
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointment_requests"] });
@@ -123,7 +146,10 @@ export default function AppointmentRequests() {
                         {req.service_type && <span>{req.service_type}</span>}
                       </div>
                     </div>
-                    <Badge variant="outline" className={statusColor(req.status)}>{req.status}</Badge>
+                    <div className="flex items-center gap-2">
+                      {req.status === "confirmed" && <Badge variant="outline" className="bg-blue-500/15 text-blue-400 border-blue-500/30 gap-1 text-[10px]"><Send className="w-2.5 h-2.5" />Email Sent</Badge>}
+                      <Badge variant="outline" className={statusColor(req.status)}>{req.status}</Badge>
+                    </div>
                   </CardContent>
                 </Card>
               );

@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send } from 'lucide-react';
+import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -47,6 +48,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
   const [flatPriceInput, setFlatPriceInput] = useState<string>('');
   const [logoSignedUrl, setLogoSignedUrl] = useState<string>('');
@@ -242,6 +244,33 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       toast.success('Public proposal link copied to clipboard');
     } catch {
       window.prompt('Copy this link:', url);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!proposal || !shareToken) return;
+    setSendingEmail(true);
+    try {
+      const proposalLink = `${window.location.origin}/proposal/${shareToken}`;
+      await sendGmailEmail('proposal_sent', {
+        recipient_email: proposal.customer_email || '',
+        customer_name: proposal.customer_name || 'Valued Customer',
+        proposal_number: proposal.proposal_number || proposal.proposal_id?.slice(0, 8) || '',
+        total: proposal.mode === 'direct' ? proposal.flat_price : '',
+        valid_until: proposal.valid_until || '',
+        proposal_link: proposalLink,
+        related_id: proposal.proposal_id,
+        related_type: 'proposal',
+      });
+      // Update proposal status to sent
+      if (proposal.proposal_id) {
+        await supabase.from('proposals').update({ status: 'sent' }).eq('id', proposal.proposal_id);
+      }
+      toast.success('Proposal email sent to client!');
+    } catch (e: any) {
+      toast.error('Failed to send email: ' + e.message);
+    } finally {
+      setSendingEmail(false);
     }
   };
 
@@ -457,6 +486,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           <Button variant="outline" onClick={handleCopyLink} disabled={!shareToken}>
             <Link2 className="h-4 w-4 mr-2" />
             Copy Public Link
+          </Button>
+          <Button variant="default" onClick={handleSendEmail} disabled={!shareToken || sendingEmail || !proposal?.customer_email}>
+            {sendingEmail ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+            Send to Client
           </Button>
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
