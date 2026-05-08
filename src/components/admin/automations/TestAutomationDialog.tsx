@@ -98,7 +98,15 @@ export function TestAutomationDialog() {
       const { error: logErr } = await supabase.from("automation_drip_logs").insert(logs);
       if (logErr) throw logErr;
 
-      toast.success(`Test enrollment created with ${drips.length} drip(s) scheduled now. Engine will process within 5 min.`);
+      // Invoke engine immediately
+      toast.info(`Sending ${drips.length} drip(s)...`);
+      const { data: engineResult, error: engineErr } = await supabase.functions.invoke("automation-engine");
+      if (engineErr) {
+        toast.warning(`Enrolled but engine failed: ${engineErr.message}`);
+      } else {
+        const r = engineResult as any;
+        toast.success(`Done! ${r?.sent || 0} sent, ${r?.failed || 0} failed.`);
+      }
       setOpen(false);
     } catch (e: any) {
       toast.error(e.message);
