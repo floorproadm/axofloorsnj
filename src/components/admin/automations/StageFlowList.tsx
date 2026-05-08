@@ -3,8 +3,9 @@ import { AutomationDrip } from "@/hooks/useAutomationFlows";
 import { SequenceDetail } from "./SequenceDetail";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Plus, Zap, Mail, Phone, MessageSquare } from "lucide-react";
+import { ChevronDown, Plus, Zap, Mail, Phone, MessageSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 interface StageInfo {
   key: string;
