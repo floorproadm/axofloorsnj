@@ -10,6 +10,7 @@ import { Zap, Loader2, TrendingUp, Briefcase, Mail, ScrollText } from "lucide-re
 
 export default function Automations() {
   const [pipeline, setPipeline] = useState<"sales" | "jobs">("sales");
+  const [view, setView] = useState<"flows" | "logs">("flows");
   const {
     stageData,
     drips,
@@ -69,38 +70,58 @@ export default function Automations() {
           </div>
         </div>
 
-        {/* Pipeline Tabs */}
-        <Tabs value={pipeline} onValueChange={(v) => setPipeline(v as "sales" | "jobs")}>
-          <TabsList className="w-full max-w-sm h-10 bg-muted/50 p-1">
-            <TabsTrigger value="sales" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
-              <TrendingUp className="w-3.5 h-3.5" />
-              Sales Pipeline
+        {/* View Tabs: Flows vs Drip Logs */}
+        <Tabs value={view} onValueChange={(v) => setView(v as "flows" | "logs")}>
+          <TabsList className="w-full max-w-xs h-10 bg-muted/50 p-1">
+            <TabsTrigger value="flows" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Zap className="w-3.5 h-3.5" />
+              Flows
             </TabsTrigger>
-            <TabsTrigger value="jobs" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
-              <Briefcase className="w-3.5 h-3.5" />
-              Jobs Pipeline
+            <TabsTrigger value="logs" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <ScrollText className="w-3.5 h-3.5" />
+              Drip Logs
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={pipeline} className="mt-4">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <Loader2 className="w-6 h-6 animate-spin text-primary/50" />
-                <p className="text-xs text-muted-foreground">Loading flows...</p>
-              </div>
-            ) : (
-              <StageFlowList
-                stages={stageData}
-                drips={drips}
-                stats={stats}
-                onCreateSequence={(input) => createSequence.mutate(input)}
-                onUpdateSequence={(updates) => updateSequence.mutate(updates)}
-                onDeleteSequence={(id) => deleteSequence.mutate(id)}
-                onCreateDrip={(input) => createDrip.mutate(input)}
-                onUpdateDrip={(updates) => updateDrip.mutate(updates)}
-                onDeleteDrip={(id) => deleteDrip.mutate(id)}
-              />
-            )}
+          <TabsContent value="flows" className="mt-4 space-y-4">
+            {/* Pipeline sub-tabs */}
+            <Tabs value={pipeline} onValueChange={(v) => setPipeline(v as "sales" | "jobs")}>
+              <TabsList className="w-full max-w-sm h-10 bg-muted/50 p-1">
+                <TabsTrigger value="sales" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  Sales Pipeline
+                </TabsTrigger>
+                <TabsTrigger value="jobs" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  Jobs Pipeline
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value={pipeline} className="mt-4">
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-16 gap-3">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary/50" />
+                    <p className="text-xs text-muted-foreground">Loading flows...</p>
+                  </div>
+                ) : (
+                  <StageFlowList
+                    stages={stageData}
+                    drips={drips}
+                    stats={stats}
+                    onCreateSequence={(input) => createSequence.mutate(input)}
+                    onUpdateSequence={(updates) => updateSequence.mutate(updates)}
+                    onDeleteSequence={(id) => deleteSequence.mutate(id)}
+                    onCreateDrip={(input) => createDrip.mutate(input)}
+                    onUpdateDrip={(updates) => updateDrip.mutate(updates)}
+                    onDeleteDrip={(id) => deleteDrip.mutate(id)}
+                  />
+                )}
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+          <TabsContent value="logs" className="mt-4">
+            <DripLogsViewer />
           </TabsContent>
         </Tabs>
       </div>
