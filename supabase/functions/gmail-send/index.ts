@@ -103,27 +103,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 1. Try DB template first
+    // 1. Resolve template (raw passthrough or DB/fallback)
     let subjectTpl: string;
     let bodyTpl: string;
 
-    const { data: dbTemplate } = await supabase
-      .from("email_templates")
-      .select("subject_template, body_template")
-      .eq("organization_id", orgId)
-      .eq("template_key", template)
-      .maybeSingle();
-
-    if (dbTemplate) {
-      subjectTpl = dbTemplate.subject_template;
-      bodyTpl = dbTemplate.body_template;
-    } else if (FALLBACK_TEMPLATES[template]) {
-      subjectTpl = FALLBACK_TEMPLATES[template].subject;
-      bodyTpl = FALLBACK_TEMPLATES[template].body;
+    if (template === "__raw__") {
+      // Direct subject/body from automation engine
+      subjectTpl = data.raw_subject || "Message from AXO Floors";
+      bodyTpl = data.raw_body || "";
     } else {
-      return new Response(JSON.stringify({ error: `Unknown template: ${template}` }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const { data: dbTemplate } = await supabase
+        .from("email_templates")
+        .select("subject_template, body_template")
+        .eq("organization_id", orgId)
+        .eq("template_key", template)
+        .maybeSingle();
+
+      if (dbTemplate) {
+        subjectTpl = dbTemplate.subject_template;
+        bodyTpl = dbTemplate.body_template;
+      } else if (FALLBACK_TEMPLATES[template]) {
+        subjectTpl = FALLBACK_TEMPLATES[template].subject;
+        bodyTpl = FALLBACK_TEMPLATES[template].body;
+      } else {
+        return new Response(JSON.stringify({ error: `Unknown template: ${template}` }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // 2. Interpolate + wrap
