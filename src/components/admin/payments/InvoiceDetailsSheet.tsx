@@ -171,10 +171,31 @@ function PublicLinkModal({ invoice, open, onClose }: { invoice: Invoice; open: b
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  const handleEmail = () => {
-    const subject = `Invoice ${invoice.invoice_number} from AXO Floors NJ`;
-    const body = `Hi,\n\nPlease find your invoice attached below:\n${publicUrl}\n\nTotal: ${fmt(Number(invoice.total_amount || 0))}\nDue: ${format(new Date(invoice.due_date), "MMMM d, yyyy")}\n\nThank you for your business!\nAXO Floors NJ`;
-    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const handleEmail = async () => {
+    // Try to find customer email from the invoice's project
+    const { data: proj } = await supabase.from("projects").select("customer_email, customer_name").eq("id", invoice.project_id).maybeSingle();
+    const email = proj?.customer_email;
+    if (!email) { toast.error("No customer email found for this invoice"); return; }
+    setSendingEmail(true);
+    try {
+      const { sendGmailEmail } = await import("@/hooks/useEmailLogs");
+      await sendGmailEmail("invoice_sent", {
+        recipient_email: email,
+        customer_name: proj?.customer_name || "Valued Client",
+        invoice_number: invoice.invoice_number,
+        amount: fmt(Number(invoice.total_amount || 0)),
+        invoice_link: publicUrl,
+        related_id: invoice.id,
+        related_type: "invoice",
+      });
+      toast.success("Invoice email sent via Gmail");
+      onClose();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send email");
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   return (
@@ -203,7 +224,7 @@ function PublicLinkModal({ invoice, open, onClose }: { invoice: Invoice; open: b
               </Button>
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" className="gap-2 text-sm" onClick={handleWhatsApp}>💬 WhatsApp</Button>
-                <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail}><Mail className="w-4 h-4" /> Email</Button>
+                <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail} disabled={sendingEmail}>{sendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />} {sendingEmail ? "Sending..." : "Email"}</Button>
               </div>
               <p className="text-[11px] text-muted-foreground text-center">Anyone with this link can view the invoice</p>
             </>

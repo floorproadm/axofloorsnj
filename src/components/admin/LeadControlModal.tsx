@@ -127,6 +127,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [showAcceptForm, setShowAcceptForm] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [sendingLeadEmail, setSendingLeadEmail] = useState(false);
   const [sheetWidth, setSheetWidth] = useState(640);
   const [activeTab, setActiveTab] = useState('resumo');
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -424,8 +425,28 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
             </Button>
           )}
           {lead.email && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 shrink-0" asChild>
-              <a href={`mailto:${lead.email}`}><Mail className="w-3 h-3" /> Email</a>
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 shrink-0" disabled={sendingLeadEmail}
+              onClick={async () => {
+                setSendingLeadEmail(true);
+                try {
+                  const { sendGmailEmail } = await import("@/hooks/useEmailLogs");
+                  await sendGmailEmail("lead_followup", {
+                    recipient_email: lead.email,
+                    name: lead.name,
+                    services: Array.isArray(lead.services) ? (lead.services as string[]).join(", ") : "Flooring",
+                    cta_link: `${window.location.origin}/floor-diagnostic`,
+                    related_id: lead.id,
+                    related_type: "lead",
+                  });
+                  toast.success("Follow-up email sent via Gmail");
+                } catch (e: any) {
+                  toast.error(e.message || "Failed to send email");
+                } finally {
+                  setSendingLeadEmail(false);
+                }
+              }}
+            >
+              {sendingLeadEmail ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />} Email
             </Button>
           )}
         </div>
