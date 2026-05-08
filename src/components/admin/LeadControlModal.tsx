@@ -127,6 +127,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [showAcceptForm, setShowAcceptForm] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [sendingLeadEmail, setSendingLeadEmail] = useState(false);
   const [sheetWidth, setSheetWidth] = useState(640);
   const [activeTab, setActiveTab] = useState('resumo');
   const [editingField, setEditingField] = useState<string | null>(null);
