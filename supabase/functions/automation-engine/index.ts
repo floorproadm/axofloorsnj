@@ -99,17 +99,30 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Get company name
+      // Get company settings (name, phone, email, website)
       const { data: settings } = await supabase
         .from("company_settings")
-        .select("company_name")
+        .select("company_name, phone, email, website")
         .eq("organization_id", log.organization_id)
         .maybeSingle();
 
       const companyName = settings?.company_name || "AXO Floors";
+      const companyPhone = settings?.phone || "(732) 351-8653";
+      const companyEmail = settings?.email || "axofloorsnj@gmail.com";
+      const companyWebsite = settings?.website || "https://axofloorsnj.com";
       const nameParts = (lead.name || "").split(" ");
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || "";
+
+      // Build scheduler link and proposal link
+      const schedulerLink = `${companyWebsite}/project-wizard`;
+      const proposalLink = lead.converted_to_project_id
+        ? `${companyWebsite}/proposal/${lead.converted_to_project_id}`
+        : schedulerLink;
+
+      // Build HTML buttons
+      const viewRequestButton = `<a href="${schedulerLink}" style="display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0">Schedule Your Estimate</a>`;
+      const viewQuoteButton = `<a href="${proposalLink}" style="display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0">View Your Proposal</a>`;
 
       // Interpolate variables
       const vars: Record<string, string> = {
@@ -117,17 +130,28 @@ Deno.serve(async (req) => {
         last_name: lastName,
         name: lead.name || "",
         company_name: companyName,
-        salesperson_name: "AXO Floors Team",
+        company_phone: companyPhone,
+        company_email: companyEmail,
+        salesperson_name: "Eduardo",
+        Eduardo: "Eduardo",
         email: lead.email,
         phone: lead.phone || "",
         services: lead.service_interest || lead.notes || "",
+        view_request_button: viewRequestButton,
+        view_quote_button: viewQuoteButton,
+        appointment_date: "",
+        appointment_time: "",
+        appointment_location: lead.address || "",
       };
 
       const interpolate = (tpl: string) =>
         tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? "");
 
       const subject = interpolate(drip.subject || "Message from " + companyName);
-      const body = interpolate(drip.message_template || "");
+      let body = interpolate(drip.message_template || "");
+
+      // Convert \n to <br> for HTML rendering (literal \n in DB text)
+      body = body.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
 
       console.log(`Sending drip to ${lead.email}: "${subject}"`);
 
