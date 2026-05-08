@@ -2,9 +2,10 @@ import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StageFlowList } from "@/components/admin/automations/StageFlowList";
+import { TestAutomationDialog } from "@/components/admin/automations/TestAutomationDialog";
 import { useAutomationFlows } from "@/hooks/useAutomationFlows";
-import { Zap, Loader2, TrendingUp, Briefcase } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useAutomationStats } from "@/hooks/useAutomationStats";
+import { Zap, Loader2, TrendingUp, Briefcase, Mail } from "lucide-react";
 
 export default function Automations() {
   const [pipeline, setPipeline] = useState<"sales" | "jobs">("sales");
@@ -19,6 +20,7 @@ export default function Automations() {
     updateDrip,
     deleteDrip,
   } = useAutomationFlows(pipeline);
+  const { data: stats } = useAutomationStats();
 
   const totalSequences = stageData.reduce((s, st) => s + st.sequenceCount, 0);
   const totalDrips = stageData.reduce((s, st) => s + st.dripCount, 0);
@@ -36,14 +38,15 @@ export default function Automations() {
             <div>
               <h1 className="text-lg font-bold text-foreground tracking-tight">Automations</h1>
               <p className="text-xs text-muted-foreground">
-                Fluxos automáticos de comunicação por pipeline
+                Automated communication flows by pipeline
               </p>
             </div>
           </div>
+          <TestAutomationDialog />
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
             <p className="text-2xl font-bold text-foreground">{activeStages}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Active Stages</p>
@@ -55,6 +58,13 @@ export default function Automations() {
           <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
             <p className="text-2xl font-bold text-primary">{totalDrips}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Total Drips</p>
+          </div>
+          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Mail className="w-3.5 h-3.5 text-emerald-500" />
+              <p className="text-2xl font-bold text-emerald-500">{stats?.totalSentWeek || 0}</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Sent This Week</p>
           </div>
         </div>
 
@@ -75,12 +85,13 @@ export default function Automations() {
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <Loader2 className="w-6 h-6 animate-spin text-primary/50" />
-                <p className="text-xs text-muted-foreground">Carregando fluxos...</p>
+                <p className="text-xs text-muted-foreground">Loading flows...</p>
               </div>
             ) : (
               <StageFlowList
                 stages={stageData}
                 drips={drips}
+                stats={stats}
                 onCreateSequence={(input) => createSequence.mutate(input)}
                 onUpdateSequence={(updates) => updateSequence.mutate(updates)}
                 onDeleteSequence={(id) => deleteSequence.mutate(id)}
