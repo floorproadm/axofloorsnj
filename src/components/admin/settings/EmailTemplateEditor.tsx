@@ -100,7 +100,7 @@ export default function EmailTemplateEditor() {
     if (!active) return "";
     let html = editBody;
     for (const v of active.variables) {
-      html = html.replaceAll(`{{${v}}}`, `<span style="background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px">{{${v}}}</span>`);
+      html = html.split(`{{${v}}}`).join(`<span style="background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px">{{${v}}}</span>`);
     }
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#333;line-height:1.6;margin:0;padding:0}
