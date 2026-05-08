@@ -15,9 +15,16 @@ interface StageInfo {
   dripCount: number;
 }
 
+interface AutomationStats {
+  weeklyBySeq: Record<string, number>;
+  lastSentBySeq: Record<string, string>;
+  totalSentWeek: number;
+}
+
 interface StageFlowListProps {
   stages: StageInfo[];
   drips: AutomationDrip[];
+  stats?: AutomationStats;
   onCreateSequence: (input: { stage_key: string; name: string }) => void;
   onUpdateSequence: (updates: { id: string; name?: string; is_active?: boolean }) => void;
   onDeleteSequence: (id: string) => void;
