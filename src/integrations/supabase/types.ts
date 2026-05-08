@@ -558,6 +558,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          body_template: string
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string
+          subject_template: string
+          template_key: string
+          updated_at: string
+          variables: string[] | null
+        }
+        Insert: {
+          body_template: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id: string
+          subject_template: string
+          template_key: string
+          updated_at?: string
+          variables?: string[] | null
+        }
+        Update: {
+          body_template?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string
+          subject_template?: string
+          template_key?: string
+          updated_at?: string
+          variables?: string[] | null
+        }
+        Relationships: []
+      }
       feed_comments: {
         Row: {
           author_name: string
