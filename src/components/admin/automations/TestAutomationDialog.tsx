@@ -87,13 +87,19 @@ export function TestAutomationDialog() {
 
       if (enrollErr) throw enrollErr;
 
-      // Schedule all drips immediately (now)
-      const logs = drips.map((d: any) => ({
-        enrollment_id: enrollment.id,
-        drip_id: d.id,
-        organization_id: AXO_ORG_ID,
-        scheduled_at: new Date().toISOString(),
-      }));
+      // Schedule drips respecting delay_days and delay_hours
+      const now = new Date();
+      const logs = drips.map((d: any) => {
+        const scheduled = new Date(now.getTime());
+        scheduled.setDate(scheduled.getDate() + (d.delay_days || 0));
+        scheduled.setHours(scheduled.getHours() + (d.delay_hours || 0));
+        return {
+          enrollment_id: enrollment.id,
+          drip_id: d.id,
+          organization_id: AXO_ORG_ID,
+          scheduled_at: scheduled.toISOString(),
+        };
+      });
 
       const { error: logErr } = await supabase.from("automation_drip_logs").insert(logs);
       if (logErr) throw logErr;
