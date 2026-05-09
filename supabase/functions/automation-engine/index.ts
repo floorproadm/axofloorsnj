@@ -107,6 +107,21 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      // ORDERING GATE: ensure all prior drips in this enrollment (lower display_order) are sent/skipped.
+      // If a prior drip is still pending, defer this one (leave pending for next run).
+      const seq = enrollmentSequence.get(log.enrollment_id) || [];
+      const currentOrder = (drip as any).display_order ?? 0;
+      const priorPending = seq.find(
+        (s) => s.display_order < currentOrder && s.status === "pending" && s.log_id !== log.id
+      );
+      if (priorPending) {
+        console.log(
+          `⏸️ Deferring drip ${log.id} (order ${currentOrder}) — prior drip order ${priorPending.display_order} still pending`
+        );
+        skippedOutOfOrder++;
+        continue;
+      }
+
       if (drip.channel === "sms" || drip.channel === "whatsapp") {
         await supabase
           .from("automation_drip_logs")
