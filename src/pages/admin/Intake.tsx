@@ -257,6 +257,9 @@ export default function Intake() {
     return leads.filter(l => normalizeSource(l.lead_source || 'website') === selectedSource).slice(0, 15);
   }, [selectedSource, leads]);
 
+  const selectedLeadIds = useMemo(() => selectedSourceLeads.map(l => l.id), [selectedSourceLeads]);
+  const { data: automationStatusMap } = useLeadsAutomationStatus(selectedLeadIds);
+
   const selectedSourceStats = useMemo(() => {
     if (!selectedSource) return null;
     return sourceStats.find(s => s.source === selectedSource) || {
