@@ -16,11 +16,13 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get all pending drip logs that are due (no joins - FKs not present)
+    // Order by scheduled_at to respect delay_days/delay_hours sequencing
     const { data: pendingDrips, error: fetchErr } = await supabase
       .from("automation_drip_logs")
       .select("id, enrollment_id, drip_id, organization_id, scheduled_at")
       .eq("status", "pending")
       .lte("scheduled_at", new Date().toISOString())
+      .order("scheduled_at", { ascending: true })
       .limit(50);
 
     if (fetchErr) throw fetchErr;
@@ -43,15 +45,57 @@ Deno.serve(async (req) => {
         .in("id", enrollmentIds),
       supabase
         .from("automation_drips")
-        .select("id, channel, subject, message_template, delay_days, delay_hours")
+        .select("id, sequence_id, channel, subject, message_template, delay_days, delay_hours, display_order")
         .in("id", dripIds),
     ]);
 
     const enrollmentMap = new Map((enrollments || []).map((e: any) => [e.id, e]));
     const dripMap = new Map((drips || []).map((d: any) => [d.id, d]));
 
+    // ORDERING VALIDATION: For each enrollment, fetch ALL drip logs to know full sequence state.
+    // A drip can only be sent if every prior drip (lower display_order in same sequence) is sent/skipped.
+    const { data: allEnrollmentLogs } = await supabase
+      .from("automation_drip_logs")
+      .select("id, enrollment_id, drip_id, status")
+      .in("enrollment_id", enrollmentIds);
+
+    // Batch-load any drip metadata we don't have yet (already-sent drips not in dripMap)
+    const missingDripIds = [
+      ...new Set((allEnrollmentLogs || []).map((l: any) => l.drip_id).filter((id: string) => !dripMap.has(id))),
+    ];
+    if (missingDripIds.length > 0) {
+      const { data: extraDrips } = await supabase
+        .from("automation_drips")
+        .select("id, display_order")
+        .in("id", missingDripIds);
+      for (const d of extraDrips || []) dripMap.set(d.id, d as any);
+    }
+
+    // Map enrollment -> sorted list of {drip_id, display_order, status}
+    const enrollmentSequence = new Map<string, Array<{ drip_id: string; display_order: number; status: string; log_id: string }>>();
+    for (const l of allEnrollmentLogs || []) {
+      const d = dripMap.get(l.drip_id);
+      const order = (d as any)?.display_order ?? 0;
+      const arr = enrollmentSequence.get(l.enrollment_id) || [];
+      arr.push({ drip_id: l.drip_id, display_order: order, status: l.status, log_id: l.id });
+      enrollmentSequence.set(l.enrollment_id, arr);
+    }
+    for (const arr of enrollmentSequence.values()) {
+      arr.sort((a, b) => a.display_order - b.display_order);
+    }
+
+    // Sort pending drips by scheduled_at, then by display_order within same enrollment
+    pendingDrips.sort((a: any, b: any) => {
+      const t = new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+      if (t !== 0) return t;
+      const oa = (dripMap.get(a.drip_id) as any)?.display_order ?? 0;
+      const ob = (dripMap.get(b.drip_id) as any)?.display_order ?? 0;
+      return oa - ob;
+    });
+
     let sent = 0;
     let failed = 0;
+    let skippedOutOfOrder = 0;
 
     for (const log of pendingDrips) {
       const enrollment = enrollmentMap.get(log.enrollment_id);
@@ -72,6 +116,21 @@ Deno.serve(async (req) => {
           .from("automation_drip_logs")
           .update({ status: "skipped", error_message: "Enrollment cancelled" })
           .eq("id", log.id);
+        continue;
+      }
+
+      // ORDERING GATE: ensure all prior drips in this enrollment (lower display_order) are sent/skipped.
+      // If a prior drip is still pending, defer this one (leave pending for next run).
+      const seq = enrollmentSequence.get(log.enrollment_id) || [];
+      const currentOrder = (drip as any).display_order ?? 0;
+      const priorPending = seq.find(
+        (s) => s.display_order < currentOrder && s.status === "pending" && s.log_id !== log.id
+      );
+      if (priorPending) {
+        console.log(
+          `⏸️ Deferring drip ${log.id} (order ${currentOrder}) — prior drip order ${priorPending.display_order} still pending`
+        );
+        skippedOutOfOrder++;
         continue;
       }
 
@@ -182,6 +241,12 @@ Deno.serve(async (req) => {
             .from("automation_drip_logs")
             .update({ status: "sent", sent_at: new Date().toISOString() })
             .eq("id", log.id);
+          // Update in-memory sequence so subsequent drips in this loop see this as sent
+          const seqUpd = enrollmentSequence.get(log.enrollment_id);
+          if (seqUpd) {
+            const item = seqUpd.find((s) => s.log_id === log.id);
+            if (item) item.status = "sent";
+          }
           sent++;
           console.log(`✅ Sent to ${lead.email}`);
         } else {
@@ -190,6 +255,11 @@ Deno.serve(async (req) => {
             .from("automation_drip_logs")
             .update({ status: "failed", error_message: errMsg })
             .eq("id", log.id);
+          const seqUpd = enrollmentSequence.get(log.enrollment_id);
+          if (seqUpd) {
+            const item = seqUpd.find((s) => s.log_id === log.id);
+            if (item) item.status = "failed";
+          }
           failed++;
           console.log(`❌ Failed for ${lead.email}: ${errMsg}`);
         }
@@ -220,11 +290,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Done: processed=${pendingDrips.length}, sent=${sent}, failed=${failed}`);
+    console.log(`Done: processed=${pendingDrips.length}, sent=${sent}, failed=${failed}, deferred=${skippedOutOfOrder}`);
 
-    return new Response(JSON.stringify({ processed: pendingDrips.length, sent, failed }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ processed: pendingDrips.length, sent, failed, deferred: skippedOutOfOrder }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
     console.error("automation-engine error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
