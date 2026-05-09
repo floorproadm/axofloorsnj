@@ -278,11 +278,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Done: processed=${pendingDrips.length}, sent=${sent}, failed=${failed}`);
+    console.log(`Done: processed=${pendingDrips.length}, sent=${sent}, failed=${failed}, deferred=${skippedOutOfOrder}`);
 
-    return new Response(JSON.stringify({ processed: pendingDrips.length, sent, failed }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ processed: pendingDrips.length, sent, failed, deferred: skippedOutOfOrder }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
     console.error("automation-engine error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
