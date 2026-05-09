@@ -74,19 +74,16 @@ export function useReferralProfile() {
   const register = useCallback(async (name: string, email: string, phone: string) => {
     setIsLoading(true);
     try {
-      // Check if email already registered
-      const { data: existing } = await supabase
-        .from('referral_profiles')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
+      // Check if email already registered via secure RPC (no public read access)
+      const { data: existingDash } = await supabase.rpc('get_referral_dashboard', { p_email: email });
+      const existing = (existingDash as any)?.profile ?? null;
 
       if (existing) {
-        setProfile(existing as unknown as ReferralProfile);
-        await loadReferrals(existing.id as string);
+        setProfile(existing as ReferralProfile);
+        setReferrals(((existingDash as any)?.referrals ?? []) as Referral[]);
         await loadRewards(existing.id as string);
         toast({ title: 'Welcome back!', description: 'Your referral dashboard is ready.' });
-        return existing as unknown as ReferralProfile;
+        return existing as ReferralProfile;
       }
 
       const referral_code = generateReferralCode(name);
@@ -113,15 +110,12 @@ export function useReferralProfile() {
   const lookupByEmail = useCallback(async (email: string) => {
     setIsLoading(true);
     try {
-      const { data } = await supabase
-        .from('referral_profiles')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
-      if (data) {
-        const p = data as unknown as ReferralProfile;
+      const { data } = await supabase.rpc('get_referral_dashboard', { p_email: email });
+      const profileData = (data as any)?.profile ?? null;
+      if (profileData) {
+        const p = profileData as ReferralProfile;
         setProfile(p);
-        await loadReferrals(p.id);
+        setReferrals(((data as any)?.referrals ?? []) as Referral[]);
         await loadRewards(p.id);
         return p;
       }
@@ -132,6 +126,8 @@ export function useReferralProfile() {
   }, []);
 
   const loadReferrals = async (referrerId: string) => {
+    // Public referral pages now load referrals through get_referral_dashboard.
+    // This helper remains for any authenticated/admin context where direct read is permitted.
     const { data } = await supabase
       .from('referrals')
       .select('*')
@@ -193,7 +189,9 @@ export function useReferralProfile() {
         .eq('id', profile.id);
 
       setProfile(prev => prev ? { ...prev, total_referrals: prev.total_referrals + 1 } : null);
-      await loadReferrals(profile.id);
+      // Refresh via secure RPC (public users can no longer read referrals directly)
+      const { data: dash } = await supabase.rpc('get_referral_dashboard', { p_email: profile.email });
+      if (dash) setReferrals(((dash as any)?.referrals ?? []) as Referral[]);
 
       toast({ title: 'Referral Added!', description: `${name} has been added to your referrals.` });
       return ref;
