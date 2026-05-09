@@ -16,6 +16,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
+import { LeadAutomationBadge } from "@/components/admin/automations/LeadAutomationBadge";
+import { useLeadsAutomationStatus } from "@/hooks/useLeadAutomations";
 import {
   Plus,
   TrendingUp,
