@@ -45,15 +45,45 @@ Deno.serve(async (req) => {
         .in("id", enrollmentIds),
       supabase
         .from("automation_drips")
-        .select("id, channel, subject, message_template, delay_days, delay_hours")
+        .select("id, sequence_id, channel, subject, message_template, delay_days, delay_hours, display_order")
         .in("id", dripIds),
     ]);
 
     const enrollmentMap = new Map((enrollments || []).map((e: any) => [e.id, e]));
     const dripMap = new Map((drips || []).map((d: any) => [d.id, d]));
 
+    // ORDERING VALIDATION: For each enrollment, fetch ALL drip logs to know full sequence state.
+    // A drip can only be sent if every prior drip (lower display_order in same sequence) is sent/skipped.
+    const { data: allEnrollmentLogs } = await supabase
+      .from("automation_drip_logs")
+      .select("id, enrollment_id, drip_id, status")
+      .in("enrollment_id", enrollmentIds);
+
+    // Map enrollment -> sorted list of {drip_id, display_order, status}
+    const enrollmentSequence = new Map<string, Array<{ drip_id: string; display_order: number; status: string; log_id: string }>>();
+    for (const l of allEnrollmentLogs || []) {
+      const d = dripMap.get(l.drip_id) || (await supabase.from("automation_drips").select("display_order").eq("id", l.drip_id).maybeSingle()).data;
+      const order = (d as any)?.display_order ?? 0;
+      const arr = enrollmentSequence.get(l.enrollment_id) || [];
+      arr.push({ drip_id: l.drip_id, display_order: order, status: l.status, log_id: l.id });
+      enrollmentSequence.set(l.enrollment_id, arr);
+    }
+    for (const arr of enrollmentSequence.values()) {
+      arr.sort((a, b) => a.display_order - b.display_order);
+    }
+
+    // Sort pending drips by scheduled_at, then by display_order within same enrollment
+    pendingDrips.sort((a: any, b: any) => {
+      const t = new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+      if (t !== 0) return t;
+      const oa = (dripMap.get(a.drip_id) as any)?.display_order ?? 0;
+      const ob = (dripMap.get(b.drip_id) as any)?.display_order ?? 0;
+      return oa - ob;
+    });
+
     let sent = 0;
     let failed = 0;
+    let skippedOutOfOrder = 0;
 
     for (const log of pendingDrips) {
       const enrollment = enrollmentMap.get(log.enrollment_id);
