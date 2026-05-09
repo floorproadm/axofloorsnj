@@ -16,6 +16,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
+import { LeadAutomationBadge } from "@/components/admin/automations/LeadAutomationBadge";
+import { useLeadsAutomationStatus } from "@/hooks/useLeadAutomations";
 import {
   Plus,
   TrendingUp,
@@ -254,6 +256,9 @@ export default function Intake() {
     if (!selectedSource) return [];
     return leads.filter(l => normalizeSource(l.lead_source || 'website') === selectedSource).slice(0, 15);
   }, [selectedSource, leads]);
+
+  const selectedLeadIds = useMemo(() => selectedSourceLeads.map(l => l.id), [selectedSourceLeads]);
+  const { data: automationStatusMap } = useLeadsAutomationStatus(selectedLeadIds);
 
   const selectedSourceStats = useMemo(() => {
     if (!selectedSource) return null;
@@ -716,6 +721,7 @@ export default function Intake() {
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
                                   <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{lead.name}</p>
+                                  <LeadAutomationBadge status={automationStatusMap?.[lead.id]} />
                                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                                 <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">

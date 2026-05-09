@@ -1,58 +1,52 @@
+## Objetivo
 
-## Goal
+Visibilidade e controle das automações por lead. Saber em tempo real: o que foi enviado, o que está agendado, se falhou, e poder pausar/cancelar quando o lead responder.
 
-Add a **Board view** to the partner Pipeline tab, with a List ↔ Board toggle. List remains the default; Board offers a horizontal-scroll Kanban that mirrors the admin's pipeline aesthetic.
+## O que já existe (não vamos refazer)
 
-## What changes
+- `automation_enrollments` (status: active/completed/cancelled) e `automation_drip_logs` (status: pending/sent/failed/skipped) já registram tudo.
+- Trigger `auto_enroll_lead_automation` **já cancela enrollments ativos quando o status do lead muda** — auto-pausa por mudança de stage já funciona no banco; só falta expor isso na UI.
+- `DripLogsViewer` global em /admin/automations já existe.
 
-### 1. New component — `src/components/partner/PartnerPipelineBoard.tsx`
+## O que vamos construir
 
-Read-only Kanban (parceiro não arrasta cards — quem move é o admin).
+### 1. Painel de Automação no Lead Detail (peça central)
+Nova aba/seção dentro de `LeadDetail.tsx` chamada **"Automações"** com:
+- **Status atual**: pill "Ativo" / "Pausado" / "Sem automação" + nome da sequência.
+- **Próximo envio**: "Email em 2d 4h" (próximo log com status=pending, ordenado por scheduled_at).
+- **Timeline vertical**: cada drip da sequência com ícone de status (✓ enviado, ⏱ agendado, ✗ falhou, — pulado), data, canal, assunto. Falhas mostram tooltip com `error_message`.
+- **Botões de controle**:
+  - `Pausar automação` → UPDATE enrollment status='cancelled' + drip_logs pending → 'skipped'
+  - `Lead respondeu (parar tudo)` → mesma ação + nota no lead "Cliente respondeu em <data>"
+  - `Reenviar agora` (em drip falhado) → reset status pra pending com scheduled_at=now()
+  - `Ver logs completos` → link pra /admin/automations?tab=logs&lead=<id>
 
-- **Active columns**: New, Contacted, Est. Req., Scheduled, Drafting, Proposal, Production. Hide columns with 0 leads to reduce noise on mobile.
-- **Layout**: horizontal `overflow-x-auto snap-x snap-mandatory`, columns `w-[260px]`, gap-3. Bleeds to screen edge with `-mx-4 px-4` for native swipe feel.
-- **Column header**: colored dot + uppercase stage label + count badge (matches `PARTNER_LEAD_STAGES` colors).
-- **Card** (compact, denser than List version):
-  - Name (truncate)
-  - City or phone (truncate, 11px muted)
-  - Footer: created date · estimated value (formatted `$1.2k` style)
-- **Outcome summary** below the board: two cards — `Won` (count + total earned $) and `Lost` (count). Avoids burying active pipeline under 50 closed leads.
+### 2. Badge discreto no Intake (cards de lead)
+No `Intake.tsx` (cards do pipeline), adicionar pequeno ícone à direita do nome:
+- 📨 verde = última automação enviada com sucesso (sent nas últimas 48h)
+- ⚠ vermelho = última falhou (failed) — tooltip mostra erro
+- ⏱ cinza = drip pendente agendado
+- (nada) = sem automação ativa
+Tooltip sempre mostra: "Última: <template> · há <X>h" ou "Próximo: em <X>h". Click no badge abre o LeadDetail direto na aba Automações.
 
-### 2. Edit — `src/pages/partner/PartnerDashboard.tsx`
+### 3. Auto-pausa explícita (já existe parcialmente)
+- Manter trigger `auto_enroll_lead_automation` que cancela ao mudar stage.
+- **Adicionar**: marcar drip_logs pending como 'skipped' (não só cancelar enrollment) — hoje só o enrollment vira cancelled mas os logs ficam pending órfãos. Vamos atualizar a função pra também pular os logs.
+- Quando lead vira `lost` ou `completed`: cancelar tudo (já acontece).
 
-- Add state: `pipelineMode: 'list' | 'board'`, persisted in `localStorage` (`axo.partner.pipelineMode`).
-- Add toggle next to `Your Referrals (N)` header — two pills using existing token styles (`bg-foreground text-background` for active, `bg-card border` for inactive).
-- When `board` is selected, render `<PartnerPipelineBoard leads={filteredLeads} commissionPercent={...} />` instead of the month-grouped list.
-- `PartnerStageBar` and `Search` remain visible and continue to filter the data feeding either view.
-- "Clear filters" button preserved.
+### 4. Hook reutilizável
+Novo `useLeadAutomations(leadId)`:
+- Retorna: `enrollments` (com sequência), `dripLogs` (com info do drip), `nextDrip`, `lastSent`, `failedCount`, mutations `pauseAll`, `markResponded`, `retryDrip`.
+- Realtime subscription em `automation_drip_logs` filtrado por enrollments do lead pra atualizar UI ao vivo quando o cron processar.
 
-### 3. Files
+## Detalhes técnicos
 
-- **NEW** `src/components/partner/PartnerPipelineBoard.tsx`
-- **EDIT** `src/pages/partner/PartnerDashboard.tsx` (toggle + conditional render + persistence)
+- **Migração**: atualizar função `auto_enroll_lead_automation` pra também `UPDATE automation_drip_logs SET status='skipped' WHERE enrollment_id IN (cancelados) AND status='pending'`.
+- **RLS**: já coberta (`get_user_org_id()` em ambas tabelas).
+- **Performance no Intake**: 1 query agregada via RPC `get_leads_automation_status(lead_ids[])` retornando `{lead_id, last_status, last_sent_at, next_scheduled_at, failed_count}` pra evitar N+1.
+- **Aba no LeadDetail**: usar Tabs do shadcn (Detalhes | Notas | Automações).
+- **Sem mudança em edge functions** — `automation-engine` continua processando os pending normalmente; quando viram skipped/cancelled ele ignora.
 
-## Out of scope
-
-- No drag-and-drop (parceiro não tem permissão para mover stages — RLS).
-- No backend changes.
-- No changes to admin / collaborator portals.
-
-## Visual reference
-
-```text
-Your Referrals (12)             [ List | Board ]
-
-  ● NEW · 2     ● CONTACTED · 3    ● PROPOSAL · 4   →
-  ┌──────┐     ┌──────┐            ┌──────┐
-  │ John │     │ Mary │            │ Tom  │
-  │ NJ   │     │ NYC  │            │ Edison│
-  │ 14d $1.2k│ │ 7d $4k│           │ 2d $8k│
-  └──────┘     └──────┘            └──────┘
-
-  ┌──── Won ────┐  ┌──── Lost ────┐
-  │ 3           │  │ 1            │
-  │ +$1,400     │  │ Not converted│
-  └─────────────┘  └──────────────┘
-```
-
-After your approval I'll create the component and wire the toggle into `PartnerDashboard.tsx` in one pass, then verify on the 390px viewport.
+## Fora do escopo agora
+- Detecção automática de resposta por email/SMS inbound (precisaria webhook do Twilio/Gmail) — fica como fase 2. Por enquanto o "Lead respondeu" é manual.
+- Edição de drips da sequência inline no painel do lead (já existe na página /admin/automations).

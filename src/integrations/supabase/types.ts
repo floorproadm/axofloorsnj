@@ -3666,6 +3666,10 @@ export type Database = {
       }
       get_dashboard_metrics: { Args: never; Returns: Json }
       get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
+      get_leads_automation_status: {
+        Args: { p_lead_ids: string[] }
+        Returns: Json
+      }
       get_leads_nra_batch: { Args: { p_lead_ids: string[] }; Returns: Json }
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }

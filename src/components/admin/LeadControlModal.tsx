@@ -30,8 +30,9 @@ import {
   CheckCircle2, Plus, Loader2, History, Ban,
   ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown,
   Maximize2, Pencil, MessageSquare, StickyNote, User, CalendarDays, Tag,
-  Paperclip, Image, File, X, Download, ExternalLink
+  Paperclip, Image, File, X, Download, ExternalLink, Zap
 } from 'lucide-react';
+import { LeadAutomationsPanel } from '@/components/admin/automations/LeadAutomationsPanel';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -488,10 +489,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
             {/* TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-3">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="resumo" className="text-xs gap-1"><User className="w-3 h-3" /> Resumo</TabsTrigger>
                 <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Histórico</TabsTrigger>
                 <TabsTrigger value="notas" className="text-xs gap-1"><StickyNote className="w-3 h-3" /> Notas</TabsTrigger>
+                <TabsTrigger value="automacoes" className="text-xs gap-1"><Zap className="w-3 h-3" /> Automações</TabsTrigger>
               </TabsList>
 
               {/* ═══ TAB: RESUMO ═══ */}
@@ -754,6 +756,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-8">Nenhuma nota adicionada ainda</p>
                 )}
+              </TabsContent>
+
+              {/* ═══ TAB: AUTOMAÇÕES ═══ */}
+              <TabsContent value="automacoes" className="space-y-4 mt-4">
+                <LeadAutomationsPanel leadId={lead.id} />
               </TabsContent>
             </Tabs>
           </div>
