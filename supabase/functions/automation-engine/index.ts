@@ -59,10 +59,22 @@ Deno.serve(async (req) => {
       .select("id, enrollment_id, drip_id, status")
       .in("enrollment_id", enrollmentIds);
 
+    // Batch-load any drip metadata we don't have yet (already-sent drips not in dripMap)
+    const missingDripIds = [
+      ...new Set((allEnrollmentLogs || []).map((l: any) => l.drip_id).filter((id: string) => !dripMap.has(id))),
+    ];
+    if (missingDripIds.length > 0) {
+      const { data: extraDrips } = await supabase
+        .from("automation_drips")
+        .select("id, display_order")
+        .in("id", missingDripIds);
+      for (const d of extraDrips || []) dripMap.set(d.id, d as any);
+    }
+
     // Map enrollment -> sorted list of {drip_id, display_order, status}
     const enrollmentSequence = new Map<string, Array<{ drip_id: string; display_order: number; status: string; log_id: string }>>();
     for (const l of allEnrollmentLogs || []) {
-      const d = dripMap.get(l.drip_id) || (await supabase.from("automation_drips").select("display_order").eq("id", l.drip_id).maybeSingle()).data;
+      const d = dripMap.get(l.drip_id);
       const order = (d as any)?.display_order ?? 0;
       const arr = enrollmentSequence.get(l.enrollment_id) || [];
       arr.push({ drip_id: l.drip_id, display_order: order, status: l.status, log_id: l.id });
