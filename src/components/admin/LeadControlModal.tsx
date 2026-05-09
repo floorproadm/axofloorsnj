@@ -30,8 +30,9 @@ import {
   CheckCircle2, Plus, Loader2, History, Ban,
   ArrowRightLeft, AlertTriangle, Send, FileText, ThumbsUp, ThumbsDown,
   Maximize2, Pencil, MessageSquare, StickyNote, User, CalendarDays, Tag,
-  Paperclip, Image, File, X, Download, ExternalLink
+  Paperclip, Image, File, X, Download, ExternalLink, Zap
 } from 'lucide-react';
+import { LeadAutomationsPanel } from '@/components/admin/automations/LeadAutomationsPanel';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
