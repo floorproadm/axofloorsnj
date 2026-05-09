@@ -229,6 +229,12 @@ Deno.serve(async (req) => {
             .from("automation_drip_logs")
             .update({ status: "sent", sent_at: new Date().toISOString() })
             .eq("id", log.id);
+          // Update in-memory sequence so subsequent drips in this loop see this as sent
+          const seqUpd = enrollmentSequence.get(log.enrollment_id);
+          if (seqUpd) {
+            const item = seqUpd.find((s) => s.log_id === log.id);
+            if (item) item.status = "sent";
+          }
           sent++;
           console.log(`✅ Sent to ${lead.email}`);
         } else {
@@ -237,6 +243,11 @@ Deno.serve(async (req) => {
             .from("automation_drip_logs")
             .update({ status: "failed", error_message: errMsg })
             .eq("id", log.id);
+          const seqUpd = enrollmentSequence.get(log.enrollment_id);
+          if (seqUpd) {
+            const item = seqUpd.find((s) => s.log_id === log.id);
+            if (item) item.status = "failed";
+          }
           failed++;
           console.log(`❌ Failed for ${lead.email}: ${errMsg}`);
         }
