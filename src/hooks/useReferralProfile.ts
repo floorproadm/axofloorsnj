@@ -189,7 +189,9 @@ export function useReferralProfile() {
         .eq('id', profile.id);
 
       setProfile(prev => prev ? { ...prev, total_referrals: prev.total_referrals + 1 } : null);
-      await loadReferrals(profile.id);
+      // Refresh via secure RPC (public users can no longer read referrals directly)
+      const { data: dash } = await supabase.rpc('get_referral_dashboard', { p_email: profile.email });
+      if (dash) setReferrals(((dash as any)?.referrals ?? []) as Referral[]);
 
       toast({ title: 'Referral Added!', description: `${name} has been added to your referrals.` });
       return ref;
