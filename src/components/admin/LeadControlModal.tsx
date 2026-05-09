@@ -757,6 +757,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   <p className="text-sm text-muted-foreground text-center py-8">Nenhuma nota adicionada ainda</p>
                 )}
               </TabsContent>
+
+              {/* ═══ TAB: AUTOMAÇÕES ═══ */}
+              <TabsContent value="automacoes" className="space-y-4 mt-4">
+                <LeadAutomationsPanel leadId={lead.id} />
+              </TabsContent>
             </Tabs>
           </div>
         </ScrollArea>
