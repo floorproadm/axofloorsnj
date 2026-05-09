@@ -16,11 +16,13 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get all pending drip logs that are due (no joins - FKs not present)
+    // Order by scheduled_at to respect delay_days/delay_hours sequencing
     const { data: pendingDrips, error: fetchErr } = await supabase
       .from("automation_drip_logs")
       .select("id, enrollment_id, drip_id, organization_id, scheduled_at")
       .eq("status", "pending")
       .lte("scheduled_at", new Date().toISOString())
+      .order("scheduled_at", { ascending: true })
       .limit(50);
 
     if (fetchErr) throw fetchErr;
