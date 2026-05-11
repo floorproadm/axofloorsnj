@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.automation-engine]
 verify_jwt = false
+
+[functions.notify-partner-lead-progress]
+verify_jwt = false
