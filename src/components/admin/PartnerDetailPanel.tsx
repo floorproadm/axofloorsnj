@@ -340,7 +340,18 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
         )}
       </div>
 
-      {/* Stats Row — hidden during pipeline stages */}
+      {/* Portal Access CTA */}
+      <div className="px-4 py-3 border-b border-border/50">
+        <Button
+          onClick={() => setInviteOpen(true)}
+          variant="outline"
+          className="w-full gap-2 border-primary/30 bg-primary/5 hover:bg-primary/10 text-foreground"
+        >
+          <KeyRound className="w-4 h-4 text-primary" />
+          Acesso ao Portal do Parceiro
+        </Button>
+      </div>
+
       {!['prospect', 'contacted', 'meeting_scheduled'].includes(partner.status) && (
         <div className="grid grid-cols-3 gap-3 p-3 border-b border-border/50">
           <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-blue-500/10 border border-blue-200/50">
