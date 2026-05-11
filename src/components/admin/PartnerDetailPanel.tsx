@@ -62,6 +62,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
 import { PartnerChecklist } from "@/components/admin/PartnerChecklist";
+import { InvitePartnerDialog } from "@/components/admin/InvitePartnerDialog";
+import { KeyRound } from "lucide-react";
 
 
 const statusColors: Record<string, string> = {
