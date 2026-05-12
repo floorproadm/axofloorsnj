@@ -61,7 +61,7 @@ import Campaign from "./pages/Campaign";
 import FloorDiagnostic from "./pages/FloorDiagnostic";
 import AxoMasterSystem from "./pages/AxoMasterSystem";
 import WowPack from "./pages/WowPack";
-import ProjectWizard from "./pages/ProjectWizard";
+
 import ReviewRequest from "./pages/ReviewRequest";
 import AppointmentRequests from "./pages/admin/AppointmentRequests";
 import NotFound from "./pages/NotFound";
@@ -119,7 +119,7 @@ const App = () => {
             <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
             <Route path="/axo-master-system" element={<AxoMasterSystem />} />
             <Route path="/wow-pack" element={<WowPack />} />
-            <Route path="/project-wizard" element={<ProjectWizard />} />
+            
             <Route path="/review-request" element={<ReviewRequest />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/invoice/:token" element={<PublicInvoice />} />
