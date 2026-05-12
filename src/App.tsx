@@ -280,6 +280,7 @@ const App = () => {
 
             {/* Partner Portal */}
             <Route path="/partner/auth" element={<PartnerAuth />} />
+            <Route path="/partner/welcome" element={<PartnerWelcome />} />
             <Route path="/partner/dashboard" element={<PartnerDashboard />} />
             <Route path="/partner" element={<Navigate to="/partner/dashboard" replace />} />
 
