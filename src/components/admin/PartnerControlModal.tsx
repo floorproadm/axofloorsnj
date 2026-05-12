@@ -87,7 +87,7 @@ export function PartnerControlModal({ partner, open, onOpenChange, onViewDetails
     onOpenChange(false);
   };
 
-  const sourceTag = (partner as any).lead_source_tag as string | null;
+  const sourceTag = (partner as Partner & { lead_source_tag?: string | null }).lead_source_tag;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
