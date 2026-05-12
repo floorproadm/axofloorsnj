@@ -36,6 +36,7 @@ export default function Partners() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [controlModalId, setControlModalId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
+  const [inviteLogsOpen, setInviteLogsOpen] = useState(false);
 
   const handleViewMode = (mode: "list" | "board") => {
     setViewMode(mode);
