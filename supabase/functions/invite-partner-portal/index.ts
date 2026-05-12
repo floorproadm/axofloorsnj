@@ -42,6 +42,32 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
+    const callerId = userData.user.id;
+
+    const logInvite = async (params: {
+      organization_id: string;
+      partner_id: string;
+      recipient_email: string;
+      invite_kind: string;
+      status: "sent" | "error";
+      link_id?: string | null;
+      error_message?: string | null;
+    }) => {
+      try {
+        await admin.from("partner_invite_logs").insert({
+          organization_id: params.organization_id,
+          partner_id: params.partner_id,
+          recipient_email: params.recipient_email,
+          invite_kind: params.invite_kind,
+          status: params.status,
+          link_id: params.link_id ?? null,
+          error_message: params.error_message ?? null,
+          sent_by: callerId,
+        });
+      } catch (logErr) {
+        console.error("Failed to write partner_invite_logs:", logErr);
+      }
+    };
 
     // Get partner data
     const { data: partner } = await admin
