@@ -18,7 +18,7 @@ const services = [
 ];
 
 const mainNavigation = [
-  { name: "Floor Diagnostic™", href: "/floor-diagnostic", highlight: true },
+  { name: "Fast Flooring Estimate", href: "/quiz", highlight: true },
   { name: "Contact", href: "/contact" },
   { name: "About", href: "/about" },
   { name: "Gallery", href: "/gallery" },
@@ -106,11 +106,11 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
       {/* CTAs na parte inferior */}
       <div className="p-4 border-t border-white/10 space-y-3">
         <Link 
-          to="/floor-diagnostic" 
+          to="/quiz" 
           onClick={onClose}
           className="block w-full py-3 px-4 bg-gradient-to-r from-gold to-gold-warm text-black font-bold text-center rounded-xl hover:shadow-lg transition-all"
         >
-          APPLY FOR DIAGNOSTIC
+          FAST FLOORING ESTIMATE
         </Link>
         <Link 
           to="/contact" 
