@@ -37,6 +37,32 @@ import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipe
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// ─── Sync linked lead status when proposal status changes ─────────────────────
+async function syncLinkedLeadStatus(projectId: string, newProposalStatus: string) {
+  if (!projectId) return;
+  // Find lead linked to this project
+  const { data: lead } = await supabase
+    .from("leads")
+    .select("id, status")
+    .eq("converted_to_project_id", projectId)
+    .maybeSingle();
+  if (!lead) return;
+
+  let targetStatus: string | null = null;
+  if (newProposalStatus === "sent" && lead.status === "in_draft") targetStatus = "proposal_sent";
+  if (newProposalStatus === "accepted" && lead.status === "proposal_sent") targetStatus = "in_production";
+  if (newProposalStatus === "rejected" && lead.status === "proposal_sent") targetStatus = "proposal_rejected";
+  if (!targetStatus) return;
+
+  const { error } = await supabase.from("leads").update({ status: targetStatus }).eq("id", lead.id);
+  if (error) {
+    // Trigger-level validation may block (e.g. follow-up missing). Warn but don't fail proposal update.
+    toast.warning(`Lead não avançou: ${error.message}`);
+  } else {
+    toast.success(`Lead movido para ${targetStatus}`);
+  }
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProposalWithRelations {
   id: string;
