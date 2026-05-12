@@ -119,6 +119,20 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
     },
   });
 
+  const { data: inviteLogs = [] } = useQuery({
+    queryKey: ["partner-invite-logs", partner.id, inviteOpen],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("partner_invite_logs")
+        .select("id, created_at, recipient_email, status, link_id, invite_kind, error_message")
+        .eq("partner_id", partner.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const convertedProjectIds = referredLeads
     .map((l) => l.converted_to_project_id)
     .filter(Boolean) as string[];
@@ -383,6 +397,41 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           <KeyRound className="w-4 h-4 text-primary" />
           Acesso ao Portal do Parceiro
         </Button>
+
+        {inviteLogs.length > 0 && (
+          <div className="mt-3 border border-border/50 rounded-md overflow-hidden">
+            <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/50">
+              Histórico de convites ({inviteLogs.length})
+            </div>
+            <div className="max-h-44 overflow-y-auto divide-y divide-border/40">
+              {inviteLogs.map((log) => (
+                <div key={log.id} className="px-3 py-2 text-xs flex items-center justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-block w-1.5 h-1.5 rounded-full ${log.status === 'sent' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                      <span className="font-medium truncate">{log.recipient_email}</span>
+                      <Badge variant="outline" className="h-4 px-1 text-[9px] uppercase">
+                        {log.invite_kind === 'magiclink' ? 'reenvio' : 'convite'}
+                      </Badge>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
+                      <span>{format(new Date(log.created_at), "dd/MM/yy HH:mm")}</span>
+                      {log.link_id && <span className="font-mono">#{log.link_id}</span>}
+                    </div>
+                    {log.status === 'error' && log.error_message && (
+                      <div className="text-[10px] text-red-600 mt-0.5 truncate" title={log.error_message}>
+                        {log.error_message}
+                      </div>
+                    )}
+                  </div>
+                  <span className={`text-[10px] font-semibold ${log.status === 'sent' ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {log.status === 'sent' ? 'Enviado' : 'Erro'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {!['prospect', 'contacted', 'meeting_scheduled'].includes(partner.status) && (

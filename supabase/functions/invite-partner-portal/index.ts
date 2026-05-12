@@ -42,6 +42,32 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
+    const callerId = userData.user.id;
+
+    const logInvite = async (params: {
+      organization_id: string;
+      partner_id: string;
+      recipient_email: string;
+      invite_kind: string;
+      status: "sent" | "error";
+      link_id?: string | null;
+      error_message?: string | null;
+    }) => {
+      try {
+        await admin.from("partner_invite_logs").insert({
+          organization_id: params.organization_id,
+          partner_id: params.partner_id,
+          recipient_email: params.recipient_email,
+          invite_kind: params.invite_kind,
+          status: params.status,
+          link_id: params.link_id ?? null,
+          error_message: params.error_message ?? null,
+          sent_by: callerId,
+        });
+      } catch (logErr) {
+        console.error("Failed to write partner_invite_logs:", logErr);
+      }
+    };
 
     // Get partner data
     const { data: partner } = await admin
@@ -177,13 +203,42 @@ Deno.serve(async (req) => {
       },
     });
 
+    // Short link ID for log (token fragment from action_link)
+    const linkId = (() => {
+      try {
+        const u = new URL(actionLink);
+        const tok = u.searchParams.get("token") || u.searchParams.get("token_hash") || "";
+        return tok ? tok.slice(0, 12) : actionLink.slice(-12);
+      } catch {
+        return null;
+      }
+    })();
+
     if (sendRes.error) {
       console.error("gmail-send error:", sendRes.error);
+      await logInvite({
+        organization_id: partner.organization_id,
+        partner_id,
+        recipient_email: email,
+        invite_kind: isResend ? "magiclink" : "invite",
+        status: "error",
+        link_id: linkId,
+        error_message: sendRes.error.message || "gmail-send failed",
+      });
       throw new Error(`Failed to send email: ${sendRes.error.message}`);
     }
 
+    await logInvite({
+      organization_id: partner.organization_id,
+      partner_id,
+      recipient_email: email,
+      invite_kind: isResend ? "magiclink" : "invite",
+      status: "sent",
+      link_id: linkId,
+    });
+
     return new Response(
-      JSON.stringify({ success: true, resent: isResend, email }),
+      JSON.stringify({ success: true, resent: isResend, email, link_id: linkId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e: any) {
