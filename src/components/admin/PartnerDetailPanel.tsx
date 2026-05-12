@@ -48,6 +48,8 @@ import {
   PlayCircle,
   ClipboardList,
   Save,
+  DollarSign,
+  Clock,
 } from "lucide-react";
 import {
   Partner,
