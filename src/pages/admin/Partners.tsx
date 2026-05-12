@@ -233,6 +233,7 @@ export default function Partners() {
         onOpenChange={(open) => { if (!open) setControlModalId(null); }}
         onViewDetails={(id) => { setControlModalId(null); setSelectedId(id); }}
       />
+      <PartnerInviteLogsSheet open={inviteLogsOpen} onOpenChange={setInviteLogsOpen} />
     </AdminLayout>
   );
 }
