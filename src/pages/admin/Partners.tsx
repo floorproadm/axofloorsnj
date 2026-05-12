@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Handshake, Plus, Search, List, LayoutGrid } from "lucide-react";
+import { Handshake, Plus, Search, List, LayoutGrid, Mail } from "lucide-react";
 import {
   usePartnersData,
   Partner,
@@ -22,6 +22,7 @@ import { PartnerListItem } from "@/components/admin/PartnerListItem";
 import { PartnerDetailPanel } from "@/components/admin/PartnerDetailPanel";
 import { PartnerPipelineBoard } from "@/components/admin/PartnerPipelineBoard";
 import { PartnerControlModal } from "@/components/admin/PartnerControlModal";
+import { PartnerInviteLogsSheet } from "@/components/admin/PartnerInviteLogsSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -35,6 +36,7 @@ export default function Partners() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [controlModalId, setControlModalId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
+  const [inviteLogsOpen, setInviteLogsOpen] = useState(false);
 
   const handleViewMode = (mode: "list" | "board") => {
     setViewMode(mode);
@@ -117,7 +119,15 @@ export default function Partners() {
           </span>
           <span className="text-border">|</span>
           <span><strong className="text-foreground">{miniStats.totalReferrals}</strong> indicações</span>
-          <div className="ml-auto flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+          <button
+            onClick={() => setInviteLogsOpen(true)}
+            className="ml-auto inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="Histórico de convites do portal"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Convites</span>
+          </button>
+          <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
             <button
               onClick={() => handleViewMode("list")}
               className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
@@ -223,6 +233,7 @@ export default function Partners() {
         onOpenChange={(open) => { if (!open) setControlModalId(null); }}
         onViewDetails={(id) => { setControlModalId(null); setSelectedId(id); }}
       />
+      <PartnerInviteLogsSheet open={inviteLogsOpen} onOpenChange={setInviteLogsOpen} />
     </AdminLayout>
   );
 }
