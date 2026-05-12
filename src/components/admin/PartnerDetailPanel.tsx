@@ -449,6 +449,10 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                           </span>
                         )}
                       </TabsTrigger>
+                      <TabsTrigger value="comissoes" className={`${tabTriggerClass} gap-1.5`}>
+                        <DollarSign className="w-3.5 h-3.5" />
+                        Comissões
+                      </TabsTrigger>
                     </>
                   )}
                   <TabsTrigger value="notas" className={tabTriggerClass}>
