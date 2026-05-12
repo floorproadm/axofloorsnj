@@ -119,6 +119,20 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
     },
   });
 
+  const { data: inviteLogs = [] } = useQuery({
+    queryKey: ["partner-invite-logs", partner.id, inviteOpen],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("partner_invite_logs")
+        .select("id, created_at, recipient_email, status, link_id, invite_kind, error_message")
+        .eq("partner_id", partner.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const convertedProjectIds = referredLeads
     .map((l) => l.converted_to_project_id)
     .filter(Boolean) as string[];
