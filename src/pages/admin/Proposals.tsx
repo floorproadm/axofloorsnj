@@ -843,19 +843,57 @@ export default function Proposals() {
     const sent = proposals.filter(p => ["sent", "viewed", "accepted", "rejected"].includes(p.status)).length;
     const closeRate = sent > 0 ? Math.round((accepted.length / sent) * 100) : 0;
     const pending = proposals.filter(p => ["sent", "viewed"].includes(p.status)).length;
-    return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length, pending };
+    return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length, pending, sent };
   }, [proposals]);
 
-  // Unique projects for filter dropdown
-  const projectOptions = useMemo(() => {
-    const map = new Map<string, string>();
+  // Duplicate detection: same project_id + same headline price + status draft
+  // Keep oldest (first created), mark the rest as duplicates
+  const duplicateIds = useMemo(() => {
+    const groups = new Map<string, ProposalWithRelations[]>();
     proposals.forEach(p => {
-      if (p.project_id && p.projects?.customer_name) {
-        map.set(p.project_id, p.projects.customer_name);
-      }
+      if (p.status !== "draft") return;
+      const price = !p.use_tiers ? (p.flat_price || p.better_price) : p.better_price;
+      const key = `${p.project_id}__${price}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(p);
     });
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+    const dupes = new Set<string>();
+    groups.forEach(items => {
+      if (items.length < 2) return;
+      const sorted = [...items].sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
+      sorted.slice(1).forEach(p => dupes.add(p.id));
+    });
+    return dupes;
   }, [proposals]);
+
+  // Quick actions: send / accept / decline / delete duplicate
+  const quickAction = useMutation({
+    mutationFn: async ({ id, action, project_id, use_tiers }: { id: string; action: "send" | "accept" | "decline" | "delete"; project_id?: string; use_tiers?: boolean }) => {
+      if (action === "delete") {
+        const { error } = await supabase.from("proposals").delete().eq("id", id);
+        if (error) throw error;
+        return;
+      }
+      const update: any = {};
+      if (action === "send") { update.status = "sent"; update.sent_at = new Date().toISOString(); }
+      if (action === "accept") {
+        update.status = "accepted";
+        update.selected_tier = use_tiers ? "better" : "flat";
+        update.accepted_at = new Date().toISOString();
+      }
+      if (action === "decline") update.status = "rejected";
+      const { error } = await supabase.from("proposals").update(update).eq("id", id);
+      if (error) throw error;
+      if (project_id && update.status) await syncLinkedLeadStatus(project_id, update.status);
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["proposals-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-leads"] });
+      const labels = { send: "Proposta enviada", accept: "Marcada como aceita", decline: "Marcada como recusada", delete: "Duplicata excluída" };
+      toast.success(labels[vars.action]);
+    },
+    onError: (e: any) => toast.error(e.message || "Falha na ação"),
+  });
 
   // Filter
   const filtered = useMemo(() => {
@@ -870,9 +908,10 @@ export default function Proposals() {
       if (tab === "accepted") return p.status === "accepted";
       if (tab === "declined") return p.status === "rejected";
       if (tab === "draft") return p.status === "draft";
+      if (tab === "duplicates") return duplicateIds.has(p.id);
       return true;
     });
-  }, [proposals, tab, search, projectFilter]);
+  }, [proposals, tab, search, projectFilter, duplicateIds]);
 
   const TABS = [
     { id: "all",      label: "All",      count: proposals.length },
