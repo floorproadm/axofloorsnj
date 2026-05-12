@@ -18,7 +18,7 @@ const services = [
 ];
 
 const mainNavigation = [
-  { name: "Fast Flooring Estimate", href: "/quiz", highlight: true },
+  { name: "Smart Estimate", href: "/quiz", highlight: true },
   { name: "Contact", href: "/contact" },
   { name: "About", href: "/about" },
   { name: "Gallery", href: "/gallery" },
@@ -110,7 +110,7 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
           onClick={onClose}
           className="block w-full py-3 px-4 bg-gradient-to-r from-gold to-gold-warm text-black font-bold text-center rounded-xl hover:shadow-lg transition-all"
         >
-          FAST FLOORING ESTIMATE
+          SMART ESTIMATE
         </Link>
         <Link 
           to="/contact" 
