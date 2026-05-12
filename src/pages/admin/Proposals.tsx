@@ -448,15 +448,16 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   const cancelEditing = () => setEditing(false);
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status, selected_tier }: { id: string; status: string; selected_tier?: string }) => {
+    mutationFn: async ({ id, status, selected_tier, project_id }: { id: string; status: string; selected_tier?: string; project_id?: string }) => {
       const update: any = { status };
       if (status === "sent") update.sent_at = new Date().toISOString();
       if (status === "accepted" && selected_tier) { update.selected_tier = selected_tier; update.accepted_at = new Date().toISOString(); }
       const { error } = await supabase.from("proposals").update(update).eq("id", id);
       if (error) throw error;
+      if (project_id) await syncLinkedLeadStatus(project_id, status);
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["proposals-list"] }); toast.success("Updated"); },
-    onError: () => toast.error("Failed to update"),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["proposals-list"] }); qc.invalidateQueries({ queryKey: ["admin-leads"] }); toast.success("Updated"); },
+    onError: (e: any) => toast.error(e.message || "Failed to update"),
   });
 
   const saveEdit = useMutation({
