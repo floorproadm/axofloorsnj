@@ -2027,6 +2027,45 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_invite_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          invite_kind: string
+          link_id: string | null
+          organization_id: string
+          partner_id: string
+          recipient_email: string
+          sent_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          invite_kind?: string
+          link_id?: string | null
+          organization_id: string
+          partner_id: string
+          recipient_email: string
+          sent_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          invite_kind?: string
+          link_id?: string | null
+          organization_id?: string
+          partner_id?: string
+          recipient_email?: string
+          sent_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       partner_users: {
         Row: {
           created_at: string
