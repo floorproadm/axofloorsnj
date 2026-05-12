@@ -81,6 +81,7 @@ import CollaboratorChat from "./pages/collaborator/CollaboratorChat";
 
 import PartnerAuth from "./pages/partner/PartnerAuth";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
+import PartnerWelcome from "./pages/partner/PartnerWelcome";
 
 const queryClient = new QueryClient();
 
