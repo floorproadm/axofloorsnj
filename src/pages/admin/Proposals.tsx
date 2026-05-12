@@ -724,7 +724,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</p>
                     {proposal.status === "draft" && (
-                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent" })}>
+                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
                         <Send className="w-4 h-4" /> Mark as Sent
                       </Button>
                     )}
@@ -736,7 +736,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                             size="sm"
                             variant="outline"
                             className="gap-1 text-xs border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
-                            onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: t.id })}
+                            onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: t.id, project_id: proposal.project_id })}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {t.label}
@@ -748,14 +748,14 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                       <Button
                         variant="outline"
                         className="w-full gap-2 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
-                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: "flat" })}
+                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: "flat", project_id: proposal.project_id })}
                       >
                         <CheckCircle2 className="w-4 h-4" /> Mark as Accepted
                       </Button>
                     )}
                     {(proposal.status === "sent" || proposal.status === "viewed") && (
                       <Button variant="outline" className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
-                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "rejected" })}>
+                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "rejected", project_id: proposal.project_id })}>
                         <XCircle className="w-4 h-4" /> Mark as Declined
                       </Button>
                     )}
