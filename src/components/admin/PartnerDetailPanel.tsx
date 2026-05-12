@@ -398,11 +398,18 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
           Acesso ao Portal do Parceiro
         </Button>
 
-        {inviteLogs.length > 0 && (
-          <div className="mt-3 border border-border/50 rounded-md overflow-hidden">
-            <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/50">
-              Histórico de convites ({inviteLogs.length})
+        <div className="mt-3 border border-border/50 rounded-md overflow-hidden">
+          <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/50">
+            Histórico de convites ({inviteLogs.length})
+          </div>
+          {inviteLogs.length === 0 ? (
+            <div className="px-3 py-4 text-center text-[11px] text-muted-foreground">
+              Nenhum convite enviado ainda.
+              <div className="text-[10px] mt-0.5 opacity-70">
+                Clique em "Acesso ao Portal do Parceiro" para enviar o primeiro.
+              </div>
             </div>
+          ) : (
             <div className="max-h-44 overflow-y-auto divide-y divide-border/40">
               {inviteLogs.map((log) => (
                 <div key={log.id} className="px-3 py-2 text-xs flex items-center justify-between gap-2">
