@@ -27,7 +27,7 @@ import {
   MapPin, Phone, Mail, Calendar, Hash, Building2,
   Link2, Mail as MailIcon, MessageCircle,
   LayoutGrid, List, Pencil, Save, X, Briefcase, ExternalLink,
-  Download, FileSpreadsheet
+  Download, FileSpreadsheet, Trash2, AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { sendGmailEmail } from "@/hooks/useEmailLogs";
@@ -36,6 +36,32 @@ import { ProposalData } from "@/types/proposal";
 import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipelineBoard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// ─── Sync linked lead status when proposal status changes ─────────────────────
+async function syncLinkedLeadStatus(projectId: string, newProposalStatus: string) {
+  if (!projectId) return;
+  // Find lead linked to this project
+  const { data: lead } = await supabase
+    .from("leads")
+    .select("id, status")
+    .eq("converted_to_project_id", projectId)
+    .maybeSingle();
+  if (!lead) return;
+
+  let targetStatus: string | null = null;
+  if (newProposalStatus === "sent" && lead.status === "in_draft") targetStatus = "proposal_sent";
+  if (newProposalStatus === "accepted" && lead.status === "proposal_sent") targetStatus = "in_production";
+  if (newProposalStatus === "rejected" && lead.status === "proposal_sent") targetStatus = "proposal_rejected";
+  if (!targetStatus) return;
+
+  const { error } = await supabase.from("leads").update({ status: targetStatus }).eq("id", lead.id);
+  if (error) {
+    // Trigger-level validation may block (e.g. follow-up missing). Warn but don't fail proposal update.
+    toast.warning(`Lead não avançou: ${error.message}`);
+  } else {
+    toast.success(`Lead movido para ${targetStatus}`);
+  }
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProposalWithRelations {
@@ -422,15 +448,16 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   const cancelEditing = () => setEditing(false);
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status, selected_tier }: { id: string; status: string; selected_tier?: string }) => {
+    mutationFn: async ({ id, status, selected_tier, project_id }: { id: string; status: string; selected_tier?: string; project_id?: string }) => {
       const update: any = { status };
       if (status === "sent") update.sent_at = new Date().toISOString();
       if (status === "accepted" && selected_tier) { update.selected_tier = selected_tier; update.accepted_at = new Date().toISOString(); }
       const { error } = await supabase.from("proposals").update(update).eq("id", id);
       if (error) throw error;
+      if (project_id) await syncLinkedLeadStatus(project_id, status);
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["proposals-list"] }); toast.success("Updated"); },
-    onError: () => toast.error("Failed to update"),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["proposals-list"] }); qc.invalidateQueries({ queryKey: ["admin-leads"] }); toast.success("Updated"); },
+    onError: (e: any) => toast.error(e.message || "Failed to update"),
   });
 
   const saveEdit = useMutation({
@@ -697,7 +724,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</p>
                     {proposal.status === "draft" && (
-                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent" })}>
+                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
                         <Send className="w-4 h-4" /> Mark as Sent
                       </Button>
                     )}
@@ -709,7 +736,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                             size="sm"
                             variant="outline"
                             className="gap-1 text-xs border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
-                            onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: t.id })}
+                            onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: t.id, project_id: proposal.project_id })}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {t.label}
@@ -721,14 +748,14 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                       <Button
                         variant="outline"
                         className="w-full gap-2 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
-                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: "flat" })}
+                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "accepted", selected_tier: "flat", project_id: proposal.project_id })}
                       >
                         <CheckCircle2 className="w-4 h-4" /> Mark as Accepted
                       </Button>
                     )}
                     {(proposal.status === "sent" || proposal.status === "viewed") && (
                       <Button variant="outline" className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
-                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "rejected" })}>
+                        onClick={() => updateStatus.mutate({ id: proposal.id, status: "rejected", project_id: proposal.project_id })}>
                         <XCircle className="w-4 h-4" /> Mark as Declined
                       </Button>
                     )}
@@ -816,7 +843,27 @@ export default function Proposals() {
     const sent = proposals.filter(p => ["sent", "viewed", "accepted", "rejected"].includes(p.status)).length;
     const closeRate = sent > 0 ? Math.round((accepted.length / sent) * 100) : 0;
     const pending = proposals.filter(p => ["sent", "viewed"].includes(p.status)).length;
-    return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length, pending };
+    return { total, acceptedTotal, closeRate, total_count: proposals.length, accepted_count: accepted.length, pending, sent };
+  }, [proposals]);
+
+  // Duplicate detection: same project_id + same headline price + status draft
+  // Keep oldest (first created), mark the rest as duplicates
+  const duplicateIds = useMemo(() => {
+    const groups = new Map<string, ProposalWithRelations[]>();
+    proposals.forEach(p => {
+      if (p.status !== "draft") return;
+      const price = !p.use_tiers ? (p.flat_price || p.better_price) : p.better_price;
+      const key = `${p.project_id}__${price}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(p);
+    });
+    const dupes = new Set<string>();
+    groups.forEach(items => {
+      if (items.length < 2) return;
+      const sorted = [...items].sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
+      sorted.slice(1).forEach(p => dupes.add(p.id));
+    });
+    return dupes;
   }, [proposals]);
 
   // Unique projects for filter dropdown
@@ -829,6 +876,35 @@ export default function Proposals() {
     });
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [proposals]);
+
+  // Quick actions: send / accept / decline / delete duplicate
+  const quickAction = useMutation({
+    mutationFn: async ({ id, action, project_id, use_tiers }: { id: string; action: "send" | "accept" | "decline" | "delete"; project_id?: string; use_tiers?: boolean }) => {
+      if (action === "delete") {
+        const { error } = await supabase.from("proposals").delete().eq("id", id);
+        if (error) throw error;
+        return;
+      }
+      const update: any = {};
+      if (action === "send") { update.status = "sent"; update.sent_at = new Date().toISOString(); }
+      if (action === "accept") {
+        update.status = "accepted";
+        update.selected_tier = use_tiers ? "better" : "flat";
+        update.accepted_at = new Date().toISOString();
+      }
+      if (action === "decline") update.status = "rejected";
+      const { error } = await supabase.from("proposals").update(update).eq("id", id);
+      if (error) throw error;
+      if (project_id && update.status) await syncLinkedLeadStatus(project_id, update.status);
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["proposals-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-leads"] });
+      const labels = { send: "Proposta enviada", accept: "Marcada como aceita", decline: "Marcada como recusada", delete: "Duplicata excluída" };
+      toast.success(labels[vars.action]);
+    },
+    onError: (e: any) => toast.error(e.message || "Falha na ação"),
+  });
 
   // Filter
   const filtered = useMemo(() => {
@@ -843,9 +919,10 @@ export default function Proposals() {
       if (tab === "accepted") return p.status === "accepted";
       if (tab === "declined") return p.status === "rejected";
       if (tab === "draft") return p.status === "draft";
+      if (tab === "duplicates") return duplicateIds.has(p.id);
       return true;
     });
-  }, [proposals, tab, search, projectFilter]);
+  }, [proposals, tab, search, projectFilter, duplicateIds]);
 
   const TABS = [
     { id: "all",      label: "All",      count: proposals.length },
@@ -853,6 +930,7 @@ export default function Proposals() {
     { id: "pending",  label: "Pending",  count: proposals.filter(p => ["sent","viewed"].includes(p.status)).length },
     { id: "accepted", label: "Accepted", count: proposals.filter(p => p.status === "accepted").length },
     { id: "declined", label: "Declined", count: proposals.filter(p => p.status === "rejected").length },
+    ...(duplicateIds.size > 0 ? [{ id: "duplicates", label: "Duplicates", count: duplicateIds.size }] : []),
   ];
 
   return (
@@ -1010,23 +1088,32 @@ export default function Proposals() {
                         ? p[`${selectedTier}_price` as keyof ProposalWithRelations] as number
                         : p.better_price;
 
+                    const isDuplicate = duplicateIds.has(p.id);
+                    const stop = (e: React.MouseEvent) => e.stopPropagation();
                     return (
                       <div key={p.id} className="group relative">
                         <button onClick={() => setSelected(p)} className="w-full text-left">
                           <div className={cn(
                             "flex items-center gap-3 p-3 rounded-lg border transition-all",
                             "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
-                            "border-border/50 bg-card"
+                            isDuplicate ? "border-amber-500/40 bg-amber-500/5" : "border-border/50 bg-card"
                           )}>
                             <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                                {isDuplicate && (
+                                  <Badge className="text-[9px] h-4 px-1.5 bg-amber-500/15 text-amber-600 border border-amber-500/30 gap-0.5">
+                                    <AlertTriangle className="w-2.5 h-2.5" /> Duplicata
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
                             </div>
                             {p.project_id && (
                               <Link
                                 to={`/admin/projects/${p.project_id}`}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={stop}
                                 className="hidden md:inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 px-1.5 py-0.5 rounded-md transition-colors"
                                 title="Open Job"
                               >
@@ -1038,6 +1125,59 @@ export default function Proposals() {
                               {isExpired ? "Expired" : displayStatus.label}
                             </Badge>
                             <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
+
+                            {/* Quick actions */}
+                            <div className="flex items-center gap-1 flex-shrink-0" onClick={stop}>
+                              {isDuplicate && (
+                                <Button
+                                  size="sm" variant="ghost"
+                                  className="h-7 w-7 p-0 text-red-500 hover:bg-red-500/10"
+                                  title="Excluir duplicata"
+                                  disabled={quickAction.isPending}
+                                  onClick={() => {
+                                    if (confirm("Excluir esta proposta duplicada?")) {
+                                      quickAction.mutate({ id: p.id, action: "delete" });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                              {p.status === "draft" && !isDuplicate && (
+                                <Button
+                                  size="sm" variant="outline"
+                                  className="h-7 px-2 text-[11px] gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-500/10"
+                                  title="Enviar Proposta"
+                                  disabled={quickAction.isPending}
+                                  onClick={() => quickAction.mutate({ id: p.id, action: "send", project_id: p.project_id })}
+                                >
+                                  <Send className="w-3 h-3" /> Enviar
+                                </Button>
+                              )}
+                              {(p.status === "sent" || p.status === "viewed") && (
+                                <>
+                                  <Button
+                                    size="sm" variant="ghost"
+                                    className="h-7 w-7 p-0 text-emerald-600 hover:bg-emerald-500/10"
+                                    title="Marcar como Aceita"
+                                    disabled={quickAction.isPending}
+                                    onClick={() => quickAction.mutate({ id: p.id, action: "accept", project_id: p.project_id, use_tiers: p.use_tiers })}
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm" variant="ghost"
+                                    className="h-7 w-7 p-0 text-red-500 hover:bg-red-500/10"
+                                    title="Marcar como Recusada"
+                                    disabled={quickAction.isPending}
+                                    onClick={() => quickAction.mutate({ id: p.id, action: "decline", project_id: p.project_id })}
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+
                             <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
                           </div>
                         </button>
