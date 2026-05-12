@@ -203,13 +203,42 @@ Deno.serve(async (req) => {
       },
     });
 
+    // Short link ID for log (token fragment from action_link)
+    const linkId = (() => {
+      try {
+        const u = new URL(actionLink);
+        const tok = u.searchParams.get("token") || u.searchParams.get("token_hash") || "";
+        return tok ? tok.slice(0, 12) : actionLink.slice(-12);
+      } catch {
+        return null;
+      }
+    })();
+
     if (sendRes.error) {
       console.error("gmail-send error:", sendRes.error);
+      await logInvite({
+        organization_id: partner.organization_id,
+        partner_id,
+        recipient_email: email,
+        invite_kind: isResend ? "magiclink" : "invite",
+        status: "error",
+        link_id: linkId,
+        error_message: sendRes.error.message || "gmail-send failed",
+      });
       throw new Error(`Failed to send email: ${sendRes.error.message}`);
     }
 
+    await logInvite({
+      organization_id: partner.organization_id,
+      partner_id,
+      recipient_email: email,
+      invite_kind: isResend ? "magiclink" : "invite",
+      status: "sent",
+      link_id: linkId,
+    });
+
     return new Response(
-      JSON.stringify({ success: true, resent: isResend, email }),
+      JSON.stringify({ success: true, resent: isResend, email, link_id: linkId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e: any) {
