@@ -930,6 +930,7 @@ export default function Proposals() {
     { id: "pending",  label: "Pending",  count: proposals.filter(p => ["sent","viewed"].includes(p.status)).length },
     { id: "accepted", label: "Accepted", count: proposals.filter(p => p.status === "accepted").length },
     { id: "declined", label: "Declined", count: proposals.filter(p => p.status === "rejected").length },
+    ...(duplicateIds.size > 0 ? [{ id: "duplicates", label: "Duplicates", count: duplicateIds.size }] : []),
   ];
 
   return (
