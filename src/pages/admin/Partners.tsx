@@ -22,6 +22,7 @@ import { PartnerListItem } from "@/components/admin/PartnerListItem";
 import { PartnerDetailPanel } from "@/components/admin/PartnerDetailPanel";
 import { PartnerPipelineBoard } from "@/components/admin/PartnerPipelineBoard";
 import { PartnerControlModal } from "@/components/admin/PartnerControlModal";
+import { PartnerInviteLogsSheet } from "@/components/admin/PartnerInviteLogsSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
