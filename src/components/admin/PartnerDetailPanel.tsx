@@ -586,7 +586,98 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 </TabsContent>
               )}
 
-              {/* Notas Tab */}
+              {/* Comissões Tab */}
+              {showFullTabs && (
+                <TabsContent value="comissoes" className="px-4 pb-4 mt-0">
+                  <div className="pt-3 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-lg border border-emerald-200/60 bg-emerald-500/5 p-3">
+                        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-emerald-700 font-semibold">
+                          <CheckCircle2 className="w-3 h-3" /> Pagas
+                        </div>
+                        <p className="text-xl font-bold tabular-nums text-emerald-700 mt-1">
+                          ${commissions.totalPaid.toFixed(0)}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-amber-200/60 bg-amber-500/5 p-3">
+                        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-amber-700 font-semibold">
+                          <Clock className="w-3 h-3" /> Pendentes
+                        </div>
+                        <p className="text-xl font-bold tabular-nums text-amber-700 mt-1">
+                          ${commissions.totalPending.toFixed(0)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-muted-foreground px-0.5">
+                      {commissionPercent}% sobre o valor dos projetos indicados. Pagas quando o projeto está marcado como{" "}
+                      <span className="font-semibold text-foreground">paid</span>.
+                    </p>
+
+                    {commissions.rows.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <DollarSign className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">Nenhuma comissão ainda</p>
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-border/40 overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-muted/40 hover:bg-muted/40">
+                              <TableHead className="h-8 text-[10px] uppercase tracking-wide">Projeto</TableHead>
+                              <TableHead className="h-8 text-[10px] uppercase tracking-wide text-right">Valor</TableHead>
+                              <TableHead className="h-8 text-[10px] uppercase tracking-wide text-right">Comissão</TableHead>
+                              <TableHead className="h-8 text-[10px] uppercase tracking-wide text-center">Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {commissions.rows.map((r) => (
+                              <TableRow key={r.id}>
+                                <TableCell className="py-2">
+                                  <p className="text-xs font-medium text-foreground truncate max-w-[140px]">{r.customer}</p>
+                                  {r.date && (
+                                    <p className="text-[10px] text-muted-foreground">
+                                      {format(new Date(r.date), "dd/MM/yy")}
+                                    </p>
+                                  )}
+                                </TableCell>
+                                <TableCell className="py-2 text-right text-xs tabular-nums text-muted-foreground">
+                                  ${r.revenue.toFixed(0)}
+                                </TableCell>
+                                <TableCell className="py-2 text-right text-xs tabular-nums font-semibold text-foreground">
+                                  ${r.amount.toFixed(0)}
+                                </TableCell>
+                                <TableCell className="py-2 text-center">
+                                  {r.paid ? (
+                                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[10px]">
+                                      Paga
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 text-[10px]">
+                                      Pendente
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                          <TableFooter>
+                            <TableRow>
+                              <TableCell className="py-2 text-xs font-semibold">Total</TableCell>
+                              <TableCell />
+                              <TableCell className="py-2 text-right text-xs tabular-nums font-bold">
+                                ${(commissions.totalPaid + commissions.totalPending).toFixed(0)}
+                              </TableCell>
+                              <TableCell />
+                            </TableRow>
+                          </TableFooter>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              )}
+
               <TabsContent value="notas" className="px-4 pb-4 mt-0">
                 <div className="pt-3 space-y-5">
                   <NotesEditor partner={partner} />
