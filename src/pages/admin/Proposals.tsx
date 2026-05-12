@@ -866,6 +866,17 @@ export default function Proposals() {
     return dupes;
   }, [proposals]);
 
+  // Unique projects for filter dropdown
+  const projectOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    proposals.forEach(p => {
+      if (p.project_id && p.projects?.customer_name) {
+        map.set(p.project_id, p.projects.customer_name);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [proposals]);
+
   // Quick actions: send / accept / decline / delete duplicate
   const quickAction = useMutation({
     mutationFn: async ({ id, action, project_id, use_tiers }: { id: string; action: "send" | "accept" | "decline" | "delete"; project_id?: string; use_tiers?: boolean }) => {
