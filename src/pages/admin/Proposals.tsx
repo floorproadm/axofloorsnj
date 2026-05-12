@@ -1088,23 +1088,32 @@ export default function Proposals() {
                         ? p[`${selectedTier}_price` as keyof ProposalWithRelations] as number
                         : p.better_price;
 
+                    const isDuplicate = duplicateIds.has(p.id);
+                    const stop = (e: React.MouseEvent) => e.stopPropagation();
                     return (
                       <div key={p.id} className="group relative">
                         <button onClick={() => setSelected(p)} className="w-full text-left">
                           <div className={cn(
                             "flex items-center gap-3 p-3 rounded-lg border transition-all",
                             "hover:shadow-sm hover:border-primary/20 hover:bg-muted/30",
-                            "border-border/50 bg-card"
+                            isDuplicate ? "border-amber-500/40 bg-amber-500/5" : "border-border/50 bg-card"
                           )}>
                             <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                                {isDuplicate && (
+                                  <Badge className="text-[9px] h-4 px-1.5 bg-amber-500/15 text-amber-600 border border-amber-500/30 gap-0.5">
+                                    <AlertTriangle className="w-2.5 h-2.5" /> Duplicata
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground truncate">{c?.project_type}{c?.city ? ` · ${c.city}` : ""}</p>
                             </div>
                             {p.project_id && (
                               <Link
                                 to={`/admin/projects/${p.project_id}`}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={stop}
                                 className="hidden md:inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/30 px-1.5 py-0.5 rounded-md transition-colors"
                                 title="Open Job"
                               >
@@ -1116,6 +1125,59 @@ export default function Proposals() {
                               {isExpired ? "Expired" : displayStatus.label}
                             </Badge>
                             <span className="text-sm font-bold tabular-nums w-20 text-right flex-shrink-0">{fmt(displayPrice)}</span>
+
+                            {/* Quick actions */}
+                            <div className="flex items-center gap-1 flex-shrink-0" onClick={stop}>
+                              {isDuplicate && (
+                                <Button
+                                  size="sm" variant="ghost"
+                                  className="h-7 w-7 p-0 text-red-500 hover:bg-red-500/10"
+                                  title="Excluir duplicata"
+                                  disabled={quickAction.isPending}
+                                  onClick={() => {
+                                    if (confirm("Excluir esta proposta duplicada?")) {
+                                      quickAction.mutate({ id: p.id, action: "delete" });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                              {p.status === "draft" && !isDuplicate && (
+                                <Button
+                                  size="sm" variant="outline"
+                                  className="h-7 px-2 text-[11px] gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-500/10"
+                                  title="Enviar Proposta"
+                                  disabled={quickAction.isPending}
+                                  onClick={() => quickAction.mutate({ id: p.id, action: "send", project_id: p.project_id })}
+                                >
+                                  <Send className="w-3 h-3" /> Enviar
+                                </Button>
+                              )}
+                              {(p.status === "sent" || p.status === "viewed") && (
+                                <>
+                                  <Button
+                                    size="sm" variant="ghost"
+                                    className="h-7 w-7 p-0 text-emerald-600 hover:bg-emerald-500/10"
+                                    title="Marcar como Aceita"
+                                    disabled={quickAction.isPending}
+                                    onClick={() => quickAction.mutate({ id: p.id, action: "accept", project_id: p.project_id, use_tiers: p.use_tiers })}
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm" variant="ghost"
+                                    className="h-7 w-7 p-0 text-red-500 hover:bg-red-500/10"
+                                    title="Marcar como Recusada"
+                                    disabled={quickAction.isPending}
+                                    onClick={() => quickAction.mutate({ id: p.id, action: "decline", project_id: p.project_id })}
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+
                             <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 group-hover:text-foreground transition-colors" />
                           </div>
                         </button>
