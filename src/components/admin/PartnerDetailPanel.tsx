@@ -155,6 +155,37 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
     },
   });
 
+  const { data: commissionPercent = 7 } = useQuery({
+    queryKey: ["company-commission-percent"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("company_settings")
+        .select("referral_commission_percent")
+        .maybeSingle();
+      return Number((data as any)?.referral_commission_percent) || 7;
+    },
+  });
+
+  const commissions = useMemo(() => {
+    const rows = partnerProjects.map((p) => {
+      const revenue = Number(p.estimated_cost) || 0;
+      const amount = (revenue * commissionPercent) / 100;
+      const paid = p.project_status === "paid";
+      return {
+        id: p.id,
+        customer: p.customer_name,
+        address: [p.address, p.city].filter(Boolean).join(", "),
+        revenue,
+        amount,
+        paid,
+        date: p.completion_date || p.start_date,
+      };
+    });
+    const totalPaid = rows.filter((r) => r.paid).reduce((s, r) => s + r.amount, 0);
+    const totalPending = rows.filter((r) => !r.paid).reduce((s, r) => s + r.amount, 0);
+    return { rows, totalPaid, totalPending };
+  }, [partnerProjects, commissionPercent]);
+
   const startEdit = () => {
     setEditValues({
       company_name: partner.company_name,
