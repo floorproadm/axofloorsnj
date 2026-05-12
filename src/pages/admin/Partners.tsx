@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Handshake, Plus, Search, List, LayoutGrid } from "lucide-react";
+import { Handshake, Plus, Search, List, LayoutGrid, Mail } from "lucide-react";
 import {
   usePartnersData,
   Partner,
