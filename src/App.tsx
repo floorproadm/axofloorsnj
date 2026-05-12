@@ -58,7 +58,7 @@ import Auth from "./pages/Auth";
 import AdminAuth from "./pages/admin/AdminAuth";
 import Campaign from "./pages/Campaign";
 
-import FloorDiagnostic from "./pages/FloorDiagnostic";
+
 import AxoMasterSystem from "./pages/AxoMasterSystem";
 import WowPack from "./pages/WowPack";
 
@@ -116,7 +116,7 @@ const App = () => {
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
             <Route path="/partner-program" element={<PartnerProgram />} />
             
-            <Route path="/floor-diagnostic" element={<FloorDiagnostic />} />
+            <Route path="/floor-diagnostic" element={<Navigate to="/quiz" replace />} />
             <Route path="/axo-master-system" element={<AxoMasterSystem />} />
             <Route path="/wow-pack" element={<WowPack />} />
             
