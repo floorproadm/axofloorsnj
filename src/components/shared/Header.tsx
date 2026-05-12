@@ -11,7 +11,7 @@ const Header = () => {
 
   const navigation = [
     { name: "Services", href: "#", hasDropdown: true },
-    { name: "Fast Estimate", href: "/quiz" },
+    { name: "Smart Estimate", href: "/quiz" },
     { name: "Gallery", href: "/gallery" },
     { name: "Contact", href: "/contact" },
   ];
@@ -114,7 +114,7 @@ const Header = () => {
               {/* Fixed CTA Button */}
               <Button asChild className="ml-6 gold-gradient text-black font-semibold hover:scale-105 transition-bounce">
                 <Link to="/quiz" className="flex items-center gap-2">
-                  Fast Flooring Estimate
+                  Smart Estimate
                 </Link>
               </Button>
             </nav>

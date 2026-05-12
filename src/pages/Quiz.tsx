@@ -488,7 +488,7 @@ const Quiz = () => {
             {/* Header */}
             <div className="text-center mb-8 sm:mb-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading text-navy mb-4">
-                Get a Fast Flooring Estimate in 60 Seconds
+                Get Your Smart Estimate in 60 Seconds
               </h1>
               <p className="text-lg sm:text-xl text-grey mb-6">
                 Answer a few quick questions about your project — we'll send tailored options and a price range.
