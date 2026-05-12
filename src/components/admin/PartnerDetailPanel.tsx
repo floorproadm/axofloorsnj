@@ -437,8 +437,9 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
       </div>
 
       {!['prospect', 'contacted', 'meeting_scheduled'].includes(partner.status) && (
