@@ -1,6 +1,8 @@
 import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +47,22 @@ interface Props {
 export function PartnerControlModal({ partner, open, onOpenChange, onViewDetails }: Props) {
   const { advancePartner } = usePartnerPipeline();
   const { deletePartner } = usePartnersData();
+
+  const { data: inviteLogs = [] } = useQuery({
+    queryKey: ["partner-control-invite-logs", partner?.id, open],
+    enabled: open && !!partner?.id,
+    queryFn: async () => {
+      if (!partner?.id) return [];
+      const { data, error } = await supabase
+        .from("partner_invite_logs")
+        .select("id, created_at, recipient_email, status, link_id, invite_kind, error_message")
+        .eq("partner_id", partner.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   if (!partner) return null;
 
@@ -138,6 +156,40 @@ export function PartnerControlModal({ partner, open, onOpenChange, onViewDetails
             <Calendar className="w-3.5 h-3.5" />
             Criado em {format(new Date(partner.created_at), "dd/MM/yyyy")}
           </p>
+        </div>
+
+        {/* Invite history */}
+        <div className="mx-4 mb-3 overflow-hidden rounded-lg border border-border/50">
+          <div className="flex items-center justify-between border-b border-border/50 bg-muted/40 px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Histórico de convites
+            </p>
+            <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+              {inviteLogs.length}
+            </Badge>
+          </div>
+          {inviteLogs.length === 0 ? (
+            <div className="px-3 py-4 text-center text-xs text-muted-foreground">
+              Nenhum convite enviado ainda.
+            </div>
+          ) : (
+            <div className="max-h-36 divide-y divide-border/40 overflow-y-auto">
+              {inviteLogs.map((log) => (
+                <div key={log.id} className="px-3 py-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate font-medium text-foreground">{log.recipient_email}</span>
+                    <span className={log.status === "sent" ? "text-emerald-600" : "text-red-600"}>
+                      {log.status === "sent" ? "Enviado" : "Erro"}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <span>{format(new Date(log.created_at), "dd/MM/yy HH:mm")}</span>
+                    {log.link_id && <span className="font-mono">#{log.link_id}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Actions */}
