@@ -17,3 +17,5 @@ verify_jwt = false
 
 [functions.notify-partner-lead-progress]
 verify_jwt = false
+[functions.invite-partner-portal]
+verify_jwt = false
