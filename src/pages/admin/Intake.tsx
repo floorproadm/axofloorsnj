@@ -618,6 +618,10 @@ export default function Intake() {
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} placeholder="email@exemplo.com" />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Endereço do imóvel</Label>
+                <Input id="address" value={formData.address} onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))} placeholder="Rua, número, cidade" />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">Cidade</Label>
@@ -627,6 +631,26 @@ export default function Intake() {
                   <Label htmlFor="budget">Budget ($)</Label>
                   <Input id="budget" type="number" value={formData.budget} onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))} placeholder="0" />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="service">Tipo de serviço</Label>
+                <Select value={formData.service} onValueChange={(v) => setFormData(prev => ({ ...prev, service: v }))}>
+                  <SelectTrigger id="service"><SelectValue placeholder="Selecione o serviço" /></SelectTrigger>
+                  <SelectContent>
+                    {SERVICE_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="source">Fonte</Label>
+                <Select value={formData.source} onValueChange={(v) => setFormData(prev => ({ ...prev, source: v }))}>
+                  <SelectTrigger id="source"><SelectValue placeholder="Fonte do lead" /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SOURCE_LABELS).map(([key, info]) => (
+                      <SelectItem key={key} value={key}>{info.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">Observação</Label>
