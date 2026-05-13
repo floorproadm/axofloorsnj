@@ -3061,6 +3061,7 @@ export type Database = {
       }
       review_requests: {
         Row: {
+          attempts: number
           channel: string
           created_at: string
           customer_email: string | null
@@ -3069,6 +3070,8 @@ export type Database = {
           customer_phone: string | null
           error_message: string | null
           id: string
+          last_attempt_at: string | null
+          next_attempt_at: string | null
           organization_id: string
           project_address: string | null
           project_id: string | null
@@ -3080,6 +3083,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attempts?: number
           channel?: string
           created_at?: string
           customer_email?: string | null
@@ -3088,6 +3092,8 @@ export type Database = {
           customer_phone?: string | null
           error_message?: string | null
           id?: string
+          last_attempt_at?: string | null
+          next_attempt_at?: string | null
           organization_id: string
           project_address?: string | null
           project_id?: string | null
@@ -3099,6 +3105,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attempts?: number
           channel?: string
           created_at?: string
           customer_email?: string | null
@@ -3107,6 +3114,8 @@ export type Database = {
           customer_phone?: string | null
           error_message?: string | null
           id?: string
+          last_attempt_at?: string | null
+          next_attempt_at?: string | null
           organization_id?: string
           project_address?: string | null
           project_id?: string | null
@@ -3800,6 +3809,7 @@ export type Database = {
         Args: { p_partner_id: string; p_user_id: string }
         Returns: string
       }
+      retry_failed_review_requests: { Args: never; Returns: Json }
       run_sla_engine: { Args: never; Returns: Json }
       submit_partner_referral: {
         Args: {
