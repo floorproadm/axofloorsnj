@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { subWeeks, startOfWeek, endOfWeek, format, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { AXO_ORG_ID } from "@/lib/constants";
 
 // ── Weekly Review (inline, same component) ──────────────────────────────────
 import WeeklyReviewTab from "@/components/admin/performance/WeeklyReviewTab";
@@ -61,10 +62,55 @@ function OverviewTab() {
   const [period, setPeriod] = useState<Period>("90d");
   const [selectedProject, setSelectedProject] = useState<ProjectWithCosts | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const { projects: allProjects, monthlyRevenue, isLoading } = usePerformanceData();
-  const { performanceMetrics: m } = useDashboardData();
+  const { projects: allProjects, isLoading } = usePerformanceData();
 
   const periodStart = getPeriodStart(period);
+
+  // Real revenue source: paid invoices joined with projects + job_costs
+  const { data: paidInvoices = [], isLoading: loadingInv } = useQuery({
+    queryKey: ["performance-paid-invoices", period],
+    queryFn: async () => {
+      let q = supabase
+        .from("invoices")
+        .select("id, project_id, total_amount, paid_at, created_at, status, projects!inner(id, customer_name, project_type, project_status, start_date, completion_date, job_costs(id, estimated_revenue, total_cost, margin_percent, profit_amount, labor_cost, material_cost, additional_costs))")
+        .eq("organization_id", AXO_ORG_ID)
+        .eq("status", "paid");
+      if (periodStart) q = q.gte("paid_at", periodStart.toISOString());
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []).map((r: any) => ({
+        ...r,
+        projects: { ...r.projects, job_costs: Array.isArray(r.projects?.job_costs) ? r.projects.job_costs[0] ?? null : r.projects?.job_costs },
+      }));
+    },
+  });
+
+  // Per-project aggregation (avoid double counting cost across multiple invoices)
+  const projectAgg = useMemo(() => {
+    const map = new Map<string, { project: any; revenue: number }>();
+    paidInvoices.forEach((inv: any) => {
+      const pid = inv.project_id;
+      if (!pid) return;
+      const cur = map.get(pid) ?? { project: inv.projects, revenue: 0 };
+      cur.revenue += Number(inv.total_amount) || 0;
+      map.set(pid, cur);
+    });
+    return Array.from(map.values());
+  }, [paidInvoices]);
+
+  const totalRevenue = paidInvoices.reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0);
+  const projectsWithCosts = projectAgg.filter(a => (a.project?.job_costs?.total_cost ?? 0) > 0);
+  const totalCost = projectsWithCosts.reduce((s, a) => s + (a.project?.job_costs?.total_cost ?? 0), 0);
+  const totalLabor = projectsWithCosts.reduce((s, a) => s + (a.project?.job_costs?.labor_cost ?? 0), 0);
+  const totalMaterial = projectsWithCosts.reduce((s, a) => s + (a.project?.job_costs?.material_cost ?? 0), 0);
+  const totalProfit = totalRevenue - totalCost;
+  const hasCostData = projectsWithCosts.length > 0;
+  const avgMargin = hasCostData
+    ? projectsWithCosts.reduce((s, a) => s + (a.project?.job_costs?.margin_percent ?? 0), 0) / projectsWithCosts.length
+    : 0;
+  const avgJobValue = projectAgg.length > 0 ? totalRevenue / projectAgg.length : 0;
+
+  // Filter performance list (kept for completed jobs section UX)
   const projects = useMemo(() => {
     if (!periodStart) return allProjects;
     return allProjects.filter(p => {
@@ -72,54 +118,61 @@ function OverviewTab() {
       return d && new Date(d) >= periodStart;
     });
   }, [allProjects, periodStart]);
-
   const completedJobs = useMemo(() => projects.filter(p => p.project_status === "completed"), [projects]);
-  const totalRevenue = completedJobs.reduce((s, p) => s + (p.job_costs?.estimated_revenue ?? 0), 0);
-  const totalProfit = completedJobs.reduce((s, p) => s + (p.job_costs?.profit_amount ?? 0), 0);
-  const totalLabor = completedJobs.reduce((s, p) => s + (p.job_costs?.labor_cost ?? 0), 0);
-  const totalMaterial = completedJobs.reduce((s, p) => s + (p.job_costs?.material_cost ?? 0), 0);
-  const avgMargin = completedJobs.length > 0
-    ? completedJobs.reduce((s, p) => s + (p.job_costs?.margin_percent ?? 0), 0) / completedJobs.length : 0;
-  const avgJobValue = completedJobs.length > 0 ? totalRevenue / completedJobs.length : 0;
 
-  // Service breakdown
+  // Service breakdown (from paid invoices)
   const byService = useMemo(() => {
     const map: Record<string, { revenue: number; count: number; profit: number }> = {};
-    completedJobs.forEach(p => {
-      const type = p.project_type || "Other";
+    projectAgg.forEach(a => {
+      const type = a.project?.project_type || "Other";
       if (!map[type]) map[type] = { revenue: 0, count: 0, profit: 0 };
-      map[type].revenue += p.job_costs?.estimated_revenue ?? 0;
-      map[type].profit += p.job_costs?.profit_amount ?? 0;
+      map[type].revenue += a.revenue;
+      map[type].profit += (a.revenue - (a.project?.job_costs?.total_cost ?? 0));
       map[type].count += 1;
     });
     return Object.entries(map)
       .map(([name, v]) => ({ name: name.replace(" & ", " &\n"), ...v, margin: v.revenue > 0 ? (v.profit / v.revenue) * 100 : 0 }))
       .sort((a, b) => b.revenue - a.revenue);
-  }, [completedJobs]);
+  }, [projectAgg]);
 
-  // Chart: monthly with profit line
+  // Weekly chart: group paid invoices by ISO week
   const chartData = useMemo(() => {
-    const byMonth: Record<string, { revenue: number; profit: number }> = {};
-    completedJobs.forEach(p => {
-      const d = p.start_date || p.completion_date;
+    const byWeek: Record<string, { revenue: number; cost: number }> = {};
+    paidInvoices.forEach((inv: any) => {
+      const d = inv.paid_at || inv.created_at;
       if (!d) return;
-      const key = d.substring(0, 7);
-      if (!byMonth[key]) byMonth[key] = { revenue: 0, profit: 0 };
-      byMonth[key].revenue += p.job_costs?.estimated_revenue ?? 0;
-      byMonth[key].profit += p.job_costs?.profit_amount ?? 0;
+      const wkStart = startOfWeek(new Date(d), { weekStartsOn: 1 });
+      const key = format(wkStart, "yyyy-MM-dd");
+      if (!byWeek[key]) byWeek[key] = { revenue: 0, cost: 0 };
+      byWeek[key].revenue += Number(inv.total_amount) || 0;
     });
-    return Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b)).map(([key, v]) => ({
-      month: format(new Date(key + "-01"), "MMM yy"),
-      revenue: Math.round(v.revenue),
-      profit: Math.round(v.profit),
-    }));
-  }, [completedJobs]);
+    // Approximate weekly cost: distribute project total_cost across its invoices proportionally
+    const projTotals = new Map<string, number>();
+    paidInvoices.forEach((inv: any) => projTotals.set(inv.project_id, (projTotals.get(inv.project_id) ?? 0) + Number(inv.total_amount || 0)));
+    paidInvoices.forEach((inv: any) => {
+      const d = inv.paid_at || inv.created_at;
+      if (!d) return;
+      const cost = inv.projects?.job_costs?.total_cost ?? 0;
+      const totalForProj = projTotals.get(inv.project_id) ?? 0;
+      const share = totalForProj > 0 ? (Number(inv.total_amount) / totalForProj) : 0;
+      const wkStart = startOfWeek(new Date(d), { weekStartsOn: 1 });
+      const key = format(wkStart, "yyyy-MM-dd");
+      byWeek[key].cost += cost * share;
+    });
+    return Object.entries(byWeek)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => ({
+        month: format(new Date(k), "MMM d"),
+        revenue: Math.round(v.revenue),
+        profit: Math.round(v.revenue - v.cost),
+      }));
+  }, [paidInvoices]);
 
   const kpis = [
-    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${completedJobs.length} jobs` },
-    { label: "Net Profit", value: fmt(totalProfit), icon: TrendingUp, color: totalProfit >= 0 ? "text-emerald-500" : "text-red-500", sub: `${avgMargin.toFixed(1)}% avg margin` },
-    { label: "Avg Job Value", value: fmt(avgJobValue), icon: Briefcase, color: "text-blue-500", sub: `${completedJobs.length} completed` },
-    { label: "Labor + Material", value: fmt(totalLabor + totalMaterial), icon: Target, color: "text-muted-foreground", sub: `${fmt(totalLabor)} labor · ${fmt(totalMaterial)} mat.` },
+    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${paidInvoices.length} paid invoice${paidInvoices.length !== 1 ? "s" : ""}` },
+    { label: "Net Profit", value: hasCostData ? fmt(totalProfit) : "—", icon: TrendingUp, color: hasCostData ? (totalProfit >= 0 ? "text-emerald-500" : "text-red-500") : "text-muted-foreground", sub: hasCostData ? `${avgMargin.toFixed(1)}% avg margin` : "Set Job Costs" },
+    { label: "Avg Job Value", value: fmt(avgJobValue), icon: Briefcase, color: "text-blue-500", sub: `${projectAgg.length} job${projectAgg.length !== 1 ? "s" : ""} billed` },
+    { label: "Labor + Material", value: hasCostData ? fmt(totalLabor + totalMaterial) : "—", icon: Target, color: "text-muted-foreground", sub: hasCostData ? `${fmt(totalLabor)} labor · ${fmt(totalMaterial)} mat.` : "No cost data" },
   ];
 
   return (
@@ -161,15 +214,24 @@ function OverviewTab() {
       </div>
 
       {/* Avg Margin banner */}
-      <Card className={cn("border", avgMargin >= 30 ? "bg-emerald-500/5 border-emerald-500/20" : avgMargin >= 15 ? "bg-amber-500/5 border-amber-500/20" : "bg-red-500/5 border-red-500/20")}>
-        <CardContent className="p-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold">Average Margin</p>
-            <p className="text-xs text-muted-foreground">Target ≥ 30% · {avgMargin >= 30 ? "🟢 Excellent" : avgMargin >= 15 ? "🟡 Acceptable" : "🔴 Review Costs"}</p>
-          </div>
-          <span className={cn("text-3xl font-bold", marginColor(avgMargin))}>{avgMargin.toFixed(1)}%</span>
-        </CardContent>
-      </Card>
+      {hasCostData ? (
+        <Card className={cn("border", avgMargin >= 30 ? "bg-emerald-500/5 border-emerald-500/20" : avgMargin >= 15 ? "bg-amber-500/5 border-amber-500/20" : "bg-red-500/5 border-red-500/20")}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold">Average Margin</p>
+              <p className="text-xs text-muted-foreground">Target ≥ 30% · {avgMargin >= 30 ? "🟢 Excellent" : avgMargin >= 15 ? "🟡 Acceptable" : "🔴 Review Costs"}</p>
+            </div>
+            <span className={cn("text-3xl font-bold", marginColor(avgMargin))}>{avgMargin.toFixed(1)}%</span>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border border-amber-500/20 bg-amber-500/5">
+          <CardContent className="p-4">
+            <p className="text-sm font-semibold text-amber-600">Margem real indisponível</p>
+            <p className="text-xs text-muted-foreground mt-1">Complete os Job Costs dos projetos faturados para visualizar a margem real.</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Charts */}
       <div className="grid md:grid-cols-2 gap-4">
