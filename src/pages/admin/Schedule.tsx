@@ -67,6 +67,7 @@ const MONTHS = Array.from({ length: 12 }, (_, i) =>
 
 export default function Schedule() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"day" | "list" | "week">("day");
@@ -79,18 +80,87 @@ export default function Schedule() {
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Fetch appointments for the visible week
+  // Fetch appointments for the visible week (real + synthesized from projects/leads)
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ["appointments", format(weekStart, "yyyy-MM-dd"), format(weekEnd, "yyyy-MM-dd")],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("appointments")
-        .select("*")
-        .gte("appointment_date", format(weekStart, "yyyy-MM-dd"))
-        .lte("appointment_date", format(weekEnd, "yyyy-MM-dd"))
-        .order("appointment_time", { ascending: true });
-      if (error) throw error;
-      return data as Appointment[];
+      const startStr = format(weekStart, "yyyy-MM-dd");
+      const endStr = format(weekEnd, "yyyy-MM-dd");
+
+      const [apptRes, projRes, leadRes] = await Promise.all([
+        supabase
+          .from("appointments")
+          .select("*")
+          .eq("organization_id", AXO_ORG_ID)
+          .gte("appointment_date", startStr)
+          .lte("appointment_date", endStr)
+          .order("appointment_time", { ascending: true }),
+        supabase
+          .from("projects")
+          .select("id, customer_name, customer_phone, address, project_type, start_date")
+          .eq("organization_id", AXO_ORG_ID)
+          .not("start_date", "is", null)
+          .gte("start_date", startStr)
+          .lte("start_date", endStr),
+        supabase
+          .from("leads")
+          .select("id, name, phone, address, city, services, next_action_date, status")
+          .eq("organization_id", AXO_ORG_ID)
+          .eq("status", "estimate_scheduled")
+          .not("next_action_date", "is", null)
+          .gte("next_action_date", startStr)
+          .lte("next_action_date", endStr),
+      ]);
+
+      if (apptRes.error) throw apptRes.error;
+
+      const realAppts = (apptRes.data || []) as Appointment[];
+
+      const projectAppts: Appointment[] = (projRes.data || []).map((p: any) => ({
+        id: `proj-${p.id}` as any,
+        organization_id: AXO_ORG_ID,
+        appointment_type: "production",
+        appointment_date: p.start_date,
+        appointment_time: "08:00:00",
+        duration_hours: 8,
+        customer_name: p.customer_name || "Projeto",
+        customer_phone: p.customer_phone || "",
+        location: p.address || "",
+        notes: p.project_type || "",
+        project_id: p.id,
+        status: "scheduled",
+        assigned_to: [],
+        customer_id: null,
+        reminder_sent: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any));
+
+      const leadAppts: Appointment[] = (leadRes.data || []).map((l: any) => {
+        const svc = Array.isArray(l.services) && l.services.length > 0 ? String(l.services[0]) : "Visita de medição";
+        const loc = [l.address, l.city].filter(Boolean).join(", ");
+        return {
+          id: `lead-${l.id}` as any,
+          organization_id: AXO_ORG_ID,
+          appointment_type: "measurement",
+          appointment_date: l.next_action_date,
+          appointment_time: "09:00:00",
+          duration_hours: 1,
+          customer_name: l.name || "Lead",
+          customer_phone: l.phone || "",
+          location: loc,
+          notes: svc,
+          project_id: null,
+          status: "scheduled",
+          assigned_to: [],
+          customer_id: null,
+          reminder_sent: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any;
+      });
+
+      return [...realAppts, ...projectAppts, ...leadAppts];
     },
   });
 
