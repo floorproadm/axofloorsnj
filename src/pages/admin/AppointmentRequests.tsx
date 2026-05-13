@@ -86,15 +86,47 @@ export default function AppointmentRequests() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, status, admin_notes }: { id: string; status: string; admin_notes: string }) => {
-      const { error } = await supabase
-        .from("appointment_requests")
-        .update({ status, admin_notes })
-        .eq("id", id);
-      if (error) throw error;
+      const req = requests.find((r: any) => r.id === id);
+
+      // Lead-derived rows: transition lead status + (optionally) create appointment
+      if (req?._kind === "lead") {
+        const leadId = req._lead_id as string;
+        if (status === "confirmed") {
+          // Transition lead to estimate_scheduled if not already
+          if (req._lead_status !== "estimate_scheduled") {
+            const { error: txErr } = await supabase.rpc("transition_lead_status", {
+              p_lead_id: leadId, p_new_status: "estimate_scheduled",
+            });
+            if (txErr) throw txErr;
+          }
+          // Create matching appointment so it shows up on Schedule
+          await supabase.from("appointments").insert({
+            organization_id: AXO_ORG_ID,
+            appointment_type: "measurement",
+            appointment_date: req.preferred_date && req.preferred_date !== "—"
+              ? format(new Date(req.preferred_date), "yyyy-MM-dd")
+              : format(new Date(), "yyyy-MM-dd"),
+            appointment_time: "09:00:00",
+            duration_hours: 1,
+            customer_name: req.customer?.full_name || "Lead",
+            customer_phone: req.customer?.phone || "",
+            location: req.customer?.address || "",
+            notes: admin_notes || req.service_type || "Visita de medição",
+            status: "scheduled",
+          } as any);
+        } else if (status === "cancelled") {
+          await supabase.from("leads").update({ status: "lost" }).eq("id", leadId);
+        }
+      } else {
+        const { error } = await supabase
+          .from("appointment_requests")
+          .update({ status, admin_notes })
+          .eq("id", id);
+        if (error) throw error;
+      }
 
       // Send email on confirm/cancel
       if (status === "confirmed" || status === "cancelled") {
-        const req = requests.find((r: any) => r.id === id);
         const email = req?.requester_email || req?.customer?.email;
         if (email && status === "confirmed") {
           try {
@@ -116,6 +148,7 @@ export default function AppointmentRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointment_requests"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
       toast.success("Request updated");
       setSelected(null);
     },
