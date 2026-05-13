@@ -66,26 +66,33 @@ function OverviewTab() {
 
   const periodStart = getPeriodStart(period);
 
-  // Real revenue source: paid invoices joined with projects + job_costs
+  // Real revenue source: CONFIRMED invoice_payment payments joined with invoice + project + job_costs
   const { data: paidInvoices = [], isLoading: loadingInv } = useQuery({
     queryKey: ["performance-paid-invoices", period],
     queryFn: async () => {
       let q = supabase
-        .from("invoices")
-        .select("id, project_id, total_amount, paid_at, created_at, status, projects!inner(id, customer_name, project_type, project_status, start_date, completion_date, job_costs(id, estimated_revenue, total_cost, margin_percent, profit_amount, labor_cost, material_cost, additional_costs))")
+        .from("payments")
+        .select("id, amount, payment_date, invoice_id, project_id, invoices!inner(id, total_amount, paid_at, created_at), projects!inner(id, customer_name, project_type, project_status, start_date, completion_date, job_costs(id, estimated_revenue, total_cost, margin_percent, profit_amount, labor_cost, material_cost, additional_costs))")
         .eq("organization_id", AXO_ORG_ID)
-        .eq("status", "paid");
-      if (periodStart) q = q.gte("paid_at", periodStart.toISOString());
+        .eq("status", "confirmed")
+        .eq("category", "invoice_payment")
+        .not("invoice_id", "is", null);
+      if (periodStart) q = q.gte("payment_date", periodStart.toISOString().split("T")[0]);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []).map((r: any) => ({
-        ...r,
+        id: r.invoice_id,
+        project_id: r.project_id,
+        total_amount: r.amount,
+        paid_at: r.payment_date,
+        created_at: r.payment_date,
+        status: "paid",
         projects: { ...r.projects, job_costs: Array.isArray(r.projects?.job_costs) ? r.projects.job_costs[0] ?? null : r.projects?.job_costs },
       }));
     },
   });
 
-  // Per-project aggregation (avoid double counting cost across multiple invoices)
+  // Per-project aggregation (avoid double counting cost across multiple payments)
   const projectAgg = useMemo(() => {
     const map = new Map<string, { project: any; revenue: number }>();
     paidInvoices.forEach((inv: any) => {
@@ -169,7 +176,7 @@ function OverviewTab() {
   }, [paidInvoices]);
 
   const kpis = [
-    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${paidInvoices.length} paid invoice${paidInvoices.length !== 1 ? "s" : ""}` },
+    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${paidInvoices.length} confirmed payment${paidInvoices.length !== 1 ? "s" : ""}` },
     { label: "Net Profit", value: hasCostData ? fmt(totalProfit) : "—", icon: TrendingUp, color: hasCostData ? (totalProfit >= 0 ? "text-emerald-500" : "text-red-500") : "text-muted-foreground", sub: hasCostData ? `${avgMargin.toFixed(1)}% avg margin` : "Set Job Costs" },
     { label: "Avg Job Value", value: fmt(avgJobValue), icon: Briefcase, color: "text-blue-500", sub: `${projectAgg.length} job${projectAgg.length !== 1 ? "s" : ""} billed` },
     { label: "Labor + Material", value: hasCostData ? fmt(totalLabor + totalMaterial) : "—", icon: Target, color: "text-muted-foreground", sub: hasCostData ? `${fmt(totalLabor)} labor · ${fmt(totalMaterial)} mat.` : "No cost data" },

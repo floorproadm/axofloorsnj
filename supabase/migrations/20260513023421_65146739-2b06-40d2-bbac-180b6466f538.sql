@@ -1,0 +1,2 @@
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS invoice_id uuid REFERENCES public.invoices(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON public.payments(invoice_id);

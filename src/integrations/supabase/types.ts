@@ -2193,6 +2193,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          invoice_id: string | null
           notes: string | null
           organization_id: string
           payment_date: string
@@ -2208,6 +2209,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          invoice_id?: string | null
           notes?: string | null
           organization_id: string
           payment_date?: string
@@ -2223,6 +2225,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          invoice_id?: string | null
           notes?: string | null
           organization_id?: string
           payment_date?: string
@@ -2237,6 +2240,13 @@ export type Database = {
             columns: ["collaborator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
           {

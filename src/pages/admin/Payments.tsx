@@ -32,6 +32,7 @@ import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/ad
 import { MonthlyOverview } from "@/components/admin/payments/MonthlyOverview";
 import { FinancialOverviewChart } from "@/components/admin/payments/FinancialOverviewChart";
 import { PLPreviewDialog } from "@/components/admin/payments/PLPreviewDialog";
+import { InvoiceReconciliation } from "@/components/admin/payments/InvoiceReconciliation";
 import { format, isWithinInterval } from "date-fns";
 
 type ActiveTab = "payments" | "invoices";
@@ -364,6 +365,8 @@ export default function Payments() {
                     ))}
                   </div>
                 )}
+
+                <InvoiceReconciliation />
               </>
             )}
           </>
