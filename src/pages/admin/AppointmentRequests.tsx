@@ -194,6 +194,7 @@ export default function AppointmentRequests() {
           <div className="grid gap-3">
             {filtered.map((req: any) => {
               const c = req.customer;
+              const isPending = req.status === "pending" || req._kind === "lead" && req._lead_status === "estimate_requested";
               return (
                 <Card
                   key={req.id}
@@ -207,10 +208,24 @@ export default function AppointmentRequests() {
                         <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{format(new Date(req.preferred_date), "MMM d, yyyy")}</span>
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{req.preferred_time}</span>
                         {req.service_type && <span>{req.service_type}</span>}
+                        {c?.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{c.address}</span>}
+                        {req._kind === "lead" && <Badge variant="outline" className="text-[10px] h-4">Lead</Badge>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {req.status === "confirmed" && <Badge variant="outline" className="bg-blue-500/15 text-blue-400 border-blue-500/30 gap-1 text-[10px]"><Send className="w-2.5 h-2.5" />Email Sent</Badge>}
+                    <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                      {isPending && (
+                        <>
+                          <Button size="sm" variant="outline" className="h-7 text-xs gap-1"
+                            onClick={() => updateMutation.mutate({ id: req.id, status: "confirmed", admin_notes: req.admin_notes || "" })}>
+                            <CheckCircle2 className="w-3 h-3" /> Confirmar visita
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-destructive hover:text-destructive"
+                            onClick={() => updateMutation.mutate({ id: req.id, status: "cancelled", admin_notes: req.admin_notes || "" })}>
+                            <XCircle className="w-3 h-3" /> Recusar
+                          </Button>
+                        </>
+                      )}
+                      {req.status === "confirmed" && req._kind !== "lead" && <Badge variant="outline" className="bg-blue-500/15 text-blue-400 border-blue-500/30 gap-1 text-[10px]"><Send className="w-2.5 h-2.5" />Email Sent</Badge>}
                       <Badge variant="outline" className={statusColor(req.status)}>{req.status}</Badge>
                     </div>
                   </CardContent>
