@@ -365,6 +365,8 @@ export default function Payments() {
                     ))}
                   </div>
                 )}
+
+                <InvoiceReconciliation />
               </>
             )}
           </>
