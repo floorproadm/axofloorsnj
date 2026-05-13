@@ -43,6 +43,7 @@ import ProjectDocuments from './pages/admin/ProjectDocuments';
 import MeasurementsManager from './pages/admin/MeasurementsManager';
 import AdminSchedule from './pages/admin/Schedule';
 import AdminPerformance from './pages/admin/Performance';
+import AdminReputation from './pages/admin/Reputation';
 import AdminCatalog from './pages/admin/Catalog';
 import AdminHelp from './pages/admin/Help';
 import AdminPartners from './pages/admin/Partners';
@@ -207,6 +208,11 @@ const App = () => {
             <Route path="/admin/performance" element={
               <ProtectedRoute>
                 <AdminPerformance />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/reputation" element={
+              <ProtectedRoute>
+                <AdminReputation />
               </ProtectedRoute>
             } />
             <Route path="/admin/catalog" element={

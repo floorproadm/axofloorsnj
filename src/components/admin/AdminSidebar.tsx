@@ -12,6 +12,7 @@ import {
   Ruler,
   CalendarDays,
   BarChart3,
+  Star,
   FileText,
   BookOpen,
   HelpCircle,
@@ -71,6 +72,7 @@ export function AdminSidebar() {
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: t("sidebar.pagamentos"), url: "/admin/payments", icon: DollarSign },
     { title: "Performance", url: "/admin/performance", icon: BarChart3 },
+    { title: "Reputation", url: "/admin/reputation", icon: Star },
   ];
 
   const toolsItems = [
