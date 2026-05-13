@@ -125,8 +125,17 @@ export default function Intake() {
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', city: '', budget: '', notes: ''
+    name: '', phone: '', email: '', address: '', city: '', budget: '',
+    service: '', source: 'manual', notes: ''
   });
+
+  const SERVICE_OPTIONS = [
+    'Hardwood Installation',
+    'Sanding & Finish',
+    'Repair',
+    'Stairs',
+    'Other',
+  ];
 
   const fetchLeads = async () => {
     setIsLoading(true);
