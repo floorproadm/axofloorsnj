@@ -601,7 +601,7 @@ export default function Intake() {
 
         {/* Add Manual Lead Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Lead Manual</DialogTitle>
             </DialogHeader>
