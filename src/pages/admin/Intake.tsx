@@ -236,15 +236,21 @@ export default function Intake() {
     setIsSaving(true);
     try {
       const { error } = await supabase.from('leads').insert({
-        name: formData.name.trim(), phone: formData.phone.trim(),
-        email: formData.email.trim() || null, city: formData.city.trim() || null,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || null,
+        address: formData.address.trim() || null,
+        city: formData.city.trim() || null,
         budget: formData.budget ? parseFloat(formData.budget) : null,
         notes: formData.notes.trim() || null,
-        lead_source: 'manual', status: 'cold_lead', organization_id: AXO_ORG_ID,
+        services: formData.service ? [formData.service] : [],
+        lead_source: formData.source || 'manual',
+        status: 'cold_lead',
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
       toast({ title: "Lead adicionado", description: `${formData.name} foi adicionado.` });
-      setFormData({ name: '', phone: '', email: '', city: '', budget: '', notes: '' });
+      setFormData({ name: '', phone: '', email: '', address: '', city: '', budget: '', service: '', source: 'manual', notes: '' });
       setIsModalOpen(false);
       fetchLeads();
     } catch (error) {
