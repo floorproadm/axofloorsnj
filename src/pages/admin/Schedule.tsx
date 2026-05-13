@@ -226,7 +226,12 @@ export default function Schedule() {
   });
 
   const openNew = () => { setEditingAppointment(null); setTemplateDefaults(null); setModalOpen(true); };
-  const openEdit = (a: Appointment) => { setEditingAppointment(a); setTemplateDefaults(null); setModalOpen(true); };
+  const openEdit = (a: Appointment) => {
+    const id = String(a.id);
+    if (id.startsWith("proj-")) { navigate(`/admin/projects/${id.slice(5)}`); return; }
+    if (id.startsWith("lead-")) { navigate(`/admin/leads/${id.slice(5)}`); return; }
+    setEditingAppointment(a); setTemplateDefaults(null); setModalOpen(true);
+  };
   const openFromTemplate = (tpl: typeof SCHEDULE_TEMPLATES[number]) => {
     setEditingAppointment(null);
     setTemplateDefaults({ type: tpl.type, duration: tpl.duration_hours, time: tpl.default_time });
