@@ -12,6 +12,7 @@ import {
   Ruler,
   CalendarDays,
   BarChart3,
+  Star,
   FileText,
   BookOpen,
   HelpCircle,
