@@ -3059,6 +3059,81 @@ export type Database = {
           },
         ]
       }
+      review_requests: {
+        Row: {
+          channel: string
+          created_at: string
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string | null
+          error_message: string | null
+          id: string
+          organization_id: string
+          project_address: string | null
+          project_id: string | null
+          rating: number | null
+          responded_at: string | null
+          review_text: string | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          error_message?: string | null
+          id?: string
+          organization_id: string
+          project_address?: string | null
+          project_id?: string | null
+          rating?: number | null
+          responded_at?: string | null
+          review_text?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          error_message?: string | null
+          id?: string
+          organization_id?: string
+          project_address?: string | null
+          project_id?: string | null
+          rating?: number | null
+          responded_at?: string | null
+          review_text?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       service_catalog: {
         Row: {
           base_price: number
