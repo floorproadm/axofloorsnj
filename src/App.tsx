@@ -210,6 +210,11 @@ const App = () => {
                 <AdminPerformance />
               </ProtectedRoute>
             } />
+            <Route path="/admin/reputation" element={
+              <ProtectedRoute>
+                <AdminReputation />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/catalog" element={
               <ProtectedRoute>
                 <AdminCatalog />
