@@ -214,15 +214,24 @@ function OverviewTab() {
       </div>
 
       {/* Avg Margin banner */}
-      <Card className={cn("border", avgMargin >= 30 ? "bg-emerald-500/5 border-emerald-500/20" : avgMargin >= 15 ? "bg-amber-500/5 border-amber-500/20" : "bg-red-500/5 border-red-500/20")}>
-        <CardContent className="p-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold">Average Margin</p>
-            <p className="text-xs text-muted-foreground">Target ≥ 30% · {avgMargin >= 30 ? "🟢 Excellent" : avgMargin >= 15 ? "🟡 Acceptable" : "🔴 Review Costs"}</p>
-          </div>
-          <span className={cn("text-3xl font-bold", marginColor(avgMargin))}>{avgMargin.toFixed(1)}%</span>
-        </CardContent>
-      </Card>
+      {hasCostData ? (
+        <Card className={cn("border", avgMargin >= 30 ? "bg-emerald-500/5 border-emerald-500/20" : avgMargin >= 15 ? "bg-amber-500/5 border-amber-500/20" : "bg-red-500/5 border-red-500/20")}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold">Average Margin</p>
+              <p className="text-xs text-muted-foreground">Target ≥ 30% · {avgMargin >= 30 ? "🟢 Excellent" : avgMargin >= 15 ? "🟡 Acceptable" : "🔴 Review Costs"}</p>
+            </div>
+            <span className={cn("text-3xl font-bold", marginColor(avgMargin))}>{avgMargin.toFixed(1)}%</span>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border border-amber-500/20 bg-amber-500/5">
+          <CardContent className="p-4">
+            <p className="text-sm font-semibold text-amber-600">Margem real indisponível</p>
+            <p className="text-xs text-muted-foreground mt-1">Complete os Job Costs dos projetos faturados para visualizar a margem real.</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Charts */}
       <div className="grid md:grid-cols-2 gap-4">
