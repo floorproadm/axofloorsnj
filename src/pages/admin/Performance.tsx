@@ -176,7 +176,7 @@ function OverviewTab() {
   }, [paidInvoices]);
 
   const kpis = [
-    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${paidInvoices.length} paid invoice${paidInvoices.length !== 1 ? "s" : ""}` },
+    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-primary", sub: `${paidInvoices.length} confirmed payment${paidInvoices.length !== 1 ? "s" : ""}` },
     { label: "Net Profit", value: hasCostData ? fmt(totalProfit) : "—", icon: TrendingUp, color: hasCostData ? (totalProfit >= 0 ? "text-emerald-500" : "text-red-500") : "text-muted-foreground", sub: hasCostData ? `${avgMargin.toFixed(1)}% avg margin` : "Set Job Costs" },
     { label: "Avg Job Value", value: fmt(avgJobValue), icon: Briefcase, color: "text-blue-500", sub: `${projectAgg.length} job${projectAgg.length !== 1 ? "s" : ""} billed` },
     { label: "Labor + Material", value: hasCostData ? fmt(totalLabor + totalMaterial) : "—", icon: Target, color: "text-muted-foreground", sub: hasCostData ? `${fmt(totalLabor)} labor · ${fmt(totalMaterial)} mat.` : "No cost data" },
