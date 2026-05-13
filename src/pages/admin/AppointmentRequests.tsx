@@ -36,22 +36,51 @@ export default function AppointmentRequests() {
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["appointment_requests"],
     queryFn: async () => {
-      const { data: reqs, error } = await supabase
-        .from("appointment_requests")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
+      const [reqRes, leadRes] = await Promise.all([
+        supabase
+          .from("appointment_requests")
+          .select("*")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("leads")
+          .select("id, name, email, phone, address, city, services, status, created_at, next_action_date")
+          .in("status", ["estimate_requested", "estimate_scheduled"])
+          .order("created_at", { ascending: false }),
+      ]);
+      if (reqRes.error) throw reqRes.error;
 
-      const customerIds = [...new Set(reqs.map((r: any) => r.customer_id))];
-      if (customerIds.length === 0) return reqs.map((r: any) => ({ ...r, customer: null }));
+      const reqs = reqRes.data || [];
+      const customerIds = [...new Set(reqs.map((r: any) => r.customer_id).filter(Boolean))];
+      let cMap: Record<string, any> = {};
+      if (customerIds.length > 0) {
+        const { data: customers } = await supabase
+          .from("customers")
+          .select("id, full_name, email, phone, address")
+          .in("id", customerIds);
+        cMap = Object.fromEntries((customers || []).map((c: any) => [c.id, c]));
+      }
+      const realRequests = reqs.map((r: any) => ({ ...r, customer: cMap[r.customer_id] || null, _kind: "request" }));
 
-      const { data: customers } = await supabase
-        .from("customers")
-        .select("id, full_name, email, phone, address")
-        .in("id", customerIds);
+      const leadRequests = (leadRes.data || []).map((l: any) => {
+        const svc = Array.isArray(l.services) && l.services.length > 0 ? String(l.services[0]) : null;
+        const addr = [l.address, l.city].filter(Boolean).join(", ");
+        return {
+          id: `lead-${l.id}`,
+          _kind: "lead",
+          _lead_id: l.id,
+          _lead_status: l.status,
+          status: l.status === "estimate_scheduled" ? "confirmed" : "pending",
+          preferred_date: l.next_action_date || l.created_at,
+          preferred_time: "—",
+          service_type: svc,
+          notes: null,
+          admin_notes: null,
+          created_at: l.created_at,
+          customer: { full_name: l.name, email: l.email, phone: l.phone, address: addr },
+        };
+      });
 
-      const cMap = Object.fromEntries((customers || []).map((c: any) => [c.id, c]));
-      return reqs.map((r: any) => ({ ...r, customer: cMap[r.customer_id] || null }));
+      return [...realRequests, ...leadRequests];
     },
   });
 
