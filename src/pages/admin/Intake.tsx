@@ -125,8 +125,17 @@ export default function Intake() {
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', city: '', budget: '', notes: ''
+    name: '', phone: '', email: '', address: '', city: '', budget: '',
+    service: '', source: 'manual', notes: ''
   });
+
+  const SERVICE_OPTIONS = [
+    'Hardwood Installation',
+    'Sanding & Finish',
+    'Repair',
+    'Stairs',
+    'Other',
+  ];
 
   const fetchLeads = async () => {
     setIsLoading(true);
@@ -227,15 +236,21 @@ export default function Intake() {
     setIsSaving(true);
     try {
       const { error } = await supabase.from('leads').insert({
-        name: formData.name.trim(), phone: formData.phone.trim(),
-        email: formData.email.trim() || null, city: formData.city.trim() || null,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || null,
+        address: formData.address.trim() || null,
+        city: formData.city.trim() || null,
         budget: formData.budget ? parseFloat(formData.budget) : null,
         notes: formData.notes.trim() || null,
-        lead_source: 'manual', status: 'cold_lead', organization_id: AXO_ORG_ID,
+        services: formData.service ? [formData.service] : [],
+        lead_source: formData.source || 'manual',
+        status: 'cold_lead',
+        organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
       toast({ title: "Lead adicionado", description: `${formData.name} foi adicionado.` });
-      setFormData({ name: '', phone: '', email: '', city: '', budget: '', notes: '' });
+      setFormData({ name: '', phone: '', email: '', address: '', city: '', budget: '', service: '', source: 'manual', notes: '' });
       setIsModalOpen(false);
       fetchLeads();
     } catch (error) {
@@ -586,7 +601,7 @@ export default function Intake() {
 
         {/* Add Manual Lead Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Lead Manual</DialogTitle>
             </DialogHeader>
@@ -603,6 +618,10 @@ export default function Intake() {
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} placeholder="email@exemplo.com" />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Endereço do imóvel</Label>
+                <Input id="address" value={formData.address} onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))} placeholder="Rua, número, cidade" />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">Cidade</Label>
@@ -612,6 +631,26 @@ export default function Intake() {
                   <Label htmlFor="budget">Budget ($)</Label>
                   <Input id="budget" type="number" value={formData.budget} onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))} placeholder="0" />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="service">Tipo de serviço</Label>
+                <Select value={formData.service} onValueChange={(v) => setFormData(prev => ({ ...prev, service: v }))}>
+                  <SelectTrigger id="service"><SelectValue placeholder="Selecione o serviço" /></SelectTrigger>
+                  <SelectContent>
+                    {SERVICE_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="source">Fonte</Label>
+                <Select value={formData.source} onValueChange={(v) => setFormData(prev => ({ ...prev, source: v }))}>
+                  <SelectTrigger id="source"><SelectValue placeholder="Fonte do lead" /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SOURCE_LABELS).map(([key, info]) => (
+                      <SelectItem key={key} value={key}>{info.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">Observação</Label>
