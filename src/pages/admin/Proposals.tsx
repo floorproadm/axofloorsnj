@@ -285,6 +285,115 @@ function ShareModal({ proposal, open, onClose }: {
   );
 }
 
+// ─── Client Portal Modal ──────────────────────────────────────────────────────
+function ClientPortalModal({ proposal, open, onClose }: {
+  proposal: ProposalWithRelations;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const client = proposal.projects;
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const customerId = client?.customer_id;
+      if (!customerId) { setLoading(false); return; }
+      const { data } = await supabase
+        .from("customers")
+        .select("portal_token")
+        .eq("id", customerId)
+        .maybeSingle();
+      let t = (data as any)?.portal_token as string | null;
+      if (!t) {
+        const newToken = crypto.randomUUID().replace(/-/g, "");
+        const { error } = await supabase
+          .from("customers")
+          .update({ portal_token: newToken } as any)
+          .eq("id", customerId);
+        if (!error) t = newToken;
+      }
+      if (!cancelled) { setToken(t); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [open, client?.customer_id]);
+
+  const portalUrl = token ? `https://axofloorsnj.lovable.app/portal/${token}` : "";
+
+  const handleCopy = () => {
+    if (!portalUrl) return;
+    navigator.clipboard.writeText(portalUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success("Link copiado!");
+  };
+
+  const handleEmail = async () => {
+    if (!client?.customer_email) { toast.error("Cliente não tem email cadastrado"); return; }
+    if (!portalUrl) { toast.error("Token não disponível"); return; }
+    setSending(true);
+    try {
+      await sendGmailEmail("portal_access", {
+        recipient_email: client.customer_email,
+        customer_name: client.customer_name || "Valued Client",
+        portal_link: portalUrl,
+        related_id: proposal.id,
+        related_type: "proposal",
+      });
+      toast.success("Email enviado via Gmail");
+      onClose();
+    } catch (e: any) {
+      toast.error(e.message || "Falha ao enviar email");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Link2 className="w-4 h-4" /> Portal do Cliente
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 pt-2">
+          {loading ? (
+            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+          ) : !client?.customer_id ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Proposta sem cliente vinculado.</p>
+          ) : !token ? (
+            <p className="text-sm text-red-500 text-center py-4">Falha ao gerar token do portal.</p>
+          ) : (
+            <>
+              <div className="p-3 rounded-xl bg-muted/50 border border-border/50">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Link do Portal</p>
+                <p className="text-xs font-mono break-all text-foreground">{portalUrl}</p>
+              </div>
+              <Button variant="outline" className="w-full gap-2" onClick={handleCopy}>
+                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                {copied ? "Copiado!" : "Copiar Link"}
+              </Button>
+              <Button className="w-full gap-2" onClick={handleEmail} disabled={sending || !client?.customer_email}>
+                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MailIcon className="w-4 h-4" />}
+                {sending ? "Enviando..." : "Enviar por Email"}
+              </Button>
+              <p className="text-[11px] text-center text-muted-foreground">
+                O cliente acessa proposta, faturas e atualizações pelo link.
+              </p>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Print Proposal ───────────────────────────────────────────────────────────
 function printProposal(proposal: ProposalWithRelations) {
   const c = proposal.projects;
