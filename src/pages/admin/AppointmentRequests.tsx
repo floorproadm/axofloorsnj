@@ -252,15 +252,15 @@ export default function AppointmentRequests() {
                 {selected.customer?.email && (
                   <p className="flex items-center gap-2 text-muted-foreground"><Mail className="w-3.5 h-3.5" />{selected.customer.email}</p>
                 )}
-                {selected.customer?.address && (
-                  <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{selected.customer.address}</p>
+                {(selected.address || selected.customer?.address) && (
+                  <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{selected.address || selected.customer?.address}</p>
                 )}
                 <div className="flex gap-4 pt-1">
                   <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{format(new Date(selected.preferred_date), "MMM d, yyyy")}</span>
                   <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{selected.preferred_time}</span>
                 </div>
                 {selected.service_type && <p>Service: {selected.service_type}</p>}
-                {selected.notes && <p className="text-muted-foreground italic">"{selected.notes}"</p>}
+                {selected.notes && <p className="text-muted-foreground italic whitespace-pre-line">"{selected.notes}"</p>}
               </div>
 
               <div className="space-y-2">
