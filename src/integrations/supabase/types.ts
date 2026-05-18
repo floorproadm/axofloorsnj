@@ -467,6 +467,45 @@ export type Database = {
           },
         ]
       }
+      b2b_price_list: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          organization_id: string
+          retail_price: number | null
+          service_name: string
+          unit: string
+          updated_at: string
+          wholesale_price: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          organization_id: string
+          retail_price?: number | null
+          service_name: string
+          unit: string
+          updated_at?: string
+          wholesale_price?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          organization_id?: string
+          retail_price?: number | null
+          service_name?: string
+          unit?: string
+          updated_at?: string
+          wholesale_price?: number
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -2065,6 +2104,77 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      partner_quotes: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          created_by: string | null
+          declined_at: string | null
+          discount_percent: number
+          id: string
+          items: Json
+          job_address: string | null
+          notes: string | null
+          organization_id: string
+          partner_client_name: string | null
+          partner_id: string
+          quote_number: string | null
+          sent_at: string | null
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          declined_at?: string | null
+          discount_percent?: number
+          id?: string
+          items?: Json
+          job_address?: string | null
+          notes?: string | null
+          organization_id: string
+          partner_client_name?: string | null
+          partner_id: string
+          quote_number?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          declined_at?: string | null
+          discount_percent?: number
+          id?: string
+          items?: Json
+          job_address?: string | null
+          notes?: string | null
+          organization_id?: string
+          partner_client_name?: string | null
+          partner_id?: string
+          quote_number?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_quotes_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_users: {
         Row: {
