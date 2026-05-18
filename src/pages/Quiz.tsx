@@ -174,7 +174,7 @@ const Quiz = () => {
 
     // Pure new installation
     if (formData.serviceType === 'new-installation') {
-      return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+      return [...keys, 'floorType', 'materials', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
     }
 
     // Pure refinish
@@ -187,14 +187,14 @@ const Quiz = () => {
       keys.push('finishScope');
 
       if (formData.finishScope === 'new-floor') {
-        return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+        return [...keys, 'floorType', 'materials', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
       }
       if (formData.finishScope === 'existing') {
         return [...keys, 'condition', 'wood', 'livingDuringRefinish', 'area', 'colorChange', 'timeline', 'budget', 'contact'];
       }
       if (formData.finishScope === 'both') {
         // Hybrid: install track + condition of existing floors
-        return [...keys, 'floorType', 'location', 'subfloorGrade', 'condition', 'area', 'timeline', 'budget', 'contact'];
+        return [...keys, 'floorType', 'materials', 'location', 'subfloorGrade', 'condition', 'area', 'timeline', 'budget', 'contact'];
       }
       if (formData.finishScope === 'not-sure') {
         // Short consult path inside the combo route
@@ -214,7 +214,8 @@ const Quiz = () => {
   // True when this lead must be flagged for human consultation
   const needsConsultation = () =>
     formData.serviceType === 'not-sure' ||
-    (formData.serviceType === 'install-plus-refinish' && formData.finishScope === 'not-sure');
+    (formData.serviceType === 'install-plus-refinish' && formData.finishScope === 'not-sure') ||
+    formData.materialsStatus === 'needs_help';
 
   const getRecommendedService = () => {
     if (formData.serviceType === "new-installation") {
