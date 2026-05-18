@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
       const lastName = nameParts.slice(1).join(" ") || "";
 
       // Build scheduler link and proposal link
-      const schedulerLink = `${companyWebsite}/project-wizard`;
+      const schedulerLink = `${companyWebsite}/schedule-estimate?lead=${lead.id}`;
       const proposalLink = lead.converted_to_project_id
         ? `${companyWebsite}/proposal/${lead.converted_to_project_id}`
         : schedulerLink;

@@ -54,8 +54,9 @@ export type Database = {
         Row: {
           admin_notes: string | null
           created_at: string
-          customer_id: string
+          customer_id: string | null
           id: string
+          lead_id: string | null
           notes: string | null
           organization_id: string
           preferred_date: string
@@ -67,8 +68,9 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           created_at?: string
-          customer_id: string
+          customer_id?: string | null
           id?: string
+          lead_id?: string | null
           notes?: string | null
           organization_id: string
           preferred_date: string
@@ -80,8 +82,9 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           created_at?: string
-          customer_id?: string
+          customer_id?: string | null
           id?: string
+          lead_id?: string | null
           notes?: string | null
           organization_id?: string
           preferred_date?: string
@@ -97,6 +100,34 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "customers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_requests_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_requests_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_estimate_scheduled_stale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_requests_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_followup_overdue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_requests_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "view_stage_aging"
+            referencedColumns: ["lead_id"]
           },
           {
             foreignKeyName: "appointment_requests_organization_id_fkey"
