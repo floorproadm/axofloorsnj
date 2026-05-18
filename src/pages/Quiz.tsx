@@ -546,6 +546,10 @@ const Quiz = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Get Your Floor Estimate in 60 Seconds — AXO Floors NJ"
+        description="Answer 7 quick questions and get a real budget range for your hardwood project. No call required to start. NJ licensed & insured installers."
+      />
       <Header />
       
       <section className="py-12 sm:py-20">
