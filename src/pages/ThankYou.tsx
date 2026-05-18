@@ -65,6 +65,10 @@ const ThankYou = () => {
       </div>;
   }
   return <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Estimate Received — We’ll Call Within 24h | AXO Floors NJ"
+        description="Thanks! Your floor estimate request is in. A senior estimator will reach out within 24 hours with your tailored budget and next steps."
+      />
       <Header />
       
       <section className="py-12 sm:py-20">
