@@ -12,6 +12,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import HardwoodFlooring from "./pages/HardwoodFlooring";
+import Installation from "./pages/Installation";
 import Refinishing from "./pages/Refinishing";
 import VinylPlankFlooring from "./pages/VinylPlankFlooring";
 import Staircase from "./pages/Staircase";
