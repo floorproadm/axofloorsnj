@@ -1,7 +1,7 @@
-import { Users, DollarSign, Plus, Trophy, User } from "lucide-react";
+import { Users, DollarSign, Plus, Trophy, User, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type PartnerView = "pipeline" | "earnings" | "rewards" | "profile";
+export type PartnerView = "pipeline" | "earnings" | "quotes" | "rewards" | "profile";
 
 interface PartnerBottomNavProps {
   active: PartnerView;
@@ -12,6 +12,7 @@ interface PartnerBottomNavProps {
 const ITEMS: { key: PartnerView; label: string; icon: typeof Users }[] = [
   { key: "pipeline", label: "Pipeline", icon: Users },
   { key: "earnings", label: "Earnings", icon: DollarSign },
+  { key: "quotes", label: "Quotes", icon: FileText },
   { key: "rewards", label: "Rewards", icon: Trophy },
   { key: "profile", label: "Profile", icon: User },
 ];
