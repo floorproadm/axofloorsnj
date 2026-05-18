@@ -67,12 +67,10 @@ const Hero = ({
               {isPrimaryTel || isPrimaryExternal ? (
                 <a href={ctaPrimaryHref} className="flex items-center justify-center gap-2 text-black">
                   {ctaPrimary}
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                 </a>
               ) : (
                 <Link to={ctaPrimaryHref} className="flex items-center justify-center gap-2 text-black">
                   {ctaPrimary}
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                 </Link>
               )}
             </Button>
