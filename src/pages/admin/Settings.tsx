@@ -125,6 +125,7 @@ export default function Settings() {
               {active === "language" && <LanguageSettings />}
               {active === "email_logs" && <EmailLogsSettings />}
               {active === "email_templates" && <EmailTemplateEditor />}
+              {active === "b2b_pricing" && <B2BPricingSettings />}
             </Suspense>
           </div>
         </div>
