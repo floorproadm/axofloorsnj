@@ -912,6 +912,10 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
       {showShare && (
         <ShareModal proposal={proposal} open={showShare} onClose={() => setShowShare(false)} />
       )}
+
+      {showPortal && (
+        <ClientPortalModal proposal={proposal} open={showPortal} onClose={() => setShowPortal(false)} />
+      )}
     </>
   );
 }
