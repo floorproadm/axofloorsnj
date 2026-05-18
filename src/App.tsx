@@ -25,6 +25,7 @@ import BuilderPartnerships from "./pages/BuilderPartnerships";
 import PartnerProgram from "./pages/PartnerProgram";
 import Quiz from "./pages/Quiz";
 import ThankYou from "./pages/ThankYou";
+import ScheduleEstimate from "./pages/ScheduleEstimate";
 import ReferralProgram from "./pages/ReferralProgram";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
