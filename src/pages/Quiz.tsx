@@ -472,6 +472,12 @@ const Quiz = () => {
             'Tells us if you already have material, want us to supply it, or need help choosing.',
           );
         }
+        if (formData.materialsStatus === 'customer_has' && !formData.materialDelivered) {
+          return fail(
+            'Is the material already delivered on-site?',
+            'This helps us avoid scheduling installs before material arrives.',
+          );
+        }
         break;
       case 'condition':
         if (!formData.currentCondition) return fail('Please select the current condition');
