@@ -149,7 +149,7 @@ export default function ScheduleEstimate() {
         <SEOHead
           title="Estimate Request Received | AXO Floors"
           description="Your appointment request was received. We'll confirm your visit within 24 hours."
-          canonicalUrl="https://axofloorsnj.com/schedule-estimate"
+          canonical="https://axofloorsnj.com/schedule-estimate"
         />
         <main className="min-h-screen bg-[#f7f7f5] flex items-center justify-center px-4 py-12">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
@@ -183,7 +183,7 @@ export default function ScheduleEstimate() {
       <SEOHead
         title="Schedule Your Estimate | AXO Floors NJ"
         description="Pick a date and time for your hardwood floor estimate. We confirm within 24 hours."
-        canonicalUrl="https://axofloorsnj.com/schedule-estimate"
+        canonical="https://axofloorsnj.com/schedule-estimate"
       />
       <main className="min-h-screen bg-[#f7f7f5] py-8 px-4">
         <div className="max-w-lg mx-auto">
