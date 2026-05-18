@@ -168,7 +168,7 @@ const Contact = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button asChild className="gold-gradient hover:scale-105 transition-bounce text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto min-h-[48px] text-black font-semibold w-full sm:w-auto">
-              <a href="#quote-form" className="flex items-center justify-center gap-2">
+              <a href="/quiz" className="flex items-center justify-center gap-2">
                 Get My Free Estimate Now
               </a>
             </Button>
