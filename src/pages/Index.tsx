@@ -154,7 +154,7 @@ const Index = () => {
         image={homeHero}
         ctaPrimary="Get My Free Estimate"
         ctaSecondary="View Real Transformations"
-        ctaPrimaryHref="/contact"
+        ctaPrimaryHref="/quiz"
         ctaSecondaryHref="/gallery"
         trustLine="500+ Homes Transformed • 10+ Years Experience"
         showReviews={true}
