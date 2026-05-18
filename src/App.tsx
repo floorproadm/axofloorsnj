@@ -100,7 +100,8 @@ const App = () => {
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/hardwood-flooring" element={<HardwoodFlooring />} />
+            <Route path="/installation" element={<Installation />} />
+            <Route path="/hardwood-flooring" element={<Navigate to="/installation" replace />} />
             <Route path="/refinishing" element={<Refinishing />} />
             <Route path="/sanding-and-refinish" element={<Navigate to="/refinishing" replace />} />
             <Route path="/vinyl-plank-flooring" element={<VinylPlankFlooring />} />
