@@ -101,7 +101,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/hardwood-flooring" element={<HardwoodFlooring />} />
-            <Route path="/sanding-and-refinish" element={<SandingRefinish />} />
+            <Route path="/refinishing" element={<Refinishing />} />
+            <Route path="/sanding-and-refinish" element={<Navigate to="/refinishing" replace />} />
             <Route path="/vinyl-plank-flooring" element={<VinylPlankFlooring />} />
             <Route path="/staircase" element={<Staircase />} />
             <Route path="/base-boards" element={<BaseBoards />} />
