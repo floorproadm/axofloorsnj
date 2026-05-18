@@ -452,6 +452,18 @@ export default function PartnerDashboard() {
           </>
         )}
 
+        {/* QUOTES VIEW */}
+        {view === "quotes" && partner && (
+          <>
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Cotações B2B
+              </h2>
+              <PartnerQuotesTab partnerId={partner.id} />
+            </div>
+          </>
+        )}
+
         {/* PROFILE VIEW */}
         {view === "profile" && partner && (
           <PartnerProfileTab
