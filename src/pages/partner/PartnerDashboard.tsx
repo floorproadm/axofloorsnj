@@ -456,6 +456,8 @@ export default function PartnerDashboard() {
           <PartnerProfileTab
             partner={partner}
             email={authEmail}
+            liveReferrals={leads.length}
+            liveConverted={convertedLeads.length}
             onUpdated={loadData}
             onLogout={handleLogout}
           />
