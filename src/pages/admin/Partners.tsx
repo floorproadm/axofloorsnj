@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Handshake, Plus, Search, List, LayoutGrid, Mail } from "lucide-react";
+import { Handshake, Plus, Search, List, LayoutGrid, Mail, FileText } from "lucide-react";
 import {
   usePartnersData,
   Partner,
@@ -25,6 +25,7 @@ import { PartnerControlModal } from "@/components/admin/PartnerControlModal";
 import { PartnerInviteLogsSheet } from "@/components/admin/PartnerInviteLogsSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { B2BQuoteSheet } from "@/components/admin/B2BQuoteSheet";
 
 export default function Partners() {
   const { partners, isLoading } = usePartnersData();
@@ -37,6 +38,8 @@ export default function Partners() {
   const [controlModalId, setControlModalId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
   const [inviteLogsOpen, setInviteLogsOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const [quotePartnerId, setQuotePartnerId] = useState<string | null>(null);
 
   const handleViewMode = (mode: "list" | "board") => {
     setViewMode(mode);
@@ -178,13 +181,23 @@ export default function Partners() {
               </SelectContent>
             </Select>
           </div>
-          <Button
+          <div className="flex gap-2">
+            <Button
+              onClick={() => { setQuotePartnerId(null); setQuoteOpen(true); }}
+              variant="outline"
+              className="flex-1 h-9 gap-2"
+              size="sm"
+            >
+              <FileText className="w-4 h-4" /> Cotação B2B
+            </Button>
+            <Button
               onClick={() => setNewOpen(true)}
-              className="w-full h-9 gap-2"
+              className="flex-1 h-9 gap-2"
               size="sm"
             >
               <Plus className="w-4 h-4" /> Novo Partner
             </Button>
+          </div>
         </div>
 
         {/* Content: List or Board */}
@@ -234,6 +247,7 @@ export default function Partners() {
         onViewDetails={(id) => { setControlModalId(null); setSelectedId(id); }}
       />
       <PartnerInviteLogsSheet open={inviteLogsOpen} onOpenChange={setInviteLogsOpen} />
+      <B2BQuoteSheet open={quoteOpen} onOpenChange={setQuoteOpen} defaultPartnerId={quotePartnerId} />
     </AdminLayout>
   );
 }

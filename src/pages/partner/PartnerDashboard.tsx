@@ -11,6 +11,7 @@ import { PartnerLeadCard } from "@/components/partner/PartnerLeadCard";
 import { PartnerProfileTab } from "@/components/partner/PartnerProfileTab";
 import { PartnerBottomNav, type PartnerView } from "@/components/partner/PartnerBottomNav";
 import { PartnerPipelineBoard } from "@/components/partner/PartnerPipelineBoard";
+import { PartnerQuotesTab } from "@/components/partner/PartnerQuotesTab";
 import { cn } from "@/lib/utils";
 
 interface Lead {
@@ -448,6 +449,18 @@ export default function PartnerDashboard() {
                 })}
               </div>
             </Card>
+          </>
+        )}
+
+        {/* QUOTES VIEW */}
+        {view === "quotes" && partner && (
+          <>
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Cotações B2B
+              </h2>
+              <PartnerQuotesTab partnerId={partner.id} />
+            </div>
           </>
         )}
 
