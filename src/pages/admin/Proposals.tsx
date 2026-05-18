@@ -663,6 +663,12 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
               </div>
             )}
 
+            {!editing && (
+              <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setShowPortal(true)}>
+                <Link2 className="w-3.5 h-3.5" /> Portal do Cliente
+              </Button>
+            )}
+
             {/* Client info */}
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2.5">
               <div className="flex items-start justify-between">
