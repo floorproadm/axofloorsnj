@@ -712,7 +712,12 @@ const Quiz = () => {
                               ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
-                          onClick={() => setFormData(prev => ({ ...prev, materialsStatus: opt.value }))}
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            materialsStatus: opt.value,
+                            // Reset delivery answer if user changes their mind
+                            materialDelivered: opt.value === 'customer_has' ? prev.materialDelivered : '',
+                          }))}
                         >
                           <CardContent className="p-4">
                             <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
@@ -722,9 +727,39 @@ const Quiz = () => {
                       ))}
                     </div>
 
-                    <p className="text-xs text-grey text-center max-w-xl mx-auto">
-                      AXO is installers first. When we supply material, we coordinate ordering and delivery through our partner network and confirm everything in writing before any purchase.
-                    </p>
+                    {/* Sub-question: only when customer already has material */}
+                    {formData.materialsStatus === 'customer_has' && (
+                      <div className="max-w-2xl mx-auto pt-2 border-t border-grey/20">
+                        <h4 className="text-base font-semibold text-navy mb-3 text-center">
+                          Is the material already delivered on-site?
+                        </h4>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            { value: 'yes', label: 'Yes' },
+                            { value: 'no', label: 'No' },
+                            { value: 'not_sure', label: 'Not sure' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, materialDelivered: opt.value }))}
+                              className={`px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                                formData.materialDelivered === opt.value
+                                  ? 'border-gold bg-gold/10 text-navy'
+                                  : 'border-grey/20 text-grey hover:border-gold/50'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="text-xs text-grey text-center max-w-xl mx-auto space-y-1">
+                      <p>We're installers first.</p>
+                      <p>If you already have materials, we install. If we supply materials, we confirm product and lead time in writing before ordering.</p>
+                    </div>
                   </div>
                 )}
 
