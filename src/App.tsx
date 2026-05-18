@@ -13,6 +13,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import HardwoodFlooring from "./pages/HardwoodFlooring";
 import SandingRefinish from "./pages/SandingRefinish";
+import Refinishing from "./pages/Refinishing";
 import VinylPlankFlooring from "./pages/VinylPlankFlooring";
 import Staircase from "./pages/Staircase";
 import BaseBoards from "./pages/BaseBoards";
