@@ -1540,6 +1540,8 @@ export type Database = {
           last_contacted_at: string | null
           lead_source: string
           location: string | null
+          material_delivered: string | null
+          materials_status: string | null
           message: string | null
           name: string
           next_action_date: string | null
@@ -1571,6 +1573,8 @@ export type Database = {
           last_contacted_at?: string | null
           lead_source?: string
           location?: string | null
+          material_delivered?: string | null
+          materials_status?: string | null
           message?: string | null
           name: string
           next_action_date?: string | null
@@ -1602,6 +1606,8 @@ export type Database = {
           last_contacted_at?: string | null
           lead_source?: string
           location?: string | null
+          material_delivered?: string | null
+          materials_status?: string | null
           message?: string | null
           name?: string
           next_action_date?: string | null
