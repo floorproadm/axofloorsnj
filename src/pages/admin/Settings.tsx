@@ -63,6 +63,7 @@ export default function Settings() {
     { id: "language", label: t("settings.idioma"), description: t("settings.idiomaDesc"), icon: Globe },
     { id: "email_logs", label: "Email Logs", description: "Gmail email audit trail", icon: Mail },
     { id: "email_templates", label: "Email Templates", description: "Edit email copy & CTAs", icon: FileEdit },
+    { id: "b2b_pricing", label: "Preços B2B", description: "Tabela de atacado para parceiros", icon: Tag },
   ];
 
   return (
