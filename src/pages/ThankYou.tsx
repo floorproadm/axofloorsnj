@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
+import SEOHead from "@/components/shared/SEOHead";
 import { CheckCircle, Phone, Mail, Calendar, ArrowRight, Home, Gift } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 interface QuizData {
