@@ -55,11 +55,30 @@ const Quiz = () => {
     timeline: "",
     budget: "",
     colorChange: "", // for refinish
+    materialsStatus: "", // customer_has | axo_supply | needs_help (install paths)
     name: "",
     email: "",
     phone: "",
     city: ""
   });
+
+  const materialsOptions = [
+    {
+      value: "customer_has",
+      label: "Yes — I already bought it",
+      description: "We'll verify compatibility before scheduling.",
+    },
+    {
+      value: "axo_supply",
+      label: "Not yet — I want AXO to supply it",
+      description: "We'll confirm product + lead time in writing before ordering.",
+    },
+    {
+      value: "needs_help",
+      label: "Not sure — I need help choosing",
+      description: "We'll guide you to the right product for your subfloor and traffic.",
+    },
+  ];
 
   const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
     const sanitizedValue = sanitizeInput(value);
@@ -155,7 +174,7 @@ const Quiz = () => {
 
     // Pure new installation
     if (formData.serviceType === 'new-installation') {
-      return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+      return [...keys, 'floorType', 'materials', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
     }
 
     // Pure refinish
@@ -168,14 +187,14 @@ const Quiz = () => {
       keys.push('finishScope');
 
       if (formData.finishScope === 'new-floor') {
-        return [...keys, 'floorType', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
+        return [...keys, 'floorType', 'materials', 'location', 'subfloorGrade', 'area', 'timeline', 'budget', 'contact'];
       }
       if (formData.finishScope === 'existing') {
         return [...keys, 'condition', 'wood', 'livingDuringRefinish', 'area', 'colorChange', 'timeline', 'budget', 'contact'];
       }
       if (formData.finishScope === 'both') {
         // Hybrid: install track + condition of existing floors
-        return [...keys, 'floorType', 'location', 'subfloorGrade', 'condition', 'area', 'timeline', 'budget', 'contact'];
+        return [...keys, 'floorType', 'materials', 'location', 'subfloorGrade', 'condition', 'area', 'timeline', 'budget', 'contact'];
       }
       if (formData.finishScope === 'not-sure') {
         // Short consult path inside the combo route
@@ -195,7 +214,8 @@ const Quiz = () => {
   // True when this lead must be flagged for human consultation
   const needsConsultation = () =>
     formData.serviceType === 'not-sure' ||
-    (formData.serviceType === 'install-plus-refinish' && formData.finishScope === 'not-sure');
+    (formData.serviceType === 'install-plus-refinish' && formData.finishScope === 'not-sure') ||
+    formData.materialsStatus === 'needs_help';
 
   const getRecommendedService = () => {
     if (formData.serviceType === "new-installation") {
@@ -270,7 +290,27 @@ const Quiz = () => {
 
     try {
       console.log('Starting quiz submission with data:', formData);
-      
+
+      // Materials phrase + tags
+      const materialsNote =
+        formData.materialsStatus === 'customer_has' ? 'Client has material.' :
+        formData.materialsStatus === 'axo_supply' ? 'AXO to supply material (sales order via partner).' :
+        formData.materialsStatus === 'needs_help' ? 'Client needs help choosing material.' : '';
+
+      const tags: string[] = [];
+      if (needsConsultation()) tags.push('NEEDS_CONSULTATION');
+      if (formData.materialsStatus === 'axo_supply') tags.push('MATERIAL_SUPPLY');
+
+      const notesString =
+        `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, ` +
+        `SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, ` +
+        `Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, ` +
+        `Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, ` +
+        `BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, ` +
+        `Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}, ` +
+        `Materials: ${formData.materialsStatus || 'N/A'}${materialsNote ? ` — ${materialsNote}` : ''}` +
+        (tags.length ? ` | ${tags.join(' | ')}` : '');
+
       // Store quiz results in Supabase leads table with sanitized data
       const quizData = {
         name: sanitizeInput(formData.name),
@@ -285,6 +325,7 @@ const Quiz = () => {
         budget: formData.budget === "10k-plus" ? 15000 : 
                 formData.budget === "5k-10k" ? 7500 :
                 formData.budget === "2k-5k" ? 3500 : 2000,
+        notes: notesString,
         organization_id: AXO_ORG_ID,
       };
 
@@ -318,7 +359,7 @@ const Quiz = () => {
             city: quizData.city,
             priority: quizData.priority,
             status: 'cold_lead',
-            notes: `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}${needsConsultation() ? ' | NEEDS_CONSULTATION' : ''}`
+            notes: notesString,
           }
         });
         console.log('Quiz lead sent to Notion successfully');
@@ -422,6 +463,14 @@ const Quiz = () => {
         break;
       case 'floorType':
         if (!formData.floorType) return fail('Please select a flooring type');
+        break;
+      case 'materials':
+        if (!formData.materialsStatus) {
+          return fail(
+            'Please pick an option',
+            'Tells us if you already have material, want us to supply it, or need help choosing.',
+          );
+        }
         break;
       case 'condition':
         if (!formData.currentCondition) return fail('Please select the current condition');
@@ -582,7 +631,7 @@ const Quiz = () => {
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What type of flooring are you interested in?
                       </h3>
-                      <p className="text-grey">Select the flooring type that best fits your needs</p>
+                      <p className="text-grey">This helps us choose the right installation method and prep.</p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -634,6 +683,41 @@ const Quiz = () => {
                         </Card>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Step: Materials (Install paths only) */}
+                {stepKey === 'materials' && (
+                  <div className="space-y-6">
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
+                        Do you already have the flooring picked out and on order?
+                      </h3>
+                      <p className="text-grey">This affects scheduling, delivery timing, and the install plan.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
+                      {materialsOptions.map((opt) => (
+                        <Card
+                          key={opt.value}
+                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                            formData.materialsStatus === opt.value
+                              ? 'border-gold bg-gold/10'
+                              : 'border-grey/20 hover:border-gold/50'
+                          }`}
+                          onClick={() => setFormData(prev => ({ ...prev, materialsStatus: opt.value }))}
+                        >
+                          <CardContent className="p-4">
+                            <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
+                            <p className="text-sm text-grey">{opt.description}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    <p className="text-xs text-grey text-center max-w-xl mx-auto">
+                      AXO is installers first. When we supply material, we coordinate ordering and delivery through our partner network and confirm everything in writing before any purchase.
+                    </p>
                   </div>
                 )}
 
