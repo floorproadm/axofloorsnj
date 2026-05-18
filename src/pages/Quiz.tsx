@@ -443,6 +443,14 @@ const Quiz = () => {
       case 'floorType':
         if (!formData.floorType) return fail('Please select a flooring type');
         break;
+      case 'materials':
+        if (!formData.materialsStatus) {
+          return fail(
+            'Please pick an option',
+            'Tells us if you already have material, want us to supply it, or need help choosing.',
+          );
+        }
+        break;
       case 'condition':
         if (!formData.currentCondition) return fail('Please select the current condition');
         break;
