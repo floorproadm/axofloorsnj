@@ -334,6 +334,8 @@ const Quiz = () => {
                 formData.budget === "5k-10k" ? 7500 :
                 formData.budget === "2k-5k" ? 3500 : 2000,
         notes: notesString,
+        materials_status: formData.materialsStatus || null,
+        material_delivered: formData.materialsStatus === 'customer_has' ? (formData.materialDelivered || null) : null,
         organization_id: AXO_ORG_ID,
       };
 
