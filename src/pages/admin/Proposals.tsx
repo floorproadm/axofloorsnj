@@ -535,6 +535,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
 }) {
   const qc = useQueryClient();
   const [showShare, setShowShare] = useState(false);
+  const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editUseTiers, setEditUseTiers] = useState(true);
