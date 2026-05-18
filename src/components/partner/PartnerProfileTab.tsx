@@ -136,8 +136,8 @@ export function PartnerProfileTab({ partner, email, liveReferrals, liveConverted
           <p className="text-sm font-semibold">Lifetime stats</p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
-          <Stat label="Referrals" value={partner.total_referrals} />
-          <Stat label="Converted" value={partner.total_converted} />
+          <Stat label="Referrals" value={refCount} />
+          <Stat label="Converted" value={convCount} />
           <Stat label="Rate" value={`${conversionRate}%`} />
         </div>
       </Card>
