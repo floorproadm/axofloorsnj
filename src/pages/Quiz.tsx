@@ -56,6 +56,7 @@ const Quiz = () => {
     budget: "",
     colorChange: "", // for refinish
     materialsStatus: "", // customer_has | axo_supply | needs_help (install paths)
+    materialDelivered: "", // yes | no | not_sure (only when customer_has)
     name: "",
     email: "",
     phone: "",
@@ -294,12 +295,19 @@ const Quiz = () => {
       // Materials phrase + tags
       const materialsNote =
         formData.materialsStatus === 'customer_has' ? 'Client has material.' :
-        formData.materialsStatus === 'axo_supply' ? 'AXO to supply material (sales order via partner).' :
+        formData.materialsStatus === 'axo_supply' ? 'AXO supplying material (SO issued by supply; client pays; AXO receives store credit).' :
         formData.materialsStatus === 'needs_help' ? 'Client needs help choosing material.' : '';
+
+      const deliveryNote =
+        formData.materialsStatus === 'customer_has' && formData.materialDelivered
+          ? ` Delivered: ${formData.materialDelivered}.`
+          : '';
 
       const tags: string[] = [];
       if (needsConsultation()) tags.push('NEEDS_CONSULTATION');
       if (formData.materialsStatus === 'axo_supply') tags.push('MATERIAL_SUPPLY');
+      if (formData.materialsStatus === 'customer_has' && formData.materialDelivered === 'no') tags.push('MATERIAL_NOT_DELIVERED');
+      if (formData.materialsStatus === 'customer_has' && formData.materialDelivered === 'not_sure') tags.push('MATERIAL_DELIVERY_UNKNOWN');
 
       const notesString =
         `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, ` +
@@ -308,7 +316,7 @@ const Quiz = () => {
         `Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, ` +
         `BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, ` +
         `Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}, ` +
-        `Materials: ${formData.materialsStatus || 'N/A'}${materialsNote ? ` — ${materialsNote}` : ''}` +
+        `Materials: ${formData.materialsStatus || 'N/A'}${materialsNote ? ` — ${materialsNote}` : ''}${deliveryNote}` +
         (tags.length ? ` | ${tags.join(' | ')}` : '');
 
       // Store quiz results in Supabase leads table with sanitized data
@@ -326,6 +334,8 @@ const Quiz = () => {
                 formData.budget === "5k-10k" ? 7500 :
                 formData.budget === "2k-5k" ? 3500 : 2000,
         notes: notesString,
+        materials_status: formData.materialsStatus || null,
+        material_delivered: formData.materialsStatus === 'customer_has' ? (formData.materialDelivered || null) : null,
         organization_id: AXO_ORG_ID,
       };
 
@@ -469,6 +479,12 @@ const Quiz = () => {
           return fail(
             'Please pick an option',
             'Tells us if you already have material, want us to supply it, or need help choosing.',
+          );
+        }
+        if (formData.materialsStatus === 'customer_has' && !formData.materialDelivered) {
+          return fail(
+            'Is the material already delivered on-site?',
+            'This helps us avoid scheduling installs before material arrives.',
           );
         }
         break;
@@ -705,7 +721,12 @@ const Quiz = () => {
                               ? 'border-gold bg-gold/10'
                               : 'border-grey/20 hover:border-gold/50'
                           }`}
-                          onClick={() => setFormData(prev => ({ ...prev, materialsStatus: opt.value }))}
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            materialsStatus: opt.value,
+                            // Reset delivery answer if user changes their mind
+                            materialDelivered: opt.value === 'customer_has' ? prev.materialDelivered : '',
+                          }))}
                         >
                           <CardContent className="p-4">
                             <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
@@ -715,9 +736,39 @@ const Quiz = () => {
                       ))}
                     </div>
 
-                    <p className="text-xs text-grey text-center max-w-xl mx-auto">
-                      AXO is installers first. When we supply material, we coordinate ordering and delivery through our partner network and confirm everything in writing before any purchase.
-                    </p>
+                    {/* Sub-question: only when customer already has material */}
+                    {formData.materialsStatus === 'customer_has' && (
+                      <div className="max-w-2xl mx-auto pt-2 border-t border-grey/20">
+                        <h4 className="text-base font-semibold text-navy mb-3 text-center">
+                          Is the material already delivered on-site?
+                        </h4>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            { value: 'yes', label: 'Yes' },
+                            { value: 'no', label: 'No' },
+                            { value: 'not_sure', label: 'Not sure' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, materialDelivered: opt.value }))}
+                              className={`px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                                formData.materialDelivered === opt.value
+                                  ? 'border-gold bg-gold/10 text-navy'
+                                  : 'border-grey/20 text-grey hover:border-gold/50'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="text-xs text-grey text-center max-w-xl mx-auto space-y-1">
+                      <p>We're installers first.</p>
+                      <p>If you already have materials, we install. If we supply materials, we confirm product and lead time in writing before ordering.</p>
+                    </div>
                   </div>
                 )}
 
