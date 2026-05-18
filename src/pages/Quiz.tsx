@@ -290,7 +290,27 @@ const Quiz = () => {
 
     try {
       console.log('Starting quiz submission with data:', formData);
-      
+
+      // Materials phrase + tags
+      const materialsNote =
+        formData.materialsStatus === 'customer_has' ? 'Client has material.' :
+        formData.materialsStatus === 'axo_supply' ? 'AXO to supply material (sales order via partner).' :
+        formData.materialsStatus === 'needs_help' ? 'Client needs help choosing material.' : '';
+
+      const tags: string[] = [];
+      if (needsConsultation()) tags.push('NEEDS_CONSULTATION');
+      if (formData.materialsStatus === 'axo_supply') tags.push('MATERIAL_SUPPLY');
+
+      const notesString =
+        `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, ` +
+        `SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, ` +
+        `Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, ` +
+        `Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, ` +
+        `BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, ` +
+        `Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}, ` +
+        `Materials: ${formData.materialsStatus || 'N/A'}${materialsNote ? ` — ${materialsNote}` : ''}` +
+        (tags.length ? ` | ${tags.join(' | ')}` : '');
+
       // Store quiz results in Supabase leads table with sanitized data
       const quizData = {
         name: sanitizeInput(formData.name),
@@ -305,6 +325,7 @@ const Quiz = () => {
         budget: formData.budget === "10k-plus" ? 15000 : 
                 formData.budget === "5k-10k" ? 7500 :
                 formData.budget === "2k-5k" ? 3500 : 2000,
+        notes: notesString,
         organization_id: AXO_ORG_ID,
       };
 
@@ -338,7 +359,7 @@ const Quiz = () => {
             city: quizData.city,
             priority: quizData.priority,
             status: 'cold_lead',
-            notes: `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, SqFt: ${formData.squareFootage || 'N/S'}, Timeline: ${formData.timeline || 'N/S'}, Wood: ${formData.woodType || 'N/A'}, Condition: ${formData.currentCondition || 'N/A'}, Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}${needsConsultation() ? ' | NEEDS_CONSULTATION' : ''}`
+            notes: notesString,
           }
         });
         console.log('Quiz lead sent to Notion successfully');
