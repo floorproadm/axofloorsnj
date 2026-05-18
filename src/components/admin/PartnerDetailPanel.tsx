@@ -550,11 +550,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                       <Button onClick={startEdit} variant="outline" className="flex-1">
                         <Pencil className="w-4 h-4 mr-1" /> Editar
                       </Button>
-                      <Button onClick={handleLogContact} disabled={saving} variant="secondary">
-                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4 mr-1" />}
-                        Registrar Contato
-                      </Button>
-                      
                     </div>
                   </div>
                 )}
