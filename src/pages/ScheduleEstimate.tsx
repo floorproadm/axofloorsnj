@@ -106,8 +106,9 @@ export default function ScheduleEstimate() {
             email: email.trim() || null,
             phone: phone.trim(),
             address: address.trim() || null,
-            service_interest: serviceType || null,
-            notes: notes.trim() || null,
+            notes: [serviceType && `Service: ${serviceType}`, notes.trim()]
+              .filter(Boolean)
+              .join("\n") || null,
             lead_source: "schedule_estimate",
           })
           .select("id")
