@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { template, data, organization_id } = await req.json();
-    const orgId = organization_id || "00000000-0000-0000-0000-000000000001";
+    const orgId = organization_id || "a0000000-0000-0000-0000-000000000001";
 
     if (!template) {
       return new Response(JSON.stringify({ error: "template required" }), {
