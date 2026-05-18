@@ -25,6 +25,7 @@ import { PartnerControlModal } from "@/components/admin/PartnerControlModal";
 import { PartnerInviteLogsSheet } from "@/components/admin/PartnerInviteLogsSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { B2BQuoteSheet } from "@/components/admin/B2BQuoteSheet";
 
 export default function Partners() {
   const { partners, isLoading } = usePartnersData();
