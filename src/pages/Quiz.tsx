@@ -295,12 +295,19 @@ const Quiz = () => {
       // Materials phrase + tags
       const materialsNote =
         formData.materialsStatus === 'customer_has' ? 'Client has material.' :
-        formData.materialsStatus === 'axo_supply' ? 'AXO to supply material (sales order via partner).' :
+        formData.materialsStatus === 'axo_supply' ? 'AXO supplying material (SO issued by supply; client pays; AXO receives store credit).' :
         formData.materialsStatus === 'needs_help' ? 'Client needs help choosing material.' : '';
+
+      const deliveryNote =
+        formData.materialsStatus === 'customer_has' && formData.materialDelivered
+          ? ` Delivered: ${formData.materialDelivered}.`
+          : '';
 
       const tags: string[] = [];
       if (needsConsultation()) tags.push('NEEDS_CONSULTATION');
       if (formData.materialsStatus === 'axo_supply') tags.push('MATERIAL_SUPPLY');
+      if (formData.materialsStatus === 'customer_has' && formData.materialDelivered === 'no') tags.push('MATERIAL_NOT_DELIVERED');
+      if (formData.materialsStatus === 'customer_has' && formData.materialDelivered === 'not_sure') tags.push('MATERIAL_DELIVERY_UNKNOWN');
 
       const notesString =
         `Quiz - Service: ${formData.serviceType}${formData.finishScope ? ` (scope: ${formData.finishScope})` : ''}, ` +
@@ -309,7 +316,7 @@ const Quiz = () => {
         `Color: ${formData.colorChange || 'N/A'}, Subfloor: ${formData.subfloor || 'N/A'}, ` +
         `BelowGrade: ${formData.belowGrade || 'N/A'}, LivingDuringRefinish: ${formData.livingDuringRefinish || 'N/A'}, ` +
         `Stairs: ${formData.stairsIncluded || 'N/A'}${formData.stairsCount ? ` (${formData.stairsCount} steps)` : ''}, ` +
-        `Materials: ${formData.materialsStatus || 'N/A'}${materialsNote ? ` — ${materialsNote}` : ''}` +
+        `Materials: ${formData.materialsStatus || 'N/A'}${materialsNote ? ` — ${materialsNote}` : ''}${deliveryNote}` +
         (tags.length ? ` | ${tags.join(' | ')}` : '');
 
       // Store quiz results in Supabase leads table with sanitized data
