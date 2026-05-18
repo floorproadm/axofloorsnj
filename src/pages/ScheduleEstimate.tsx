@@ -123,12 +123,10 @@ export default function ScheduleEstimate() {
         preferred_date: format(date, "yyyy-MM-dd"),
         preferred_time: time,
         service_type: serviceType || null,
+        address: address.trim() || null,
         notes: [
           notes.trim(),
-          address ? `Address: ${address}` : "",
-          email ? `Email: ${email}` : "",
-          `Phone: ${phone}`,
-          `Name: ${name}`,
+          `Contact: ${name} · ${phone}${email ? ` · ${email}` : ""}`,
         ]
           .filter(Boolean)
           .join("\n") || null,
