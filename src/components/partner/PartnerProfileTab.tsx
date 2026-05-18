@@ -22,11 +22,13 @@ interface Partner {
 interface Props {
   partner: Partner;
   email: string;
+  liveReferrals?: number;
+  liveConverted?: number;
   onUpdated: () => void;
   onLogout: () => void;
 }
 
-export function PartnerProfileTab({ partner, email, onUpdated, onLogout }: Props) {
+export function PartnerProfileTab({ partner, email, liveReferrals, liveConverted, onUpdated, onLogout }: Props) {
   const { toast } = useToast();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,10 +62,10 @@ export function PartnerProfileTab({ partner, email, onUpdated, onLogout }: Props
     onUpdated();
   };
 
+  const refCount = liveReferrals ?? partner.total_referrals;
+  const convCount = liveConverted ?? partner.total_converted;
   const conversionRate =
-    partner.total_referrals > 0
-      ? ((partner.total_converted / partner.total_referrals) * 100).toFixed(0)
-      : "0";
+    refCount > 0 ? ((convCount / refCount) * 100).toFixed(0) : "0";
 
   return (
     <div className="space-y-4">
@@ -134,8 +136,8 @@ export function PartnerProfileTab({ partner, email, onUpdated, onLogout }: Props
           <p className="text-sm font-semibold">Lifetime stats</p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
-          <Stat label="Referrals" value={partner.total_referrals} />
-          <Stat label="Converted" value={partner.total_converted} />
+          <Stat label="Referrals" value={refCount} />
+          <Stat label="Converted" value={convCount} />
           <Stat label="Rate" value={`${conversionRate}%`} />
         </div>
       </Card>

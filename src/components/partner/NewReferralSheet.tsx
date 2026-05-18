@@ -161,7 +161,7 @@ export function NewReferralSheet({ open, onOpenChange, onCreated }: Props) {
                 <SelectTrigger id="service">
                   <SelectValue placeholder="Select service" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[200]">
                   <SelectItem value="refinishing">Refinishing</SelectItem>
                   <SelectItem value="installation">Installation</SelectItem>
                   <SelectItem value="repair">Repair</SelectItem>
@@ -179,7 +179,7 @@ export function NewReferralSheet({ open, onOpenChange, onCreated }: Props) {
                 <SelectTrigger id="urgency">
                   <SelectValue placeholder="Select urgency" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[200]">
                   <SelectItem value="asap">ASAP</SelectItem>
                   <SelectItem value="this_month">This month</SelectItem>
                   <SelectItem value="next_3_months">Next 3 months</SelectItem>
