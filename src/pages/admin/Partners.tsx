@@ -247,6 +247,7 @@ export default function Partners() {
         onViewDetails={(id) => { setControlModalId(null); setSelectedId(id); }}
       />
       <PartnerInviteLogsSheet open={inviteLogsOpen} onOpenChange={setInviteLogsOpen} />
+      <B2BQuoteSheet open={quoteOpen} onOpenChange={setQuoteOpen} defaultPartnerId={quotePartnerId} />
     </AdminLayout>
   );
 }
