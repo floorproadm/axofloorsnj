@@ -11,6 +11,7 @@ import { PartnerLeadCard } from "@/components/partner/PartnerLeadCard";
 import { PartnerProfileTab } from "@/components/partner/PartnerProfileTab";
 import { PartnerBottomNav, type PartnerView } from "@/components/partner/PartnerBottomNav";
 import { PartnerPipelineBoard } from "@/components/partner/PartnerPipelineBoard";
+import { PartnerQuotesTab } from "@/components/partner/PartnerQuotesTab";
 import { cn } from "@/lib/utils";
 
 interface Lead {
