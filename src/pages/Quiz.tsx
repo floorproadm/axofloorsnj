@@ -665,6 +665,41 @@ const Quiz = () => {
                   </div>
                 )}
 
+                {/* Step: Materials (Install paths only) */}
+                {stepKey === 'materials' && (
+                  <div className="space-y-6">
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-heading font-bold text-navy mb-2">
+                        Do you already have the flooring picked out and on order?
+                      </h3>
+                      <p className="text-grey">This affects scheduling, delivery timing, and the install plan.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
+                      {materialsOptions.map((opt) => (
+                        <Card
+                          key={opt.value}
+                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                            formData.materialsStatus === opt.value
+                              ? 'border-gold bg-gold/10'
+                              : 'border-grey/20 hover:border-gold/50'
+                          }`}
+                          onClick={() => setFormData(prev => ({ ...prev, materialsStatus: opt.value }))}
+                        >
+                          <CardContent className="p-4">
+                            <h4 className="font-semibold text-navy mb-1">{opt.label}</h4>
+                            <p className="text-sm text-grey">{opt.description}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    <p className="text-xs text-grey text-center max-w-xl mx-auto">
+                      AXO is installers first. When we supply material, we coordinate ordering and delivery through our partner network and confirm everything in writing before any purchase.
+                    </p>
+                  </div>
+                )}
+
                 {/* Step: Location (Install paths) */}
                 {stepKey === 'location' && (
                   <div className="space-y-6">
