@@ -56,6 +56,7 @@ const Quiz = () => {
     budget: "",
     colorChange: "", // for refinish
     materialsStatus: "", // customer_has | axo_supply | needs_help (install paths)
+    materialDelivered: "", // yes | no | not_sure (only when customer_has)
     name: "",
     email: "",
     phone: "",
