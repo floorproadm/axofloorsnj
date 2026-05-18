@@ -179,8 +179,17 @@ Deno.serve(async (req) => {
         ? `${companyWebsite}/proposal/${lead.converted_to_project_id}`
         : schedulerLink;
 
-      // Build HTML buttons
-      const viewRequestButton = `<a href="${schedulerLink}" style="display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0">Schedule Your Estimate</a>`;
+      // Build HTML buttons — hybrid: primary phone CTA + secondary scheduler
+      const telHref = `tel:${(companyPhone || "").replace(/[^0-9+]/g, "")}`;
+      const viewRequestButton = `
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:16px 0">
+          <tr><td>
+            <a href="${telHref}" style="display:inline-block;background:#0f1b3d;color:#fff!important;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:700;font-size:16px">📞 Call ${companyPhone}</a>
+          </td></tr>
+          <tr><td style="padding-top:10px;text-align:center">
+            <a href="${schedulerLink}" style="color:#8B6914;text-decoration:underline;font-size:14px;font-weight:600">Or pick a time online →</a>
+          </td></tr>
+        </table>`;
       const viewQuoteButton = `<a href="${proposalLink}" style="display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0">View Your Proposal</a>`;
 
       // Interpolate variables
