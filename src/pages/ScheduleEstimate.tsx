@@ -65,7 +65,7 @@ export default function ScheduleEstimate() {
     (async () => {
       const { data } = await supabase
         .from("leads")
-        .select("id, name, email, phone, address, service_interest")
+        .select("id, name, email, phone, address")
         .eq("id", leadIdParam)
         .maybeSingle();
       if (data) {
@@ -74,7 +74,6 @@ export default function ScheduleEstimate() {
         setEmail(data.email || "");
         setPhone(data.phone || "");
         setAddress(data.address || "");
-        if (data.service_interest) setServiceType(data.service_interest);
       }
     })();
   }, [leadIdParam]);
