@@ -55,11 +55,30 @@ const Quiz = () => {
     timeline: "",
     budget: "",
     colorChange: "", // for refinish
+    materialsStatus: "", // customer_has | axo_supply | needs_help (install paths)
     name: "",
     email: "",
     phone: "",
     city: ""
   });
+
+  const materialsOptions = [
+    {
+      value: "customer_has",
+      label: "Yes — I already bought it",
+      description: "We'll verify compatibility before scheduling.",
+    },
+    {
+      value: "axo_supply",
+      label: "Not yet — I want AXO to supply it",
+      description: "We'll confirm product + lead time in writing before ordering.",
+    },
+    {
+      value: "needs_help",
+      label: "Not sure — I need help choosing",
+      description: "We'll guide you to the right product for your subfloor and traffic.",
+    },
+  ];
 
   const handleFieldChange = (field: string, value: string, rules: string[] = []) => {
     const sanitizedValue = sanitizeInput(value);
