@@ -83,6 +83,7 @@ interface ProposalWithRelations {
   use_tiers: boolean;
   flat_price: number | null;
   projects: {
+    customer_id: string | null;
     customer_name: string;
     customer_email: string;
     customer_phone: string;
@@ -820,7 +821,7 @@ export default function Proposals() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("proposals")
-        .select("*, projects(customer_name, customer_email, customer_phone, project_type, address, city, zip_code, square_footage)")
+        .select("*, projects(customer_id, customer_name, customer_email, customer_phone, project_type, address, city, zip_code, square_footage)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []).map((d: any) => ({
