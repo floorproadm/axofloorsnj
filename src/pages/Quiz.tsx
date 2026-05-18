@@ -610,7 +610,7 @@ const Quiz = () => {
                       <h3 className="text-2xl font-heading font-bold text-navy mb-2">
                         What type of flooring are you interested in?
                       </h3>
-                      <p className="text-grey">Select the flooring type that best fits your needs</p>
+                      <p className="text-grey">This helps us choose the right installation method and prep.</p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
