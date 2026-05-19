@@ -65,7 +65,8 @@ import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
 import { PartnerChecklist } from "@/components/admin/PartnerChecklist";
 import { InvitePartnerDialog } from "@/components/admin/InvitePartnerDialog";
-import { KeyRound } from "lucide-react";
+import { KeyRound, FileText } from "lucide-react";
+import { B2BQuoteSheet } from "@/components/admin/B2BQuoteSheet";
 
 
 const statusColors: Record<string, string> = {
@@ -98,6 +99,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
   const [newJobOpen, setNewJobOpen] = useState(false);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
 
   const initials = partner.contact_name
     .split(" ")
@@ -342,7 +344,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       )}
 
       {/* Quick Action Bar */}
-      <div className="grid grid-cols-3 gap-2 p-4 border-b border-border/50">
+      <div className="grid grid-cols-4 gap-2 p-4 border-b border-border/50">
         {partner.phone ? (
           <a
             href={`tel:${partner.phone}`}
@@ -385,6 +387,13 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
             <span className="text-xs font-medium">Email</span>
           </div>
         )}
+        <button
+          onClick={() => setQuoteOpen(true)}
+          className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 transition-colors"
+        >
+          <FileText className="w-5 h-5" />
+          <span className="text-xs font-medium">Cotação B2B</span>
+        </button>
       </div>
 
       {/* Portal Access CTA */}
@@ -711,6 +720,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
         open={inviteOpen}
         onOpenChange={setInviteOpen}
       />
+      <B2BQuoteSheet open={quoteOpen} onOpenChange={setQuoteOpen} defaultPartnerId={partner.id} />
     </div>
   );
 }
