@@ -344,7 +344,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       )}
 
       {/* Quick Action Bar */}
-      <div className="grid grid-cols-3 gap-2 p-4 border-b border-border/50">
+      <div className="grid grid-cols-4 gap-2 p-4 border-b border-border/50">
         {partner.phone ? (
           <a
             href={`tel:${partner.phone}`}
