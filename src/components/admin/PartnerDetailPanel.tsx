@@ -387,6 +387,13 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
             <span className="text-xs font-medium">Email</span>
           </div>
         )}
+        <button
+          onClick={() => setQuoteOpen(true)}
+          className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 transition-colors"
+        >
+          <FileText className="w-5 h-5" />
+          <span className="text-xs font-medium">Cotação B2B</span>
+        </button>
       </div>
 
       {/* Portal Access CTA */}
