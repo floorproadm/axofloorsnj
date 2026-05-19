@@ -720,6 +720,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
         open={inviteOpen}
         onOpenChange={setInviteOpen}
       />
+      <B2BQuoteSheet open={quoteOpen} onOpenChange={setQuoteOpen} defaultPartnerId={partner.id} />
     </div>
   );
 }
