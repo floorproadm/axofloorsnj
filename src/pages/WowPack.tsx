@@ -147,10 +147,10 @@ const WowPack = () => {
                   <CardContent className="p-6">
                     <p className="text-xs tracking-wider uppercase text-accent mb-2 font-medium">General Manager</p>
                     <h3 className="font-heading text-xl font-bold text-foreground mb-3">Eduardo Oliveira</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-2">Eduardo is your point of contact from the first call to the final walkthrough. Fluent in English and Portuguese, with 8 years in premium flooring, he translates complex technical decisions into clear, honest guidance.</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-2">Eduardo is your point of contact from the first call to the final walkthrough. Fluent in English and Portuguese, with 10 years in premium flooring, he translates complex technical decisions into clear, honest guidance.</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">He's the one who answers your questions before you even ask them — and the one who calls you after every project to make sure you love what you see.</p>
                     <div className="mt-5 pt-4 border-t border-border flex items-baseline gap-2">
-                      <span className="font-heading text-3xl text-accent font-bold">8</span>
+                      <span className="font-heading text-3xl text-accent font-bold">10</span>
                       <span className="text-xs text-muted-foreground">years serving<br />NJ · NY · PA</span>
                     </div>
                   </CardContent>
