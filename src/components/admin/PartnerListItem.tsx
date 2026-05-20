@@ -1,6 +1,6 @@
 import { Phone, Mail } from "lucide-react";
-import { formatDistanceToNow, subDays, isAfter } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { isAfter, subDays } from "date-fns";
+
 import { Partner, PARTNER_TYPES } from "@/hooks/admin/usePartnersData";
 import { cn } from "@/lib/utils";
 
@@ -39,12 +39,6 @@ export function PartnerListItem({ partner, isSelected, onSelect }: Props) {
 
   const isChurned = partner.status === "churned";
 
-  const lastContactText = partner.last_contacted_at
-    ? formatDistanceToNow(new Date(partner.last_contacted_at), {
-        addSuffix: true,
-        locale: ptBR,
-      })
-    : null;
 
   return (
     <button
@@ -102,13 +96,6 @@ export function PartnerListItem({ partner, isSelected, onSelect }: Props) {
           )}
         </div>
 
-        {lastContactText ? (
-          <p className={cn("text-[10px] mt-0.5", isAtRisk ? "text-amber-600" : "text-muted-foreground/60")}>
-            {lastContactText}
-          </p>
-        ) : (
-          <p className="text-[10px] mt-0.5 text-red-500/70">Sem contato</p>
-        )}
       </div>
 
       {/* Quick actions */}
