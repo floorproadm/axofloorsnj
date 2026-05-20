@@ -72,7 +72,6 @@ export function AdminSidebar() {
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: t("sidebar.pagamentos"), url: "/admin/payments", icon: DollarSign },
     { title: "Performance", url: "/admin/performance", icon: BarChart3 },
-    { title: "Reputation", url: "/admin/reputation", icon: Star },
   ];
 
   const toolsItems = [
@@ -81,6 +80,7 @@ export function AdminSidebar() {
     { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
     { title: t("sidebar.medicoes"), url: "/admin/measurements", icon: Ruler },
     { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
+    { title: "Reputation", url: "/admin/reputation", icon: Star },
   ];
 
   const manageItems = [
