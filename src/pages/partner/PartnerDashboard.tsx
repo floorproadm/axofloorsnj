@@ -194,10 +194,11 @@ export default function PartnerDashboard() {
             </p>
           </div>
           <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
-            {tier.name}
+            {partner?.partner_program === "trade" ? "Trade" : tier.name}
           </span>
         </div>
       </header>
+
 
       <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
         {/* PIPELINE VIEW */}
@@ -218,14 +219,17 @@ export default function PartnerDashboard() {
                 </div>
                 <p className="text-2xl font-bold tabular-nums">{conversionRate}%</p>
               </Card>
-              <Card className="p-3">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                  <DollarSign className="w-3 h-3" />
-                  <span>Earned</span>
-                </div>
-                <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
-              </Card>
+              {partner?.partner_program !== "trade" && (
+                <Card className="p-3">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <DollarSign className="w-3 h-3" />
+                    <span>Earned</span>
+                  </div>
+                  <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
+                </Card>
+              )}
             </div>
+
 
             {leads.length > 0 && (
               <div>
