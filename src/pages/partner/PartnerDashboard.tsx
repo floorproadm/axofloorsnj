@@ -204,7 +204,7 @@ export default function PartnerDashboard() {
         {/* PIPELINE VIEW */}
         {view === "pipeline" && (
           <>
-            <div className="grid grid-cols-3 gap-2">
+            <div className={cn("grid gap-2", partner?.partner_program === "trade" ? "grid-cols-2" : "grid-cols-3")}>
               <Card className="p-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                   <Users className="w-3 h-3" />
