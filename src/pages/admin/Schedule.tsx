@@ -261,7 +261,7 @@ export default function Schedule() {
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
               >
                 <CalendarDays className="w-4 h-4 mr-1.5" />
-                Schedule & Appointment
+                Schedule
               </TabsTrigger>
               <TabsTrigger
                 value="appointments"
