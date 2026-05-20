@@ -161,7 +161,7 @@ export default function Reputation() {
             {isLoading ? (
               <div className="text-sm text-muted-foreground py-8 text-center">Carregando…</div>
             ) : requests.length === 0 ? (
-              <div className="text-sm text-muted-foreground py-8 text-center">Nenhum pedido ainda. Marque um job como completed para disparar automaticamente.</div>
+              <div className="text-sm text-muted-foreground py-8 text-center">Nenhum pedido ainda. Use a lista de jobs concluídos acima para enviar manualmente.</div>
             ) : (
               <div className="space-y-1.5">
                 {requests.map(r => (
