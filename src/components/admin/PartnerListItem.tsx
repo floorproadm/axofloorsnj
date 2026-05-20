@@ -102,13 +102,6 @@ export function PartnerListItem({ partner, isSelected, onSelect }: Props) {
           )}
         </div>
 
-        {lastContactText ? (
-          <p className={cn("text-[10px] mt-0.5", isAtRisk ? "text-amber-600" : "text-muted-foreground/60")}>
-            {lastContactText}
-          </p>
-        ) : (
-          <p className="text-[10px] mt-0.5 text-red-500/70">Sem contato</p>
-        )}
       </div>
 
       {/* Quick actions */}
