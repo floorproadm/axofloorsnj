@@ -2,14 +2,16 @@ import { Users, DollarSign, Plus, Trophy, User, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type PartnerView = "pipeline" | "earnings" | "quotes" | "rewards" | "profile";
+export type PartnerProgram = "referral" | "trade";
 
 interface PartnerBottomNavProps {
   active: PartnerView;
   onChange: (v: PartnerView) => void;
   onNewReferral: () => void;
+  program?: PartnerProgram;
 }
 
-const ITEMS: { key: PartnerView; label: string; icon: typeof Users }[] = [
+const ALL_ITEMS: { key: PartnerView; label: string; icon: typeof Users }[] = [
   { key: "pipeline", label: "Pipeline", icon: Users },
   { key: "earnings", label: "Earnings", icon: DollarSign },
   { key: "quotes", label: "Quotes", icon: FileText },
@@ -17,10 +19,54 @@ const ITEMS: { key: PartnerView; label: string; icon: typeof Users }[] = [
   { key: "profile", label: "Profile", icon: User },
 ];
 
-export function PartnerBottomNav({ active, onChange, onNewReferral }: PartnerBottomNavProps) {
-  // Render as: [Pipeline, Earnings, FAB, Rewards, Profile]
-  const left = ITEMS.slice(0, 2);
-  const right = ITEMS.slice(2);
+export function PartnerBottomNav({ active, onChange, onNewReferral, program = "referral" }: PartnerBottomNavProps) {
+  // Trade partners: only Quotes + Pipeline + Profile, no FAB (no referrals to create)
+  // Referral partners: full nav with center FAB to create new referral
+  const isTrade = program === "trade";
+
+  const items = isTrade
+    ? ALL_ITEMS.filter((i) => i.key === "quotes" || i.key === "pipeline" || i.key === "profile")
+    : ALL_ITEMS;
+
+  if (isTrade) {
+    return (
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-4px_20px_-4px_hsl(var(--navy-primary)/0.08)]">
+        <div className="flex items-center justify-around px-2 h-16 max-w-lg mx-auto">
+          {items.map((item) => {
+            const isActive = active === item.key;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.key}
+                onClick={() => onChange(item.key)}
+                className="flex flex-col items-center gap-0.5 py-2 px-3 min-w-[64px]"
+              >
+                <Icon
+                  className={cn(
+                    "w-5 h-5 transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[10px] font-medium transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="h-[env(safe-area-inset-bottom)]" />
+      </nav>
+    );
+  }
+
+  // Referral layout with center FAB
+  const left = items.slice(0, 2);
+  const right = items.slice(2);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-4px_20px_-4px_hsl(var(--navy-primary)/0.08)]">
