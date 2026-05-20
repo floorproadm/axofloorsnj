@@ -27,7 +27,7 @@ const statusColor = (s: string) => {
   return "bg-amber-500/15 text-amber-400 border-amber-500/30";
 };
 
-export default function AppointmentRequests() {
+export function AppointmentRequestsBody() {
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("all");
   const [selected, setSelected] = useState<any | null>(null);
