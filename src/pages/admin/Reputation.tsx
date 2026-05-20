@@ -115,7 +115,7 @@ export default function Reputation() {
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4">
             <p className="text-sm font-semibold">{counters.sent} pedidos enviados · {counters.responded} reviews recebidos</p>
-            <p className="text-xs text-muted-foreground mt-1">Engine automática dispara um pedido sempre que um job é marcado como completed.</p>
+            <p className="text-xs text-muted-foreground mt-1">Envio manual: dispare o pedido a partir da lista de jobs concluídos abaixo, no momento certo.</p>
           </CardContent>
         </Card>
 
