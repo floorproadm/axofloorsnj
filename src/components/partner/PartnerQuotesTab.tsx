@@ -106,8 +106,41 @@ export function PartnerQuotesTab({ partnerId }: { partnerId: string }) {
 
   return (
     <>
-      <div className="space-y-2">
-        {quotes.map(q => (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          {FILTERS.map(f => {
+            const count = f.key === "all" ? quotes.length : (counts[f.key] || 0);
+            const active = filter === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={cn(
+                  "shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors",
+                  active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted/50"
+                )}
+              >
+                {f.label} <span className="opacity-70 ml-0.5">({count})</span>
+              </button>
+            );
+          })}
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as any)}
+            className="ml-auto shrink-0 text-xs bg-background border border-border rounded-md px-2 py-1"
+          >
+            <option value="newest">Mais recentes</option>
+            <option value="oldest">Mais antigas</option>
+            <option value="total_desc">Maior valor</option>
+            <option value="total_asc">Menor valor</option>
+          </select>
+        </div>
+
+        {filtered.length === 0 ? (
+          <Card className="p-6 text-center">
+            <p className="text-xs text-muted-foreground">Nenhuma cotação neste filtro.</p>
+          </Card>
+        ) : filtered.map(q => (
           <Card key={q.id} className="p-3 cursor-pointer hover:bg-muted/40 transition-colors" onClick={() => setSelected(q)}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
