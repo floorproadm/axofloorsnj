@@ -16,7 +16,9 @@ import {
   Partner,
   PARTNER_TYPES,
   PARTNER_STATUSES,
+  PARTNER_PROGRAMS,
 } from "@/hooks/admin/usePartnersData";
+
 import { NewPartnerDialog } from "@/components/admin/NewPartnerDialog";
 import { PartnerListItem } from "@/components/admin/PartnerListItem";
 import { PartnerDetailPanel } from "@/components/admin/PartnerDetailPanel";
@@ -33,6 +35,7 @@ export default function Partners() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("active");
+  const [programFilter, setProgramFilter] = useState<"all" | "referral" | "trade">("all");
   const [newOpen, setNewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [controlModalId, setControlModalId] = useState<string | null>(null);
@@ -61,9 +64,20 @@ export default function Partners() {
         return false;
       if (typeFilter !== "all" && p.partner_type !== typeFilter) return false;
       if (statusFilter !== "all" && p.status !== statusFilter) return false;
+      if (programFilter !== "all" && (p.partner_program || "referral") !== programFilter) return false;
       return true;
     });
-  }, [partners, search, typeFilter, statusFilter]);
+  }, [partners, search, typeFilter, statusFilter, programFilter]);
+
+  const programCounts = useMemo(() => {
+    let referral = 0, trade = 0;
+    for (const p of partners) {
+      if ((p.partner_program || "referral") === "trade") trade++;
+      else referral++;
+    }
+    return { all: partners.length, referral, trade };
+  }, [partners]);
+
 
   const miniStats = useMemo(() => {
     const active = partners.filter((p) => p.status === "active").length;
@@ -148,7 +162,28 @@ export default function Partners() {
 
         {/* Search & Filters */}
         <div className="p-3 space-y-2 border-b border-border/50">
+          {/* Program segmented tabs */}
+          <div className="inline-flex w-full rounded-lg border border-border bg-muted/50 p-0.5">
+            {([
+              { key: "all", label: "Todos", count: programCounts.all },
+              { key: "referral", label: "Referral", count: programCounts.referral },
+              { key: "trade", label: "Trade (B2B)", count: programCounts.trade },
+            ] as const).map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => setProgramFilter(opt.key as any)}
+                className={`flex-1 px-2 py-1.5 text-[11px] font-semibold rounded-md transition-colors ${
+                  programFilter === opt.key
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label} <span className="text-muted-foreground/70 tabular-nums">({opt.count})</span>
+              </button>
+            ))}
+          </div>
           <div className="relative">
+
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar partner..."
