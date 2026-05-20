@@ -67,6 +67,7 @@ export function AdminSidebar() {
 
   const topItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
+    { title: "Mission Control", url: "/admin/mission-control", icon: Target },
     { title: "Schedule & Appointment", url: "/admin/schedule", icon: CalendarDays },
     
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
@@ -75,7 +76,6 @@ export function AdminSidebar() {
   ];
 
   const toolsItems = [
-    { title: "Mission Control", url: "/admin/mission-control", icon: Target },
     { title: t("sidebar.captacao"), url: "/admin/intake", icon: Inbox },
     { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
     { title: t("sidebar.medicoes"), url: "/admin/measurements", icon: Ruler },
