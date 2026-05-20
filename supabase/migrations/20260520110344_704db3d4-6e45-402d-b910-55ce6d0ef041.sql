@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS trg_enqueue_review_request ON public.projects;
