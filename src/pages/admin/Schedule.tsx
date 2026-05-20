@@ -71,6 +71,14 @@ export default function Schedule() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : "schedule") as "schedule" | "appointments";
+  const setMainTab = (v: "schedule" | "appointments") => {
+    const next = new URLSearchParams(searchParams);
+    if (v === "appointments") next.set("tab", "appointments");
+    else next.delete("tab");
+    setSearchParams(next, { replace: true });
+  };
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"day" | "list" | "week">("day");
   const [modalOpen, setModalOpen] = useState(false);
