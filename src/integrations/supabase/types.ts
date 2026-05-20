@@ -2272,6 +2272,7 @@ export type Database = {
           next_action_note: string | null
           notes: string | null
           organization_id: string
+          partner_program: string
           partner_type: string
           phone: string | null
           photo_url: string | null
@@ -2294,6 +2295,7 @@ export type Database = {
           next_action_note?: string | null
           notes?: string | null
           organization_id: string
+          partner_program?: string
           partner_type?: string
           phone?: string | null
           photo_url?: string | null
@@ -2316,6 +2318,7 @@ export type Database = {
           next_action_note?: string | null
           notes?: string | null
           organization_id?: string
+          partner_program?: string
           partner_type?: string
           phone?: string | null
           photo_url?: string | null
