@@ -34,12 +34,22 @@ const STATUS_COLOR: Record<string, string> = {
   declined: "bg-red-500/10 text-red-700 border-red-200",
 };
 
+const FILTERS: Array<{ key: "all" | "draft" | "sent" | "accepted" | "declined"; label: string }> = [
+  { key: "all", label: "Todas" },
+  { key: "sent", label: "Enviadas" },
+  { key: "accepted", label: "Aceitas" },
+  { key: "declined", label: "Recusadas" },
+  { key: "draft", label: "Rascunho" },
+];
+
 export function PartnerQuotesTab({ partnerId }: { partnerId: string }) {
   const { toast } = useToast();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Quote | null>(null);
   const [acting, setActing] = useState(false);
+  const [filter, setFilter] = useState<"all" | "draft" | "sent" | "accepted" | "declined">("all");
+  const [sort, setSort] = useState<"newest" | "oldest" | "total_desc" | "total_asc">("newest");
 
   const load = async () => {
     setLoading(true);
@@ -54,6 +64,16 @@ export function PartnerQuotesTab({ partnerId }: { partnerId: string }) {
   };
 
   useEffect(() => { load(); }, [partnerId]);
+
+  const counts = quotes.reduce((acc, q) => { acc[q.status] = (acc[q.status] || 0) + 1; return acc; }, {} as Record<string, number>);
+  const filtered = (filter === "all" ? quotes : quotes.filter(q => q.status === filter))
+    .slice()
+    .sort((a, b) => {
+      if (sort === "newest") return +new Date(b.created_at) - +new Date(a.created_at);
+      if (sort === "oldest") return +new Date(a.created_at) - +new Date(b.created_at);
+      if (sort === "total_desc") return Number(b.total) - Number(a.total);
+      return Number(a.total) - Number(b.total);
+    });
 
   const respond = async (status: "accepted" | "declined") => {
     if (!selected) return;
@@ -86,8 +106,41 @@ export function PartnerQuotesTab({ partnerId }: { partnerId: string }) {
 
   return (
     <>
-      <div className="space-y-2">
-        {quotes.map(q => (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          {FILTERS.map(f => {
+            const count = f.key === "all" ? quotes.length : (counts[f.key] || 0);
+            const active = filter === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={cn(
+                  "shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors",
+                  active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted/50"
+                )}
+              >
+                {f.label} <span className="opacity-70 ml-0.5">({count})</span>
+              </button>
+            );
+          })}
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as any)}
+            className="ml-auto shrink-0 text-xs bg-background border border-border rounded-md px-2 py-1"
+          >
+            <option value="newest">Mais recentes</option>
+            <option value="oldest">Mais antigas</option>
+            <option value="total_desc">Maior valor</option>
+            <option value="total_asc">Menor valor</option>
+          </select>
+        </div>
+
+        {filtered.length === 0 ? (
+          <Card className="p-6 text-center">
+            <p className="text-xs text-muted-foreground">Nenhuma cotação neste filtro.</p>
+          </Card>
+        ) : filtered.map(q => (
           <Card key={q.id} className="p-3 cursor-pointer hover:bg-muted/40 transition-colors" onClick={() => setSelected(q)}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
