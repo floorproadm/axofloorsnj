@@ -108,6 +108,18 @@ Deno.serve(async (req) => {
       });
       if (linkErr) throw linkErr;
       actionLink = linkData.properties!.action_link;
+
+      // Re-sync the partner_users.user_id to the actual auth user of THIS email.
+      // Prior tests can leave a stale user_id linked to the partner, which
+      // makes PartnerDashboard's guard kick the real user out as "Access denied".
+      const realUserId = linkData.user?.id;
+      if (realUserId && realUserId !== existingLink.user_id) {
+        const { error: relinkErr } = await admin.rpc("link_partner_user", {
+          p_partner_id: partner_id,
+          p_user_id: realUserId,
+        });
+        if (relinkErr) console.error("relink_partner_user failed:", relinkErr);
+      }
     } else {
       // New invite → creates the auth user and returns link
       const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
