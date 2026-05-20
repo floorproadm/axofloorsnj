@@ -272,30 +272,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Mission Control entry point — full panel moved to /admin/mission-control */}
-        {totalUrgent > 0 && (
-          <section className="mb-8">
-            <Link
-              to="/admin/mission-control"
-              className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[hsl(var(--state-risk))]/30 bg-[hsl(var(--state-risk-bg))] hover:bg-[hsl(var(--state-risk-bg))]/80 transition-colors group"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-lg bg-[hsl(var(--state-risk))] flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-base font-bold">{totalUrgent}</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">Mission Control</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {totalUrgent} {totalUrgent !== 1 ? t("dashboard.acoesPendentes") : t("dashboard.acaoPendente")}
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs font-semibold text-[hsl(var(--gold-warm))] group-hover:underline flex-shrink-0">
-                {t("dashboard.verTodos")} →
-              </span>
-            </Link>
-          </section>
-        )}
 
         {/* Today's Agenda with mini week calendar */}
         <section className="mb-8">
