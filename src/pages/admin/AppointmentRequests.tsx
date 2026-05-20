@@ -300,6 +300,14 @@ export function AppointmentRequestsBody() {
           )}
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+export default function AppointmentRequests() {
+  return (
+    <AdminLayout title="Appointment Requests">
+      <AppointmentRequestsBody />
     </AdminLayout>
   );
 }
