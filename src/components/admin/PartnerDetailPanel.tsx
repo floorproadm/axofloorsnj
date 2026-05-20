@@ -269,13 +269,6 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
         </button>
       )}
 
-      {/* At Risk Banner */}
-      {isAtRisk && (
-        <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-200 text-amber-700 text-xs font-medium flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          Partner em risco — sem contato há mais de 30 dias
-        </div>
-      )}
 
       {/* Header */}
       <div className="p-5 border-b border-border/50">
