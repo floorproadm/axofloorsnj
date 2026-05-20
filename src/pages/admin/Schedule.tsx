@@ -394,6 +394,8 @@ export default function Schedule() {
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} />
           )}
         </div>
+        </>
+        )}
       </div>
 
       {/* Create/Edit Modal */}
