@@ -316,13 +316,23 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               >
                 {PARTNER_STATUSES[partner.status] || partner.status}
               </Badge>
-              <Badge
-                variant="outline"
-                className={`text-[10px] ${(partner.partner_program || "referral") === "trade" ? "bg-amber-500/10 text-amber-700 border-amber-200" : "bg-blue-500/10 text-blue-700 border-blue-200"}`}
-                title={(partner.partner_program || "referral") === "trade" ? "Recebe cotação wholesale e revende com margem própria" : "Indica clientes e recebe comissão"}
+              <Select
+                value={(partner.partner_program || "referral")}
+                onValueChange={async (v) => {
+                  await updatePartner.mutateAsync({ id: partner.id, partner_program: v as any });
+                }}
               >
-                {(partner.partner_program || "referral") === "trade" ? "Trade (B2B)" : "Referral"}
-              </Badge>
+                <SelectTrigger
+                  className={`h-6 px-2 py-0 text-[10px] font-semibold w-auto gap-1 border ${(partner.partner_program || "referral") === "trade" ? "bg-amber-500/10 text-amber-700 border-amber-200" : "bg-blue-500/10 text-blue-700 border-blue-200"}`}
+                  title="Clique para alternar entre Referral e Trade (B2B)"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="referral">Referral — indica e recebe comissão</SelectItem>
+                  <SelectItem value="trade">Trade (B2B) — recebe cotação wholesale</SelectItem>
+                </SelectContent>
+              </Select>
               <Badge variant="secondary" className="text-[10px]">
                 {PARTNER_TYPES[partner.partner_type] || partner.partner_type}
               </Badge>
