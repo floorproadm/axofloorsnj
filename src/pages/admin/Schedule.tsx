@@ -250,9 +250,9 @@ export default function Schedule() {
   };
 
   return (
-    <AdminLayout title="Schedule">
+    <AdminLayout title="Schedule & Appointment">
       <div className="flex flex-col h-full">
-        {/* Main Tabs: Schedule | Appointments */}
+        {/* Main Tabs: Schedule & Appointment | Appointments */}
         <div className="px-4 pt-3">
           <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "schedule" | "appointments")}>
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
@@ -261,7 +261,7 @@ export default function Schedule() {
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
               >
                 <CalendarDays className="w-4 h-4 mr-1.5" />
-                Schedule
+                Schedule & Appointment
               </TabsTrigger>
               <TabsTrigger
                 value="appointments"
