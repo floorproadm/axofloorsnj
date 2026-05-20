@@ -316,6 +316,13 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               >
                 {PARTNER_STATUSES[partner.status] || partner.status}
               </Badge>
+              <Badge
+                variant="outline"
+                className={`text-[10px] ${(partner.partner_program || "referral") === "trade" ? "bg-amber-500/10 text-amber-700 border-amber-200" : "bg-blue-500/10 text-blue-700 border-blue-200"}`}
+                title={(partner.partner_program || "referral") === "trade" ? "Recebe cotação wholesale e revende com margem própria" : "Indica clientes e recebe comissão"}
+              >
+                {(partner.partner_program || "referral") === "trade" ? "Trade (B2B)" : "Referral"}
+              </Badge>
               <Badge variant="secondary" className="text-[10px]">
                 {PARTNER_TYPES[partner.partner_type] || partner.partner_type}
               </Badge>
@@ -326,6 +333,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                 </Badge>
               )}
             </div>
+
           </div>
         </div>
       </div>

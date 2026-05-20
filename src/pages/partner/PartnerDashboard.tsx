@@ -33,10 +33,12 @@ interface PartnerInfo {
   email: string | null;
   phone: string | null;
   partner_type: string;
+  partner_program: "referral" | "trade";
   service_zone: string;
   total_referrals: number;
   total_converted: number;
 }
+
 
 export default function PartnerDashboard() {
   const navigate = useNavigate();
@@ -85,7 +87,7 @@ export default function PartnerDashboard() {
     const [{ data: p }, { data: ls }, { data: cs }] = await Promise.all([
       supabase
         .from("partners")
-        .select("id, company_name, contact_name, email, phone, partner_type, service_zone, total_referrals, total_converted")
+        .select("id, company_name, contact_name, email, phone, partner_type, partner_program, service_zone, total_referrals, total_converted")
         .eq("id", partnerId)
         .maybeSingle(),
       supabase
@@ -100,11 +102,18 @@ export default function PartnerDashboard() {
         .maybeSingle(),
     ]);
 
-    if (p) setPartner(p as any);
+    if (p) {
+      setPartner(p as any);
+      // For trade partners, force initial view to "quotes" (their primary workflow)
+      if ((p as any).partner_program === "trade") {
+        setView((prev) => (prev === "earnings" || prev === "rewards" ? "quotes" : prev));
+      }
+    }
     if (ls) setLeads(ls as any);
     if (cs) setCommissionPercent(Number((cs as any).referral_commission_percent) || 7);
     setLoading(false);
   };
+
 
   useEffect(() => {
     loadData();
@@ -185,16 +194,17 @@ export default function PartnerDashboard() {
             </p>
           </div>
           <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
-            {tier.name}
+            {partner?.partner_program === "trade" ? "Trade" : tier.name}
           </span>
         </div>
       </header>
+
 
       <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
         {/* PIPELINE VIEW */}
         {view === "pipeline" && (
           <>
-            <div className="grid grid-cols-3 gap-2">
+            <div className={cn("grid gap-2", partner?.partner_program === "trade" ? "grid-cols-2" : "grid-cols-3")}>
               <Card className="p-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                   <Users className="w-3 h-3" />
@@ -209,14 +219,17 @@ export default function PartnerDashboard() {
                 </div>
                 <p className="text-2xl font-bold tabular-nums">{conversionRate}%</p>
               </Card>
-              <Card className="p-3">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                  <DollarSign className="w-3 h-3" />
-                  <span>Earned</span>
-                </div>
-                <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
-              </Card>
+              {partner?.partner_program !== "trade" && (
+                <Card className="p-3">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <DollarSign className="w-3 h-3" />
+                    <span>Earned</span>
+                  </div>
+                  <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
+                </Card>
+              )}
             </div>
+
 
             {leads.length > 0 && (
               <div>
@@ -477,9 +490,15 @@ export default function PartnerDashboard() {
         )}
       </main>
 
-      <PartnerBottomNav active={view} onChange={setView} onNewReferral={() => setSheetOpen(true)} />
+      <PartnerBottomNav
+        active={view}
+        onChange={setView}
+        onNewReferral={() => setSheetOpen(true)}
+        program={partner?.partner_program || "referral"}
+      />
 
       <NewReferralSheet open={sheetOpen} onOpenChange={setSheetOpen} onCreated={loadData} />
     </div>
   );
 }
+

@@ -10,6 +10,7 @@ export interface Partner {
   email: string | null;
   phone: string | null;
   partner_type: string;
+  partner_program: "referral" | "trade";
   service_zone: string;
   status: string;
   last_contacted_at: string | null;
@@ -26,6 +27,20 @@ export interface Partner {
 }
 
 export type PartnerInsert = Omit<Partner, "id" | "created_at" | "updated_at" | "total_referrals" | "total_converted">;
+
+export const PARTNER_PROGRAMS: Record<"referral" | "trade", { label: string; description: string; color: string }> = {
+  referral: {
+    label: "Referral",
+    description: "Indica clientes e recebe comissão",
+    color: "bg-blue-500/10 text-blue-700 border-blue-200",
+  },
+  trade: {
+    label: "Trade (B2B)",
+    description: "Recebe cotação wholesale e revende com margem própria",
+    color: "bg-amber-500/10 text-amber-700 border-amber-200",
+  },
+};
+
 
 export const SERVICE_ZONES: Record<string, string> = {
   core: "Core (Central NJ)",

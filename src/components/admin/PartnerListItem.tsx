@@ -90,12 +90,18 @@ export function PartnerListItem({ partner, isSelected, onSelect }: Props) {
           <span className="text-[10px] text-muted-foreground/70">
             {PARTNER_TYPES[partner.partner_type] || partner.partner_type}
           </span>
+          {(partner.partner_program || "referral") === "trade" && (
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700">
+              Trade
+            </span>
+          )}
           {partner.total_referrals > 0 && (
             <span className="text-[10px] text-blue-600 font-medium">
               {partner.total_referrals} ind.
             </span>
           )}
         </div>
+
         {lastContactText ? (
           <p className={cn("text-[10px] mt-0.5", isAtRisk ? "text-amber-600" : "text-muted-foreground/60")}>
             {lastContactText}

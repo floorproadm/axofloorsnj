@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { usePartnersData, PARTNER_TYPES, PARTNER_STATUSES, PARTNER_PIPELINE_STAGES } from "@/hooks/admin/usePartnersData";
+import { usePartnersData, PARTNER_TYPES, PARTNER_STATUSES, PARTNER_PIPELINE_STAGES, PARTNER_PROGRAMS } from "@/hooks/admin/usePartnersData";
 
 const schema = z.object({
   company_name: z.string().trim().min(1, "Nome da empresa é obrigatório").max(200),
@@ -35,9 +35,11 @@ const schema = z.object({
   email: z.string().trim().email("Email inválido").max(255).optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
   partner_type: z.string().min(1, "Selecione o tipo"),
+  partner_program: z.enum(["referral", "trade"]),
   status: z.string().min(1, "Selecione o estágio"),
   notes: z.string().trim().max(2000).optional(),
 });
+
 
 type FormValues = z.infer<typeof schema>;
 
@@ -60,6 +62,7 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active",
       email: "",
       phone: "",
       partner_type: "builder",
+      partner_program: "referral",
       status: defaultStatus,
       notes: "",
     },
@@ -73,6 +76,7 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active",
         email: "",
         phone: "",
         partner_type: "builder",
+        partner_program: "referral",
         status: defaultStatus,
         notes: "",
       });
@@ -88,6 +92,7 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active",
         email: values.email || null,
         phone: values.phone || null,
         partner_type: values.partner_type,
+        partner_program: values.partner_program,
         notes: values.notes || null,
         status: showStageSelector ? values.status : defaultStatus,
         last_contacted_at: null,
@@ -100,6 +105,7 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active",
       setLoading(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -139,6 +145,25 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active",
                 </FormItem>
               )} />
             </div>
+            <FormField control={form.control} name="partner_program" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Programa</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    {Object.entries(PARTNER_PROGRAMS).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{v.label}</span>
+                          <span className="text-[10px] text-muted-foreground">{v.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
             <FormField control={form.control} name="partner_type" render={({ field }) => (
               <FormItem>
                 <FormLabel>Tipo</FormLabel>
@@ -153,6 +178,7 @@ export function NewPartnerDialog({ open, onOpenChange, defaultStatus = "active",
                 <FormMessage />
               </FormItem>
             )} />
+
             {showStageSelector && (
               <FormField control={form.control} name="status" render={({ field }) => (
                 <FormItem>
