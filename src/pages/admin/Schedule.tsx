@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AppointmentRequestsBody } from "@/pages/admin/AppointmentRequests";
+import { CalendarDays, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,6 +71,14 @@ export default function Schedule() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : "schedule") as "schedule" | "appointments";
+  const setMainTab = (v: "schedule" | "appointments") => {
+    const next = new URLSearchParams(searchParams);
+    if (v === "appointments") next.set("tab", "appointments");
+    else next.delete("tab");
+    setSearchParams(next, { replace: true });
+  };
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"day" | "list" | "week">("day");
   const [modalOpen, setModalOpen] = useState(false);
@@ -242,6 +252,34 @@ export default function Schedule() {
   return (
     <AdminLayout title="Schedule">
       <div className="flex flex-col h-full">
+        {/* Main Tabs: Schedule | Appointments */}
+        <div className="px-4 pt-3">
+          <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "schedule" | "appointments")}>
+            <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+              <TabsTrigger
+                value="schedule"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <CalendarDays className="w-4 h-4 mr-1.5" />
+                Schedule
+              </TabsTrigger>
+              <TabsTrigger
+                value="appointments"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <Inbox className="w-4 h-4 mr-1.5" />
+                Appointments
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {mainTab === "appointments" ? (
+          <div className="p-4">
+            <AppointmentRequestsBody />
+          </div>
+        ) : (
+        <>
         {/* Header */}
         <div className="border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 py-3 space-y-3 md:space-y-4">
           {/* Title row */}
@@ -356,6 +394,8 @@ export default function Schedule() {
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} />
           )}
         </div>
+        </>
+        )}
       </div>
 
       {/* Create/Edit Modal */}

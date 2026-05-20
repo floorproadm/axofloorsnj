@@ -27,7 +27,7 @@ const statusColor = (s: string) => {
   return "bg-amber-500/15 text-amber-400 border-amber-500/30";
 };
 
-export default function AppointmentRequests() {
+export function AppointmentRequestsBody() {
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("all");
   const [selected, setSelected] = useState<any | null>(null);
@@ -165,8 +165,9 @@ export default function AppointmentRequests() {
   };
 
   return (
-    <AdminLayout title="Appointment Requests">
+    <>
       <div className="space-y-6">
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold">Appointment Requests</h1>
@@ -299,6 +300,14 @@ export default function AppointmentRequests() {
           )}
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+export default function AppointmentRequests() {
+  return (
+    <AdminLayout title="Appointment Requests">
+      <AppointmentRequestsBody />
     </AdminLayout>
   );
 }
