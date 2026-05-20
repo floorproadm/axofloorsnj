@@ -88,7 +88,11 @@ Deno.serve(async (req) => {
       .eq("partner_id", partner_id)
       .maybeSingle();
 
-    const origin = redirect_origin || "https://axofloorsnj.com";
+    // Always use the production custom domain — never the Lovable preview URL.
+    // This guarantees the email link looks branded (axofloorsnj.com) regardless
+    // of where the admin is calling from (preview, staging, etc.).
+    const PROD_ORIGIN = "https://axofloorsnj.com";
+    const origin = PROD_ORIGIN;
     const redirectTo = `${origin}/partner/welcome`;
 
     let actionLink: string;
