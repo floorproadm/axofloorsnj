@@ -252,6 +252,34 @@ export default function Schedule() {
   return (
     <AdminLayout title="Schedule">
       <div className="flex flex-col h-full">
+        {/* Main Tabs: Schedule | Appointments */}
+        <div className="px-4 pt-3">
+          <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "schedule" | "appointments")}>
+            <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+              <TabsTrigger
+                value="schedule"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <CalendarDays className="w-4 h-4 mr-1.5" />
+                Schedule
+              </TabsTrigger>
+              <TabsTrigger
+                value="appointments"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <Inbox className="w-4 h-4 mr-1.5" />
+                Appointments
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {mainTab === "appointments" ? (
+          <div className="p-4">
+            <AppointmentRequestsBody />
+          </div>
+        ) : (
+        <>
         {/* Header */}
         <div className="border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 py-3 space-y-3 md:space-y-4">
           {/* Title row */}
