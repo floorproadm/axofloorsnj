@@ -319,7 +319,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
               <Select
                 value={(partner.partner_program || "referral")}
                 onValueChange={async (v) => {
-                  await updatePartner(partner.id, { partner_program: v as any });
+                  await updatePartner.mutateAsync({ id: partner.id, partner_program: v as any });
                 }}
               >
                 <SelectTrigger
