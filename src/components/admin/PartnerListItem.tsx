@@ -1,5 +1,5 @@
 import { Phone, Mail } from "lucide-react";
-import { formatDistanceToNow, subDays, isAfter } from "date-fns";
+import { isAfter, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Partner, PARTNER_TYPES } from "@/hooks/admin/usePartnersData";
 import { cn } from "@/lib/utils";
@@ -39,12 +39,6 @@ export function PartnerListItem({ partner, isSelected, onSelect }: Props) {
 
   const isChurned = partner.status === "churned";
 
-  const lastContactText = partner.last_contacted_at
-    ? formatDistanceToNow(new Date(partner.last_contacted_at), {
-        addSuffix: true,
-        locale: ptBR,
-      })
-    : null;
 
   return (
     <button
