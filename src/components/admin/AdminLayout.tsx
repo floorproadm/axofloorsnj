@@ -126,11 +126,21 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
                   </button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0 bg-card border border-border shadow-lg z-50">
-                  <div className="px-4 py-3 border-b border-border">
-                    <h3 className="text-sm font-bold text-foreground">{t("layout.notificacoes")}</h3>
-                    <p className="text-[11px] text-muted-foreground">
-                      {notificationCount} {notificationCount !== 1 ? t("layout.pendentes") : t("layout.pendente")}
-                    </p>
+                  <div className="px-4 py-3 border-b border-border flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground">{t("layout.notificacoes")}</h3>
+                      <p className="text-[11px] text-muted-foreground">
+                        {notificationCount} {notificationCount !== 1 ? t("layout.pendentes") : t("layout.pendente")}
+                      </p>
+                    </div>
+                    {notificationCount > 0 && (
+                      <button
+                        onClick={clearNotifications}
+                        className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Clear all
+                      </button>
+                    )}
                   </div>
                   {notifications.length === 0 ? (
                     <div className="py-8 text-center text-sm text-muted-foreground">
