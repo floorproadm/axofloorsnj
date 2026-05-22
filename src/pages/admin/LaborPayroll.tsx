@@ -9,13 +9,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import {
   Plus, Hammer, DollarSign, Calendar, Users,
-  CheckCircle2, Clock, Trash2, Loader2, Filter
+  CheckCircle2, Clock, Trash2, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +68,7 @@ export default function LaborPayroll() {
   const qc = useQueryClient();
   const [showNew, setShowNew] = useState(false);
   const [monthOffset, setMonthOffset] = useState(0);
-  const [filterRole, setFilterRole] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState<PayrollEntry | null>(null);
   const [form, setForm] = useState<NewPayrollForm>({
     name: "", role: "", daily_rate: "", days_worked: "1",
     service_date: format(new Date(), "yyyy-MM-dd"),
