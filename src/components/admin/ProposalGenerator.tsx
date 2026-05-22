@@ -417,6 +417,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setProposal(null)}>Back</Button>
+          <Button variant="outline" onClick={() => setEditPanelOpen(true)}>
+            <Settings2 className="h-4 w-4 mr-2" />
+            Edit content
+          </Button>
           {/* Light/Dark toggle for the preview */}
           <div className="inline-flex items-center rounded-md border bg-background p-0.5">
             <button
