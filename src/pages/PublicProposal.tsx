@@ -174,6 +174,7 @@ export default function PublicProposal() {
 
   const displayName = overrides.customer_name || customer?.full_name || "Client";
   const displayPhone = overrides.customer_phone || customer?.phone || "";
+  const displayEmail = overrides.customer_email || customer?.email || "";
   const displayAddress = overrides.address || project?.address || customer?.address || "";
   const displayProjectType = overrides.project_type || project?.project_type || "Flooring Project";
   const displaySqft = overrides.square_footage ?? project?.square_footage;
@@ -229,6 +230,9 @@ export default function PublicProposal() {
               </p>
               {displayPhone && (
                 <p className="text-xs text-slate-500 mt-0.5">{displayPhone}</p>
+              )}
+              {displayEmail && (
+                <p className="text-xs text-slate-500 mt-0.5">{displayEmail}</p>
               )}
             </div>
           </div>
