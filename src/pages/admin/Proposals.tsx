@@ -768,11 +768,25 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
               </Button>
             )}
 
+            {!editing && (() => {
+              const previewToken = btoa(`prop-${proposal.id}`).replace(/=/g, "").slice(0, 18);
+              return (
+                <Button
+                  size="sm"
+                  className="w-full gap-1.5 text-xs"
+                  onClick={() => window.open(`/proposal/${previewToken}`, "_blank")}
+                >
+                  <Eye className="w-3.5 h-3.5" /> Preview Proposal
+                </Button>
+              );
+            })()}
+
             {!editing && (
               <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setEditPanelOpen(true)}>
                 <Pencil className="w-3.5 h-3.5" /> Edit Content & Sections
               </Button>
             )}
+
 
             {/* Client info */}
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2.5">
