@@ -608,17 +608,17 @@ function exportProposalCSV(proposal: ProposalWithRelations) {
 }
 
 // ─── Proposal Detail Sheet ────────────────────────────────────────────────────
-function ProposalDetailSheet({ proposal, open, onClose }: {
+function ProposalDetailSheet({ proposal, open, onClose, onEditProposal }: {
   proposal: ProposalWithRelations | null;
   open: boolean;
   onClose: () => void;
+  onEditProposal: (proposalId: string) => void;
 }) {
   const qc = useQueryClient();
   const [showShare, setShowShare] = useState(false);
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [editPanelOpen, setEditPanelOpen] = useState(false);
   const [localOverrides, setLocalOverrides] = useState<ContentOverrides | null>(null);
   const [localHidden, setLocalHidden] = useState<SectionKey[] | null>(null);
   const [localValidUntil, setLocalValidUntil] = useState<string | null>(null);
@@ -732,7 +732,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                 <Button
                   size="sm"
                   className="w-full gap-1.5 text-xs"
-                  onClick={() => setEditPanelOpen(true)}
+                  onClick={() => onEditProposal(proposal.id)}
                 >
                   <Pencil className="w-3.5 h-3.5" /> Edit Proposal
                 </Button>
@@ -1048,15 +1048,6 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
       {showPortal && (
         <ClientPortalModal proposal={proposal} open={showPortal} onClose={() => setShowPortal(false)} />
       )}
-
-      <ProposalUnifiedEditor
-        open={editPanelOpen}
-        onOpenChange={setEditPanelOpen}
-        proposalId={proposal.id}
-        onSaved={() => {
-          qc.invalidateQueries({ queryKey: ["proposals-list"] });
-        }}
-      />
     </>
   );
 }
