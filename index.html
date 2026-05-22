@@ -94,18 +94,23 @@
     <!-- Google Business Profile Integration -->
     <meta name="google-site-verification" content="your-google-verification-code" />
     
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel Code (skipped in Lovable preview to avoid history.replaceState throttling) -->
     <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '403151700983838');
-    fbq('track', 'PageView');
+    (function(){
+      var host = window.location.hostname;
+      var isPreview = host.endsWith('lovable.app') || host.endsWith('lovable.dev') || host === 'localhost' || host === '127.0.0.1';
+      if (isPreview) return;
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '403151700983838');
+      fbq('track', 'PageView');
+    })();
     </script>
     
     <meta property="og:title" content="AXO Floors - Professional Hardwood Flooring Refinishing &amp; Installation">
