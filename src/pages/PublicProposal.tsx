@@ -19,6 +19,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
+import { ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
 
 const fmt = (v: number) =>
   `$${Number(v || 0).toLocaleString("en-US", {
@@ -133,6 +134,12 @@ export default function PublicProposal() {
       { key: "best", price: Number(proposal.best_price) },
     ];
   }, [proposal]);
+
+  const overrides = (proposal?.content_overrides ?? {}) as ContentOverrides;
+  const hiddenSections = ((proposal?.hidden_sections ?? []) as string[]).filter(
+    (key): key is SectionKey => ["method", "timeline", "guarantee", "cta"].includes(key),
+  );
+  const isHidden = (key: SectionKey) => hiddenSections.includes(key);
 
   if (loading) {
     return (
