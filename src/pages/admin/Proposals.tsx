@@ -645,6 +645,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   const [showShare, setShowShare] = useState(false);
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editUseTiers, setEditUseTiers] = useState(true);
   const [editFlatPrice, setEditFlatPrice] = useState("");
