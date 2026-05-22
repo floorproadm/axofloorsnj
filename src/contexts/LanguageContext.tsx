@@ -56,6 +56,14 @@ const translations = {
   "dashboard.respostaLead": { pt: "Resposta Lead", en: "Lead Response" },
   "dashboard.leadParado48h": { pt: "Lead parado +48h", en: "Lead stalled +48h" },
 
+  // Mission Control alerts
+  "mission.subtitle": { pt: "Alertas operacionais automáticos e tarefas manuais em um só lugar.", en: "Automatic operational alerts and manual tasks in one place." },
+  "mission.alerts.autoEscalations": { pt: "escalações automáticas (24h)", en: "automatic escalations (24h)" },
+  "mission.alerts.followupsOverdue": { pt: "follow-ups atrasados", en: "follow-ups overdue" },
+  "mission.alerts.estimatesStale": { pt: "estimates parados > 3 dias", en: "estimates stalled > 3 days" },
+  "mission.alerts.recentFieldUploads": { pt: "uploads recentes do campo", en: "recent field uploads" },
+  "mission.alerts.followUp": { pt: "Follow up", en: "Follow up" },
+
   // Settings
   "settings.titulo": { pt: "Configurações", en: "Settings" },
   "settings.centroGovernanca": { pt: "Centro de Governança", en: "Governance Center" },

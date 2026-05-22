@@ -33,7 +33,7 @@ import { MonthlyOverview } from "@/components/admin/payments/MonthlyOverview";
 import { FinancialOverviewChart } from "@/components/admin/payments/FinancialOverviewChart";
 import { PLPreviewDialog } from "@/components/admin/payments/PLPreviewDialog";
 import { InvoiceReconciliation } from "@/components/admin/payments/InvoiceReconciliation";
-import { format, isWithinInterval } from "date-fns";
+import { format, isWithinInterval, parseISO } from "date-fns";
 
 type ActiveTab = "payments" | "invoices";
 
@@ -324,7 +324,7 @@ export default function Payments() {
                     {groupedPayments.map((group) => (
                       <div key={group.date} className="space-y-1.5">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                          {format(new Date(group.date + "T12:00:00"), "EEEE, MMM dd")}
+                          {format(parseISO(group.date), "EEEE, MMM dd")}
                         </p>
                         {group.items.map((pay) => {
                           const sc = paymentStatusConfig[pay.status] || paymentStatusConfig.pending;

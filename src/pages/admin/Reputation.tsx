@@ -51,9 +51,15 @@ export default function Reputation() {
     },
   });
 
+  // Memoize sentIds so the eligible-projects filter doesn't re-create the Set on every render
+  const sentIds = useMemo(
+    () => new Set(requests.map(r => r.project_id).filter(Boolean)),
+    [requests]
+  );
+
   // Completed projects with no review_request yet → eligible for manual send
   const { data: eligibleProjects = [] } = useQuery({
-    queryKey: ["reputation-eligible-projects"],
+    queryKey: ["reputation-eligible-projects", Array.from(sentIds).sort().join(",")],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
@@ -63,10 +69,9 @@ export default function Reputation() {
         .order("completion_date", { ascending: false })
         .limit(50);
       if (error) throw error;
-      const sentIds = new Set(requests.map(r => r.project_id).filter(Boolean));
       return (data ?? []).filter((p: any) => !sentIds.has(p.id));
     },
-    enabled: !isLoading,
+    enabled: !isLoading && requests !== undefined,
   });
 
   const sendMutation = useMutation({
