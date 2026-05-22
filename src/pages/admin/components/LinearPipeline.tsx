@@ -1,3 +1,18 @@
+// ============================================================================
+// FREEZE — LinearPipeline (Leads Sales Pipeline)
+// Aprovado pelo usuário. NÃO refatorar sem autorização explícita.
+// Protegido:
+//   - Ordem das 7 stages: cold_lead → warm_lead → estimate_requested →
+//     estimate_scheduled → in_draft → proposal_sent → proposal_rejected
+//   - Sistema NRA (Next Required Action) + alertas e color coding
+//   - Botão Quick Quote em `estimate_scheduled` e `in_draft`
+//   - Funnel health bar com taxas de conversão entre stages
+//   - Toggle de visualização Board / List
+//   - Filtro de parceiro via `lead_source === 'partner_referral'`
+// Exceção autorizada: padronização de `lead_source: 'partner_referral'`
+// para leads originados de parceiros nos modais Quick Appt / Quick Request
+// (Onda 1, item 5).
+// ============================================================================
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { usePartnersData } from "@/hooks/admin/usePartnersData";
 import { AXO_ORG_ID } from "@/lib/constants";
