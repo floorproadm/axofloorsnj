@@ -39,6 +39,19 @@ const STATUSES = [
   { value: "paid", label: "Paid" },
 ];
 
+const DESTRUCTIVE_STATUSES = new Set(["cancelled", "paid"]);
+const DESTRUCTIVE_COPY: Record<string, { title: string; description: string }> = {
+  cancelled: {
+    title: "Cancel this project?",
+    description: "Marking as cancelled will remove it from the active pipeline. You can revert by changing the status again.",
+  },
+  paid: {
+    title: "Mark project as Paid?",
+    description: "This closes the financial cycle for the project. Make sure all invoices and payments are reconciled before confirming.",
+  },
+};
+
+
 function fmt(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
 }
