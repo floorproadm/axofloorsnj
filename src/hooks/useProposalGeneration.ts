@@ -173,17 +173,20 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         }
         const flatMargin = flatPrice > 0 ? Math.round(((flatPrice - baseCost) / flatPrice) * 100) : 0;
 
-        if (flatMargin < minMargin) {
+        // Margin guard only applies when job costs exist (proposal works as estimate otherwise)
+        if (jobCost && flatMargin < minMargin) {
           throw new Error(
             `BLOCKED: Margin ${flatMargin}% < minimum ${minMargin}%. Increase price or reduce costs.`
           );
         }
 
         // Fetch line items (best-effort) so we can show the breakdown
-        const { data: items } = await supabase
-          .from('job_cost_items')
-          .select('description, category, amount')
-          .eq('job_cost_id', jobCost.id);
+        const { data: items } = jobCost
+          ? await supabase
+              .from('job_cost_items')
+              .select('description, category, amount')
+              .eq('job_cost_id', jobCost.id)
+          : { data: [] as { description: string | null; category: string; amount: number }[] };
 
         const { data: savedProposal, error: saveError } = await supabase
           .from('proposals')
