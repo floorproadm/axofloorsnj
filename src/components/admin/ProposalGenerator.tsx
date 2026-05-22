@@ -117,21 +117,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   };
 
   const handleGenerate = async () => {
-    if (!mode) {
-      toast.error('Choose a proposal mode first.');
-      return;
-    }
-    if (mode === 'direct') {
-      const price = Number(flatPriceInput);
-      if (!price || price <= 0) {
-        toast.error('Enter a valid price for Direct mode.');
-        return;
-      }
-      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: price });
-      if (data) setProposal(data);
-      return;
-    }
-    const data = await fetchProjectData(projectId, { mode: 'tiers' });
+    // Direct mode only — start with price = 0, user builds total from line items.
+    const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 });
     if (data) setProposal(data);
   };
 
@@ -353,33 +340,16 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-2">Set the final price</p>
-            <p>One price + line items breakdown. Margin is validated against company minimum.</p>
+            <p className="font-medium text-foreground mb-2">Build the proposal from line items</p>
+            <p>Add services and materials — the final price is calculated automatically from the items you add.</p>
           </div>
-
-          {/* Direct mode price input */}
-          <div className="space-y-2 p-3 bg-muted/30 rounded-lg border">
-            <Label htmlFor="flat-price" className="text-sm">Final price ($)</Label>
-            <Input
-              id="flat-price"
-              type="number"
-              inputMode="decimal"
-              placeholder="e.g. 4500"
-              value={flatPriceInput}
-              onChange={(e) => setFlatPriceInput(e.target.value)}
-              className="text-lg font-semibold"
-            />
-            <p className="text-xs text-muted-foreground">
-              Margin is calculated automatically against job costs and validated against company minimum.
-            </p>
-          </div>
-
 
           <div className="text-xs text-muted-foreground border-t pt-3">
             <p className="font-medium text-foreground mb-1">How it works</p>
             <ul className="list-disc ml-5 space-y-0.5">
-              <li>Enter the final price — you'll add line items right after</li>
-              <li>If job costs exist, margin is checked against company minimum</li>
+              <li>Generate the proposal, then add line items (description, qty, unit price)</li>
+              <li>Total is the sum of all line items — no manual price entry</li>
+              <li>If job costs exist, margin is checked against the company minimum</li>
             </ul>
           </div>
 
@@ -391,10 +361,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           )}
 
           <div className="flex gap-2">
-            <Button
-              onClick={handleGenerate}
-              disabled={isLoading || !mode || (mode === 'direct' && !flatPriceInput)}
-            >
+            <Button onClick={handleGenerate} disabled={isLoading}>
               {isLoading ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
               ) : (
