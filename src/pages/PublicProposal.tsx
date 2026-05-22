@@ -225,14 +225,14 @@ export default function PublicProposal() {
             <div className="flex-1 min-w-0">
               <p className="text-xs text-slate-500">Prepared for</p>
               <p className="font-semibold text-slate-900">
-                {customer?.full_name || "Client"}
+                {displayName}
               </p>
-              {customer?.phone && (
-                <p className="text-xs text-slate-500 mt-0.5">{customer.phone}</p>
+              {displayPhone && (
+                <p className="text-xs text-slate-500 mt-0.5">{displayPhone}</p>
               )}
             </div>
           </div>
-          {(project?.address || customer?.address) && (
+          {displayAddress && (
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4 text-slate-600" />
@@ -240,12 +240,35 @@ export default function PublicProposal() {
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-slate-500">Project address</p>
                 <p className="text-sm text-slate-900">
-                  {project?.address || customer?.address}
+                  {displayAddress}
                 </p>
               </div>
             </div>
           )}
         </Card>
+
+        <Card className="p-5 bg-white">
+          <h3 className="text-sm font-semibold text-slate-900 mb-2">Site Assessment</h3>
+          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{siteAssessment}</p>
+          <div className="grid grid-cols-2 gap-3 mt-4 text-xs text-slate-500">
+            <div><span className="block uppercase tracking-wider">Service</span><strong className="text-slate-800">{displayProjectType}</strong></div>
+            {displaySqft && <div><span className="block uppercase tracking-wider">Area</span><strong className="text-slate-800">{Number(displaySqft).toLocaleString()} sqft</strong></div>}
+          </div>
+        </Card>
+
+        {!isHidden("method") && (
+          <Card className="p-5 bg-white">
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">The AXO Transformation Method</h3>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {["Diagnostic", "Preparation", "Execution", "Finishing"].map((step, index) => (
+                <div key={step} className="rounded-lg border border-slate-200 p-3 bg-slate-50">
+                  <span className="text-amber-700 font-bold">0{index + 1}</span>
+                  <p className="font-semibold text-slate-900 mt-1">{step}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* Optional client note */}
         {proposal.client_note && (
