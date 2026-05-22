@@ -372,12 +372,18 @@ export function ProposalUnifiedEditor({
               <Eye className="w-3.5 h-3.5" />
               Live preview — reflects saved changes
             </div>
-            <iframe
-              key={iframeKey}
-              src={`/proposal/${previewToken}`}
-              title="Proposal preview"
-              className="w-full h-[calc(100%-32px)] bg-white"
-            />
+            {loading || !previewToken ? (
+              <div className="w-full h-[calc(100%-32px)] bg-white text-zinc-500 flex items-center justify-center text-sm">
+                {loading ? "Loading preview..." : "Public preview link is not ready yet."}
+              </div>
+            ) : (
+              <iframe
+                key={iframeKey}
+                src={`/proposal/${previewToken}`}
+                title="Proposal preview"
+                className="w-full h-[calc(100%-32px)] bg-white"
+              />
+            )}
           </div>
         </div>
       </DialogContent>
