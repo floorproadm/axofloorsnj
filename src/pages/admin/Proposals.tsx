@@ -1060,6 +1060,7 @@ export default function Proposals() {
   const [search, setSearch] = useState("");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [selected, setSelected] = useState<ProposalWithRelations | null>(null);
+  const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
   const handleViewMode = (mode: "list" | "board") => {
@@ -1449,7 +1450,25 @@ export default function Proposals() {
         )}
       </div>
 
-      <ProposalDetailSheet proposal={selected} open={!!selected} onClose={() => setSelected(null)} />
+      <ProposalDetailSheet
+        proposal={selected}
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        onEditProposal={(proposalId) => {
+          setEditingProposalId(proposalId);
+          setSelected(null);
+        }}
+      />
+      <ProposalUnifiedEditor
+        open={!!editingProposalId}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setEditingProposalId(null);
+        }}
+        proposalId={editingProposalId ?? ""}
+        onSaved={() => {
+          qc.invalidateQueries({ queryKey: ["proposals-list"] });
+        }}
+      />
       <NewProposalDialog open={showNew} onClose={() => setShowNew(false)} onCreated={() => { qc.invalidateQueries({ queryKey: ["proposals-list"] }); }} />
     </AdminLayout>
   );
