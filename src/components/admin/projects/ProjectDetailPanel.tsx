@@ -95,10 +95,19 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const totalCosts = (materials ?? []).reduce((s, m) => s + m.amount, 0) + (labor ?? []).reduce((s, l) => s + l.total_cost, 0);
   const revenue = jobCost?.estimated_revenue ?? project?.job_costs?.estimated_revenue ?? 0;
 
-  async function handleStatusChange(status: string) {
+  async function applyStatusChange(status: string) {
     if (!project) return;
     await supabase.from("projects").update({ project_status: status }).eq("id", project.id);
     qc.invalidateQueries({ queryKey: ["hub-projects"] });
+  }
+
+  async function handleStatusChange(status: string) {
+    if (!project) return;
+    if (DESTRUCTIVE_STATUSES.has(status)) {
+      setPendingStatus(status);
+      return;
+    }
+    await applyStatusChange(status);
   }
 
   async function handleCompleteTask(taskId: string) {
