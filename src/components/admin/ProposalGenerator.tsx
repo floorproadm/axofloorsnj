@@ -8,11 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings2 } from 'lucide-react';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ProposalEditPanel, ContentOverrides, SECTION_KEYS, SectionKey } from './ProposalEditPanel';
 
 /** Editable line item shape — extends the read-only one with qty + unit_price for live math */
 interface EditableLine {
@@ -55,6 +56,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  const [editPanelOpen, setEditPanelOpen] = useState(false);
+  const [overrides, setOverrides] = useState<ContentOverrides>({});
+  const [hiddenSections, setHiddenSections] = useState<SectionKey[]>([]);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
     return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
@@ -122,19 +126,27 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     if (data) setProposal(data);
   };
 
-  // When proposal is loaded, fetch the share_token from DB (most recent for project)
+  // When proposal is loaded, fetch the share_token + overrides + hidden_sections from DB
   useEffect(() => {
     if (!proposal?.proposal_id) {
       setShareToken(null);
+      setOverrides({});
+      setHiddenSections([]);
       return;
     }
     (async () => {
       const { data } = await supabase
         .from('proposals')
-        .select('share_token')
+        .select('share_token, content_overrides, hidden_sections')
         .eq('id', proposal.proposal_id!)
         .maybeSingle();
       if (data?.share_token) setShareToken(data.share_token);
+      const ov = ((data as any)?.content_overrides ?? {}) as ContentOverrides;
+      const hs = (((data as any)?.hidden_sections ?? []) as string[]).filter((k): k is SectionKey =>
+        (SECTION_KEYS as readonly string[]).includes(k)
+      );
+      setOverrides(ov);
+      setHiddenSections(hs);
     })();
   }, [proposal?.proposal_id]);
 
@@ -377,8 +389,26 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     );
   }
 
+  // Merge overrides on top of the proposal data — overrides win when present
+  const displayCustomerName = overrides.customer_name || proposal.customer_name;
+  const displayAddress = overrides.address || proposal.address;
+  const displayEmail = overrides.customer_email || proposal.customer_email;
+  const displayPhone = overrides.customer_phone || proposal.customer_phone;
+  const displayProjectType = overrides.project_type || proposal.project_type;
+  const displaySqft = overrides.square_footage ?? proposal.square_footage;
+  const isHidden = (k: SectionKey) => hiddenSections.includes(k);
+
   const sqftPerDay = 350;
-  const durationDays = Math.max(1, Math.ceil((proposal.square_footage || 500) / sqftPerDay));
+  const durationDays = Math.max(1, Math.ceil((displaySqft || 500) / sqftPerDay));
+
+  const defaultSiteAssessment = proposal.mode === 'direct'
+    ? `Based on our evaluation of your ${displaySqft} sqft ${displayProjectType} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
+    : `Based on our evaluation of your ${displaySqft} sqft ${displayProjectType} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`;
+  const defaultTimeline = `Based on ${displaySqft} sqft, we estimate ${durationDays} working day${durationDays > 1 ? 's' : ''} to complete your project. Our crew works 8AM–5PM with full area protection.`;
+  const ctaHeading = overrides.cta_heading || 'Ready to move forward?';
+  const ctaText = overrides.cta_text || 'Contact us to discuss your project and choose the best option for your home.';
+  const siteAssessment = overrides.site_assessment || defaultSiteAssessment;
+  const timelineText = overrides.timeline || defaultTimeline;
 
   return (
     <div className="space-y-4">
@@ -387,6 +417,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setProposal(null)}>Back</Button>
+          <Button variant="outline" onClick={() => setEditPanelOpen(true)}>
+            <Settings2 className="h-4 w-4 mr-2" />
+            Edit content
+          </Button>
           {/* Light/Dark toggle for the preview */}
           <div className="inline-flex items-center rounded-md border bg-background p-0.5">
             <button
@@ -601,41 +635,39 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           <div style={{ marginBottom: 25 }}>
             <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Prepared For</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Client</span><br/><strong style={{ color: theme.text }}>{proposal.customer_name}</strong></div>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Address</span><br/><span style={{ color: theme.textDim }}>{proposal.address}</span></div>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Contact</span><br/><span style={{ color: theme.textDim }}>{proposal.customer_email} | {proposal.customer_phone}</span></div>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Project</span><br/><span style={{ color: theme.textDim }}>{proposal.project_type} — {proposal.square_footage} sqft</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Client</span><br/><strong style={{ color: theme.text }}>{displayCustomerName}</strong></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Address</span><br/><span style={{ color: theme.textDim }}>{displayAddress}</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Contact</span><br/><span style={{ color: theme.textDim }}>{displayEmail} | {displayPhone}</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Project</span><br/><span style={{ color: theme.textDim }}>{displayProjectType} — {displaySqft} sqft</span></div>
             </div>
           </div>
 
           {/* Site Assessment */}
           <div style={{ marginBottom: 25 }}>
             <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Site Assessment</h2>
-            <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6 }}>
-              {proposal.mode === 'direct'
-                ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
-                : `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`}
-            </p>
+            <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{siteAssessment}</p>
           </div>
 
           {/* AXO Transformation Method */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>The AXO Transformation Method</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-              {[
-                { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
-                { num: 2, title: 'Preparation', desc: 'Dustless sanding & surface prep' },
-                { num: 3, title: 'Execution', desc: 'Staining & finish application' },
-                { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
-              ].map(step => (
-                <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
-                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
-                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 4 }}>{step.title}</h4>
-                  <p style={{ fontSize: 11, color: theme.textMuted }}>{step.desc}</p>
-                </div>
-              ))}
+          {!isHidden('method') && (
+            <div style={{ marginBottom: 25 }}>
+              <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>The AXO Transformation Method</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                {[
+                  { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
+                  { num: 2, title: 'Preparation', desc: 'Dustless sanding & surface prep' },
+                  { num: 3, title: 'Execution', desc: 'Staining & finish application' },
+                  { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
+                ].map(step => (
+                  <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
+                    <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
+                    <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 4 }}>{step.title}</h4>
+                    <p style={{ fontSize: 11, color: theme.textMuted }}>{step.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Valid Until */}
           <div style={{ background: theme.validityBg, color: theme.validityText, padding: 12, borderRadius: 8, textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
@@ -673,38 +705,41 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           )}
 
           {/* Timeline */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Estimated Timeline</h2>
-            <p style={{ fontSize: 14, color: theme.textDim }}>
-              Based on {proposal.square_footage} sqft, we estimate <strong style={{ color: theme.text }}>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
-              Our crew works 8AM–5PM with full area protection.
-            </p>
-          </div>
+          {!isHidden('timeline') && (
+            <div style={{ marginBottom: 25 }}>
+              <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Estimated Timeline</h2>
+              <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{timelineText}</p>
+            </div>
+          )}
 
           {/* Woody's Guarantee */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Woody's Guarantee</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-              {[
-                { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
-                { period: '10', unit: 'Years', type: 'Structural', desc: 'Peeling, bubbling, or delamination covered.' },
-                { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
-              ].map(g => (
-                <div key={g.type} style={{ textAlign: 'center', padding: 15, border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
-                  <div style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
-                  <p style={{ fontSize: 12, color: theme.textDim, marginTop: 6 }}>{g.desc}</p>
-                </div>
-              ))}
+          {!isHidden('guarantee') && (
+            <div style={{ marginBottom: 25 }}>
+              <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Woody's Guarantee</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                {[
+                  { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
+                  { period: '10', unit: 'Years', type: 'Structural', desc: 'Peeling, bubbling, or delamination covered.' },
+                  { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
+                ].map(g => (
+                  <div key={g.type} style={{ textAlign: 'center', padding: 15, border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
+                    <div style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
+                    <p style={{ fontSize: 12, color: theme.textDim, marginTop: 6 }}>{g.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* CTA */}
-          <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
-            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>Ready to move forward?</h3>
-            <p style={{ fontSize: 14, opacity: 0.9 }}>Contact us to discuss your project and choose the best option for your home.</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>{brand.phone}</p>
-          </div>
+          {!isHidden('cta') && (
+            <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
+              <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>{ctaHeading}</h3>
+              <p style={{ fontSize: 14, opacity: 0.9, whiteSpace: 'pre-wrap' }}>{ctaText}</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>{brand.phone}</p>
+            </div>
+          )}
 
           {/* Footer */}
           <div style={{ textAlign: 'center', paddingTop: 20, borderTop: `1px solid ${theme.border}`, color: theme.textMuted, fontSize: 11 }}>
@@ -714,6 +749,22 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
         </div>
       </div>
+
+      {proposal.proposal_id && (
+        <ProposalEditPanel
+          open={editPanelOpen}
+          onOpenChange={setEditPanelOpen}
+          proposalId={proposal.proposal_id}
+          initialOverrides={overrides}
+          initialHidden={hiddenSections}
+          initialValidUntil={proposal.valid_until}
+          onSaved={({ overrides: ov, hidden, validUntil }) => {
+            setOverrides(ov);
+            setHiddenSections(hidden);
+            setProposal((prev) => (prev ? { ...prev, valid_until: validUntil } : prev));
+          }}
+        />
+      )}
     </div>
   );
 }
