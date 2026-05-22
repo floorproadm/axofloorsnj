@@ -539,6 +539,35 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog
+        open={pendingStatus !== null}
+        onOpenChange={(o) => { if (!o) setPendingStatus(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus]?.title : "Confirm"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus]?.description : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (pendingStatus) {
+                  await applyStatusChange(pendingStatus);
+                  setPendingStatus(null);
+                }
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <FullMeasurementDialog
         open={measurementOpen}
         onOpenChange={setMeasurementOpen}
