@@ -16,19 +16,17 @@ import { NewJobDialog } from "@/components/admin/NewJobDialog";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { isThisWeek as isThisWeekFn, parseISO } from "date-fns";
 
 type SortKey = "recent" | "revenue_desc" | "margin_asc" | "start_asc";
 
 function isThisWeek(dateStr: string | null) {
   if (!dateStr) return false;
-  const d = new Date(dateStr);
-  const now = new Date();
-  const start = new Date(now);
-  start.setDate(now.getDate() - now.getDay());
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 7);
-  return d >= start && d < end;
+  try {
+    return isThisWeekFn(parseISO(dateStr), { weekStartsOn: 0 });
+  } catch {
+    return false;
+  }
 }
 
 export default function ProjectsHub() {
