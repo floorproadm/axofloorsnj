@@ -192,7 +192,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           .from('proposals')
           .insert({
             project_id: projectId,
-            customer_id: project.customer_id!,
+            customer_id: project.customer_id ?? null,
             use_tiers: false,
             flat_price: flatPrice,
             // tier columns are NOT NULL, fill with flat values to satisfy schema
@@ -254,7 +254,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         .from('proposals')
         .insert({
           project_id: projectId,
-          customer_id: project.customer_id!,
+          customer_id: project.customer_id ?? null,
           use_tiers: true,
           good_price: goodTier.price,
           better_price: betterTier.price,
