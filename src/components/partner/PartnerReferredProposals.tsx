@@ -48,12 +48,12 @@ export function PartnerReferredProposals({ partnerId, commissionPercent }: Props
     let active = true;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("proposals" as any)
+      const { data } = await (supabase as any)
+        .from("proposals")
         .select(
           "id, proposal_number, status, use_tiers, selected_tier, good_price, better_price, best_price, flat_price, created_at, project_id",
         )
-        .eq("referring_partner_id" as any, partnerId)
+        .eq("referring_partner_id", partnerId)
         .order("created_at", { ascending: false });
       if (!active) return;
       setProposals((data as any) || []);
