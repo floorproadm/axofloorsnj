@@ -283,7 +283,7 @@ export default function ProjectDetail() {
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
                       />
                     </Field>
-                    <Field label="CEP / Zip">
+                    <Field label="Zip Code">
                       <Input
                         value={form.zip_code}
                         onChange={(e) => setForm({ ...form, zip_code: e.target.value })}
