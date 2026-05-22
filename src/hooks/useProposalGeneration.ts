@@ -168,18 +168,9 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
 
       // ───────── DIRECT MODE ─────────
       if (mode === 'direct') {
+        // Price starts at 0 — it is derived from line items the user adds in the editor.
         const flatPrice = options.flatPrice ?? 0;
-        if (flatPrice <= 0) {
-          throw new Error('Direct mode requires a price greater than zero.');
-        }
         const flatMargin = flatPrice > 0 ? Math.round(((flatPrice - baseCost) / flatPrice) * 100) : 0;
-
-        // Margin guard only applies when job costs exist (proposal works as estimate otherwise)
-        if (jobCost && flatMargin < minMargin) {
-          throw new Error(
-            `BLOCKED: Margin ${flatMargin}% < minimum ${minMargin}%. Increase price or reduce costs.`
-          );
-        }
 
         // Fetch line items (best-effort) so we can show the breakdown
         const { data: items } = jobCost
