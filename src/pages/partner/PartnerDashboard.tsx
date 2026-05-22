@@ -386,6 +386,18 @@ export default function PartnerDashboard() {
                 </div>
               )}
             </div>
+
+            {partner && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Referred Proposals
+                </h2>
+                <PartnerReferredProposals
+                  partnerId={partner.id}
+                  commissionPercent={commissionPercent}
+                />
+              </div>
+            )}
           </>
         )}
 
