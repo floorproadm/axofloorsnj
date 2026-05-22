@@ -226,7 +226,7 @@ export function ProposalUnifiedEditor({
               <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
             </div>
           ) : (
-            <div className="px-5 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
+            <div className="px-5 py-4 space-y-4 max-h-[42vh] overflow-y-auto">
               {/* Row 1: Client / project basics */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Field label="Client name">
@@ -379,7 +379,7 @@ export function ProposalUnifiedEditor({
             ) : (
               <iframe
                 key={iframeKey}
-                src={`/proposal/${previewToken}`}
+                src={`/proposal/${previewToken}?adminPreview=1`}
                 title="Proposal preview"
                 className="w-full h-[calc(100%-32px)] bg-white"
               />
