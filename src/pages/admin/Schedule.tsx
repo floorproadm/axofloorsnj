@@ -205,6 +205,26 @@ export default function Schedule() {
   // Mutations
   const saveMutation = useMutation({
     mutationFn: async (data: TablesInsert<"appointments"> & { id?: string }) => {
+      // Soft conflict check: ±1h window on same date
+      try {
+        const dateStr = data.appointment_date as string | undefined;
+        const timeStr = data.appointment_time as string | undefined;
+        if (dateStr && timeStr) {
+          const [h, m] = timeStr.split(":").map(Number);
+          const target = (h || 0) * 60 + (m || 0);
+          const conflict = appointments.find((a) => {
+            if (data.id && a.id === data.id) return false;
+            if (a.appointment_date !== dateStr) return false;
+            const [ah, am] = a.appointment_time.slice(0, 5).split(":").map(Number);
+            const mins = (ah || 0) * 60 + (am || 0);
+            return Math.abs(mins - target) <= 60;
+          });
+          if (conflict) {
+            sonnerToast.warning(`There's already an appointment at this time: ${conflict.customer_name}`);
+          }
+        }
+      } catch { /* non-blocking */ }
+
       if (data.id) {
         const { id, ...rest } = data;
         const { error } = await supabase.from("appointments").update(rest).eq("id", id);
