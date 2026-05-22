@@ -1042,6 +1042,26 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Proposal <span className="font-semibold">{proposal.proposal_number}</span> will be permanently removed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteProposal.mutate()}
+              className="bg-red-500 hover:bg-red-600 gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Delete Draft
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {showShare && (
         <ShareModal proposal={proposal} open={showShare} onClose={() => setShowShare(false)} />
       )}
