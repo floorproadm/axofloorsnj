@@ -36,6 +36,7 @@ import { ProposalData } from "@/types/proposal";
 import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipelineBoard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProposalEditPanel, ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
 
 // ─── Sync linked lead status when proposal status changes ─────────────────────
 async function syncLinkedLeadStatus(projectId: string, newProposalStatus: string) {
