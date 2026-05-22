@@ -69,7 +69,7 @@ export function AdminSidebar() {
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Mission Control", url: "/admin/mission-control", icon: Target },
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
-    { title: "Schedule & Appointments", url: "/admin/schedule", icon: CalendarDays },
+    
     
     { title: t("sidebar.pagamentos"), url: "/admin/payments", icon: DollarSign },
     { title: "Performance", url: "/admin/performance", icon: BarChart3 },
