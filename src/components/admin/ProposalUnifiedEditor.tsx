@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { X, Save, Loader2, Eye, Printer, DollarSign } from "lucide-react";
+import { X, Save, Loader2, Eye, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -31,11 +29,7 @@ interface Props {
 interface ProposalRow {
   id: string;
   proposal_number: string;
-  use_tiers: boolean;
-  good_price: number;
-  better_price: number;
-  best_price: number;
-  flat_price: number | null;
+  share_token: string | null;
   valid_until: string;
   content_overrides: ContentOverrides | null;
   hidden_sections: SectionKey[] | null;
@@ -76,21 +70,11 @@ export function ProposalUnifiedEditor({
   const [ov, setOv] = useState<ContentOverrides>({});
   const [hidden, setHidden] = useState<SectionKey[]>([]);
   const [validUntil, setValidUntil] = useState("");
-  const [useTiers, setUseTiers] = useState(true);
-  const [good, setGood] = useState("");
-  const [better, setBetter] = useState("");
-  const [best, setBest] = useState("");
-  const [flat, setFlat] = useState("");
-  const [recommendedTier, setRecommendedTier] =
-    useState<"good" | "better" | "best">("better");
 
   // Iframe reload key
   const [iframeKey, setIframeKey] = useState(0);
 
-  const previewToken = useMemo(
-    () => btoa(`prop-${proposalId}`).replace(/=/g, "").slice(0, 18),
-    [proposalId],
-  );
+  const previewToken = useMemo(() => proposal?.share_token ?? "", [proposal?.share_token]);
 
   useEffect(() => {
     if (!open) return;
@@ -107,7 +91,15 @@ export function ProposalUnifiedEditor({
         setLoading(false);
         return;
       }
-      const prop = p as unknown as ProposalRow;
+      let prop = p as unknown as ProposalRow;
+      if (!prop.share_token) {
+        const newToken = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
+        const { error: tokenError } = await supabase
+          .from("proposals")
+          .update({ share_token: newToken } as any)
+          .eq("id", prop.id);
+        if (!tokenError) prop = { ...prop, share_token: newToken };
+      }
       const { data: proj } = await supabase
         .from("projects")
         .select(
@@ -121,12 +113,6 @@ export function ProposalUnifiedEditor({
       setOv(prop.content_overrides ?? {});
       setHidden(prop.hidden_sections ?? []);
       setValidUntil(prop.valid_until);
-      setUseTiers(prop.use_tiers);
-      setGood(String(prop.good_price ?? 0));
-      setBetter(String(prop.better_price ?? 0));
-      setBest(String(prop.best_price ?? 0));
-      setFlat(String(prop.flat_price ?? prop.better_price ?? 0));
-      setRecommendedTier("better");
       setLoading(false);
     })();
     return () => {
@@ -161,16 +147,7 @@ export function ProposalUnifiedEditor({
         content_overrides: cleaned,
         hidden_sections: hidden,
         valid_until: validUntil,
-        use_tiers: useTiers,
       };
-      if (useTiers) {
-        update.good_price = parseFloat(good) || 0;
-        update.better_price = parseFloat(better) || 0;
-        update.best_price = parseFloat(best) || 0;
-        update.flat_price = null;
-      } else {
-        update.flat_price = parseFloat(flat) || 0;
-      }
 
       const { error } = await supabase
         .from("proposals")
@@ -189,12 +166,16 @@ export function ProposalUnifiedEditor({
   };
 
   const handlePrint = () => {
-    window.open(`/proposal/${previewToken}?print=1`, "_blank");
+    if (previewToken) window.open(`/proposal/${previewToken}?print=1`, "_blank");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-none w-screen h-screen p-0 gap-0 border-0 rounded-none flex flex-col bg-zinc-950 text-zinc-100">
+        <DialogTitle className="sr-only">Edit proposal</DialogTitle>
+        <DialogDescription className="sr-only">
+          Edit proposal content and review the live proposal preview.
+        </DialogDescription>
         {/* Sticky editor toolbar */}
         <div className="flex-shrink-0 border-b border-zinc-800 bg-zinc-900">
           {/* Top bar */}
@@ -355,82 +336,7 @@ export function ProposalUnifiedEditor({
                 </Field>
               </div>
 
-              {/* Row 4: Pricing */}
-              <div className="rounded-md border border-zinc-800 bg-zinc-950/60 p-3">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] uppercase tracking-wider text-zinc-500">
-                    Pricing
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-zinc-400">
-                      Tiers (Good/Better/Best)
-                    </span>
-                    <Switch
-                      checked={useTiers}
-                      onCheckedChange={setUseTiers}
-                    />
-                  </div>
-                </div>
-
-                {useTiers ? (
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      {
-                        key: "good" as const,
-                        label: "Good — Essential",
-                        v: good,
-                        s: setGood,
-                      },
-                      {
-                        key: "better" as const,
-                        label: "Better — Recommended",
-                        v: better,
-                        s: setBetter,
-                      },
-                      {
-                        key: "best" as const,
-                        label: "Best — Premium",
-                        v: best,
-                        s: setBest,
-                      },
-                    ].map((t) => (
-                      <div key={t.key}>
-                        <Label className="text-[10px] uppercase tracking-wider text-zinc-500">
-                          {t.label}
-                        </Label>
-                        <div className="relative mt-1">
-                          <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
-                          <Input
-                            type="number"
-                            value={t.v}
-                            onChange={(e) => t.s(e.target.value)}
-                            className="pl-7 bg-zinc-950 border-zinc-800 text-zinc-100 h-9"
-                            placeholder="0"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="max-w-xs">
-                    <Label className="text-[10px] uppercase tracking-wider text-zinc-500">
-                      Single price
-                    </Label>
-                    <div className="relative mt-1">
-                      <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
-                      <Input
-                        type="number"
-                        value={flat}
-                        onChange={(e) => setFlat(e.target.value)}
-                        className="pl-7 bg-zinc-950 border-zinc-800 text-zinc-100 h-9"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Row 5: Sections on/off */}
+              {/* Row 4: Sections on/off */}
               <div className="rounded-md border border-zinc-800 bg-zinc-950/60 p-3">
                 <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">
                   Sections visible on proposal
@@ -466,12 +372,18 @@ export function ProposalUnifiedEditor({
               <Eye className="w-3.5 h-3.5" />
               Live preview — reflects saved changes
             </div>
-            <iframe
-              key={iframeKey}
-              src={`/proposal/${previewToken}`}
-              title="Proposal preview"
-              className="w-full h-[calc(100%-32px)] bg-white"
-            />
+            {loading || !previewToken ? (
+              <div className="w-full h-[calc(100%-32px)] bg-white text-zinc-500 flex items-center justify-center text-sm">
+                {loading ? "Loading preview..." : "Public preview link is not ready yet."}
+              </div>
+            ) : (
+              <iframe
+                key={iframeKey}
+                src={`/proposal/${previewToken}`}
+                title="Proposal preview"
+                className="w-full h-[calc(100%-32px)] bg-white"
+              />
+            )}
           </div>
         </div>
       </DialogContent>
