@@ -117,21 +117,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   };
 
   const handleGenerate = async () => {
-    if (!mode) {
-      toast.error('Choose a proposal mode first.');
-      return;
-    }
-    if (mode === 'direct') {
-      const price = Number(flatPriceInput);
-      if (!price || price <= 0) {
-        toast.error('Enter a valid price for Direct mode.');
-        return;
-      }
-      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: price });
-      if (data) setProposal(data);
-      return;
-    }
-    const data = await fetchProjectData(projectId, { mode: 'tiers' });
+    // Direct mode only — start with price = 0, user builds total from line items.
+    const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 });
     if (data) setProposal(data);
   };
 
