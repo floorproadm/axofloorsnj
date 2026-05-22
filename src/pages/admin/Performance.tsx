@@ -62,7 +62,7 @@ function OverviewTab() {
   const [period, setPeriod] = useState<Period>("90d");
   const [selectedProject, setSelectedProject] = useState<ProjectWithCosts | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const { projects: allProjects, isLoading } = usePerformanceData();
+  const { isLoading } = usePerformanceData();
 
   const periodStart = getPeriodStart(period);
 
