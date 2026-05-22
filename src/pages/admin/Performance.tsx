@@ -117,15 +117,17 @@ function OverviewTab() {
     : 0;
   const avgJobValue = projectAgg.length > 0 ? totalRevenue / projectAgg.length : 0;
 
-  // Filter performance list (kept for completed jobs section UX)
-  const projects = useMemo(() => {
-    if (!periodStart) return allProjects;
-    return allProjects.filter(p => {
-      const d = p.start_date || p.completion_date;
-      return d && new Date(d) >= periodStart;
-    });
-  }, [allProjects, periodStart]);
-  const completedJobs = useMemo(() => projects.filter(p => p.project_status === "completed"), [projects]);
+  // Completed Jobs list derived from same paid-invoice aggregation as KPIs (single source of truth)
+  const completedJobs = useMemo(() => {
+    return projectAgg
+      .filter(a => a.project?.project_status === "completed")
+      .map(a => ({
+        ...a.project,
+        job_costs: a.project?.job_costs
+          ? { ...a.project.job_costs, estimated_revenue: a.revenue }
+          : { estimated_revenue: a.revenue, margin_percent: 0 },
+      })) as ProjectWithCosts[];
+  }, [projectAgg]);
 
   // Service breakdown (from paid invoices)
   const byService = useMemo(() => {
