@@ -126,6 +126,8 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   onCreated: (proposal: ProposalData) => void;
 }) {
   const [projectId, setProjectId] = useState("");
+  const [mode, setMode] = useState<"tiers" | "direct">("tiers");
+  const [flatPrice, setFlatPrice] = useState<string>("");
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
 
   const { data: projects = [] } = useQuery({
@@ -145,13 +147,21 @@ function NewProposalDialog({ open, onClose, onCreated }: {
 
   const handleGenerate = async () => {
     if (!projectId) return;
-    const data = await fetchProjectData(projectId);
+    const opts =
+      mode === "direct"
+        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0 }
+        : { mode: "tiers" as const };
+    const data = await fetchProjectData(projectId, opts);
     if (data) {
       onCreated(data);
       onClose();
       setProjectId("");
+      setFlatPrice("");
+      setMode("tiers");
     }
   };
+
+  const directDisabled = mode === "direct" && (!flatPrice || Number(flatPrice) <= 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -178,17 +188,57 @@ function NewProposalDialog({ open, onClose, onCreated }: {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Pricing mode toggle */}
+          <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+            <div className="space-y-0.5">
+              <p className="text-xs font-semibold">
+                {mode === "tiers" ? "Pricing Tiers" : "Direct Price"}
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                {mode === "tiers"
+                  ? "Good / Better / Best auto-generated"
+                  : "Single price + line items breakdown"}
+              </p>
+            </div>
+            <Switch
+              checked={mode === "tiers"}
+              onCheckedChange={(v) => setMode(v ? "tiers" : "direct")}
+            />
+          </div>
+
+          {mode === "direct" && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Flat Price (USD) *</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                value={flatPrice}
+                onChange={(e) => setFlatPrice(e.target.value)}
+                placeholder="e.g. 4500"
+                className="text-sm"
+              />
+            </div>
+          )}
+
           {error && (
             <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500">
               {error}
             </div>
           )}
           <p className="text-xs text-muted-foreground">
-            Generates Good / Better / Best tiers automatically from job costs.
+            {mode === "tiers"
+              ? "Generates Good / Better / Best tiers automatically from job costs."
+              : "Creates a single-price proposal validated against minimum margin."}
           </p>
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
-            <Button className="flex-1" disabled={!projectId || isLoading} onClick={handleGenerate}>
+            <Button
+              className="flex-1"
+              disabled={!projectId || isLoading || directDisabled}
+              onClick={handleGenerate}
+            >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
             </Button>
           </div>
@@ -197,6 +247,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
     </Dialog>
   );
 }
+
 
 // ─── Share Modal ──────────────────────────────────────────────────────────────
 function ShareModal({ proposal, open, onClose }: {
