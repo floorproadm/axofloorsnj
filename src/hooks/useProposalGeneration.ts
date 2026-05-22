@@ -63,6 +63,7 @@ export const DEFAULT_TIER_MARGINS = {
 interface FetchOptions {
   mode?: 'tiers' | 'direct';
   flatPrice?: number; // required when mode='direct'
+  referringPartnerId?: string | null;
 }
 
 interface UseProposalGenerationReturn {
@@ -193,6 +194,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           .insert({
             project_id: projectId,
             customer_id: project.customer_id ?? null,
+            referring_partner_id: options.referringPartnerId ?? null,
             use_tiers: false,
             flat_price: flatPrice,
             // tier columns are NOT NULL, fill with flat values to satisfy schema
@@ -206,7 +208,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
             status: 'draft',
             proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
             organization_id: AXO_ORG_ID,
-          })
+          } as any)
           .select()
           .single();
 
@@ -255,6 +257,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         .insert({
           project_id: projectId,
           customer_id: project.customer_id ?? null,
+          referring_partner_id: options.referringPartnerId ?? null,
           use_tiers: true,
           good_price: goodTier.price,
           better_price: betterTier.price,
@@ -266,7 +269,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           status: 'draft',
           proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
           organization_id: AXO_ORG_ID,
-        })
+        } as any)
         .select()
         .single();
 

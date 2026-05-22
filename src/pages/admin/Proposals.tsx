@@ -128,6 +128,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   const [projectId, setProjectId] = useState("");
   const [mode, setMode] = useState<"tiers" | "direct">("tiers");
   const [flatPrice, setFlatPrice] = useState<string>("");
+  const [partnerId, setPartnerId] = useState<string>("none");
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
 
   const { data: projects = [] } = useQuery({
@@ -135,7 +136,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, customer_name, project_type, city")
+        .select("id, customer_name, project_type, city, customer_id")
         .in("project_status", ["pending", "in_production"])
         .order("created_at", { ascending: false })
         .limit(60);
@@ -145,12 +146,47 @@ function NewProposalDialog({ open, onClose, onCreated }: {
     enabled: open,
   });
 
+  const { data: partners = [] } = useQuery({
+    queryKey: ["partners-for-proposal"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("partners")
+        .select("id, company_name, contact_name, partner_program")
+        .eq("status", "active")
+        .order("company_name", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: open,
+  });
+
+  // Auto-detect: if the selected project's customer was referred by a partner, pre-fill
+  useEffect(() => {
+    if (!projectId) return;
+    const proj = projects.find((p: any) => p.id === projectId);
+    if (!proj?.customer_id) return;
+    (async () => {
+      const { data } = await supabase
+        .from("leads")
+        .select("referred_by_partner_id")
+        .eq("customer_id", proj.customer_id)
+        .not("referred_by_partner_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.referred_by_partner_id) {
+        setPartnerId(data.referred_by_partner_id as string);
+      }
+    })();
+  }, [projectId, projects]);
+
   const handleGenerate = async () => {
     if (!projectId) return;
+    const referringPartnerId = partnerId !== "none" ? partnerId : null;
     const opts =
       mode === "direct"
-        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0 }
-        : { mode: "tiers" as const };
+        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0, referringPartnerId }
+        : { mode: "tiers" as const, referringPartnerId };
     const data = await fetchProjectData(projectId, opts);
     if (data) {
       onCreated(data);
@@ -158,6 +194,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
       setProjectId("");
       setFlatPrice("");
       setMode("tiers");
+      setPartnerId("none");
     }
   };
 
@@ -187,6 +224,31 @@ function NewProposalDialog({ open, onClose, onCreated }: {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Referring partner (optional) */}
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1.5">
+              Referring Partner
+              <span className="text-[10px] font-normal text-muted-foreground">(optional)</span>
+            </Label>
+            <Select value={partnerId} onValueChange={setPartnerId}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="No partner referral" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— No partner —</SelectItem>
+                {partners.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.company_name}
+                    {p.contact_name && ` · ${p.contact_name}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">
+              Partner will see this proposal in their portal and earn commission if accepted.
+            </p>
           </div>
 
           {/* Pricing mode toggle */}
@@ -227,11 +289,6 @@ function NewProposalDialog({ open, onClose, onCreated }: {
               {error}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            {mode === "tiers"
-              ? "Generates Good / Better / Best tiers automatically from job costs."
-              : "Creates a single-price proposal validated against minimum margin."}
-          </p>
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button

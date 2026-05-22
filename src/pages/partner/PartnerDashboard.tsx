@@ -12,6 +12,7 @@ import { PartnerProfileTab } from "@/components/partner/PartnerProfileTab";
 import { PartnerBottomNav, type PartnerView } from "@/components/partner/PartnerBottomNav";
 import { PartnerPipelineBoard } from "@/components/partner/PartnerPipelineBoard";
 import { PartnerQuotesTab } from "@/components/partner/PartnerQuotesTab";
+import { PartnerReferredProposals } from "@/components/partner/PartnerReferredProposals";
 import { cn } from "@/lib/utils";
 
 interface Lead {
@@ -385,6 +386,18 @@ export default function PartnerDashboard() {
                 </div>
               )}
             </div>
+
+            {partner && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Referred Proposals
+                </h2>
+                <PartnerReferredProposals
+                  partnerId={partner.id}
+                  commissionPercent={commissionPercent}
+                />
+              </div>
+            )}
           </>
         )}
 

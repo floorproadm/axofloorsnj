@@ -2932,6 +2932,7 @@ export type Database = {
           pdf_document_id: string | null
           project_id: string
           proposal_number: string
+          referring_partner_id: string | null
           selected_tier: string | null
           sent_at: string | null
           share_token: string | null
@@ -2958,6 +2959,7 @@ export type Database = {
           pdf_document_id?: string | null
           project_id: string
           proposal_number: string
+          referring_partner_id?: string | null
           selected_tier?: string | null
           sent_at?: string | null
           share_token?: string | null
@@ -2984,6 +2986,7 @@ export type Database = {
           pdf_document_id?: string | null
           project_id?: string
           proposal_number?: string
+          referring_partner_id?: string | null
           selected_tier?: string | null
           sent_at?: string | null
           share_token?: string | null
