@@ -2921,7 +2921,7 @@ export type Database = {
           better_price: number
           client_note: string | null
           created_at: string
-          customer_id: string
+          customer_id: string | null
           flat_price: number | null
           good_price: number
           id: string
@@ -2947,7 +2947,7 @@ export type Database = {
           better_price: number
           client_note?: string | null
           created_at?: string
-          customer_id: string
+          customer_id?: string | null
           flat_price?: number | null
           good_price: number
           id?: string
@@ -2973,7 +2973,7 @@ export type Database = {
           better_price?: number
           client_note?: string | null
           created_at?: string
-          customer_id?: string
+          customer_id?: string | null
           flat_price?: number | null
           good_price?: number
           id?: string
