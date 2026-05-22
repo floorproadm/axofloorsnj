@@ -49,7 +49,16 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   const { criticalAlerts } = useDashboardData();
 
-  const notifications = React.useMemo(() => {
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem("admin.notifications.dismissed");
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      return new Set();
+    }
+  });
+
+  const allNotifications = React.useMemo(() => {
     const items: { id: string; name: string; type: "cold" | "proposal" | "stalled"; link: string }[] = [];
     (criticalAlerts.newLeadsNoContact24h || []).forEach(l => items.push({ id: l.id, name: l.name, type: "cold", link: "/admin/leads?status=cold_lead" }));
     (criticalAlerts.proposalWithoutFollowUp || []).forEach(l => items.push({ id: l.id, name: l.name, type: "proposal", link: "/admin/leads?status=proposal_sent" }));
@@ -57,7 +66,25 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
     return items;
   }, [criticalAlerts]);
 
+  const notifications = React.useMemo(
+    () => allNotifications.filter(n => !dismissed.has(`${n.type}-${n.id}`)),
+    [allNotifications, dismissed],
+  );
+
   const notificationCount = notifications.length;
+
+  const clearNotifications = () => {
+    const keys = allNotifications.map(n => `${n.type}-${n.id}`);
+    const next = new Set([...dismissed, ...keys]);
+    setDismissed(next);
+    try {
+      localStorage.setItem("admin.notifications.dismissed", JSON.stringify(Array.from(next)));
+    } catch {
+      /* ignore */
+    }
+    toast({ title: "Notifications cleared" });
+  };
+
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
@@ -99,11 +126,21 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
                   </button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0 bg-card border border-border shadow-lg z-50">
-                  <div className="px-4 py-3 border-b border-border">
-                    <h3 className="text-sm font-bold text-foreground">{t("layout.notificacoes")}</h3>
-                    <p className="text-[11px] text-muted-foreground">
-                      {notificationCount} {notificationCount !== 1 ? t("layout.pendentes") : t("layout.pendente")}
-                    </p>
+                  <div className="px-4 py-3 border-b border-border flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground">{t("layout.notificacoes")}</h3>
+                      <p className="text-[11px] text-muted-foreground">
+                        {notificationCount} {notificationCount !== 1 ? t("layout.pendentes") : t("layout.pendente")}
+                      </p>
+                    </div>
+                    {notificationCount > 0 && (
+                      <button
+                        onClick={clearNotifications}
+                        className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Clear all
+                      </button>
+                    )}
                   </div>
                   {notifications.length === 0 ? (
                     <div className="py-8 text-center text-sm text-muted-foreground">
