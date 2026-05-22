@@ -27,7 +27,7 @@ export default function MissionControlPage() {
 
     if (recentSystemActions.length > 0) {
       tasks.push({
-        label: `${recentSystemActions.length} escalações automáticas (24h)`,
+        label: `${recentSystemActions.length} ${t("mission.alerts.autoEscalations")}`,
         color: "risk",
         link: "/admin/leads",
         type: "sla_auto_escalation",
@@ -36,7 +36,7 @@ export default function MissionControlPage() {
 
     if (slaBreaches.followupOverdue.count > 0) {
       tasks.push({
-        label: `${slaBreaches.followupOverdue.count} follow-ups atrasados`,
+        label: `${slaBreaches.followupOverdue.count} ${t("mission.alerts.followupsOverdue")}`,
         color: "blocked",
         link: "/admin/leads?status=proposal_sent",
         type: "sla_followup",
@@ -45,7 +45,7 @@ export default function MissionControlPage() {
 
     if (slaBreaches.estimateStale.count > 0) {
       tasks.push({
-        label: `${slaBreaches.estimateStale.count} estimates parados > 3 dias`,
+        label: `${slaBreaches.estimateStale.count} ${t("mission.alerts.estimatesStale")}`,
         color: "risk",
         link: "/admin/leads?status=estimate_scheduled",
         type: "sla_estimate",
@@ -54,7 +54,7 @@ export default function MissionControlPage() {
 
     if (recentFieldUploads.length > 0) {
       tasks.push({
-        label: `${recentFieldUploads.length} uploads recentes do campo`,
+        label: `${recentFieldUploads.length} ${t("mission.alerts.recentFieldUploads")}`,
         color: "success",
         link: "/admin/jobs",
         type: "field_upload",
@@ -63,7 +63,7 @@ export default function MissionControlPage() {
 
     criticalAlerts.proposalWithoutFollowUp.forEach((l) => {
       tasks.push({
-        label: `Follow up – ${l.name}`,
+        label: `${t("mission.alerts.followUp")} – ${l.name}`,
         color: "blocked",
         link: "/admin/leads?status=proposal_sent",
         type: "follow_up",
