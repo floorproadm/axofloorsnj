@@ -56,6 +56,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  const [editPanelOpen, setEditPanelOpen] = useState(false);
+  const [overrides, setOverrides] = useState<ContentOverrides>({});
+  const [hiddenSections, setHiddenSections] = useState<SectionKey[]>([]);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
     return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
