@@ -106,7 +106,7 @@ export default function MissionControlPage() {
               Mission Control
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Alertas operacionais automáticos e tarefas manuais em um só lugar.
+              {t("mission.subtitle")}
             </p>
           </div>
         </div>
