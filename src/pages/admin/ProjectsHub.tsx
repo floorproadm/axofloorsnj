@@ -368,6 +368,35 @@ export default function ProjectsHub() {
         )}
 
         <NewJobDialog open={showNewJob} onOpenChange={setShowNewJob} />
+
+        <AlertDialog
+          open={pendingStatus !== null}
+          onOpenChange={(o) => { if (!o) setPendingStatus(null); }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus.status]?.title : "Confirm"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus.status]?.description : ""}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (pendingStatus) {
+                    await applyStatusChange(pendingStatus.id, pendingStatus.status);
+                    setPendingStatus(null);
+                  }
+                }}
+              >
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
