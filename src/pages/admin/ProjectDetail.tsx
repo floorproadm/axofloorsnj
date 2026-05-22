@@ -71,7 +71,7 @@ export default function ProjectDetail() {
     if (!projectId) return;
     setSaving(true);
     const payload: any = {
-      customer_name: form.customer_name || null,
+      customer_name: form.customer_name ?? '',
       customer_phone: form.customer_phone || null,
       customer_email: form.customer_email || null,
       address: form.address || null,
