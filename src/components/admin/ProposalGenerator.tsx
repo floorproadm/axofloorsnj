@@ -635,41 +635,39 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           <div style={{ marginBottom: 25 }}>
             <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Prepared For</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Client</span><br/><strong style={{ color: theme.text }}>{proposal.customer_name}</strong></div>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Address</span><br/><span style={{ color: theme.textDim }}>{proposal.address}</span></div>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Contact</span><br/><span style={{ color: theme.textDim }}>{proposal.customer_email} | {proposal.customer_phone}</span></div>
-              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Project</span><br/><span style={{ color: theme.textDim }}>{proposal.project_type} — {proposal.square_footage} sqft</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Client</span><br/><strong style={{ color: theme.text }}>{displayCustomerName}</strong></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Address</span><br/><span style={{ color: theme.textDim }}>{displayAddress}</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Contact</span><br/><span style={{ color: theme.textDim }}>{displayEmail} | {displayPhone}</span></div>
+              <div><span style={{ color: theme.textMuted, fontSize: 12 }}>Project</span><br/><span style={{ color: theme.textDim }}>{displayProjectType} — {displaySqft} sqft</span></div>
             </div>
           </div>
 
           {/* Site Assessment */}
           <div style={{ marginBottom: 25 }}>
             <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Site Assessment</h2>
-            <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6 }}>
-              {proposal.mode === 'direct'
-                ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
-                : `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`}
-            </p>
+            <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{siteAssessment}</p>
           </div>
 
           {/* AXO Transformation Method */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>The AXO Transformation Method</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-              {[
-                { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
-                { num: 2, title: 'Preparation', desc: 'Dustless sanding & surface prep' },
-                { num: 3, title: 'Execution', desc: 'Staining & finish application' },
-                { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
-              ].map(step => (
-                <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
-                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
-                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 4 }}>{step.title}</h4>
-                  <p style={{ fontSize: 11, color: theme.textMuted }}>{step.desc}</p>
-                </div>
-              ))}
+          {!isHidden('method') && (
+            <div style={{ marginBottom: 25 }}>
+              <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>The AXO Transformation Method</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                {[
+                  { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
+                  { num: 2, title: 'Preparation', desc: 'Dustless sanding & surface prep' },
+                  { num: 3, title: 'Execution', desc: 'Staining & finish application' },
+                  { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
+                ].map(step => (
+                  <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
+                    <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
+                    <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 4 }}>{step.title}</h4>
+                    <p style={{ fontSize: 11, color: theme.textMuted }}>{step.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Valid Until */}
           <div style={{ background: theme.validityBg, color: theme.validityText, padding: 12, borderRadius: 8, textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
