@@ -348,11 +348,12 @@ export default function Catalog() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      // Delete image from storage if exists
+      // Delete DB record FIRST — only remove the image if the DB delete succeeds,
+      // otherwise we'd lose the image while the row still exists.
+      await deleteMutation.mutateAsync(deleteTarget.id);
       if (deleteTarget.image_url) {
         await deleteCatalogImage(deleteTarget.image_url).catch(() => {});
       }
-      await deleteMutation.mutateAsync(deleteTarget.id);
       toast.success(pt ? "Item removido" : "Item deleted");
     } catch (e: any) {
       toast.error(e.message || "Error");
