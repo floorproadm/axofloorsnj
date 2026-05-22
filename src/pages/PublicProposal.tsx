@@ -39,6 +39,7 @@ export default function PublicProposal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const printMode = searchParams.get("print") === "1";
+  const adminPreview = searchParams.get("adminPreview") === "1";
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
@@ -87,7 +88,7 @@ export default function PublicProposal() {
         setProposal(prop);
 
         // Mark as viewed (first time only)
-        if (!prop.viewed_at) {
+        if (!adminPreview && !prop.viewed_at) {
           await supabase
             .from("proposals")
             .update({
@@ -118,7 +119,7 @@ export default function PublicProposal() {
         setLoading(false);
       }
     })();
-  }, [token]);
+  }, [token, adminPreview]);
 
   const isAccepted = proposal?.status === "accepted";
   const isExpired = useMemo(() => {
