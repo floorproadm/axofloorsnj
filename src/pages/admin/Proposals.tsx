@@ -82,7 +82,7 @@ interface ProposalWithRelations {
   valid_until: string;
   created_at: string;
   project_id: string;
-  share_token: string | null;
+  share_token?: string | null;
   use_tiers: boolean;
   flat_price: number | null;
   content_overrides?: ContentOverrides | null;
