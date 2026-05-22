@@ -373,6 +373,17 @@ export default function Payments() {
                         })}
                       </div>
                     ))}
+                    {visibleCount < totalVisible && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVisibleCount((c) => c + 50)}
+                        >
+                          Load more ({totalVisible - visibleCount} remaining)
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
 
