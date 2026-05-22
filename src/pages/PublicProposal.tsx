@@ -19,7 +19,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
-import { ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
+import type { ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
 
 const fmt = (v: number) =>
   `$${Number(v || 0).toLocaleString("en-US", {
