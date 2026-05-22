@@ -145,14 +145,12 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
 
       if (projectError) throw new Error('Project not found: ' + projectError.message);
 
-      // Fetch job costs
-      const { data: jobCost, error: costError } = await supabase
+      // Fetch job costs (optional — proposals work like estimates: user enters items directly)
+      const { data: jobCost } = await supabase
         .from('job_costs')
         .select('*')
         .eq('project_id', projectId)
-        .single();
-
-      if (costError) throw new Error('Job costs not found. Calculate costs first.');
+        .maybeSingle();
 
       // Fetch company settings for minimum margin
       const { data: settings } = await supabase
@@ -162,7 +160,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         .single();
 
       const minMargin = settings?.default_margin_min_percent ?? 30;
-      const baseCost = jobCost.total_cost ?? 0;
+      const baseCost = jobCost?.total_cost ?? 0;
 
       const validUntil = new Date();
       validUntil.setDate(validUntil.getDate() + 30);
