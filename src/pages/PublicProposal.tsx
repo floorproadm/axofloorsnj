@@ -19,7 +19,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
-import type { ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
 
 const fmt = (v: number) =>
   `$${Number(v || 0).toLocaleString("en-US", {
@@ -39,7 +38,6 @@ export default function PublicProposal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const printMode = searchParams.get("print") === "1";
-  const adminPreview = searchParams.get("adminPreview") === "1";
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
@@ -88,7 +86,7 @@ export default function PublicProposal() {
         setProposal(prop);
 
         // Mark as viewed (first time only)
-        if (!adminPreview && !prop.viewed_at) {
+        if (!prop.viewed_at) {
           await supabase
             .from("proposals")
             .update({
@@ -119,7 +117,7 @@ export default function PublicProposal() {
         setLoading(false);
       }
     })();
-  }, [token, adminPreview]);
+  }, [token]);
 
   const isAccepted = proposal?.status === "accepted";
   const isExpired = useMemo(() => {
@@ -135,12 +133,6 @@ export default function PublicProposal() {
       { key: "best", price: Number(proposal.best_price) },
     ];
   }, [proposal]);
-
-  const overrides = (proposal?.content_overrides ?? {}) as ContentOverrides;
-  const hiddenSections = ((proposal?.hidden_sections ?? []) as string[]).filter(
-    (key): key is SectionKey => ["method", "timeline", "guarantee", "cta"].includes(key),
-  );
-  const isHidden = (key: SectionKey) => hiddenSections.includes(key);
 
   if (loading) {
     return (
@@ -172,18 +164,6 @@ export default function PublicProposal() {
     setPickedTier(tier);
     setSignOpen(true);
   };
-
-  const displayName = overrides.customer_name || customer?.full_name || "Client";
-  const displayPhone = overrides.customer_phone || customer?.phone || "";
-  const displayEmail = overrides.customer_email || customer?.email || "";
-  const displayAddress = overrides.address || project?.address || customer?.address || "";
-  const displayProjectType = overrides.project_type || project?.project_type || "Flooring Project";
-  const displaySqft = overrides.square_footage ?? project?.square_footage;
-  const durationDays = Math.max(1, Math.ceil((Number(displaySqft) || 500) / 350));
-  const siteAssessment = overrides.site_assessment || `Based on our evaluation of your ${displaySqft || ""} sqft ${displayProjectType} project, we've prepared a fixed-scope quote with a transparent professional scope.`;
-  const timelineText = overrides.timeline || `Based on this scope, we estimate ${durationDays} working day${durationDays > 1 ? "s" : ""} to complete your project.`;
-  const ctaHeading = overrides.cta_heading || "Ready to move forward?";
-  const ctaText = overrides.cta_text || "Call or text us — happy to walk you through the proposal.";
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -227,17 +207,14 @@ export default function PublicProposal() {
             <div className="flex-1 min-w-0">
               <p className="text-xs text-slate-500">Prepared for</p>
               <p className="font-semibold text-slate-900">
-                {displayName}
+                {customer?.full_name || "Client"}
               </p>
-              {displayPhone && (
-                <p className="text-xs text-slate-500 mt-0.5">{displayPhone}</p>
-              )}
-              {displayEmail && (
-                <p className="text-xs text-slate-500 mt-0.5">{displayEmail}</p>
+              {customer?.phone && (
+                <p className="text-xs text-slate-500 mt-0.5">{customer.phone}</p>
               )}
             </div>
           </div>
-          {displayAddress && (
+          {(project?.address || customer?.address) && (
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4 text-slate-600" />
@@ -245,35 +222,12 @@ export default function PublicProposal() {
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-slate-500">Project address</p>
                 <p className="text-sm text-slate-900">
-                  {displayAddress}
+                  {project?.address || customer?.address}
                 </p>
               </div>
             </div>
           )}
         </Card>
-
-        <Card className="p-5 bg-white">
-          <h3 className="text-sm font-semibold text-slate-900 mb-2">Site Assessment</h3>
-          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{siteAssessment}</p>
-          <div className="grid grid-cols-2 gap-3 mt-4 text-xs text-slate-500">
-            <div><span className="block uppercase tracking-wider">Service</span><strong className="text-slate-800">{displayProjectType}</strong></div>
-            {displaySqft && <div><span className="block uppercase tracking-wider">Area</span><strong className="text-slate-800">{Number(displaySqft).toLocaleString()} sqft</strong></div>}
-          </div>
-        </Card>
-
-        {!isHidden("method") && (
-          <Card className="p-5 bg-white">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">The AXO Transformation Method</h3>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {["Diagnostic", "Preparation", "Execution", "Finishing"].map((step, index) => (
-                <div key={step} className="rounded-lg border border-slate-200 p-3 bg-slate-50">
-                  <span className="text-amber-700 font-bold">0{index + 1}</span>
-                  <p className="font-semibold text-slate-900 mt-1">{step}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
 
         {/* Optional client note */}
         {proposal.client_note && (
@@ -348,46 +302,37 @@ export default function PublicProposal() {
           />
         </div>
 
-        {!isHidden("timeline") && (
-          <Card className="p-5 bg-white">
-            <h3 className="text-sm font-semibold text-slate-900 mb-2">Estimated Timeline</h3>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{timelineText}</p>
-          </Card>
-        )}
-
         {/* Woody's Guarantee */}
-        {!isHidden("guarantee") && (
-          <Card className="p-5 bg-white">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">
-              Woody's Guarantee
-            </h3>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              {[
-                { n: "30", u: "Days", t: "Satisfaction" },
-                { n: "10", u: "Years", t: "Structural" },
-                { n: "5", u: "Years", t: "Finish" },
-              ].map((g) => (
-                <div key={g.t} className="bg-slate-50 rounded-lg py-3">
-                  <div className="text-2xl font-bold text-amber-600">{g.n}</div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">
-                    {g.u}
-                  </div>
-                  <div className="text-[11px] text-slate-700 font-medium mt-1">
-                    {g.t}
-                  </div>
+        <Card className="p-5 bg-white">
+          <h3 className="text-sm font-semibold text-slate-900 mb-3">
+            Woody's Guarantee
+          </h3>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            {[
+              { n: "30", u: "Days", t: "Satisfaction" },
+              { n: "10", u: "Years", t: "Structural" },
+              { n: "5", u: "Years", t: "Finish" },
+            ].map((g) => (
+              <div key={g.t} className="bg-slate-50 rounded-lg py-3">
+                <div className="text-2xl font-bold text-amber-600">{g.n}</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">
+                  {g.u}
                 </div>
-              ))}
-            </div>
-          </Card>
-        )}
+                <div className="text-[11px] text-slate-700 font-medium mt-1">
+                  {g.t}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
 
         {/* Help */}
-        {!isHidden("cta") && <Card className="p-5 bg-[#0f1b3d] text-white">
+        <Card className="p-5 bg-[#0f1b3d] text-white">
           <p className="text-amber-400 text-xs uppercase tracking-wider font-semibold">
-            {ctaHeading}
+            Questions?
           </p>
           <p className="text-sm mt-1 opacity-90">
-            {ctaText}
+            Call or text us — happy to walk you through any tier.
           </p>
           <a
             href={`tel:${phoneTel}`}
@@ -397,7 +342,7 @@ export default function PublicProposal() {
             <Phone className="w-4 h-4" />
             {brand.phone}
           </a>
-        </Card>}
+        </Card>
 
         {/* Status banners */}
         {isAccepted && (

@@ -36,8 +36,6 @@ import { ProposalData } from "@/types/proposal";
 import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipelineBoard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
-import { ProposalUnifiedEditor } from "@/components/admin/ProposalUnifiedEditor";
 
 // ─── Sync linked lead status when proposal status changes ─────────────────────
 async function syncLinkedLeadStatus(projectId: string, newProposalStatus: string) {
@@ -82,11 +80,8 @@ interface ProposalWithRelations {
   valid_until: string;
   created_at: string;
   project_id: string;
-  share_token?: string | null;
   use_tiers: boolean;
   flat_price: number | null;
-  content_overrides?: ContentOverrides | null;
-  hidden_sections?: SectionKey[] | null;
   projects: {
     customer_id?: string | null;
     customer_name: string;
@@ -131,6 +126,8 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   onCreated: (proposal: ProposalData) => void;
 }) {
   const [projectId, setProjectId] = useState("");
+  const [mode, setMode] = useState<"tiers" | "direct">("tiers");
+  const [flatPrice, setFlatPrice] = useState<string>("");
   const [partnerId, setPartnerId] = useState<string>("none");
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
 
@@ -186,19 +183,22 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   const handleGenerate = async () => {
     if (!projectId) return;
     const referringPartnerId = partnerId !== "none" ? partnerId : null;
-    const data = await fetchProjectData(projectId, {
-      mode: "direct" as const,
-      flatPrice: 0,
-      referringPartnerId,
-    });
+    const opts =
+      mode === "direct"
+        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0, referringPartnerId }
+        : { mode: "tiers" as const, referringPartnerId };
+    const data = await fetchProjectData(projectId, opts);
     if (data) {
       onCreated(data);
       onClose();
       setProjectId("");
+      setFlatPrice("");
+      setMode("tiers");
       setPartnerId("none");
     }
   };
 
+  const directDisabled = mode === "direct" && (!flatPrice || Number(flatPrice) <= 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -251,11 +251,38 @@ function NewProposalDialog({ open, onClose, onCreated }: {
             </p>
           </div>
 
-          <div className="rounded-lg border border-border/60 px-3 py-2">
-            <p className="text-[11px] text-muted-foreground">
-              Price starts at $0. Add line items inside the proposal — the total updates automatically.
-            </p>
+          {/* Pricing mode toggle */}
+          <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+            <div className="space-y-0.5">
+              <p className="text-xs font-semibold">
+                {mode === "tiers" ? "Pricing Tiers" : "Direct Price"}
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                {mode === "tiers"
+                  ? "Good / Better / Best auto-generated"
+                  : "Single price + line items breakdown"}
+              </p>
+            </div>
+            <Switch
+              checked={mode === "tiers"}
+              onCheckedChange={(v) => setMode(v ? "tiers" : "direct")}
+            />
           </div>
+
+          {mode === "direct" && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Flat Price (USD) *</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                value={flatPrice}
+                onChange={(e) => setFlatPrice(e.target.value)}
+                placeholder="e.g. 4500"
+                className="text-sm"
+              />
+            </div>
+          )}
 
           {error && (
             <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500">
@@ -266,7 +293,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
             <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button
               className="flex-1"
-              disabled={!projectId || isLoading}
+              disabled={!projectId || isLoading || directDisabled}
               onClick={handleGenerate}
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
@@ -286,33 +313,14 @@ function ShareModal({ proposal, open, onClose }: {
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const [shareToken, setShareToken] = useState<string | null>(proposal.share_token ?? null);
-  const publicUrl = shareToken ? `${window.location.origin}/proposal/${shareToken}` : "";
+  const shareToken = btoa(`prop-${proposal.id}`).replace(/=/g, "").slice(0, 18);
+  const publicUrl = `${window.location.origin}/proposal/${shareToken}`;
   const client = proposal.projects;
   const selectedPrice = proposal.selected_tier
     ? proposal[`${proposal.selected_tier}_price` as keyof ProposalWithRelations] as number
     : proposal.better_price;
 
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    (async () => {
-      if (proposal.share_token) {
-        setShareToken(proposal.share_token);
-        return;
-      }
-      const newToken = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
-      const { error } = await supabase
-        .from("proposals")
-        .update({ share_token: newToken } as any)
-        .eq("id", proposal.id);
-      if (!cancelled) setShareToken(error ? null : newToken);
-    })();
-    return () => { cancelled = true; };
-  }, [open, proposal.id, proposal.share_token]);
-
   const handleCopy = () => {
-    if (!publicUrl) { toast.error("Public proposal link is not ready yet"); return; }
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -320,7 +328,6 @@ function ShareModal({ proposal, open, onClose }: {
   };
 
   const handleWhatsApp = () => {
-    if (!publicUrl) { toast.error("Public proposal link is not ready yet"); return; }
     const name = client?.customer_name.split(" ")[0] || "there";
     const text = `Hi ${name}! Your proposal from AXO Floors NJ is ready to review:\n${publicUrl}\n\nValid until ${format(parseISO(proposal.valid_until), "MMM d, yyyy")}.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
@@ -330,7 +337,6 @@ function ShareModal({ proposal, open, onClose }: {
   const handleEmail = async () => {
     const to = client?.customer_email;
     if (!to) { toast.error("Client has no email address"); return; }
-    if (!publicUrl) { toast.error("Public proposal link is not ready yet"); return; }
     setSending(true);
     try {
       await sendGmailEmail("proposal_sent", {
@@ -630,20 +636,15 @@ function exportProposalCSV(proposal: ProposalWithRelations) {
 }
 
 // ─── Proposal Detail Sheet ────────────────────────────────────────────────────
-function ProposalDetailSheet({ proposal, open, onClose, onEditProposal }: {
+function ProposalDetailSheet({ proposal, open, onClose }: {
   proposal: ProposalWithRelations | null;
   open: boolean;
   onClose: () => void;
-  onEditProposal: (proposalId: string) => void;
 }) {
   const qc = useQueryClient();
   const [showShare, setShowShare] = useState(false);
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [localOverrides, setLocalOverrides] = useState<ContentOverrides | null>(null);
-  const [localHidden, setLocalHidden] = useState<SectionKey[] | null>(null);
-  const [localValidUntil, setLocalValidUntil] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editUseTiers, setEditUseTiers] = useState(true);
   const [editFlatPrice, setEditFlatPrice] = useState("");
@@ -705,21 +706,6 @@ function ProposalDetailSheet({ proposal, open, onClose, onEditProposal }: {
     onError: () => toast.error("Failed to save"),
   });
 
-  const deleteProposal = useMutation({
-    mutationFn: async () => {
-      if (!proposal) throw new Error("No proposal");
-      const { error } = await supabase.from("proposals").delete().eq("id", proposal.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["proposals-list"] });
-      toast.success("Draft deleted");
-      setShowDeleteConfirm(false);
-      onClose();
-    },
-    onError: (e: any) => toast.error(e.message || "Failed to delete"),
-  });
-
   if (!proposal) return null;
   const c = proposal.projects;
   const address = [c?.address, c?.city, c?.zip_code].filter(Boolean).join(", ");
@@ -750,49 +736,46 @@ function ProposalDetailSheet({ proposal, open, onClose, onEditProposal }: {
           <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-10 space-y-5 mt-5">
             {/* Quick actions */}
             {!editing && (
-              <>
-                <Button
-                  size="sm"
-                  className="w-full gap-1.5 text-xs"
-                  onClick={() => onEditProposal(proposal.id)}
-                >
-                  <Pencil className="w-3.5 h-3.5" /> Edit Proposal
-                </Button>
-                <div className="flex gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs">
-                        <Download className="w-3.5 h-3.5" /> Export
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => setShowPdfConfirm(true)} className="gap-2 text-xs cursor-pointer">
-                        <Printer className="w-3.5 h-3.5" />
-                        <div className="flex flex-col">
-                          <span className="font-medium">Download as PDF</span>
-                          <span className="text-[10px] text-muted-foreground">Opens print dialog → Save as PDF</span>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => exportProposalCSV(proposal)} className="gap-2 text-xs cursor-pointer">
-                        <FileSpreadsheet className="w-3.5 h-3.5" />
-                        <div className="flex flex-col">
-                          <span className="font-medium">Download as CSV</span>
-                          <span className="text-[10px] text-muted-foreground">Spreadsheet with all data</span>
-                        </div>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
-                    <Share2 className="w-3.5 h-3.5" /> Send to Client
+              <div className="flex gap-2">
+                {isDraft && (
+                  <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={startEditing}>
+                    <Pencil className="w-3.5 h-3.5" /> Edit Draft
                   </Button>
-                </div>
-                <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setShowPortal(true)}>
-                  <Link2 className="w-3.5 h-3.5" /> Portal do Cliente
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs">
+                      <Download className="w-3.5 h-3.5" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setShowPdfConfirm(true)} className="gap-2 text-xs cursor-pointer">
+                      <Printer className="w-3.5 h-3.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">Download as PDF</span>
+                        <span className="text-[10px] text-muted-foreground">Opens print dialog → Save as PDF</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportProposalCSV(proposal)} className="gap-2 text-xs cursor-pointer">
+                      <FileSpreadsheet className="w-3.5 h-3.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">Download as CSV</span>
+                        <span className="text-[10px] text-muted-foreground">Spreadsheet with all data</span>
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
+                  <Share2 className="w-3.5 h-3.5" /> Send to Client
                 </Button>
-              </>
+              </div>
             )}
 
-
+            {!editing && (
+              <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setShowPortal(true)}>
+                <Link2 className="w-3.5 h-3.5" /> Portal do Cliente
+              </Button>
+            )}
 
             {/* Client info */}
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2.5">
@@ -966,18 +949,9 @@ function ProposalDetailSheet({ proposal, open, onClose, onEditProposal }: {
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</p>
                     {proposal.status === "draft" && (
-                      <>
-                        <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
-                          <Send className="w-4 h-4" /> Mark as Sent
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
-                          onClick={() => setShowDeleteConfirm(true)}
-                        >
-                          <Trash2 className="w-4 h-4" /> Delete Draft
-                        </Button>
-                      </>
+                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
+                        <Send className="w-4 h-4" /> Mark as Sent
+                      </Button>
                     )}
                     {(proposal.status === "sent" || proposal.status === "viewed") && proposal.use_tiers && (
                       <div className="grid grid-cols-3 gap-2">
@@ -1043,26 +1017,6 @@ function ProposalDetailSheet({ proposal, open, onClose, onEditProposal }: {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Proposal <span className="font-semibold">{proposal.proposal_number}</span> will be permanently removed. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteProposal.mutate()}
-              className="bg-red-500 hover:bg-red-600 gap-1.5"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Delete Draft
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {showShare && (
         <ShareModal proposal={proposal} open={showShare} onClose={() => setShowShare(false)} />
       )}
@@ -1082,7 +1036,6 @@ export default function Proposals() {
   const [search, setSearch] = useState("");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [selected, setSelected] = useState<ProposalWithRelations | null>(null);
-  const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
   const handleViewMode = (mode: "list" | "board") => {
@@ -1103,8 +1056,6 @@ export default function Proposals() {
         ...d,
         use_tiers: d.use_tiers ?? true,
         flat_price: d.flat_price ?? null,
-        content_overrides: d.content_overrides ?? null,
-        hidden_sections: d.hidden_sections ?? null,
       })) as ProposalWithRelations[];
     },
   });
@@ -1472,25 +1423,7 @@ export default function Proposals() {
         )}
       </div>
 
-      <ProposalDetailSheet
-        proposal={selected}
-        open={!!selected}
-        onClose={() => setSelected(null)}
-        onEditProposal={(proposalId) => {
-          setEditingProposalId(proposalId);
-          setSelected(null);
-        }}
-      />
-      <ProposalUnifiedEditor
-        open={!!editingProposalId}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) setEditingProposalId(null);
-        }}
-        proposalId={editingProposalId ?? ""}
-        onSaved={() => {
-          qc.invalidateQueries({ queryKey: ["proposals-list"] });
-        }}
-      />
+      <ProposalDetailSheet proposal={selected} open={!!selected} onClose={() => setSelected(null)} />
       <NewProposalDialog open={showNew} onClose={() => setShowNew(false)} onCreated={() => { qc.invalidateQueries({ queryKey: ["proposals-list"] }); }} />
     </AdminLayout>
   );

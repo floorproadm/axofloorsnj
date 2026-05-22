@@ -2920,12 +2920,10 @@ export type Database = {
           best_price: number
           better_price: number
           client_note: string | null
-          content_overrides: Json
           created_at: string
           customer_id: string | null
           flat_price: number | null
           good_price: number
-          hidden_sections: string[]
           id: string
           margin_best: number
           margin_better: number
@@ -2949,12 +2947,10 @@ export type Database = {
           best_price: number
           better_price: number
           client_note?: string | null
-          content_overrides?: Json
           created_at?: string
           customer_id?: string | null
           flat_price?: number | null
           good_price: number
-          hidden_sections?: string[]
           id?: string
           margin_best: number
           margin_better: number
@@ -2978,12 +2974,10 @@ export type Database = {
           best_price?: number
           better_price?: number
           client_note?: string | null
-          content_overrides?: Json
           created_at?: string
           customer_id?: string | null
           flat_price?: number | null
           good_price?: number
-          hidden_sections?: string[]
           id?: string
           margin_best?: number
           margin_better?: number
