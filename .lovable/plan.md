@@ -1,4 +1,4 @@
-# Admin: Bom → Excelente (revisado)
+# Admin: Bom → Excelente (revisado) — ✅ Concluído (Ondas 1, 2, 3)
 
 Execução **onda a onda**. Item 12 fora de escopo. Item 3 = remover state morto.
 
