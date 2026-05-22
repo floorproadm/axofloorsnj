@@ -286,7 +286,7 @@ function ShareModal({ proposal, open, onClose }: {
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const [shareToken, setShareToken] = useState<string | null>(proposal.share_token);
+  const [shareToken, setShareToken] = useState<string | null>(proposal.share_token ?? null);
   const publicUrl = shareToken ? `${window.location.origin}/proposal/${shareToken}` : "";
   const client = proposal.projects;
   const selectedPrice = proposal.selected_tier
