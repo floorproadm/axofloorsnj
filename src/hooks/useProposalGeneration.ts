@@ -63,6 +63,7 @@ export const DEFAULT_TIER_MARGINS = {
 interface FetchOptions {
   mode?: 'tiers' | 'direct';
   flatPrice?: number; // required when mode='direct'
+  referringPartnerId?: string | null;
 }
 
 interface UseProposalGenerationReturn {
