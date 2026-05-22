@@ -343,37 +343,46 @@ export default function PublicProposal() {
           />
         </div>
 
+        {!isHidden("timeline") && (
+          <Card className="p-5 bg-white">
+            <h3 className="text-sm font-semibold text-slate-900 mb-2">Estimated Timeline</h3>
+            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{timelineText}</p>
+          </Card>
+        )}
+
         {/* Woody's Guarantee */}
-        <Card className="p-5 bg-white">
-          <h3 className="text-sm font-semibold text-slate-900 mb-3">
-            Woody's Guarantee
-          </h3>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            {[
-              { n: "30", u: "Days", t: "Satisfaction" },
-              { n: "10", u: "Years", t: "Structural" },
-              { n: "5", u: "Years", t: "Finish" },
-            ].map((g) => (
-              <div key={g.t} className="bg-slate-50 rounded-lg py-3">
-                <div className="text-2xl font-bold text-amber-600">{g.n}</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">
-                  {g.u}
+        {!isHidden("guarantee") && (
+          <Card className="p-5 bg-white">
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">
+              Woody's Guarantee
+            </h3>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              {[
+                { n: "30", u: "Days", t: "Satisfaction" },
+                { n: "10", u: "Years", t: "Structural" },
+                { n: "5", u: "Years", t: "Finish" },
+              ].map((g) => (
+                <div key={g.t} className="bg-slate-50 rounded-lg py-3">
+                  <div className="text-2xl font-bold text-amber-600">{g.n}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">
+                    {g.u}
+                  </div>
+                  <div className="text-[11px] text-slate-700 font-medium mt-1">
+                    {g.t}
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-700 font-medium mt-1">
-                  {g.t}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* Help */}
-        <Card className="p-5 bg-[#0f1b3d] text-white">
+        {!isHidden("cta") && <Card className="p-5 bg-[#0f1b3d] text-white">
           <p className="text-amber-400 text-xs uppercase tracking-wider font-semibold">
-            Questions?
+            {ctaHeading}
           </p>
           <p className="text-sm mt-1 opacity-90">
-            Call or text us — happy to walk you through any tier.
+            {ctaText}
           </p>
           <a
             href={`tel:${phoneTel}`}
@@ -383,7 +392,7 @@ export default function PublicProposal() {
             <Phone className="w-4 h-4" />
             {brand.phone}
           </a>
-        </Card>
+        </Card>}
 
         {/* Status banners */}
         {isAccepted && (
