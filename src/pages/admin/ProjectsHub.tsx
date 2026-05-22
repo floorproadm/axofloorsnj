@@ -17,6 +17,28 @@ import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { isThisWeek as isThisWeekFn, parseISO } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+const DESTRUCTIVE_STATUSES = new Set(["cancelled", "paid"]);
+const DESTRUCTIVE_COPY: Record<string, { title: string; description: string }> = {
+  cancelled: {
+    title: "Cancel this project?",
+    description: "Marking as cancelled will remove it from the active pipeline. You can revert by changing the status again.",
+  },
+  paid: {
+    title: "Mark project as Paid?",
+    description: "This closes the financial cycle for the project. Make sure all invoices and payments are reconciled before confirming.",
+  },
+};
 
 type SortKey = "recent" | "revenue_desc" | "margin_asc" | "start_asc";
 
