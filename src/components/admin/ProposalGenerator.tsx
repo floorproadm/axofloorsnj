@@ -749,6 +749,22 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
         </div>
       </div>
+
+      {proposal.proposal_id && (
+        <ProposalEditPanel
+          open={editPanelOpen}
+          onOpenChange={setEditPanelOpen}
+          proposalId={proposal.proposal_id}
+          initialOverrides={overrides}
+          initialHidden={hiddenSections}
+          initialValidUntil={proposal.valid_until}
+          onSaved={({ overrides: ov, hidden, validUntil }) => {
+            setOverrides(ov);
+            setHiddenSections(hidden);
+            setProposal((prev) => (prev ? { ...prev, valid_until: validUntil } : prev));
+          }}
+        />
+      )}
     </div>
   );
 }
