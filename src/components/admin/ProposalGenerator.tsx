@@ -376,10 +376,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
 
           <div className="text-xs text-muted-foreground border-t pt-3">
-            <p className="font-medium text-foreground mb-1">Requirements</p>
+            <p className="font-medium text-foreground mb-1">How it works</p>
             <ul className="list-disc ml-5 space-y-0.5">
-              <li>Job costs must be calculated</li>
-              <li>Margin must meet company minimum</li>
+              <li>Enter the final price — you'll add line items right after</li>
+              <li>If job costs exist, margin is checked against company minimum</li>
             </ul>
           </div>
 
