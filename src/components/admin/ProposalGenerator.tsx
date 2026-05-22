@@ -126,19 +126,27 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     if (data) setProposal(data);
   };
 
-  // When proposal is loaded, fetch the share_token from DB (most recent for project)
+  // When proposal is loaded, fetch the share_token + overrides + hidden_sections from DB
   useEffect(() => {
     if (!proposal?.proposal_id) {
       setShareToken(null);
+      setOverrides({});
+      setHiddenSections([]);
       return;
     }
     (async () => {
       const { data } = await supabase
         .from('proposals')
-        .select('share_token')
+        .select('share_token, content_overrides, hidden_sections')
         .eq('id', proposal.proposal_id!)
         .maybeSingle();
       if (data?.share_token) setShareToken(data.share_token);
+      const ov = ((data as any)?.content_overrides ?? {}) as ContentOverrides;
+      const hs = (((data as any)?.hidden_sections ?? []) as string[]).filter((k): k is SectionKey =>
+        (SECTION_KEYS as readonly string[]).includes(k)
+      );
+      setOverrides(ov);
+      setHiddenSections(hs);
     })();
   }, [proposal?.proposal_id]);
 
