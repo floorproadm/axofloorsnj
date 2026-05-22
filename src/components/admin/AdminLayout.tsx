@@ -82,7 +82,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
     } catch {
       /* ignore */
     }
-    toast({ title: t("layout.notificacoesLimpas") ?? "Notifications cleared" });
+    toast({ title: "Notifications cleared" });
   };
 
 
