@@ -73,6 +73,7 @@ export default function Payments() {
   const [periodType, setPeriodType] = useState<PeriodType>("month");
   const [anchor, setAnchor] = useState(() => new Date());
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(50);
 
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
