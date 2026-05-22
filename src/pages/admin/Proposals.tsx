@@ -83,8 +83,8 @@ interface ProposalWithRelations {
   project_id: string;
   use_tiers: boolean;
   flat_price: number | null;
-  content_overrides: ContentOverrides | null;
-  hidden_sections: SectionKey[] | null;
+  content_overrides?: ContentOverrides | null;
+  hidden_sections?: SectionKey[] | null;
   projects: {
     customer_id?: string | null;
     customer_name: string;
