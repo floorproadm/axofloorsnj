@@ -344,7 +344,7 @@ function OverviewTab() {
       <PerformanceExportSheet
         open={exportOpen}
         onOpenChange={setExportOpen}
-        projects={projects}
+        projects={completedJobs}
         periodLabel={PERIODS.find(p => p.value === period)?.label ?? period}
       />
     </div>
