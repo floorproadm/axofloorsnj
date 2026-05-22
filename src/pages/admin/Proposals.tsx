@@ -36,6 +36,7 @@ import { ProposalData } from "@/types/proposal";
 import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipelineBoard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProposalEditPanel, ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
 
 // ─── Sync linked lead status when proposal status changes ─────────────────────
 async function syncLinkedLeadStatus(projectId: string, newProposalStatus: string) {
@@ -82,6 +83,8 @@ interface ProposalWithRelations {
   project_id: string;
   use_tiers: boolean;
   flat_price: number | null;
+  content_overrides?: ContentOverrides | null;
+  hidden_sections?: SectionKey[] | null;
   projects: {
     customer_id?: string | null;
     customer_name: string;
@@ -646,6 +649,10 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editPanelOpen, setEditPanelOpen] = useState(false);
+  const [localOverrides, setLocalOverrides] = useState<ContentOverrides | null>(null);
+  const [localHidden, setLocalHidden] = useState<SectionKey[] | null>(null);
+  const [localValidUntil, setLocalValidUntil] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editUseTiers, setEditUseTiers] = useState(true);
   const [editFlatPrice, setEditFlatPrice] = useState("");
@@ -755,7 +762,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
               <div className="flex gap-2">
                 {isDraft && (
                   <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={startEditing}>
-                    <Pencil className="w-3.5 h-3.5" /> Edit Draft
+                    <Pencil className="w-3.5 h-3.5" /> Edit Pricing
                   </Button>
                 )}
                 <DropdownMenu>
@@ -790,6 +797,12 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
             {!editing && (
               <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setShowPortal(true)}>
                 <Link2 className="w-3.5 h-3.5" /> Portal do Cliente
+              </Button>
+            )}
+
+            {!editing && (
+              <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setEditPanelOpen(true)}>
+                <Pencil className="w-3.5 h-3.5" /> Edit Content & Sections
               </Button>
             )}
 
@@ -1069,6 +1082,21 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
       {showPortal && (
         <ClientPortalModal proposal={proposal} open={showPortal} onClose={() => setShowPortal(false)} />
       )}
+
+      <ProposalEditPanel
+        open={editPanelOpen}
+        onOpenChange={setEditPanelOpen}
+        proposalId={proposal.id}
+        initialOverrides={localOverrides ?? proposal.content_overrides ?? {}}
+        initialHidden={localHidden ?? proposal.hidden_sections ?? []}
+        initialValidUntil={localValidUntil ?? proposal.valid_until}
+        onSaved={({ overrides, hidden, validUntil }) => {
+          setLocalOverrides(overrides);
+          setLocalHidden(hidden);
+          setLocalValidUntil(validUntil);
+          qc.invalidateQueries({ queryKey: ["proposals-list"] });
+        }}
+      />
     </>
   );
 }
@@ -1101,6 +1129,8 @@ export default function Proposals() {
         ...d,
         use_tiers: d.use_tiers ?? true,
         flat_price: d.flat_price ?? null,
+        content_overrides: d.content_overrides ?? null,
+        hidden_sections: d.hidden_sections ?? null,
       })) as ProposalWithRelations[];
     },
   });
