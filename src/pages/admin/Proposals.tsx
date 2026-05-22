@@ -129,8 +129,6 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   onCreated: (proposal: ProposalData) => void;
 }) {
   const [projectId, setProjectId] = useState("");
-  const [mode, setMode] = useState<"tiers" | "direct">("tiers");
-  const [flatPrice, setFlatPrice] = useState<string>("");
   const [partnerId, setPartnerId] = useState<string>("none");
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
 
@@ -186,22 +184,19 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   const handleGenerate = async () => {
     if (!projectId) return;
     const referringPartnerId = partnerId !== "none" ? partnerId : null;
-    const opts =
-      mode === "direct"
-        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0, referringPartnerId }
-        : { mode: "tiers" as const, referringPartnerId };
-    const data = await fetchProjectData(projectId, opts);
+    const data = await fetchProjectData(projectId, {
+      mode: "direct" as const,
+      flatPrice: 0,
+      referringPartnerId,
+    });
     if (data) {
       onCreated(data);
       onClose();
       setProjectId("");
-      setFlatPrice("");
-      setMode("tiers");
       setPartnerId("none");
     }
   };
 
-  const directDisabled = mode === "direct" && (!flatPrice || Number(flatPrice) <= 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
