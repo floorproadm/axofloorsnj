@@ -389,8 +389,26 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     );
   }
 
+  // Merge overrides on top of the proposal data — overrides win when present
+  const displayCustomerName = overrides.customer_name || proposal.customer_name;
+  const displayAddress = overrides.address || proposal.address;
+  const displayEmail = overrides.customer_email || proposal.customer_email;
+  const displayPhone = overrides.customer_phone || proposal.customer_phone;
+  const displayProjectType = overrides.project_type || proposal.project_type;
+  const displaySqft = overrides.square_footage ?? proposal.square_footage;
+  const isHidden = (k: SectionKey) => hiddenSections.includes(k);
+
   const sqftPerDay = 350;
-  const durationDays = Math.max(1, Math.ceil((proposal.square_footage || 500) / sqftPerDay));
+  const durationDays = Math.max(1, Math.ceil((displaySqft || 500) / sqftPerDay));
+
+  const defaultSiteAssessment = proposal.mode === 'direct'
+    ? `Based on our evaluation of your ${displaySqft} sqft ${displayProjectType} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
+    : `Based on our evaluation of your ${displaySqft} sqft ${displayProjectType} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`;
+  const defaultTimeline = `Based on ${displaySqft} sqft, we estimate ${durationDays} working day${durationDays > 1 ? 's' : ''} to complete your project. Our crew works 8AM–5PM with full area protection.`;
+  const ctaHeading = overrides.cta_heading || 'Ready to move forward?';
+  const ctaText = overrides.cta_text || 'Contact us to discuss your project and choose the best option for your home.';
+  const siteAssessment = overrides.site_assessment || defaultSiteAssessment;
+  const timelineText = overrides.timeline || defaultTimeline;
 
   return (
     <div className="space-y-4">
