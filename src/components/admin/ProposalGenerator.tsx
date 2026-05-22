@@ -705,38 +705,41 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           )}
 
           {/* Timeline */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Estimated Timeline</h2>
-            <p style={{ fontSize: 14, color: theme.textDim }}>
-              Based on {proposal.square_footage} sqft, we estimate <strong style={{ color: theme.text }}>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
-              Our crew works 8AM–5PM with full area protection.
-            </p>
-          </div>
+          {!isHidden('timeline') && (
+            <div style={{ marginBottom: 25 }}>
+              <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Estimated Timeline</h2>
+              <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{timelineText}</p>
+            </div>
+          )}
 
           {/* Woody's Guarantee */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Woody's Guarantee</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-              {[
-                { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
-                { period: '10', unit: 'Years', type: 'Structural', desc: 'Peeling, bubbling, or delamination covered.' },
-                { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
-              ].map(g => (
-                <div key={g.type} style={{ textAlign: 'center', padding: 15, border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
-                  <div style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
-                  <p style={{ fontSize: 12, color: theme.textDim, marginTop: 6 }}>{g.desc}</p>
-                </div>
-              ))}
+          {!isHidden('guarantee') && (
+            <div style={{ marginBottom: 25 }}>
+              <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Woody's Guarantee</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                {[
+                  { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
+                  { period: '10', unit: 'Years', type: 'Structural', desc: 'Peeling, bubbling, or delamination covered.' },
+                  { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
+                ].map(g => (
+                  <div key={g.type} style={{ textAlign: 'center', padding: 15, border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
+                    <div style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
+                    <p style={{ fontSize: 12, color: theme.textDim, marginTop: 6 }}>{g.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* CTA */}
-          <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
-            <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>Ready to move forward?</h3>
-            <p style={{ fontSize: 14, opacity: 0.9 }}>Contact us to discuss your project and choose the best option for your home.</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>{brand.phone}</p>
-          </div>
+          {!isHidden('cta') && (
+            <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
+              <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>{ctaHeading}</h3>
+              <p style={{ fontSize: 14, opacity: 0.9, whiteSpace: 'pre-wrap' }}>{ctaText}</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: brand.primary, marginTop: 10 }}>{brand.phone}</p>
+            </div>
+          )}
 
           {/* Footer */}
           <div style={{ textAlign: 'center', paddingTop: 20, borderTop: `1px solid ${theme.border}`, color: theme.textMuted, fontSize: 11 }}>
