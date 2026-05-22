@@ -10,7 +10,6 @@ import {
   Home,
   Inbox,
   Ruler,
-  CalendarDays,
   BarChart3,
   Star,
   FileText,
