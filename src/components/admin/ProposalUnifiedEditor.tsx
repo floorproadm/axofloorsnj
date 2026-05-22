@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { X, Save, Loader2, Eye, Printer, DollarSign } from "lucide-react";
+import { X, Save, Loader2, Eye, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -31,11 +29,7 @@ interface Props {
 interface ProposalRow {
   id: string;
   proposal_number: string;
-  use_tiers: boolean;
-  good_price: number;
-  better_price: number;
-  best_price: number;
-  flat_price: number | null;
+  share_token: string | null;
   valid_until: string;
   content_overrides: ContentOverrides | null;
   hidden_sections: SectionKey[] | null;
@@ -76,21 +70,11 @@ export function ProposalUnifiedEditor({
   const [ov, setOv] = useState<ContentOverrides>({});
   const [hidden, setHidden] = useState<SectionKey[]>([]);
   const [validUntil, setValidUntil] = useState("");
-  const [useTiers, setUseTiers] = useState(true);
-  const [good, setGood] = useState("");
-  const [better, setBetter] = useState("");
-  const [best, setBest] = useState("");
-  const [flat, setFlat] = useState("");
-  const [recommendedTier, setRecommendedTier] =
-    useState<"good" | "better" | "best">("better");
 
   // Iframe reload key
   const [iframeKey, setIframeKey] = useState(0);
 
-  const previewToken = useMemo(
-    () => btoa(`prop-${proposalId}`).replace(/=/g, "").slice(0, 18),
-    [proposalId],
-  );
+  const previewToken = useMemo(() => proposal?.share_token ?? "", [proposal?.share_token]);
 
   useEffect(() => {
     if (!open) return;
@@ -107,7 +91,15 @@ export function ProposalUnifiedEditor({
         setLoading(false);
         return;
       }
-      const prop = p as unknown as ProposalRow;
+      let prop = p as unknown as ProposalRow;
+      if (!prop.share_token) {
+        const newToken = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
+        const { error: tokenError } = await supabase
+          .from("proposals")
+          .update({ share_token: newToken } as any)
+          .eq("id", prop.id);
+        if (!tokenError) prop = { ...prop, share_token: newToken };
+      }
       const { data: proj } = await supabase
         .from("projects")
         .select(
@@ -121,12 +113,6 @@ export function ProposalUnifiedEditor({
       setOv(prop.content_overrides ?? {});
       setHidden(prop.hidden_sections ?? []);
       setValidUntil(prop.valid_until);
-      setUseTiers(prop.use_tiers);
-      setGood(String(prop.good_price ?? 0));
-      setBetter(String(prop.better_price ?? 0));
-      setBest(String(prop.best_price ?? 0));
-      setFlat(String(prop.flat_price ?? prop.better_price ?? 0));
-      setRecommendedTier("better");
       setLoading(false);
     })();
     return () => {
