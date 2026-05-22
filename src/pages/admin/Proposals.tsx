@@ -649,6 +649,10 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editPanelOpen, setEditPanelOpen] = useState(false);
+  const [localOverrides, setLocalOverrides] = useState<ContentOverrides | null>(null);
+  const [localHidden, setLocalHidden] = useState<SectionKey[] | null>(null);
+  const [localValidUntil, setLocalValidUntil] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editUseTiers, setEditUseTiers] = useState(true);
   const [editFlatPrice, setEditFlatPrice] = useState("");
