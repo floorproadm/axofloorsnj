@@ -49,7 +49,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
-  const [mode, setMode] = useState<'tiers' | 'direct' | null>(null);
+  const [mode] = useState<'direct'>('direct');
   const [flatPriceInput, setFlatPriceInput] = useState<string>('');
   const [logoSignedUrl, setLogoSignedUrl] = useState<string>('');
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
