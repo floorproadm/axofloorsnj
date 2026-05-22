@@ -223,9 +223,19 @@ export default function ProjectsHub() {
     setSortBy("recent");
   }
 
-  async function handleStatusChange(id: string, status: string) {
+  const [pendingStatus, setPendingStatus] = useState<{ id: string; status: string } | null>(null);
+
+  async function applyStatusChange(id: string, status: string) {
     await supabase.from("projects").update({ project_status: status }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["hub-projects"] });
+  }
+
+  async function handleStatusChange(id: string, status: string) {
+    if (DESTRUCTIVE_STATUSES.has(status)) {
+      setPendingStatus({ id, status });
+      return;
+    }
+    await applyStatusChange(id, status);
   }
 
   return (
