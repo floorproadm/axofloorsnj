@@ -762,7 +762,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
               <div className="flex gap-2">
                 {isDraft && (
                   <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={startEditing}>
-                    <Pencil className="w-3.5 h-3.5" /> Edit Draft
+                    <Pencil className="w-3.5 h-3.5" /> Edit Pricing
                   </Button>
                 )}
                 <DropdownMenu>
