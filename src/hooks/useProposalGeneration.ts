@@ -257,6 +257,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         .insert({
           project_id: projectId,
           customer_id: project.customer_id ?? null,
+          referring_partner_id: options.referringPartnerId ?? null,
           use_tiers: true,
           good_price: goodTier.price,
           better_price: betterTier.price,
@@ -268,7 +269,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           status: 'draft',
           proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
           organization_id: AXO_ORG_ID,
-        })
+        } as any)
         .select()
         .single();
 
