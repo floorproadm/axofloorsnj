@@ -147,16 +147,7 @@ export function ProposalUnifiedEditor({
         content_overrides: cleaned,
         hidden_sections: hidden,
         valid_until: validUntil,
-        use_tiers: useTiers,
       };
-      if (useTiers) {
-        update.good_price = parseFloat(good) || 0;
-        update.better_price = parseFloat(better) || 0;
-        update.best_price = parseFloat(best) || 0;
-        update.flat_price = null;
-      } else {
-        update.flat_price = parseFloat(flat) || 0;
-      }
 
       const { error } = await supabase
         .from("proposals")
@@ -175,12 +166,16 @@ export function ProposalUnifiedEditor({
   };
 
   const handlePrint = () => {
-    window.open(`/proposal/${previewToken}?print=1`, "_blank");
+    if (previewToken) window.open(`/proposal/${previewToken}?print=1`, "_blank");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-none w-screen h-screen p-0 gap-0 border-0 rounded-none flex flex-col bg-zinc-950 text-zinc-100">
+        <DialogTitle className="sr-only">Edit proposal</DialogTitle>
+        <DialogDescription className="sr-only">
+          Edit proposal content and review the live proposal preview.
+        </DialogDescription>
         {/* Sticky editor toolbar */}
         <div className="flex-shrink-0 border-b border-zinc-800 bg-zinc-900">
           {/* Top bar */}
