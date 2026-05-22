@@ -965,9 +965,18 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</p>
                     {proposal.status === "draft" && (
-                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
-                        <Send className="w-4 h-4" /> Mark as Sent
-                      </Button>
+                      <>
+                        <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
+                          <Send className="w-4 h-4" /> Mark as Sent
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
+                          onClick={() => setShowDeleteConfirm(true)}
+                        >
+                          <Trash2 className="w-4 h-4" /> Delete Draft
+                        </Button>
+                      </>
                     )}
                     {(proposal.status === "sent" || proposal.status === "viewed") && proposal.use_tiers && (
                       <div className="grid grid-cols-3 gap-2">
