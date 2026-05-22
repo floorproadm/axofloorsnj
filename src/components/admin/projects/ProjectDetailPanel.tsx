@@ -39,6 +39,19 @@ const STATUSES = [
   { value: "paid", label: "Paid" },
 ];
 
+const DESTRUCTIVE_STATUSES = new Set(["cancelled", "paid"]);
+const DESTRUCTIVE_COPY: Record<string, { title: string; description: string }> = {
+  cancelled: {
+    title: "Cancel this project?",
+    description: "Marking as cancelled will remove it from the active pipeline. You can revert by changing the status again.",
+  },
+  paid: {
+    title: "Mark project as Paid?",
+    description: "This closes the financial cycle for the project. Make sure all invoices and payments are reconciled before confirming.",
+  },
+};
+
+
 function fmt(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
 }
@@ -53,6 +66,7 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [measurementOpen, setMeasurementOpen] = useState(false);
   const [costsOpen, setCostsOpen] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
@@ -81,10 +95,19 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
   const totalCosts = (materials ?? []).reduce((s, m) => s + m.amount, 0) + (labor ?? []).reduce((s, l) => s + l.total_cost, 0);
   const revenue = jobCost?.estimated_revenue ?? project?.job_costs?.estimated_revenue ?? 0;
 
-  async function handleStatusChange(status: string) {
+  async function applyStatusChange(status: string) {
     if (!project) return;
     await supabase.from("projects").update({ project_status: status }).eq("id", project.id);
     qc.invalidateQueries({ queryKey: ["hub-projects"] });
+  }
+
+  async function handleStatusChange(status: string) {
+    if (!project) return;
+    if (DESTRUCTIVE_STATUSES.has(status)) {
+      setPendingStatus(status);
+      return;
+    }
+    await applyStatusChange(status);
   }
 
   async function handleCompleteTask(taskId: string) {
@@ -511,6 +534,35 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleting ? "Deleting..." : "Delete project"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={pendingStatus !== null}
+        onOpenChange={(o) => { if (!o) setPendingStatus(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus]?.title : "Confirm"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus]?.description : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (pendingStatus) {
+                  await applyStatusChange(pendingStatus);
+                  setPendingStatus(null);
+                }
+              }}
+            >
+              Confirm
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
