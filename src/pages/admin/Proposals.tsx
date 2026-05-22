@@ -82,6 +82,7 @@ interface ProposalWithRelations {
   valid_until: string;
   created_at: string;
   project_id: string;
+  share_token?: string | null;
   use_tiers: boolean;
   flat_price: number | null;
   content_overrides?: ContentOverrides | null;
@@ -285,14 +286,33 @@ function ShareModal({ proposal, open, onClose }: {
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const shareToken = btoa(`prop-${proposal.id}`).replace(/=/g, "").slice(0, 18);
-  const publicUrl = `${window.location.origin}/proposal/${shareToken}`;
+  const [shareToken, setShareToken] = useState<string | null>(proposal.share_token ?? null);
+  const publicUrl = shareToken ? `${window.location.origin}/proposal/${shareToken}` : "";
   const client = proposal.projects;
   const selectedPrice = proposal.selected_tier
     ? proposal[`${proposal.selected_tier}_price` as keyof ProposalWithRelations] as number
     : proposal.better_price;
 
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      if (proposal.share_token) {
+        setShareToken(proposal.share_token);
+        return;
+      }
+      const newToken = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
+      const { error } = await supabase
+        .from("proposals")
+        .update({ share_token: newToken } as any)
+        .eq("id", proposal.id);
+      if (!cancelled) setShareToken(error ? null : newToken);
+    })();
+    return () => { cancelled = true; };
+  }, [open, proposal.id, proposal.share_token]);
+
   const handleCopy = () => {
+    if (!publicUrl) { toast.error("Public proposal link is not ready yet"); return; }
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -300,6 +320,7 @@ function ShareModal({ proposal, open, onClose }: {
   };
 
   const handleWhatsApp = () => {
+    if (!publicUrl) { toast.error("Public proposal link is not ready yet"); return; }
     const name = client?.customer_name.split(" ")[0] || "there";
     const text = `Hi ${name}! Your proposal from AXO Floors NJ is ready to review:\n${publicUrl}\n\nValid until ${format(parseISO(proposal.valid_until), "MMM d, yyyy")}.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
@@ -309,6 +330,7 @@ function ShareModal({ proposal, open, onClose }: {
   const handleEmail = async () => {
     const to = client?.customer_email;
     if (!to) { toast.error("Client has no email address"); return; }
+    if (!publicUrl) { toast.error("Public proposal link is not ready yet"); return; }
     setSending(true);
     try {
       await sendGmailEmail("proposal_sent", {
@@ -608,17 +630,17 @@ function exportProposalCSV(proposal: ProposalWithRelations) {
 }
 
 // ─── Proposal Detail Sheet ────────────────────────────────────────────────────
-function ProposalDetailSheet({ proposal, open, onClose }: {
+function ProposalDetailSheet({ proposal, open, onClose, onEditProposal }: {
   proposal: ProposalWithRelations | null;
   open: boolean;
   onClose: () => void;
+  onEditProposal: (proposalId: string) => void;
 }) {
   const qc = useQueryClient();
   const [showShare, setShowShare] = useState(false);
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [editPanelOpen, setEditPanelOpen] = useState(false);
   const [localOverrides, setLocalOverrides] = useState<ContentOverrides | null>(null);
   const [localHidden, setLocalHidden] = useState<SectionKey[] | null>(null);
   const [localValidUntil, setLocalValidUntil] = useState<string | null>(null);
@@ -732,7 +754,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                 <Button
                   size="sm"
                   className="w-full gap-1.5 text-xs"
-                  onClick={() => setEditPanelOpen(true)}
+                  onClick={() => onEditProposal(proposal.id)}
                 >
                   <Pencil className="w-3.5 h-3.5" /> Edit Proposal
                 </Button>
@@ -1048,15 +1070,6 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
       {showPortal && (
         <ClientPortalModal proposal={proposal} open={showPortal} onClose={() => setShowPortal(false)} />
       )}
-
-      <ProposalUnifiedEditor
-        open={editPanelOpen}
-        onOpenChange={setEditPanelOpen}
-        proposalId={proposal.id}
-        onSaved={() => {
-          qc.invalidateQueries({ queryKey: ["proposals-list"] });
-        }}
-      />
     </>
   );
 }
@@ -1069,6 +1082,7 @@ export default function Proposals() {
   const [search, setSearch] = useState("");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [selected, setSelected] = useState<ProposalWithRelations | null>(null);
+  const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
   const handleViewMode = (mode: "list" | "board") => {
@@ -1458,7 +1472,25 @@ export default function Proposals() {
         )}
       </div>
 
-      <ProposalDetailSheet proposal={selected} open={!!selected} onClose={() => setSelected(null)} />
+      <ProposalDetailSheet
+        proposal={selected}
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        onEditProposal={(proposalId) => {
+          setEditingProposalId(proposalId);
+          setSelected(null);
+        }}
+      />
+      <ProposalUnifiedEditor
+        open={!!editingProposalId}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setEditingProposalId(null);
+        }}
+        proposalId={editingProposalId ?? ""}
+        onSaved={() => {
+          qc.invalidateQueries({ queryKey: ["proposals-list"] });
+        }}
+      />
       <NewProposalDialog open={showNew} onClose={() => setShowNew(false)} onCreated={() => { qc.invalidateQueries({ queryKey: ["proposals-list"] }); }} />
     </AdminLayout>
   );
