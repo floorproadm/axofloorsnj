@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, startOfWeek, endOfWeek, addDays, formatDistance } from "date-fns";
 import { DollarSign, Briefcase, Users, FileText, UserPlus, Send, CreditCard } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 import { MetricCard } from "@/components/admin/dashboard/MetricCard";
@@ -20,6 +21,12 @@ export default function Dashboard() {
   const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions } =
     useDashboardData();
   const { t, language } = useLanguage();
+  const { user } = useAuth();
+  const userName =
+    (user?.user_metadata as { full_name?: string; name?: string } | undefined)?.full_name ||
+    (user?.user_metadata as { name?: string } | undefined)?.name ||
+    user?.email?.split("@")[0] ||
+    "";
 
   const today = new Date();
   const todayStr = format(today, "yyyy-MM-dd");
@@ -189,7 +196,7 @@ export default function Dashboard() {
         {/* Greeting */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            {greeting}, Eduardo
+            {greeting}{userName ? `, ${userName}` : ""}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {appointments.length > 0 ? (

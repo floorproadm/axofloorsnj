@@ -9,13 +9,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import {
   Plus, Hammer, DollarSign, Calendar, Users,
-  CheckCircle2, Clock, Trash2, Loader2, Filter
+  CheckCircle2, Clock, Trash2, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +68,7 @@ export default function LaborPayroll() {
   const qc = useQueryClient();
   const [showNew, setShowNew] = useState(false);
   const [monthOffset, setMonthOffset] = useState(0);
-  const [filterRole, setFilterRole] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState<PayrollEntry | null>(null);
   const [form, setForm] = useState<NewPayrollForm>({
     name: "", role: "", daily_rate: "", days_worked: "1",
     service_date: format(new Date(), "yyyy-MM-dd"),
@@ -249,7 +259,7 @@ export default function LaborPayroll() {
                         size="icon"
                         variant="ghost"
                         className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => deleteMutation.mutate(entry.id)}
+                        onClick={() => setDeleteTarget(entry)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -343,6 +353,30 @@ export default function LaborPayroll() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.description ?? "This labor entry"} will be permanently removed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={() => {
+                if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
+                setDeleteTarget(null);
+              }}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
