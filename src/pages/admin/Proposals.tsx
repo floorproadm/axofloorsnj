@@ -707,6 +707,21 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
     onError: () => toast.error("Failed to save"),
   });
 
+  const deleteProposal = useMutation({
+    mutationFn: async () => {
+      if (!proposal) throw new Error("No proposal");
+      const { error } = await supabase.from("proposals").delete().eq("id", proposal.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["proposals-list"] });
+      toast.success("Draft deleted");
+      setShowDeleteConfirm(false);
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message || "Failed to delete"),
+  });
+
   if (!proposal) return null;
   const c = proposal.projects;
   const address = [c?.address, c?.city, c?.zip_code].filter(Boolean).join(", ");
