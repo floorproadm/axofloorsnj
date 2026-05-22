@@ -1129,6 +1129,8 @@ export default function Proposals() {
         ...d,
         use_tiers: d.use_tiers ?? true,
         flat_price: d.flat_price ?? null,
+        content_overrides: d.content_overrides ?? null,
+        hidden_sections: d.hidden_sections ?? null,
       })) as ProposalWithRelations[];
     },
   });
