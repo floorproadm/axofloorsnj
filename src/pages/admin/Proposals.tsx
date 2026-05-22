@@ -1082,6 +1082,21 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
       {showPortal && (
         <ClientPortalModal proposal={proposal} open={showPortal} onClose={() => setShowPortal(false)} />
       )}
+
+      <ProposalEditPanel
+        open={editPanelOpen}
+        onOpenChange={setEditPanelOpen}
+        proposalId={proposal.id}
+        initialOverrides={localOverrides ?? proposal.content_overrides ?? {}}
+        initialHidden={localHidden ?? proposal.hidden_sections ?? []}
+        initialValidUntil={localValidUntil ?? proposal.valid_until}
+        onSaved={({ overrides, hidden, validUntil }) => {
+          setLocalOverrides(overrides);
+          setLocalHidden(hidden);
+          setLocalValidUntil(validUntil);
+          qc.invalidateQueries({ queryKey: ["proposals-list"] });
+        }}
+      />
     </>
   );
 }
