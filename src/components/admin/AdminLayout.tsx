@@ -49,7 +49,16 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
 
   const { criticalAlerts } = useDashboardData();
 
-  const notifications = React.useMemo(() => {
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem("admin.notifications.dismissed");
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      return new Set();
+    }
+  });
+
+  const allNotifications = React.useMemo(() => {
     const items: { id: string; name: string; type: "cold" | "proposal" | "stalled"; link: string }[] = [];
     (criticalAlerts.newLeadsNoContact24h || []).forEach(l => items.push({ id: l.id, name: l.name, type: "cold", link: "/admin/leads?status=cold_lead" }));
     (criticalAlerts.proposalWithoutFollowUp || []).forEach(l => items.push({ id: l.id, name: l.name, type: "proposal", link: "/admin/leads?status=proposal_sent" }));
@@ -57,7 +66,25 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
     return items;
   }, [criticalAlerts]);
 
+  const notifications = React.useMemo(
+    () => allNotifications.filter(n => !dismissed.has(`${n.type}-${n.id}`)),
+    [allNotifications, dismissed],
+  );
+
   const notificationCount = notifications.length;
+
+  const clearNotifications = () => {
+    const keys = allNotifications.map(n => `${n.type}-${n.id}`);
+    const next = new Set([...dismissed, ...keys]);
+    setDismissed(next);
+    try {
+      localStorage.setItem("admin.notifications.dismissed", JSON.stringify(Array.from(next)));
+    } catch {
+      /* ignore */
+    }
+    toast({ title: t("layout.notificacoesLimpas") ?? "Notifications cleared" });
+  };
+
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
