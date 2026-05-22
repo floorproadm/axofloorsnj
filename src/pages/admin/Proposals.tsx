@@ -36,7 +36,8 @@ import { ProposalData } from "@/types/proposal";
 import { ProposalPipelineBoard } from "@/components/admin/proposals/ProposalPipelineBoard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProposalEditPanel, ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
+import { ContentOverrides, SectionKey } from "@/components/admin/ProposalEditPanel";
+import { ProposalUnifiedEditor } from "@/components/admin/ProposalUnifiedEditor";
 
 // ─── Sync linked lead status when proposal status changes ─────────────────────
 async function syncLinkedLeadStatus(projectId: string, newProposalStatus: string) {
@@ -727,65 +728,48 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
           <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-10 space-y-5 mt-5">
             {/* Quick actions */}
             {!editing && (
-              <div className="flex gap-2">
-                {isDraft && (
-                  <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={startEditing}>
-                    <Pencil className="w-3.5 h-3.5" /> Edit Pricing
-                  </Button>
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs">
-                      <Download className="w-3.5 h-3.5" /> Export
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => setShowPdfConfirm(true)} className="gap-2 text-xs cursor-pointer">
-                      <Printer className="w-3.5 h-3.5" />
-                      <div className="flex flex-col">
-                        <span className="font-medium">Download as PDF</span>
-                        <span className="text-[10px] text-muted-foreground">Opens print dialog → Save as PDF</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => exportProposalCSV(proposal)} className="gap-2 text-xs cursor-pointer">
-                      <FileSpreadsheet className="w-3.5 h-3.5" />
-                      <div className="flex flex-col">
-                        <span className="font-medium">Download as CSV</span>
-                        <span className="text-[10px] text-muted-foreground">Spreadsheet with all data</span>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
-                  <Share2 className="w-3.5 h-3.5" /> Send to Client
-                </Button>
-              </div>
-            )}
-
-            {!editing && (
-              <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setShowPortal(true)}>
-                <Link2 className="w-3.5 h-3.5" /> Portal do Cliente
-              </Button>
-            )}
-
-            {!editing && (() => {
-              const previewToken = btoa(`prop-${proposal.id}`).replace(/=/g, "").slice(0, 18);
-              return (
+              <>
                 <Button
                   size="sm"
                   className="w-full gap-1.5 text-xs"
-                  onClick={() => window.open(`/proposal/${previewToken}`, "_blank")}
+                  onClick={() => setEditPanelOpen(true)}
                 >
-                  <Eye className="w-3.5 h-3.5" /> Preview Proposal
+                  <Pencil className="w-3.5 h-3.5" /> Edit Proposal
                 </Button>
-              );
-            })()}
-
-            {!editing && (
-              <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setEditPanelOpen(true)}>
-                <Pencil className="w-3.5 h-3.5" /> Edit Content & Sections
-              </Button>
+                <div className="flex gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs">
+                        <Download className="w-3.5 h-3.5" /> Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => setShowPdfConfirm(true)} className="gap-2 text-xs cursor-pointer">
+                        <Printer className="w-3.5 h-3.5" />
+                        <div className="flex flex-col">
+                          <span className="font-medium">Download as PDF</span>
+                          <span className="text-[10px] text-muted-foreground">Opens print dialog → Save as PDF</span>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportProposalCSV(proposal)} className="gap-2 text-xs cursor-pointer">
+                        <FileSpreadsheet className="w-3.5 h-3.5" />
+                        <div className="flex flex-col">
+                          <span className="font-medium">Download as CSV</span>
+                          <span className="text-[10px] text-muted-foreground">Spreadsheet with all data</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowShare(true)}>
+                    <Share2 className="w-3.5 h-3.5" /> Send to Client
+                  </Button>
+                </div>
+                <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setShowPortal(true)}>
+                  <Link2 className="w-3.5 h-3.5" /> Portal do Cliente
+                </Button>
+              </>
             )}
+
 
 
             {/* Client info */}
@@ -1065,17 +1049,11 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
         <ClientPortalModal proposal={proposal} open={showPortal} onClose={() => setShowPortal(false)} />
       )}
 
-      <ProposalEditPanel
+      <ProposalUnifiedEditor
         open={editPanelOpen}
         onOpenChange={setEditPanelOpen}
         proposalId={proposal.id}
-        initialOverrides={localOverrides ?? proposal.content_overrides ?? {}}
-        initialHidden={localHidden ?? proposal.hidden_sections ?? []}
-        initialValidUntil={localValidUntil ?? proposal.valid_until}
-        onSaved={({ overrides, hidden, validUntil }) => {
-          setLocalOverrides(overrides);
-          setLocalHidden(hidden);
-          setLocalValidUntil(validUntil);
+        onSaved={() => {
           qc.invalidateQueries({ queryKey: ["proposals-list"] });
         }}
       />
