@@ -123,10 +123,16 @@ export default function Payments() {
     return periodPayments.filter((p) => p.category === categoryFilter);
   }, [periodPayments, categoryFilter]);
 
-  /* ── Group by day ── */
+  /* ── Group by day (paginated) ── */
+  const totalVisible = filteredPeriodPayments.length;
   const groupedPayments = useMemo(() => {
+    // Sort newest-first then slice for pagination
+    const sorted = [...filteredPeriodPayments].sort((a, b) =>
+      b.payment_date.localeCompare(a.payment_date)
+    );
+    const sliced = sorted.slice(0, visibleCount);
     const groups: Record<string, Payment[]> = {};
-    filteredPeriodPayments.forEach((p) => {
+    sliced.forEach((p) => {
       const key = p.payment_date;
       if (!groups[key]) groups[key] = [];
       groups[key].push(p);
@@ -134,7 +140,10 @@ export default function Payments() {
     return Object.entries(groups)
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([date, items]) => ({ date, items }));
-  }, [filteredPeriodPayments]);
+  }, [filteredPeriodPayments, visibleCount]);
+
+  // Reset pagination when filters change
+  useEffect(() => { setVisibleCount(50); }, [categoryFilter, periodType, anchor]);
 
   /* ── Invoice stats ── */
   const invoiceStats = useMemo(() => {
