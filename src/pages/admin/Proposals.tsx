@@ -800,6 +800,12 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
               </Button>
             )}
 
+            {!editing && (
+              <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs" onClick={() => setEditPanelOpen(true)}>
+                <Pencil className="w-3.5 h-3.5" /> Edit Content & Sections
+              </Button>
+            )}
+
             {/* Client info */}
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2.5">
               <div className="flex items-start justify-between">
