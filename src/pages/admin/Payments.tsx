@@ -324,7 +324,7 @@ export default function Payments() {
                     {groupedPayments.map((group) => (
                       <div key={group.date} className="space-y-1.5">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                          {format(new Date(group.date + "T12:00:00"), "EEEE, MMM dd")}
+                          {format(parseISO(group.date), "EEEE, MMM dd")}
                         </p>
                         {group.items.map((pay) => {
                           const sc = paymentStatusConfig[pay.status] || paymentStatusConfig.pending;
