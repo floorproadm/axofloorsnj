@@ -17,6 +17,28 @@ import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { isThisWeek as isThisWeekFn, parseISO } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+const DESTRUCTIVE_STATUSES = new Set(["cancelled", "paid"]);
+const DESTRUCTIVE_COPY: Record<string, { title: string; description: string }> = {
+  cancelled: {
+    title: "Cancel this project?",
+    description: "Marking as cancelled will remove it from the active pipeline. You can revert by changing the status again.",
+  },
+  paid: {
+    title: "Mark project as Paid?",
+    description: "This closes the financial cycle for the project. Make sure all invoices and payments are reconciled before confirming.",
+  },
+};
 
 type SortKey = "recent" | "revenue_desc" | "margin_asc" | "start_asc";
 
@@ -201,9 +223,19 @@ export default function ProjectsHub() {
     setSortBy("recent");
   }
 
-  async function handleStatusChange(id: string, status: string) {
+  const [pendingStatus, setPendingStatus] = useState<{ id: string; status: string } | null>(null);
+
+  async function applyStatusChange(id: string, status: string) {
     await supabase.from("projects").update({ project_status: status }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["hub-projects"] });
+  }
+
+  async function handleStatusChange(id: string, status: string) {
+    if (DESTRUCTIVE_STATUSES.has(status)) {
+      setPendingStatus({ id, status });
+      return;
+    }
+    await applyStatusChange(id, status);
   }
 
   return (
@@ -336,6 +368,35 @@ export default function ProjectsHub() {
         )}
 
         <NewJobDialog open={showNewJob} onOpenChange={setShowNewJob} />
+
+        <AlertDialog
+          open={pendingStatus !== null}
+          onOpenChange={(o) => { if (!o) setPendingStatus(null); }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus.status]?.title : "Confirm"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {pendingStatus ? DESTRUCTIVE_COPY[pendingStatus.status]?.description : ""}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (pendingStatus) {
+                    await applyStatusChange(pendingStatus.id, pendingStatus.status);
+                    setPendingStatus(null);
+                  }
+                }}
+              >
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );

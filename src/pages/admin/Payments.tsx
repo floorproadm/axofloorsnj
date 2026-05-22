@@ -73,6 +73,7 @@ export default function Payments() {
   const [periodType, setPeriodType] = useState<PeriodType>("month");
   const [anchor, setAnchor] = useState(() => new Date());
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(50);
 
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -122,10 +123,16 @@ export default function Payments() {
     return periodPayments.filter((p) => p.category === categoryFilter);
   }, [periodPayments, categoryFilter]);
 
-  /* ── Group by day ── */
+  /* ── Group by day (paginated) ── */
+  const totalVisible = filteredPeriodPayments.length;
   const groupedPayments = useMemo(() => {
+    // Sort newest-first then slice for pagination
+    const sorted = [...filteredPeriodPayments].sort((a, b) =>
+      b.payment_date.localeCompare(a.payment_date)
+    );
+    const sliced = sorted.slice(0, visibleCount);
     const groups: Record<string, Payment[]> = {};
-    filteredPeriodPayments.forEach((p) => {
+    sliced.forEach((p) => {
       const key = p.payment_date;
       if (!groups[key]) groups[key] = [];
       groups[key].push(p);
@@ -133,7 +140,10 @@ export default function Payments() {
     return Object.entries(groups)
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([date, items]) => ({ date, items }));
-  }, [filteredPeriodPayments]);
+  }, [filteredPeriodPayments, visibleCount]);
+
+  // Reset pagination when filters change
+  useEffect(() => { setVisibleCount(50); }, [categoryFilter, periodType, anchor]);
 
   /* ── Invoice stats ── */
   const invoiceStats = useMemo(() => {
@@ -363,6 +373,17 @@ export default function Payments() {
                         })}
                       </div>
                     ))}
+                    {visibleCount < totalVisible && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVisibleCount((c) => c + 50)}
+                        >
+                          Load more ({totalVisible - visibleCount} remaining)
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
 
