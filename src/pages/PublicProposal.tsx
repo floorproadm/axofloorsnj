@@ -172,6 +172,17 @@ export default function PublicProposal() {
     setSignOpen(true);
   };
 
+  const displayName = overrides.customer_name || customer?.full_name || "Client";
+  const displayPhone = overrides.customer_phone || customer?.phone || "";
+  const displayAddress = overrides.address || project?.address || customer?.address || "";
+  const displayProjectType = overrides.project_type || project?.project_type || "Flooring Project";
+  const displaySqft = overrides.square_footage ?? project?.square_footage;
+  const durationDays = Math.max(1, Math.ceil((Number(displaySqft) || 500) / 350));
+  const siteAssessment = overrides.site_assessment || `Based on our evaluation of your ${displaySqft || ""} sqft ${displayProjectType} project, we've prepared a fixed-scope quote with a transparent professional scope.`;
+  const timelineText = overrides.timeline || `Based on this scope, we estimate ${durationDays} working day${durationDays > 1 ? "s" : ""} to complete your project.`;
+  const ctaHeading = overrides.cta_heading || "Ready to move forward?";
+  const ctaText = overrides.cta_text || "Call or text us — happy to walk you through the proposal.";
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Branded Header */}
