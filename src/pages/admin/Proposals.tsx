@@ -645,6 +645,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   const [showShare, setShowShare] = useState(false);
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editUseTiers, setEditUseTiers] = useState(true);
   const [editFlatPrice, setEditFlatPrice] = useState("");
@@ -704,6 +705,21 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
       setEditing(false);
     },
     onError: () => toast.error("Failed to save"),
+  });
+
+  const deleteProposal = useMutation({
+    mutationFn: async () => {
+      if (!proposal) throw new Error("No proposal");
+      const { error } = await supabase.from("proposals").delete().eq("id", proposal.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["proposals-list"] });
+      toast.success("Draft deleted");
+      setShowDeleteConfirm(false);
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message || "Failed to delete"),
   });
 
   if (!proposal) return null;
@@ -949,9 +965,18 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</p>
                     {proposal.status === "draft" && (
-                      <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
-                        <Send className="w-4 h-4" /> Mark as Sent
-                      </Button>
+                      <>
+                        <Button className="w-full gap-2" onClick={() => updateStatus.mutate({ id: proposal.id, status: "sent", project_id: proposal.project_id })}>
+                          <Send className="w-4 h-4" /> Mark as Sent
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
+                          onClick={() => setShowDeleteConfirm(true)}
+                        >
+                          <Trash2 className="w-4 h-4" /> Delete Draft
+                        </Button>
+                      </>
                     )}
                     {(proposal.status === "sent" || proposal.status === "viewed") && proposal.use_tiers && (
                       <div className="grid grid-cols-3 gap-2">
@@ -1012,6 +1037,26 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
               className="gap-1.5"
             >
               <Printer className="w-3.5 h-3.5" /> Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Proposal <span className="font-semibold">{proposal.proposal_number}</span> will be permanently removed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteProposal.mutate()}
+              className="bg-red-500 hover:bg-red-600 gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Delete Draft
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
