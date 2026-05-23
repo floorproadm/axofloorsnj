@@ -1344,6 +1344,14 @@ export default function Proposals() {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
                                 <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                                {p.status === "accepted" && p.selected_tier && p.selected_tier !== "flat" && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 capitalize border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
+                                  >
+                                    {TIER_CONFIG[p.selected_tier as keyof typeof TIER_CONFIG]?.label ?? p.selected_tier}
+                                  </Badge>
+                                )}
                                 {isDuplicate && (
                                   <Badge className="text-[9px] h-4 px-1.5 bg-amber-500/15 text-amber-600 border border-amber-500/30 gap-0.5">
                                     <AlertTriangle className="w-2.5 h-2.5" /> Duplicata
