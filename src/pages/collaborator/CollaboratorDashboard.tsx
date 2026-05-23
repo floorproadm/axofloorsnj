@@ -15,7 +15,7 @@ import {
   Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2,
   Package, Plus, X
 } from "lucide-react";
-import { format, startOfWeek, addDays, isToday, isSameDay } from "date-fns";
+import { format, startOfWeek, addDays, isToday, isSameDay, parseISO } from "date-fns";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { convertHeicToJpeg } from "@/utils/heicConverter";
@@ -47,7 +47,7 @@ export default function CollaboratorDashboard() {
 
   // Today's appointments
   const todayAppointments = appointments.filter((a) =>
-    isSameDay(new Date(a.appointment_date + "T00:00:00"), new Date())
+    isSameDay(parseISO(a.appointment_date), new Date())
   );
 
   const todayProject = todayAppointments[0];
@@ -95,7 +95,7 @@ export default function CollaboratorDashboard() {
   // Count jobs per day for week strip
   const jobsPerDay = weekDays.map((day) => ({
     date: day,
-    count: appointments.filter((a) => isSameDay(new Date(a.appointment_date + "T00:00:00"), day)).length,
+    count: appointments.filter((a) => isSameDay(parseISO(a.appointment_date), day)).length,
   }));
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,7 +281,7 @@ export default function CollaboratorDashboard() {
                       </span>
                       {task.due_date && !isDone && (
                         <span className="text-[10px] text-muted-foreground">
-                          Vence: {format(new Date(task.due_date + "T00:00:00"), "MMM d")}
+                          Vence: {format(parseISO(task.due_date), "MMM d")}
                         </span>
                       )}
                     </div>
