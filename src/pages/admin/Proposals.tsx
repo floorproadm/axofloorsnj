@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -129,6 +130,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   const [mode, setMode] = useState<"tiers" | "direct">("tiers");
   const [flatPrice, setFlatPrice] = useState<string>("");
   const [partnerId, setPartnerId] = useState<string>("none");
+  const [clientNote, setClientNote] = useState("");
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
 
   const { data: projects = [] } = useQuery({
@@ -185,8 +187,8 @@ function NewProposalDialog({ open, onClose, onCreated }: {
     const referringPartnerId = partnerId !== "none" ? partnerId : null;
     const opts =
       mode === "direct"
-        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0, referringPartnerId }
-        : { mode: "tiers" as const, referringPartnerId };
+        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0, referringPartnerId, clientNote }
+        : { mode: "tiers" as const, referringPartnerId, clientNote };
     const data = await fetchProjectData(projectId, opts);
     if (data) {
       onCreated(data);
@@ -195,6 +197,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
       setFlatPrice("");
       setMode("tiers");
       setPartnerId("none");
+      setClientNote("");
     }
   };
 
@@ -283,6 +286,16 @@ function NewProposalDialog({ open, onClose, onCreated }: {
               />
             </div>
           )}
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Note to Client (optional)</Label>
+            <Textarea
+              value={clientNote}
+              onChange={(e) => setClientNote(e.target.value)}
+              placeholder="e.g. Thank you for trusting AXO Floors! We look forward to transforming your space."
+              className="min-h-[80px] resize-none text-sm"
+            />
+          </div>
 
           {error && (
             <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500">

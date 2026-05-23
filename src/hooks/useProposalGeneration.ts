@@ -64,6 +64,7 @@ interface FetchOptions {
   mode?: 'tiers' | 'direct';
   flatPrice?: number; // required when mode='direct'
   referringPartnerId?: string | null;
+  clientNote?: string | null;
 }
 
 interface UseProposalGenerationReturn {
@@ -199,6 +200,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
             status: 'draft',
             proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
             organization_id: AXO_ORG_ID,
+            client_note: options.clientNote || null,
           } as any)
           .select()
           .single();
@@ -260,6 +262,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           status: 'draft',
           proposal_number: `PROP-${Date.now().toString(36).toUpperCase()}`,
           organization_id: AXO_ORG_ID,
+          client_note: options.clientNote || null,
         } as any)
         .select()
         .single();
