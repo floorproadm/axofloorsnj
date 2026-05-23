@@ -125,6 +125,10 @@ export default function PublicProposal() {
     return new Date(proposal.valid_until) < new Date() && !isAccepted;
   }, [proposal, isAccepted]);
 
+  const displayName = customer?.full_name || project?.customer_name || "Client";
+  const displayPhone = customer?.phone || project?.customer_phone || null;
+  const displayEmail = customer?.email || project?.customer_email || null;
+
   const tiers: Array<{ key: TierKey; price: number }> = useMemo(() => {
     if (!proposal || !proposal.use_tiers) return [];
     return [
@@ -207,10 +211,10 @@ export default function PublicProposal() {
             <div className="flex-1 min-w-0">
               <p className="text-xs text-slate-500">Prepared for</p>
               <p className="font-semibold text-slate-900">
-                {customer?.full_name || "Client"}
+                {displayName}
               </p>
-              {customer?.phone && (
-                <p className="text-xs text-slate-500 mt-0.5">{customer.phone}</p>
+              {displayPhone && (
+                <p className="text-xs text-slate-500 mt-0.5">{displayPhone}</p>
               )}
             </div>
           </div>
@@ -383,7 +387,7 @@ export default function PublicProposal() {
         onOpenChange={setSignOpen}
         proposalId={proposal.id}
         organizationId={proposal.organization_id}
-        defaultName={customer?.full_name || ""}
+        defaultName={displayName}
         selectedTier={pickedTier}
         onSigned={() => {
           // refresh
