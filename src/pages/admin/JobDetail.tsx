@@ -1090,18 +1090,23 @@ function LaborBlock({ projectId }: { projectId: string }) {
   const { data: entries = [], isLoading } = useLaborEntries(projectId);
   const { mutateAsync: addEntry, isPending: isAdding } = useAddLaborEntry();
   const { mutateAsync: deleteEntry } = useDeleteLaborEntry();
+  const { mutateAsync: markPaid } = useMarkLaborPaid();
   const [showForm, setShowForm] = useState(false);
+  const [crewId, setCrewId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [rate, setRate] = useState('');
   const [days, setDays] = useState('1');
 
   const total = entries.reduce((s, e) => s + (e.total_cost ?? e.daily_rate * e.days_worked), 0);
+  const unpaid = entries.filter((e) => !e.is_paid).reduce((s, e) => s + (e.total_cost ?? e.daily_rate * e.days_worked), 0);
+
+  const resetForm = () => { setCrewId(null); setName(''); setRate(''); setDays('1'); };
 
   const handleAdd = async () => {
     if (!name.trim() || !rate) return;
     try {
-      await addEntry({ project_id: projectId, worker_name: name, daily_rate: parseFloat(rate), days_worked: parseFloat(days) || 1 });
-      setName(''); setRate(''); setDays('1');
+      await addEntry({ project_id: projectId, worker_name: name, daily_rate: parseFloat(rate), days_worked: parseFloat(days) || 1, crew_member_id: crewId });
+      resetForm();
       setShowForm(false);
       toast.success('Labor entry added');
     } catch { toast.error('Error adding entry'); }
@@ -1125,34 +1130,61 @@ function LaborBlock({ projectId }: { projectId: string }) {
       ) : (
         <>
           {entries.length > 0 ? (
-            <div className="divide-y divide-border/20">
-              {entries.map((e) => (
-                <div key={e.id} className="group flex items-center justify-between py-2">
-                  <div className="min-w-0">
-                    <p className="text-sm text-foreground">{e.worker_name}</p>
-                    <p className="text-xs text-muted-foreground">{formatCurrency(e.daily_rate)}/day × {e.days_worked}d</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteEntry({ id: e.id, projectId })}><Trash2 className="w-3 h-3" /></Button>
-                  </div>
+            <>
+              {unpaid > 0 && (
+                <div className="flex items-center justify-between text-xs px-2 py-1.5 mb-1 rounded bg-amber-500/5 border border-amber-500/20">
+                  <span className="text-amber-600 dark:text-amber-400">Unpaid: {formatCurrency(unpaid)}</span>
+                  <Button variant="ghost" size="sm" className="h-6 text-[11px] text-amber-600 dark:text-amber-400 hover:text-amber-700"
+                    onClick={async () => {
+                      const ids = entries.filter((e) => !e.is_paid).map((e) => e.id);
+                      await markPaid({ ids, paid: true });
+                      toast.success('Marked as paid');
+                    }}>
+                    Mark all paid
+                  </Button>
                 </div>
-              ))}
-            </div>
+              )}
+              <div className="divide-y divide-border/20">
+                {entries.map((e) => (
+                  <div key={e.id} className="group flex items-center justify-between py-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-foreground truncate">{e.worker_name}</p>
+                        {e.crew_member_id && <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wide">crew</span>}
+                        {e.is_paid && <span className="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">paid</span>}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{formatCurrency(e.daily_rate)}/day × {e.days_worked}d</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-sm font-semibold tabular-nums">{formatCurrency(e.total_cost ?? e.daily_rate * e.days_worked)}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                        onClick={() => deleteEntry({ id: e.id, projectId })}><Trash2 className="w-3 h-3" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : !showForm && (
             <p className="text-xs text-muted-foreground/50 text-center py-2 italic">No labor entries</p>
           )}
           {showForm && (
             <div className="border border-border/50 rounded-lg bg-muted/10 p-3 space-y-2 mt-2">
-              <Input placeholder="Worker name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm" autoFocus />
+              <CrewMemberPicker
+                value={crewId}
+                workerName={name}
+                onSelect={({ id, name: n, rate: r }) => {
+                  setCrewId(id);
+                  setName(n);
+                  if (r) setRate(String(r));
+                }}
+              />
               <div className="grid grid-cols-2 gap-2">
                 <Input type="number" placeholder="$/day" value={rate} onChange={(e) => setRate(e.target.value)} className="text-sm" />
                 <Input type="number" placeholder="Days" value={days} onChange={(e) => setDays(e.target.value)} className="text-sm"
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setShowForm(false); }} />
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setShowForm(false); resetForm(); } }} />
               </div>
               <div className="flex justify-end gap-2">
-                <Button size="sm" variant="ghost" className="text-xs" onClick={() => setShowForm(false)}>Cancel</Button>
+                <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setShowForm(false); resetForm(); }}>Cancel</Button>
                 <Button size="sm" className="text-xs" onClick={handleAdd} disabled={isAdding || !name.trim() || !rate}>
                   {isAdding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Add'}
                 </Button>
