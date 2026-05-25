@@ -8,13 +8,11 @@
 //   - Botão Quick Quote em `estimate_scheduled` e `in_draft`
 //   - Funnel health bar com taxas de conversão entre stages
 //   - Toggle de visualização Board / List
-//   - Filtro de parceiro via `lead_source === 'partner_referral'`
-// Exceção autorizada: padronização de `lead_source: 'partner_referral'`
-// para leads originados de parceiros nos modais Quick Appt / Quick Request
-// (Onda 1, item 5).
+// NOTA: Filtro de parceiro removido — pipeline de parceiros agora em
+// /admin/partners (aba Referral Pipeline).
 // ============================================================================
 import { useMemo, useState, useCallback, useEffect } from "react";
-import { usePartnersData } from "@/hooks/admin/usePartnersData";
+
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +54,7 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2, X, Zap, Search, Filter, Handshake
+  Loader2, X, Zap, Search, Filter
 } from "lucide-react";
 import { differenceInHours, differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -139,23 +137,22 @@ function getOperationalAlert(lead: Lead, nra: any) {
   return null;
 }
 
-/* ─── Reusable Source Toggle (Lead | Parceiro) ─── */
-type SourceType = 'lead' | 'partner' | 'new';
+/* ─── Reusable Source Toggle (Lead | Novo) ─── */
+type SourceType = 'lead' | 'new';
 
 function SourceToggle({ source, onChange }: { source: SourceType; onChange: (s: SourceType) => void }) {
-  const active = source === 'new' ? 'lead' : source;
   return (
     <div className="flex gap-1 p-1 bg-muted rounded-lg">
-      {([['lead', 'Lead'], ['partner', 'Parceiro']] as const).map(([key, label]) => (
+      {(['lead', 'new'] as const).map((key) => (
         <button
           key={key}
           onClick={() => onChange(key)}
           className={cn(
             "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-            active === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+            source === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
           )}
         >
-          {label}
+          {key === 'lead' ? 'Lead Existente' : 'Novo Lead'}
         </button>
       ))}
     </div>
@@ -347,16 +344,9 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const [apptAddress, setApptAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [source, setSource] = useState<SourceType>('lead');
-  const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const [newLeadForm, setNewLeadForm] = useState(EMPTY_NEW_LEAD);
   const { updateLeadStatus } = useLeadPipeline();
   const { addFollowUpAction } = useLeadFollowUp();
-  const { partners } = usePartnersData();
-
-  const activePartners = useMemo(() =>
-    partners.filter(p => ['active', 'trial_first_job'].includes(p.status)),
-    [partners]
-  );
 
   const eligibleLeads = useMemo(() =>
     leads.filter(l => {
@@ -368,7 +358,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
 
   const resetForm = () => { 
     setSelectedLeadId(''); setApptDate(''); setApptTime(''); setApptAddress(''); setNotes(''); 
-    setSource('lead'); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD);
+    setSource('lead'); setNewLeadForm(EMPTY_NEW_LEAD);
   };
 
   // Auto-fill address when lead is selected
@@ -381,10 +371,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const handleSave = async () => {
     if (source === 'lead' && !selectedLeadId) {
       toast.error('Selecione um lead');
-      return;
-    }
-    if (source === 'partner' && !selectedPartnerId) {
-      toast.error('Selecione um parceiro');
       return;
     }
     if (source === 'new' && (!newLeadForm.name.trim() || !newLeadForm.phone.trim())) {
@@ -427,38 +413,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
         createdLeadId = newLead.id;
         leadName = newLeadForm.name.trim();
         leadPhone = newLeadForm.phone.trim();
-      } else if (source === 'partner') {
-        const partner = activePartners.find(p => p.id === selectedPartnerId);
-        if (!partner) throw new Error('Parceiro não encontrado');
-
-        const { data: newLead, error: insertError } = await supabase
-          .from('leads')
-          .insert({
-            name: partner.contact_name,
-            phone: partner.phone || 'N/A',
-            email: partner.email,
-            lead_source: 'partner_referral',
-            status: 'estimate_scheduled',
-            priority: 'high',
-            address: addressValue,
-            notes: `Via parceiro: ${partner.company_name}`,
-            referred_by_partner_id: partner.id,
-            organization_id: AXO_ORG_ID,
-          })
-          .select('id')
-          .single();
-        if (insertError) throw insertError;
-        createdLeadId = newLead.id;
-        leadName = partner.contact_name;
-        leadPhone = partner.phone || 'N/A';
-
-        await supabase
-          .from('partners')
-          .update({ 
-            total_referrals: (partner.total_referrals || 0) + 1,
-            last_contacted_at: new Date().toISOString(),
-          } as any)
-          .eq('id', partner.id);
       } else {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
@@ -513,11 +467,11 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
           {source === 'new' ? (
             <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} onCancel={() => setSource('lead')} />
-          ) : source === 'lead' ? (
+          ) : (
             <LeadSelectorOrNew
               source={source}
               selectedLeadId={selectedLeadId}
@@ -525,26 +479,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
               eligibleLeads={eligibleLeads}
               onSwitchToNew={() => { setSource('new'); setSelectedLeadId(''); }}
             />
-          ) : (
-            <div>
-              <Label>Parceiro *</Label>
-              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um parceiro..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {activePartners.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum parceiro ativo</SelectItem>
-                  ) : (
-                    activePartners.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.contact_name} — {p.company_name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
           )}
 
           {source !== 'new' && (
@@ -594,45 +528,23 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 }) {
   const navigate = useNavigate();
   const [selectedLeadId, setSelectedLeadId] = useState('');
-  const [source, setSource] = useState<SourceType>('lead');
-  const [selectedPartnerId, setSelectedPartnerId] = useState('');
-  const { partners } = usePartnersData();
-
-  const partnerLeadsWithProject = useMemo(() =>
-    leads.filter(l => !!l.converted_to_project_id && !!l.referred_by_partner_id),
-    [leads]
-  );
-
-  const partnersWithProjects = useMemo(() => {
-    const partnerIds = new Set(partnerLeadsWithProject.map(l => l.referred_by_partner_id));
-    return partners.filter(p => partnerIds.has(p.id));
-  }, [partners, partnerLeadsWithProject]);
 
   const eligibleLeads = useMemo(() =>
     leads.filter(l => !!l.converted_to_project_id),
     [leads]
   );
 
-  const resetForm = () => { setSelectedLeadId(''); setSelectedPartnerId(''); setSource('lead'); };
+  const resetForm = () => { setSelectedLeadId(''); };
 
   const handleGo = () => {
-    if (source === 'partner') {
-      const partnerLeads = partnerLeadsWithProject.filter(l => l.referred_by_partner_id === selectedPartnerId);
-      if (partnerLeads.length > 0 && partnerLeads[0].converted_to_project_id) {
-        onOpenChange(false);
-        resetForm();
-        navigate(`/admin/projects/${partnerLeads[0].converted_to_project_id}`);
-      }
-    } else {
-      const lead = eligibleLeads.find(l => l.id === selectedLeadId);
-      if (!lead?.converted_to_project_id) return;
-      onOpenChange(false);
-      resetForm();
-      navigate(`/admin/projects/${lead.converted_to_project_id}`);
-    }
+    const lead = eligibleLeads.find(l => l.id === selectedLeadId);
+    if (!lead?.converted_to_project_id) return;
+    onOpenChange(false);
+    resetForm();
+    navigate(`/admin/projects/${lead.converted_to_project_id}`);
   };
 
-  const canGo = source === 'lead' ? !!selectedLeadId : source === 'partner' ? !!selectedPartnerId : false;
+  const canGo = !!selectedLeadId;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
@@ -644,51 +556,27 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Selecione o lead ou parceiro com projeto para abrir o gerador de proposta.</p>
+          <p className="text-sm text-muted-foreground">Selecione o lead com projeto para abrir o gerador de proposta.</p>
 
-          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); }} />
-
-          {source === 'lead' ? (
-            <div>
-              <Label>Lead com Projeto *</Label>
-              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {eligibleLeads.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum lead com projeto</SelectItem>
-                  ) : (
-                    eligibleLeads.map(l => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.name} — {STAGE_LABELS[normalizeStatus(l.status)]}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div>
-              <Label>Parceiro com Projeto *</Label>
-              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um parceiro..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {partnersWithProjects.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum parceiro com projeto</SelectItem>
-                  ) : (
-                    partnersWithProjects.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.contact_name} — {p.company_name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div>
+            <Label>Lead com Projeto *</Label>
+            <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                {eligibleLeads.length === 0 ? (
+                  <SelectItem value="_none" disabled>Nenhum lead com projeto</SelectItem>
+                ) : (
+                  eligibleLeads.map(l => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name} — {STAGE_LABELS[normalizeStatus(l.status)]}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
@@ -714,16 +602,9 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
   const [budget, setBudget] = useState('');
   const [notes, setNotes] = useState('');
   const [source, setSource] = useState<SourceType>('lead');
-  const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const [newLeadForm, setNewLeadForm] = useState(EMPTY_NEW_LEAD);
   const { updateLeadStatus } = useLeadPipeline();
   const { addFollowUpAction } = useLeadFollowUp();
-  const { partners } = usePartnersData();
-
-  const activePartners = useMemo(() =>
-    partners.filter(p => ['active', 'trial_first_job'].includes(p.status)),
-    [partners]
-  );
 
   const eligibleLeads = useMemo(() =>
     leads.filter(l => {
@@ -735,7 +616,7 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
 
   const resetForm = () => { 
     setSelectedLeadId(''); setSelectedServices([]); setBudget(''); setNotes(''); 
-    setSource('lead'); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD);
+    setSource('lead'); setNewLeadForm(EMPTY_NEW_LEAD);
   };
 
   const toggleService = (svc: string) => {
@@ -747,10 +628,6 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
   const handleSave = async () => {
     if (source === 'lead' && !selectedLeadId) {
       toast.error('Selecione um lead');
-      return;
-    }
-    if (source === 'partner' && !selectedPartnerId) {
-      toast.error('Selecione um parceiro');
       return;
     }
     if (source === 'new' && (!newLeadForm.name.trim() || !newLeadForm.phone.trim())) {
@@ -788,45 +665,6 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
           });
         }
         toast.success('Lead criado e solicitação registrada');
-      } else if (source === 'partner') {
-        const partner = activePartners.find(p => p.id === selectedPartnerId);
-        if (!partner) throw new Error('Parceiro não encontrado');
-
-        const { data: newLead, error: insertError } = await supabase
-          .from('leads')
-          .insert({
-            name: partner.contact_name,
-            phone: partner.phone || 'N/A',
-            email: partner.email,
-            lead_source: 'partner_referral',
-            status: 'estimate_requested',
-            priority: 'high',
-            services: selectedServices.length > 0 ? selectedServices : undefined,
-            budget: budget ? parseFloat(budget) : undefined,
-            notes: notes.trim() || `Via parceiro: ${partner.company_name}`,
-            referred_by_partner_id: partner.id,
-            organization_id: AXO_ORG_ID,
-          })
-          .select('id')
-          .single();
-        if (insertError) throw insertError;
-
-        await supabase
-          .from('partners')
-          .update({ 
-            total_referrals: (partner.total_referrals || 0) + 1,
-            last_contacted_at: new Date().toISOString(),
-          } as any)
-          .eq('id', partner.id);
-
-        if (newLead) {
-          await addFollowUpAction(newLead.id, {
-            date: new Date().toISOString(),
-            action: 'Orçamento solicitado via parceiro',
-            notes: `Parceiro: ${partner.company_name}`,
-          });
-        }
-        toast.success('Solicitação registrada via parceiro');
       } else {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
@@ -872,11 +710,11 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
           {source === 'new' ? (
             <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} onCancel={() => setSource('lead')} />
-          ) : source === 'lead' ? (
+          ) : (
             <LeadSelectorOrNew
               source={source}
               selectedLeadId={selectedLeadId}
@@ -884,26 +722,6 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
               eligibleLeads={eligibleLeads}
               onSwitchToNew={() => { setSource('new'); setSelectedLeadId(''); }}
             />
-          ) : (
-            <div>
-              <Label>Parceiro *</Label>
-              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um parceiro..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {activePartners.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum parceiro ativo</SelectItem>
-                  ) : (
-                    activePartners.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.contact_name} — {p.company_name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
           )}
 
           <div>
@@ -951,7 +769,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const [viewMode, setViewMode] = useState<ViewMode>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [needsActionOnly, setNeedsActionOnly] = useState(false);
-  const [partnerOnly, setPartnerOnly] = useState(false);
+  
 
   // Quick-action modal states
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
@@ -970,11 +788,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
 
   const salesLeads = useMemo(() => {
     let filtered = leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage));
-    // Partner filter
-    if (partnerOnly) {
-      filtered = filtered.filter(l => l.lead_source === 'partner_referral');
-    }
-    // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(l => 
@@ -985,16 +798,12 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       );
     }
     return filtered;
-  }, [leads, searchQuery, partnerOnly]);
+  }, [leads, searchQuery]);
 
   // Unfiltered sales leads for stats (funnel bar uses all data)
   const allSalesLeads = useMemo(() => {
-    let filtered = leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage));
-    if (partnerOnly) {
-      filtered = filtered.filter(l => l.lead_source === 'partner_referral');
-    }
-    return filtered;
-  }, [leads, partnerOnly]);
+    return leads.filter(l => SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage));
+  }, [leads]);
 
   const activeLeadIds = useMemo(() => 
     allSalesLeads
@@ -1131,7 +940,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     return nra && (nra.severity === 'critical' || nra.severity === 'blocked');
   };
 
-  if (allSalesLeads.length === 0 && !searchQuery && !partnerOnly) {
+  if (allSalesLeads.length === 0 && !searchQuery) {
     return (
       <>
         <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
@@ -1145,23 +954,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </Button>
         </div>
         <QuickNewLeadModal open={showNewLeadModal} onOpenChange={setShowNewLeadModal} onSuccess={onRefresh} />
-      </>
-    );
-  }
-
-  if (allSalesLeads.length === 0 && partnerOnly) {
-    return (
-      <>
-        <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
-          <Handshake className="w-12 h-12 text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-semibold text-muted-foreground">Nenhum lead de parceiros no funil.</h3>
-          <p className="text-sm text-muted-foreground/70 mt-2">
-            Seus parceiros ainda não enviaram leads ou eles já avançaram para produção.
-          </p>
-          <Button onClick={() => setPartnerOnly(false)} variant="outline" className="mt-4">
-            Ver todos os leads
-          </Button>
-        </div>
       </>
     );
   }
@@ -1278,18 +1070,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </div>
           <Button
             size="sm"
-            variant={partnerOnly ? "default" : "outline"}
-            className={cn(
-              "text-xs h-8 flex-shrink-0 gap-1.5",
-              partnerOnly && "bg-primary text-primary-foreground hover:bg-primary/90"
-            )}
-            onClick={() => setPartnerOnly(!partnerOnly)}
-          >
-            <Handshake className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Parceiros</span>
-          </Button>
-          <Button
-            size="sm"
             variant={needsActionOnly ? "default" : "outline"}
             className={cn(
               "text-xs h-8 flex-shrink-0 gap-1.5",
@@ -1353,7 +1133,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       </div>
 
       {/* Active Filter Chip */}
-      {(statusFilter || searchQuery || needsActionOnly || partnerOnly) && (
+      {(statusFilter || searchQuery || needsActionOnly) && (
         <div className="flex items-center gap-2 flex-wrap">
           {statusFilter && (
             <Badge variant="secondary" className={cn(
@@ -1374,19 +1154,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           {searchQuery && (
             <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
               Busca: "{searchQuery}" ({filteredSalesLeads.length})
-            </Badge>
-          )}
-          {partnerOnly && (
-            <Badge variant="default" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
-              <Handshake className="w-3 h-3" />
-              Leads de Parceiros
-              <button
-                onClick={() => setPartnerOnly(false)}
-                className="ml-1 rounded-full hover:bg-primary-foreground/20 p-0.5 transition-colors"
-                aria-label="Limpar filtro de parceiros"
-              >
-                <X className="w-3 h-3" />
-              </button>
             </Badge>
           )}
           {needsActionOnly && (
