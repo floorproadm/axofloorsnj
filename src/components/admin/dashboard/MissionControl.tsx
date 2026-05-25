@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
-  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2
+  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, X, BellOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Task, useTasks } from "@/hooks/useTasks";
 
 import { format, isPast, isToday } from "date-fns";
+
+const DISMISSED_KEY = "mc:dismissed-alerts";
+const alertKey = (a: { type: string; label: string }) => `${a.type}::${a.label}`;
+const readDismissed = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; }
+};
+const writeDismissed = (keys: string[]) => {
+  localStorage.setItem(DISMISSED_KEY, JSON.stringify(keys));
+  window.dispatchEvent(new Event("mc:dismissed-changed"));
+};
 
 // ---------- System Alerts ----------
 
