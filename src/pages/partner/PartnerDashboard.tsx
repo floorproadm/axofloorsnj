@@ -127,7 +127,27 @@ export default function PartnerDashboard() {
     }
     if (ls) setLeads(ls as any);
     if (cs) setCommissionPercent(Number((cs as any).referral_commission_percent) || 7);
+
+    // Load notifications for this partner user
+    const { data: notifs } = await supabase
+      .from("notifications")
+      .select("id, title, body, link, read, created_at")
+      .eq("user_id", session.session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (notifs) setNotifications(notifs as any);
+
     setLoading(false);
+  };
+
+  const markAllNotificationsRead = async () => {
+    const unread = notifications.filter((n) => !n.read);
+    if (unread.length === 0) return;
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .in("id", unread.map((n) => n.id));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
 
