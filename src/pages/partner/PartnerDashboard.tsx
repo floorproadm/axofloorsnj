@@ -25,7 +25,17 @@ interface Lead {
   city: string | null;
   budget: number | null;
   created_at: string;
+  status_changed_at: string | null;
   converted_to_project_id: string | null;
+}
+
+interface PartnerNotification {
+  id: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read: boolean;
+  created_at: string;
 }
 
 interface PartnerInfo {
