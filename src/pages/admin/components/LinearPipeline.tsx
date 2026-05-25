@@ -56,7 +56,7 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2, X, Zap, Search, Filter, Handshake
+  Loader2, X, Zap, Search, Filter
 } from "lucide-react";
 import { differenceInHours, differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
