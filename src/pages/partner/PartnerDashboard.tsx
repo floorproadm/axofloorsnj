@@ -308,7 +308,7 @@ export default function PartnerDashboard() {
         {/* PIPELINE VIEW */}
         {view === "pipeline" && (
           <>
-            <div className={cn("grid gap-2", partner?.partner_program === "trade" ? "grid-cols-2" : "grid-cols-3")}>
+            <div className={cn("grid gap-2", partner?.partner_program === "trade" ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4")}>
               <Card className="p-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                   <Users className="w-3 h-3" />
@@ -324,15 +324,48 @@ export default function PartnerDashboard() {
                 <p className="text-2xl font-bold tabular-nums">{conversionRate}%</p>
               </Card>
               {partner?.partner_program !== "trade" && (
-                <Card className="p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <DollarSign className="w-3 h-3" />
-                    <span>Earned</span>
-                  </div>
-                  <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
-                </Card>
+                <>
+                  <Card className="p-3 border-primary/20 bg-primary/5">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Zap className="w-3 h-3" />
+                      <span>Pipeline</span>
+                    </div>
+                    <p className="text-2xl font-bold tabular-nums text-foreground">
+                      ${pipelineValue.toFixed(0)}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">potential</p>
+                  </Card>
+                  <Card className="p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <DollarSign className="w-3 h-3" />
+                      <span>Earned</span>
+                    </div>
+                    <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
+                  </Card>
+                </>
               )}
             </div>
+
+            {/* Global pipeline progress */}
+            {activeLeadsForProgress.length > 0 && (
+              <Card className="p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                    Pipeline Progress
+                  </p>
+                  <p className="text-[11px] tabular-nums font-semibold">{pipelineProgress.toFixed(0)}%</p>
+                </div>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 via-amber-500 to-emerald-500 transition-all"
+                    style={{ width: `${pipelineProgress}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  {activeLeadsForProgress.length} active referral{activeLeadsForProgress.length > 1 ? "s" : ""} moving through the pipeline
+                </p>
+              </Card>
+            )}
 
 
             {leads.length > 0 && (
