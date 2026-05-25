@@ -26,6 +26,7 @@ interface SystemAlert {
   color: "blocked" | "risk" | "success";
   link: string;
   type: string;
+  entityId?: string | null;
 }
 
 const dotColor = {
