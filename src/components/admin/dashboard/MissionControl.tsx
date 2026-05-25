@@ -126,22 +126,47 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
   return (
     <div className="space-y-5">
+      {/* Clear all alerts header */}
+      {hasAlerts && (
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            {t("mission.alertas") || "Alertas"} ({visibleAlerts.length})
+          </span>
+          <button
+            onClick={clearAllAlerts}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            title="Limpar todas as notificações"
+          >
+            <BellOff className="w-3 h-3" />
+            Limpar tudo
+          </button>
+        </div>
+      )}
+
       {/* Unified list: alerts first, then tasks */}
       <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
         {/* System Alerts */}
-        {systemAlerts.map((alert, idx) => {
+        {visibleAlerts.map((alert, idx) => {
           const Icon = typeIcon[alert.type];
           return (
-            <Link
+            <div
               key={`alert-${idx}`}
-              to={alert.link}
               className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group"
             >
-              <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
-              {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
-              <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-            </Link>
+              <Link to={alert.link} className="flex items-center gap-3 flex-1 min-w-0">
+                <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
+                {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
+                <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              </Link>
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); dismissAlert(alert); }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+                title="Dispensar"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           );
         })}
 
