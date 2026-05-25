@@ -68,6 +68,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
   const [showCompleted, setShowCompleted] = useState(false);
   const { tasks, isLoading: isLoadingTasks, createTask, updateTask, deleteTask } = useTasks(showCompleted);
   const [dismissed, setDismissed] = useState<string[]>(() => readDismissed());
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     const onChange = () => setDismissed(readDismissed());
