@@ -264,6 +264,39 @@ export default function PartnerDashboard() {
               {partner?.contact_name || partner?.company_name}
             </p>
           </div>
+          {/* Notification bell */}
+          <Popover open={notifOpen} onOpenChange={(o) => { setNotifOpen(o); if (o) markAllNotificationsRead(); }}>
+            <PopoverTrigger asChild>
+              <button className="relative w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted transition-colors">
+                <Bell className="w-4 h-4 text-muted-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center tabular-nums">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <div className="px-3 py-2 border-b">
+                <p className="text-sm font-semibold">Notifications</p>
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">No notifications yet</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div key={n.id} className={cn("px-3 py-2.5 border-b last:border-0", !n.read && "bg-primary/5")}>
+                      <p className="text-sm font-medium leading-tight">{n.title}</p>
+                      {n.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>}
+                      <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
           <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
             {partner?.partner_program === "trade" ? "Trade" : tier.name}
           </span>
