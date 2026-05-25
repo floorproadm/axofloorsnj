@@ -100,7 +100,7 @@ export default function CrewsVans() {
   // ─── Mutations ───
   const addCrewMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("profiles").insert({
+      const payload = {
         full_name: crewForm.full_name,
         phone: crewForm.phone || null,
         email: crewForm.email || null,
@@ -108,20 +108,41 @@ export default function CrewsVans() {
         daily_rate: crewForm.daily_rate ? parseFloat(crewForm.daily_rate) : 0,
         employment_type: crewForm.employment_type || null,
         region: crewForm.region || null,
-        is_active_crew: true,
         bio: crewForm.bio || null,
-      } as any);
-      if (error) throw error;
+      } as any;
+      if (editingCrewId) {
+        const { error } = await supabase.from("profiles").update(payload).eq("id", editingCrewId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("profiles").insert({ ...payload, is_active_crew: true });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast.success("Crew member added");
+      toast.success(editingCrewId ? "Crew member updated" : "Crew member added");
       qc.invalidateQueries({ queryKey: ["crew-members"] });
       qc.invalidateQueries({ queryKey: ["crew-earnings"] });
       setShowNewCrew(false);
+      setEditingCrewId(null);
       setCrewForm({ full_name: "", phone: "", email: "", role: "", bio: "", employment_type: "", region: "", daily_rate: "" });
     },
-    onError: (e: any) => toast.error(e.message || "Failed to add crew member"),
+    onError: (e: any) => toast.error(e.message || "Failed to save crew member"),
   });
+
+  const openEditCrew = (m: CrewMemberType) => {
+    setEditingCrewId(m.id);
+    setCrewForm({
+      full_name: m.full_name || "",
+      phone: (m as any).phone || "",
+      email: (m as any).email || "",
+      role: m.role || "",
+      bio: (m as any).bio || "",
+      employment_type: (m as any).employment_type || "",
+      region: (m as any).region || "",
+      daily_rate: m.daily_rate ? String(m.daily_rate) : "",
+    });
+    setShowNewCrew(true);
+  };
 
   const addVanMutation = useMutation({
     mutationFn: async () => {
