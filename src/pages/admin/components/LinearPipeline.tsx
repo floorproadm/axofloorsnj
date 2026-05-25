@@ -542,23 +542,14 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
   const resetForm = () => { setSelectedLeadId(''); setSource('lead'); };
 
   const handleGo = () => {
-    if (source === 'partner') {
-      const partnerLeads = partnerLeadsWithProject.filter(l => l.referred_by_partner_id === selectedPartnerId);
-      if (partnerLeads.length > 0 && partnerLeads[0].converted_to_project_id) {
-        onOpenChange(false);
-        resetForm();
-        navigate(`/admin/projects/${partnerLeads[0].converted_to_project_id}`);
-      }
-    } else {
-      const lead = eligibleLeads.find(l => l.id === selectedLeadId);
-      if (!lead?.converted_to_project_id) return;
-      onOpenChange(false);
-      resetForm();
-      navigate(`/admin/projects/${lead.converted_to_project_id}`);
-    }
+    const lead = eligibleLeads.find(l => l.id === selectedLeadId);
+    if (!lead?.converted_to_project_id) return;
+    onOpenChange(false);
+    resetForm();
+    navigate(`/admin/projects/${lead.converted_to_project_id}`);
   };
 
-  const canGo = source === 'lead' ? !!selectedLeadId : source === 'partner' ? !!selectedPartnerId : false;
+  const canGo = !!selectedLeadId;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
