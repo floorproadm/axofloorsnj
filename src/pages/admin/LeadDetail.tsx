@@ -133,13 +133,36 @@ export default function LeadDetail() {
             Lead não encontrado
           </div>
         ) : (
-          <LeadControlModal
-            lead={lead}
-            isOpen={true}
-            onClose={() => navigate('/admin/leads')}
-            onRefresh={refetch}
-            embedded
-          />
+          <>
+            {(lead as any).referred_by_partner_id && (
+              <div className="mb-4 rounded-lg border border-border bg-background p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Handshake className="w-4 h-4 text-primary" />
+                  <h2 className="text-sm font-semibold">
+                    Partner Referral
+                    {partner && (
+                      <span className="text-muted-foreground font-normal">
+                        {' '}— {partner.contact_name || partner.company_name}
+                      </span>
+                    )}
+                  </h2>
+                </div>
+                <ReferralCollabPanel
+                  leadId={lead.id}
+                  mode="admin"
+                  authorName={me || 'AXO Team'}
+                  organizationId={(lead as any).organization_id ?? null}
+                />
+              </div>
+            )}
+            <LeadControlModal
+              lead={lead}
+              isOpen={true}
+              onClose={() => navigate('/admin/leads')}
+              onRefresh={refetch}
+              embedded
+            />
+          </>
         )}
       </div>
     </AdminLayout>
