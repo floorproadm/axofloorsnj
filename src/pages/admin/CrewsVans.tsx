@@ -321,15 +321,6 @@ export default function CrewsVans() {
                               onClick={(e) => { e.stopPropagation(); deleteCrewMutation.mutate(member.id); }}
                               title="Mark inactive"
                             >
-                            </div>
-                          </div>
-                          {!inactive && (
-                            <Button
-                              size="icon" variant="ghost"
-                              className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                              onClick={() => deleteCrewMutation.mutate(member.id)}
-                              title="Mark inactive"
-                            >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           )}
