@@ -104,7 +104,7 @@ export default function LeadDetail() {
             variant="ghost"
             size="sm"
             className="gap-1.5"
-            onClick={() => navigate('/admin/leads')}
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/admin/leads'))}
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar para Leads & Vendas
@@ -158,7 +158,7 @@ export default function LeadDetail() {
             <LeadControlModal
               lead={lead}
               isOpen={true}
-              onClose={() => navigate('/admin/leads')}
+              onClose={() => (window.history.length > 1 ? navigate(-1) : navigate('/admin/leads'))}
               onRefresh={refetch}
               embedded
             />
