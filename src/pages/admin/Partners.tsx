@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Handshake, Plus, Search, List, LayoutGrid, Mail, FileText } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Handshake, Plus, Search, List, LayoutGrid, Mail, FileText, Users, GitBranch } from "lucide-react";
 import {
   usePartnersData,
   Partner,
@@ -28,6 +30,8 @@ import { PartnerInviteLogsSheet } from "@/components/admin/PartnerInviteLogsShee
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { B2BQuoteSheet } from "@/components/admin/B2BQuoteSheet";
+import { AdminReferralPipelineTab } from "@/components/admin/AdminReferralPipelineTab";
+
 
 export default function Partners() {
   const { partners, isLoading } = usePartnersData();
