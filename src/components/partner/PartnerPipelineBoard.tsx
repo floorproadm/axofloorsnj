@@ -55,18 +55,26 @@ export function PartnerPipelineBoard({ leads, commissionPercent, onSelect }: Pro
           <div className="flex gap-3 px-4">
             {visibleStages.map((stage) => {
               const items = grouped[stage.key] || [];
+              const stageValue = items.reduce((s, l) => s + (l.budget || 0), 0);
               return (
                 <div key={stage.key} className="flex-shrink-0 snap-start w-[260px]">
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className={cn("w-2 h-2 rounded-full flex-shrink-0", stage.dot)} />
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground truncate">
-                        {stage.label}
+                  <div className="mb-2 px-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className={cn("w-2 h-2 rounded-full flex-shrink-0", stage.dot)} />
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground truncate">
+                          {stage.label}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold tabular-nums text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
+                        {items.length}
                       </span>
                     </div>
-                    <span className="text-[10px] font-bold tabular-nums text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
-                      {items.length}
-                    </span>
+                    {stageValue > 0 && (
+                      <p className="text-[10px] text-muted-foreground tabular-nums mt-0.5">
+                        {formatValue(stageValue)} pipeline
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
