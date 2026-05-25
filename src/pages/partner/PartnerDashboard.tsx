@@ -322,7 +322,11 @@ export default function PartnerDashboard() {
                   <p className="text-sm text-muted-foreground">No leads match this filter.</p>
                 </Card>
               ) : pipelineMode === "board" ? (
-                <PartnerPipelineBoard leads={filteredLeads} commissionPercent={commissionPercent} />
+                <PartnerPipelineBoard
+                  leads={filteredLeads}
+                  commissionPercent={commissionPercent}
+                  onSelect={(l) => setSelectedLead(l)}
+                />
               ) : (
                 <div className="space-y-4">
                   {Object.entries(groupedByMonth).map(([month, items]) => (
@@ -336,7 +340,14 @@ export default function PartnerDashboard() {
                             lead.status === "completed" && lead.budget
                               ? (lead.budget * commissionPercent) / 100
                               : 0;
-                          return <PartnerLeadCard key={lead.id} lead={lead} commission={commission} />;
+                          return (
+                            <PartnerLeadCard
+                              key={lead.id}
+                              lead={lead}
+                              commission={commission}
+                              onClick={() => setSelectedLead(lead)}
+                            />
+                          );
                         })}
                       </div>
                     </div>
