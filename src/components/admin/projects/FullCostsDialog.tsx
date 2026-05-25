@@ -64,7 +64,7 @@ export function FullCostsDialog({ open, onOpenChange, projectId }: Props) {
 
 /* ============= MATERIALS ============= */
 
-function MaterialsSection({ projectId }: { projectId: string }) {
+export function MaterialsSection({ projectId }: { projectId: string }) {
   const { data: materials = [] } = useMaterialCosts(projectId);
   const add = useAddMaterialCost();
   const del = useDeleteMaterialCost();
