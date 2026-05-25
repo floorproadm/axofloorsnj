@@ -534,22 +534,12 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const { partners } = usePartnersData();
 
-  const partnerLeadsWithProject = useMemo(() =>
-    leads.filter(l => !!l.converted_to_project_id && !!l.referred_by_partner_id),
-    [leads]
-  );
-
-  const partnersWithProjects = useMemo(() => {
-    const partnerIds = new Set(partnerLeadsWithProject.map(l => l.referred_by_partner_id));
-    return partners.filter(p => partnerIds.has(p.id));
-  }, [partners, partnerLeadsWithProject]);
-
   const eligibleLeads = useMemo(() =>
     leads.filter(l => !!l.converted_to_project_id),
     [leads]
   );
 
-  const resetForm = () => { setSelectedLeadId(''); setSelectedPartnerId(''); setSource('lead'); };
+  const resetForm = () => { setSelectedLeadId(''); setSource('lead'); };
 
   const handleGo = () => {
     if (source === 'partner') {
