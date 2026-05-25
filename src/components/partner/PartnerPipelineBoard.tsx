@@ -42,9 +42,7 @@ export function PartnerPipelineBoard({ leads, commissionPercent }: Props) {
     0
   );
 
-  const visibleStages = ACTIVE_STAGES.filter(
-    (s) => (grouped[s.key] || []).length > 0
-  );
+  const visibleStages = ACTIVE_STAGES;
 
   if (leads.length === 0) return null;
 
