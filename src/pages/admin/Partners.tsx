@@ -94,15 +94,10 @@ export default function Partners() {
 
   const miniStats = useMemo(() => {
     const active = partners.filter((p) => p.status === "active").length;
-    const atRisk = partners.filter(
-      (p) =>
-        p.status === "active" &&
-        (!p.last_contacted_at ||
-          new Date(p.last_contacted_at) < new Date(Date.now() - 30 * 86400000))
-    ).length;
     const totalReferrals = partners.reduce((s, p) => s + p.total_referrals, 0);
-    return { active, atRisk, totalReferrals };
+    return { active, totalReferrals };
   }, [partners]);
+
   const selectedPartner = useMemo(
     () => partners.find((p) => p.id === selectedId) || null,
     [partners, selectedId]
@@ -155,11 +150,8 @@ export default function Partners() {
         <div className="px-3 pt-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
           <span><strong className="text-foreground">{miniStats.active}</strong> ativos</span>
           <span className="text-border">|</span>
-          <span className={miniStats.atRisk > 0 ? "text-amber-600" : ""}>
-            <strong className={miniStats.atRisk > 0 ? "text-amber-600" : "text-foreground"}>{miniStats.atRisk}</strong> em risco
-          </span>
-          <span className="text-border">|</span>
           <span><strong className="text-foreground">{miniStats.totalReferrals}</strong> indicações</span>
+
           <button
             onClick={() => setInviteLogsOpen(true)}
             className="ml-auto inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
