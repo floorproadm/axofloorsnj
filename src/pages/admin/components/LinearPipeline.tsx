@@ -8,10 +8,8 @@
 //   - Botão Quick Quote em `estimate_scheduled` e `in_draft`
 //   - Funnel health bar com taxas de conversão entre stages
 //   - Toggle de visualização Board / List
-//   - Filtro de parceiro via `lead_source === 'partner_referral'`
-// Exceção autorizada: padronização de `lead_source: 'partner_referral'`
-// para leads originados de parceiros nos modais Quick Appt / Quick Request
-// (Onda 1, item 5).
+// NOTA: Filtro de parceiro removido — pipeline de parceiros agora em
+// /admin/partners (aba Referral Pipeline).
 // ============================================================================
 import { useMemo, useState, useCallback, useEffect } from "react";
 
