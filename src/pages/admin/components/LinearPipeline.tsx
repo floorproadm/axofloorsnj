@@ -1252,18 +1252,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </div>
           <Button
             size="sm"
-            variant={partnerOnly ? "default" : "outline"}
-            className={cn(
-              "text-xs h-8 flex-shrink-0 gap-1.5",
-              partnerOnly && "bg-primary text-primary-foreground hover:bg-primary/90"
-            )}
-            onClick={() => setPartnerOnly(!partnerOnly)}
-          >
-            <Handshake className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Parceiros</span>
-          </Button>
-          <Button
-            size="sm"
             variant={needsActionOnly ? "default" : "outline"}
             className={cn(
               "text-xs h-8 flex-shrink-0 gap-1.5",
