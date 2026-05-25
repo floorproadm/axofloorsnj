@@ -988,8 +988,6 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                 )}
               </>
             )}
-              </>
-            )}
           </div>
         </SheetContent>
       </Sheet>
