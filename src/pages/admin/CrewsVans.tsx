@@ -44,6 +44,12 @@ export default function CrewsVans() {
   const [payrollAnchor, setPayrollAnchor] = useState(() => new Date());
   const [filterPaid, setFilterPaid] = useState<"all" | "paid" | "unpaid">("all");
   const [filterCrew, setFilterCrew] = useState<string>("all");
+  const [showNewLabor, setShowNewLabor] = useState(false);
+  const [laborForm, setLaborForm] = useState({
+    project_id: "", crew_member_id: "", worker_name: "",
+    daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0],
+    is_paid: false, notes: "",
+  });
 
   const [crewForm, setCrewForm] = useState({
     full_name: "", phone: "", email: "", role: "", bio: "",
