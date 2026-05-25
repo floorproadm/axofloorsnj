@@ -534,11 +534,11 @@ export default function CrewsVans() {
       </div>
 
       {/* ─── ADD CREW DIALOG ─── */}
-      <Dialog open={showNewCrew} onOpenChange={setShowNewCrew}>
+      <Dialog open={showNewCrew} onOpenChange={(o) => { setShowNewCrew(o); if (!o) { setEditingCrewId(null); setCrewForm({ full_name: "", phone: "", email: "", role: "", bio: "", employment_type: "", region: "", daily_rate: "" }); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Users className="w-4 h-4" /> Add Crew Member
+              <Users className="w-4 h-4" /> {editingCrewId ? "Edit Crew Member" : "Add Crew Member"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
