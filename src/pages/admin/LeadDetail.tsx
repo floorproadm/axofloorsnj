@@ -4,8 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { LeadControlModal } from '@/components/admin/LeadControlModal';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, LinkIcon, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Loader2, LinkIcon, MessageSquare, Handshake } from 'lucide-react';
 import { toast } from 'sonner';
+import { ReferralCollabPanel } from '@/components/referral/ReferralCollabPanel';
 
 export default function LeadDetail() {
   const { leadId } = useParams<{ leadId: string }>();
