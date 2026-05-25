@@ -123,6 +123,8 @@ export function NewLeadDialog({ open, onOpenChange, referredByPartnerId }: NewLe
       });
 
       form.reset();
+      queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
       if (referredByPartnerId) {
         queryClient.invalidateQueries({ queryKey: ["partner-leads", referredByPartnerId] });
         queryClient.invalidateQueries({ queryKey: ["partners"] });
