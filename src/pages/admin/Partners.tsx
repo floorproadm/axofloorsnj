@@ -187,9 +187,6 @@ export default function Partners() {
         {/* Search & Filters */}
         <div className="p-3 space-y-2 border-b border-border/50">
           {/* Program segmented tabs */}
-          <p className="text-[10px] text-muted-foreground leading-snug px-0.5">
-            <strong className="text-foreground">Referral</strong>: indica clientes e recebe comissão · <strong className="text-foreground">Trade (B2B)</strong>: recebe cotação wholesale e revende. Altere o programa de cada parceiro abrindo o detalhe e clicando no badge.
-          </p>
           <div className="inline-flex w-full rounded-lg border border-border bg-muted/50 p-0.5">
             {([
               { key: "all", label: "Todos", count: programCounts.all },
