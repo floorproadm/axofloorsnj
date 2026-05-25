@@ -38,6 +38,7 @@ export default function CrewsVans() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<"crew" | "vans" | "payroll">("crew");
   const [showNewCrew, setShowNewCrew] = useState(false);
+  const [editingCrewId, setEditingCrewId] = useState<string | null>(null);
   const [showNewVan, setShowNewVan] = useState(false);
   const [payrollPeriodType, setPayrollPeriodType] = useState<PeriodType>("month");
   const [payrollAnchor, setPayrollAnchor] = useState(() => new Date());
