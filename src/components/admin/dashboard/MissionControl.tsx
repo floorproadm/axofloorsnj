@@ -222,15 +222,22 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
 // ---------- Task Row ----------
 
-function TaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: (t: Task) => void; onDelete: (id: string) => void }) {
+function TaskRow({ task, onToggle, onDelete, onOpen }: { task: Task; onToggle: (t: Task) => void; onDelete: (id: string) => void; onOpen: (t: Task) => void }) {
   const dot = priorityDot[task.priority] ?? priorityDot.medium;
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && task.status !== "done";
   const isDone = task.status === "done";
   const isInProgress = task.status === "in_progress";
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group">
-      <button onClick={() => onToggle(task)} className="flex-shrink-0 focus:outline-none" title="Toggle status">
+    <div
+      onClick={() => onOpen(task)}
+      className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group cursor-pointer"
+    >
+      <button
+        onClick={(e) => { e.stopPropagation(); onToggle(task); }}
+        className="flex-shrink-0 focus:outline-none"
+        title="Toggle status"
+      >
         {isDone ? (
           <CheckCircle2 className="w-4 h-4 text-[hsl(var(--state-success))]" />
         ) : isInProgress ? (
@@ -263,12 +270,125 @@ function TaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: (t: Task)
         )}
       </div>
       <button
-        onClick={() => onDelete(task.id)}
+        onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
         className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
         title="Delete"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>
     </div>
+  );
+}
+
+// ---------- Task Detail Sheet ----------
+
+function TaskDetailSheet({
+  task, open, onOpenChange, onToggle, onDelete,
+}: {
+  task: Task | null;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  onToggle: (t: Task) => void;
+  onDelete: (id: string) => void;
+}) {
+  if (!task) return null;
+  const isDone = task.status === "done";
+  const isInProgress = task.status === "in_progress";
+  const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !isDone;
+
+  const relatedLink = task.related_project_id
+    ? `/admin/projects/${task.related_project_id}`
+    : task.related_lead_id
+    ? `/admin/leads/${task.related_lead_id}`
+    : task.related_partner_id
+    ? `/admin/partners/${task.related_partner_id}`
+    : null;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-md">
+        <SheetHeader className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className={cn("w-2 h-2 rounded-full", priorityDot[task.priority] ?? priorityDot.medium)} />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              {task.priority}
+            </span>
+            {isDone && (
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--state-success))]">
+                · Concluída
+              </span>
+            )}
+            {isInProgress && (
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--gold-warm))]">
+                · Em progresso
+              </span>
+            )}
+          </div>
+          <SheetTitle className={cn("text-left", isDone && "line-through opacity-60")}>
+            {task.title}
+          </SheetTitle>
+          {task.description && (
+            <SheetDescription className="text-left whitespace-pre-wrap">
+              {task.description}
+            </SheetDescription>
+          )}
+        </SheetHeader>
+
+        <div className="mt-6 space-y-3 text-sm">
+          {task.assignee_name && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <User className="w-4 h-4" />
+              <span className="text-foreground">{task.assignee_name}</span>
+            </div>
+          )}
+          {task.partner_name && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span>🤝</span>
+              <span className="text-foreground">{task.partner_name}</span>
+            </div>
+          )}
+          {task.due_date && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="w-4 h-4" />
+              <span className={cn(isOverdue ? "text-[hsl(var(--state-blocked))] font-semibold" : "text-foreground")}>
+                {format(new Date(task.due_date), "dd MMM yyyy")}
+                {isOverdue && " · Atrasada"}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Flag className="w-4 h-4" />
+            <span className="text-foreground capitalize">{task.status.replace("_", " ")}</span>
+          </div>
+          {!task.description && (
+            <div className="flex items-center gap-2 text-muted-foreground/60">
+              <FileText className="w-4 h-4" />
+              <span className="italic">Sem descrição</span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8 flex flex-col gap-2">
+          <Button onClick={() => onToggle(task)} variant="default" className="w-full">
+            {isDone ? "Reabrir" : isInProgress ? "Marcar como concluída" : "Iniciar tarefa"}
+          </Button>
+          {relatedLink && (
+            <Button asChild variant="outline" className="w-full">
+              <Link to={relatedLink} onClick={() => onOpenChange(false)}>
+                Abrir item relacionado
+              </Link>
+            </Button>
+          )}
+          <Button
+            onClick={() => onDelete(task.id)}
+            variant="ghost"
+            className="w-full text-destructive hover:text-destructive"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Excluir tarefa
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
