@@ -967,6 +967,20 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
                         <XCircle className="w-4 h-4" /> Mark as Declined
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
+                      onClick={async () => {
+                        if (!confirm(`Excluir a proposta ${proposal.proposal_number}? Esta ação não pode ser desfeita.`)) return;
+                        const { error } = await supabase.from("proposals").delete().eq("id", proposal.id);
+                        if (error) { toast.error("Falha ao excluir"); return; }
+                        toast.success("Proposta excluída");
+                        qc.invalidateQueries({ queryKey: ["proposals-list"] });
+                        onClose();
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" /> Excluir Proposta
+                    </Button>
                   </div>
                 )}
               </>
