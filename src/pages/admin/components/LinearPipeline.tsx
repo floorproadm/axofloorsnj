@@ -375,10 +375,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
       toast.error('Selecione um lead');
       return;
     }
-    if (source === 'partner' && !selectedPartnerId) {
-      toast.error('Selecione um parceiro');
-      return;
-    }
     if (source === 'new' && (!newLeadForm.name.trim() || !newLeadForm.phone.trim())) {
       toast.error('Nome e telefone são obrigatórios');
       return;
