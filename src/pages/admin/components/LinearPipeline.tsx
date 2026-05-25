@@ -561,51 +561,27 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Selecione o lead ou parceiro com projeto para abrir o gerador de proposta.</p>
+          <p className="text-sm text-muted-foreground">Selecione o lead com projeto para abrir o gerador de proposta.</p>
 
-          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); }} />
-
-          {source === 'lead' ? (
-            <div>
-              <Label>Lead com Projeto *</Label>
-              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {eligibleLeads.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum lead com projeto</SelectItem>
-                  ) : (
-                    eligibleLeads.map(l => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.name} — {STAGE_LABELS[normalizeStatus(l.status)]}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div>
-              <Label>Parceiro com Projeto *</Label>
-              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um parceiro..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {partnersWithProjects.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum parceiro com projeto</SelectItem>
-                  ) : (
-                    partnersWithProjects.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.contact_name} — {p.company_name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div>
+            <Label>Lead com Projeto *</Label>
+            <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                {eligibleLeads.length === 0 ? (
+                  <SelectItem value="_none" disabled>Nenhum lead com projeto</SelectItem>
+                ) : (
+                  eligibleLeads.map(l => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name} — {STAGE_LABELS[normalizeStatus(l.status)]}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
