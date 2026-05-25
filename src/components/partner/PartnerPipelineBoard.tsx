@@ -29,7 +29,7 @@ const ACTIVE_STAGES = PARTNER_LEAD_STAGES.filter(
 const formatValue = (v: number) =>
   v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v}`;
 
-export function PartnerPipelineBoard({ leads, commissionPercent }: Props) {
+export function PartnerPipelineBoard({ leads, commissionPercent, onSelect }: Props) {
   const grouped = useMemo(() => {
     const map: Record<string, Lead[]> = {};
     for (const l of leads) (map[l.status] ||= []).push(l);
