@@ -346,16 +346,9 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
   const [apptAddress, setApptAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [source, setSource] = useState<SourceType>('lead');
-  const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const [newLeadForm, setNewLeadForm] = useState(EMPTY_NEW_LEAD);
   const { updateLeadStatus } = useLeadPipeline();
   const { addFollowUpAction } = useLeadFollowUp();
-  const { partners } = usePartnersData();
-
-  const activePartners = useMemo(() =>
-    partners.filter(p => ['active', 'trial_first_job'].includes(p.status)),
-    [partners]
-  );
 
   const eligibleLeads = useMemo(() =>
     leads.filter(l => {
@@ -367,7 +360,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
 
   const resetForm = () => { 
     setSelectedLeadId(''); setApptDate(''); setApptTime(''); setApptAddress(''); setNotes(''); 
-    setSource('lead'); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD);
+    setSource('lead'); setNewLeadForm(EMPTY_NEW_LEAD);
   };
 
   // Auto-fill address when lead is selected
