@@ -119,6 +119,9 @@ export function PartnerPipelineBoard({ leads, commissionPercent, onSelect }: Pro
               );
             })}
           </div>
+          <p className="text-[10px] text-muted-foreground text-center mt-1 px-4">
+            ← scroll horizontally to see all {visibleStages.length} stages →
+          </p>
         </div>
       ) : (
         <Card className="p-6 text-center">
