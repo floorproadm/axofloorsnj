@@ -25,7 +25,7 @@ interface Lead {
   city: string | null;
   budget: number | null;
   created_at: string;
-  status_changed_at: string | null;
+  status_changed_at?: string | null;
   converted_to_project_id: string | null;
 }
 
