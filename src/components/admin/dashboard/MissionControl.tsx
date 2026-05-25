@@ -69,7 +69,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
   useEffect(() => {
     const onChange = () => setDismissed(readDismissed());
-    window.addEventListener("mc:dismissed-changed", onChange);
+    window.addEventListener(MC_DISMISSED_EVENT, onChange);
     window.addEventListener("storage", onChange);
     return () => {
       window.removeEventListener("mc:dismissed-changed", onChange);
