@@ -242,19 +242,19 @@ export default function Partners() {
           </div>
           <div className="flex gap-2">
             <Button
+              onClick={() => setNewOpen(true)}
+              className="flex-1 h-9 gap-2"
+              size="sm"
+            >
+              <Plus className="w-4 h-4" /> Novo Partner
+            </Button>
+            <Button
               onClick={() => { setQuotePartnerId(null); setQuoteOpen(true); }}
               variant="outline"
               className="flex-1 h-9 gap-2"
               size="sm"
             >
               <FileText className="w-4 h-4" /> Cotação B2B
-            </Button>
-            <Button
-              onClick={() => setNewOpen(true)}
-              className="flex-1 h-9 gap-2"
-              size="sm"
-            >
-              <Plus className="w-4 h-4" /> Novo Partner
             </Button>
           </div>
         </div>
