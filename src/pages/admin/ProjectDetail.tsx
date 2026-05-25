@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { JobCostEditor } from '@/components/admin/JobCostEditor';
+import { MaterialsSection, LaborSection } from '@/components/admin/projects/FullCostsDialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
