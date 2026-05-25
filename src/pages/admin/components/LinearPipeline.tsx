@@ -530,9 +530,6 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
 }) {
   const navigate = useNavigate();
   const [selectedLeadId, setSelectedLeadId] = useState('');
-  const [source, setSource] = useState<SourceType>('lead');
-  const [selectedPartnerId, setSelectedPartnerId] = useState('');
-  const { partners } = usePartnersData();
 
   const eligibleLeads = useMemo(() =>
     leads.filter(l => !!l.converted_to_project_id),
