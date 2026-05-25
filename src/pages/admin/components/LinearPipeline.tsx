@@ -469,11 +469,11 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setSelectedPartnerId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
+          <SourceToggle source={source} onChange={(s) => { setSource(s); setSelectedLeadId(''); setNewLeadForm(EMPTY_NEW_LEAD); }} />
 
           {source === 'new' ? (
             <InlineNewLeadFields form={newLeadForm} setForm={setNewLeadForm} onCancel={() => setSource('lead')} />
-          ) : source === 'lead' ? (
+          ) : (
             <LeadSelectorOrNew
               source={source}
               selectedLeadId={selectedLeadId}
@@ -481,26 +481,6 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
               eligibleLeads={eligibleLeads}
               onSwitchToNew={() => { setSource('new'); setSelectedLeadId(''); }}
             />
-          ) : (
-            <div>
-              <Label>Parceiro *</Label>
-              <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um parceiro..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {activePartners.length === 0 ? (
-                    <SelectItem value="_none" disabled>Nenhum parceiro ativo</SelectItem>
-                  ) : (
-                    activePartners.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.contact_name} — {p.company_name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
           )}
 
           {source !== 'new' && (
