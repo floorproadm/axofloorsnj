@@ -167,18 +167,28 @@ export default function PartnerDashboard() {
     return counts;
   }, [leads]);
 
+  // Stale detection: no status change in 7+ days, still active
+  const STALE_MS = 7 * 24 * 60 * 60 * 1000;
+  const isStale = (l: Lead) => {
+    if (["completed", "lost"].includes(l.status)) return false;
+    const ref = l.status_changed_at || l.created_at;
+    return Date.now() - new Date(ref).getTime() > STALE_MS;
+  };
+  const staleCount = useMemo(() => leads.filter(isStale).length, [leads]);
+
   // Filtered + grouped leads
   const filteredLeads = useMemo(() => {
     const term = search.trim().toLowerCase();
     return leads.filter((l) => {
       if (activeStage && l.status !== activeStage) return false;
+      if (needsAttention && !isStale(l)) return false;
       if (term) {
         const hay = `${l.name} ${l.phone} ${l.city || ""}`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       return true;
     });
-  }, [leads, activeStage, search]);
+  }, [leads, activeStage, search, needsAttention]);
 
   const groupedByMonth = useMemo(() => {
     const groups: Record<string, Lead[]> = {};
