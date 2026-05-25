@@ -158,14 +158,17 @@ export default function Dashboard() {
       ...criticalAlerts.proposalWithoutFollowUp.map((l) => ({
         type: "follow_up",
         label: `${t("mission.alerts.followUp")} – ${l.name}`,
+        entityId: l.id,
       })),
       ...criticalAlerts.newLeadsNoContact24h.map((l) => ({
         type: "new_lead",
         label: `${t("dashboard.respostaLead")} – ${l.name}`,
+        entityId: l.id,
       })),
       ...criticalAlerts.leadsStalled48h.map((l) => ({
         type: "stalled",
         label: `${t("dashboard.leadParado48h")} – ${l.name}`,
+        entityId: l.id,
       })),
     ],
     [criticalAlerts, t]

@@ -5,8 +5,8 @@
 export const MC_DISMISSED_KEY = "mc:dismissed-alerts";
 export const MC_DISMISSED_EVENT = "mc:dismissed-changed";
 
-export const mcAlertKey = (a: { type: string; label: string }) =>
-  `${a.type}::${a.label}`;
+export const mcAlertKey = (a: { type: string; label: string; entityId?: string | null }) =>
+  `${a.type}::${a.entityId ?? a.label}`;
 
 export const readMcDismissed = (): string[] => {
   try {
