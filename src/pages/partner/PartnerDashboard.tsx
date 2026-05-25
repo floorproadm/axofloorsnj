@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X, Trophy, CheckCircle2 } from "lucide-react";
+import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X, Trophy, CheckCircle2, Bell, AlertCircle, Zap } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { formatDistanceToNow } from "date-fns";
 import { NewReferralSheet } from "@/components/partner/NewReferralSheet";
 import { PartnerStageBar, PARTNER_LEAD_STAGES } from "@/components/partner/PartnerStageBar";
 import { PartnerLeadCard } from "@/components/partner/PartnerLeadCard";
@@ -25,7 +27,17 @@ interface Lead {
   city: string | null;
   budget: number | null;
   created_at: string;
+  status_changed_at?: string | null;
   converted_to_project_id: string | null;
+}
+
+interface PartnerNotification {
+  id: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read: boolean;
+  created_at: string;
 }
 
 interface PartnerInfo {
@@ -58,6 +70,9 @@ export default function PartnerDashboard() {
     return (localStorage.getItem("axo.partner.pipelineMode") as "list" | "board") || "list";
   });
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [notifications, setNotifications] = useState<PartnerNotification[]>([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [needsAttention, setNeedsAttention] = useState(false);
 
   const updatePipelineMode = (m: "list" | "board") => {
     setPipelineMode(m);
@@ -95,7 +110,7 @@ export default function PartnerDashboard() {
         .maybeSingle(),
       supabase
         .from("leads")
-        .select("id, name, phone, email, status, city, budget, created_at, converted_to_project_id")
+        .select("id, name, phone, email, status, city, budget, created_at, status_changed_at, converted_to_project_id")
         .eq("referred_by_partner_id", partnerId)
         .order("created_at", { ascending: false }),
       supabase
@@ -114,7 +129,27 @@ export default function PartnerDashboard() {
     }
     if (ls) setLeads(ls as any);
     if (cs) setCommissionPercent(Number((cs as any).referral_commission_percent) || 7);
+
+    // Load notifications for this partner user
+    const { data: notifs } = await supabase
+      .from("notifications")
+      .select("id, title, body, link, read, created_at")
+      .eq("user_id", session.session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (notifs) setNotifications(notifs as any);
+
     setLoading(false);
+  };
+
+  const markAllNotificationsRead = async () => {
+    const unread = notifications.filter((n) => !n.read);
+    if (unread.length === 0) return;
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .in("id", unread.map((n) => n.id));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
 
@@ -134,18 +169,28 @@ export default function PartnerDashboard() {
     return counts;
   }, [leads]);
 
+  // Stale detection: no status change in 7+ days, still active
+  const STALE_MS = 7 * 24 * 60 * 60 * 1000;
+  const isStale = (l: Lead) => {
+    if (["completed", "lost"].includes(l.status)) return false;
+    const ref = l.status_changed_at || l.created_at;
+    return Date.now() - new Date(ref).getTime() > STALE_MS;
+  };
+  const staleCount = useMemo(() => leads.filter(isStale).length, [leads]);
+
   // Filtered + grouped leads
   const filteredLeads = useMemo(() => {
     const term = search.trim().toLowerCase();
     return leads.filter((l) => {
       if (activeStage && l.status !== activeStage) return false;
+      if (needsAttention && !isStale(l)) return false;
       if (term) {
         const hay = `${l.name} ${l.phone} ${l.city || ""}`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       return true;
     });
-  }, [leads, activeStage, search]);
+  }, [leads, activeStage, search, needsAttention]);
 
   const groupedByMonth = useMemo(() => {
     const groups: Record<string, Lead[]> = {};
@@ -164,6 +209,29 @@ export default function PartnerDashboard() {
   );
   const conversionRate =
     leads.length > 0 ? ((convertedLeads.length / leads.length) * 100).toFixed(0) : "0";
+
+  // Active pipeline value (potential commission from non-terminal leads)
+  const pipelineValue = leads
+    .filter((l) => !["completed", "lost"].includes(l.status))
+    .reduce((s, l) => s + ((l.budget || 0) * commissionPercent) / 100, 0);
+
+  // Global pipeline progress (avg stage index of active leads / total active stages)
+  const ACTIVE_STAGE_KEYS = PARTNER_LEAD_STAGES.filter(
+    (s) => s.key !== "completed" && s.key !== "lost"
+  ).map((s) => s.key);
+  const activeLeadsForProgress = leads.filter((l) => ACTIVE_STAGE_KEYS.includes(l.status));
+  const pipelineProgress =
+    activeLeadsForProgress.length === 0
+      ? 0
+      : (activeLeadsForProgress.reduce(
+          (s, l) => s + (ACTIVE_STAGE_KEYS.indexOf(l.status) + 1),
+          0
+        ) /
+          activeLeadsForProgress.length /
+          ACTIVE_STAGE_KEYS.length) *
+        100;
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   if (loading) {
     return (
@@ -196,6 +264,39 @@ export default function PartnerDashboard() {
               {partner?.contact_name || partner?.company_name}
             </p>
           </div>
+          {/* Notification bell */}
+          <Popover open={notifOpen} onOpenChange={(o) => { setNotifOpen(o); if (o) markAllNotificationsRead(); }}>
+            <PopoverTrigger asChild>
+              <button className="relative w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted transition-colors">
+                <Bell className="w-4 h-4 text-muted-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center tabular-nums">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <div className="px-3 py-2 border-b">
+                <p className="text-sm font-semibold">Notifications</p>
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">No notifications yet</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div key={n.id} className={cn("px-3 py-2.5 border-b last:border-0", !n.read && "bg-primary/5")}>
+                      <p className="text-sm font-medium leading-tight">{n.title}</p>
+                      {n.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>}
+                      <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
           <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
             {partner?.partner_program === "trade" ? "Trade" : tier.name}
           </span>
@@ -207,7 +308,7 @@ export default function PartnerDashboard() {
         {/* PIPELINE VIEW */}
         {view === "pipeline" && (
           <>
-            <div className={cn("grid gap-2", partner?.partner_program === "trade" ? "grid-cols-2" : "grid-cols-3")}>
+            <div className={cn("grid gap-2", partner?.partner_program === "trade" ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4")}>
               <Card className="p-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                   <Users className="w-3 h-3" />
@@ -223,22 +324,71 @@ export default function PartnerDashboard() {
                 <p className="text-2xl font-bold tabular-nums">{conversionRate}%</p>
               </Card>
               {partner?.partner_program !== "trade" && (
-                <Card className="p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <DollarSign className="w-3 h-3" />
-                    <span>Earned</span>
-                  </div>
-                  <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
-                </Card>
+                <>
+                  <Card className="p-3 border-primary/20 bg-primary/5">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Zap className="w-3 h-3" />
+                      <span>Pipeline</span>
+                    </div>
+                    <p className="text-2xl font-bold tabular-nums text-foreground">
+                      ${pipelineValue.toFixed(0)}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">potential</p>
+                  </Card>
+                  <Card className="p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <DollarSign className="w-3 h-3" />
+                      <span>Earned</span>
+                    </div>
+                    <p className="text-2xl font-bold tabular-nums">${estimatedCommissions.toFixed(0)}</p>
+                  </Card>
+                </>
               )}
             </div>
 
+            {/* Global pipeline progress */}
+            {activeLeadsForProgress.length > 0 && (
+              <Card className="p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                    Pipeline Progress
+                  </p>
+                  <p className="text-[11px] tabular-nums font-semibold">{pipelineProgress.toFixed(0)}%</p>
+                </div>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 via-amber-500 to-emerald-500 transition-all"
+                    style={{ width: `${pipelineProgress}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  {activeLeadsForProgress.length} active referral{activeLeadsForProgress.length > 1 ? "s" : ""} moving through the pipeline
+                </p>
+              </Card>
+            )}
+
 
             {leads.length > 0 && (
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-                  Filter by stage
-                </p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    Filter by stage
+                  </p>
+                  {staleCount > 0 && (
+                    <button
+                      onClick={() => setNeedsAttention((v) => !v)}
+                      className={cn(
+                        "flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full border transition-colors",
+                        needsAttention
+                          ? "bg-amber-500 text-white border-amber-500"
+                          : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+                      )}
+                    >
+                      <AlertCircle className="w-3 h-3" />
+                      Needs attention · {staleCount}
+                    </button>
+                  )}
+                </div>
                 <PartnerStageBar counts={stageCounts} active={activeStage} onSelect={setActiveStage} />
               </div>
             )}
@@ -271,11 +421,12 @@ export default function PartnerDashboard() {
                     : `Your Referrals (${filteredLeads.length})`}
                 </h2>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {(activeStage || search) && (
+                  {(activeStage || search || needsAttention) && (
                     <button
                       onClick={() => {
                         setActiveStage(null);
                         setSearch("");
+                        setNeedsAttention(false);
                       }}
                       className="text-xs text-muted-foreground hover:text-foreground underline"
                     >

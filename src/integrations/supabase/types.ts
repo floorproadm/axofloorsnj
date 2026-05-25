@@ -3981,6 +3981,7 @@ export type Database = {
         Args: { p_partner_id: string; p_user_id: string }
         Returns: string
       }
+      partner_nudge_admin: { Args: { p_lead_id: string }; Returns: Json }
       retry_failed_review_requests: { Args: never; Returns: Json }
       run_sla_engine: { Args: never; Returns: Json }
       submit_partner_referral: {
