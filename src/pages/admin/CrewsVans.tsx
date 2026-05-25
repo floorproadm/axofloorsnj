@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
-import { useAllLaborEntries, useMarkLaborPaid } from "@/hooks/useLaborEntries";
+import { useAllLaborEntries, useMarkLaborPaid, useAddLaborEntry } from "@/hooks/useLaborEntries";
 import { useCrewEarnings, type CrewMember as CrewMemberType } from "@/hooks/useCrewMembers";
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
