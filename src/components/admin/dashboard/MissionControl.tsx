@@ -130,7 +130,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
       {hasAlerts && (
         <div className="flex items-center justify-between px-1">
           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            {t("mission.alertas") || "Alertas"} ({visibleAlerts.length})
+            Alertas ({visibleAlerts.length})
           </span>
           <button
             onClick={clearAllAlerts}
