@@ -139,7 +139,18 @@ export default function Partners() {
 
   return (
     <AdminLayout title="Partners">
-      <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-[calc(100vh-8rem)]">
+        <TabsList className="grid grid-cols-2 w-full max-w-md mb-3">
+          <TabsTrigger value="partners" className="gap-1.5">
+            <Users className="w-3.5 h-3.5" /> Partners
+          </TabsTrigger>
+          <TabsTrigger value="referrals" className="gap-1.5">
+            <GitBranch className="w-3.5 h-3.5" /> Referral Pipeline
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="partners" className="flex-1 overflow-hidden mt-0">
+          <div className="flex flex-col h-full overflow-hidden rounded-xl border border-border/50 bg-card">
+
         {/* Mini Stats + View Toggle */}
         <div className="px-3 pt-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
           <span><strong className="text-foreground">{miniStats.active}</strong> ativos</span>
