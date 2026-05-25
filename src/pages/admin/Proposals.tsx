@@ -126,6 +126,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   onClose: () => void;
   onCreated: (proposal: ProposalData) => void;
 }) {
+  const navigate = useNavigate();
   const [projectId, setProjectId] = useState("");
   const [partnerId, setPartnerId] = useState<string>("none");
   const [clientNote, setClientNote] = useState("");
