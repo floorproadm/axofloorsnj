@@ -65,6 +65,29 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
   const { t } = useLanguage();
   const [showCompleted, setShowCompleted] = useState(false);
   const { tasks, isLoading: isLoadingTasks, createTask, updateTask, deleteTask } = useTasks(showCompleted);
+  const [dismissed, setDismissed] = useState<string[]>(() => readDismissed());
+
+  useEffect(() => {
+    const onChange = () => setDismissed(readDismissed());
+    window.addEventListener("mc:dismissed-changed", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("mc:dismissed-changed", onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
+
+  const visibleAlerts = systemAlerts.filter((a) => !dismissed.includes(alertKey(a)));
+  const dismissAlert = (a: SystemAlert) => {
+    const next = Array.from(new Set([...dismissed, alertKey(a)]));
+    setDismissed(next);
+    writeDismissed(next);
+  };
+  const clearAllAlerts = () => {
+    const next = Array.from(new Set([...dismissed, ...systemAlerts.map(alertKey)]));
+    setDismissed(next);
+    writeDismissed(next);
+  };
 
   const pendingTasks = tasks.filter((t) => t.status !== "done");
   const doneTasks = tasks.filter((t) => t.status === "done");
@@ -75,7 +98,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
     updateTask.mutate({ id: task.id, status: next });
   };
 
-  const hasAlerts = systemAlerts.length > 0;
+  const hasAlerts = visibleAlerts.length > 0;
   const hasTasks = pendingTasks.length > 0;
   const isEmpty = !hasAlerts && !hasTasks && !isLoading;
 
