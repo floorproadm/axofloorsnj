@@ -140,7 +140,7 @@ export default function Partners() {
             <Users className="w-3.5 h-3.5" /> Partners
           </TabsTrigger>
           <TabsTrigger value="referrals" className="gap-1.5">
-            <GitBranch className="w-3.5 h-3.5" /> Referral Pipeline
+            <Inbox className="w-3.5 h-3.5" /> Referral Pipeline
           </TabsTrigger>
         </TabsList>
         <TabsContent value="partners" className="flex-1 overflow-hidden mt-0">
