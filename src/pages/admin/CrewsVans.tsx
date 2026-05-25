@@ -54,6 +54,16 @@ export default function CrewsVans() {
     is_paid: false, notes: "",
   });
 
+  useEffect(() => {
+    if (searchParams.get("new") === "labor") {
+      setTab("payroll");
+      setShowNewLabor(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("new");
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const [crewForm, setCrewForm] = useState({
     full_name: "", phone: "", email: "", role: "", bio: "",
     employment_type: "", region: "", daily_rate: ""
