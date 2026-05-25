@@ -369,10 +369,26 @@ export default function PartnerDashboard() {
 
 
             {leads.length > 0 && (
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-                  Filter by stage
-                </p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    Filter by stage
+                  </p>
+                  {staleCount > 0 && (
+                    <button
+                      onClick={() => setNeedsAttention((v) => !v)}
+                      className={cn(
+                        "flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full border transition-colors",
+                        needsAttention
+                          ? "bg-amber-500 text-white border-amber-500"
+                          : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+                      )}
+                    >
+                      <AlertCircle className="w-3 h-3" />
+                      Needs attention · {staleCount}
+                    </button>
+                  )}
+                </div>
                 <PartnerStageBar counts={stageCounts} active={activeStage} onSelect={setActiveStage} />
               </div>
             )}
