@@ -205,10 +205,7 @@ export default function ProjectDetail() {
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
             <TabsTrigger value="proof">Job Proof</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="chat" className="gap-1">
-              <MessageCircle className="h-3.5 w-3.5" />
-              Chat
-            </TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
