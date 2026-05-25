@@ -21,7 +21,8 @@ import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGaller
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { InvoicesPaymentsSection } from '@/components/admin/job-detail/InvoicesPaymentsSection';
 import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/hooks/useMaterialCosts';
-import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry } from '@/hooks/useLaborEntries';
+import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry, useMarkLaborPaid } from '@/hooks/useLaborEntries';
+import { CrewMemberPicker } from '@/components/admin/crew/CrewMemberPicker';
 import { useJobCost } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useProjectSignals, computeRisk } from '@/hooks/useProjectSignals';

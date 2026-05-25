@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useCrewMembers, useQuickAddCrewMember, type CrewMember } from '@/hooks/useCrewMembers';
-import { formatCurrency } from '@/lib/finance';
+import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface CrewMemberPickerProps {
