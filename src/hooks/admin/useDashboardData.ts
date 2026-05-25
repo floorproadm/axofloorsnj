@@ -132,8 +132,10 @@ export function useDashboardData() {
       }
       return data as unknown as DashboardRPCResponse;
     },
-    refetchInterval: 60 * 1000,
-    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   const pipeline = data?.pipeline ?? [];
