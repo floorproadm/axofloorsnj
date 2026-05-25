@@ -140,7 +140,7 @@ export default function Partners() {
   return (
     <AdminLayout title="Partners">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-[calc(100vh-8rem)]">
-        <TabsList className="grid grid-cols-2 w-full max-w-md mb-3">
+        <TabsList className="grid grid-cols-2 w-full max-w-md mb-3 mx-auto">
           <TabsTrigger value="partners" className="gap-1.5">
             <Users className="w-3.5 h-3.5" /> Partners
           </TabsTrigger>
