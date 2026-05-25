@@ -140,10 +140,40 @@ export default function Dashboard() {
 
   const newLeadsToday = criticalAlerts.newLeadsNoContact24h.length;
 
-  const totalUrgent =
-    criticalAlerts.proposalWithoutFollowUp.length +
-    criticalAlerts.newLeadsNoContact24h.length +
-    criticalAlerts.leadsStalled48h.length;
+  // Mirror Mission Control's dismissed alerts so the home counter
+  // disappears when the user clears items there.
+  const [dismissed, setDismissed] = useState<string[]>(() => readMcDismissed());
+  useEffect(() => {
+    const onChange = () => setDismissed(readMcDismissed());
+    window.addEventListener(MC_DISMISSED_EVENT, onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener(MC_DISMISSED_EVENT, onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
+
+  const criticalAlertEntries = useMemo(
+    () => [
+      ...criticalAlerts.proposalWithoutFollowUp.map((l) => ({
+        type: "follow_up",
+        label: `${t("mission.alerts.followUp")} – ${l.name}`,
+      })),
+      ...criticalAlerts.newLeadsNoContact24h.map((l) => ({
+        type: "new_lead",
+        label: `${t("dashboard.respostaLead")} – ${l.name}`,
+      })),
+      ...criticalAlerts.leadsStalled48h.map((l) => ({
+        type: "stalled",
+        label: `${t("dashboard.leadParado48h")} – ${l.name}`,
+      })),
+    ],
+    [criticalAlerts, t]
+  );
+
+  const totalUrgent = criticalAlertEntries.filter(
+    (a) => !dismissed.includes(mcAlertKey(a))
+  ).length;
 
   // Mission Control panel moved to /admin/mission-control — Home only shows entry banner.
 
