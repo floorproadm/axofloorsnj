@@ -242,20 +242,71 @@ const EMPTY_NEW_LEAD = { name: '', phone: '', email: '', address: '' };
    QUICK ACTION MODALS
    ════════════════════════════════════════════════════════════ */
 
-/* ─── 1. New Lead Modal ─── */
+/* ─── 1. New Lead Modal — 2-step wizard ─── */
+const LEAD_SOURCE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'manual', label: 'Manual / Walk-in' },
+  { value: 'phone', label: 'Telefone' },
+  { value: 'website', label: 'Website' },
+  { value: 'referral', label: 'Indicação' },
+  { value: 'google', label: 'Google' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'door_knock', label: 'Porta a porta' },
+  { value: 'other', label: 'Outro' },
+];
+
+const PRIORITY_OPTIONS: { value: 'low' | 'medium' | 'high'; label: string; dot: string }[] = [
+  { value: 'low', label: 'Baixa', dot: 'bg-muted-foreground' },
+  { value: 'medium', label: 'Média', dot: 'bg-amber-500' },
+  { value: 'high', label: 'Alta', dot: 'bg-red-500' },
+];
+
 function QuickNewLeadModal({ open, onOpenChange, onSuccess }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', email: '', city: '', budget: '', notes: '' });
+  const [step, setStep] = useState<1 | 2>(1);
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    city: '',
+    zip_code: '',
+    lead_source: 'manual',
+    services: [] as string[],
+    budget: '',
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    next_action_date: undefined as Date | undefined,
+    notes: '',
+  });
 
-  const resetForm = () => setForm({ name: '', phone: '', email: '', city: '', budget: '', notes: '' });
+  const resetForm = () => {
+    setStep(1);
+    setForm({
+      name: '', phone: '', email: '', address: '', city: '', zip_code: '',
+      lead_source: 'manual', services: [], budget: '',
+      priority: 'medium', next_action_date: undefined, notes: '',
+    });
+  };
+
+  const step1Valid = form.name.trim().length > 0 && form.phone.trim().length > 0;
+
+  const toggleService = (key: string) => {
+    setForm(f => ({
+      ...f,
+      services: f.services.includes(key)
+        ? f.services.filter(s => s !== key)
+        : [...f.services, key],
+    }));
+  };
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.phone.trim()) {
+    if (!step1Valid) {
       toast.error('Nome e telefone são obrigatórios');
+      setStep(1);
       return;
     }
     setSaving(true);
@@ -264,12 +315,19 @@ function QuickNewLeadModal({ open, onOpenChange, onSuccess }: {
         name: form.name.trim(),
         phone: form.phone.trim(),
         email: form.email.trim() || null,
+        address: form.address.trim() || null,
         city: form.city.trim() || null,
+        zip_code: form.zip_code.trim() || null,
+        lead_source: form.lead_source,
+        services: form.services.length > 0 ? form.services : [],
         budget: form.budget ? parseFloat(form.budget) : null,
+        priority: form.priority,
+        next_action_date: form.next_action_date
+          ? format(form.next_action_date, 'yyyy-MM-dd')
+          : null,
+        follow_up_required: !!form.next_action_date,
         notes: form.notes.trim() || null,
-        lead_source: 'manual',
         organization_id: AXO_ORG_ID,
-        // status defaults to 'cold_lead' via DB default
       });
       if (error) throw error;
       toast.success('Lead criado com sucesso');
@@ -285,49 +343,229 @@ function QuickNewLeadModal({ open, onOpenChange, onSuccess }: {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-primary" />
-            Novo Lead Manual
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="nl-name">Nome *</Label>
-              <Input id="nl-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome completo" />
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pt-5 pb-4 border-b">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <UserPlus className="w-4 h-4 text-primary" />
+              Novo Lead Manual
+            </DialogTitle>
+            {/* Step indicator */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1">
+                <div className={cn(
+                  "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold border transition-colors",
+                  step >= 1 ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border"
+                )}>
+                  {step > 1 ? <Check className="w-3 h-3" /> : '1'}
+                </div>
+                <span className={cn("text-xs font-medium", step === 1 ? "text-foreground" : "text-muted-foreground")}>
+                  Contato
+                </span>
+              </div>
+              <div className="h-px flex-1 bg-border" />
+              <div className="flex items-center gap-2 flex-1 justify-end">
+                <span className={cn("text-xs font-medium", step === 2 ? "text-foreground" : "text-muted-foreground")}>
+                  Qualificação
+                </span>
+                <div className={cn(
+                  "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold border transition-colors",
+                  step >= 2 ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border"
+                )}>
+                  2
+                </div>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="nl-phone">Telefone *</Label>
-              <Input id="nl-phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(XXX) XXX-XXXX" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="nl-email">Email</Label>
-              <Input id="nl-email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com" />
-            </div>
-            <div>
-              <Label htmlFor="nl-city">Cidade</Label>
-              <Input id="nl-city" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="nl-budget">Budget ($)</Label>
-            <Input id="nl-budget" type="number" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} placeholder="0.00" />
-          </div>
-          <div>
-            <Label htmlFor="nl-notes">Notas</Label>
-            <Textarea id="nl-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} placeholder="Observações..." />
-          </div>
+          </DialogHeader>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
-            {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
-            Criar Lead
-          </Button>
+
+        {/* Body */}
+        <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+          {step === 1 && (
+            <>
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <User className="w-3 h-3" /> Contato
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="nl-name" className="text-xs">Nome *</Label>
+                  <Input id="nl-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome completo" className="mt-1" />
+                </div>
+                <div>
+                  <Label htmlFor="nl-phone" className="text-xs">Telefone *</Label>
+                  <Input id="nl-phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(XXX) XXX-XXXX" className="mt-1" />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="nl-email" className="text-xs">Email</Label>
+                <Input id="nl-email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@exemplo.com" className="mt-1" />
+              </div>
+
+              <div className="pt-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <MapPin className="w-3 h-3" /> Endereço
+              </div>
+              <div>
+                <Label className="text-xs">Endereço completo</Label>
+                <div className="mt-1">
+                  <AddressAutocomplete
+                    value={form.address}
+                    onSelect={(r) => setForm(f => ({
+                      ...f,
+                      address: r.street || r.full,
+                      city: r.city || f.city,
+                      zip_code: r.zip || f.zip_code,
+                    }))}
+                    onChange={(v) => setForm(f => ({ ...f, address: v }))}
+                    placeholder="Comece a digitar o endereço…"
+                  />
+                </div>
+                {(form.city || form.zip_code) && (
+                  <p className="mt-1.5 text-[11px] text-muted-foreground">
+                    {[form.city, form.zip_code].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <Briefcase className="w-3 h-3" /> Projeto
+              </div>
+              <div>
+                <Label className="text-xs">Serviços de interesse</Label>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {SERVICE_OPTIONS.map(([key, label]) => {
+                    const active = form.services.includes(key);
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => toggleService(key)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
+                          active
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background hover:bg-muted text-foreground border-border"
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="nl-source" className="text-xs">Fonte do lead</Label>
+                  <Select value={form.lead_source} onValueChange={(v) => setForm(f => ({ ...f, lead_source: v }))}>
+                    <SelectTrigger id="nl-source" className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LEAD_SOURCE_OPTIONS.map(o => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="nl-budget" className="text-xs">Budget ($)</Label>
+                  <Input id="nl-budget" type="number" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} placeholder="0.00" className="mt-1" />
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <Zap className="w-3 h-3" /> Próxima ação
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Prioridade</Label>
+                  <Select value={form.priority} onValueChange={(v: any) => setForm(f => ({ ...f, priority: v }))}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PRIORITY_OPTIONS.map(p => (
+                        <SelectItem key={p.value} value={p.value}>
+                          <span className="flex items-center gap-2">
+                            <span className={cn("w-1.5 h-1.5 rounded-full", p.dot)} />
+                            {p.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Próxima ação (data)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "mt-1 w-full justify-start text-left font-normal h-10",
+                          !form.next_action_date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {form.next_action_date ? format(form.next_action_date, 'PPP') : <span>Escolher data</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={form.next_action_date}
+                        onSelect={(d) => setForm(f => ({ ...f, next_action_date: d }))}
+                        disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="nl-notes" className="text-xs">Notas</Label>
+                <Textarea
+                  id="nl-notes"
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  rows={3}
+                  placeholder="Contexto, dores, urgência, referência…"
+                  className="mt-1 resize-none"
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <DialogFooter className="px-6 py-4 border-t bg-muted/30 sm:justify-between gap-2">
+          {step === 1 ? (
+            <>
+              <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => setStep(2)}
+                disabled={!step1Valid}
+                className="bg-primary text-primary-foreground"
+              >
+                Continuar <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" onClick={() => setStep(1)} disabled={saving}>
+                <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+              </Button>
+              <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
+                {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+                Criar Lead
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
