@@ -1233,15 +1233,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     </div>
                   </div>
 
-                  {/* Conversion rate arrow between stages */}
-                  {idx < SALES_STAGES.length - 1 && rate !== undefined && (
-                    <div className="flex flex-col items-center justify-center px-0.5 pt-8 flex-shrink-0">
-                      <span className="text-[9px] font-bold text-muted-foreground whitespace-nowrap">
-                        {rate}%
-                      </span>
-                      <span className="text-muted-foreground/40 text-xs">→</span>
-                    </div>
-                  )}
                 </div>
               );
             })}
