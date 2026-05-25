@@ -99,6 +99,7 @@ export function MobileBottomNav() {
     { label: t("mobile.novaFatura"), icon: FileSpreadsheet, action: "invoice" },
     { label: t("mobile.novaFoto"), icon: ImagePlus, action: "photo" },
     { label: "Novo Partner", icon: UserPlus, action: "partner" },
+    { label: "Pagamento Labor", icon: Hammer, action: "labor" },
   ];
 
   // Fetch eligible leads when picker opens
