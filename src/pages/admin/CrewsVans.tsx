@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -36,7 +36,10 @@ const fmt = (v: number) =>
 
 export default function CrewsVans() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"crew" | "vans" | "payroll">("crew");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab] = useState<"crew" | "vans" | "payroll">(
+    (searchParams.get("tab") as any) || "crew"
+  );
   const [showNewCrew, setShowNewCrew] = useState(false);
   const [editingCrewId, setEditingCrewId] = useState<string | null>(null);
   const [showNewVan, setShowNewVan] = useState(false);
@@ -50,6 +53,16 @@ export default function CrewsVans() {
     daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0],
     is_paid: false, notes: "",
   });
+
+  useEffect(() => {
+    if (searchParams.get("new") === "labor") {
+      setTab("payroll");
+      setShowNewLabor(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("new");
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const [crewForm, setCrewForm] = useState({
     full_name: "", phone: "", email: "", role: "", bio: "",

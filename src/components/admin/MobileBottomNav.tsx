@@ -16,6 +16,7 @@ import {
   ImagePlus,
   X,
   Zap,
+  Hammer,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -98,6 +99,7 @@ export function MobileBottomNav() {
     { label: t("mobile.novaFatura"), icon: FileSpreadsheet, action: "invoice" },
     { label: t("mobile.novaFoto"), icon: ImagePlus, action: "photo" },
     { label: "Novo Partner", icon: UserPlus, action: "partner" },
+    { label: "Pagamento Labor", icon: Hammer, action: "labor" },
   ];
 
   // Fetch eligible leads when picker opens
@@ -144,6 +146,9 @@ export function MobileBottomNav() {
         break;
       case "quickquote":
         setLeadPickerOpen(true);
+        break;
+      case "labor":
+        navigate("/admin/crews?tab=payroll&new=labor");
         break;
       default:
         break;
