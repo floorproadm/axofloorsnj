@@ -209,25 +209,17 @@ export default function Partners() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="inline-flex flex-1 rounded-lg border border-border bg-muted/50 p-0.5">
-              {([
-                { key: "all", label: "Todos", count: programCounts.all },
-                { key: "referral", label: "Referral", count: programCounts.referral },
-                { key: "trade", label: "Trade", count: programCounts.trade },
-              ] as const).map((opt) => (
-                <button
-                  key={opt.key}
-                  onClick={() => setProgramFilter(opt.key as any)}
-                  className={`flex-1 px-2 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-                    programFilter === opt.key
-                      ? "bg-background shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {opt.label} <span className="text-muted-foreground/70 tabular-nums">({opt.count})</span>
-                </button>
-              ))}
-            </div>
+            <Select value={programFilter} onValueChange={(v) => setProgramFilter(v as any)}>
+              <SelectTrigger className="h-8 text-xs flex-1">
+                <SelectValue placeholder="Programa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos ({programCounts.all})</SelectItem>
+                <SelectItem value="referral">Referral ({programCounts.referral})</SelectItem>
+                <SelectItem value="trade">Trade ({programCounts.trade})</SelectItem>
+              </SelectContent>
+            </Select>
+
           </div>
 
           <div className="flex gap-2">
