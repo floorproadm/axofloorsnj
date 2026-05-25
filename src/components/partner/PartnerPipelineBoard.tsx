@@ -19,6 +19,7 @@ interface Lead {
 interface Props {
   leads: Lead[];
   commissionPercent: number;
+  onSelect?: (lead: Lead) => void;
 }
 
 const ACTIVE_STAGES = PARTNER_LEAD_STAGES.filter(
