@@ -47,6 +47,9 @@ import { useLeadFollowUp } from "@/hooks/useLeadFollowUp";
 import { useLeadNRABatch } from "@/hooks/useLeadNRA";
 import { LeadControlModal } from "@/components/admin/LeadControlModal";
 import { QuickQuoteSheet } from "@/components/admin/QuickQuoteSheet";
+import { AddressAutocomplete } from "@/components/admin/AddressAutocomplete";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -54,7 +57,8 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2, X, Zap, Search, Filter
+  Loader2, X, Zap, Search, Filter,
+  ArrowLeft, ArrowRight, Check, CalendarIcon, User, Briefcase
 } from "lucide-react";
 import { differenceInHours, differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
