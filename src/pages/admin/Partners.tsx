@@ -299,7 +299,14 @@ export default function Partners() {
             </div>
           </>
         )}
-      </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="referrals" className="flex-1 overflow-hidden mt-0">
+          <div className="flex flex-col h-full overflow-hidden rounded-xl border border-border/50 bg-card">
+            <AdminReferralPipelineTab />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} defaultStatus={viewMode === "board" ? "prospect" : "active"} />
       <PartnerControlModal
@@ -311,5 +318,6 @@ export default function Partners() {
       <PartnerInviteLogsSheet open={inviteLogsOpen} onOpenChange={setInviteLogsOpen} />
       <B2BQuoteSheet open={quoteOpen} onOpenChange={setQuoteOpen} defaultPartnerId={quotePartnerId} />
     </AdminLayout>
+
   );
 }
