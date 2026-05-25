@@ -252,38 +252,10 @@ function NewProposalDialog({ open, onClose, onCreated }: {
             </p>
           </div>
 
-          {/* Pricing mode toggle */}
-          <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
-            <div className="space-y-0.5">
-              <p className="text-xs font-semibold">
-                {mode === "tiers" ? "Pricing Tiers" : "Direct Price"}
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                {mode === "tiers"
-                  ? "Good / Better / Best auto-generated"
-                  : "Single price + line items breakdown"}
-              </p>
-            </div>
-            <Switch
-              checked={mode === "tiers"}
-              onCheckedChange={(v) => setMode(v ? "tiers" : "direct")}
-            />
+          <div className="rounded-lg border border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
+            Add line items after generating — the total is calculated from them.
           </div>
 
-          {mode === "direct" && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Flat Price (USD) *</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={flatPrice}
-                onChange={(e) => setFlatPrice(e.target.value)}
-                placeholder="e.g. 4500"
-                className="text-sm"
-              />
-            </div>
-          )}
 
           <div className="space-y-1.5">
             <Label className="text-xs">Note to Client (optional)</Label>
