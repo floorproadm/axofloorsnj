@@ -199,7 +199,25 @@ export default function ProjectDetail() {
         </AlertDialog>
 
         {/* Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
+        <ProjectDetailTabs />
+      </div>
+    </AdminLayout>
+  );
+}
+
+function ProjectDetailTabs() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') || 'overview';
+  return (
+    <Tabs value={tab} onValueChange={(v) => { const n = new URLSearchParams(searchParams); n.set('tab', v); setSearchParams(n, { replace: true }); }} className="w-full">
+      <_ProjectDetailTabsInner />
+    </Tabs>
+  );
+}
+
+function _ProjectDetailTabsInner() {
+  return (
+    <Tabs defaultValue="overview" className="w-full">
           <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
