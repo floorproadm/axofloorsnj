@@ -4,8 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { LeadControlModal } from '@/components/admin/LeadControlModal';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, LinkIcon, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Loader2, LinkIcon, MessageSquare, Handshake } from 'lucide-react';
 import { toast } from 'sonner';
+import { ReferralCollabPanel } from '@/components/referral/ReferralCollabPanel';
 
 export default function LeadDetail() {
   const { leadId } = useParams<{ leadId: string }>();
@@ -43,6 +44,37 @@ export default function LeadDetail() {
       return data;
     },
     enabled: !!lead?.customer_id,
+  });
+
+  // Partner info — only when lead came from a partner
+  const { data: partner } = useQuery({
+    queryKey: ['lead-referring-partner', (lead as any)?.referred_by_partner_id],
+    queryFn: async () => {
+      const partnerId = (lead as any)?.referred_by_partner_id;
+      if (!partnerId) return null;
+      const { data } = await supabase
+        .from('partners')
+        .select('id, company_name, contact_name')
+        .eq('id', partnerId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!(lead as any)?.referred_by_partner_id,
+  });
+
+  // Current admin display name
+  const { data: me } = useQuery({
+    queryKey: ['referral-current-admin-name'],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return 'AXO Team';
+      const { data: p } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', u.user.id)
+        .maybeSingle();
+      return p?.full_name || u.user.email?.split('@')[0] || 'AXO Team';
+    },
   });
 
   const portalUrl = customer?.portal_token
@@ -101,13 +133,36 @@ export default function LeadDetail() {
             Lead não encontrado
           </div>
         ) : (
-          <LeadControlModal
-            lead={lead}
-            isOpen={true}
-            onClose={() => navigate('/admin/leads')}
-            onRefresh={refetch}
-            embedded
-          />
+          <>
+            {(lead as any).referred_by_partner_id && (
+              <div className="mb-4 rounded-lg border border-border bg-background p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Handshake className="w-4 h-4 text-primary" />
+                  <h2 className="text-sm font-semibold">
+                    Partner Referral
+                    {partner && (
+                      <span className="text-muted-foreground font-normal">
+                        {' '}— {partner.contact_name || partner.company_name}
+                      </span>
+                    )}
+                  </h2>
+                </div>
+                <ReferralCollabPanel
+                  leadId={lead.id}
+                  mode="admin"
+                  authorName={me || 'AXO Team'}
+                  organizationId={(lead as any).organization_id ?? null}
+                />
+              </div>
+            )}
+            <LeadControlModal
+              lead={lead}
+              isOpen={true}
+              onClose={() => navigate('/admin/leads')}
+              onRefresh={refetch}
+              embedded
+            />
+          </>
         )}
       </div>
     </AdminLayout>

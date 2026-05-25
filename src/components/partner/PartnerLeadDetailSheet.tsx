@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { ReferralCollabPanel } from "@/components/referral/ReferralCollabPanel";
 
 interface Lead {
   id: string;
@@ -38,9 +39,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   commissionPercent: number;
+  partnerName: string;
 }
 
-export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent }: Props) {
+export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent, partnerName }: Props) {
   const [nudging, setNudging] = useState(false);
 
   if (!lead) return null;
@@ -250,12 +252,19 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
             </div>
           )}
 
-          {/* Nudge AXO */}
+          {/* Collaboration: status from AXO + shared thread */}
+          <ReferralCollabPanel
+            leadId={lead.id}
+            mode="partner"
+            authorName={partnerName}
+          />
+
+          {/* Nudge AXO — last-resort ping */}
           {!["completed", "lost"].includes(lead.status) && (
             <Button
               onClick={handleNudge}
               disabled={nudging}
-              variant="default"
+              variant="outline"
               className="w-full gap-2"
             >
               {nudging ? (
@@ -266,13 +275,6 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
               Nudge AXO for update
             </Button>
           )}
-
-          <div className="rounded-lg bg-muted/40 p-3">
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Our team manages this referral. You'll see progress updates here as the stage moves
-              forward.
-            </p>
-          </div>
         </div>
       </SheetContent>
     </Sheet>

@@ -681,6 +681,7 @@ export default function PartnerDashboard() {
         open={!!selectedLead}
         onOpenChange={(o) => !o && setSelectedLead(null)}
         commissionPercent={commissionPercent}
+        partnerName={partner?.contact_name || partner?.company_name || "Partner"}
       />
     </div>
   );

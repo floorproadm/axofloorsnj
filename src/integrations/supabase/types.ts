@@ -1567,10 +1567,12 @@ export type Database = {
           created_at: string
           customer_id: string | null
           email: string | null
+          expected_close_date: string | null
           follow_up_actions: Json | null
           follow_up_date: string | null
           follow_up_required: boolean | null
           id: string
+          internal_note_for_partner: string | null
           last_contacted_at: string | null
           lead_source: string
           location: string | null
@@ -1579,6 +1581,7 @@ export type Database = {
           message: string | null
           name: string
           next_action_date: string | null
+          next_step: string | null
           notes: string | null
           organization_id: string
           phone: string
@@ -1600,10 +1603,12 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           email?: string | null
+          expected_close_date?: string | null
           follow_up_actions?: Json | null
           follow_up_date?: string | null
           follow_up_required?: boolean | null
           id?: string
+          internal_note_for_partner?: string | null
           last_contacted_at?: string | null
           lead_source?: string
           location?: string | null
@@ -1612,6 +1617,7 @@ export type Database = {
           message?: string | null
           name: string
           next_action_date?: string | null
+          next_step?: string | null
           notes?: string | null
           organization_id: string
           phone: string
@@ -1633,10 +1639,12 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           email?: string | null
+          expected_close_date?: string | null
           follow_up_actions?: Json | null
           follow_up_date?: string | null
           follow_up_required?: boolean | null
           id?: string
+          internal_note_for_partner?: string | null
           last_contacted_at?: string | null
           lead_source?: string
           location?: string | null
@@ -1645,6 +1653,7 @@ export type Database = {
           message?: string | null
           name?: string
           next_action_date?: string | null
+          next_step?: string | null
           notes?: string | null
           organization_id?: string
           phone?: string
@@ -3093,6 +3102,68 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_messages: {
+        Row: {
+          author_name: string
+          author_role: string
+          author_user_id: string | null
+          content: string
+          created_at: string
+          id: string
+          lead_id: string
+          organization_id: string
+        }
+        Insert: {
+          author_name: string
+          author_role: string
+          author_user_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          organization_id: string
+        }
+        Update: {
+          author_name?: string
+          author_role?: string
+          author_user_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_estimate_scheduled_stale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_followup_overdue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "view_stage_aging"
+            referencedColumns: ["lead_id"]
           },
         ]
       }
