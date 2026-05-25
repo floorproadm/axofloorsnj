@@ -13,6 +13,11 @@ import { cn } from "@/lib/utils";
 
 import { MetricCard } from "@/components/admin/dashboard/MetricCard";
 import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
+import {
+  mcAlertKey,
+  readMcDismissed,
+  MC_DISMISSED_EVENT,
+} from "@/lib/missionControlDismissed";
 
 const DAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const DAY_LABELS_EN = ["S", "M", "T", "W", "T", "F", "S"];
