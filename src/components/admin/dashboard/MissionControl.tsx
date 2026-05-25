@@ -184,7 +184,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
         {/* Manual Tasks */}
         {pendingTasks.map((task) => (
-          <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} />
+          <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
         ))}
       </div>
 
