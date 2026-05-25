@@ -46,6 +46,37 @@ export default function LeadDetail() {
     enabled: !!lead?.customer_id,
   });
 
+  // Partner info — only when lead came from a partner
+  const { data: partner } = useQuery({
+    queryKey: ['lead-referring-partner', (lead as any)?.referred_by_partner_id],
+    queryFn: async () => {
+      const partnerId = (lead as any)?.referred_by_partner_id;
+      if (!partnerId) return null;
+      const { data } = await supabase
+        .from('partners')
+        .select('id, company_name, contact_name')
+        .eq('id', partnerId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!(lead as any)?.referred_by_partner_id,
+  });
+
+  // Current admin display name
+  const { data: me } = useQuery({
+    queryKey: ['referral-current-admin-name'],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return 'AXO Team';
+      const { data: p } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', u.user.id)
+        .maybeSingle();
+      return p?.full_name || u.user.email?.split('@')[0] || 'AXO Team';
+    },
+  });
+
   const portalUrl = customer?.portal_token
     ? `${window.location.origin}/portal/${customer.portal_token}`
     : null;
