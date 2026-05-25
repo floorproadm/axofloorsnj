@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +126,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   onClose: () => void;
   onCreated: (proposal: ProposalData) => void;
 }) {
+  const navigate = useNavigate();
   const [projectId, setProjectId] = useState("");
   const [partnerId, setPartnerId] = useState<string>("none");
   const [clientNote, setClientNote] = useState("");
@@ -197,6 +198,8 @@ function NewProposalDialog({ open, onClose, onCreated }: {
       setProjectId("");
       setPartnerId("none");
       setClientNote("");
+      // Match /admin/projects flow: land directly on the Proposal tab line-items editor
+      navigate(`/admin/projects/${projectId}?tab=proposal`);
     }
   };
 

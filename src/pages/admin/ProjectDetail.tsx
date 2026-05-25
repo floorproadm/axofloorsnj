@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -37,6 +37,8 @@ import { ptBR } from 'date-fns/locale';
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'overview';
   const qc = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -199,7 +201,7 @@ export default function ProjectDetail() {
         </AlertDialog>
 
         {/* Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
