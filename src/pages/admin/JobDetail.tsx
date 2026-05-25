@@ -17,7 +17,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
-import { JobProofUploader } from '@/components/admin/JobProofUploader';
+import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { InvoicesPaymentsSection } from '@/components/admin/job-detail/InvoicesPaymentsSection';
 import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/hooks/useMaterialCosts';
@@ -448,7 +448,7 @@ export default function JobDetail() {
         {/* ═══ PHOTOS & PROOF ═══ */}
         <div id="section-photos">
           <Section title="Photos & Proof" icon={<Camera className="w-4 h-4" />}>
-            <JobProofUploader projectId={project.id} />
+            <ProjectProgressGallery projectId={project.id} />
           </Section>
         </div>
       </div>

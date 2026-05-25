@@ -18,7 +18,7 @@ import {
 import { toast } from 'sonner';
 import { JobCostEditor } from '@/components/admin/JobCostEditor';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
-import { JobProofUploader } from '@/components/admin/JobProofUploader';
+import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
 import {
@@ -379,7 +379,7 @@ export default function ProjectDetail() {
 
           {/* JOB PROOF */}
           <TabsContent value="proof">
-            <JobProofUploader projectId={project.id} />
+            <ProjectProgressGallery projectId={project.id} />
           </TabsContent>
 
           {/* DOCUMENTS */}
