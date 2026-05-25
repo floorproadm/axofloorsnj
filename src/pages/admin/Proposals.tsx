@@ -127,8 +127,6 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   onCreated: (proposal: ProposalData) => void;
 }) {
   const [projectId, setProjectId] = useState("");
-  const [mode, setMode] = useState<"tiers" | "direct">("tiers");
-  const [flatPrice, setFlatPrice] = useState<string>("");
   const [partnerId, setPartnerId] = useState<string>("none");
   const [clientNote, setClientNote] = useState("");
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
@@ -185,23 +183,23 @@ function NewProposalDialog({ open, onClose, onCreated }: {
   const handleGenerate = async () => {
     if (!projectId) return;
     const referringPartnerId = partnerId !== "none" ? partnerId : null;
-    const opts =
-      mode === "direct"
-        ? { mode: "direct" as const, flatPrice: Number(flatPrice) || 0, referringPartnerId, clientNote }
-        : { mode: "tiers" as const, referringPartnerId, clientNote };
-    const data = await fetchProjectData(projectId, opts);
+    // Same flow as /admin/projects → ProposalGenerator: direct mode, $0 start,
+    // total is built from line items added afterwards.
+    const data = await fetchProjectData(projectId, {
+      mode: "direct",
+      flatPrice: 0,
+      referringPartnerId,
+      clientNote,
+    });
     if (data) {
       onCreated(data);
       onClose();
       setProjectId("");
-      setFlatPrice("");
-      setMode("tiers");
       setPartnerId("none");
       setClientNote("");
     }
   };
 
-  const directDisabled = mode === "direct" && (!flatPrice || Number(flatPrice) <= 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -254,38 +252,10 @@ function NewProposalDialog({ open, onClose, onCreated }: {
             </p>
           </div>
 
-          {/* Pricing mode toggle */}
-          <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
-            <div className="space-y-0.5">
-              <p className="text-xs font-semibold">
-                {mode === "tiers" ? "Pricing Tiers" : "Direct Price"}
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                {mode === "tiers"
-                  ? "Good / Better / Best auto-generated"
-                  : "Single price + line items breakdown"}
-              </p>
-            </div>
-            <Switch
-              checked={mode === "tiers"}
-              onCheckedChange={(v) => setMode(v ? "tiers" : "direct")}
-            />
+          <div className="rounded-lg border border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
+            Add line items after generating — the total is calculated from them.
           </div>
 
-          {mode === "direct" && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Flat Price (USD) *</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={flatPrice}
-                onChange={(e) => setFlatPrice(e.target.value)}
-                placeholder="e.g. 4500"
-                className="text-sm"
-              />
-            </div>
-          )}
 
           <div className="space-y-1.5">
             <Label className="text-xs">Note to Client (optional)</Label>
@@ -306,7 +276,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
             <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button
               className="flex-1"
-              disabled={!projectId || isLoading || directDisabled}
+              disabled={!projectId || isLoading}
               onClick={handleGenerate}
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
