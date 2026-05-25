@@ -628,6 +628,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
   onClose: () => void;
 }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [showShare, setShowShare] = useState(false);
   const [showPortal, setShowPortal] = useState(false);
   const [showPdfConfirm, setShowPdfConfirm] = useState(false);
@@ -724,7 +725,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
             {!editing && (
               <div className="flex gap-2">
                 {isDraft && (
-                  <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={startEditing}>
+                  <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => { onClose(); navigate(`/admin/projects/${proposal.project_id}?tab=proposal`); }}>
                     <Pencil className="w-3.5 h-3.5" /> Edit Draft
                   </Button>
                 )}
