@@ -68,35 +68,41 @@ export function PartnerPipelineBoard({ leads, commissionPercent }: Props) {
                   </div>
 
                   <div className="space-y-2">
-                    {items.map((lead) => {
-                      const value = lead.budget || 0;
-                      return (
-                        <Card
-                          key={lead.id}
-                          className="p-2.5 hover:border-primary/40 transition-colors"
-                        >
-                          <p className="text-sm font-semibold truncate leading-tight">
-                            {lead.name}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                            {lead.city || lead.phone}
-                          </p>
-                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/60">
-                            <span className="text-[10px] text-muted-foreground tabular-nums">
-                              {new Date(lead.created_at).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </span>
-                            {value > 0 && (
-                              <span className="text-[11px] font-semibold tabular-nums text-foreground">
-                                {formatValue(value)}
+                    {items.length === 0 ? (
+                      <Card className="p-3 border-dashed bg-muted/20">
+                        <p className="text-[11px] text-muted-foreground text-center">Empty</p>
+                      </Card>
+                    ) : (
+                      items.map((lead) => {
+                        const value = lead.budget || 0;
+                        return (
+                          <Card
+                            key={lead.id}
+                            className="p-2.5 hover:border-primary/40 transition-colors"
+                          >
+                            <p className="text-sm font-semibold truncate leading-tight">
+                              {lead.name}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                              {lead.city || lead.phone}
+                            </p>
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/60">
+                              <span className="text-[10px] text-muted-foreground tabular-nums">
+                                {new Date(lead.created_at).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })}
                               </span>
-                            )}
-                          </div>
-                        </Card>
-                      );
-                    })}
+                              {value > 0 && (
+                                <span className="text-[11px] font-semibold tabular-nums text-foreground">
+                                  {formatValue(value)}
+                                </span>
+                              )}
+                            </div>
+                          </Card>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               );
