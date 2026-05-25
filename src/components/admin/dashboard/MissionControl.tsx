@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
-  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2
+  PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, X, BellOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Task, useTasks } from "@/hooks/useTasks";
 
 import { format, isPast, isToday } from "date-fns";
+
+const DISMISSED_KEY = "mc:dismissed-alerts";
+const alertKey = (a: { type: string; label: string }) => `${a.type}::${a.label}`;
+const readDismissed = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; }
+};
+const writeDismissed = (keys: string[]) => {
+  localStorage.setItem(DISMISSED_KEY, JSON.stringify(keys));
+  window.dispatchEvent(new Event("mc:dismissed-changed"));
+};
 
 // ---------- System Alerts ----------
 
@@ -55,6 +65,29 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
   const { t } = useLanguage();
   const [showCompleted, setShowCompleted] = useState(false);
   const { tasks, isLoading: isLoadingTasks, createTask, updateTask, deleteTask } = useTasks(showCompleted);
+  const [dismissed, setDismissed] = useState<string[]>(() => readDismissed());
+
+  useEffect(() => {
+    const onChange = () => setDismissed(readDismissed());
+    window.addEventListener("mc:dismissed-changed", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("mc:dismissed-changed", onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
+
+  const visibleAlerts = systemAlerts.filter((a) => !dismissed.includes(alertKey(a)));
+  const dismissAlert = (a: SystemAlert) => {
+    const next = Array.from(new Set([...dismissed, alertKey(a)]));
+    setDismissed(next);
+    writeDismissed(next);
+  };
+  const clearAllAlerts = () => {
+    const next = Array.from(new Set([...dismissed, ...systemAlerts.map(alertKey)]));
+    setDismissed(next);
+    writeDismissed(next);
+  };
 
   const pendingTasks = tasks.filter((t) => t.status !== "done");
   const doneTasks = tasks.filter((t) => t.status === "done");
@@ -65,7 +98,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
     updateTask.mutate({ id: task.id, status: next });
   };
 
-  const hasAlerts = systemAlerts.length > 0;
+  const hasAlerts = visibleAlerts.length > 0;
   const hasTasks = pendingTasks.length > 0;
   const isEmpty = !hasAlerts && !hasTasks && !isLoading;
 
@@ -93,22 +126,47 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
 
   return (
     <div className="space-y-5">
+      {/* Clear all alerts header */}
+      {hasAlerts && (
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Alertas ({visibleAlerts.length})
+          </span>
+          <button
+            onClick={clearAllAlerts}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            title="Limpar todas as notificações"
+          >
+            <BellOff className="w-3 h-3" />
+            Limpar tudo
+          </button>
+        </div>
+      )}
+
       {/* Unified list: alerts first, then tasks */}
       <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
         {/* System Alerts */}
-        {systemAlerts.map((alert, idx) => {
+        {visibleAlerts.map((alert, idx) => {
           const Icon = typeIcon[alert.type];
           return (
-            <Link
+            <div
               key={`alert-${idx}`}
-              to={alert.link}
               className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group"
             >
-              <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
-              {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
-              <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-            </Link>
+              <Link to={alert.link} className="flex items-center gap-3 flex-1 min-w-0">
+                <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
+                {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
+                <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              </Link>
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); dismissAlert(alert); }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+                title="Dispensar"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           );
         })}
 
