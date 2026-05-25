@@ -139,23 +139,22 @@ function getOperationalAlert(lead: Lead, nra: any) {
   return null;
 }
 
-/* ─── Reusable Source Toggle (Lead | Parceiro) ─── */
-type SourceType = 'lead' | 'partner' | 'new';
+/* ─── Reusable Source Toggle (Lead | Novo) ─── */
+type SourceType = 'lead' | 'new';
 
 function SourceToggle({ source, onChange }: { source: SourceType; onChange: (s: SourceType) => void }) {
-  const active = source === 'new' ? 'lead' : source;
   return (
     <div className="flex gap-1 p-1 bg-muted rounded-lg">
-      {([['lead', 'Lead'], ['partner', 'Parceiro']] as const).map(([key, label]) => (
+      {(['lead', 'new'] as const).map((key) => (
         <button
           key={key}
           onClick={() => onChange(key)}
           className={cn(
             "flex-1 text-sm font-medium py-1.5 rounded-md transition-colors",
-            active === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+            source === key ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
           )}
         >
-          {label}
+          {key === 'lead' ? 'Lead Existente' : 'Novo Lead'}
         </button>
       ))}
     </div>
