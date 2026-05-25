@@ -158,7 +158,7 @@ export default function LeadDetail() {
             <LeadControlModal
               lead={lead}
               isOpen={true}
-              onClose={() => navigate('/admin/leads')}
+              onClose={() => (window.history.length > 1 ? navigate(-1) : navigate('/admin/leads'))}
               onRefresh={refetch}
               embedded
             />
