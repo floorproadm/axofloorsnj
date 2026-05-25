@@ -38,6 +38,7 @@ export default function CrewsVans() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<"crew" | "vans" | "payroll">("crew");
   const [showNewCrew, setShowNewCrew] = useState(false);
+  const [editingCrewId, setEditingCrewId] = useState<string | null>(null);
   const [showNewVan, setShowNewVan] = useState(false);
   const [payrollPeriodType, setPayrollPeriodType] = useState<PeriodType>("month");
   const [payrollAnchor, setPayrollAnchor] = useState(() => new Date());
@@ -99,7 +100,7 @@ export default function CrewsVans() {
   // ─── Mutations ───
   const addCrewMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("profiles").insert({
+      const payload = {
         full_name: crewForm.full_name,
         phone: crewForm.phone || null,
         email: crewForm.email || null,
@@ -107,20 +108,41 @@ export default function CrewsVans() {
         daily_rate: crewForm.daily_rate ? parseFloat(crewForm.daily_rate) : 0,
         employment_type: crewForm.employment_type || null,
         region: crewForm.region || null,
-        is_active_crew: true,
         bio: crewForm.bio || null,
-      } as any);
-      if (error) throw error;
+      } as any;
+      if (editingCrewId) {
+        const { error } = await supabase.from("profiles").update(payload).eq("id", editingCrewId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("profiles").insert({ ...payload, is_active_crew: true });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast.success("Crew member added");
+      toast.success(editingCrewId ? "Crew member updated" : "Crew member added");
       qc.invalidateQueries({ queryKey: ["crew-members"] });
       qc.invalidateQueries({ queryKey: ["crew-earnings"] });
       setShowNewCrew(false);
+      setEditingCrewId(null);
       setCrewForm({ full_name: "", phone: "", email: "", role: "", bio: "", employment_type: "", region: "", daily_rate: "" });
     },
-    onError: (e: any) => toast.error(e.message || "Failed to add crew member"),
+    onError: (e: any) => toast.error(e.message || "Failed to save crew member"),
   });
+
+  const openEditCrew = (m: CrewMemberType) => {
+    setEditingCrewId(m.id);
+    setCrewForm({
+      full_name: m.full_name || "",
+      phone: (m as any).phone || "",
+      email: (m as any).email || "",
+      role: m.role || "",
+      bio: (m as any).bio || "",
+      employment_type: (m as any).employment_type || "",
+      region: (m as any).region || "",
+      daily_rate: m.daily_rate ? String(m.daily_rate) : "",
+    });
+    setShowNewCrew(true);
+  };
 
   const addVanMutation = useMutation({
     mutationFn: async () => {
@@ -236,7 +258,7 @@ export default function CrewsVans() {
                   const e = earningsById.get(member.id);
                   const inactive = member.is_active_crew === false;
                   return (
-                    <Card key={member.id} className={cn("border-border/50 hover:border-primary/30 transition-colors group", inactive && "opacity-50")}>
+                    <Card key={member.id} onClick={() => openEditCrew(member)} className={cn("border-border/50 hover:border-primary/30 transition-colors group cursor-pointer", inactive && "opacity-50")}>
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center flex-shrink-0 font-bold text-sm text-primary">
@@ -281,12 +303,12 @@ export default function CrewsVans() {
                             )}
                             <div className="flex items-center gap-3 mt-2">
                               {member.phone && (
-                                <a href={`tel:${member.phone}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                <a href={`tel:${member.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                                   <Phone className="w-3 h-3" /> {member.phone}
                                 </a>
                               )}
                               {member.email && (
-                                <a href={`mailto:${member.email}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                <a href={`mailto:${member.email}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                                   <Mail className="w-3 h-3" /> {member.email.split("@")[0]}
                                 </a>
                               )}
@@ -296,7 +318,7 @@ export default function CrewsVans() {
                             <Button
                               size="icon" variant="ghost"
                               className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                              onClick={() => deleteCrewMutation.mutate(member.id)}
+                              onClick={(e) => { e.stopPropagation(); deleteCrewMutation.mutate(member.id); }}
                               title="Mark inactive"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -512,11 +534,11 @@ export default function CrewsVans() {
       </div>
 
       {/* ─── ADD CREW DIALOG ─── */}
-      <Dialog open={showNewCrew} onOpenChange={setShowNewCrew}>
+      <Dialog open={showNewCrew} onOpenChange={(o) => { setShowNewCrew(o); if (!o) { setEditingCrewId(null); setCrewForm({ full_name: "", phone: "", email: "", role: "", bio: "", employment_type: "", region: "", daily_rate: "" }); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Users className="w-4 h-4" /> Add Crew Member
+              <Users className="w-4 h-4" /> {editingCrewId ? "Edit Crew Member" : "Add Crew Member"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
@@ -566,7 +588,7 @@ export default function CrewsVans() {
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setShowNewCrew(false)}>Cancel</Button>
               <Button className="flex-1" disabled={!crewForm.full_name || addCrewMutation.isPending} onClick={() => addCrewMutation.mutate()}>
-                {addCrewMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Member"}
+                {addCrewMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingCrewId ? "Save Changes" : "Add Member"}
               </Button>
             </div>
           </div>
