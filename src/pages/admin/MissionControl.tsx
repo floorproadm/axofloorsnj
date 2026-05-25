@@ -15,6 +15,7 @@ export default function MissionControlPage() {
       label: string;
       color: "blocked" | "risk" | "success";
       link: string;
+      entityId?: string | null;
       type:
         | "follow_up"
         | "new_lead"
@@ -67,6 +68,7 @@ export default function MissionControlPage() {
         color: "blocked",
         link: "/admin/leads?status=proposal_sent",
         type: "follow_up",
+        entityId: l.id,
       });
     });
 
@@ -76,6 +78,7 @@ export default function MissionControlPage() {
         color: "risk",
         link: "/admin/leads?status=cold_lead",
         type: "new_lead",
+        entityId: l.id,
       });
     });
 
@@ -85,6 +88,7 @@ export default function MissionControlPage() {
         color: "blocked",
         link: "/admin/leads",
         type: "stalled",
+        entityId: l.id,
       });
     });
 
