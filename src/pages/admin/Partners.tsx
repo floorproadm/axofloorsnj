@@ -94,15 +94,10 @@ export default function Partners() {
 
   const miniStats = useMemo(() => {
     const active = partners.filter((p) => p.status === "active").length;
-    const atRisk = partners.filter(
-      (p) =>
-        p.status === "active" &&
-        (!p.last_contacted_at ||
-          new Date(p.last_contacted_at) < new Date(Date.now() - 30 * 86400000))
-    ).length;
     const totalReferrals = partners.reduce((s, p) => s + p.total_referrals, 0);
-    return { active, atRisk, totalReferrals };
+    return { active, totalReferrals };
   }, [partners]);
+
   const selectedPartner = useMemo(
     () => partners.find((p) => p.id === selectedId) || null,
     [partners, selectedId]
