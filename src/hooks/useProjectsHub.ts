@@ -131,7 +131,9 @@ export function useProjectsHub() {
         })),
       })) as HubProject[];
     },
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   // Accepted proposals not yet converted
