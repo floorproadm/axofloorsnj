@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Handshake, Plus, Search, List, LayoutGrid, Mail, FileText, Users, GitBranch } from "lucide-react";
+import { Handshake, Plus, Search, List, LayoutGrid, Mail, FileText, Users, GitBranch, Inbox } from "lucide-react";
 import {
   usePartnersData,
   Partner,
