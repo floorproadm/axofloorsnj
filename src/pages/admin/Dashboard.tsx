@@ -212,9 +212,12 @@ export default function Dashboard() {
             {totalUrgent > 0 && (
               <>
                 {" · "}
-                <span className="font-semibold text-[hsl(var(--state-risk))]">
+                <Link
+                  to="/admin/mission-control"
+                  className="font-semibold text-[hsl(var(--state-risk))] hover:underline underline-offset-2"
+                >
                   {totalUrgent} {totalUrgent !== 1 ? t("dashboard.acoesPendentes") : t("dashboard.acaoPendente")}
-                </span>
+                </Link>
               </>
             )}
           </p>
