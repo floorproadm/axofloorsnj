@@ -103,6 +103,22 @@ export default function CrewsVans() {
   const totalPaid = laborEntries.filter((e: any) => e.is_paid).reduce((s: number, e: any) => s + (Number(e.daily_rate) * Number(e.days_worked)), 0);
   const totalUnpaid = totalLabor - totalPaid;
 
+  // Projects list for manual labor entry
+  const { data: projectsList = [] } = useQuery({
+    queryKey: ["projects-min-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, customer_name, address, project_status")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { mutateAsync: addLaborEntry, isPending: addingLabor } = useAddLaborEntry();
+
   // ─── Mutations ───
   const addCrewMutation = useMutation({
     mutationFn: async () => {
