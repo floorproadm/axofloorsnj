@@ -524,6 +524,13 @@ export default function PartnerDashboard() {
       />
 
       <NewReferralSheet open={sheetOpen} onOpenChange={setSheetOpen} onCreated={loadData} />
+
+      <PartnerLeadDetailSheet
+        lead={selectedLead}
+        open={!!selectedLead}
+        onOpenChange={(o) => !o && setSelectedLead(null)}
+        commissionPercent={commissionPercent}
+      />
     </div>
   );
 }
