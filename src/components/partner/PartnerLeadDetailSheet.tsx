@@ -39,9 +39,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   commissionPercent: number;
+  partnerName: string;
 }
 
-export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent }: Props) {
+export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent, partnerName }: Props) {
   const [nudging, setNudging] = useState(false);
 
   if (!lead) return null;
