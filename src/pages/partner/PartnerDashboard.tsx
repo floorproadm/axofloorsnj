@@ -13,6 +13,7 @@ import { PartnerBottomNav, type PartnerView } from "@/components/partner/Partner
 import { PartnerPipelineBoard } from "@/components/partner/PartnerPipelineBoard";
 import { PartnerQuotesTab } from "@/components/partner/PartnerQuotesTab";
 import { PartnerReferredProposals } from "@/components/partner/PartnerReferredProposals";
+import { PartnerLeadDetailSheet } from "@/components/partner/PartnerLeadDetailSheet";
 import { cn } from "@/lib/utils";
 
 interface Lead {
@@ -56,6 +57,7 @@ export default function PartnerDashboard() {
     if (typeof window === "undefined") return "list";
     return (localStorage.getItem("axo.partner.pipelineMode") as "list" | "board") || "list";
   });
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const updatePipelineMode = (m: "list" | "board") => {
     setPipelineMode(m);
@@ -320,7 +322,11 @@ export default function PartnerDashboard() {
                   <p className="text-sm text-muted-foreground">No leads match this filter.</p>
                 </Card>
               ) : pipelineMode === "board" ? (
-                <PartnerPipelineBoard leads={filteredLeads} commissionPercent={commissionPercent} />
+                <PartnerPipelineBoard
+                  leads={filteredLeads}
+                  commissionPercent={commissionPercent}
+                  onSelect={(l) => setSelectedLead(l)}
+                />
               ) : (
                 <div className="space-y-4">
                   {Object.entries(groupedByMonth).map(([month, items]) => (
@@ -334,7 +340,14 @@ export default function PartnerDashboard() {
                             lead.status === "completed" && lead.budget
                               ? (lead.budget * commissionPercent) / 100
                               : 0;
-                          return <PartnerLeadCard key={lead.id} lead={lead} commission={commission} />;
+                          return (
+                            <PartnerLeadCard
+                              key={lead.id}
+                              lead={lead}
+                              commission={commission}
+                              onClick={() => setSelectedLead(lead)}
+                            />
+                          );
                         })}
                       </div>
                     </div>
@@ -511,6 +524,13 @@ export default function PartnerDashboard() {
       />
 
       <NewReferralSheet open={sheetOpen} onOpenChange={setSheetOpen} onCreated={loadData} />
+
+      <PartnerLeadDetailSheet
+        lead={selectedLead}
+        open={!!selectedLead}
+        onOpenChange={(o) => !o && setSelectedLead(null)}
+        commissionPercent={commissionPercent}
+      />
     </div>
   );
 }

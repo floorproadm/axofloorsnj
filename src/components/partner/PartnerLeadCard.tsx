@@ -25,12 +25,13 @@ interface Props {
     created_at: string;
   };
   commission: number;
+  onClick?: () => void;
 }
 
-export function PartnerLeadCard({ lead, commission }: Props) {
+export function PartnerLeadCard({ lead, commission, onClick }: Props) {
   const status = STAGE_BADGE[lead.status] || { label: lead.status, color: "bg-muted" };
   return (
-    <Card className="p-3">
+    <Card onClick={onClick} className={onClick ? "p-3 cursor-pointer hover:border-primary/40 transition-colors" : "p-3"}>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-sm truncate">{lead.name}</p>

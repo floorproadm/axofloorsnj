@@ -19,6 +19,7 @@ interface Lead {
 interface Props {
   leads: Lead[];
   commissionPercent: number;
+  onSelect?: (lead: Lead) => void;
 }
 
 const ACTIVE_STAGES = PARTNER_LEAD_STAGES.filter(
@@ -28,7 +29,7 @@ const ACTIVE_STAGES = PARTNER_LEAD_STAGES.filter(
 const formatValue = (v: number) =>
   v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v}`;
 
-export function PartnerPipelineBoard({ leads, commissionPercent }: Props) {
+export function PartnerPipelineBoard({ leads, commissionPercent, onSelect }: Props) {
   const grouped = useMemo(() => {
     const map: Record<string, Lead[]> = {};
     for (const l of leads) (map[l.status] ||= []).push(l);
@@ -78,7 +79,8 @@ export function PartnerPipelineBoard({ leads, commissionPercent }: Props) {
                         return (
                           <Card
                             key={lead.id}
-                            className="p-2.5 hover:border-primary/40 transition-colors"
+                            onClick={() => onSelect?.(lead)}
+                            className="p-2.5 hover:border-primary/40 transition-colors cursor-pointer"
                           >
                             <p className="text-sm font-semibold truncate leading-tight">
                               {lead.name}
