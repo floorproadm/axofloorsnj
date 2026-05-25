@@ -12,15 +12,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Button } from "@/components/ui/button";
 import { format, isPast, isToday } from "date-fns";
 
-const DISMISSED_KEY = "mc:dismissed-alerts";
-const alertKey = (a: { type: string; label: string }) => `${a.type}::${a.label}`;
-const readDismissed = (): string[] => {
-  try { return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; }
-};
-const writeDismissed = (keys: string[]) => {
-  localStorage.setItem(DISMISSED_KEY, JSON.stringify(keys));
-  window.dispatchEvent(new Event("mc:dismissed-changed"));
-};
+import {
+  mcAlertKey as alertKey,
+  readMcDismissed as readDismissed,
+  writeMcDismissed as writeDismissed,
+  MC_DISMISSED_EVENT,
+} from "@/lib/missionControlDismissed";
 
 // ---------- System Alerts ----------
 
