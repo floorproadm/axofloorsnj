@@ -303,15 +303,24 @@ export default function CrewsVans() {
                             )}
                             <div className="flex items-center gap-3 mt-2">
                               {member.phone && (
-                                <a href={`tel:${member.phone}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                <a href={`tel:${member.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                                   <Phone className="w-3 h-3" /> {member.phone}
                                 </a>
                               )}
                               {member.email && (
-                                <a href={`mailto:${member.email}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                <a href={`mailto:${member.email}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                                   <Mail className="w-3 h-3" /> {member.email.split("@")[0]}
                                 </a>
                               )}
+                            </div>
+                          </div>
+                          {!inactive && (
+                            <Button
+                              size="icon" variant="ghost"
+                              className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                              onClick={(e) => { e.stopPropagation(); deleteCrewMutation.mutate(member.id); }}
+                              title="Mark inactive"
+                            >
                             </div>
                           </div>
                           {!inactive && (
