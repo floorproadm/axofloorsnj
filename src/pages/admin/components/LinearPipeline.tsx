@@ -536,7 +536,7 @@ function QuickProposalModal({ open, onOpenChange, leads }: {
     [leads]
   );
 
-  const resetForm = () => { setSelectedLeadId(''); setSource('lead'); };
+  const resetForm = () => { setSelectedLeadId(''); };
 
   const handleGo = () => {
     const lead = eligibleLeads.find(l => l.id === selectedLeadId);
