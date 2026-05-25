@@ -670,45 +670,6 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
           });
         }
         toast.success('Lead criado e solicitação registrada');
-      } else if (source === 'partner') {
-        const partner = activePartners.find(p => p.id === selectedPartnerId);
-        if (!partner) throw new Error('Parceiro não encontrado');
-
-        const { data: newLead, error: insertError } = await supabase
-          .from('leads')
-          .insert({
-            name: partner.contact_name,
-            phone: partner.phone || 'N/A',
-            email: partner.email,
-            lead_source: 'partner_referral',
-            status: 'estimate_requested',
-            priority: 'high',
-            services: selectedServices.length > 0 ? selectedServices : undefined,
-            budget: budget ? parseFloat(budget) : undefined,
-            notes: notes.trim() || `Via parceiro: ${partner.company_name}`,
-            referred_by_partner_id: partner.id,
-            organization_id: AXO_ORG_ID,
-          })
-          .select('id')
-          .single();
-        if (insertError) throw insertError;
-
-        await supabase
-          .from('partners')
-          .update({ 
-            total_referrals: (partner.total_referrals || 0) + 1,
-            last_contacted_at: new Date().toISOString(),
-          } as any)
-          .eq('id', partner.id);
-
-        if (newLead) {
-          await addFollowUpAction(newLead.id, {
-            date: new Date().toISOString(),
-            action: 'Orçamento solicitado via parceiro',
-            notes: `Parceiro: ${partner.company_name}`,
-          });
-        }
-        toast.success('Solicitação registrada via parceiro');
       } else {
         const lead = eligibleLeads.find(l => l.id === selectedLeadId);
         if (!lead) return;
