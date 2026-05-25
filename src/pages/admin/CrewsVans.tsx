@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
-import { useAllLaborEntries, useMarkLaborPaid } from "@/hooks/useLaborEntries";
+import { useAllLaborEntries, useMarkLaborPaid, useAddLaborEntry } from "@/hooks/useLaborEntries";
 import { useCrewEarnings, type CrewMember as CrewMemberType } from "@/hooks/useCrewMembers";
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
@@ -44,6 +44,12 @@ export default function CrewsVans() {
   const [payrollAnchor, setPayrollAnchor] = useState(() => new Date());
   const [filterPaid, setFilterPaid] = useState<"all" | "paid" | "unpaid">("all");
   const [filterCrew, setFilterCrew] = useState<string>("all");
+  const [showNewLabor, setShowNewLabor] = useState(false);
+  const [laborForm, setLaborForm] = useState({
+    project_id: "", crew_member_id: "", worker_name: "",
+    daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0],
+    is_paid: false, notes: "",
+  });
 
   const [crewForm, setCrewForm] = useState({
     full_name: "", phone: "", email: "", role: "", bio: "",
@@ -96,6 +102,22 @@ export default function CrewsVans() {
   const totalLabor = laborEntries.reduce((s: number, e: any) => s + (Number(e.daily_rate) * Number(e.days_worked)), 0);
   const totalPaid = laborEntries.filter((e: any) => e.is_paid).reduce((s: number, e: any) => s + (Number(e.daily_rate) * Number(e.days_worked)), 0);
   const totalUnpaid = totalLabor - totalPaid;
+
+  // Projects list for manual labor entry
+  const { data: projectsList = [] } = useQuery({
+    queryKey: ["projects-min-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, customer_name, address, project_status")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { mutateAsync: addLaborEntry, isPending: addingLabor } = useAddLaborEntry();
 
   // ─── Mutations ───
   const addCrewMutation = useMutation({
@@ -395,9 +417,12 @@ export default function CrewsVans() {
 
           {/* ─── PAYROLL TAB ─── (reads labor_entries — source of truth) */}
           <TabsContent value="payroll" className="mt-4 space-y-4">
-            <div className="rounded-lg bg-muted/30 border border-border/50 p-3 text-xs text-muted-foreground flex items-start gap-2">
-              <Hammer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-              <span>Labor entries are created inside each job's <strong>Labor</strong> section. This view aggregates everything for review and payment.</span>
+            <div className="flex items-start gap-2 rounded-lg bg-muted/30 border border-border/50 p-3">
+              <Hammer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground flex-1">Labor entries are usually created inside each job's <strong>Labor</strong> section. Use the button to log a manual payment.</span>
+              <Button size="sm" className="gap-1.5 h-7" onClick={() => setShowNewLabor(true)}>
+                <Plus className="w-3.5 h-3.5" /> Add Payment
+              </Button>
             </div>
 
             {/* Period selector */}
@@ -637,6 +662,122 @@ export default function CrewsVans() {
               <Button variant="outline" className="flex-1" onClick={() => setShowNewVan(false)}>Cancel</Button>
               <Button className="flex-1" disabled={!vanForm.name || addVanMutation.isPending} onClick={() => addVanMutation.mutate()}>
                 {addVanMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Van"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* ─── ADD MANUAL LABOR PAYMENT DIALOG ─── */}
+      <Dialog open={showNewLabor} onOpenChange={(o) => { setShowNewLabor(o); if (!o) setLaborForm({ project_id: "", crew_member_id: "", worker_name: "", daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0], is_paid: false, notes: "" }); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Hammer className="w-4 h-4" /> Add Labor Payment
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Project *</Label>
+              <Select value={laborForm.project_id} onValueChange={v => setLaborForm(f => ({ ...f, project_id: v }))}>
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Select project" /></SelectTrigger>
+                <SelectContent>
+                  {projectsList.map((p: any) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.customer_name || p.address || p.id.slice(0, 8)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Crew Member</Label>
+              <Select
+                value={laborForm.crew_member_id || "__none"}
+                onValueChange={v => {
+                  if (v === "__none") {
+                    setLaborForm(f => ({ ...f, crew_member_id: "" }));
+                  } else {
+                    const m = crew.find(c => c.id === v);
+                    setLaborForm(f => ({
+                      ...f,
+                      crew_member_id: v,
+                      worker_name: m?.full_name || f.worker_name,
+                      daily_rate: m?.daily_rate ? String(m.daily_rate) : f.daily_rate,
+                    }));
+                  }
+                }}
+              >
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Pick crew or type manually" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">— Manual entry —</SelectItem>
+                  {crew.filter(c => c.is_active_crew !== false).map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 space-y-1.5">
+                <Label className="text-xs">Worker Name *</Label>
+                <Input placeholder="e.g. Carlos Silva" value={laborForm.worker_name}
+                  onChange={e => setLaborForm(f => ({ ...f, worker_name: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Daily Rate ($) *</Label>
+                <Input type="number" placeholder="250" value={laborForm.daily_rate}
+                  onChange={e => setLaborForm(f => ({ ...f, daily_rate: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Days Worked *</Label>
+                <Input type="number" step="0.5" placeholder="1" value={laborForm.days_worked}
+                  onChange={e => setLaborForm(f => ({ ...f, days_worked: e.target.value }))} />
+              </div>
+              <div className="col-span-2 space-y-1.5">
+                <Label className="text-xs">Work Date</Label>
+                <Input type="date" value={laborForm.work_date}
+                  onChange={e => setLaborForm(f => ({ ...f, work_date: e.target.value }))} />
+              </div>
+              <div className="col-span-2 space-y-1.5">
+                <Label className="text-xs">Notes</Label>
+                <Input placeholder="Optional notes..." value={laborForm.notes}
+                  onChange={e => setLaborForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+              <label className="col-span-2 flex items-center gap-2 text-xs cursor-pointer select-none">
+                <input type="checkbox" className="rounded" checked={laborForm.is_paid}
+                  onChange={e => setLaborForm(f => ({ ...f, is_paid: e.target.checked }))} />
+                Already paid
+              </label>
+            </div>
+            <div className="rounded-md border border-border/50 bg-muted/30 p-2.5 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Total</span>
+              <span className="font-semibold tabular-nums">
+                {fmt((parseFloat(laborForm.daily_rate) || 0) * (parseFloat(laborForm.days_worked) || 0))}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShowNewLabor(false)}>Cancel</Button>
+              <Button className="flex-1"
+                disabled={!laborForm.project_id || !laborForm.worker_name || !laborForm.daily_rate || addingLabor}
+                onClick={async () => {
+                  try {
+                    await addLaborEntry({
+                      project_id: laborForm.project_id,
+                      worker_name: laborForm.worker_name,
+                      daily_rate: parseFloat(laborForm.daily_rate) || 0,
+                      days_worked: parseFloat(laborForm.days_worked) || 1,
+                      work_date: laborForm.work_date,
+                      is_paid: laborForm.is_paid,
+                      notes: laborForm.notes || undefined,
+                      crew_member_id: laborForm.crew_member_id || null,
+                    });
+                    toast.success("Labor payment added");
+                    setShowNewLabor(false);
+                    setLaborForm({ project_id: "", crew_member_id: "", worker_name: "", daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0], is_paid: false, notes: "" });
+                  } catch (e: any) {
+                    toast.error(e.message || "Failed to add labor payment");
+                  }
+                }}>
+                {addingLabor ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Payment"}
               </Button>
             </div>
           </div>
