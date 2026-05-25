@@ -68,6 +68,9 @@ export default function PartnerDashboard() {
     return (localStorage.getItem("axo.partner.pipelineMode") as "list" | "board") || "list";
   });
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [notifications, setNotifications] = useState<PartnerNotification[]>([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [needsAttention, setNeedsAttention] = useState(false);
 
   const updatePipelineMode = (m: "list" | "board") => {
     setPipelineMode(m);
