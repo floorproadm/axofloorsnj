@@ -421,11 +421,12 @@ export default function PartnerDashboard() {
                     : `Your Referrals (${filteredLeads.length})`}
                 </h2>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {(activeStage || search) && (
+                  {(activeStage || search || needsAttention) && (
                     <button
                       onClick={() => {
                         setActiveStage(null);
                         setSearch("");
+                        setNeedsAttention(false);
                       }}
                       className="text-xs text-muted-foreground hover:text-foreground underline"
                     >
