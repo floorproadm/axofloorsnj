@@ -147,6 +147,9 @@ export function MobileBottomNav() {
       case "quickquote":
         setLeadPickerOpen(true);
         break;
+      case "labor":
+        navigate("/admin/crews?tab=payroll&new=labor");
+        break;
       default:
         break;
     }
