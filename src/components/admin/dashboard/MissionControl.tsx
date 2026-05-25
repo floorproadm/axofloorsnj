@@ -72,7 +72,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
     window.addEventListener(MC_DISMISSED_EVENT, onChange);
     window.addEventListener("storage", onChange);
     return () => {
-      window.removeEventListener("mc:dismissed-changed", onChange);
+      window.removeEventListener(MC_DISMISSED_EVENT, onChange);
       window.removeEventListener("storage", onChange);
     };
   }, []);
