@@ -186,26 +186,7 @@ export default function Partners() {
 
         {/* Search & Filters */}
         <div className="p-3 space-y-2 border-b border-border/50">
-          {/* Program segmented tabs */}
-          <div className="inline-flex w-full rounded-lg border border-border bg-muted/50 p-0.5">
-            {([
-              { key: "all", label: "Todos", count: programCounts.all },
-              { key: "referral", label: "Referral", count: programCounts.referral },
-              { key: "trade", label: "Trade (B2B)", count: programCounts.trade },
-            ] as const).map((opt) => (
-              <button
-                key={opt.key}
-                onClick={() => setProgramFilter(opt.key as any)}
-                className={`flex-1 px-2 py-1.5 text-[11px] font-semibold rounded-md transition-colors ${
-                  programFilter === opt.key
-                    ? "bg-background shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {opt.label} <span className="text-muted-foreground/70 tabular-nums">({opt.count})</span>
-              </button>
-            ))}
-          </div>
+          {/* Search */}
           <div className="relative">
 
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -228,18 +209,27 @@ export default function Partners() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(PARTNER_STATUSES).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="inline-flex flex-1 rounded-lg border border-border bg-muted/50 p-0.5">
+              {([
+                { key: "all", label: "Todos", count: programCounts.all },
+                { key: "referral", label: "Referral", count: programCounts.referral },
+                { key: "trade", label: "Trade", count: programCounts.trade },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setProgramFilter(opt.key as any)}
+                  className={`flex-1 px-2 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                    programFilter === opt.key
+                      ? "bg-background shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.label} <span className="text-muted-foreground/70 tabular-nums">({opt.count})</span>
+                </button>
+              ))}
+            </div>
           </div>
+
           <div className="flex gap-2">
             <Button
               onClick={() => setNewOpen(true)}
