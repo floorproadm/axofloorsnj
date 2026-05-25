@@ -364,7 +364,22 @@ export default function ProjectDetail() {
                 <CardTitle className="text-lg">Custos do Projeto</CardTitle>
               </CardHeader>
               <CardContent>
-                <JobCostEditor projectId={project.id} />
+                <Tabs defaultValue="margin">
+                  <TabsList>
+                    <TabsTrigger value="margin">Margin</TabsTrigger>
+                    <TabsTrigger value="materials">Materials</TabsTrigger>
+                    <TabsTrigger value="labor">Labor</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="margin" className="mt-4">
+                    <JobCostEditor projectId={project.id} />
+                  </TabsContent>
+                  <TabsContent value="materials" className="mt-4">
+                    <MaterialsSection projectId={project.id} />
+                  </TabsContent>
+                  <TabsContent value="labor" className="mt-4">
+                    <LaborSection projectId={project.id} />
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
