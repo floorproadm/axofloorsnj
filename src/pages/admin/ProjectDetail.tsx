@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { JobCostEditor } from '@/components/admin/JobCostEditor';
+import { MaterialsSection, LaborSection } from '@/components/admin/projects/FullCostsDialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
@@ -364,7 +365,22 @@ export default function ProjectDetail() {
                 <CardTitle className="text-lg">Custos do Projeto</CardTitle>
               </CardHeader>
               <CardContent>
-                <JobCostEditor projectId={project.id} />
+                <Tabs defaultValue="margin">
+                  <TabsList>
+                    <TabsTrigger value="margin">Margin</TabsTrigger>
+                    <TabsTrigger value="materials">Materials</TabsTrigger>
+                    <TabsTrigger value="labor">Labor</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="margin" className="mt-4">
+                    <JobCostEditor projectId={project.id} />
+                  </TabsContent>
+                  <TabsContent value="materials" className="mt-4">
+                    <MaterialsSection projectId={project.id} />
+                  </TabsContent>
+                  <TabsContent value="labor" className="mt-4">
+                    <LaborSection projectId={project.id} />
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
