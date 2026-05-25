@@ -258,7 +258,7 @@ export default function CrewsVans() {
                   const e = earningsById.get(member.id);
                   const inactive = member.is_active_crew === false;
                   return (
-                    <Card key={member.id} className={cn("border-border/50 hover:border-primary/30 transition-colors group", inactive && "opacity-50")}>
+                    <Card key={member.id} onClick={() => openEditCrew(member)} className={cn("border-border/50 hover:border-primary/30 transition-colors group cursor-pointer", inactive && "opacity-50")}>
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center flex-shrink-0 font-bold text-sm text-primary">
