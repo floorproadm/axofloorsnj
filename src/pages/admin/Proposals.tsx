@@ -198,6 +198,8 @@ function NewProposalDialog({ open, onClose, onCreated }: {
       setProjectId("");
       setPartnerId("none");
       setClientNote("");
+      // Match /admin/projects flow: land directly on the Proposal tab line-items editor
+      navigate(`/admin/projects/${projectId}?tab=proposal`);
     }
   };
 
