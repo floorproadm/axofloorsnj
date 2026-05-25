@@ -276,7 +276,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
             <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button
               className="flex-1"
-              disabled={!projectId || isLoading || directDisabled}
+              disabled={!projectId || isLoading}
               onClick={handleGenerate}
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
