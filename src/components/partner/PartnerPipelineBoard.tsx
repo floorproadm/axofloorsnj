@@ -79,7 +79,8 @@ export function PartnerPipelineBoard({ leads, commissionPercent, onSelect }: Pro
                         return (
                           <Card
                             key={lead.id}
-                            className="p-2.5 hover:border-primary/40 transition-colors"
+                            onClick={() => onSelect?.(lead)}
+                            className="p-2.5 hover:border-primary/40 transition-colors cursor-pointer"
                           >
                             <p className="text-sm font-semibold truncate leading-tight">
                               {lead.name}
