@@ -204,10 +204,18 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
       {showCompleted && doneTasks.length > 0 && (
         <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card opacity-50">
           {doneTasks.map((task) => (
-            <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} />
+            <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
           ))}
         </div>
       )}
+
+      <TaskDetailSheet
+        task={selectedTask}
+        open={!!selectedTask}
+        onOpenChange={(o) => !o && setSelectedTask(null)}
+        onToggle={toggleStatus}
+        onDelete={(id) => { deleteTask.mutate(id); setSelectedTask(null); }}
+      />
     </div>
   );
 }
