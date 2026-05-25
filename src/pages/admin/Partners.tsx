@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Handshake, Plus, Search, List, LayoutGrid, Mail, FileText } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Handshake, Plus, Search, List, LayoutGrid, Mail, FileText, Users, GitBranch } from "lucide-react";
 import {
   usePartnersData,
   Partner,
@@ -28,6 +30,8 @@ import { PartnerInviteLogsSheet } from "@/components/admin/PartnerInviteLogsShee
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { B2BQuoteSheet } from "@/components/admin/B2BQuoteSheet";
+import { AdminReferralPipelineTab } from "@/components/admin/AdminReferralPipelineTab";
+
 
 export default function Partners() {
   const { partners, isLoading } = usePartnersData();
@@ -43,6 +47,15 @@ export default function Partners() {
   const [inviteLogsOpen, setInviteLogsOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [quotePartnerId, setQuotePartnerId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") === "referrals" ? "referrals" : "partners";
+  const setActiveTab = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (v === "partners") next.delete("tab");
+    else next.set("tab", v);
+    setSearchParams(next, { replace: true });
+  };
+
 
   const handleViewMode = (mode: "list" | "board") => {
     setViewMode(mode);
@@ -126,7 +139,18 @@ export default function Partners() {
 
   return (
     <AdminLayout title="Partners">
-      <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-[calc(100vh-8rem)]">
+        <TabsList className="grid grid-cols-2 w-full max-w-md mb-3">
+          <TabsTrigger value="partners" className="gap-1.5">
+            <Users className="w-3.5 h-3.5" /> Partners
+          </TabsTrigger>
+          <TabsTrigger value="referrals" className="gap-1.5">
+            <GitBranch className="w-3.5 h-3.5" /> Referral Pipeline
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="partners" className="flex-1 overflow-hidden mt-0">
+          <div className="flex flex-col h-full overflow-hidden rounded-xl border border-border/50 bg-card">
+
         {/* Mini Stats + View Toggle */}
         <div className="px-3 pt-3 pb-1 flex items-center gap-3 text-xs text-muted-foreground">
           <span><strong className="text-foreground">{miniStats.active}</strong> ativos</span>
@@ -275,7 +299,14 @@ export default function Partners() {
             </div>
           </>
         )}
-      </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="referrals" className="flex-1 overflow-hidden mt-0">
+          <div className="flex flex-col h-full overflow-hidden rounded-xl border border-border/50 bg-card">
+            <AdminReferralPipelineTab />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <NewPartnerDialog open={newOpen} onOpenChange={setNewOpen} defaultStatus={viewMode === "board" ? "prospect" : "active"} />
       <PartnerControlModal
@@ -287,5 +318,6 @@ export default function Partners() {
       <PartnerInviteLogsSheet open={inviteLogsOpen} onOpenChange={setInviteLogsOpen} />
       <B2BQuoteSheet open={quoteOpen} onOpenChange={setQuoteOpen} defaultPartnerId={quotePartnerId} />
     </AdminLayout>
+
   );
 }
