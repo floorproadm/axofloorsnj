@@ -93,7 +93,9 @@ export function useTasks(showCompleted = false) {
 
       return tasks;
     },
-    staleTime: 30_000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
   });
 
   const createTask = useMutation({
@@ -135,7 +137,23 @@ export function useTasks(showCompleted = false) {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+    // Optimistic: update cache immediately so UI reflects change without waiting for refetch
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
+      const snapshots = queryClient.getQueriesData<Task[]>({ queryKey: ["tasks"] });
+      snapshots.forEach(([key, list]) => {
+        if (!list) return;
+        const next = list.map((t) =>
+          t.id === input.id ? { ...t, ...input, id: t.id } as Task : t
+        );
+        queryClient.setQueryData(key, next);
+      });
+      return { snapshots };
+    },
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshots?.forEach(([key, data]) => queryClient.setQueryData(key, data));
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
   });
 
   const deleteTask = useMutation({
@@ -143,7 +161,20 @@ export function useTasks(showCompleted = false) {
       const { error } = await supabase.from("tasks" as any).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+    // Optimistic: remove from cache immediately
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
+      const snapshots = queryClient.getQueriesData<Task[]>({ queryKey: ["tasks"] });
+      snapshots.forEach(([key, list]) => {
+        if (!list) return;
+        queryClient.setQueryData(key, list.filter((t) => t.id !== id));
+      });
+      return { snapshots };
+    },
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshots?.forEach(([key, data]) => queryClient.setQueryData(key, data));
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
   });
 
   return {
