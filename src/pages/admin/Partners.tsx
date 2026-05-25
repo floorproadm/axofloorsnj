@@ -47,6 +47,15 @@ export default function Partners() {
   const [inviteLogsOpen, setInviteLogsOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [quotePartnerId, setQuotePartnerId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") === "referrals" ? "referrals" : "partners";
+  const setActiveTab = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (v === "partners") next.delete("tab");
+    else next.set("tab", v);
+    setSearchParams(next, { replace: true });
+  };
+
 
   const handleViewMode = (mode: "list" | "board") => {
     setViewMode(mode);
