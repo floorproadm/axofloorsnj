@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -15,12 +16,12 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Plus, Truck, Users, Phone, Mail,
-  Loader2, Trash2, CheckCircle2, Clock, DollarSign, Hammer
+  Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PaymentDetailsSheet } from "@/components/admin/payments/PaymentDetailsSheet";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
-import type { Payment } from "@/hooks/usePayments";
+import { useAllLaborEntries, useMarkLaborPaid } from "@/hooks/useLaborEntries";
+import { useCrewEarnings, type CrewMember as CrewMemberType } from "@/hooks/useCrewMembers";
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
 const EMPLOYMENT_TYPES = ["Head", "Full-Time Employee", "Daily Rate", "Subcontractor"];
@@ -33,40 +34,15 @@ const VAN_STATUSES = ["Available", "In Use", "Maintenance", "Out of Service"];
 const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-interface CrewMember {
-  id: string;
-  full_name: string;
-  email: string | null;
-  phone: string | null;
-  role: string | null;
-  bio: string | null;
-  avatar_url: string | null;
-  created_at: string;
-}
-
-interface PayrollEntry {
-  id: string;
-  collaborator_id: string | null;
-  amount: number;
-  category: string;
-  payment_date: string;
-  description: string | null;
-  notes: string | null;
-  status: string;
-  payment_method: string | null;
-  project_id: string | null;
-  project?: { customer_name: string; project_type: string } | null;
-}
-
 export default function CrewsVans() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<"crew" | "vans" | "payroll">("crew");
   const [showNewCrew, setShowNewCrew] = useState(false);
   const [showNewVan, setShowNewVan] = useState(false);
-  const [showNewPayroll, setShowNewPayroll] = useState(false);
-  const [selectedPayrollEntry, setSelectedPayrollEntry] = useState<Payment | null>(null);
   const [payrollPeriodType, setPayrollPeriodType] = useState<PeriodType>("month");
   const [payrollAnchor, setPayrollAnchor] = useState(() => new Date());
+  const [filterPaid, setFilterPaid] = useState<"all" | "paid" | "unpaid">("all");
+  const [filterCrew, setFilterCrew] = useState<string>("all");
 
   const [crewForm, setCrewForm] = useState({
     full_name: "", phone: "", email: "", role: "", bio: "",
@@ -78,22 +54,16 @@ export default function CrewsVans() {
     region: "", status: "Available", notes: ""
   });
 
-  const [payrollForm, setPayrollForm] = useState({
-    name: "", role: "", daily_rate: "", days_worked: "1",
-    service_date: format(new Date(), "yyyy-MM-dd"),
-    project_id: "", notes: "", payment_method: "cash"
-  });
-
-  // ─── Crew queries ───
+  // ─── Crew queries (with new columns) ───
   const { data: crew = [], isLoading: loadingCrew } = useQuery({
-    queryKey: ["crew-members"],
+    queryKey: ["crew-members", "full"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email, phone, role, bio, avatar_url, created_at")
-        .order("created_at", { ascending: false });
+        .select("id, full_name, email, phone, role, bio, avatar_url, daily_rate, employment_type, region, is_active_crew, created_at")
+        .order("full_name");
       if (error) throw error;
-      return (data ?? []) as CrewMember[];
+      return (data ?? []) as unknown as (CrewMemberType & { created_at: string })[];
     },
   });
 
@@ -111,42 +81,20 @@ export default function CrewsVans() {
     },
   });
 
-  // ─── Payroll queries ───
+  // ─── Payroll: real labor entries + earnings ───
   const payrollRange = getPeriodRange(payrollAnchor, payrollPeriodType);
-
-  const { data: payrollEntries = [], isLoading: loadingPayroll } = useQuery({
-    queryKey: ["labor-payroll", payrollRange.label],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("payments")
-        .select("*, project:projects(customer_name, project_type)")
-        .eq("category", "labor")
-        .gte("payment_date", format(payrollRange.start, "yyyy-MM-dd"))
-        .lte("payment_date", format(payrollRange.end, "yyyy-MM-dd"))
-        .order("payment_date", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as PayrollEntry[];
-    },
+  const { data: earnings = [] } = useCrewEarnings();
+  const { data: laborEntries = [], isLoading: loadingPayroll } = useAllLaborEntries({
+    crewMemberId: filterCrew === "all" ? undefined : filterCrew,
+    paid: filterPaid === "all" ? null : filterPaid === "paid",
+    from: format(payrollRange.start, "yyyy-MM-dd"),
+    to: format(payrollRange.end, "yyyy-MM-dd"),
   });
+  const { mutateAsync: markPaid } = useMarkLaborPaid();
 
-  const { data: projects = [] } = useQuery({
-    queryKey: ["active-projects-payroll"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("projects")
-        .select("id, customer_name, project_type")
-        .in("project_status", ["pending", "in_production"])
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
-  const totalPaid = payrollEntries.filter(e => e.status === "confirmed").reduce((s, e) => s + e.amount, 0);
-  const totalPending = payrollEntries.filter(e => e.status === "pending").reduce((s, e) => s + e.amount, 0);
-  const totalCost = payrollEntries.reduce((s, e) => s + e.amount, 0);
-  const payrollCalc = parseFloat(payrollForm.daily_rate || "0") * parseFloat(payrollForm.days_worked || "0");
+  const totalLabor = laborEntries.reduce((s: number, e: any) => s + (Number(e.daily_rate) * Number(e.days_worked)), 0);
+  const totalPaid = laborEntries.filter((e: any) => e.is_paid).reduce((s: number, e: any) => s + (Number(e.daily_rate) * Number(e.days_worked)), 0);
+  const totalUnpaid = totalLabor - totalPaid;
 
   // ─── Mutations ───
   const addCrewMutation = useMutation({
@@ -156,18 +104,18 @@ export default function CrewsVans() {
         phone: crewForm.phone || null,
         email: crewForm.email || null,
         role: crewForm.role || null,
-        bio: [
-          crewForm.employment_type && `Type: ${crewForm.employment_type}`,
-          crewForm.region && `Region: ${crewForm.region}`,
-          crewForm.daily_rate && `Rate: $${crewForm.daily_rate}/day`,
-          crewForm.bio,
-        ].filter(Boolean).join(" · ") || null,
+        daily_rate: crewForm.daily_rate ? parseFloat(crewForm.daily_rate) : 0,
+        employment_type: crewForm.employment_type || null,
+        region: crewForm.region || null,
+        is_active_crew: true,
+        bio: crewForm.bio || null,
       } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Crew member added");
       qc.invalidateQueries({ queryKey: ["crew-members"] });
+      qc.invalidateQueries({ queryKey: ["crew-earnings"] });
       setShowNewCrew(false);
       setCrewForm({ full_name: "", phone: "", email: "", role: "", bio: "", employment_type: "", region: "", daily_rate: "" });
     },
@@ -199,46 +147,12 @@ export default function CrewsVans() {
     onError: (e: any) => toast.error(e.message || "Failed to add van"),
   });
 
-  const addPayrollMutation = useMutation({
-    mutationFn: async () => {
-      const dailyRate = parseFloat(payrollForm.daily_rate);
-      const daysWorked = parseFloat(payrollForm.days_worked);
-      const total = dailyRate * daysWorked;
-      const { error } = await supabase.from("payments").insert({
-        amount: total, category: "labor",
-        description: `${payrollForm.name} – ${payrollForm.role} (${payrollForm.days_worked} days @ ${fmt(dailyRate)}/day)`,
-        payment_date: payrollForm.service_date,
-        project_id: payrollForm.project_id || null,
-        notes: payrollForm.notes || null,
-        payment_method: payrollForm.payment_method,
-        status: "pending",
-        organization_id: AXO_ORG_ID,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Labor entry added");
-      qc.invalidateQueries({ queryKey: ["labor-payroll"] });
-      setShowNewPayroll(false);
-      setPayrollForm({ name: "", role: "", daily_rate: "", days_worked: "1", service_date: format(new Date(), "yyyy-MM-dd"), project_id: "", notes: "", payment_method: "cash" });
-    },
-    onError: () => toast.error("Failed to add entry"),
-  });
-
-  const confirmPayrollMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("payments").update({ status: "confirmed" }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Payment confirmed"); qc.invalidateQueries({ queryKey: ["labor-payroll"] }); },
-  });
-
   const deleteCrewMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("profiles").delete().eq("id", id);
+      const { error } = await supabase.from("profiles").update({ is_active_crew: false } as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["crew-members"] }); },
+    onSuccess: () => { toast.success("Marked inactive"); qc.invalidateQueries({ queryKey: ["crew-members"] }); },
   });
 
   const deleteVanMutation = useMutation({
@@ -247,14 +161,6 @@ export default function CrewsVans() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Van removed"); qc.invalidateQueries({ queryKey: ["van-records"] }); },
-  });
-
-  const deletePayrollMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("payments").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Entry removed"); qc.invalidateQueries({ queryKey: ["labor-payroll"] }); },
   });
 
   const toggleVanStatus = useMutation({
@@ -279,10 +185,10 @@ export default function CrewsVans() {
   const handleAddClick = () => {
     if (tab === "crew") setShowNewCrew(true);
     else if (tab === "vans") setShowNewVan(true);
-    else setShowNewPayroll(true);
   };
 
-  const addLabel = tab === "crew" ? "Add Worker" : tab === "vans" ? "Add Van" : "Add Entry";
+  const addLabel = tab === "crew" ? "Add Worker" : tab === "vans" ? "Add Van" : "";
+  const earningsById = new Map(earnings.map(e => [e.crew_member_id, e]));
 
   return (
     <AdminLayout title="Crews & Fleet">
@@ -301,9 +207,11 @@ export default function CrewsVans() {
                 <Truck className="w-4 h-4" /> Fleet
               </TabsTrigger>
             </TabsList>
-            <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
-              <Plus className="w-4 h-4" /> {addLabel}
-            </Button>
+            {tab !== "payroll" && (
+              <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
+                <Plus className="w-4 h-4" /> {addLabel}
+              </Button>
+            )}
           </div>
 
           {/* ─── CREW TAB ─── */}
@@ -324,47 +232,81 @@ export default function CrewsVans() {
               </Card>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                {crew.map((member) => (
-                  <Card key={member.id} className="border-border/50 hover:border-primary/30 transition-colors group">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center flex-shrink-0 font-bold text-sm text-primary">
-                          {initials(member.full_name || "?")}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm">{member.full_name}</p>
-                          {member.role && (
-                            <Badge variant="outline" className={cn("text-[10px] h-4 px-1.5 mt-0.5", roleColors[member.role] || "")}>
-                              {member.role}
-                            </Badge>
-                          )}
-                          {member.bio && (
-                            <p className="text-xs text-muted-foreground mt-1 truncate">{member.bio}</p>
-                          )}
-                          <div className="flex items-center gap-3 mt-2">
-                            {member.phone && (
-                              <a href={`tel:${member.phone}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                                <Phone className="w-3 h-3" /> {member.phone}
-                              </a>
-                            )}
-                            {member.email && (
-                              <a href={`mailto:${member.email}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                                <Mail className="w-3 h-3" /> {member.email.split("@")[0]}
-                              </a>
-                            )}
+                {crew.map((member) => {
+                  const e = earningsById.get(member.id);
+                  const inactive = member.is_active_crew === false;
+                  return (
+                    <Card key={member.id} className={cn("border-border/50 hover:border-primary/30 transition-colors group", inactive && "opacity-50")}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center flex-shrink-0 font-bold text-sm text-primary">
+                            {initials(member.full_name || "?")}
                           </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-sm">{member.full_name}</p>
+                              {inactive && <span className="text-[9px] text-muted-foreground uppercase">inactive</span>}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                              {member.role && (
+                                <Badge variant="outline" className={cn("text-[10px] h-4 px-1.5", roleColors[member.role] || "")}>
+                                  {member.role}
+                                </Badge>
+                              )}
+                              {member.employment_type && (
+                                <span className="text-[10px] text-muted-foreground">{member.employment_type}</span>
+                              )}
+                              {member.daily_rate ? (
+                                <span className="text-[10px] tabular-nums text-muted-foreground">· {fmt(Number(member.daily_rate))}/d</span>
+                              ) : null}
+                            </div>
+                            {/* Stats row */}
+                            {e && e.jobs_count > 0 && (
+                              <div className="mt-2 grid grid-cols-3 gap-1.5 pt-2 border-t border-border/40">
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Jobs</p>
+                                  <p className="text-xs font-semibold tabular-nums flex items-center gap-1"><Briefcase className="w-2.5 h-2.5" />{e.jobs_count}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Earned</p>
+                                  <p className="text-xs font-semibold tabular-nums">{fmt(Number(e.total_earned))}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Owed</p>
+                                  <p className={cn("text-xs font-semibold tabular-nums", Number(e.unpaid_amount) > 0 ? "text-amber-500" : "text-muted-foreground")}>
+                                    {fmt(Number(e.unpaid_amount))}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-3 mt-2">
+                              {member.phone && (
+                                <a href={`tel:${member.phone}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                  <Phone className="w-3 h-3" /> {member.phone}
+                                </a>
+                              )}
+                              {member.email && (
+                                <a href={`mailto:${member.email}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                  <Mail className="w-3 h-3" /> {member.email.split("@")[0]}
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          {!inactive && (
+                            <Button
+                              size="icon" variant="ghost"
+                              className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                              onClick={() => deleteCrewMutation.mutate(member.id)}
+                              title="Mark inactive"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
                         </div>
-                        <Button
-                          size="icon" variant="ghost"
-                          className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                          onClick={() => deleteCrewMutation.mutate(member.id)}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>
@@ -429,8 +371,13 @@ export default function CrewsVans() {
             )}
           </TabsContent>
 
-          {/* ─── PAYROLL TAB ─── */}
+          {/* ─── PAYROLL TAB ─── (reads labor_entries — source of truth) */}
           <TabsContent value="payroll" className="mt-4 space-y-4">
+            <div className="rounded-lg bg-muted/30 border border-border/50 p-3 text-xs text-muted-foreground flex items-start gap-2">
+              <Hammer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+              <span>Labor entries are created inside each job's <strong>Labor</strong> section. This view aggregates everything for review and payment.</span>
+            </div>
+
             {/* Period selector */}
             <div className="flex flex-col items-center gap-2">
               <PeriodSelector
@@ -439,82 +386,123 @@ export default function CrewsVans() {
                 anchor={payrollAnchor}
                 onAnchorChange={setPayrollAnchor}
               />
-              <a href="/admin/payments" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-                View all in Payments →
-              </a>
             </div>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
-                { label: "Total Labor", value: fmt(totalCost), color: "text-foreground" },
-                { label: "Confirmed", value: fmt(totalPaid), color: "text-emerald-500" },
-                { label: "Pending", value: fmt(totalPending), color: "text-amber-500" },
+                { label: "Total Labor", value: fmt(totalLabor), color: "text-foreground" },
+                { label: "Paid", value: fmt(totalPaid), color: "text-emerald-500" },
+                { label: "Unpaid", value: fmt(totalUnpaid), color: "text-amber-500" },
               ].map((c) => (
                 <Card key={c.label} className="border-border/50">
                   <CardContent className="p-2.5 sm:p-4">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">{c.label}</p>
-                    <p className={cn("text-base sm:text-2xl font-bold truncate", c.color)}>{c.value}</p>
+                    <p className={cn("text-base sm:text-2xl font-bold truncate tabular-nums", c.color)}>{c.value}</p>
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-2">
+              <Select value={filterCrew} onValueChange={setFilterCrew}>
+                <SelectTrigger className="h-8 text-xs w-auto min-w-[140px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All crew</SelectItem>
+                  {crew.filter(c => c.is_active_crew !== false).map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={filterPaid} onValueChange={(v) => setFilterPaid(v as any)}>
+                <SelectTrigger className="h-8 text-xs w-auto min-w-[120px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All status</SelectItem>
+                  <SelectItem value="unpaid">Unpaid only</SelectItem>
+                  <SelectItem value="paid">Paid only</SelectItem>
+                </SelectContent>
+              </Select>
+              {totalUnpaid > 0 && filterPaid !== "paid" && (
+                <Button size="sm" variant="outline" className="h-8 text-xs ml-auto gap-1"
+                  onClick={async () => {
+                    const ids = laborEntries.filter((e: any) => !e.is_paid).map((e: any) => e.id);
+                    if (!ids.length) return;
+                    await markPaid({ ids, paid: true });
+                    toast.success(`Marked ${ids.length} entries paid`);
+                  }}>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Mark all paid ({fmt(totalUnpaid)})
+                </Button>
+              )}
             </div>
 
             {/* Entries List */}
             <Card className="border-border/50">
               <CardContent className="p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Entries — {payrollEntries.length} records
+                  Entries — {laborEntries.length} records
                 </p>
                 {loadingPayroll ? (
                   <div className="flex items-center justify-center py-10">
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                   </div>
-                ) : payrollEntries.length === 0 ? (
+                ) : laborEntries.length === 0 ? (
                   <div className="text-center py-10 text-sm text-muted-foreground">
-                    No labor payments this month
+                    No labor entries in this period
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {payrollEntries.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group cursor-pointer" onClick={() => setSelectedPayrollEntry({ ...entry, created_at: entry.payment_date, updated_at: entry.payment_date, projects: entry.project } as Payment)}>
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={cn(
-                            "w-2 h-2 rounded-full flex-shrink-0",
-                            entry.status === "confirmed" ? "bg-emerald-500" : "bg-amber-500"
-                          )} />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{entry.description ?? "—"}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-muted-foreground">{format(new Date(entry.payment_date), "MMM d")}</span>
-                              {entry.project && (
-                                <span className="text-xs text-muted-foreground">· {entry.project.customer_name}</span>
-                              )}
-                              {entry.payment_method && (
-                                <Badge variant="outline" className="text-[9px] h-4 px-1">{entry.payment_method}</Badge>
-                              )}
+                  <div className="space-y-1.5">
+                    {laborEntries.map((entry: any) => {
+                      const amount = Number(entry.daily_rate) * Number(entry.days_worked);
+                      const project = entry.projects;
+                      return (
+                        <div key={entry.id} className="flex items-center justify-between p-2.5 rounded-lg border border-border/50 bg-muted/10 hover:bg-muted/30 transition-colors group">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={cn(
+                              "w-2 h-2 rounded-full flex-shrink-0",
+                              entry.is_paid ? "bg-emerald-500" : "bg-amber-500"
+                            )} />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium truncate">{entry.worker_name}</p>
+                                {entry.crew_member_id && <span className="text-[9px] text-muted-foreground uppercase">crew</span>}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs text-muted-foreground tabular-nums">{format(new Date(entry.work_date), "MMM d")}</span>
+                                <span className="text-xs text-muted-foreground">· {fmt(Number(entry.daily_rate))} × {entry.days_worked}d</span>
+                                {project && (
+                                  <Link to={`/admin/jobs/${project.id}`} className="text-xs text-primary hover:underline truncate flex items-center gap-0.5">
+                                    {project.customer_name || project.address || 'Job'}
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </Link>
+                                )}
+                              </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-sm font-semibold tabular-nums">{fmt(amount)}</span>
+                            {!entry.is_paid ? (
+                              <Button size="icon" variant="ghost"
+                                className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={async () => { await markPaid({ ids: [entry.id], paid: true }); toast.success('Marked paid'); }}
+                                title="Mark paid"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </Button>
+                            ) : (
+                              <Button size="icon" variant="ghost"
+                                className="h-7 w-7 text-muted-foreground hover:text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={async () => { await markPaid({ ids: [entry.id], paid: false }); toast.success('Marked unpaid'); }}
+                                title="Mark unpaid"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-sm font-semibold">{fmt(entry.amount)}</span>
-                          {entry.status === "pending" && (
-                            <Button size="icon" variant="ghost"
-                              className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => confirmPayrollMutation.mutate(entry.id)}
-                            >
-                              <CheckCircle2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                          <Button size="icon" variant="ghost"
-                            className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => deletePayrollMutation.mutate(entry.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -632,90 +620,6 @@ export default function CrewsVans() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* ─── ADD PAYROLL DIALOG ─── */}
-      <Dialog open={showNewPayroll} onOpenChange={setShowNewPayroll}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Hammer className="w-4 h-4" /> New Labor Entry
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Worker Name *</Label>
-                <Input placeholder="e.g. Carlos" value={payrollForm.name} onChange={e => setPayrollForm(f => ({ ...f, name: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Role *</Label>
-                <Select value={payrollForm.role} onValueChange={v => setPayrollForm(f => ({ ...f, role: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select role" /></SelectTrigger>
-                  <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Payment Method</Label>
-                <Select value={payrollForm.payment_method} onValueChange={v => setPayrollForm(f => ({ ...f, payment_method: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["cash", "check", "zelle", "wire"].map(m => <SelectItem key={m} value={m} className="capitalize">{m}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Daily Rate ($) *</Label>
-                <Input type="number" placeholder="250" value={payrollForm.daily_rate} onChange={e => setPayrollForm(f => ({ ...f, daily_rate: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Days Worked *</Label>
-                <Input type="number" min="0.5" step="0.5" value={payrollForm.days_worked} onChange={e => setPayrollForm(f => ({ ...f, days_worked: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Service Date</Label>
-                <Input type="date" value={payrollForm.service_date} onChange={e => setPayrollForm(f => ({ ...f, service_date: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Project (optional)</Label>
-                <Select value={payrollForm.project_id} onValueChange={v => setPayrollForm(f => ({ ...f, project_id: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Link to job" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">— None —</SelectItem>
-                    {projects.map((p: any) => (
-                      <SelectItem key={p.id} value={p.id}>{p.customer_name} · {p.project_type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Notes</Label>
-                <Input placeholder="Optional notes..." value={payrollForm.notes} onChange={e => setPayrollForm(f => ({ ...f, notes: e.target.value }))} />
-              </div>
-            </div>
-            {payrollCalc > 0 && (
-              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total to pay</span>
-                <span className="text-lg font-bold text-primary">{fmt(payrollCalc)}</span>
-              </div>
-            )}
-            <div className="flex gap-2 pt-1">
-              <Button variant="outline" className="flex-1" onClick={() => setShowNewPayroll(false)}>Cancel</Button>
-              <Button
-                className="flex-1"
-                disabled={!payrollForm.name || !payrollForm.role || !payrollForm.daily_rate || addPayrollMutation.isPending}
-                onClick={() => addPayrollMutation.mutate()}
-              >
-                {addPayrollMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Entry"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-      <PaymentDetailsSheet
-        payment={selectedPayrollEntry}
-        open={!!selectedPayrollEntry}
-        onOpenChange={(open) => !open && setSelectedPayrollEntry(null)}
-      />
     </AdminLayout>
   );
 }
