@@ -48,6 +48,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "appointment_assignees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "view_crew_earnings"
+            referencedColumns: ["crew_member_id"]
+          },
         ]
       }
       appointment_requests: {
@@ -1421,12 +1428,15 @@ export type Database = {
       labor_entries: {
         Row: {
           created_at: string | null
+          crew_member_id: string | null
           daily_rate: number
           days_worked: number
           id: string
           is_paid: boolean | null
           notes: string | null
           organization_id: string
+          paid_at: string | null
+          payment_method: string | null
           project_id: string
           role: string | null
           total_cost: number | null
@@ -1435,12 +1445,15 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          crew_member_id?: string | null
           daily_rate?: number
           days_worked?: number
           id?: string
           is_paid?: boolean | null
           notes?: string | null
           organization_id: string
+          paid_at?: string | null
+          payment_method?: string | null
           project_id: string
           role?: string | null
           total_cost?: number | null
@@ -1449,12 +1462,15 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          crew_member_id?: string | null
           daily_rate?: number
           days_worked?: number
           id?: string
           is_paid?: boolean | null
           notes?: string | null
           organization_id?: string
+          paid_at?: string | null
+          payment_method?: string | null
           project_id?: string
           role?: string | null
           total_cost?: number | null
@@ -1462,6 +1478,20 @@ export type Database = {
           worker_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "labor_entries_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labor_entries_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "view_crew_earnings"
+            referencedColumns: ["crew_member_id"]
+          },
           {
             foreignKeyName: "labor_entries_organization_id_fkey"
             columns: ["organization_id"]
@@ -2405,6 +2435,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_payments_collaborator"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "view_crew_earnings"
+            referencedColumns: ["crew_member_id"]
+          },
+          {
             foreignKeyName: "payments_invoice_id_fkey"
             columns: ["invoice_id"]
             isOneToOne: false
@@ -2440,10 +2477,14 @@ export type Database = {
           bio: string | null
           birthdate: string | null
           created_at: string
+          daily_rate: number | null
           email: string | null
+          employment_type: string | null
           full_name: string | null
           id: string
+          is_active_crew: boolean | null
           phone: string | null
+          region: string | null
           role: string | null
           updated_at: string
           user_id: string | null
@@ -2453,10 +2494,14 @@ export type Database = {
           bio?: string | null
           birthdate?: string | null
           created_at?: string
+          daily_rate?: number | null
           email?: string | null
+          employment_type?: string | null
           full_name?: string | null
           id?: string
+          is_active_crew?: boolean | null
           phone?: string | null
+          region?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string | null
@@ -2466,10 +2511,14 @@ export type Database = {
           bio?: string | null
           birthdate?: string | null
           created_at?: string
+          daily_rate?: number | null
           email?: string | null
+          employment_type?: string | null
           full_name?: string | null
           id?: string
+          is_active_crew?: boolean | null
           phone?: string | null
+          region?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string | null
@@ -3956,6 +4005,21 @@ export type Database = {
         Update: {
           customer_name?: string | null
           project_id?: string | null
+        }
+        Relationships: []
+      }
+      view_crew_earnings: {
+        Row: {
+          avg_rate: number | null
+          crew_member_id: string | null
+          default_rate: number | null
+          full_name: string | null
+          jobs_count: number | null
+          last_worked_at: string | null
+          paid_amount: number | null
+          role: string | null
+          total_earned: number | null
+          unpaid_amount: number | null
         }
         Relationships: []
       }

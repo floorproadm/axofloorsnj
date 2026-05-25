@@ -13,6 +13,9 @@ export interface LaborEntry {
   total_cost: number;
   work_date: string;
   is_paid: boolean;
+  paid_at: string | null;
+  payment_method: string | null;
+  crew_member_id: string | null;
   notes: string | null;
   created_at: string;
 }
@@ -46,6 +49,7 @@ export function useAddLaborEntry() {
       work_date?: string;
       is_paid?: boolean;
       notes?: string;
+      crew_member_id?: string | null;
     }) => {
       const { data, error } = await supabase
         .from('labor_entries')
@@ -59,7 +63,8 @@ export function useAddLaborEntry() {
           work_date: input.work_date || new Date().toISOString().split('T')[0],
           is_paid: input.is_paid ?? false,
           notes: input.notes || null,
-        })
+          crew_member_id: input.crew_member_id || null,
+        } as any)
         .select()
         .single();
       if (error) throw error;
@@ -68,6 +73,8 @@ export function useAddLaborEntry() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['labor-entries', data.project_id] });
       queryClient.invalidateQueries({ queryKey: ['job-cost', data.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['crew-earnings'] });
+      queryClient.invalidateQueries({ queryKey: ['all-labor-entries'] });
     },
   });
 }
@@ -83,6 +90,51 @@ export function useDeleteLaborEntry() {
     onSuccess: (projectId) => {
       queryClient.invalidateQueries({ queryKey: ['labor-entries', projectId] });
       queryClient.invalidateQueries({ queryKey: ['job-cost', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['crew-earnings'] });
+      queryClient.invalidateQueries({ queryKey: ['all-labor-entries'] });
+    },
+  });
+}
+
+export function useMarkLaborPaid() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ids, paid, method }: { ids: string[]; paid: boolean; method?: string }) => {
+      const { error } = await supabase
+        .from('labor_entries')
+        .update({
+          is_paid: paid,
+          paid_at: paid ? new Date().toISOString() : null,
+          payment_method: paid ? method || 'cash' : null,
+        } as any)
+        .in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['labor-entries'] });
+      queryClient.invalidateQueries({ queryKey: ['all-labor-entries'] });
+      queryClient.invalidateQueries({ queryKey: ['crew-earnings'] });
+    },
+  });
+}
+
+export function useAllLaborEntries(filters?: { crewMemberId?: string; paid?: boolean | null; from?: string; to?: string }) {
+  return useQuery({
+    queryKey: ['all-labor-entries', filters],
+    queryFn: async () => {
+      let q = supabase
+        .from('labor_entries')
+        .select('*, projects(id, customer_name, address), profiles:crew_member_id(id, full_name, avatar_url)')
+        .order('work_date', { ascending: false })
+        .limit(500);
+      if (filters?.crewMemberId) q = q.eq('crew_member_id', filters.crewMemberId);
+      if (filters?.paid === true) q = q.eq('is_paid', true);
+      if (filters?.paid === false) q = q.eq('is_paid', false);
+      if (filters?.from) q = q.gte('work_date', filters.from);
+      if (filters?.to) q = q.lte('work_date', filters.to);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data ?? [];
     },
   });
 }
