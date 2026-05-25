@@ -417,9 +417,12 @@ export default function CrewsVans() {
 
           {/* ─── PAYROLL TAB ─── (reads labor_entries — source of truth) */}
           <TabsContent value="payroll" className="mt-4 space-y-4">
-            <div className="rounded-lg bg-muted/30 border border-border/50 p-3 text-xs text-muted-foreground flex items-start gap-2">
-              <Hammer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-              <span>Labor entries are created inside each job's <strong>Labor</strong> section. This view aggregates everything for review and payment.</span>
+            <div className="flex items-start gap-2 rounded-lg bg-muted/30 border border-border/50 p-3">
+              <Hammer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground flex-1">Labor entries are usually created inside each job's <strong>Labor</strong> section. Use the button to log a manual payment.</span>
+              <Button size="sm" className="gap-1.5 h-7" onClick={() => setShowNewLabor(true)}>
+                <Plus className="w-3.5 h-3.5" /> Add Payment
+              </Button>
             </div>
 
             {/* Period selector */}
