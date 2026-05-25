@@ -331,12 +331,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
   if (!proposal) {
     return (
-      <Card className="w-full max-w-2xl mx-auto">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Generate Proposal
-          </CardTitle>
+          <CardTitle className="text-lg">Generate Proposal</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="text-sm text-muted-foreground">
