@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AppointmentRequestsBody } from "@/pages/admin/AppointmentRequests";
-import { CalendarDays, Inbox } from "lucide-react";
+import { CalendarDays, Inbox, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   ChevronLeft, ChevronRight, Plus, Clock, MapPin, Phone, User,
-  CalendarIcon, Trash2, Edit2, Copy, Ruler, Wrench, PhoneCall, PackageCheck
+  CalendarIcon, Trash2, Edit2, Copy, Ruler, Wrench, PhoneCall, PackageCheck,
+  Save
 } from "lucide-react";
 import {
   format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays,
@@ -80,10 +81,11 @@ export default function Schedule() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : "schedule") as "schedule" | "appointments";
-  const setMainTab = (v: "schedule" | "appointments") => {
+  const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : searchParams.get("tab") === "settings" ? "settings" : "schedule") as "schedule" | "appointments" | "settings";
+  const setMainTab = (v: "schedule" | "appointments" | "settings") => {
     const next = new URLSearchParams(searchParams);
     if (v === "appointments") next.set("tab", "appointments");
+    else if (v === "settings") next.set("tab", "settings");
     else next.delete("tab");
     setSearchParams(next, { replace: true });
   };
@@ -280,9 +282,9 @@ export default function Schedule() {
   return (
     <AdminLayout title="Schedule & Appointment">
       <div className="flex flex-col h-full">
-        {/* Main Tabs: Schedule & Appointment | Appointments */}
+        {/* Main Tabs: Schedule & Appointment | Appointments | Settings */}
         <div className="px-4 pt-3">
-          <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "schedule" | "appointments")}>
+          <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "schedule" | "appointments" | "settings")}>
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
               <TabsTrigger
                 value="schedule"
@@ -298,6 +300,13 @@ export default function Schedule() {
                 <Inbox className="w-4 h-4 mr-1.5" />
                 Appointments
               </TabsTrigger>
+              <TabsTrigger
+                value="settings"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <Settings className="w-4 h-4 mr-1.5" />
+                Settings
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -306,6 +315,8 @@ export default function Schedule() {
           <div className="p-4">
             <AppointmentRequestsBody />
           </div>
+        ) : mainTab === "settings" ? (
+          <ScheduleSettings />
         ) : (
         <>
         {/* Header */}
@@ -958,5 +969,114 @@ function AppointmentModal({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ─── Schedule Settings ──────────────────────────────────────
+function ScheduleSettings() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["schedule-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("company_settings")
+        .select("id, default_job_start_time, custom_send_time")
+        .eq("organization_id", AXO_ORG_ID)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const [jobStartTime, setJobStartTime] = useState("08:00");
+  const [sendTime, setSendTime] = useState("09:00");
+
+  useEffect(() => {
+    if (settings) {
+      setJobStartTime(settings.default_job_start_time || "08:00");
+      setSendTime(settings.custom_send_time || "09:00");
+    }
+  }, [settings]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("company_settings")
+        .update({
+          default_job_start_time: jobStartTime,
+          custom_send_time: sendTime,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", settings?.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["schedule-settings"] });
+      toast({ title: "Configurações salvas" });
+    },
+    onError: (e: Error) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center text-muted-foreground">
+        Carregando configurações...
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 max-w-xl mx-auto space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-foreground">Configurações de Agenda</h2>
+        <p className="text-sm text-muted-foreground">
+          Defina os horários padrão para operações do sistema.
+        </p>
+      </div>
+
+      <div className="space-y-4 bg-card border border-border/50 rounded-xl p-5">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Default Job Start Time</Label>
+            <p className="text-xs text-muted-foreground">
+              Horário padrão de início para novos jobs e agendamentos de produção.
+            </p>
+            <Input
+              type="time"
+              value={jobStartTime}
+              onChange={(e) => setJobStartTime(e.target.value)}
+              className="w-40 h-9"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Custom Send Time</Label>
+            <p className="text-xs text-muted-foreground">
+              Hora padrão para envio de propostas e faturas ao cliente.
+            </p>
+            <Input
+              type="time"
+              value={sendTime}
+              onChange={(e) => setSendTime(e.target.value)}
+              className="w-40 h-9"
+            />
+          </div>
+        </div>
+
+        <div className="pt-2 flex justify-end">
+          <Button
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending}
+            size="sm"
+            className="gap-1.5"
+          >
+            <Save className="w-3.5 h-3.5" />
+            {saveMutation.isPending ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
