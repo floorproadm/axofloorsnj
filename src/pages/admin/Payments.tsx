@@ -20,6 +20,9 @@ import {
   MoreHorizontal,
   Download,
   Eye,
+  CreditCard,
+  CheckSquare,
+  Banknote,
 } from "lucide-react";
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
 import { usePayments, type Payment } from "@/hooks/usePayments";
