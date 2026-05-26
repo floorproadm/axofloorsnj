@@ -86,6 +86,15 @@ const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.C
   'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
   'quick_quote': { label: 'Quick Quote', type: 'Ação Rápida', icon: Zap },
   'project_wizard': { label: 'Project Wizard', type: 'Qualificador', icon: CheckCircle, url: '/project-wizard' },
+    'google':          { label: 'Google',          type: 'Digital',    icon: TrendingUp },
+    'facebook':        { label: 'Facebook',        type: 'Digital',    icon: TrendingUp },
+    'instagram':       { label: 'Instagram',       type: 'Digital',    icon: TrendingUp },
+    'angi':            { label: 'Angi',            type: 'Marketplace', icon: TrendingUp },
+    'yard_sign':       { label: 'Yard Sign',       type: 'Offline',    icon: MapPin },
+    'word_of_mouth':   { label: 'Word of Mouth',   type: 'Referral',   icon: Users },
+    'repeat_customer': { label: 'Repeat Customer', type: 'Retencao',   icon: CheckCircle },
+    'phone_call':      { label: 'Phone Call',      type: 'Direto',     icon: Phone },
+    'mail':            { label: 'Mail / Mailer',   type: 'Offline',    icon: Mail },
 };
 
 const normalizeSource = (source: string): string => {
@@ -135,6 +144,7 @@ export default function Intake() {
     'Repair',
     'Stairs',
     'Other',
+      'Base Boards',
   ];
 
   const fetchLeads = async () => {
