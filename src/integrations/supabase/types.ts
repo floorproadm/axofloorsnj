@@ -599,19 +599,23 @@ export type Database = {
           default_labor_rate: number
           default_margin_min_percent: number
           email: string | null
+          google_rating: number
           id: string
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url: string | null
           organization_id: string | null
           phone: string | null
           primary_color: string | null
+          projects_completed: number
           referral_commission_percent: number
           secondary_color: string | null
           singleton_key: boolean
           tagline: string | null
           trade_name: string | null
+          trust_builders: Json
           updated_at: string
           website: string | null
+          years_in_business: number
         }
         Insert: {
           company_name?: string
@@ -619,19 +623,23 @@ export type Database = {
           default_labor_rate?: number
           default_margin_min_percent?: number
           email?: string | null
+          google_rating?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           organization_id?: string | null
           phone?: string | null
           primary_color?: string | null
+          projects_completed?: number
           referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
           tagline?: string | null
           trade_name?: string | null
+          trust_builders?: Json
           updated_at?: string
           website?: string | null
+          years_in_business?: number
         }
         Update: {
           company_name?: string
@@ -639,19 +647,23 @@ export type Database = {
           default_labor_rate?: number
           default_margin_min_percent?: number
           email?: string | null
+          google_rating?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           organization_id?: string | null
           phone?: string | null
           primary_color?: string | null
+          projects_completed?: number
           referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
           tagline?: string | null
           trade_name?: string | null
+          trust_builders?: Json
           updated_at?: string
           website?: string | null
+          years_in_business?: number
         }
         Relationships: [
           {
