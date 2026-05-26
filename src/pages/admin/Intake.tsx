@@ -135,7 +135,7 @@ export default function Intake() {
 
   const [formData, setFormData] = useState({
     name: '', phone: '', email: '', address: '', city: '', budget: '',
-    service: '', source: 'manual', notes: ''
+    service: '', source: 'manual', notes: '', contact_type: ''
   });
 
   const SERVICE_OPTIONS = [
