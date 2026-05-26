@@ -135,7 +135,7 @@ export default function Intake() {
 
   const [formData, setFormData] = useState({
     name: '', phone: '', email: '', address: '', city: '', budget: '',
-    service: '', source: 'manual', notes: ''
+    service: '', source: 'manual', notes: '', contact_type: ''
   });
 
   const SERVICE_OPTIONS = [
@@ -255,12 +255,13 @@ export default function Intake() {
         notes: formData.notes.trim() || null,
         services: formData.service ? [formData.service] : [],
         lead_source: formData.source || 'manual',
+        contact_type: formData.contact_type.trim() || null,
         status: 'cold_lead',
         organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
       toast({ title: "Lead adicionado", description: `${formData.name} foi adicionado.` });
-      setFormData({ name: '', phone: '', email: '', address: '', city: '', budget: '', service: '', source: 'manual', notes: '' });
+      setFormData({ name: '', phone: '', email: '', address: '', city: '', budget: '', service: '', source: 'manual', notes: '', contact_type: '' });
       setIsModalOpen(false);
       fetchLeads();
     } catch (error) {
@@ -623,6 +624,18 @@ export default function Intake() {
               <div className="space-y-2">
                 <Label htmlFor="phone">Telefone *</Label>
                 <Input id="phone" value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))} placeholder="(000) 000-0000" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contact_type">Tipo de Contato</Label>
+                <Select value={formData.contact_type} onValueChange={(v) => setFormData(prev => ({ ...prev, contact_type: v }))}>
+                  <SelectTrigger id="contact_type"><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Homeowner">Homeowner</SelectItem>
+                    <SelectItem value="Builder">Builder</SelectItem>
+                    <SelectItem value="Company">Company</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

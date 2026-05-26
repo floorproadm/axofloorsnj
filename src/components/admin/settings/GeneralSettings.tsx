@@ -121,18 +121,18 @@ export default function GeneralSettings() {
               <Label htmlFor="company_name">{t("general.razaoSocial")}</Label>
               <Input id="company_name" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="AXO Floors LLC" />
             </div>
-                          <div className="space-y-2">
-                                          <Label htmlFor="company_phone">Phone</Label>Label>
-                                          <Input id="company_phone" value="(732) 351-8653" readOnly placeholder="(732) 351-8653" />
-                          </div>div>
-                        <div className="space-y-2">
-                                        <Label htmlFor="company_email">Email</Label>Label>
-                                        <Input id="company_email" value="axofloorsnj@gmail.com" readOnly placeholder="axofloorsnj@gmail.com" />
-                        </div>div>
-                        <div className="space-y-2">
-                                        <Label htmlFor="company_timezone">Time Zone</Label>Label>
-                                        <Input id="company_timezone" value="Central Standard Time" readOnly placeholder="Central Standard Time" />
-                        </div>div></div>
+            <div className="space-y-2">
+              <Label htmlFor="company_phone">Phone</Label>
+              <Input id="company_phone" value="(732) 351-8653" readOnly placeholder="(732) 351-8653" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="company_email">Email</Label>
+              <Input id="company_email" value="axofloorsnj@gmail.com" readOnly placeholder="axofloorsnj@gmail.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="company_timezone">Time Zone</Label>
+              <Input id="company_timezone" value="Central Standard Time" readOnly placeholder="Central Standard Time" />
+            </div>
           </div>
         </CardContent>
       </Card>

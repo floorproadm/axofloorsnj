@@ -1593,6 +1593,7 @@ export type Database = {
           assigned_to: string | null
           budget: number | null
           city: string | null
+          contact_type: string | null
           converted_to_project_id: string | null
           created_at: string
           customer_id: string | null
@@ -1629,6 +1630,7 @@ export type Database = {
           assigned_to?: string | null
           budget?: number | null
           city?: string | null
+          contact_type?: string | null
           converted_to_project_id?: string | null
           created_at?: string
           customer_id?: string | null
@@ -1665,6 +1667,7 @@ export type Database = {
           assigned_to?: string | null
           budget?: number | null
           city?: string | null
+          contact_type?: string | null
           converted_to_project_id?: string | null
           created_at?: string
           customer_id?: string | null
