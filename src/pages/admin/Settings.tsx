@@ -128,6 +128,7 @@ export default function Settings() {
               {active === "email_logs" && <EmailLogsSettings />}
               {active === "email_templates" && <EmailTemplateEditor />}
               {active === "b2b_pricing" && <B2BPricingSettings />}
+              {active === "trust" && <TrustSettings />}
             </Suspense>
           </div>
         </div>
