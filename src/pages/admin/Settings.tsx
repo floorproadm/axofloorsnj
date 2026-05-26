@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, Tag } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, Tag, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -14,8 +14,9 @@ const TeamSettings = lazy(() => import("@/components/admin/settings/TeamSettings
 const EmailLogsSettings = lazy(() => import("@/components/admin/settings/EmailLogsSettings"));
 const EmailTemplateEditor = lazy(() => import("@/components/admin/settings/EmailTemplateEditor"));
 const B2BPricingSettings = lazy(() => import("@/components/admin/settings/B2BPricingSettings"));
+const TrustSettings = lazy(() => import("@/components/admin/settings/TrustSettings"));
 
-type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing";
+type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "trust";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
@@ -64,6 +65,7 @@ export default function Settings() {
     { id: "email_logs", label: "Email Logs", description: "Gmail email audit trail", icon: Mail },
     { id: "email_templates", label: "Email Templates", description: "Edit email copy & CTAs", icon: FileEdit },
     { id: "b2b_pricing", label: "Preços B2B", description: "Tabela de atacado para parceiros", icon: Tag },
+    { id: "trust", label: "Trust & Social Proof", description: "Trust builders and credibility counters", icon: ShieldCheck },
   ];
 
   return (
@@ -126,6 +128,7 @@ export default function Settings() {
               {active === "email_logs" && <EmailLogsSettings />}
               {active === "email_templates" && <EmailTemplateEditor />}
               {active === "b2b_pricing" && <B2BPricingSettings />}
+              {active === "trust" && <TrustSettings />}
             </Suspense>
           </div>
         </div>
