@@ -4115,6 +4115,7 @@ export type Database = {
         Args: { p_lead_id: string; p_project_type: string }
         Returns: string
       }
+      get_customer_portal: { Args: { p_token: string }; Returns: Json }
       get_dashboard_metrics: { Args: never; Returns: Json }
       get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
       get_leads_automation_status: {

@@ -130,48 +130,23 @@ export default function PublicPortal() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: cust } = await supabase
-        .from("customers")
-        .select("id, full_name, email, phone, portal_token, organization_id")
-        .eq("portal_token", token)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("get_customer_portal", { p_token: token });
 
       if (cancelled) return;
-      if (!cust) {
+      if (error || !data || !(data as any).customer) {
         setCustomer(null);
+        setProposals([]);
+        setProjects([]);
+        setInvoices([]);
         setLoading(false);
         return;
       }
-      setCustomer(cust as Customer);
 
-      const [{ data: props }, { data: projs }] = await Promise.all([
-        supabase
-          .from("proposals")
-          .select("id, share_token, status, good_price, better_price, best_price, flat_price, use_tiers, selected_tier, valid_until, created_at, accepted_at, organization_id")
-          .eq("customer_id", cust.id)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("projects")
-          .select("id, customer_name, project_type, project_status, address, start_date, completion_date, next_action, next_action_date")
-          .eq("customer_id", cust.id)
-          .order("created_at", { ascending: false }),
-      ]);
-
-      if (cancelled) return;
-      setProposals((props as Proposal[]) || []);
-      setProjects((projs as Project[]) || []);
-
-      const projectIds = (projs || []).map((p: any) => p.id);
-      if (projectIds.length > 0) {
-        const { data: invs } = await supabase
-          .from("invoices")
-          .select("id, invoice_number, share_token, status, amount, total_amount, due_date, paid_at, project_id")
-          .in("project_id", projectIds)
-          .order("due_date", { ascending: false });
-        if (!cancelled) setInvoices((invs as Invoice[]) || []);
-      } else {
-        setInvoices([]);
-      }
+      const payload = data as any;
+      setCustomer(payload.customer as Customer);
+      setProposals((payload.proposals as Proposal[]) || []);
+      setProjects((payload.projects as Project[]) || []);
+      setInvoices((payload.invoices as Invoice[]) || []);
       setLoading(false);
     })();
     return () => { cancelled = true; };
