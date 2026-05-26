@@ -42,6 +42,13 @@ const APPOINTMENT_TYPES = [
   { value: "follow_up", label: "Follow-up", color: "bg-amber-500", border: "border-l-amber-500", bg: "bg-amber-50", text: "text-amber-700" },
   { value: "delivery", label: "Entrega", color: "bg-purple-500", border: "border-l-purple-500", bg: "bg-purple-50", text: "text-purple-700" },
   { value: "other", label: "Outro", color: "bg-gray-500", border: "border-l-gray-500", bg: "bg-gray-50", text: "text-gray-700" },
+  { value: "on_site_estimate",    label: "On-Site Estimate",    color: "bg-violet-500",  border: "border-l-violet-500",  bg: "bg-violet-50",  text: "text-violet-700" },
+  { value: "site_visit",         label: "Site Visit",         color: "bg-emerald-400", border: "border-l-emerald-400", bg: "bg-emerald-50", text: "text-emerald-700" },
+  { value: "project_walkthrough", label: "Project Walkthrough", color: "bg-orange-400",  border: "border-l-orange-400",  bg: "bg-orange-50",  text: "text-orange-700" },
+  { value: "punch_out",          label: "Punch-Out",          color: "bg-orange-500",  border: "border-l-orange-500",  bg: "bg-orange-50",  text: "text-orange-700" },
+  { value: "quality_control",    label: "Quality Control",    color: "bg-yellow-500",  border: "border-l-yellow-500",  bg: "bg-yellow-50",  text: "text-yellow-700" },
+  { value: "scope_clarification",label: "Scope Clarification", color: "bg-sky-400",     border: "border-l-sky-400",     bg: "bg-sky-50",     text: "text-sky-700" },
+  { value: "payment_collection", label: "Payment Collection",  color: "bg-green-600",  border: "border-l-green-600",  bg: "bg-green-50",  text: "text-green-700" },
 ];
 
 const SCHEDULE_TEMPLATES = [
