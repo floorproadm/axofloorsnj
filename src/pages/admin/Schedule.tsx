@@ -81,10 +81,11 @@ export default function Schedule() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : "schedule") as "schedule" | "appointments";
-  const setMainTab = (v: "schedule" | "appointments") => {
+  const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : searchParams.get("tab") === "settings" ? "settings" : "schedule") as "schedule" | "appointments" | "settings";
+  const setMainTab = (v: "schedule" | "appointments" | "settings") => {
     const next = new URLSearchParams(searchParams);
     if (v === "appointments") next.set("tab", "appointments");
+    else if (v === "settings") next.set("tab", "settings");
     else next.delete("tab");
     setSearchParams(next, { replace: true });
   };
