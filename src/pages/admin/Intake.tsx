@@ -255,12 +255,13 @@ export default function Intake() {
         notes: formData.notes.trim() || null,
         services: formData.service ? [formData.service] : [],
         lead_source: formData.source || 'manual',
+        contact_type: formData.contact_type.trim() || null,
         status: 'cold_lead',
         organization_id: AXO_ORG_ID,
       });
       if (error) throw error;
       toast({ title: "Lead adicionado", description: `${formData.name} foi adicionado.` });
-      setFormData({ name: '', phone: '', email: '', address: '', city: '', budget: '', service: '', source: 'manual', notes: '' });
+      setFormData({ name: '', phone: '', email: '', address: '', city: '', budget: '', service: '', source: 'manual', notes: '', contact_type: '' });
       setIsModalOpen(false);
       fetchLeads();
     } catch (error) {
