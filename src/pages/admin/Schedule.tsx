@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AppointmentRequestsBody } from "@/pages/admin/AppointmentRequests";
-import { CalendarDays, Inbox } from "lucide-react";
+import { CalendarDays, Inbox, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   ChevronLeft, ChevronRight, Plus, Clock, MapPin, Phone, User,
-  CalendarIcon, Trash2, Edit2, Copy, Ruler, Wrench, PhoneCall, PackageCheck
+  CalendarIcon, Trash2, Edit2, Copy, Ruler, Wrench, PhoneCall, PackageCheck,
+  Save
 } from "lucide-react";
 import {
   format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays,
