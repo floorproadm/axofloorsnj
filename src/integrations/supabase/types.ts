@@ -596,6 +596,8 @@ export type Database = {
         Row: {
           company_name: string
           created_at: string
+          custom_send_time: string
+          default_job_start_time: string
           default_labor_rate: number
           default_margin_min_percent: number
           email: string | null
@@ -620,6 +622,8 @@ export type Database = {
         Insert: {
           company_name?: string
           created_at?: string
+          custom_send_time?: string
+          default_job_start_time?: string
           default_labor_rate?: number
           default_margin_min_percent?: number
           email?: string | null
@@ -644,6 +648,8 @@ export type Database = {
         Update: {
           company_name?: string
           created_at?: string
+          custom_send_time?: string
+          default_job_start_time?: string
           default_labor_rate?: number
           default_margin_min_percent?: number
           email?: string | null
