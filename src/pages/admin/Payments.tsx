@@ -200,6 +200,29 @@ export default function Payments() {
   return (
     <AdminLayout title="Payments & Invoices">
       <div className="space-y-4">
+        {/* ── Accepted Payment Methods ── */}
+        <div className="rounded-lg border border-border bg-card/40 p-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Accepted Payment Methods
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium">
+                <CreditCard className="w-3.5 h-3.5 text-primary" />
+                Credit Card
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium">
+                <CheckSquare className="w-3.5 h-3.5 text-primary" />
+                Check
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium">
+                <Banknote className="w-3.5 h-3.5 text-primary" />
+                Zelle
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* ── Main Tabs ── */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
