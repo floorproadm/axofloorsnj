@@ -109,7 +109,8 @@ export default function PublicDepositInvoice() {
     return Number(proposal.flat_price) || 0;
   }, [proposal, signature]);
 
-  const depositAmount = useMemo(() => acceptedPrice * 0.5, [acceptedPrice]);
+  const depositPct = (company?.deposit_percentage ?? 50) / 100;
+  const depositAmount = useMemo(() => acceptedPrice * depositPct, [acceptedPrice, depositPct]);
   const balanceAmount = useMemo(() => acceptedPrice - depositAmount, [acceptedPrice, depositAmount]);
 
   const paymentMethod = (signature?.payment_method || "check") as PaymentMethod;
@@ -281,7 +282,7 @@ export default function PublicDepositInvoice() {
                 </td>
               </tr>
               <tr style={{ backgroundColor: brand.secondary }} className="text-white">
-                <td className="px-4 py-4 font-semibold">Deposit due now (50%)</td>
+                <td className="px-4 py-4 font-semibold">Deposit due now ({company?.deposit_percentage ?? 50}%)</td>
                 <td
                   className="px-4 py-4 text-right text-xl font-bold tabular-nums"
                   style={{ color: brand.primary }}
