@@ -825,7 +825,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             <div style={{ marginBottom: 20 }}>
               <PrintDirectCard
                 price={previewSubtotal}
-                lineItems={proposal.line_items ?? []}
                 projectType={proposal.project_type}
                 formatCurrency={formatCurrency}
                 brand={brand}
@@ -979,31 +978,14 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand, theme
   );
 }
 
-function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand, theme, isDark }: {
+function PrintDirectCard({ price, projectType, formatCurrency, brand, theme, isDark }: {
   price: number;
-  lineItems: { description: string; category: string; amount: number }[];
   projectType: string;
   formatCurrency: (v: number) => string;
   brand: Brand;
   theme: PreviewTheme;
   isDark: boolean;
 }) {
-  const grouped = lineItems.reduce<Record<string, { description: string; amount: number }[]>>((acc, item) => {
-    const key = item.category || 'other';
-    if (!acc[key]) acc[key] = [];
-    acc[key].push({ description: item.description, amount: item.amount });
-    return acc;
-  }, {});
-
-  const categoryLabels: Record<string, string> = {
-    labor: 'Labor',
-    material: 'Materials',
-    materials: 'Materials',
-    equipment: 'Equipment',
-    additional: 'Additional Services',
-    other: 'Other',
-  };
-
   return (
     <div style={{
       border: `2px solid ${brand.primary}`,
@@ -1031,30 +1013,9 @@ function PrintDirectCard({ price, lineItems, projectType, formatCurrency, brand,
         {formatCurrency(price)}
       </p>
 
-      {lineItems.length > 0 ? (
-        <div style={{ background: theme.surface, borderRadius: 8, padding: 16, border: `1px solid ${theme.borderSoft}` }}>
-          <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: isDark ? theme.text : brand.secondary, marginBottom: 10, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
-            Scope Breakdown
-          </h4>
-          {Object.entries(grouped).map(([cat, items]) => (
-            <div key={cat} style={{ marginBottom: 10 }}>
-              <p style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>
-                {categoryLabels[cat] || cat}
-              </p>
-              {items.map((it, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: i < items.length - 1 ? `1px dashed ${theme.border}` : 'none' }}>
-                  <span style={{ color: theme.textDim }}>{it.description}</span>
-                  <span style={{ color: theme.text, fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(it.amount)}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p style={{ fontSize: 13, color: theme.textDim, fontStyle: 'italic' }}>
-          Includes all labor, materials, and equipment required to complete this project per the agreed scope.
-        </p>
-      )}
+      <p style={{ fontSize: 13, color: theme.textDim, fontStyle: 'italic' }}>
+        Includes all labor, materials, and equipment required to complete this project per the agreed scope.
+      </p>
     </div>
   );
 }
