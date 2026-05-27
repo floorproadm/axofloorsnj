@@ -382,20 +382,31 @@ function PaymentInstructions({
             <InstructionRow label="Make check payable to" value={brand.legalName} />
             <InstructionRow label="Amount" value={`$${amount.toFixed(2)}`} />
             <InstructionRow label="Memo" value={invoiceNumber} />
-            <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-100">
-              We'll coordinate pickup or provide a mailing address — reply to{" "}
-              <a href={`mailto:${brand.email}`} className="text-amber-600 font-medium">
-                {brand.email}
-              </a>{" "}
-              or text{" "}
-              <a
-                href={`tel:${brand.phone.replace(/\D/g, "")}`}
-                className="text-amber-600 font-medium"
-              >
-                {brand.phone}
-              </a>
-              .
-            </p>
+            {brand.checkMailingAddress ? (
+              <div className="pt-2 border-t border-slate-100 space-y-1">
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Please mail your check to the address below. Include the memo reference so we can match your payment.
+                </p>
+                <p className="text-sm text-slate-900 font-medium leading-relaxed whitespace-pre-line">
+                  {brand.checkMailingAddress}
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-100">
+                We'll coordinate pickup or provide a mailing address — reply to{" "}
+                <a href={`mailto:${brand.email}`} className="text-amber-600 font-medium">
+                  {brand.email}
+                </a>{" "}
+                or text{" "}
+                <a
+                  href={`tel:${brand.phone.replace(/\D/g, "")}`}
+                  className="text-amber-600 font-medium"
+                >
+                  {brand.phone}
+                </a>
+                .
+              </p>
+            )}
           </div>
         </div>
       </Card>
