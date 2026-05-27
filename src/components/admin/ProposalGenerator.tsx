@@ -203,10 +203,11 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           category: it.category || 'other',
           qty: 1,
           unit_price: Number(it.amount) || 0,
+          service_catalog_id: null,
         }));
       }
       if (seeded.length === 0) {
-        seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0 });
+        seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0, service_catalog_id: null });
       }
       if (!cancelled) {
         setEditableLines(seeded);
