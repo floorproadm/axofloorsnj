@@ -33,7 +33,8 @@ export function useServiceCatalog(itemType?: CatalogItemType) {
       let q = supabase
         .from("service_catalog" as any)
         .select("*")
-        .order("display_order", { ascending: true })
+        .eq("is_active", true)
+        .order("category", { ascending: true })
         .order("name", { ascending: true });
 
       if (itemType) {
