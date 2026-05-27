@@ -101,14 +101,27 @@ export default function PublicProposal() {
             .eq("share_token", token);
         }
 
-        const [projRes, custRes, companyRes] = await Promise.all([
+        const [projRes, custRes, companyRes, itemsRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle(),
           supabase.from("company_settings").select("*").limit(1).maybeSingle(),
+          supabase
+            .from("proposal_line_items" as any)
+            .select("description, category, quantity, unit_price, amount, display_order")
+            .eq("proposal_id", prop.id)
+            .order("display_order", { ascending: true }),
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
         setCompany(companyRes.data);
+        setLineItems(((itemsRes.data as any[]) || []).map((r) => ({
+          description: r.description || "",
+          category: r.category || "other",
+          quantity: Number(r.quantity) || 0,
+          unit_price: Number(r.unit_price) || 0,
+          amount: Number(r.amount) || 0,
+        })));
+
         const logoPath = (companyRes.data as any)?.logo_url;
         if (logoPath) {
           const { data: signed } = await supabase.storage
