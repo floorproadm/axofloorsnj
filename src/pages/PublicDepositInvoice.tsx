@@ -34,14 +34,14 @@ export default function PublicDepositInvoice() {
   const [error, setError] = useState<string | null>(null);
 
   const brand = {
-    name: company?.trade_name || company?.company_name || "AXO Floors",
+    name: "AXO FLOORS",
     legalName: "AXO FLOORS LLC",
     tagline: company?.tagline || "Professional Flooring · NJ",
     phone: company?.phone || "(732) 351-8653",
     email: company?.email || "axofloorsnj@gmail.com",
     website: company?.website || "axofloorsnj.com",
     primary: company?.primary_color || "#d97706",
-    secondary: company?.secondary_color || "#0B1426",
+    secondary: "#0B1426",
     logoUrl,
   };
 
@@ -164,15 +164,12 @@ export default function PublicDepositInvoice() {
             )}
             <div className="min-w-0">
               <h1 className="text-xl font-bold tracking-tight truncate">{brand.name}</h1>
-              <p
-                className="text-[10px] uppercase tracking-[2px] mt-0.5"
-                style={{ color: brand.primary }}
-              >
-                {brand.tagline}
+              <p className="text-[10px] uppercase tracking-[2px] mt-0.5 text-amber-500">
+                Deposit Invoice
               </p>
             </div>
           </div>
-          <Badge className="bg-amber-500 text-white border-0 hover:bg-amber-500">
+          <Badge className="bg-amber-500 text-white border-0 hover:bg-amber-500 shrink-0">
             Deposit Due
           </Badge>
         </div>
