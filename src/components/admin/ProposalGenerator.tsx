@@ -139,10 +139,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     if (!projectId) return;
     let cancelled = false;
     (async () => {
-      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 });
+      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0, readOnly: true });
       if (cancelled) return;
-      // Only adopt if it was an existing (reused) proposal — never auto-insert.
       if (data?._isExisting) setProposal(data);
+
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
