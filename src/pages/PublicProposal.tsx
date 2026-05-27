@@ -283,7 +283,7 @@ export default function PublicProposal() {
                 tierKey={t.key}
                 price={t.price}
                 recommended={i === 1}
-                disabled={isAccepted || isExpired}
+                disabled={!canAct}
                 accepted={proposal.selected_tier === t.key}
                 onSelect={() => handleSelectTier(t.key)}
               />
@@ -297,15 +297,46 @@ export default function PublicProposal() {
             <p className="text-4xl font-bold text-slate-900 mt-1">
               {fmt(Number(proposal.flat_price))}
             </p>
+            {lineItems.length > 0 && (
+              <div className="mt-4 border-t border-slate-200 pt-4 space-y-2">
+                <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                  Breakdown
+                </p>
+                {lineItems.map((li, idx) => (
+                  <div key={idx} className="flex justify-between items-start text-sm">
+                    <div className="flex-1 min-w-0 pr-3">
+                      <p className="text-slate-900">{li.description}</p>
+                      {li.quantity !== 1 && (
+                        <p className="text-[11px] text-slate-500">
+                          {li.quantity} × {fmt(li.unit_price)}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-slate-900 font-medium tabular-nums">{fmt(li.amount)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
             <Button
               size="lg"
               className="w-full mt-5 bg-amber-600 hover:bg-amber-700"
-              disabled={isAccepted || isExpired}
+              disabled={!canAct}
               onClick={() => handleSelectTier("flat")}
             >
               {isAccepted ? "Approved" : "Approve & Sign — Lock In Your Project"}
             </Button>
           </Card>
+        )}
+
+        {/* Decline */}
+        {canAct && (
+          <Button
+            variant="outline"
+            className="w-full text-slate-600 hover:text-slate-900"
+            onClick={() => setDeclineOpen(true)}
+          >
+            Decline Proposal
+          </Button>
         )}
 
         {/* Trust badges */}
