@@ -35,8 +35,8 @@ export default function PublicDepositInvoice() {
   const [error, setError] = useState<string | null>(null);
 
   const brand = {
-    name: "AXO FLOORS",
-    legalName: "AXO FLOORS LLC",
+    name: company?.company_name || "AXO FLOORS",
+    legalName: company?.trade_name || company?.company_name || "AXO FLOORS LLC",
     tagline: company?.tagline || "Professional Flooring · NJ",
     phone: company?.phone || "(732) 351-8653",
     email: company?.email || "axofloorsnj@gmail.com",
