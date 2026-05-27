@@ -491,6 +491,14 @@ function StatusBadge({ status, expired }: { status: string; expired: boolean }) 
       </Badge>
     );
   }
+  if (status === "rejected") {
+    return (
+      <Badge className="bg-slate-500 text-white border-0 hover:bg-slate-500">
+        Declined
+      </Badge>
+    );
+  }
+
   return (
     <Badge className="bg-amber-400 text-[#0f1b3d] border-0 hover:bg-amber-400">
       Awaiting Approval
