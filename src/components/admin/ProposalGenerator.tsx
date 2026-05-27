@@ -57,6 +57,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   // Proposal-level settings (per-proposal overrides of company defaults)
   const [paymentTerms, setPaymentTerms] = useState<string>('');
   const [taxRate, setTaxRate] = useState<string>('0');
