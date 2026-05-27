@@ -1,84 +1,74 @@
-## Objetivo
-Deixar o sistema de automações 100% funcional com email-only: converter SMS pendentes em email, adicionar rodapé de opt-out em todos os drips e popular as variáveis de agendamento no engine.
+## Bug fixes for proposals system
 
-## Observações da auditoria (antes de mudar)
+### BUG 1 — ShareModal broken link
+File: `src/pages/admin/Proposals.tsx` (function `ShareModal`, ~line 296).
 
-**SMS drips encontrados (5, não 4):**
-| ID | Sequência | Stage | Delay |
-|---|---|---|---|
-| `9237ede4…` | Aggressive New Lead Follow Up | `cold_lead` | 0d *(será convertido)* |
-| `7cd4f2f6…` | Aggressive New Lead Follow Up | `cold_lead` | 4d *(será convertido)* |
-| `10822afb…` | Passive Proposal Follow Up | `proposal_sent` | 3d *(será convertido)* |
-| `0ec04612…` | Cancelled Appointment | `warm_lead` | 1d *(será convertido)* |
-| `6eeea762…` | Appointment Information | `estimate_scheduled` | 0d *(não está na sua lista — mantenho como SMS / skipped)* |
+- Remove the `btoa(...)` token hack.
+- Load the real `share_token` from the `proposals` table on open (state + `useEffect` querying `proposals.share_token` by `proposal.id`).
+- If `share_token` is null, generate one via `encode(gen_random_bytes(24),'hex')` style — easier: insert `crypto.randomUUID().replace(/-/g,'')` and `UPDATE proposals SET share_token = ... WHERE id = ...` then use it.
+- Build `publicUrl = ${origin}/proposal/${realToken}` from that value. Show a loading state until token resolves; disable Copy/Email/WhatsApp until loaded.
 
-Confirma deixar esse 5º SMS (`Appointment Information`) como está? Sigo a sua lista de 4.
+### BUG 2 — Line items not persisted
+File: `src/components/admin/ProposalGenerator.tsx` (`saveLines`, ~line 187).
 
-**Edge function `unsubscribe` não existe.** Você pediu apenas para gerar a URL `…/functions/v1/unsubscribe?lead_id=…` e injetar como `{{unsubscribe_url}}`. Vou fazer só isso — o link existirá mas retornará 404 até a função ser criada. Se quiser, faço a função num passo seguinte (toggle simples num campo `unsubscribed_at` na tabela `leads` + página de confirmação).
+New DB table via migration:
 
-## Mudanças
-
-### 1. Migration SQL (uma única migration)
-
-**1a. Converter os 4 SMS → email** via `UPDATE automation_drips` por `id`, setando `channel='email'`, `subject` e `message_template` novos:
-
-- **`9237ede4` — cold_lead 0d (Welcome imediato)**  
-  Subject: `We got your quote request, {{first_name}}!`  
-  Body: agradecimento imediato em nome de `{{salesperson_name}}` / `{{company_name}}`, confirma que recebemos o pedido (`{{services}}`), próximo passo é agendar a visita técnica via `{{view_request_button}}` ou ligar `{{company_phone}}`. Tom = mesmo da sequência "Aggressive New Lead Follow Up".
-
-- **`7cd4f2f6` — cold_lead 4d (Quick check-in)**  
-  Subject: `Still need help with your project, {{first_name}}?`  
-  Body curto, 2-3 frases, pergunta se ainda precisa de ajuda, CTA `{{view_request_button}}`. Casa entre os drips 3d ("Are you still interested…") e 5d ("Availability this week").
-
-- **`10822afb` — proposal_sent 3d**  
-  Subject: `Any questions about your proposal, {{first_name}}?`  
-  Body: `{{salesperson_name}}` faz check-in, oferece esclarecer dúvidas, CTA duplo `{{view_quote_button}}` + ligar. Casa entre 1d ("Have you had a chance…") e 4d ("Ok, we just couldn't wait…").
-
-- **`0ec04612` — warm_lead Cancelled 1d**  
-  Subject: `Sorry we missed you, {{first_name}} — let's reschedule`  
-  Body: empático sobre o cancelamento, oferece reagendar via `{{view_request_button}}`. Casa com o 3d "Touching base - still interested?" da mesma sequência.
-
-**1b. Adicionar rodapé de opt-out** em **todos** os drips com `channel='email'` (inclui os 4 recém-convertidos) via `UPDATE automation_drips … SET message_template = message_template || '<footer html>' WHERE channel='email' AND message_template NOT LIKE '%unsubscribe_url%'`. Guard `NOT LIKE` para ser idempotente.
-
-Rodapé exato (conforme pedido):
-```html
-<br><hr style="border:none;border-top:1px solid #eee;margin:20px 0"><p style="font-size:12px;color:#999;text-align:center">To unsubscribe from these emails, <a href="{{unsubscribe_url}}">click here</a>.</p>
+```
+public.proposal_line_items (
+  id uuid pk default gen_random_uuid(),
+  proposal_id uuid not null,
+  description text not null default '',
+  category text not null default 'other',
+  quantity numeric not null default 1,
+  unit_price numeric not null default 0,
+  amount numeric generated always as (quantity * unit_price) stored,
+  display_order int not null default 0,
+  created_at timestamptz not null default now()
+)
 ```
 
-### 2. Edit `supabase/functions/automation-engine/index.ts`
+- GRANTs: `authenticated` full, `service_role` all, `anon SELECT` (needed so `/proposal/:token` public page can read items).
+- RLS:
+  - tenant_all (authenticated) via join `proposals.organization_id = get_user_org_id()`.
+  - public read by token via join `proposals.share_token IS NOT NULL` (mirrors `invoice_items` policy).
+- Index on `proposal_id`.
 
-**2a. `{{unsubscribe_url}}`** — adicionar ao bloco `vars`:
-```ts
-unsubscribe_url: `${supabaseUrl}/functions/v1/unsubscribe?lead_id=${lead.id}`,
-```
+Update `saveLines()`:
+- `delete from proposal_line_items where proposal_id = X` then `insert` all current `editableLines` (description, category, quantity, unit_price, display_order by index).
+- Keep updating `proposals.flat_price = editedTotal` as before.
 
-**2b. Appointment vars** — antes do `vars`, fazer lookup do próximo agendamento do lead:
-```ts
-const { data: nextAppt } = await supabase
-  .from("appointments")
-  .select("appointment_date, appointment_time, location")
-  .eq("organization_id", log.organization_id)
-  .eq("customer_id", lead.customer_id)            // appointments usa customer_id
-  .gte("appointment_date", new Date().toISOString().slice(0,10))
-  .in("status", ["scheduled", "confirmed"])
-  .order("appointment_date", { ascending: true })
-  .order("appointment_time", { ascending: true })
-  .limit(1)
-  .maybeSingle();
-```
-Fallback: se `lead.customer_id` é null ou não há resultado → strings vazias (já é o comportamento atual). Formatar `appointment_date` como `MMM D, YYYY` e `appointment_time` como `h:mm AM/PM` para leitura humana; `appointment_location` = `nextAppt?.location || lead.address || ""`.
+Hydration (`useEffect` ~line 143): read from new `proposal_line_items` (qty + unit_price) when present; fall back to existing `line_items` array seed only if table empty.
 
-Nota: a tabela `appointments` se liga ao lead via `customer_id`, não `lead_id`. Se o lead ainda não tem `customer_id`, as vars ficam vazias (comportamento aceitável — atualmente já ficam vazias).
+Also update the public proposal page (`src/pages/PublicProposal.tsx`) to fetch from `proposal_line_items` when `use_tiers=false` so the breakdown shows real qty/unit_price.
 
-### 3. Sem mudanças em UI
+### BUG 3 — Decline button on public portal
+File: `src/pages/PublicProposal.tsx`.
 
-Tudo é backend (SQL + edge function). Os drips reaparecem como "Email" no `/admin/automations` automaticamente.
+- Add new column via migration: `proposals.rejection_reason text null`, `proposals.rejected_at timestamptz null` (if not present — confirmed missing).
+- Add `Decline Proposal` outline button next to the signature CTA (only when status is `sent`/`viewed`).
+- New `DeclineDialog` component (`src/components/proposal/DeclineDialog.tsx`):
+  - Textarea "Reason (optional)".
+  - On confirm: `update proposals set status='rejected', rejection_reason=<text or null>, rejected_at=now() where share_token = token`.
+  - Public RLS `proposals_public_*` already allows update by share_token (mirrors invoice). Verify and add a permissive UPDATE policy `proposals_public_decline_by_token` if missing, scoped `using (share_token is not null)`.
+- After update, show a confirmation card: "Proposal declined — thank you for letting us know."
 
-## Validação pós-deploy
-1. `SELECT channel, COUNT(*) FROM automation_drips GROUP BY channel;` → 0 SMS (exceto o 5º se mantido).
-2. `SELECT COUNT(*) FROM automation_drips WHERE channel='email' AND message_template NOT LIKE '%unsubscribe_url%';` → 0.
-3. Logs do `automation-engine` mostram envio com `{{appointment_date}}` interpolado em drips de `estimate_scheduled`.
+### BUG 4 — Admin notification email on signature
+File: `src/components/proposal/SignatureDialog.tsx` (in `handleSubmit`, after the `proposals` update succeeds).
 
-## Pergunta antes de implementar
-1. Manter o 5º SMS (`Appointment Information`, `estimate_scheduled` 0d) como está, ou converter também?
-2. Quer que eu **também** crie a edge function `unsubscribe` (marca `leads.unsubscribed_at` + cancela enrollments ativos + página de confirmação)?
+- Look up admin email: query `company_settings.email` (already public-readable).
+- Look up proposal number: query `proposals.proposal_number` (already loaded in caller — pass it as a prop `proposalNumber` to avoid extra round trip).
+- Call `supabase.functions.invoke('gmail-send', { body: { to: adminEmail, subject: 'Proposal Signed — <number>', html: <table with customer name, proposal #, selected tier, payment method, link to https://<origin>/admin/proposals> } })`.
+- Wrap in try/catch — never block the success UI if email fails (just `console.error`).
+
+Add `proposalNumber: string` prop to `SignatureDialog` and pass it from `PublicProposal.tsx`.
+
+### Technical summary
+
+1. Migration: create `proposal_line_items` table + grants + RLS + index; add `rejection_reason`, `rejected_at` columns to `proposals`; add public UPDATE policy on `proposals` for decline-by-token if not already present.
+2. Edit `src/pages/admin/Proposals.tsx` — real `share_token` in `ShareModal`.
+3. Edit `src/components/admin/ProposalGenerator.tsx` — upsert into `proposal_line_items` in `saveLines`, hydrate from it.
+4. Edit `src/pages/PublicProposal.tsx` — fetch line items from new table; add Decline button + dialog wiring.
+5. New file `src/components/proposal/DeclineDialog.tsx`.
+6. Edit `src/components/proposal/SignatureDialog.tsx` — add `proposalNumber` prop + admin email via `gmail-send`.
+
+No edge function changes needed (reuses existing `gmail-send`).

@@ -19,6 +19,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
+import { DeclineDialog } from "@/components/proposal/DeclineDialog";
+
 
 const fmt = (v: number) =>
   `$${Number(v || 0).toLocaleString("en-US", {
@@ -46,7 +48,10 @@ export default function PublicProposal() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [signOpen, setSignOpen] = useState(false);
+  const [declineOpen, setDeclineOpen] = useState(false);
   const [pickedTier, setPickedTier] = useState<TierKey | "flat" | null>(null);
+  const [lineItems, setLineItems] = useState<Array<{ description: string; category: string; quantity: number; unit_price: number; amount: number }>>([]);
+
 
   // White-label brand with safe fallbacks
   const brand = {
@@ -96,14 +101,27 @@ export default function PublicProposal() {
             .eq("share_token", token);
         }
 
-        const [projRes, custRes, companyRes] = await Promise.all([
+        const [projRes, custRes, companyRes, itemsRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle(),
           supabase.from("company_settings").select("*").limit(1).maybeSingle(),
+          supabase
+            .from("proposal_line_items" as any)
+            .select("description, category, quantity, unit_price, amount, display_order")
+            .eq("proposal_id", prop.id)
+            .order("display_order", { ascending: true }),
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
         setCompany(companyRes.data);
+        setLineItems(((itemsRes.data as any[]) || []).map((r) => ({
+          description: r.description || "",
+          category: r.category || "other",
+          quantity: Number(r.quantity) || 0,
+          unit_price: Number(r.unit_price) || 0,
+          amount: Number(r.amount) || 0,
+        })));
+
         const logoPath = (companyRes.data as any)?.logo_url;
         if (logoPath) {
           const { data: signed } = await supabase.storage
@@ -120,10 +138,13 @@ export default function PublicProposal() {
   }, [token]);
 
   const isAccepted = proposal?.status === "accepted";
+  const isRejected = proposal?.status === "rejected";
   const isExpired = useMemo(() => {
     if (!proposal?.valid_until) return false;
-    return new Date(proposal.valid_until) < new Date() && !isAccepted;
-  }, [proposal, isAccepted]);
+    return new Date(proposal.valid_until) < new Date() && !isAccepted && !isRejected;
+  }, [proposal, isAccepted, isRejected]);
+  const canAct = !isAccepted && !isRejected && !isExpired;
+
 
   const displayName = customer?.full_name || project?.customer_name || "Client";
   const displayPhone = customer?.phone || project?.customer_phone || null;
@@ -262,7 +283,7 @@ export default function PublicProposal() {
                 tierKey={t.key}
                 price={t.price}
                 recommended={i === 1}
-                disabled={isAccepted || isExpired}
+                disabled={!canAct}
                 accepted={proposal.selected_tier === t.key}
                 onSelect={() => handleSelectTier(t.key)}
               />
@@ -276,15 +297,46 @@ export default function PublicProposal() {
             <p className="text-4xl font-bold text-slate-900 mt-1">
               {fmt(Number(proposal.flat_price))}
             </p>
+            {lineItems.length > 0 && (
+              <div className="mt-4 border-t border-slate-200 pt-4 space-y-2">
+                <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                  Breakdown
+                </p>
+                {lineItems.map((li, idx) => (
+                  <div key={idx} className="flex justify-between items-start text-sm">
+                    <div className="flex-1 min-w-0 pr-3">
+                      <p className="text-slate-900">{li.description}</p>
+                      {li.quantity !== 1 && (
+                        <p className="text-[11px] text-slate-500">
+                          {li.quantity} × {fmt(li.unit_price)}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-slate-900 font-medium tabular-nums">{fmt(li.amount)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
             <Button
               size="lg"
               className="w-full mt-5 bg-amber-600 hover:bg-amber-700"
-              disabled={isAccepted || isExpired}
+              disabled={!canAct}
               onClick={() => handleSelectTier("flat")}
             >
               {isAccepted ? "Approved" : "Approve & Sign — Lock In Your Project"}
             </Button>
           </Card>
+        )}
+
+        {/* Decline */}
+        {canAct && (
+          <Button
+            variant="outline"
+            className="w-full text-slate-600 hover:text-slate-900"
+            onClick={() => setDeclineOpen(true)}
+          >
+            Decline Proposal
+          </Button>
         )}
 
         {/* Trust badges */}
@@ -375,6 +427,19 @@ export default function PublicProposal() {
             </div>
           </Card>
         )}
+        {isRejected && (
+          <Card className="p-4 bg-slate-100 border-slate-300 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-slate-900 text-sm">
+                Proposal declined.
+              </p>
+              <p className="text-xs text-slate-700 mt-0.5">
+                Thank you for letting us know. Call us anytime if anything changes.
+              </p>
+            </div>
+          </Card>
+        )}
 
         <p className="text-center text-[11px] text-slate-400 pt-4">
           {brand.name} · {brand.website}
@@ -389,14 +454,27 @@ export default function PublicProposal() {
         organizationId={proposal.organization_id}
         defaultName={displayName}
         selectedTier={pickedTier}
+        proposalNumber={proposal.proposal_number}
+        customerName={displayName}
         onSigned={() => {
-          // refresh
           window.location.reload();
+        }}
+      />
+
+      {/* Decline dialog */}
+      <DeclineDialog
+        open={declineOpen}
+        onOpenChange={setDeclineOpen}
+        proposalId={proposal.id}
+        shareToken={token!}
+        onDeclined={() => {
+          setTimeout(() => window.location.reload(), 1500);
         }}
       />
     </div>
   );
 }
+
 
 function StatusBadge({ status, expired }: { status: string; expired: boolean }) {
   if (expired) {
@@ -413,6 +491,14 @@ function StatusBadge({ status, expired }: { status: string; expired: boolean }) 
       </Badge>
     );
   }
+  if (status === "rejected") {
+    return (
+      <Badge className="bg-slate-500 text-white border-0 hover:bg-slate-500">
+        Declined
+      </Badge>
+    );
+  }
+
   return (
     <Badge className="bg-amber-400 text-[#0f1b3d] border-0 hover:bg-amber-400">
       Awaiting Approval
