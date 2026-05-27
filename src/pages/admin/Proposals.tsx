@@ -299,19 +299,46 @@ function ShareModal({ proposal, open, onClose }: {
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const shareToken = btoa(`prop-${proposal.id}`).replace(/=/g, "").slice(0, 18);
-  const publicUrl = `${window.location.origin}/proposal/${shareToken}`;
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [tokenLoading, setTokenLoading] = useState(true);
+  const publicUrl = shareToken ? `${window.location.origin}/proposal/${shareToken}` : "";
   const client = proposal.projects;
   const selectedPrice = proposal.selected_tier
     ? proposal[`${proposal.selected_tier}_price` as keyof ProposalWithRelations] as number
     : proposal.better_price;
 
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      setTokenLoading(true);
+      const { data } = await supabase
+        .from("proposals")
+        .select("share_token")
+        .eq("id", proposal.id)
+        .maybeSingle();
+      if (cancelled) return;
+      let token = data?.share_token as string | null;
+      if (!token) {
+        token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        await supabase.from("proposals").update({ share_token: token } as any).eq("id", proposal.id);
+      }
+      if (!cancelled) {
+        setShareToken(token);
+        setTokenLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [open, proposal.id]);
+
   const handleCopy = () => {
+    if (!publicUrl) return;
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success("Link copied!");
   };
+
 
   const handleWhatsApp = () => {
     const name = client?.customer_name.split(" ")[0] || "there";
