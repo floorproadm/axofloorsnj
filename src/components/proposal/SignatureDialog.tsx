@@ -25,7 +25,7 @@ interface Props {
   selectedTier: "good" | "better" | "best" | "flat" | null;
   proposalNumber?: string;
   customerName?: string;
-  onSigned?: () => void;
+  proposalToken: string;
 }
 
 type PaymentMethod = "check" | "zelle" | "other";
@@ -39,7 +39,7 @@ export function SignatureDialog({
   selectedTier,
   proposalNumber,
   customerName,
-  onSigned,
+  proposalToken,
 }: Props) {
 
   const padRef = useRef<SignaturePad | null>(null);
@@ -153,7 +153,7 @@ export function SignatureDialog({
       }
 
       setDone(true);
-      onSigned?.();
+      window.location.href = `/proposal/${proposalToken}/invoice`;
 
     } catch (e: any) {
       console.error(e);
