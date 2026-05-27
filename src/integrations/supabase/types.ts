@@ -2955,6 +2955,7 @@ export type Database = {
           id: string
           proposal_id: string
           quantity: number
+          service_catalog_id: string | null
           unit_price: number
         }
         Insert: {
@@ -2966,6 +2967,7 @@ export type Database = {
           id?: string
           proposal_id: string
           quantity?: number
+          service_catalog_id?: string | null
           unit_price?: number
         }
         Update: {
@@ -2977,6 +2979,7 @@ export type Database = {
           id?: string
           proposal_id?: string
           quantity?: number
+          service_catalog_id?: string | null
           unit_price?: number
         }
         Relationships: []

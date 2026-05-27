@@ -1,0 +1,1 @@
+ALTER TABLE public.proposal_line_items ADD COLUMN IF NOT EXISTS service_catalog_id uuid;
