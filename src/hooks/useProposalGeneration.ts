@@ -218,6 +218,11 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         };
       }
 
+      // readOnly callers (e.g. auto-load on mount) must never trigger an INSERT.
+      if (options.readOnly) return null;
+
+
+
 
       // ───────── DIRECT MODE ─────────
       if (mode === 'direct') {
