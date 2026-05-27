@@ -138,10 +138,13 @@ export default function PublicProposal() {
   }, [token]);
 
   const isAccepted = proposal?.status === "accepted";
+  const isRejected = proposal?.status === "rejected";
   const isExpired = useMemo(() => {
     if (!proposal?.valid_until) return false;
-    return new Date(proposal.valid_until) < new Date() && !isAccepted;
-  }, [proposal, isAccepted]);
+    return new Date(proposal.valid_until) < new Date() && !isAccepted && !isRejected;
+  }, [proposal, isAccepted, isRejected]);
+  const canAct = !isAccepted && !isRejected && !isExpired;
+
 
   const displayName = customer?.full_name || project?.customer_name || "Client";
   const displayPhone = customer?.phone || project?.customer_phone || null;
