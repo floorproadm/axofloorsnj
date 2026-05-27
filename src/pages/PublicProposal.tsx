@@ -48,7 +48,10 @@ export default function PublicProposal() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [signOpen, setSignOpen] = useState(false);
+  const [declineOpen, setDeclineOpen] = useState(false);
   const [pickedTier, setPickedTier] = useState<TierKey | "flat" | null>(null);
+  const [lineItems, setLineItems] = useState<Array<{ description: string; category: string; quantity: number; unit_price: number; amount: number }>>([]);
+
 
   // White-label brand with safe fallbacks
   const brand = {
