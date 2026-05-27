@@ -98,34 +98,39 @@ export function ServiceCatalogPicker({
               No services found.
             </p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {grouped.map(([category, list]) => (
                 <div key={category}>
-                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5 sticky top-0 bg-background py-1 z-10">
-                    {category}
-                  </h4>
-                  <div className="space-y-1.5">
+                  <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 pb-2 mb-2 border-b border-border/40">
+                    <h4 className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
+                      {category}
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
                     {list.map((item) => (
                       <button
                         key={item.id}
                         onClick={() => handleSelect(item)}
-                        className="w-full text-left rounded-md border border-border/60 bg-muted/30 hover:bg-muted/60 transition-colors px-3 py-2.5 group"
+                        className="w-full text-left rounded-lg border border-border/60 bg-card/60 hover:bg-card hover:border-primary/25 hover:shadow-sm transition-all duration-200 p-3 group"
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-foreground truncate leading-tight">
                               {item.name}
                             </p>
                             {item.description && (
-                              <p className="text-[11px] text-muted-foreground truncate">
+                              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                                 {item.description}
                               </p>
                             )}
                           </div>
-                          <div className="shrink-0 flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px] font-mono">
-                              ${Number(item.base_price).toLocaleString()}/{item.price_unit}
+                          <div className="shrink-0 flex flex-col items-end gap-1 mt-0.5">
+                            <Badge variant="secondary" className="text-[10px] font-mono font-semibold">
+                              ${Number(item.base_price).toLocaleString()}
                             </Badge>
+                            <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
+                              /{item.price_unit}
+                            </span>
                           </div>
                         </div>
                       </button>
