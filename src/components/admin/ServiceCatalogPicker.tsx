@@ -28,7 +28,7 @@ function mapCatalogCategory(cat: string | null): string {
     lower.includes("repair")
   )
     return "labor";
-  if (lower.includes("add")) return "additional";
+  if (lower.includes("add")) return "material";
   if (lower.includes("material")) return "material";
   if (lower.includes("equip")) return "equipment";
   return "other";
