@@ -383,20 +383,23 @@ function ShareModal({ proposal, open, onClose }: {
         <div className="space-y-3 pt-2">
           <div className="p-3 rounded-xl bg-muted/50 border border-border/50">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Client Link</p>
-            <p className="text-xs font-mono break-all text-foreground">{publicUrl}</p>
+            <p className="text-xs font-mono break-all text-foreground">
+              {tokenLoading ? "Generating link..." : publicUrl}
+            </p>
           </div>
-          <Button variant="outline" className="w-full gap-2" onClick={handleCopy}>
+          <Button variant="outline" className="w-full gap-2" onClick={handleCopy} disabled={tokenLoading || !publicUrl}>
             {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
             {copied ? "Copied!" : "Copy Link"}
           </Button>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" className="gap-2 text-sm" onClick={handleWhatsApp}>
+            <Button variant="outline" className="gap-2 text-sm" onClick={handleWhatsApp} disabled={tokenLoading || !publicUrl}>
               <MessageCircle className="w-4 h-4" /> WhatsApp
             </Button>
-            <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail} disabled={sending}>
+            <Button variant="outline" className="gap-2 text-sm" onClick={handleEmail} disabled={sending || tokenLoading || !publicUrl}>
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MailIcon className="w-4 h-4" />} {sending ? "Sending..." : "Email"}
             </Button>
           </div>
+
           <p className="text-[11px] text-center text-muted-foreground">
             Client can view, compare tiers and accept online
           </p>
