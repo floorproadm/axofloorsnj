@@ -234,6 +234,16 @@ export default function PublicDepositInvoice() {
                 )}
               </p>
             </div>
+            {proposal?.accepted_at && (
+              <div className="mt-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500">
+                  Accepted
+                </p>
+                <p className="text-sm text-slate-900">
+                  {format(new Date(proposal.accepted_at), "MMM d, yyyy · h:mm a")}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
