@@ -23,6 +23,9 @@ export default function GeneralSettings() {
   const [saving, setSaving] = useState(false);
 
   const [formName, setFormName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formCheckAddress, setFormCheckAddress] = useState("");
   const [formMargin, setFormMargin] = useState("");
   const [formModel, setFormModel] = useState<LaborPricingModel>("sqft");
   const [formRate, setFormRate] = useState("");
@@ -38,6 +41,9 @@ export default function GeneralSettings() {
       setFormModel(laborPricingModel);
       setFormRate(String(laborRate));
       const s: any = settings || {};
+      setFormPhone(s.phone ?? "");
+      setFormEmail(s.email ?? "");
+      setFormCheckAddress(s.check_mailing_address ?? "");
       setFormPaymentTerms(s.default_payment_terms ?? "50% deposit due upon signing. Balance due upon completion.");
       setFormTaxRate(String(s.default_tax_rate ?? 0));
       setFormTermsText(s.default_terms_text ?? "");
@@ -66,6 +72,9 @@ export default function GeneralSettings() {
     try {
       const payload: any = {
         company_name: formName.trim(),
+        phone: formPhone.trim() || null,
+        email: formEmail.trim() || null,
+        check_mailing_address: formCheckAddress.trim() || null,
         default_margin_min_percent: marginNum,
         labor_pricing_model: formModel,
         default_labor_rate: rateNum,
@@ -140,11 +149,22 @@ export default function GeneralSettings() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="company_phone">Phone</Label>
-              <Input id="company_phone" value="(732) 351-8653" readOnly placeholder="(732) 351-8653" />
+              <Input id="company_phone" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="(732) 351-8653" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="company_email">Email</Label>
-              <Input id="company_email" value="axofloorsnj@gmail.com" readOnly placeholder="axofloorsnj@gmail.com" />
+              <Input id="company_email" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="axofloorsnj@gmail.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="check_mailing_address">Check Mailing Address</Label>
+              <Textarea
+                id="check_mailing_address"
+                value={formCheckAddress}
+                onChange={(e) => setFormCheckAddress(e.target.value)}
+                placeholder="e.g. AXO Floors LLC, 123 Main St, City, NJ 07000"
+                rows={2}
+              />
+              <p className="text-xs text-muted-foreground">Shown on the public deposit invoice under the check payment instructions. Leave empty to keep the default pickup coordination message.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="company_timezone">Time Zone</Label>
