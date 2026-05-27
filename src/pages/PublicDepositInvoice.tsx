@@ -292,12 +292,21 @@ export default function PublicDepositInvoice() {
           </p>
         </Card>
 
-        <div className="pt-4 text-center text-[11px] text-slate-400">
-          <p className="font-medium text-slate-600">{brand.legalName}</p>
-          <p className="mt-0.5">
-            {brand.website} · {brand.email}
+        <footer className="pt-8 pb-6 border-t border-slate-200 text-center space-y-4">
+          <div className="flex items-center justify-center gap-2">
+            {brand.logoUrl && (
+              <img src={brand.logoUrl} alt={brand.name} className="h-6 object-contain opacity-70" />
+            )}
+            <span className="text-sm font-semibold text-slate-700">{brand.name}</span>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
+            Thank you for trusting us with your project.<br />
+            We look forward to delivering exceptional results.
           </p>
-        </div>
+          <p className="text-[11px] text-slate-400">
+            {brand.legalName} · {brand.website} · {brand.email}
+          </p>
+        </footer>
       </main>
     </div>
   );
