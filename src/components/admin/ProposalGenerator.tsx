@@ -626,6 +626,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               <Button size="sm" variant="outline" onClick={addLine}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add line
               </Button>
+              <Button size="sm" variant="secondary" onClick={() => setCatalogOpen(true)}>
+                <Package className="h-3.5 w-3.5 mr-1" /> Catalog
+              </Button>
               <Button size="sm" onClick={saveLines} disabled={!linesDirty || savingLines || editedTotal <= 0}>
                 {savingLines ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
                 Save
