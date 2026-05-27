@@ -148,7 +148,7 @@ export default function PublicDepositInvoice() {
   }
 
   const isAccepted = proposal.status === "accepted";
-  const invoiceNumber = `${proposal.proposal_number}-DEP`;
+  const invoiceNumber = `INV-DEP-${proposal.id.split("-")[0].toUpperCase()}`;
 
   return (
     <div className="min-h-screen bg-white pb-16">
