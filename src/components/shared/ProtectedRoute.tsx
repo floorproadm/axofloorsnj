@@ -13,9 +13,12 @@ export default function ProtectedRoute({ children, requireAdmin = true }: Protec
   const { user, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
+  const userId = user?.id;
 
   useEffect(() => {
-    if (loading || !user) {
+    if (loading) return;
+    if (!userId) {
+      setIsAdmin(null);
       setCheckingRole(false);
       return;
     }
@@ -27,20 +30,16 @@ export default function ProtectedRoute({ children, requireAdmin = true }: Protec
     }
 
     let cancelled = false;
-    const checkRole = async () => {
-      setCheckingRole(true);
-      const { data, error } = await supabase.rpc('has_role', {
-        _user_id: user.id,
-        _role: 'admin'
-      });
-      if (!cancelled) {
-        setIsAdmin(error ? false : data === true);
-        setCheckingRole(false);
-      }
-    };
-    checkRole();
+    // Re-validate silently on token refresh — never flip back to the spinner
+    // once we have a known admin state, otherwise the admin tree unmounts/
+    // remounts on every onAuthStateChange and the page flickers.
+    supabase.rpc('has_role', { _user_id: userId, _role: 'admin' }).then(({ data, error }) => {
+      if (cancelled) return;
+      setIsAdmin(error ? false : data === true);
+      setCheckingRole(false);
+    });
     return () => { cancelled = true; };
-  }, [user, loading, requireAdmin]);
+  }, [userId, loading, requireAdmin]);
 
   if (loading || checkingRole) {
     return (
