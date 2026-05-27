@@ -44,6 +44,7 @@ export default function PublicDepositInvoice() {
     primary: company?.primary_color || "#d97706",
     secondary: "#0B1426",
     logoUrl,
+    checkMailingAddress: company?.check_mailing_address || "",
   };
 
   useEffect(() => {
