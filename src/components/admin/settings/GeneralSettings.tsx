@@ -48,6 +48,7 @@ export default function GeneralSettings() {
       setFormPaymentTerms(s.default_payment_terms ?? "50% deposit due upon signing. Balance due upon completion.");
       setFormTaxRate(String(s.default_tax_rate ?? 0));
       setFormTermsText(s.default_terms_text ?? "");
+      setFormDepositPercent(String(s.deposit_percentage ?? 50));
     }
   }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate, settings]);
 
