@@ -255,6 +255,20 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0 }]);
     setLinesDirty(true);
   };
+  const addCatalogLine = (item: { name: string; description: string | null; base_price: number; category: string | null }) => {
+    setEditableLines((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        description: item.name + (item.description ? ` — ${item.description}` : ''),
+        category: mapCatalogCategory(item.category),
+        qty: 1,
+        unit_price: Number(item.base_price) || 0,
+      },
+    ]);
+    setLinesDirty(true);
+    toast.success(`Added: ${item.name}`);
+  };
   const updateLine = (id: string, patch: Partial<EditableLine>) => {
     setEditableLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
     setLinesDirty(true);
