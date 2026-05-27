@@ -45,10 +45,9 @@ export function ServiceCatalogPicker({
   const grouped = useMemo(() => {
     const filtered = items.filter(
       (it) =>
-        it.is_active &&
-        (it.name.toLowerCase().includes(search.toLowerCase()) ||
-          (it.description ?? "").toLowerCase().includes(search.toLowerCase()) ||
-          (it.category ?? "").toLowerCase().includes(search.toLowerCase()))
+        it.name.toLowerCase().includes(search.toLowerCase()) ||
+        (it.description ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        (it.category ?? "").toLowerCase().includes(search.toLowerCase())
     );
     const map = new Map<string, CatalogItem[]>();
     filtered.forEach((it) => {
