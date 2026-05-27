@@ -167,6 +167,56 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
       const validUntil = new Date();
       validUntil.setDate(validUntil.getDate() + 30);
 
+      // ───────── REUSE EXISTING PROPOSAL ─────────
+      // Never insert a new row if a non-terminal proposal already exists for this project.
+      // Terminal states (accepted/rejected/expired) are intentional — a brand new proposal is fine.
+      const { data: existing } = await supabase
+        .from('proposals')
+        .select('*')
+        .eq('project_id', projectId)
+        .in('status', ['draft', 'sent', 'viewed'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        const isTiers = !!(existing as any).use_tiers;
+        const resolvedMode: 'tiers' | 'direct' = isTiers ? 'tiers' : 'direct';
+        const flatPrice = Number((existing as any).flat_price ?? 0);
+        const flatMargin = flatPrice > 0
+          ? Math.round(((flatPrice - baseCost) / flatPrice) * 100)
+          : 0;
+        const reusedTiers: ProposalTier[] = isTiers
+          ? TIER_TEMPLATES.map((t) => ({
+              ...t,
+              price: Number((existing as any)[`${t.id}_price`] ?? 0),
+              margin_percent: Number((existing as any)[`margin_${t.id}`] ?? 0),
+            }))
+          : [];
+        return {
+          project_id: projectId,
+          proposal_id: (existing as any).id,
+          proposal_number: (existing as any).proposal_number,
+          proposal_status: (existing as any).status,
+          customer_name: project.customer_name,
+          customer_email: project.customer_email,
+          customer_phone: project.customer_phone,
+          address: [project.address, project.city, project.zip_code].filter(Boolean).join(', '),
+          project_type: project.project_type,
+          square_footage: project.square_footage ?? 0,
+          mode: resolvedMode,
+          tiers: reusedTiers,
+          flat_price: flatPrice,
+          flat_margin_percent: flatMargin,
+          line_items: [],
+          created_at: (existing as any).created_at,
+          valid_until: (existing as any).valid_until,
+          base_cost: baseCost,
+          _isExisting: true,
+        };
+      }
+
+
       // ───────── DIRECT MODE ─────────
       if (mode === 'direct') {
         // Price starts at 0 — it is derived from line items the user adds in the editor.
