@@ -266,6 +266,20 @@ export default function GeneralSettings() {
                 className="tabular-nums"
               />
             </div>
+            <div className="space-y-2 max-w-[200px]">
+              <Label htmlFor="deposit_percentage">Deposit Percentage (%)</Label>
+              <Input
+                id="deposit_percentage"
+                type="number"
+                min={1}
+                max={100}
+                step="1"
+                value={formDepositPercent}
+                onChange={(e) => setFormDepositPercent(e.target.value)}
+                className="tabular-nums"
+              />
+              <p className="text-xs text-muted-foreground">Default deposit % applied to new proposals and deposit invoices.</p>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="default_terms_text">Default Terms &amp; Conditions</Label>
               <Textarea
