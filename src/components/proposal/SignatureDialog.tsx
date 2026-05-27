@@ -42,16 +42,6 @@ export function SignatureDialog({
   onSigned,
 }: Props) {
 
-
-export function SignatureDialog({
-  open,
-  onOpenChange,
-  proposalId,
-  organizationId,
-  defaultName = "",
-  selectedTier,
-  onSigned,
-}: Props) {
   const padRef = useRef<SignaturePad | null>(null);
   const [name, setName] = useState(defaultName);
   const [email, setEmail] = useState("");
