@@ -921,6 +921,12 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
         </div>
       </div>
+
+      <ServiceCatalogPicker
+        open={catalogOpen}
+        onClose={() => setCatalogOpen(false)}
+        onSelect={addCatalogLine}
+      />
     </div>
   );
 }
