@@ -251,12 +251,18 @@ export function SignatureDialog({
                 <RadioGroupItem value="zelle" /> Zelle
               </label>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <RadioGroupItem value="other" /> Other (we'll coordinate)
+                <RadioGroupItem value="other" /> Other
               </label>
             </RadioGroup>
-            <p className="text-[11px] text-muted-foreground">
-              We'll send payment instructions after you sign.
-            </p>
+            {paymentMethod === "other" ? (
+              <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+                We will contact you with payment instructions within 24h.
+              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">
+                We'll send payment instructions after you sign.
+              </p>
+            )}
           </div>
         </div>
 
