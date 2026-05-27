@@ -23,6 +23,7 @@ interface EditableLine {
   category: string;
   qty: number;
   unit_price: number;
+  service_catalog_id?: string | null;
 }
 
 const CATEGORY_OPTIONS = [
@@ -181,7 +182,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       if (proposal.proposal_id) {
         const { data: rows } = await supabase
           .from('proposal_line_items' as any)
-          .select('description, category, quantity, unit_price, display_order')
+          .select('description, category, quantity, unit_price, display_order, service_catalog_id')
           .eq('proposal_id', proposal.proposal_id)
           .order('display_order', { ascending: true });
         if (rows && rows.length > 0) {
@@ -191,6 +192,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             category: r.category || 'other',
             qty: Number(r.quantity) || 0,
             unit_price: Number(r.unit_price) || 0,
+            service_catalog_id: r.service_catalog_id || null,
           }));
         }
       }
@@ -252,10 +254,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   }, [editedTotal, proposal]);
 
   const addLine = () => {
-    setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0 }]);
+    setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0, service_catalog_id: null }]);
     setLinesDirty(true);
   };
-  const addCatalogLine = (item: { name: string; description: string | null; base_price: number; category: string | null }) => {
+  const addCatalogLine = (item: { id: string; name: string; description: string | null; base_price: number; category: string | null }) => {
     setEditableLines((prev) => [
       ...prev,
       {
@@ -264,6 +266,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         category: mapCatalogCategory(item.category),
         qty: 1,
         unit_price: Number(item.base_price) || 0,
+        service_catalog_id: item.id,
       },
     ]);
     setLinesDirty(true);
@@ -307,6 +310,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         quantity: Number(l.qty) || 0,
         unit_price: Number(l.unit_price) || 0,
         display_order: idx,
+        service_catalog_id: l.service_catalog_id || null,
       }));
       if (rows.length > 0) {
         const { error: insErr } = await supabase
