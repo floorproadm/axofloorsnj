@@ -390,7 +390,7 @@ function PaymentInstructions({
         <div>
           <p className="text-sm font-semibold text-blue-900">We'll be in touch</p>
           <p className="text-xs text-blue-800 mt-1 leading-relaxed">
-            We will contact you with payment instructions within 24h.
+            We will contact you with payment instructions within 24h
           </p>
         </div>
       </div>
