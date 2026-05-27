@@ -246,6 +246,16 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
 
   // Live totals derived from editable lines
+  const filteredLines = useMemo(() => {
+    if (!lineSearch.trim()) return editableLines;
+    const q = lineSearch.toLowerCase();
+    return editableLines.filter(
+      (l) =>
+        l.description.toLowerCase().includes(q) ||
+        l.category.toLowerCase().includes(q)
+    );
+  }, [editableLines, lineSearch]);
+
   const editedTotal = useMemo(
     () => editableLines.reduce((s, l) => s + (Number(l.qty) || 0) * (Number(l.unit_price) || 0), 0),
     [editableLines]
