@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon, Package } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon, Package, Search } from 'lucide-react';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,6 +59,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [lineSearch, setLineSearch] = useState('');
   // Proposal-level settings (per-proposal overrides of company defaults)
   const [paymentTerms, setPaymentTerms] = useState<string>('');
   const [taxRate, setTaxRate] = useState<string>('0');
@@ -245,6 +246,16 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
 
   // Live totals derived from editable lines
+  const filteredLines = useMemo(() => {
+    if (!lineSearch.trim()) return editableLines;
+    const q = lineSearch.toLowerCase();
+    return editableLines.filter(
+      (l) =>
+        l.description.toLowerCase().includes(q) ||
+        l.category.toLowerCase().includes(q)
+    );
+  }, [editableLines, lineSearch]);
+
   const editedTotal = useMemo(
     () => editableLines.reduce((s, l) => s + (Number(l.qty) || 0) * (Number(l.unit_price) || 0), 0),
     [editableLines]
@@ -641,6 +652,24 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
+            {/* Search filter */}
+            <div className="flex items-center gap-2 mb-1">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Filter lines..."
+                  value={lineSearch}
+                  onChange={(e) => setLineSearch(e.target.value)}
+                  className="pl-8 h-8 text-sm"
+                />
+              </div>
+              {lineSearch && (
+                <span className="text-[11px] text-muted-foreground">
+                  {filteredLines.length} of {editableLines.length}
+                </span>
+              )}
+            </div>
+
             {/* Header row */}
             <div className="hidden md:grid grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
               <div>Description</div>
@@ -651,7 +680,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               <div></div>
             </div>
 
-            {editableLines.map((line) => {
+            {filteredLines.map((line) => {
               const total = (Number(line.qty) || 0) * (Number(line.unit_price) || 0);
               return (
                 <div
@@ -707,9 +736,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               );
             })}
 
-            {editableLines.length === 0 && (
+            {filteredLines.length === 0 && (
               <p className="text-xs text-muted-foreground italic px-2 py-3">
-                No lines yet. Click "Add line" to start building the scope.
+                {lineSearch ? 'No lines match your filter.' : 'No lines yet. Click "Add line" to start building the scope.'}
               </p>
             )}
 
