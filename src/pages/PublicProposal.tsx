@@ -62,7 +62,7 @@ export default function PublicProposal() {
     email: company?.email || "info@axofloors.com",
     website: company?.website || "axofloorsnj.com",
     primary: company?.primary_color || "#d97706",
-    secondary: company?.secondary_color || "#0f1b3d",
+    secondary: company?.secondary_color || "#0B1426",
     logoUrl,
   };
 
