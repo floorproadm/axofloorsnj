@@ -30,8 +30,8 @@ interface Props {
 
 export function PartnerLeadCard({ lead, commission, onClick }: Props) {
   const status = STAGE_BADGE[lead.status] || { label: lead.status, color: "bg-muted" };
-  return (
-    <Card onClick={onClick} className={onClick ? "p-3 cursor-pointer hover:border-primary/40 transition-colors" : "p-3"}>
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-sm truncate">{lead.name}</p>
@@ -50,8 +50,22 @@ export function PartnerLeadCard({ lead, commission, onClick }: Props) {
           <span className="text-emerald-600 dark:text-emerald-400 font-semibold">+${commission.toFixed(0)}</span>
         )}
       </div>
-    </Card>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full text-left rounded-lg border bg-card text-card-foreground shadow-sm p-3 cursor-pointer hover:border-primary/40 hover:bg-muted/30 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40"
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <Card className="p-3">{content}</Card>;
 }
 
 export { PARTNER_LEAD_STAGES };
