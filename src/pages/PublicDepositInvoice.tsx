@@ -367,7 +367,7 @@ function PaymentInstructions({
           <MailIcon className="w-5 h-5 text-slate-700 mt-0.5 shrink-0" />
           <div className="flex-1 space-y-3">
             <p className="text-sm font-semibold text-slate-900">Pay by Check</p>
-            <InstructionRow label="Make payable to" value={brand.legalName} />
+            <InstructionRow label="Make check payable to" value={brand.legalName} />
             <InstructionRow label="Amount" value={`$${amount.toFixed(2)}`} />
             <InstructionRow label="Memo" value={invoiceNumber} />
             <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-100">
