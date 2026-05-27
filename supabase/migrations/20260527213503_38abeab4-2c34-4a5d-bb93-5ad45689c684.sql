@@ -1,0 +1,1 @@
+ALTER TABLE public.company_settings ADD COLUMN deposit_percentage numeric NOT NULL DEFAULT 50 CHECK (deposit_percentage >= 1 AND deposit_percentage <= 100);
