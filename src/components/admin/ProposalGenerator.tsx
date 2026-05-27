@@ -138,27 +138,53 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     })();
   }, [proposal?.proposal_id]);
 
-  // Hydrate editable lines from proposal.line_items (Direct mode only).
-  // Existing line items have only `amount` (total per row), so we seed qty=1, unit_price=amount.
+  // Hydrate editable lines from proposal_line_items (Direct mode only).
+  // Falls back to legacy proposal.line_items array if table is empty.
   useEffect(() => {
     if (!proposal || proposal.mode !== 'direct') {
       setEditableLines([]);
       setLinesDirty(false);
       return;
     }
-    const seeded: EditableLine[] = (proposal.line_items ?? []).map((it) => ({
-      id: uid(),
-      description: it.description || it.category || 'Item',
-      category: it.category || 'other',
-      qty: 1,
-      unit_price: Number(it.amount) || 0,
-    }));
-    if (seeded.length === 0) {
-      seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0 });
-    }
-    setEditableLines(seeded);
-    setLinesDirty(false);
+    let cancelled = false;
+    (async () => {
+      let seeded: EditableLine[] = [];
+      if (proposal.proposal_id) {
+        const { data: rows } = await supabase
+          .from('proposal_line_items' as any)
+          .select('description, category, quantity, unit_price, display_order')
+          .eq('proposal_id', proposal.proposal_id)
+          .order('display_order', { ascending: true });
+        if (rows && rows.length > 0) {
+          seeded = rows.map((r: any) => ({
+            id: uid(),
+            description: r.description || '',
+            category: r.category || 'other',
+            qty: Number(r.quantity) || 0,
+            unit_price: Number(r.unit_price) || 0,
+          }));
+        }
+      }
+      if (seeded.length === 0) {
+        seeded = (proposal.line_items ?? []).map((it) => ({
+          id: uid(),
+          description: it.description || it.category || 'Item',
+          category: it.category || 'other',
+          qty: 1,
+          unit_price: Number(it.amount) || 0,
+        }));
+      }
+      if (seeded.length === 0) {
+        seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0 });
+      }
+      if (!cancelled) {
+        setEditableLines(seeded);
+        setLinesDirty(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [proposal?.proposal_id]);
+
 
   // Live totals derived from editable lines
   const editedTotal = useMemo(
