@@ -72,6 +72,9 @@ export default function GeneralSettings() {
     try {
       const payload: any = {
         company_name: formName.trim(),
+        phone: formPhone.trim() || null,
+        email: formEmail.trim() || null,
+        check_mailing_address: formCheckAddress.trim() || null,
         default_margin_min_percent: marginNum,
         labor_pricing_model: formModel,
         default_labor_rate: rateNum,
