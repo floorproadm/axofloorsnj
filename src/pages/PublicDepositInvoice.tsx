@@ -170,7 +170,7 @@ export default function PublicDepositInvoice() {
             </div>
           </div>
           <Badge className="bg-amber-500 text-white border-0 hover:bg-amber-500 shrink-0">
-            Deposit Due
+            PAYMENT DUE
           </Badge>
         </div>
       </header>
