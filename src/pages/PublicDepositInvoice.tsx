@@ -12,6 +12,7 @@ import {
   Smartphone,
   Mail as MailIcon,
   Info,
+  Printer,
 } from "lucide-react";
 
 const fmt = (v: number) =>
