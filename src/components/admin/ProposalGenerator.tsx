@@ -55,6 +55,12 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  // Proposal-level settings (per-proposal overrides of company defaults)
+  const [paymentTerms, setPaymentTerms] = useState<string>('');
+  const [taxRate, setTaxRate] = useState<string>('0');
+  const [termsText, setTermsText] = useState<string>('');
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
     return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
