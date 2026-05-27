@@ -88,6 +88,7 @@ export default function GeneralSettings() {
         default_payment_terms: formPaymentTerms.trim() || null,
         default_tax_rate: taxNum,
         default_terms_text: formTermsText.trim() || null,
+        deposit_percentage: depositNum,
         updated_at: new Date().toISOString(),
       };
 
