@@ -263,7 +263,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       ...prev,
       {
         id: uid(),
-        description: item.name + (item.description ? ` — ${item.description}` : ''),
+        description: item.name,
         category: mapCatalogCategory(item.category),
         qty: 1,
         unit_price: Number(item.base_price) || 0,
