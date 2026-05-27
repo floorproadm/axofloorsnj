@@ -271,6 +271,7 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
             <MetricCard
+              to="/admin/projects"
               icon={<DollarSign className="w-4 h-4" />}
               label="Pipeline"
               value={formatCurrency(moneyMetrics.estimatedValueOpen)}
@@ -283,6 +284,7 @@ export default function Dashboard() {
               accent={moneyMetrics.estimatedValueOpen > 0 ? "success" : "default"}
             />
             <MetricCard
+              to="/admin/schedule"
               icon={<Briefcase className="w-4 h-4" />}
               label={t("dashboard.semana")}
               value={String(weekAppointments.length)}
@@ -294,6 +296,7 @@ export default function Dashboard() {
               subColor="text-[hsl(var(--state-success))]"
             />
             <MetricCard
+              to="/admin/leads"
               icon={<Users className="w-4 h-4" />}
               label="Leads"
               value={String(funnelMetrics.cold_lead + funnelMetrics.warm_lead)}
@@ -306,6 +309,7 @@ export default function Dashboard() {
               accent={newLeadsToday > 0 ? "risk" : "default"}
             />
             <MetricCard
+              to="/admin/proposals"
               icon={<FileText className="w-4 h-4" />}
               label={t("dashboard.proposals")}
               value={String(openProposals)}
