@@ -23,10 +23,25 @@ interface Props {
   organizationId: string;
   defaultName?: string;
   selectedTier: "good" | "better" | "best" | "flat" | null;
+  proposalNumber?: string;
+  customerName?: string;
   onSigned?: () => void;
 }
 
 type PaymentMethod = "check" | "zelle" | "other";
+
+export function SignatureDialog({
+  open,
+  onOpenChange,
+  proposalId,
+  organizationId,
+  defaultName = "",
+  selectedTier,
+  proposalNumber,
+  customerName,
+  onSigned,
+}: Props) {
+
 
 export function SignatureDialog({
   open,
