@@ -19,6 +19,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
+import { DeclineDialog } from "@/components/proposal/DeclineDialog";
+
 
 const fmt = (v: number) =>
   `$${Number(v || 0).toLocaleString("en-US", {
