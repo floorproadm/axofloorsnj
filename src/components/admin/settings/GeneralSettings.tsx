@@ -33,6 +33,7 @@ export default function GeneralSettings() {
   const [formPaymentTerms, setFormPaymentTerms] = useState("");
   const [formTaxRate, setFormTaxRate] = useState("0");
   const [formTermsText, setFormTermsText] = useState("");
+  const [formDepositPercent, setFormDepositPercent] = useState("50");
 
   useEffect(() => {
     if (!isLoading) {
@@ -47,6 +48,7 @@ export default function GeneralSettings() {
       setFormPaymentTerms(s.default_payment_terms ?? "50% deposit due upon signing. Balance due upon completion.");
       setFormTaxRate(String(s.default_tax_rate ?? 0));
       setFormTermsText(s.default_terms_text ?? "");
+      setFormDepositPercent(String(s.deposit_percentage ?? 50));
     }
   }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate, settings]);
 
@@ -54,6 +56,7 @@ export default function GeneralSettings() {
     const marginNum = parseFloat(formMargin);
     const rateNum = parseFloat(formRate);
     const taxNum = parseFloat(formTaxRate);
+    const depositNum = parseFloat(formDepositPercent);
 
     if (isNaN(marginNum) || marginNum < 0 || marginNum > 100) {
       toast({ title: t("general.erro"), description: t("general.margemErro"), variant: "destructive" });
@@ -65,6 +68,10 @@ export default function GeneralSettings() {
     }
     if (isNaN(taxNum) || taxNum < 0 || taxNum > 100) {
       toast({ title: t("general.erro"), description: "Tax rate must be between 0 and 100.", variant: "destructive" });
+      return;
+    }
+    if (isNaN(depositNum) || depositNum < 1 || depositNum > 100) {
+      toast({ title: t("general.erro"), description: "Deposit percentage must be between 1 and 100.", variant: "destructive" });
       return;
     }
 
@@ -81,6 +88,7 @@ export default function GeneralSettings() {
         default_payment_terms: formPaymentTerms.trim() || null,
         default_tax_rate: taxNum,
         default_terms_text: formTermsText.trim() || null,
+        deposit_percentage: depositNum,
         updated_at: new Date().toISOString(),
       };
 
@@ -257,6 +265,20 @@ export default function GeneralSettings() {
                 onChange={(e) => setFormTaxRate(e.target.value)}
                 className="tabular-nums"
               />
+            </div>
+            <div className="space-y-2 max-w-[200px]">
+              <Label htmlFor="deposit_percentage">Deposit Percentage (%)</Label>
+              <Input
+                id="deposit_percentage"
+                type="number"
+                min={1}
+                max={100}
+                step="1"
+                value={formDepositPercent}
+                onChange={(e) => setFormDepositPercent(e.target.value)}
+                className="tabular-nums"
+              />
+              <p className="text-xs text-muted-foreground">Default deposit % applied to new proposals and deposit invoices.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="default_terms_text">Default Terms &amp; Conditions</Label>

@@ -604,6 +604,7 @@ export type Database = {
           default_payment_terms: string | null
           default_tax_rate: number | null
           default_terms_text: string | null
+          deposit_percentage: number
           email: string | null
           google_rating: number
           id: string
@@ -634,6 +635,7 @@ export type Database = {
           default_payment_terms?: string | null
           default_tax_rate?: number | null
           default_terms_text?: string | null
+          deposit_percentage?: number
           email?: string | null
           google_rating?: number
           id?: string
@@ -664,6 +666,7 @@ export type Database = {
           default_payment_terms?: string | null
           default_tax_rate?: number | null
           default_terms_text?: string | null
+          deposit_percentage?: number
           email?: string | null
           google_rating?: number
           id?: string
