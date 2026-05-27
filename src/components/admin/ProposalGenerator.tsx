@@ -126,8 +126,28 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const handleGenerate = async () => {
     // Direct mode only — start with price = 0, user builds total from line items.
     const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 });
-    if (data) setProposal(data);
+    if (data) {
+      setProposal(data);
+      if (data._isExisting) toast.info('Opened existing draft for this project');
+    }
   };
+
+  // Auto-load existing non-terminal proposal for this project on mount,
+  // so returning to the tab never duplicates and the "Generate" CTA only shows
+  // when no proposal exists.
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    (async () => {
+      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0, readOnly: true });
+      if (cancelled) return;
+      if (data?._isExisting) setProposal(data);
+
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
+
 
   // When proposal is loaded, fetch the share_token from DB (most recent for project)
   useEffect(() => {

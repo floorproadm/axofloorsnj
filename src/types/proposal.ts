@@ -40,6 +40,7 @@ export interface ProposalData {
   created_at: string;
   valid_until: string;
   base_cost: number; // Total cost (labor + material + additional)
+  _isExisting?: boolean; // true when an existing proposal was reused instead of inserted
 }
 
 export interface TierValidation {
