@@ -191,6 +191,32 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     return () => { cancelled = true; };
   }, [proposal?.proposal_id]);
 
+  // Hydrate proposal-level settings — fetches the proposal row to read
+  // payment_terms / tax_rate / terms_text, falling back to company defaults.
+  useEffect(() => {
+    if (!proposal?.proposal_id) return;
+    let cancelled = false;
+    (async () => {
+      const { data: row } = await supabase
+        .from('proposals')
+        .select('payment_terms, tax_rate, terms_text')
+        .eq('id', proposal.proposal_id!)
+        .maybeSingle();
+      if (cancelled) return;
+      const r: any = row || {};
+      const defaultsPT = (settings as any)?.default_payment_terms ?? '50% deposit due upon signing. Balance due upon completion.';
+      const defaultsTax = (settings as any)?.default_tax_rate ?? 0;
+      const defaultsTerms = (settings as any)?.default_terms_text ?? '';
+      setPaymentTerms((r.payment_terms ?? defaultsPT) || '');
+      setTaxRate(String(r.tax_rate ?? defaultsTax ?? 0));
+      setTermsText((r.terms_text ?? defaultsTerms) || '');
+      setSettingsDirty(false);
+    })();
+    return () => { cancelled = true; };
+  }, [proposal?.proposal_id, settings]);
+
+
+
 
   // Live totals derived from editable lines
   const editedTotal = useMemo(
