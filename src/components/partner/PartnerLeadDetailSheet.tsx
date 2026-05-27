@@ -45,13 +45,7 @@ interface Props {
 export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent, partnerName }: Props) {
   const [nudging, setNudging] = useState(false);
 
-  if (!lead) {
-    return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-md" />
-      </Sheet>
-    );
-  }
+  if (!lead) return null;
 
   const stageIndex = PARTNER_LEAD_STAGES.findIndex((s) => s.key === lead.status);
   const stage = PARTNER_LEAD_STAGES[stageIndex];
