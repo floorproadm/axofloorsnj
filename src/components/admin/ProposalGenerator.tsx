@@ -680,7 +680,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               <div></div>
             </div>
 
-            {editableLines.map((line) => {
+            {filteredLines.map((line) => {
               const total = (Number(line.qty) || 0) * (Number(line.unit_price) || 0);
               return (
                 <div
@@ -736,9 +736,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               );
             })}
 
-            {editableLines.length === 0 && (
+            {filteredLines.length === 0 && (
               <p className="text-xs text-muted-foreground italic px-2 py-3">
-                No lines yet. Click "Add line" to start building the scope.
+                {lineSearch ? 'No lines match your filter.' : 'No lines yet. Click "Add line" to start building the scope.'}
               </p>
             )}
 
