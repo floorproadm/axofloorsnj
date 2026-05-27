@@ -70,6 +70,7 @@ import NotFound from "./pages/NotFound";
 import SharedPost from "./pages/SharedPost";
 import PublicInvoice from "./pages/PublicInvoice";
 import PublicProposal from "./pages/PublicProposal";
+import PublicDepositInvoice from "./pages/PublicDepositInvoice";
 import PublicPortal from "./pages/PublicPortal";
 import Links from "./pages/Links";
 
