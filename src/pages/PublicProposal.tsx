@@ -427,6 +427,19 @@ export default function PublicProposal() {
             </div>
           </Card>
         )}
+        {isRejected && (
+          <Card className="p-4 bg-slate-100 border-slate-300 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-slate-900 text-sm">
+                Proposal declined.
+              </p>
+              <p className="text-xs text-slate-700 mt-0.5">
+                Thank you for letting us know. Call us anytime if anything changes.
+              </p>
+            </div>
+          </Card>
+        )}
 
         <p className="text-center text-[11px] text-slate-400 pt-4">
           {brand.name} · {brand.website}
@@ -441,14 +454,27 @@ export default function PublicProposal() {
         organizationId={proposal.organization_id}
         defaultName={displayName}
         selectedTier={pickedTier}
+        proposalNumber={proposal.proposal_number}
+        customerName={displayName}
         onSigned={() => {
-          // refresh
           window.location.reload();
+        }}
+      />
+
+      {/* Decline dialog */}
+      <DeclineDialog
+        open={declineOpen}
+        onOpenChange={setDeclineOpen}
+        proposalId={proposal.id}
+        shareToken={token!}
+        onDeclined={() => {
+          setTimeout(() => window.location.reload(), 1500);
         }}
       />
     </div>
   );
 }
+
 
 function StatusBadge({ status, expired }: { status: string; expired: boolean }) {
   if (expired) {
