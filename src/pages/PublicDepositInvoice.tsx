@@ -170,9 +170,19 @@ export default function PublicDepositInvoice() {
               </p>
             </div>
           </div>
-          <Badge className="bg-amber-500 text-white border-0 hover:bg-amber-500 shrink-0">
-            PAYMENT DUE
-          </Badge>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors print:hidden"
+              title="Print / Save as PDF"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Print</span>
+            </button>
+            <Badge className="bg-amber-500 text-white border-0 hover:bg-amber-500">
+              PAYMENT DUE
+            </Badge>
+          </div>
         </div>
       </header>
 
