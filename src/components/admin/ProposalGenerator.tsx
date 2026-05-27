@@ -9,11 +9,12 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon, Package } from 'lucide-react';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ServiceCatalogPicker, mapCatalogCategory } from '@/components/admin/ServiceCatalogPicker';
 
 /** Editable line item shape — extends the read-only one with qty + unit_price for live math */
 interface EditableLine {
