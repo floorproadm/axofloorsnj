@@ -33,6 +33,7 @@ export default function GeneralSettings() {
   const [formPaymentTerms, setFormPaymentTerms] = useState("");
   const [formTaxRate, setFormTaxRate] = useState("0");
   const [formTermsText, setFormTermsText] = useState("");
+  const [formDepositPercent, setFormDepositPercent] = useState("50");
 
   useEffect(() => {
     if (!isLoading) {
