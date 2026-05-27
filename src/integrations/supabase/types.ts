@@ -594,6 +594,7 @@ export type Database = {
       }
       company_settings: {
         Row: {
+          check_mailing_address: string | null
           company_name: string
           created_at: string
           custom_send_time: string
@@ -623,6 +624,7 @@ export type Database = {
           years_in_business: number
         }
         Insert: {
+          check_mailing_address?: string | null
           company_name?: string
           created_at?: string
           custom_send_time?: string
@@ -652,6 +654,7 @@ export type Database = {
           years_in_business?: number
         }
         Update: {
+          check_mailing_address?: string | null
           company_name?: string
           created_at?: string
           custom_send_time?: string
