@@ -346,12 +346,12 @@ function PaymentInstructions({
           <Smartphone className="w-5 h-5 text-slate-700 mt-0.5 shrink-0" />
           <div className="flex-1 space-y-3">
             <p className="text-sm font-semibold text-slate-900">Pay by Zelle</p>
-            <InstructionRow label="Send to" value={brand.email} copyable />
+            <InstructionRow label="Send via Zelle to" value={`${brand.phone} / ${brand.email}`} />
             <InstructionRow label="Recipient name" value={brand.legalName} />
             <InstructionRow label="Amount" value={`$${amount.toFixed(2)}`} />
             <InstructionRow label="Memo / Reference" value={invoiceNumber} />
             <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-100">
-              Open your bank's Zelle feature, send to the email above, and include the reference
+              Open your bank's Zelle feature, send to the phone or email above, and include the reference
               so we can match your payment.
             </p>
           </div>
