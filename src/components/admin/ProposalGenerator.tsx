@@ -223,6 +223,29 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         .update({ flat_price: editedTotal })
         .eq('id', proposal.proposal_id);
       if (upErr) throw upErr;
+
+      // Replace all line items for this proposal
+      const { error: delErr } = await supabase
+        .from('proposal_line_items' as any)
+        .delete()
+        .eq('proposal_id', proposal.proposal_id);
+      if (delErr) throw delErr;
+
+      const rows = editableLines.map((l, idx) => ({
+        proposal_id: proposal.proposal_id,
+        description: l.description || 'Item',
+        category: l.category || 'other',
+        quantity: Number(l.qty) || 0,
+        unit_price: Number(l.unit_price) || 0,
+        display_order: idx,
+      }));
+      if (rows.length > 0) {
+        const { error: insErr } = await supabase
+          .from('proposal_line_items' as any)
+          .insert(rows);
+        if (insErr) throw insErr;
+      }
+
       setProposal((prev) =>
         prev
           ? {
