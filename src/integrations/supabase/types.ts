@@ -2930,6 +2930,42 @@ export type Database = {
           },
         ]
       }
+      proposal_line_items: {
+        Row: {
+          amount: number | null
+          category: string
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          proposal_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          amount?: number | null
+          category?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          proposal_id: string
+          quantity?: number
+          unit_price?: number
+        }
+        Update: {
+          amount?: number | null
+          category?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          proposal_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: []
+      }
       proposal_signatures: {
         Row: {
           client_note: string | null
@@ -3014,6 +3050,8 @@ export type Database = {
           project_id: string
           proposal_number: string
           referring_partner_id: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
           selected_tier: string | null
           sent_at: string | null
           share_token: string | null
@@ -3043,6 +3081,8 @@ export type Database = {
           project_id: string
           proposal_number: string
           referring_partner_id?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           selected_tier?: string | null
           sent_at?: string | null
           share_token?: string | null
@@ -3072,6 +3112,8 @@ export type Database = {
           project_id?: string
           proposal_number?: string
           referring_partner_id?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           selected_tier?: string | null
           sent_at?: string | null
           share_token?: string | null
