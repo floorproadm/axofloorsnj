@@ -184,6 +184,12 @@ export default function PublicDepositInvoice() {
             Deposit Invoice
           </p>
           <h2 className="text-2xl font-bold text-slate-900 mt-1">{invoiceNumber}</h2>
+          <p className="text-sm text-slate-600 mt-2">
+            Deposit for: <span className="font-semibold text-slate-900">{proposal?.headline || proposal?.title || "Project"}</span>
+            {displayAddress && (
+              <span className="block text-slate-500 mt-0.5">{displayAddress}</span>
+            )}
+          </p>
         </div>
 
         {isAccepted && (
