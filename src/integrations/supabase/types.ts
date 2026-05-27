@@ -600,6 +600,9 @@ export type Database = {
           default_job_start_time: string
           default_labor_rate: number
           default_margin_min_percent: number
+          default_payment_terms: string | null
+          default_tax_rate: number | null
+          default_terms_text: string | null
           email: string | null
           google_rating: number
           id: string
@@ -626,6 +629,9 @@ export type Database = {
           default_job_start_time?: string
           default_labor_rate?: number
           default_margin_min_percent?: number
+          default_payment_terms?: string | null
+          default_tax_rate?: number | null
+          default_terms_text?: string | null
           email?: string | null
           google_rating?: number
           id?: string
@@ -652,6 +658,9 @@ export type Database = {
           default_job_start_time?: string
           default_labor_rate?: number
           default_margin_min_percent?: number
+          default_payment_terms?: string | null
+          default_tax_rate?: number | null
+          default_terms_text?: string | null
           email?: string | null
           google_rating?: number
           id?: string
@@ -3046,6 +3055,7 @@ export type Database = {
           margin_better: number
           margin_good: number
           organization_id: string
+          payment_terms: string | null
           pdf_document_id: string | null
           project_id: string
           proposal_number: string
@@ -3056,6 +3066,8 @@ export type Database = {
           sent_at: string | null
           share_token: string | null
           status: string
+          tax_rate: number | null
+          terms_text: string | null
           updated_at: string
           use_tiers: boolean
           valid_until: string
@@ -3077,6 +3089,7 @@ export type Database = {
           margin_better: number
           margin_good: number
           organization_id: string
+          payment_terms?: string | null
           pdf_document_id?: string | null
           project_id: string
           proposal_number: string
@@ -3087,6 +3100,8 @@ export type Database = {
           sent_at?: string | null
           share_token?: string | null
           status?: string
+          tax_rate?: number | null
+          terms_text?: string | null
           updated_at?: string
           use_tiers?: boolean
           valid_until: string
@@ -3108,6 +3123,7 @@ export type Database = {
           margin_better?: number
           margin_good?: number
           organization_id?: string
+          payment_terms?: string | null
           pdf_document_id?: string | null
           project_id?: string
           proposal_number?: string
@@ -3118,6 +3134,8 @@ export type Database = {
           sent_at?: string | null
           share_token?: string | null
           status?: string
+          tax_rate?: number | null
+          terms_text?: string | null
           updated_at?: string
           use_tiers?: boolean
           valid_until?: string

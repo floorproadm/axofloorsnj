@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, Loader2, Building2, TrendingUp, Clock } from "lucide-react";
+import { Save, Loader2, Building2, TrendingUp, Clock, FileText } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -25,6 +26,10 @@ export default function GeneralSettings() {
   const [formMargin, setFormMargin] = useState("");
   const [formModel, setFormModel] = useState<LaborPricingModel>("sqft");
   const [formRate, setFormRate] = useState("");
+  // Proposal document defaults
+  const [formPaymentTerms, setFormPaymentTerms] = useState("");
+  const [formTaxRate, setFormTaxRate] = useState("0");
+  const [formTermsText, setFormTermsText] = useState("");
 
   useEffect(() => {
     if (!isLoading) {
@@ -32,12 +37,17 @@ export default function GeneralSettings() {
       setFormMargin(String(marginMinPercent));
       setFormModel(laborPricingModel);
       setFormRate(String(laborRate));
+      const s: any = settings || {};
+      setFormPaymentTerms(s.default_payment_terms ?? "50% deposit due upon signing. Balance due upon completion.");
+      setFormTaxRate(String(s.default_tax_rate ?? 0));
+      setFormTermsText(s.default_terms_text ?? "");
     }
-  }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate]);
+  }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate, settings]);
 
   const handleSave = async () => {
     const marginNum = parseFloat(formMargin);
     const rateNum = parseFloat(formRate);
+    const taxNum = parseFloat(formTaxRate);
 
     if (isNaN(marginNum) || marginNum < 0 || marginNum > 100) {
       toast({ title: t("general.erro"), description: t("general.margemErro"), variant: "destructive" });
@@ -47,14 +57,21 @@ export default function GeneralSettings() {
       toast({ title: t("general.erro"), description: t("general.laborRateErro"), variant: "destructive" });
       return;
     }
+    if (isNaN(taxNum) || taxNum < 0 || taxNum > 100) {
+      toast({ title: t("general.erro"), description: "Tax rate must be between 0 and 100.", variant: "destructive" });
+      return;
+    }
 
     setSaving(true);
     try {
-      const payload = {
+      const payload: any = {
         company_name: formName.trim(),
         default_margin_min_percent: marginNum,
         labor_pricing_model: formModel,
         default_labor_rate: rateNum,
+        default_payment_terms: formPaymentTerms.trim() || null,
+        default_tax_rate: taxNum,
+        default_terms_text: formTermsText.trim() || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -183,6 +200,57 @@ export default function GeneralSettings() {
             </span>
           )}
         </CardFooter>
+      </Card>
+
+      {/* Proposal Document Defaults */}
+      <Card className="border-l-4 border-l-[hsl(var(--gold-warm))] shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileText className="w-5 h-5 text-[hsl(var(--gold-warm))]" />
+            Proposal Defaults
+          </CardTitle>
+          <CardDescription>
+            Default payment terms, tax rate and conditions pre-populated on every new proposal. Each proposal can override these.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid gap-4 max-w-2xl">
+            <div className="space-y-2">
+              <Label htmlFor="default_payment_terms">Default Payment Terms</Label>
+              <Textarea
+                id="default_payment_terms"
+                value={formPaymentTerms}
+                onChange={(e) => setFormPaymentTerms(e.target.value)}
+                placeholder="50% deposit due upon signing. Balance due upon completion."
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2 max-w-[200px]">
+              <Label htmlFor="default_tax_rate">Default Tax Rate (%)</Label>
+              <Input
+                id="default_tax_rate"
+                type="number"
+                min={0}
+                max={100}
+                step="0.01"
+                value={formTaxRate}
+                onChange={(e) => setFormTaxRate(e.target.value)}
+                className="tabular-nums"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="default_terms_text">Default Terms &amp; Conditions</Label>
+              <Textarea
+                id="default_terms_text"
+                value={formTermsText}
+                onChange={(e) => setFormTermsText(e.target.value)}
+                placeholder="Warranty notes, scope exclusions, change-order policy, etc."
+                rows={5}
+              />
+              <p className="text-xs text-muted-foreground">Shown at the bottom of every proposal document.</p>
+            </div>
+          </div>
+        </CardContent>
       </Card>
     </div>
   );

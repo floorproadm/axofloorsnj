@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon } from 'lucide-react';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,6 +56,12 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  // Proposal-level settings (per-proposal overrides of company defaults)
+  const [paymentTerms, setPaymentTerms] = useState<string>('');
+  const [taxRate, setTaxRate] = useState<string>('0');
+  const [termsText, setTermsText] = useState<string>('');
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
     return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
@@ -185,6 +192,32 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     return () => { cancelled = true; };
   }, [proposal?.proposal_id]);
 
+  // Hydrate proposal-level settings — fetches the proposal row to read
+  // payment_terms / tax_rate / terms_text, falling back to company defaults.
+  useEffect(() => {
+    if (!proposal?.proposal_id) return;
+    let cancelled = false;
+    (async () => {
+      const { data: row } = await supabase
+        .from('proposals')
+        .select('payment_terms, tax_rate, terms_text')
+        .eq('id', proposal.proposal_id!)
+        .maybeSingle();
+      if (cancelled) return;
+      const r: any = row || {};
+      const defaultsPT = (settings as any)?.default_payment_terms ?? '50% deposit due upon signing. Balance due upon completion.';
+      const defaultsTax = (settings as any)?.default_tax_rate ?? 0;
+      const defaultsTerms = (settings as any)?.default_terms_text ?? '';
+      setPaymentTerms((r.payment_terms ?? defaultsPT) || '');
+      setTaxRate(String(r.tax_rate ?? defaultsTax ?? 0));
+      setTermsText((r.terms_text ?? defaultsTerms) || '');
+      setSettingsDirty(false);
+    })();
+    return () => { cancelled = true; };
+  }, [proposal?.proposal_id, settings]);
+
+
+
 
   // Live totals derived from editable lines
   const editedTotal = useMemo(
@@ -268,6 +301,50 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       setSavingLines(false);
     }
   };
+
+  // Persist proposal-level settings (payment terms / tax rate / terms text)
+  const saveSettings = async () => {
+    if (!proposal?.proposal_id) return;
+    const taxNum = parseFloat(taxRate);
+    if (isNaN(taxNum) || taxNum < 0 || taxNum > 100) {
+      toast.error('Tax rate must be between 0 and 100.');
+      return;
+    }
+    setSavingSettings(true);
+    try {
+      const { error: upErr } = await supabase
+        .from('proposals')
+        .update({
+          payment_terms: paymentTerms.trim() || null,
+          tax_rate: taxNum,
+          terms_text: termsText.trim() || null,
+        } as any)
+        .eq('id', proposal.proposal_id);
+      if (upErr) throw upErr;
+      setSettingsDirty(false);
+      toast.success('Proposal settings saved');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save settings');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  // Derived totals for the printable preview
+  const previewSubtotal = useMemo(() => {
+    if (!proposal) return 0;
+    if (proposal.mode === 'direct') {
+      return editableLines.length > 0
+        ? editedTotal
+        : Number(proposal.flat_price) || 0;
+    }
+    return 0;
+  }, [proposal, editableLines, editedTotal]);
+  const previewTaxRate = parseFloat(taxRate) || 0;
+  const previewTax = previewSubtotal * (previewTaxRate / 100);
+  const previewTotal = previewSubtotal + previewTax;
+
+
 
   const handleCopyLink = async () => {
     if (!shareToken) {
@@ -618,6 +695,70 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </Card>
       )}
 
+      {/* Proposal Settings — per-proposal overrides of company defaults */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <SettingsIcon className="h-4 w-4" /> Proposal Settings
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Payment terms, tax rate and terms shown on this proposal only. Defaults from company settings.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={saveSettings}
+            disabled={!settingsDirty || savingSettings}
+          >
+            {savingSettings ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+            Save
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-[1fr_140px]">
+            <div className="space-y-1.5">
+              <Label htmlFor="payment-terms" className="text-xs">Payment Terms</Label>
+              <Textarea
+                id="payment-terms"
+                value={paymentTerms}
+                onChange={(e) => { setPaymentTerms(e.target.value); setSettingsDirty(true); }}
+                placeholder="50% deposit due upon signing. Balance due upon completion."
+                rows={2}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="tax-rate" className="text-xs">Tax Rate (%)</Label>
+              <Input
+                id="tax-rate"
+                type="number"
+                min={0}
+                max={100}
+                step="0.01"
+                value={taxRate}
+                onChange={(e) => { setTaxRate(e.target.value); setSettingsDirty(true); }}
+                className="text-sm tabular-nums"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="terms-text" className="text-xs">Notes / Terms &amp; Conditions</Label>
+            <Textarea
+              id="terms-text"
+              value={termsText}
+              onChange={(e) => { setTermsText(e.target.value); setSettingsDirty(true); }}
+              placeholder="Additional terms, warranty notes, scope exclusions, etc."
+              rows={4}
+              className="text-sm"
+            />
+          </div>
+          {settingsDirty && (
+            <p className="text-[11px] text-amber-600 italic">Unsaved changes — click Save to persist.</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Printable Professional Document */}
       <div
         ref={printRef}
@@ -654,35 +795,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
           </div>
 
-          {/* Site Assessment */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Site Assessment</h2>
-            <p style={{ fontSize: 14, color: theme.textDim, lineHeight: 1.6 }}>
-              {proposal.mode === 'direct'
-                ? `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared a fixed-scope quote with a transparent line-item breakdown. Each item uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`
-                : `Based on our evaluation of your ${proposal.square_footage} sqft ${proposal.project_type} project, we've prepared three tailored options. Each tier uses professional-grade materials and our proven AXO Transformation Method to ensure lasting results.`}
-            </p>
-          </div>
-
-          {/* AXO Transformation Method */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>The AXO Transformation Method</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-              {[
-                { num: 1, title: 'Diagnostic', desc: 'Floor inspection & species identification' },
-                { num: 2, title: 'Preparation', desc: 'Dustless sanding & surface prep' },
-                { num: 3, title: 'Execution', desc: 'Staining & finish application' },
-                { num: 4, title: 'Finishing', desc: 'Final inspection & cleanup' },
-              ].map(step => (
-                <div key={step.num} style={{ textAlign: 'center', padding: '15px 10px', border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
-                  <div style={{ display: 'inline-block', width: 28, height: 28, lineHeight: '28px', borderRadius: '50%', background: brand.secondary, color: '#fff', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{step.num}</div>
-                  <h4 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 4 }}>{step.title}</h4>
-                  <p style={{ fontSize: 11, color: theme.textMuted }}>{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Valid Until */}
           <div style={{ background: theme.validityBg, color: theme.validityText, padding: 12, borderRadius: 8, textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
             Valid until: <strong>{format(new Date(proposal.valid_until), 'MMMM d, yyyy')}</strong>
@@ -690,9 +802,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
           {/* Pricing — Tiers OR Direct (single card with line items) */}
           {proposal.mode === 'direct' ? (
-            <div style={{ marginBottom: 30 }}>
+            <div style={{ marginBottom: 20 }}>
               <PrintDirectCard
-                price={proposal.flat_price ?? 0}
+                price={previewSubtotal}
                 lineItems={proposal.line_items ?? []}
                 projectType={proposal.project_type}
                 formatCurrency={formatCurrency}
@@ -702,7 +814,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               />
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 30 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
               {proposal.tiers.map((tier, index) => (
                 <PrintTierCard
                   key={tier.id}
@@ -718,34 +830,45 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
           )}
 
-          {/* Timeline */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Estimated Timeline</h2>
-            <p style={{ fontSize: 14, color: theme.textDim }}>
-              Based on {proposal.square_footage} sqft, we estimate <strong style={{ color: theme.text }}>{durationDays} working day{durationDays > 1 ? 's' : ''}</strong> to complete your project. 
-              Our crew works 8AM–5PM with full area protection.
-            </p>
-          </div>
-
-          {/* Woody's Guarantee */}
-          <div style={{ marginBottom: 25 }}>
-            <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 18, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 12, paddingBottom: 8, borderBottom: `2px solid ${brand.primary}` }}>Woody's Guarantee</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-              {[
-                { period: '30', unit: 'Days', type: 'Satisfaction', desc: 'Not happy? We come back and make it right.' },
-                { period: '10', unit: 'Years', type: 'Structural', desc: 'Peeling, bubbling, or delamination covered.' },
-                { period: '5', unit: 'Years', type: 'Finish', desc: 'Normal wear coating integrity guaranteed.' },
-              ].map(g => (
-                <div key={g.type} style={{ textAlign: 'center', padding: 15, border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: brand.primary }}>{g.period}</div>
-                  <div style={{ fontSize: 11, color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 1 }}>{g.unit} — {g.type}</div>
-                  <p style={{ fontSize: 12, color: theme.textDim, marginTop: 6 }}>{g.desc}</p>
+          {/* Totals — Direct mode only */}
+          {proposal.mode === 'direct' && (
+            <div style={{ marginBottom: 25, display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ minWidth: 280, padding: 16, border: `1px solid ${theme.border}`, borderRadius: 8, background: theme.surface }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.textDim, marginBottom: 6 }}>
+                  <span>Subtotal</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(previewSubtotal)}</span>
                 </div>
-              ))}
+                {previewTaxRate > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.textDim, marginBottom: 6 }}>
+                    <span>Tax ({previewTaxRate}%)</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(previewTax)}</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: `2px solid ${theme.border}`, paddingTop: 8, marginTop: 6 }}>
+                  <span style={{ fontSize: 11, textTransform: 'uppercase' as const, letterSpacing: 2, color: theme.textMuted, fontWeight: 600 }}>Total</span>
+                  <span style={{ fontSize: 22, fontWeight: 700, color: brand.primary, fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(previewTotal)}</span>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* CTA */}
+          {/* Payment Terms */}
+          {paymentTerms && (
+            <div style={{ marginBottom: 20, padding: 14, background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 8 }}>
+              <p style={{ fontSize: 11, textTransform: 'uppercase' as const, letterSpacing: 2, color: theme.textMuted, fontWeight: 600, marginBottom: 6 }}>Payment Terms</p>
+              <p style={{ fontSize: 13, color: theme.textDim, lineHeight: 1.5, whiteSpace: 'pre-line' }}>{paymentTerms}</p>
+            </div>
+          )}
+
+          {/* Terms & Conditions */}
+          {termsText && (
+            <div style={{ marginBottom: 25 }}>
+              <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 14, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 8 }}>Terms &amp; Conditions</h2>
+              <p style={{ fontSize: 12, color: theme.textMuted, lineHeight: 1.6, whiteSpace: 'pre-line' }}>{termsText}</p>
+            </div>
+          )}
+
+
           <div style={{ background: brand.secondary, color: '#fff', padding: 25, borderRadius: 12, textAlign: 'center', marginBottom: 25 }}>
             <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: brand.primary, marginBottom: 8, fontSize: 18 }}>Ready to move forward?</h3>
             <p style={{ fontSize: 14, opacity: 0.9 }}>Contact us to discuss your project and choose the best option for your home.</p>
