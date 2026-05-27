@@ -192,6 +192,40 @@ Deno.serve(async (req) => {
         </table>`;
       const viewQuoteButton = `<a href="${proposalLink}" style="display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0">View Your Proposal</a>`;
 
+      // Lookup next upcoming appointment for this lead's customer (best-effort)
+      let apptDateStr = "";
+      let apptTimeStr = "";
+      let apptLocation = "";
+      if (lead.customer_id) {
+        const today = new Date().toISOString().slice(0, 10);
+        const { data: nextAppt } = await supabase
+          .from("appointments")
+          .select("appointment_date, appointment_time, location")
+          .eq("organization_id", log.organization_id)
+          .eq("customer_id", lead.customer_id)
+          .gte("appointment_date", today)
+          .in("status", ["scheduled", "confirmed"])
+          .order("appointment_date", { ascending: true })
+          .order("appointment_time", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (nextAppt) {
+          try {
+            const d = new Date(`${nextAppt.appointment_date}T00:00:00`);
+            apptDateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+          } catch { apptDateStr = nextAppt.appointment_date || ""; }
+          try {
+            const [hh, mm] = String(nextAppt.appointment_time || "").split(":");
+            const h = Number(hh);
+            const ampm = h >= 12 ? "PM" : "AM";
+            const h12 = ((h + 11) % 12) + 1;
+            apptTimeStr = `${h12}:${mm || "00"} ${ampm}`;
+          } catch { apptTimeStr = nextAppt.appointment_time || ""; }
+          apptLocation = nextAppt.location || "";
+        }
+      }
+      if (!apptLocation) apptLocation = lead.address || "";
+
       // Interpolate variables
       const vars: Record<string, string> = {
         first_name: firstName,
@@ -207,10 +241,12 @@ Deno.serve(async (req) => {
         services: lead.service_interest || lead.notes || "",
         view_request_button: viewRequestButton,
         view_quote_button: viewQuoteButton,
-        appointment_date: "",
-        appointment_time: "",
-        appointment_location: lead.address || "",
+        appointment_date: apptDateStr,
+        appointment_time: apptTimeStr,
+        appointment_location: apptLocation,
+        unsubscribe_url: `${supabaseUrl}/functions/v1/unsubscribe?lead_id=${lead.id}`,
       };
+
 
       const interpolate = (tpl: string) =>
         tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? "");
