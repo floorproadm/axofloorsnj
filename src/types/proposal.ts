@@ -19,6 +19,7 @@ export interface ProposalLineItem {
   description: string;
   category: string;
   amount: number;
+  service_catalog_id?: string;
 }
 
 export interface ProposalData {
