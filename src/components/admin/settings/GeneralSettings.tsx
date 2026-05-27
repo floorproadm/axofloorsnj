@@ -56,6 +56,7 @@ export default function GeneralSettings() {
     const marginNum = parseFloat(formMargin);
     const rateNum = parseFloat(formRate);
     const taxNum = parseFloat(formTaxRate);
+    const depositNum = parseFloat(formDepositPercent);
 
     if (isNaN(marginNum) || marginNum < 0 || marginNum > 100) {
       toast({ title: t("general.erro"), description: t("general.margemErro"), variant: "destructive" });
@@ -67,6 +68,10 @@ export default function GeneralSettings() {
     }
     if (isNaN(taxNum) || taxNum < 0 || taxNum > 100) {
       toast({ title: t("general.erro"), description: "Tax rate must be between 0 and 100.", variant: "destructive" });
+      return;
+    }
+    if (isNaN(depositNum) || depositNum < 1 || depositNum > 100) {
+      toast({ title: t("general.erro"), description: "Deposit percentage must be between 1 and 100.", variant: "destructive" });
       return;
     }
 
