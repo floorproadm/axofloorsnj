@@ -9,11 +9,12 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon, Package } from 'lucide-react';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ServiceCatalogPicker, mapCatalogCategory } from '@/components/admin/ServiceCatalogPicker';
 
 /** Editable line item shape — extends the read-only one with qty + unit_price for live math */
 interface EditableLine {
@@ -56,6 +57,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [editableLines, setEditableLines] = useState<EditableLine[]>([]);
   const [linesDirty, setLinesDirty] = useState(false);
   const [savingLines, setSavingLines] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   // Proposal-level settings (per-proposal overrides of company defaults)
   const [paymentTerms, setPaymentTerms] = useState<string>('');
   const [taxRate, setTaxRate] = useState<string>('0');
@@ -252,6 +254,20 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const addLine = () => {
     setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0 }]);
     setLinesDirty(true);
+  };
+  const addCatalogLine = (item: { name: string; description: string | null; base_price: number; category: string | null }) => {
+    setEditableLines((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        description: item.name + (item.description ? ` — ${item.description}` : ''),
+        category: mapCatalogCategory(item.category),
+        qty: 1,
+        unit_price: Number(item.base_price) || 0,
+      },
+    ]);
+    setLinesDirty(true);
+    toast.success(`Added: ${item.name}`);
   };
   const updateLine = (id: string, patch: Partial<EditableLine>) => {
     setEditableLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -610,6 +626,9 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               <Button size="sm" variant="outline" onClick={addLine}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add line
               </Button>
+              <Button size="sm" variant="secondary" onClick={() => setCatalogOpen(true)}>
+                <Package className="h-3.5 w-3.5 mr-1" /> Catalog
+              </Button>
               <Button size="sm" onClick={saveLines} disabled={!linesDirty || savingLines || editedTotal <= 0}>
                 {savingLines ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
                 Save
@@ -902,6 +921,12 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           </div>
         </div>
       </div>
+
+      <ServiceCatalogPicker
+        open={catalogOpen}
+        onClose={() => setCatalogOpen(false)}
+        onSelect={addCatalogLine}
+      />
     </div>
   );
 }
