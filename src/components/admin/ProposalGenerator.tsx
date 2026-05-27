@@ -652,6 +652,24 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
+            {/* Search filter */}
+            <div className="flex items-center gap-2 mb-1">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Filter lines..."
+                  value={lineSearch}
+                  onChange={(e) => setLineSearch(e.target.value)}
+                  className="pl-8 h-8 text-sm"
+                />
+              </div>
+              {lineSearch && (
+                <span className="text-[11px] text-muted-foreground">
+                  {filteredLines.length} of {editableLines.length}
+                </span>
+              )}
+            </div>
+
             {/* Header row */}
             <div className="hidden md:grid grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
               <div>Description</div>
