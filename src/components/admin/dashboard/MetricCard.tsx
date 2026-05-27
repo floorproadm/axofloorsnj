@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface MetricCardProps {
   icon: React.ReactNode;
@@ -10,6 +11,7 @@ interface MetricCardProps {
   subColor?: string;
   accent?: "default" | "success" | "risk" | "blocked";
   className?: string;
+  to?: string;
 }
 
 const accentStyles = {
@@ -34,11 +36,15 @@ export function MetricCard({
   subColor,
   accent = "default",
   className,
+  to,
 }: MetricCardProps) {
-  return (
+  const card = (
     <Card
       className={cn(
-        "rounded-xl shadow-sm border transition-shadow hover:shadow-md min-w-[140px]",
+        "rounded-xl shadow-sm border transition-all min-w-[140px]",
+        to
+          ? "hover:shadow-md hover:border-primary/40 hover:-translate-y-0.5 cursor-pointer"
+          : "hover:shadow-md",
         accentStyles[accent],
         className
       )}
@@ -75,4 +81,17 @@ export function MetricCard({
       </CardContent>
     </Card>
   );
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        aria-label={label}
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-xl"
+      >
+        {card}
+      </Link>
+    );
+  }
+  return card;
 }
