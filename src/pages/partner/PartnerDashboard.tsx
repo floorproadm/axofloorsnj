@@ -534,7 +534,12 @@ export default function PartnerDashboard() {
                   {convertedLeads.map((lead) => {
                     const commission = ((lead.budget || 0) * commissionPercent) / 100;
                     return (
-                      <Card key={lead.id} className="p-3 flex items-center justify-between">
+                      <button
+                        key={lead.id}
+                        type="button"
+                        onClick={() => setSelectedLead(lead)}
+                        className="w-full text-left rounded-lg border bg-card text-card-foreground shadow-sm p-3 flex items-center justify-between hover:border-primary/40 hover:bg-muted/30 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      >
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate">{lead.name}</p>
                           <p className="text-[11px] text-muted-foreground">
@@ -544,7 +549,7 @@ export default function PartnerDashboard() {
                         <span className="text-sm font-bold text-primary tabular-nums">
                           +${commission.toFixed(0)}
                         </span>
-                      </Card>
+                      </button>
                     );
                   })}
                 </div>
