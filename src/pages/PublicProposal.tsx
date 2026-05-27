@@ -3,43 +3,45 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import {
   Loader2,
   FileText,
   CheckCircle2,
-  Shield,
-  Award,
   ScrollText,
-  Phone,
-  MapPin,
-  Calendar,
   AlertTriangle,
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
 import { DeclineDialog } from "@/components/proposal/DeclineDialog";
 
-
 const fmt = (v: number) =>
   `$${Number(v || 0).toLocaleString("en-US", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })}`;
 
 type TierKey = "good" | "better" | "best";
 
 const TIER_LABELS: Record<TierKey, { name: string; tag: string }> = {
-  good: { name: "Essential", tag: "Solid foundation" },
-  better: { name: "Recommended", tag: "Best value" },
-  best: { name: "Premium", tag: "Top-tier finish" },
+  good: { name: "Good", tag: "Essential scope" },
+  better: { name: "Better", tag: "Recommended" },
+  best: { name: "Best", tag: "Premium finish" },
 };
+
+interface LineItem {
+  description: string;
+  category: string;
+  quantity: number;
+  unit_price: number;
+  amount: number;
+}
 
 export default function PublicProposal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const printMode = searchParams.get("print") === "1";
+
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
@@ -50,8 +52,7 @@ export default function PublicProposal() {
   const [signOpen, setSignOpen] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [pickedTier, setPickedTier] = useState<TierKey | "flat" | null>(null);
-  const [lineItems, setLineItems] = useState<Array<{ description: string; category: string; quantity: number; unit_price: number; amount: number }>>([]);
-
+  const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
   // White-label brand with safe fallbacks
   const brand = {
@@ -64,7 +65,6 @@ export default function PublicProposal() {
     secondary: company?.secondary_color || "#0f1b3d",
     logoUrl,
   };
-  const phoneTel = brand.phone.replace(/\D/g, "");
 
   useEffect(() => {
     if (printMode && !loading && proposal) {
@@ -103,7 +103,9 @@ export default function PublicProposal() {
 
         const [projRes, custRes, companyRes, itemsRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
-          supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle(),
+          prop.customer_id
+            ? supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle()
+            : Promise.resolve({ data: null }),
           supabase.from("company_settings").select("*").limit(1).maybeSingle(),
           supabase
             .from("proposal_line_items" as any)
@@ -145,10 +147,13 @@ export default function PublicProposal() {
   }, [proposal, isAccepted, isRejected]);
   const canAct = !isAccepted && !isRejected && !isExpired;
 
-
   const displayName = customer?.full_name || project?.customer_name || "Client";
   const displayPhone = customer?.phone || project?.customer_phone || null;
   const displayEmail = customer?.email || project?.customer_email || null;
+  const displayAddress =
+    project?.address ||
+    customer?.address ||
+    [project?.city, project?.zip_code].filter(Boolean).join(", ");
 
   const tiers: Array<{ key: TierKey; price: number }> = useMemo(() => {
     if (!proposal || !proposal.use_tiers) return [];
@@ -159,23 +164,37 @@ export default function PublicProposal() {
     ];
   }, [proposal]);
 
+  // Totals (Direct mode only — tiers show their own price)
+  const subtotal = useMemo(() => {
+    if (!proposal) return 0;
+    if (lineItems.length > 0) {
+      return lineItems.reduce((s, li) => s + (Number(li.amount) || 0), 0);
+    }
+    return Number(proposal.flat_price) || 0;
+  }, [proposal, lineItems]);
+
+  const taxRate = Number(proposal?.tax_rate) || 0;
+  const taxAmount = subtotal * (taxRate / 100);
+  const grandTotal = subtotal + taxAmount;
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
       </div>
     );
   }
 
   if (error || !proposal) {
+    const phoneTel = brand.phone.replace(/\D/g, "");
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center max-w-sm px-6">
           <FileText className="w-12 h-12 mx-auto text-slate-300 mb-3" />
           <p className="text-lg font-semibold text-slate-700">Proposal Not Found</p>
           <p className="text-sm text-slate-500 mt-1">
             This link may have expired or is invalid. Please contact us at{" "}
-            <a href={`tel:${phoneTel}`} className="text-primary font-medium">
+            <a href={`tel:${phoneTel}`} className="text-amber-600 font-medium">
               {brand.phone}
             </a>
             .
@@ -190,18 +209,30 @@ export default function PublicProposal() {
     setSignOpen(true);
   };
 
+  const termsText: string =
+    proposal.terms_text?.trim() ||
+    proposal.payment_terms?.trim() ||
+    "";
+
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-white pb-16">
       {/* Branded Header */}
       <header style={{ backgroundColor: brand.secondary }} className="text-white">
-        <div className="max-w-3xl mx-auto px-5 py-7 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-2xl mx-auto px-5 py-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
             {brand.logoUrl && (
-              <img src={brand.logoUrl} alt={brand.name} className="h-10 max-w-[140px] object-contain" />
+              <img
+                src={brand.logoUrl}
+                alt={brand.name}
+                className="h-10 max-w-[120px] object-contain"
+              />
             )}
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{brand.name}</h1>
-              <p className="text-[11px] uppercase tracking-[2px] mt-0.5" style={{ color: brand.primary }}>
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold tracking-tight truncate">{brand.name}</h1>
+              <p
+                className="text-[10px] uppercase tracking-[2px] mt-0.5"
+                style={{ color: brand.primary }}
+              >
                 {brand.tagline}
               </p>
             </div>
@@ -210,60 +241,63 @@ export default function PublicProposal() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-5 py-6 space-y-5">
-        {/* Title */}
+      <main className="max-w-2xl mx-auto px-5 py-8 space-y-8">
+        {/* Document Header — Invoice2go style */}
         <div>
-          <p className="text-xs uppercase tracking-wider text-slate-500">Proposal</p>
-          <h2 className="text-2xl font-bold text-slate-900 mt-1">
-            Your project quote
-          </h2>
-          <p className="text-sm text-slate-600 mt-1">
-            Proposal #{proposal.proposal_number} · Valid through{" "}
-            {format(new Date(proposal.valid_until), "MMM d, yyyy")}
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[2px]"
+            style={{ color: brand.primary }}
+          >
+            Proposal
           </p>
+          <h2 className="text-2xl font-bold text-slate-900 mt-1">
+            {proposal.proposal_number}
+          </h2>
         </div>
 
-        {/* Customer + project */}
-        <Card className="p-5 space-y-3 bg-white">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-              <FileText className="w-4 h-4 text-slate-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-500">Prepared for</p>
-              <p className="font-semibold text-slate-900">
-                {displayName}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-slate-200">
+          {/* Bill To */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500 mb-2">
+              Bill To
+            </p>
+            <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+            {displayEmail && (
+              <p className="text-sm text-slate-600 mt-0.5">{displayEmail}</p>
+            )}
+            {displayPhone && (
+              <p className="text-sm text-slate-600 mt-0.5">{displayPhone}</p>
+            )}
+            {displayAddress && (
+              <p className="text-sm text-slate-600 mt-1 leading-snug">
+                {displayAddress}
               </p>
-              {displayPhone && (
-                <p className="text-xs text-slate-500 mt-0.5">{displayPhone}</p>
-              )}
-            </div>
+            )}
           </div>
-          {(project?.address || customer?.address) && (
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                <MapPin className="w-4 h-4 text-slate-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-slate-500">Project address</p>
-                <p className="text-sm text-slate-900">
-                  {project?.address || customer?.address}
-                </p>
-              </div>
-            </div>
-          )}
-        </Card>
+
+          {/* Document meta */}
+          <div className="sm:text-right">
+            <DocMeta label="Date" value={format(new Date(proposal.created_at), "MMM d, yyyy")} />
+            <DocMeta
+              label="Valid Until"
+              value={format(new Date(proposal.valid_until), "MMM d, yyyy")}
+            />
+            {proposal.payment_terms && (
+              <DocMeta label="Payment Terms" value={proposal.payment_terms} multiline />
+            )}
+          </div>
+        </div>
 
         {/* Optional client note */}
         {proposal.client_note && (
-          <Card className="p-5 bg-amber-50 border-amber-200">
+          <Card className="p-4 bg-amber-50 border-amber-200">
             <div className="flex items-start gap-3">
               <ScrollText className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs uppercase tracking-wider text-amber-800 font-semibold">
-                  Note from AXO
+                <p className="text-[10px] uppercase tracking-[2px] text-amber-800 font-semibold">
+                  Note from {brand.name}
                 </p>
-                <p className="text-sm text-slate-800 mt-1 leading-relaxed">
+                <p className="text-sm text-slate-800 mt-1 leading-relaxed whitespace-pre-line">
                   {proposal.client_note}
                 </p>
               </div>
@@ -271,10 +305,10 @@ export default function PublicProposal() {
           </Card>
         )}
 
-        {/* Pricing */}
+        {/* Pricing — Tiers or Line Items table */}
         {proposal.use_tiers ? (
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500">
               Choose your option
             </h3>
             {tiers.map((t, i) => (
@@ -285,120 +319,66 @@ export default function PublicProposal() {
                 recommended={i === 1}
                 disabled={!canAct}
                 accepted={proposal.selected_tier === t.key}
+                primaryColor={brand.primary}
+                secondaryColor={brand.secondary}
                 onSelect={() => handleSelectTier(t.key)}
               />
             ))}
           </div>
         ) : (
-          <Card className="p-6 bg-white border-2 border-[#0f1b3d]">
-            <p className="text-xs uppercase tracking-wider text-slate-500">
-              Project total
-            </p>
-            <p className="text-4xl font-bold text-slate-900 mt-1">
-              {fmt(Number(proposal.flat_price))}
-            </p>
-            {lineItems.length > 0 && (
-              <div className="mt-4 border-t border-slate-200 pt-4 space-y-2">
-                <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
-                  Breakdown
-                </p>
-                {lineItems.map((li, idx) => (
-                  <div key={idx} className="flex justify-between items-start text-sm">
-                    <div className="flex-1 min-w-0 pr-3">
-                      <p className="text-slate-900">{li.description}</p>
-                      {li.quantity !== 1 && (
-                        <p className="text-[11px] text-slate-500">
-                          {li.quantity} × {fmt(li.unit_price)}
-                        </p>
-                      )}
-                    </div>
-                    <p className="text-slate-900 font-medium tabular-nums">{fmt(li.amount)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+          <LineItemsTable
+            items={lineItems}
+            subtotal={subtotal}
+            taxRate={taxRate}
+            taxAmount={taxAmount}
+            grandTotal={grandTotal}
+            primaryColor={brand.primary}
+          />
+        )}
+
+        {/* Approve / Decline actions */}
+        {canAct && !proposal.use_tiers && (
+          <div className="space-y-3 pt-2">
             <Button
               size="lg"
-              className="w-full mt-5 bg-amber-600 hover:bg-amber-700"
-              disabled={!canAct}
+              className="w-full font-semibold text-white hover:opacity-90"
+              style={{ backgroundColor: brand.primary }}
               onClick={() => handleSelectTier("flat")}
             >
-              {isAccepted ? "Approved" : "Approve & Sign — Lock In Your Project"}
+              Approve &amp; Sign
             </Button>
-          </Card>
-        )}
-
-        {/* Decline */}
-        {canAct && (
-          <Button
-            variant="outline"
-            className="w-full text-slate-600 hover:text-slate-900"
-            onClick={() => setDeclineOpen(true)}
-          >
-            Decline Proposal
-          </Button>
-        )}
-
-        {/* Trust badges */}
-        <div className="grid grid-cols-3 gap-2">
-          <TrustBadge
-            icon={<Award className="w-4 h-4" />}
-            title="DuraSeal"
-            sub="Premium Materials"
-          />
-          <TrustBadge
-            icon={<CheckCircle2 className="w-4 h-4" />}
-            title="10+ Years"
-            sub="Expert Craftsmen"
-          />
-          <TrustBadge
-            icon={<Shield className="w-4 h-4" />}
-            title="Fully Insured"
-            sub="$2M Coverage"
-          />
-        </div>
-
-        {/* Woody's Guarantee */}
-        <Card className="p-5 bg-white">
-          <h3 className="text-sm font-semibold text-slate-900 mb-3">
-            Woody's Guarantee
-          </h3>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            {[
-              { n: "30", u: "Days", t: "Satisfaction" },
-              { n: "10", u: "Years", t: "Structural" },
-              { n: "5", u: "Years", t: "Finish" },
-            ].map((g) => (
-              <div key={g.t} className="bg-slate-50 rounded-lg py-3">
-                <div className="text-2xl font-bold text-amber-600">{g.n}</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">
-                  {g.u}
-                </div>
-                <div className="text-[11px] text-slate-700 font-medium mt-1">
-                  {g.t}
-                </div>
-              </div>
-            ))}
+            <Button
+              variant="outline"
+              className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={() => setDeclineOpen(true)}
+            >
+              Decline Proposal
+            </Button>
           </div>
-        </Card>
+        )}
+        {canAct && proposal.use_tiers && (
+          <div className="pt-2">
+            <Button
+              variant="outline"
+              className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={() => setDeclineOpen(true)}
+            >
+              Decline Proposal
+            </Button>
+          </div>
+        )}
 
-        {/* Help */}
-        <Card className="p-5 bg-[#0f1b3d] text-white">
-          <p className="text-amber-400 text-xs uppercase tracking-wider font-semibold">
-            Questions?
-          </p>
-          <p className="text-sm mt-1 opacity-90">
-            Call or text us — happy to walk you through any tier.
-          </p>
-          <a
-            href={`tel:${phoneTel}`}
-            className="mt-3 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 font-semibold rounded-md py-2.5"
-            style={{ color: brand.secondary }}
-          >
-            <Phone className="w-4 h-4" />
-            {brand.phone}
-          </a>
-        </Card>
+        {/* Terms */}
+        {termsText && (
+          <div className="pt-6 border-t border-slate-200">
+            <p className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500 mb-2">
+              Terms &amp; Conditions
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed whitespace-pre-line">
+              {termsText}
+            </p>
+          </div>
+        )}
 
         {/* Status banners */}
         {isAccepted && (
@@ -409,7 +389,7 @@ export default function PublicProposal() {
                 Project confirmed.
               </p>
               <p className="text-xs text-green-800 mt-0.5">
-                We'll text you within 24h to schedule kickoff.
+                We'll reach out within 24h to schedule kickoff.
               </p>
             </div>
           </Card>
@@ -422,7 +402,7 @@ export default function PublicProposal() {
                 This proposal has expired.
               </p>
               <p className="text-xs text-amber-800 mt-0.5">
-                Call us to refresh pricing — we're happy to help.
+                Contact us to refresh pricing.
               </p>
             </div>
           </Card>
@@ -435,15 +415,17 @@ export default function PublicProposal() {
                 Proposal declined.
               </p>
               <p className="text-xs text-slate-700 mt-0.5">
-                Thank you for letting us know. Call us anytime if anything changes.
+                Thank you for letting us know.
               </p>
             </div>
           </Card>
         )}
 
-        <p className="text-center text-[11px] text-slate-400 pt-4">
-          {brand.name} · {brand.website}
-        </p>
+        {/* Footer */}
+        <div className="pt-8 text-center text-[11px] text-slate-400">
+          <p className="font-medium text-slate-600">{brand.name}</p>
+          {brand.website && <p className="mt-0.5">{brand.website}</p>}
+        </div>
       </main>
 
       {/* Sign dialog */}
@@ -475,6 +457,28 @@ export default function PublicProposal() {
   );
 }
 
+function DocMeta({
+  label,
+  value,
+  multiline,
+}: {
+  label: string;
+  value: string;
+  multiline?: boolean;
+}) {
+  return (
+    <div className="mb-2 last:mb-0">
+      <p className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500">
+        {label}
+      </p>
+      <p
+        className={`text-sm text-slate-900 ${multiline ? "leading-snug" : ""}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
 
 function StatusBadge({ status, expired }: { status: string; expired: boolean }) {
   if (expired) {
@@ -498,11 +502,97 @@ function StatusBadge({ status, expired }: { status: string; expired: boolean }) 
       </Badge>
     );
   }
-
   return (
     <Badge className="bg-amber-400 text-[#0f1b3d] border-0 hover:bg-amber-400">
       Awaiting Approval
     </Badge>
+  );
+}
+
+function LineItemsTable({
+  items,
+  subtotal,
+  taxRate,
+  taxAmount,
+  grandTotal,
+  primaryColor,
+}: {
+  items: LineItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  grandTotal: number;
+  primaryColor: string;
+}) {
+  const hasItems = items.length > 0;
+
+  return (
+    <div className="overflow-hidden border border-slate-200 rounded-md">
+      {hasItems && (
+        <>
+          {/* Table header */}
+          <div
+            className="grid grid-cols-[1fr_56px_96px_96px] gap-2 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-white"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <div>Description</div>
+            <div className="text-right">Qty</div>
+            <div className="text-right">Unit Price</div>
+            <div className="text-right">Amount</div>
+          </div>
+
+          {/* Rows */}
+          {items.map((li, idx) => (
+            <div
+              key={idx}
+              className={`grid grid-cols-[1fr_56px_96px_96px] gap-2 px-4 py-3 text-sm border-t border-slate-100 ${
+                idx % 2 === 1 ? "bg-slate-50" : "bg-white"
+              }`}
+            >
+              <div className="text-slate-900 leading-snug">{li.description || "Item"}</div>
+              <div className="text-right text-slate-700 tabular-nums">
+                {li.quantity}
+              </div>
+              <div className="text-right text-slate-700 tabular-nums">
+                {`$${Number(li.unit_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              </div>
+              <div className="text-right text-slate-900 font-medium tabular-nums">
+                {`$${Number(li.amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Totals */}
+      <div className={`px-4 py-4 space-y-1.5 ${hasItems ? "border-t-2 border-slate-200 bg-white" : "bg-white"}`}>
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-600">Subtotal</span>
+          <span className="text-slate-900 tabular-nums">
+            {`$${subtotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          </span>
+        </div>
+        {taxRate > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600">Tax ({taxRate}%)</span>
+            <span className="text-slate-900 tabular-nums">
+              {`$${taxAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            </span>
+          </div>
+        )}
+        <div className="pt-3 mt-2 border-t-2 border-slate-300 flex justify-between items-baseline">
+          <span className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-500">
+            Total
+          </span>
+          <span
+            className="text-2xl font-bold tabular-nums"
+            style={{ color: primaryColor }}
+          >
+            {`$${grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -512,6 +602,8 @@ function TierCard({
   recommended,
   disabled,
   accepted,
+  primaryColor,
+  secondaryColor,
   onSelect,
 }: {
   tierKey: TierKey;
@@ -519,17 +611,23 @@ function TierCard({
   recommended?: boolean;
   disabled: boolean;
   accepted: boolean;
+  primaryColor: string;
+  secondaryColor: string;
   onSelect: () => void;
 }) {
   const meta = TIER_LABELS[tierKey];
   return (
     <Card
       className={`p-5 bg-white relative ${
-        recommended ? "border-2 border-amber-500" : ""
+        recommended ? "border-2" : ""
       } ${accepted ? "border-2 border-green-500" : ""}`}
+      style={recommended && !accepted ? { borderColor: primaryColor } : {}}
     >
       {recommended && !accepted && (
-        <Badge className="absolute -top-2.5 right-4 bg-amber-500 text-white border-0 text-[10px] uppercase tracking-wider">
+        <Badge
+          className="absolute -top-2.5 right-4 text-white border-0 text-[10px] uppercase tracking-wider hover:opacity-100"
+          style={{ backgroundColor: primaryColor }}
+        >
           Recommended
         </Badge>
       )}
@@ -540,19 +638,18 @@ function TierCard({
       )}
       <div className="flex items-baseline justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wider text-slate-500">
+          <p className="text-[10px] uppercase tracking-[2px] text-slate-500">
             {meta.tag}
           </p>
           <h4 className="text-lg font-bold text-slate-900 mt-0.5">{meta.name}</h4>
         </div>
-        <p className="text-2xl font-bold text-slate-900">{fmt(price)}</p>
+        <p className="text-2xl font-bold text-slate-900 tabular-nums">{fmt(price)}</p>
       </div>
       <Button
-        className={`w-full mt-4 ${
-          recommended
-            ? "bg-amber-600 hover:bg-amber-700"
-            : "bg-[#0f1b3d] hover:bg-[#1a2954]"
-        }`}
+        className="w-full mt-4 text-white hover:opacity-90"
+        style={{
+          backgroundColor: recommended ? primaryColor : secondaryColor,
+        }}
         disabled={disabled}
         onClick={onSelect}
       >
@@ -563,23 +660,5 @@ function TierCard({
           : `Approve ${meta.name}`}
       </Button>
     </Card>
-  );
-}
-
-function TrustBadge({
-  icon,
-  title,
-  sub,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  sub: string;
-}) {
-  return (
-    <div className="bg-white rounded-lg border border-slate-200 px-3 py-3 text-center">
-      <div className="text-amber-600 flex justify-center mb-1">{icon}</div>
-      <p className="text-xs font-semibold text-slate-900">{title}</p>
-      <p className="text-[10px] text-slate-500 leading-tight mt-0.5">{sub}</p>
-    </div>
   );
 }
