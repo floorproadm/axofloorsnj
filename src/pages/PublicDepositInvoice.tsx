@@ -282,7 +282,7 @@ export default function PublicDepositInvoice() {
                 </td>
               </tr>
               <tr style={{ backgroundColor: brand.secondary }} className="text-white">
-                <td className="px-4 py-4 font-semibold">Deposit due now (50%)</td>
+                <td className="px-4 py-4 font-semibold">Deposit due now ({company?.deposit_percentage ?? 50}%)</td>
                 <td
                   className="px-4 py-4 text-right text-xl font-bold tabular-nums"
                   style={{ color: brand.primary }}
