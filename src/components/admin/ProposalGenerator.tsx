@@ -301,6 +301,50 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     }
   };
 
+  // Persist proposal-level settings (payment terms / tax rate / terms text)
+  const saveSettings = async () => {
+    if (!proposal?.proposal_id) return;
+    const taxNum = parseFloat(taxRate);
+    if (isNaN(taxNum) || taxNum < 0 || taxNum > 100) {
+      toast.error('Tax rate must be between 0 and 100.');
+      return;
+    }
+    setSavingSettings(true);
+    try {
+      const { error: upErr } = await supabase
+        .from('proposals')
+        .update({
+          payment_terms: paymentTerms.trim() || null,
+          tax_rate: taxNum,
+          terms_text: termsText.trim() || null,
+        } as any)
+        .eq('id', proposal.proposal_id);
+      if (upErr) throw upErr;
+      setSettingsDirty(false);
+      toast.success('Proposal settings saved');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save settings');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  // Derived totals for the printable preview
+  const previewSubtotal = useMemo(() => {
+    if (!proposal) return 0;
+    if (proposal.mode === 'direct') {
+      return editableLines.length > 0
+        ? editedTotal
+        : Number(proposal.flat_price) || 0;
+    }
+    return 0;
+  }, [proposal, editableLines, editedTotal]);
+  const previewTaxRate = parseFloat(taxRate) || 0;
+  const previewTax = previewSubtotal * (previewTaxRate / 100);
+  const previewTotal = previewSubtotal + previewTax;
+
+
+
   const handleCopyLink = async () => {
     if (!shareToken) {
       toast.error('Public link is being generated. Try again in a moment.');
