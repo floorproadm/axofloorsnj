@@ -193,6 +193,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
       clientNote,
     });
     if (data) {
+      if (data._isExisting) toast.info("Opened existing draft for this project");
       onCreated(data);
       onClose();
       setProjectId("");
