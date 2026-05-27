@@ -23,6 +23,9 @@ export default function GeneralSettings() {
   const [saving, setSaving] = useState(false);
 
   const [formName, setFormName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formCheckAddress, setFormCheckAddress] = useState("");
   const [formMargin, setFormMargin] = useState("");
   const [formModel, setFormModel] = useState<LaborPricingModel>("sqft");
   const [formRate, setFormRate] = useState("");
@@ -38,6 +41,9 @@ export default function GeneralSettings() {
       setFormModel(laborPricingModel);
       setFormRate(String(laborRate));
       const s: any = settings || {};
+      setFormPhone(s.phone ?? "");
+      setFormEmail(s.email ?? "");
+      setFormCheckAddress(s.check_mailing_address ?? "");
       setFormPaymentTerms(s.default_payment_terms ?? "50% deposit due upon signing. Balance due upon completion.");
       setFormTaxRate(String(s.default_tax_rate ?? 0));
       setFormTermsText(s.default_terms_text ?? "");
