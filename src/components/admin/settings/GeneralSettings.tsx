@@ -201,6 +201,57 @@ export default function GeneralSettings() {
           )}
         </CardFooter>
       </Card>
+
+      {/* Proposal Document Defaults */}
+      <Card className="border-l-4 border-l-[hsl(var(--gold-warm))] shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileText className="w-5 h-5 text-[hsl(var(--gold-warm))]" />
+            Proposal Defaults
+          </CardTitle>
+          <CardDescription>
+            Default payment terms, tax rate and conditions pre-populated on every new proposal. Each proposal can override these.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid gap-4 max-w-2xl">
+            <div className="space-y-2">
+              <Label htmlFor="default_payment_terms">Default Payment Terms</Label>
+              <Textarea
+                id="default_payment_terms"
+                value={formPaymentTerms}
+                onChange={(e) => setFormPaymentTerms(e.target.value)}
+                placeholder="50% deposit due upon signing. Balance due upon completion."
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2 max-w-[200px]">
+              <Label htmlFor="default_tax_rate">Default Tax Rate (%)</Label>
+              <Input
+                id="default_tax_rate"
+                type="number"
+                min={0}
+                max={100}
+                step="0.01"
+                value={formTaxRate}
+                onChange={(e) => setFormTaxRate(e.target.value)}
+                className="tabular-nums"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="default_terms_text">Default Terms &amp; Conditions</Label>
+              <Textarea
+                id="default_terms_text"
+                value={formTermsText}
+                onChange={(e) => setFormTermsText(e.target.value)}
+                placeholder="Warranty notes, scope exclusions, change-order policy, etc."
+                rows={5}
+              />
+              <p className="text-xs text-muted-foreground">Shown at the bottom of every proposal document.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
