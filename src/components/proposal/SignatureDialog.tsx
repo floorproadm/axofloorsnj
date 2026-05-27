@@ -153,7 +153,7 @@ export function SignatureDialog({
       }
 
       setDone(true);
-      onSigned?.();
+      window.location.href = `/proposal/${proposalToken}/invoice`;
 
     } catch (e: any) {
       console.error(e);

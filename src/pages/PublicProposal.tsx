@@ -438,9 +438,7 @@ export default function PublicProposal() {
         selectedTier={pickedTier}
         proposalNumber={proposal.proposal_number}
         customerName={displayName}
-        onSigned={() => {
-          window.location.reload();
-        }}
+        proposalToken={token}
       />
 
       {/* Decline dialog */}
