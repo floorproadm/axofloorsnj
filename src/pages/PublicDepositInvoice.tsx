@@ -348,7 +348,7 @@ function PaymentInstructions({
 }: {
   method: PaymentMethod;
   amount: number;
-  brand: { primary: string; secondary: string; email: string; phone: string; legalName: string };
+  brand: { primary: string; secondary: string; email: string; phone: string; legalName: string; checkMailingAddress: string };
   invoiceNumber: string;
 }) {
   if (method === "zelle") {
