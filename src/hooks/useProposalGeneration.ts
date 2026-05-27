@@ -65,7 +65,9 @@ interface FetchOptions {
   flatPrice?: number; // required when mode='direct'
   referringPartnerId?: string | null;
   clientNote?: string | null;
+  readOnly?: boolean; // when true, never insert — return existing or null
 }
+
 
 interface UseProposalGenerationReturn {
   generateTiers: (baseCost: number, minMargin: number) => ProposalTier[];
