@@ -606,6 +606,7 @@ export type Database = {
           default_terms_text: string | null
           deposit_percentage: number
           email: string | null
+          email_logo_url: string | null
           google_rating: number
           id: string
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
@@ -637,6 +638,7 @@ export type Database = {
           default_terms_text?: string | null
           deposit_percentage?: number
           email?: string | null
+          email_logo_url?: string | null
           google_rating?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
@@ -668,6 +670,7 @@ export type Database = {
           default_terms_text?: string | null
           deposit_percentage?: number
           email?: string | null
+          email_logo_url?: string | null
           google_rating?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
