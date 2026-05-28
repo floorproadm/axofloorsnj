@@ -944,8 +944,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           {proposal.mode === 'direct' ? (
             <div style={{ marginBottom: 20 }}>
               <PrintDirectCard
-                price={previewSubtotal}
-                projectType={proposal.project_type}
                 formatCurrency={formatCurrency}
                 brand={brand}
                 theme={theme}
