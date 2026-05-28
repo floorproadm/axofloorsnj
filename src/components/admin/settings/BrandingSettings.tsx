@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush, Phone } from "lucide-react";
+import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush, Phone, Mail, Globe } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -385,9 +385,9 @@ export default function BrandingSettings() {
             {/* Footer com contato */}
             <div className="px-6 py-3 border-t bg-gray-50 text-[11px] text-gray-600 flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {phone && <span>📞 {phone}</span>}
-                {email && <span>✉ {email}</span>}
-                {website && <span>🌐 {website}</span>}
+                {phone && <span className="inline-flex items-center gap-1.5"><Phone className="w-3 h-3" />{phone}</span>}
+                {email && <span className="inline-flex items-center gap-1.5"><Mail className="w-3 h-3" />{email}</span>}
+                {website && <span className="inline-flex items-center gap-1.5"><Globe className="w-3 h-3" />{website}</span>}
                 {!phone && !email && !website && <span className="italic text-gray-400">Adicione contato acima para exibir aqui</span>}
               </div>
               <div className="font-medium" style={{ color: secondaryColor }}>{tradeName || 'Your Company'}</div>
