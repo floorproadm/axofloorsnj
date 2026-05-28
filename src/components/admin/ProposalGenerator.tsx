@@ -950,6 +950,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 brand={brand}
                 theme={theme}
                 isDark={previewTheme === 'dark'}
+                lines={editableLines}
               />
             </div>
           ) : (
