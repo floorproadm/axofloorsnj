@@ -950,6 +950,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                 brand={brand}
                 theme={theme}
                 isDark={previewTheme === 'dark'}
+                lines={editableLines}
               />
             </div>
           ) : (
@@ -1104,14 +1105,32 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand, theme
   );
 }
 
-function PrintDirectCard({ price, projectType, formatCurrency, brand, theme, isDark }: {
+function PrintDirectCard({ price, projectType, formatCurrency, brand, theme, isDark, lines }: {
   price: number;
   projectType: string;
   formatCurrency: (v: number) => string;
   brand: Brand;
   theme: PreviewTheme;
   isDark: boolean;
+  lines: EditableLine[];
 }) {
+  const thStyle: React.CSSProperties = {
+    textAlign: 'left',
+    fontSize: 11,
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    color: theme.textMuted,
+    padding: '8px 10px',
+    borderBottom: `1px solid ${theme.border}`,
+  };
+  const tdStyle: React.CSSProperties = {
+    fontSize: 13,
+    color: theme.text,
+    padding: '10px',
+    borderBottom: `1px solid ${theme.borderSoft}`,
+    fontVariantNumeric: 'tabular-nums',
+  };
   return (
     <div style={{
       border: `2px solid ${brand.primary}`,
@@ -1138,6 +1157,35 @@ function PrintDirectCard({ price, projectType, formatCurrency, brand, theme, isD
       <p style={{ fontSize: 42, fontWeight: 700, color: brand.primary, margin: '6px 0 18px 0' }}>
         {formatCurrency(price)}
       </p>
+
+      {lines.length > 0 && (
+        <div style={{ marginTop: 8, marginBottom: 18, background: theme.surface, borderRadius: 8, border: `1px solid ${theme.border}`, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Description</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 70 }}>Qty</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 110 }}>Unit Price</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 110 }}>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((l) => {
+                const qty = Number(l.qty) || 0;
+                const unit = Number(l.unit_price) || 0;
+                return (
+                  <tr key={l.id}>
+                    <td style={tdStyle}>{l.description || <span style={{ color: theme.textDim, fontStyle: 'italic' }}>Untitled item</span>}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right' }}>{qty}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right' }}>{formatCurrency(unit)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600 }}>{formatCurrency(qty * unit)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <p style={{ fontSize: 13, color: theme.textDim, fontStyle: 'italic' }}>
         Includes all labor, materials, and equipment required to complete this project per the agreed scope.
