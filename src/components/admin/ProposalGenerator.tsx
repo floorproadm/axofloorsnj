@@ -1103,9 +1103,7 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand, theme
   );
 }
 
-function PrintDirectCard({ price, projectType, formatCurrency, brand, theme, isDark, lines }: {
-  price: number;
-  projectType: string;
+function PrintDirectCard({ formatCurrency, brand, theme, isDark, lines }: {
   formatCurrency: (v: number) => string;
   brand: Brand;
   theme: PreviewTheme;
