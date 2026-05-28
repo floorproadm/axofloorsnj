@@ -446,7 +446,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           : prev
       );
       setLinesDirty(false);
-      toast.success('Proposal updated');
+      toast.success('Line items saved!');
     } catch (e: any) {
       toast.error(e?.message || 'Failed to update proposal');
     } finally {
