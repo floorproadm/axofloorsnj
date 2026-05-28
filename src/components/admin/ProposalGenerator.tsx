@@ -14,25 +14,16 @@ import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ServiceCatalogPicker, mapCatalogCategory } from '@/components/admin/ServiceCatalogPicker';
+import { ServiceCatalogPicker } from '@/components/admin/ServiceCatalogPicker';
 
 /** Editable line item shape — extends the read-only one with qty + unit_price for live math */
 interface EditableLine {
   id: string;
   description: string;
-  category: string;
   qty: number;
   unit_price: number;
   service_catalog_id?: string | null;
 }
-
-const CATEGORY_OPTIONS = [
-  { value: 'labor', label: 'Labor' },
-  { value: 'material', label: 'Materials' },
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'additional', label: 'Additional Services' },
-  { value: 'other', label: 'Other' },
-];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -183,14 +174,13 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       if (proposal.proposal_id) {
         const { data: rows } = await supabase
           .from('proposal_line_items' as any)
-          .select('description, category, quantity, unit_price, display_order, service_catalog_id')
+          .select('description, quantity, unit_price, display_order, service_catalog_id')
           .eq('proposal_id', proposal.proposal_id)
           .order('display_order', { ascending: true });
         if (rows && rows.length > 0) {
           seeded = rows.map((r: any) => ({
             id: uid(),
             description: r.description || '',
-            category: r.category || 'other',
             qty: Number(r.quantity) || 0,
             unit_price: Number(r.unit_price) || 0,
             service_catalog_id: r.service_catalog_id || null,
@@ -201,14 +191,13 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         seeded = (proposal.line_items ?? []).map((it) => ({
           id: uid(),
           description: it.description || it.category || 'Item',
-          category: it.category || 'other',
           qty: 1,
           unit_price: Number(it.amount) || 0,
           service_catalog_id: null,
         }));
       }
       if (seeded.length === 0) {
-        seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0, service_catalog_id: null });
+        seeded.push({ id: uid(), description: 'Project scope', qty: 1, unit_price: proposal.flat_price ?? 0, service_catalog_id: null });
       }
       if (!cancelled) {
         setEditableLines(seeded);
@@ -250,9 +239,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     if (!lineSearch.trim()) return editableLines;
     const q = lineSearch.toLowerCase();
     return editableLines.filter(
-      (l) =>
-        l.description.toLowerCase().includes(q) ||
-        l.category.toLowerCase().includes(q)
+      (l) => l.description.toLowerCase().includes(q)
     );
   }, [editableLines, lineSearch]);
 
@@ -266,7 +253,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   }, [editedTotal, proposal]);
 
   const addLine = () => {
-    setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0, service_catalog_id: null }]);
+    setEditableLines((prev) => [...prev, { id: uid(), description: '', qty: 1, unit_price: 0, service_catalog_id: null }]);
     setLinesDirty(true);
   };
   const addCatalogLine = (item: { id: string; name: string; description: string | null; base_price: number; category: string | null }) => {
@@ -275,7 +262,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       {
         id: uid(),
         description: item.name,
-        category: mapCatalogCategory(item.category),
         qty: 1,
         unit_price: Number(item.base_price) || 0,
         service_catalog_id: item.id,
@@ -318,7 +304,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       const rows = editableLines.map((l, idx) => ({
         proposal_id: proposal.proposal_id,
         description: l.description || 'Item',
-        category: l.category || 'other',
         quantity: Number(l.qty) || 0,
         unit_price: Number(l.unit_price) || 0,
         display_order: idx,
@@ -339,7 +324,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               flat_margin_percent: editedMargin,
               line_items: editableLines.map((l) => ({
                 description: l.description || 'Item',
-                category: l.category,
+                category: 'other',
                 amount: (Number(l.qty) || 0) * (Number(l.unit_price) || 0),
               })),
             }
@@ -671,9 +656,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
 
             {/* Header row */}
-            <div className="hidden md:grid grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="hidden md:grid grid-cols-[1fr_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
               <div>Description</div>
-              <div>Category</div>
               <div className="text-right">Qty</div>
               <div className="text-right">Unit price</div>
               <div className="text-right">Total</div>
@@ -685,7 +669,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               return (
                 <div
                   key={line.id}
-                  className="grid grid-cols-1 md:grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+                  className="grid grid-cols-1 md:grid-cols-[1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
                 >
                   <Input
                     value={line.description}
@@ -693,15 +677,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                     placeholder="e.g. Sanding & 3 coats finish — living room"
                     className="h-8 text-sm"
                   />
-                  <select
-                    value={line.category}
-                    onChange={(e) => updateLine(line.id, { category: e.target.value })}
-                    className="h-8 text-sm bg-background border border-input rounded-md px-2"
-                  >
-                    {CATEGORY_OPTIONS.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
                   <Input
                     type="number"
                     inputMode="decimal"
