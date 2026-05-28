@@ -111,7 +111,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;c
 .btn{display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0}
 .footer{border-top:1px solid #eee;padding-top:16px;text-align:center;font-size:12px;color:#999}
 </style></head><body><div class="container">
-<div class="header"><img src="https://dcfmrqrbsfxvqhihpamd.supabase.co/storage/v1/object/public/feed-media/brand/axo-logo-official.png" alt="AXO Floors" /></div>
+<div class="header"><img src="https://dcfmrqrbsfxvqhihpamd.supabase.co/storage/v1/object/public/feed-media/brand/axo-logo-email.png" alt="AXO Floors" /></div>
 <div class="content">${html}</div>
 <div class="footer">AXO Floors · New Jersey · (732) 351-8653<br>axofloorsnj@gmail.com</div>
 </div></body></html>`;
