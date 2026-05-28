@@ -377,6 +377,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     setLinesDirty(true);
   };
 
+  // Drag-and-drop sensors for reordering line items
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const handleLineDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setEditableLines((prev) => {
+      const oldIndex = prev.findIndex((l) => l.id === active.id);
+      const newIndex = prev.findIndex((l) => l.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+    setLinesDirty(true);
+  };
+
   // Persist edited lines as the new flat_price on the proposal.
   const saveLines = async () => {
     if (!proposal?.proposal_id) return;
