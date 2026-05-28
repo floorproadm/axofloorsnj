@@ -253,7 +253,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   }, [editedTotal, proposal]);
 
   const addLine = () => {
-    setEditableLines((prev) => [...prev, { id: uid(), description: '', category: 'labor', qty: 1, unit_price: 0, service_catalog_id: null }]);
+    setEditableLines((prev) => [...prev, { id: uid(), description: '', qty: 1, unit_price: 0, service_catalog_id: null }]);
     setLinesDirty(true);
   };
   const addCatalogLine = (item: { id: string; name: string; description: string | null; base_price: number; category: string | null }) => {
@@ -262,7 +262,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       {
         id: uid(),
         description: item.name,
-        category: mapCatalogCategory(item.category),
         qty: 1,
         unit_price: Number(item.base_price) || 0,
         service_catalog_id: item.id,
