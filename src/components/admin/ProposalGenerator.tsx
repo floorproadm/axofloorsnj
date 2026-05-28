@@ -304,7 +304,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       const rows = editableLines.map((l, idx) => ({
         proposal_id: proposal.proposal_id,
         description: l.description || 'Item',
-        category: l.category || 'other',
         quantity: Number(l.qty) || 0,
         unit_price: Number(l.unit_price) || 0,
         display_order: idx,
