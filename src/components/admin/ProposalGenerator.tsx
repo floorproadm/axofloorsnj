@@ -14,7 +14,7 @@ import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ServiceCatalogPicker, mapCatalogCategory } from '@/components/admin/ServiceCatalogPicker';
+import { ServiceCatalogPicker } from '@/components/admin/ServiceCatalogPicker';
 
 /** Editable line item shape — extends the read-only one with qty + unit_price for live math */
 interface EditableLine {
