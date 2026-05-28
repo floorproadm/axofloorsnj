@@ -21,6 +21,17 @@ const fmt = (v: number) =>
     maximumFractionDigits: 2,
   })}`;
 
+/** Returns black or white based on background luminance for WCAG contrast. */
+const readableText = (hex: string): string => {
+  const h = (hex || "").replace("#", "");
+  if (h.length !== 6) return "#ffffff";
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? "#0f172a" : "#ffffff";
+};
+
 type TierKey = "good" | "better" | "best";
 
 const TIER_LABELS: Record<TierKey, { name: string; tag: string }> = {
