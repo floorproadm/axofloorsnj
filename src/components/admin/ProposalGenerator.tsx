@@ -20,19 +20,10 @@ import { ServiceCatalogPicker, mapCatalogCategory } from '@/components/admin/Ser
 interface EditableLine {
   id: string;
   description: string;
-  category: string;
   qty: number;
   unit_price: number;
   service_catalog_id?: string | null;
 }
-
-const CATEGORY_OPTIONS = [
-  { value: 'labor', label: 'Labor' },
-  { value: 'material', label: 'Materials' },
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'additional', label: 'Additional Services' },
-  { value: 'other', label: 'Other' },
-];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
