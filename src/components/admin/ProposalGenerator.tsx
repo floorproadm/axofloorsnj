@@ -215,7 +215,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.85;
   };
-  const safePrimary = isUnreadableOnDark(settings?.primary_color) ? '#d97706' : (settings?.primary_color || '#d97706');
+  const safePrimary = isUnreadableOnDark(settings?.primary_color) ? '#fcba03' : (settings?.primary_color || '#fcba03');
   const safeSecondary = isUnreadableOnDark(settings?.secondary_color) ? '#1e3a5f' : (settings?.secondary_color || '#1e3a5f');
   const brand = {
     name: settings?.trade_name || settings?.company_name || 'AXO Floors',
