@@ -240,10 +240,10 @@ const Index = () => {
           </div>
 
           <div className="text-center mt-10 sm:mt-12">
-            <Button asChild variant="outline" className="min-h-[48px] px-6 sm:px-8 font-semibold">
+            <Button asChild variant="outline" className="min-h-[52px] px-8 sm:px-10 py-3 text-base font-semibold">
               <Link to="/sanding-and-refinish" className="flex items-center justify-center gap-2">
                 Explore Services
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
           </div>
