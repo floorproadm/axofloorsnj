@@ -324,7 +324,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               flat_margin_percent: editedMargin,
               line_items: editableLines.map((l) => ({
                 description: l.description || 'Item',
-                category: l.category,
+                category: 'other',
                 amount: (Number(l.qty) || 0) * (Number(l.unit_price) || 0),
               })),
             }
