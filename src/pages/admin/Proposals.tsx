@@ -1199,7 +1199,7 @@ export default function Proposals() {
 
   return (
     <AdminLayout title="Proposals">
-      <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
+      <div className="flex flex-col h-[calc(100dvh-11rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3">

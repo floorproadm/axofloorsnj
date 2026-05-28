@@ -120,7 +120,7 @@ export default function Partners() {
   if (selectedPartner) {
     return (
       <AdminLayout title="Partners">
-        <div className="h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
+        <div className="h-[calc(100dvh-11rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
           <PartnerDetailPanel
             key={selectedPartner.id}
             partner={selectedPartner}
@@ -134,7 +134,7 @@ export default function Partners() {
 
   return (
     <AdminLayout title="Partners">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-[calc(100vh-8rem)]">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-[calc(100dvh-11rem)]">
         <TabsList className="grid grid-cols-2 w-full max-w-md mb-3 mx-auto">
           <TabsTrigger value="partners" className="gap-1.5">
             <Users className="w-3.5 h-3.5" /> Partners
