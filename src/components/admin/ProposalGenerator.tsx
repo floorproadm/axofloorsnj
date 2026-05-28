@@ -225,7 +225,11 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     phone: settings?.phone || '(732) 351-8653',
     email: settings?.email || 'info@axofloors.com',
     website: settings?.website || 'www.axofloors.com',
-    logoUrl: (settings as any)?.email_logo_url || logoSignedUrl,
+    logoUrl: (previewTheme === 'dark'
+      ? (settings as any)?.proposal_logo_dark_url
+      : (settings as any)?.proposal_logo_light_url)
+      || (settings as any)?.email_logo_url
+      || logoSignedUrl,
   };
 
   const handleGenerate = async () => {
