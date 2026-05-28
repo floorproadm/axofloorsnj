@@ -44,6 +44,87 @@ interface EditableLine {
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+const formatCurrencyUSD = (value: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value || 0);
+
+interface SortableLineRowProps {
+  line: EditableLine;
+  onUpdate: (id: string, patch: Partial<EditableLine>) => void;
+  onRemove: (id: string) => void;
+}
+
+function SortableLineRow({ line, onUpdate, onRemove }: SortableLineRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: line.id });
+  const total = (Number(line.qty) || 0) * (Number(line.unit_price) || 0);
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="grid grid-cols-1 md:grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="hidden md:flex items-center justify-center h-8 w-6 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className="flex flex-col gap-1 min-w-0">
+        <Input
+          value={line.description}
+          onChange={(e) => onUpdate(line.id, { description: e.target.value })}
+          placeholder="e.g. Sanding & 3 coats finish — living room"
+          className="h-8 text-sm"
+        />
+        {line.service_catalog_id ? (
+          <span className="self-start bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full">
+            Catalog
+          </span>
+        ) : null}
+      </div>
+      <Input
+        type="number"
+        inputMode="decimal"
+        value={line.qty}
+        min={0}
+        step="0.01"
+        onChange={(e) => onUpdate(line.id, { qty: parseFloat(e.target.value) || 0 })}
+        className="h-8 text-sm text-right tabular-nums"
+      />
+      <Input
+        type="number"
+        inputMode="decimal"
+        value={line.unit_price}
+        min={0}
+        step="0.01"
+        onChange={(e) => onUpdate(line.id, { unit_price: parseFloat(e.target.value) || 0 })}
+        className="h-8 text-sm text-right tabular-nums"
+      />
+      <div className="text-sm text-right font-medium tabular-nums">
+        {formatCurrencyUSD(total)}
+      </div>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        onClick={() => onRemove(line.id)}
+        aria-label="Remove line"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+}
+
+
 interface ProposalGeneratorProps {
   projectId: string;
   onClose?: () => void;
