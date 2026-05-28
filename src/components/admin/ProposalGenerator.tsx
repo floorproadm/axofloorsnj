@@ -771,7 +771,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
 
             {/* Header row */}
-            <div className="hidden md:grid grid-cols-[1fr_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="hidden md:grid grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div></div>
               <div>Description</div>
               <div className="text-right">Qty</div>
               <div className="text-right">Unit price</div>
@@ -779,52 +780,28 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               <div></div>
             </div>
 
-            {filteredLines.map((line) => {
-              const total = (Number(line.qty) || 0) * (Number(line.unit_price) || 0);
-              return (
-                <div
-                  key={line.id}
-                  className="grid grid-cols-1 md:grid-cols-[1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
-                >
-                  <Input
-                    value={line.description}
-                    onChange={(e) => updateLine(line.id, { description: e.target.value })}
-                    placeholder="e.g. Sanding & 3 coats finish — living room"
-                    className="h-8 text-sm"
-                  />
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    value={line.qty}
-                    min={0}
-                    step="0.01"
-                    onChange={(e) => updateLine(line.id, { qty: parseFloat(e.target.value) || 0 })}
-                    className="h-8 text-sm text-right tabular-nums"
-                  />
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    value={line.unit_price}
-                    min={0}
-                    step="0.01"
-                    onChange={(e) => updateLine(line.id, { unit_price: parseFloat(e.target.value) || 0 })}
-                    className="h-8 text-sm text-right tabular-nums"
-                  />
-                  <div className="text-sm text-right font-medium tabular-nums">
-                    {formatCurrency(total)}
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeLine(line.id)}
-                    aria-label="Remove line"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+            <DndContext
+              sensors={dndSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleLineDragEnd}
+            >
+              <SortableContext
+                items={editableLines.map((l) => l.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {filteredLines.map((line) => (
+                    <SortableLineRow
+                      key={line.id}
+                      line={line}
+                      onUpdate={updateLine}
+                      onRemove={removeLine}
+                    />
+                  ))}
                 </div>
-              );
-            })}
+              </SortableContext>
+            </DndContext>
+
 
             {filteredLines.length === 0 && (
               <p className="text-xs text-muted-foreground italic px-2 py-3">
