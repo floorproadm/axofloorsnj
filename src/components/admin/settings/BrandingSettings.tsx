@@ -31,6 +31,11 @@ export default function BrandingSettings() {
   const [emailLogoUrl, setEmailLogoUrl] = useState("");
   const [uploadingEmailLogo, setUploadingEmailLogo] = useState(false);
 
+  const [proposalLogoLightUrl, setProposalLogoLightUrl] = useState("");
+  const [proposalLogoDarkUrl, setProposalLogoDarkUrl] = useState("");
+  const [uploadingProposalLight, setUploadingProposalLight] = useState(false);
+  const [uploadingProposalDark, setUploadingProposalDark] = useState(false);
+
   const generateSignedUrl = async (path: string) => {
     if (!path) { setLogoDisplayUrl(""); return; }
     const { data, error } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60);
@@ -50,6 +55,8 @@ export default function BrandingSettings() {
       setLogoPath(storedPath);
       generateSignedUrl(storedPath);
       setEmailLogoUrl((settings as any).email_logo_url ?? "");
+      setProposalLogoLightUrl((settings as any).proposal_logo_light_url ?? "");
+      setProposalLogoDarkUrl((settings as any).proposal_logo_dark_url ?? "");
     }
   }, [isLoading, settings]);
 
@@ -77,6 +84,34 @@ export default function BrandingSettings() {
   };
 
   const handleClearEmailLogo = () => setEmailLogoUrl("");
+
+  const handleProposalLogoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    variant: "light" | "dark"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB", variant: "destructive" });
+      return;
+    }
+    const setUploading = variant === "light" ? setUploadingProposalLight : setUploadingProposalDark;
+    const setUrl = variant === "light" ? setProposalLogoLightUrl : setProposalLogoDarkUrl;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `brand/proposal-logo-${variant}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("feed-media").upload(fileName, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("feed-media").getPublicUrl(fileName);
+      setUrl(data.publicUrl);
+      toast({ title: `Logo de proposta (${variant}) enviado` });
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -129,6 +164,8 @@ export default function BrandingSettings() {
           website: website.trim() || null,
           logo_url: logoPath || null,
           email_logo_url: emailLogoUrl || null,
+          proposal_logo_light_url: proposalLogoLightUrl || null,
+          proposal_logo_dark_url: proposalLogoDarkUrl || null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", settings.id);
@@ -251,6 +288,75 @@ export default function BrandingSettings() {
                   </label>
                 </Button>
                 <p className="text-xs text-muted-foreground mt-1">PNG transparente recomendado · máx 2MB</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <Label>Logos da Proposta (Light / Dark)</Label>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Versões otimizadas para cada tema do preview da proposta. Use uma versão escura sobre fundo branco (Light) e uma versão clara sobre fundo escuro (Dark). Se vazio, usa o logo da empresa.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              {/* Light variant */}
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Light Mode</div>
+                <div className="flex items-center gap-3">
+                  {proposalLogoLightUrl ? (
+                    <div className="relative w-28 h-20 rounded-lg border bg-white flex items-center justify-center overflow-hidden p-2">
+                      <img src={proposalLogoLightUrl} alt="Logo Light" className="max-w-full max-h-full object-contain" />
+                      <button
+                        onClick={() => setProposalLogoLightUrl("")}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        type="button"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-28 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-white">
+                      <Upload className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <Button variant="outline" size="sm" disabled={uploadingProposalLight} asChild>
+                    <label className="cursor-pointer">
+                      {uploadingProposalLight ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                      {proposalLogoLightUrl ? "Trocar" : "Enviar"}
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleProposalLogoUpload(e, "light")} />
+                    </label>
+                  </Button>
+                </div>
+              </div>
+              {/* Dark variant */}
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Dark Mode</div>
+                <div className="flex items-center gap-3">
+                  {proposalLogoDarkUrl ? (
+                    <div className="relative w-28 h-20 rounded-lg border bg-neutral-900 flex items-center justify-center overflow-hidden p-2">
+                      <img src={proposalLogoDarkUrl} alt="Logo Dark" className="max-w-full max-h-full object-contain" />
+                      <button
+                        onClick={() => setProposalLogoDarkUrl("")}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        type="button"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-28 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-neutral-900">
+                      <Upload className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <Button variant="outline" size="sm" disabled={uploadingProposalDark} asChild>
+                    <label className="cursor-pointer">
+                      {uploadingProposalDark ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                      {proposalLogoDarkUrl ? "Trocar" : "Enviar"}
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleProposalLogoUpload(e, "dark")} />
+                    </label>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

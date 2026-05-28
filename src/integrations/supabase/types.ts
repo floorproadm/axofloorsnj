@@ -615,6 +615,8 @@ export type Database = {
           phone: string | null
           primary_color: string | null
           projects_completed: number
+          proposal_logo_dark_url: string | null
+          proposal_logo_light_url: string | null
           referral_commission_percent: number
           secondary_color: string | null
           singleton_key: boolean
@@ -647,6 +649,8 @@ export type Database = {
           phone?: string | null
           primary_color?: string | null
           projects_completed?: number
+          proposal_logo_dark_url?: string | null
+          proposal_logo_light_url?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
@@ -679,6 +683,8 @@ export type Database = {
           phone?: string | null
           primary_color?: string | null
           projects_completed?: number
+          proposal_logo_dark_url?: string | null
+          proposal_logo_light_url?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
           singleton_key?: boolean
