@@ -174,14 +174,13 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       if (proposal.proposal_id) {
         const { data: rows } = await supabase
           .from('proposal_line_items' as any)
-          .select('description, category, quantity, unit_price, display_order, service_catalog_id')
+          .select('description, quantity, unit_price, display_order, service_catalog_id')
           .eq('proposal_id', proposal.proposal_id)
           .order('display_order', { ascending: true });
         if (rows && rows.length > 0) {
           seeded = rows.map((r: any) => ({
             id: uid(),
             description: r.description || '',
-            category: r.category || 'other',
             qty: Number(r.quantity) || 0,
             unit_price: Number(r.unit_price) || 0,
             service_catalog_id: r.service_catalog_id || null,
@@ -192,14 +191,13 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         seeded = (proposal.line_items ?? []).map((it) => ({
           id: uid(),
           description: it.description || it.category || 'Item',
-          category: it.category || 'other',
           qty: 1,
           unit_price: Number(it.amount) || 0,
           service_catalog_id: null,
         }));
       }
       if (seeded.length === 0) {
-        seeded.push({ id: uid(), description: 'Project scope', category: 'labor', qty: 1, unit_price: proposal.flat_price ?? 0, service_catalog_id: null });
+        seeded.push({ id: uid(), description: 'Project scope', qty: 1, unit_price: proposal.flat_price ?? 0, service_catalog_id: null });
       }
       if (!cancelled) {
         setEditableLines(seeded);
