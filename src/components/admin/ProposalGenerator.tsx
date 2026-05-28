@@ -66,7 +66,7 @@ function SortableLineRow({ line, onUpdate, onRemove }: SortableLineRowProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-1 sm:grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+      className="grid grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2 min-w-[640px]"
     >
       <button
         type="button"
