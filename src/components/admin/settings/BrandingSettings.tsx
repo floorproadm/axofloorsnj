@@ -164,6 +164,8 @@ export default function BrandingSettings() {
           website: website.trim() || null,
           logo_url: logoPath || null,
           email_logo_url: emailLogoUrl || null,
+          proposal_logo_light_url: proposalLogoLightUrl || null,
+          proposal_logo_dark_url: proposalLogoDarkUrl || null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", settings.id);
