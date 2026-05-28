@@ -594,8 +594,7 @@ function LineItemsTable({
             Total
           </span>
           <span
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: primaryColor }}
+            className="text-2xl font-bold tabular-nums text-slate-900"
           >
             {`$${grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           </span>
