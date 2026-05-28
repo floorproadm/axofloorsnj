@@ -352,8 +352,8 @@ export default function PublicProposal() {
           <div className="space-y-3 pt-2">
             <Button
               size="lg"
-              className="w-full font-semibold text-white hover:opacity-90"
-              style={{ backgroundColor: brand.primary }}
+              className="w-full font-semibold hover:opacity-90"
+              style={{ backgroundColor: brand.primary, color: readableText(brand.primary) }}
               onClick={() => handleSelectTier("flat")}
             >
               Approve &amp; Sign
