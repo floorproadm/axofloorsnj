@@ -85,6 +85,34 @@ export default function BrandingSettings() {
 
   const handleClearEmailLogo = () => setEmailLogoUrl("");
 
+  const handleProposalLogoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    variant: "light" | "dark"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB", variant: "destructive" });
+      return;
+    }
+    const setUploading = variant === "light" ? setUploadingProposalLight : setUploadingProposalDark;
+    const setUrl = variant === "light" ? setProposalLogoLightUrl : setProposalLogoDarkUrl;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `brand/proposal-logo-${variant}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("feed-media").upload(fileName, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("feed-media").getPublicUrl(fileName);
+      setUrl(data.publicUrl);
+      toast({ title: `Logo de proposta (${variant}) enviado` });
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
