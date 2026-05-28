@@ -249,13 +249,17 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   // so returning to the tab never duplicates and the "Generate" CTA only shows
   // when no proposal exists.
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId) {
+      setIsHydrating(false);
+      return;
+    }
     let cancelled = false;
+    setIsHydrating(true);
     (async () => {
       const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0, readOnly: true });
       if (cancelled) return;
       if (data?._isExisting) setProposal(data);
-
+      setIsHydrating(false);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
