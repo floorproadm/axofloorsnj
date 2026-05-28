@@ -28,6 +28,9 @@ export default function BrandingSettings() {
   const [logoDisplayUrl, setLogoDisplayUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  const [emailLogoUrl, setEmailLogoUrl] = useState("");
+  const [uploadingEmailLogo, setUploadingEmailLogo] = useState(false);
+
   const generateSignedUrl = async (path: string) => {
     if (!path) { setLogoDisplayUrl(""); return; }
     const { data, error } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60);
@@ -46,8 +49,34 @@ export default function BrandingSettings() {
       const storedPath = (settings as any).logo_url ?? "";
       setLogoPath(storedPath);
       generateSignedUrl(storedPath);
+      setEmailLogoUrl((settings as any).email_logo_url ?? "");
     }
   }, [isLoading, settings]);
+
+  const handleEmailLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB", variant: "destructive" });
+      return;
+    }
+    setUploadingEmailLogo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `brand/email-logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("feed-media").upload(fileName, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("feed-media").getPublicUrl(fileName);
+      setEmailLogoUrl(data.publicUrl);
+      toast({ title: "Logo de e-mail enviado" });
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingEmailLogo(false);
+    }
+  };
+
+  const handleClearEmailLogo = () => setEmailLogoUrl("");
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,6 +128,7 @@ export default function BrandingSettings() {
           email: email.trim() || null,
           website: website.trim() || null,
           logo_url: logoPath || null,
+          email_logo_url: emailLogoUrl || null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", settings.id);
@@ -183,7 +213,44 @@ export default function BrandingSettings() {
                     <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
                   </label>
                 </Button>
-                <p className="text-xs text-muted-foreground mt-1">PNG ou JPG, máximo 2MB</p>
+                <p className="text-xs text-muted-foreground mt-1">PNG ou JPG, máximo 2MB. Usado em propostas, materiais e tela.</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label>Logo para E-mails</Label>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Versão escura sobre fundo branco — usada no cabeçalho de todos os e-mails transacionais. O logo principal acima costuma ser claro/transparente e não aparece bem em fundos brancos.
+            </p>
+            <div className="flex items-center gap-4 pt-1">
+              {emailLogoUrl ? (
+                <div className="relative w-32 h-20 rounded-lg border bg-white flex items-center justify-center overflow-hidden p-2">
+                  <img src={emailLogoUrl} alt="Email Logo" className="max-w-full max-h-full object-contain" />
+                  <button
+                    onClick={handleClearEmailLogo}
+                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                    type="button"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-32 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-white">
+                  <Upload className="w-6 h-6 text-muted-foreground" />
+                </div>
+              )}
+              <div>
+                <Button variant="outline" size="sm" disabled={uploadingEmailLogo} asChild>
+                  <label className="cursor-pointer">
+                    {uploadingEmailLogo ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                    {emailLogoUrl ? "Trocar" : "Enviar"} Logo de E-mail
+                    <input type="file" accept="image/*" className="hidden" onChange={handleEmailLogoUpload} />
+                  </label>
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">PNG transparente recomendado · máx 2MB</p>
               </div>
             </div>
           </div>

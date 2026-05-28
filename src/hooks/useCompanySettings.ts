@@ -12,6 +12,7 @@ export interface CompanySettings {
   labor_pricing_model: LaborPricingModel;
   default_labor_rate: number;
   logo_url: string | null;
+  email_logo_url: string | null;
   primary_color: string | null;
   secondary_color: string | null;
   phone: string | null;
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: Omit<CompanySettings, 'id' | 'created_at' | 'updated_at'
   labor_pricing_model: 'sqft',
   default_labor_rate: 3.50,
   logo_url: null,
+  email_logo_url: null,
   primary_color: '#d97706',
   secondary_color: '#1e3a5f',
   phone: '(732) 351-8653',
@@ -141,6 +143,7 @@ export async function getCompanySettingsWithDefaults(): Promise<Omit<CompanySett
     labor_pricing_model: settings.labor_pricing_model,
     default_labor_rate: settings.default_labor_rate,
     logo_url: settings.logo_url,
+    email_logo_url: settings.email_logo_url,
     primary_color: settings.primary_color,
     secondary_color: settings.secondary_color,
     phone: settings.phone,
