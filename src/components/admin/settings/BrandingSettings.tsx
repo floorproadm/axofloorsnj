@@ -28,6 +28,9 @@ export default function BrandingSettings() {
   const [logoDisplayUrl, setLogoDisplayUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  const [emailLogoUrl, setEmailLogoUrl] = useState("");
+  const [uploadingEmailLogo, setUploadingEmailLogo] = useState(false);
+
   const generateSignedUrl = async (path: string) => {
     if (!path) { setLogoDisplayUrl(""); return; }
     const { data, error } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60);
@@ -46,8 +49,34 @@ export default function BrandingSettings() {
       const storedPath = (settings as any).logo_url ?? "";
       setLogoPath(storedPath);
       generateSignedUrl(storedPath);
+      setEmailLogoUrl((settings as any).email_logo_url ?? "");
     }
   }, [isLoading, settings]);
+
+  const handleEmailLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB", variant: "destructive" });
+      return;
+    }
+    setUploadingEmailLogo(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `brand/email-logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("feed-media").upload(fileName, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("feed-media").getPublicUrl(fileName);
+      setEmailLogoUrl(data.publicUrl);
+      toast({ title: "Logo de e-mail enviado" });
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingEmailLogo(false);
+    }
+  };
+
+  const handleClearEmailLogo = () => setEmailLogoUrl("");
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,6 +128,7 @@ export default function BrandingSettings() {
           email: email.trim() || null,
           website: website.trim() || null,
           logo_url: logoPath || null,
+          email_logo_url: emailLogoUrl || null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", settings.id);

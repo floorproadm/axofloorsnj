@@ -12,6 +12,7 @@ export interface CompanySettings {
   labor_pricing_model: LaborPricingModel;
   default_labor_rate: number;
   logo_url: string | null;
+  email_logo_url: string | null;
   primary_color: string | null;
   secondary_color: string | null;
   phone: string | null;
