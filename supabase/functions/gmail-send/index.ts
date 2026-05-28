@@ -21,7 +21,9 @@ function createRawEmail(to: string, subject: string, htmlBody: string, from?: st
   return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function wrapHtml(content: string): string {
+const DEFAULT_EMAIL_LOGO = "https://dcfmrqrbsfxvqhihpamd.supabase.co/storage/v1/object/public/feed-media/brand/axo-logo-email.png?v=2";
+
+function wrapHtml(content: string, logoUrl: string): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#333;line-height:1.6;margin:0;padding:0}
 .container{max-width:600px;margin:0 auto;padding:32px 24px}
@@ -31,7 +33,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;c
 .btn{display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0}
 .footer{border-top:1px solid #eee;padding-top:16px;text-align:center;font-size:12px;color:#999}
 </style></head><body><div class="container">
-<div class="header"><img src="https://dcfmrqrbsfxvqhihpamd.supabase.co/storage/v1/object/public/feed-media/brand/axo-logo-email.png?v=2" alt="AXO Floors" /></div>
+<div class="header"><img src="${logoUrl}" alt="AXO Floors" /></div>
 <div class="content">${content}</div>
 <div class="footer">AXO Floors · New Jersey · (732) 351-8653<br>axofloorsnj@gmail.com</div>
 </div></body></html>`;
@@ -132,9 +134,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2. Interpolate + wrap
+    // 2. Resolve email logo (from company_settings, with fallback)
+    const { data: settingsRow } = await supabase
+      .from("company_settings")
+      .select("email_logo_url")
+      .eq("organization_id", orgId)
+      .maybeSingle();
+    const logoUrl = (settingsRow as any)?.email_logo_url || DEFAULT_EMAIL_LOGO;
+
+    // 3. Interpolate + wrap
     const subject = interpolate(subjectTpl, data);
-    const html = wrapHtml(interpolate(bodyTpl, data));
+    const html = wrapHtml(interpolate(bodyTpl, data), logoUrl);
     const raw = createRawEmail(data.recipient_email, subject, html);
 
     // 3. Send via Gmail
