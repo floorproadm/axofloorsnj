@@ -921,12 +921,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           {/* Hero */}
           <div style={{ textAlign: 'center', paddingBottom: 25, borderBottom: `3px solid ${brand.secondary}`, marginBottom: 30 }}>
             {brand.logoUrl ? (
-              <img
-                src={brand.logoUrl}
-                alt={brand.name}
-                style={{ maxHeight: 64, maxWidth: 240, objectFit: 'contain', margin: '0 auto 10px', display: 'block' }}
-                crossOrigin="anonymous"
-              />
+              <div
+                style={{
+                  display: 'inline-block',
+                  margin: '0 auto 10px',
+                  padding: previewTheme === 'dark' ? '10px 18px' : 0,
+                  background: previewTheme === 'dark' ? '#ffffff' : 'transparent',
+                  borderRadius: previewTheme === 'dark' ? 10 : 0,
+                  lineHeight: 0,
+                }}
+              >
+                <img
+                  src={brand.logoUrl}
+                  alt={brand.name}
+                  style={{ maxHeight: 64, maxWidth: 240, objectFit: 'contain', display: 'block' }}
+                  crossOrigin="anonymous"
+                />
+              </div>
             ) : (
               <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 32, color: previewTheme === 'dark' ? theme.text : brand.secondary, marginBottom: 8 }}>{brand.name}</h1>
             )}
