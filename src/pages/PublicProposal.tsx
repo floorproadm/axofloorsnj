@@ -653,12 +653,11 @@ function TierCard({
         <p className="text-2xl font-bold text-slate-900 tabular-nums">{fmt(price)}</p>
       </div>
       <Button
-        className={cn(
-          "w-full mt-4 hover:opacity-90",
+        className={`w-full mt-4 hover:opacity-90 ${
           recommended
             ? "bg-green-600 text-white hover:bg-green-700"
             : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-        )}
+        }`}
         disabled={disabled}
         onClick={onSelect}
       >
