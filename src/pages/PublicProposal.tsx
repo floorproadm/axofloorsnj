@@ -654,9 +654,10 @@ function TierCard({
         <p className="text-2xl font-bold text-slate-900 tabular-nums">{fmt(price)}</p>
       </div>
       <Button
-        className="w-full mt-4 text-white hover:opacity-90"
+        className="w-full mt-4 hover:opacity-90"
         style={{
           backgroundColor: recommended ? primaryColor : secondaryColor,
+          color: readableText(recommended ? primaryColor : secondaryColor),
         }}
         disabled={disabled}
         onClick={onSelect}
