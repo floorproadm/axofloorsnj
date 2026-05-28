@@ -7,20 +7,38 @@ import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import ReferralDashboard from "@/components/referral/ReferralDashboard";
 import { useReferralProfile } from "@/hooks/useReferralProfile";
-import { Share2, Users, DollarSign, Check, Gift, Heart, Star, Loader2, LogIn } from "lucide-react";
+import hardwoodHero from "@/assets/hardwood-hero.jpg";
+import {
+  Gift,
+  Share2,
+  DollarSign,
+  UserPlus,
+  Check,
+  Star,
+  Loader2,
+  LogIn,
+  Phone,
+  ArrowRight,
+  Sparkles,
+  Info,
+} from "lucide-react";
+
+const NAVY = "#0a1628";
+const GOLD = "#f5a623";
 
 const ReferralProgram = () => {
-  const { profile, referrals, rewards, tier, isLoading, register, lookupByEmail, addReferral } = useReferralProfile();
-  
-  // Registration form
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPhone, setRegPhone] = useState('');
-  
-  // Login form
-  const [loginEmail, setLoginEmail] = useState('');
+  const { profile, referrals, rewards, tier, isLoading, register, lookupByEmail, addReferral } =
+    useReferralProfile();
+
+  // Registration
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+
+  // Login
+  const [loginEmail, setLoginEmail] = useState("");
   const [showLogin, setShowLogin] = useState(false);
-  const [loginError, setLoginError] = useState('');
+  const [loginError, setLoginError] = useState("");
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,14 +48,16 @@ const ReferralProgram = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError('');
+    setLoginError("");
     const result = await lookupByEmail(loginEmail.trim());
-    if (!result) {
-      setLoginError('No account found with this email. Register below.');
-    }
+    if (!result) setLoginError("No account found with this email. Register below.");
   };
 
-  // If user has a profile, show dashboard
+  const scrollToForm = () => {
+    document.getElementById("referral-signup")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Logged-in dashboard (unchanged behavior)
   if (profile) {
     return (
       <div className="min-h-screen bg-background">
@@ -60,39 +80,186 @@ const ReferralProgram = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <Header />
-      
-      {/* Hero Section */}
-      <section className="py-12 sm:py-20 navy-gradient text-white">
-        <div className="container mx-auto px-4 text-center">
-          <div className="w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Gift className="w-10 h-10 text-accent" />
+
+      {/* 1. HERO */}
+      <section
+        className="relative py-20 sm:py-28 overflow-hidden"
+        style={{ backgroundColor: NAVY }}
+      >
+        <div
+          className="absolute inset-0 opacity-25 bg-cover bg-center"
+          style={{ backgroundImage: `url(${hardwoodHero})` }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(180deg, ${NAVY}cc 0%, ${NAVY}f5 100%)`,
+          }}
+        />
+
+        <div className="relative container mx-auto px-4 max-w-4xl text-center text-white">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6"
+            style={{ backgroundColor: `${GOLD}1a`, color: GOLD, border: `1px solid ${GOLD}40` }}
+          >
+            <Gift className="w-4 h-4" />
+            Earn $100 for Every Referral
           </div>
-          
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading mb-4">
-            Refer & Earn 7-10%
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-heading leading-tight mb-6">
+            Join Our{" "}
+            <span style={{ color: GOLD }}>Referral Program</span>
+            <br className="hidden sm:block" /> & Earn Rewards
           </h1>
-          
-          <p className="text-lg sm:text-xl text-white/80 max-w-3xl mx-auto mb-8">
-            Happy with your floors? Share the love — and earn 7-10% of every project you refer.
+
+          <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Love AXO Floors? Share us with friends and family — and earn a{" "}
+            <span className="font-semibold text-white">$100 Gift Card</span> every time someone you
+            refer becomes a client.
           </p>
-          
-          <div className="flex items-center justify-center gap-2 text-accent">
-            <Heart className="w-5 h-5 fill-current" />
-            <span className="font-medium">We'll treat your referrals like VIPs</span>
+
+          <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-3xl mx-auto pt-8 border-t border-white/10">
+            {[
+              { value: "$100", label: "Gift Card per referral" },
+              { value: "∞", label: "No limit on referrals" },
+              { value: "10+", label: "Years of trusted service" },
+            ].map((s) => (
+              <div key={s.label} className="text-center">
+                <div
+                  className="text-2xl sm:text-4xl font-bold font-heading mb-1"
+                  style={{ color: GOLD }}
+                >
+                  {s.value}
+                </div>
+                <div className="text-xs sm:text-sm text-white/60 leading-tight">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Registration + Login */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4 max-w-lg">
+      {/* 2. HOW IT WORKS */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-14">
+            <div
+              className="text-xs font-bold tracking-[0.2em] mb-3"
+              style={{ color: GOLD }}
+            >
+              SIMPLE PROCESS
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading" style={{ color: NAVY }}>
+              How It Works
+            </h2>
+          </div>
+
+          <div className="space-y-8 max-w-2xl mx-auto">
+            {[
+              {
+                icon: UserPlus,
+                title: "Sign Up",
+                desc: "Fill out the form below. It's free and takes less than a minute.",
+              },
+              {
+                icon: Share2,
+                title: "Share the Link",
+                desc: "Share your unique link with friends, neighbors, or anyone who needs new floors.",
+              },
+              {
+                icon: DollarSign,
+                title: "Earn $100",
+                desc: "When your referral becomes a client and signs a contract, you receive a $100 Gift Card.",
+              },
+            ].map((step, i) => (
+              <div key={step.title} className="flex items-start gap-5">
+                <div className="relative shrink-0">
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: NAVY }}
+                  >
+                    <step.icon className="w-7 h-7 text-white" />
+                  </div>
+                  <div
+                    className="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white border-2 border-white"
+                    style={{ backgroundColor: GOLD }}
+                  >
+                    {i + 1}
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <h3 className="text-xl font-bold font-heading mb-2" style={{ color: NAVY }}>
+                    {step.title}
+                  </h3>
+                  <p className="text-base text-gray-600 leading-relaxed">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. PROGRAM BENEFITS */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <div className="text-center mb-12">
+            <div className="text-xs font-bold tracking-[0.2em] mb-3" style={{ color: GOLD }}>
+              WHY JOIN
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading" style={{ color: NAVY }}>
+              Program Benefits
+            </h2>
+          </div>
+
+          <ul className="space-y-4 mb-10">
+            {[
+              "No limit on how many people you can refer",
+              "$100 gift card delivered after client signs contract",
+              "Completely free to join — no fees ever",
+              "You'll be notified at every step of the process",
+              "Trusted by New Jersey homeowners",
+            ].map((b) => (
+              <li
+                key={b}
+                className="flex items-start gap-3 bg-white p-4 rounded-lg border border-gray-100"
+              >
+                <div
+                  className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5"
+                  style={{ backgroundColor: `${GOLD}20` }}
+                >
+                  <Check className="w-4 h-4" style={{ color: GOLD }} strokeWidth={3} />
+                </div>
+                <span className="text-base text-gray-700 leading-relaxed">{b}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div
+            className="rounded-2xl p-6 sm:p-8 text-center text-white"
+            style={{ backgroundColor: NAVY }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <Gift className="w-7 h-7" style={{ color: GOLD }} />
+              <div className="text-2xl sm:text-3xl font-bold font-heading" style={{ color: GOLD }}>
+                $100 Gift Card
+              </div>
+            </div>
+            <div className="text-white/70 text-sm sm:text-base">
+              Per converted client · Delivered within 48h of contract signing
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. SIGN UP FORM */}
+      <section id="referral-signup" className="py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-xl">
           {showLogin ? (
-            <Card className="border-2 border-accent/20">
+            <Card className="border border-gray-200 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-xl font-heading flex items-center gap-2">
-                  <LogIn className="w-5 h-5 text-accent" />
+                <CardTitle className="text-2xl font-heading flex items-center gap-2" style={{ color: NAVY }}>
+                  <LogIn className="w-6 h-6" style={{ color: GOLD }} />
                   Access Your Dashboard
                 </CardTitle>
               </CardHeader>
@@ -100,16 +267,34 @@ const ReferralProgram = () => {
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
                     <Label htmlFor="login-email">Email</Label>
-                    <Input id="login-email" type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="your@email.com" required />
+                    <Input
+                      id="login-email"
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                      className="h-12"
+                    />
                   </div>
                   {loginError && <p className="text-sm text-destructive">{loginError}</p>}
-                  <Button type="submit" className="w-full gold-gradient text-black font-semibold" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-base font-semibold text-white hover:opacity-90"
+                    style={{ backgroundColor: GOLD, color: NAVY }}
+                    disabled={isLoading}
+                  >
+                    {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                     Access Dashboard
                   </Button>
-                  <p className="text-center text-sm text-muted-foreground">
-                    New here?{' '}
-                    <button type="button" onClick={() => setShowLogin(false)} className="text-accent font-semibold hover:underline">
+                  <p className="text-center text-sm text-gray-600">
+                    New here?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setShowLogin(false)}
+                      className="font-semibold hover:underline"
+                      style={{ color: GOLD }}
+                    >
                       Register
                     </button>
                   </p>
@@ -117,34 +302,104 @@ const ReferralProgram = () => {
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-2 border-accent/20">
-              <CardHeader>
-                <CardTitle className="text-xl font-heading flex items-center gap-2">
-                  <Gift className="w-5 h-5 text-accent" />
+            <Card className="border border-gray-200 shadow-2xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                  style={{ backgroundColor: `${GOLD}1a` }}
+                >
+                  <Sparkles className="w-7 h-7" style={{ color: GOLD }} />
+                </div>
+                <CardTitle className="text-2xl sm:text-3xl font-heading" style={{ color: NAVY }}>
                   Join the Referral Program
                 </CardTitle>
+                <p className="text-sm text-gray-500 mt-1">Free signup — start earning today</p>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div>
-                    <Label htmlFor="reg-name">Your Name *</Label>
-                    <Input id="reg-name" value={regName} onChange={e => setRegName(e.target.value)} placeholder="Sarah Johnson" required maxLength={100} />
+                    <Label htmlFor="reg-name" className="text-sm font-medium" style={{ color: NAVY }}>
+                      Full Name *
+                    </Label>
+                    <Input
+                      id="reg-name"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      placeholder="Sarah Johnson"
+                      required
+                      maxLength={100}
+                      className="h-12 mt-1"
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="reg-email">Email *</Label>
-                    <Input id="reg-email" type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="sarah@email.com" required maxLength={255} />
+                    <Label htmlFor="reg-email" className="text-sm font-medium" style={{ color: NAVY }}>
+                      Email Address *
+                    </Label>
+                    <Input
+                      id="reg-email"
+                      type="email"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="sarah@email.com"
+                      required
+                      maxLength={255}
+                      className="h-12 mt-1"
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="reg-phone">Phone *</Label>
-                    <Input id="reg-phone" value={regPhone} onChange={e => setRegPhone(e.target.value)} placeholder="(555) 123-4567" required maxLength={30} />
+                    <Label htmlFor="reg-phone" className="text-sm font-medium" style={{ color: NAVY }}>
+                      Phone Number *
+                    </Label>
+                    <Input
+                      id="reg-phone"
+                      value={regPhone}
+                      onChange={(e) => setRegPhone(e.target.value)}
+                      placeholder="(555) 123-4567"
+                      required
+                      maxLength={30}
+                      className="h-12 mt-1"
+                    />
                   </div>
-                  <Button type="submit" className="w-full gold-gradient text-black font-semibold h-12" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Gift className="w-4 h-4 mr-2" />}
-                    Get My Referral Code
+
+                  <div
+                    className="flex items-start gap-3 p-4 rounded-lg text-sm"
+                    style={{ backgroundColor: `${GOLD}10`, border: `1px solid ${GOLD}33` }}
+                  >
+                    <Info className="w-5 h-5 shrink-0 mt-0.5" style={{ color: GOLD }} />
+                    <p className="text-gray-700 leading-relaxed">
+                      After signing up, simply share your unique link with friends and ask them to
+                      book a free estimate. When they sign a contract, you get{" "}
+                      <strong style={{ color: NAVY }}>$100</strong>!
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full h-14 text-base font-bold hover:opacity-90 shadow-lg"
+                    style={{ backgroundColor: GOLD, color: NAVY }}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    ) : (
+                      <Gift className="w-5 h-5 mr-2" />
+                    )}
+                    Join the Program — It's Free!
                   </Button>
-                  <p className="text-center text-sm text-muted-foreground">
-                    Already registered?{' '}
-                    <button type="button" onClick={() => setShowLogin(true)} className="text-accent font-semibold hover:underline">
+
+                  <p className="text-center text-xs text-gray-500 leading-relaxed">
+                    By signing up, you agree to receive program updates from AXO Floors. No spam,
+                    ever.
+                  </p>
+
+                  <p className="text-center text-sm text-gray-600 pt-2 border-t border-gray-100">
+                    Already registered?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setShowLogin(true)}
+                      className="font-semibold hover:underline"
+                      style={{ color: GOLD }}
+                    >
                       Access Dashboard
                     </button>
                   </p>
@@ -155,85 +410,88 @@ const ReferralProgram = () => {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4">
+      {/* 5. TESTIMONIALS */}
+      <section className="py-20" style={{ backgroundColor: NAVY }}>
+        <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-heading text-primary mb-4">
-              How It Works
+            <div className="text-xs font-bold tracking-[0.2em] mb-3" style={{ color: GOLD }}>
+              MEMBER STORIES
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-white">
+              Our Referrers Love the Program
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Three simple steps to start earning. Your friends get perfect floors. You get paid.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <Card className="text-center border-2 border-accent/20 hover:shadow-lg transition-shadow">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Share2 className="w-8 h-8 text-accent" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              {
+                quote:
+                  "I referred two neighbors and earned $200! AXO's work is so good that recommending them is easy.",
+                name: "Jennifer M.",
+                location: "Westfield, NJ",
+              },
+              {
+                quote:
+                  "The referral program is simple and the gift cards arrive quickly. I love supporting a local business I trust.",
+                name: "Robert K.",
+                location: "Summit, NJ",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="rounded-2xl p-6 sm:p-8"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-current" style={{ color: GOLD }} />
+                  ))}
                 </div>
-                <div className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-4">1</div>
-                <h3 className="text-xl font-heading font-semibold text-primary mb-4">Register & Share</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Sign up and get your unique referral link + QR code. Share via WhatsApp, SMS, or email.
+                <p className="text-white/90 text-base sm:text-lg leading-relaxed italic mb-5">
+                  "{t.quote}"
                 </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center border-2 border-accent/20 hover:shadow-lg transition-shadow">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Users className="w-8 h-8 text-accent" />
+                <div>
+                  <div className="font-bold font-heading text-white">{t.name}</div>
+                  <div className="text-sm text-white/60">{t.location}</div>
                 </div>
-                <div className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-4">2</div>
-                <h3 className="text-xl font-heading font-semibold text-primary mb-4">Friends Sign Up</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  When someone uses your link, they become a lead linked to you. We track everything automatically.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center border-2 border-accent/20 hover:shadow-lg transition-shadow">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <DollarSign className="w-8 h-8 text-accent" />
-                </div>
-                <div className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-4">3</div>
-                <h3 className="text-xl font-heading font-semibold text-primary mb-4">Earn Credits</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Receive 7-10% of the project value when it completes. Credits for services or gift cards.
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-
-      {/* Testimonials */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-heading text-primary mb-12">
-            Happy Referrers
+      {/* 6. FINAL CTA */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-2xl text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-4" style={{ color: NAVY }}>
+            Ready to Start Earning?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {[
-              { quote: "I've referred 3 families and earned over $2,800. Everyone loves their work!", name: "Sarah T." },
-              { quote: "Best referral program I've seen. My neighbor got amazing floors and I got a $960 check!", name: "Mike R." },
-            ].map(t => (
-              <Card key={t.name} className="border-2 border-accent/20">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4 leading-relaxed italic">"{t.quote}"</p>
-                  <p className="font-heading font-semibold text-primary">- {t.name}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <p className="text-lg text-gray-600 mb-10 leading-relaxed">
+            Join hundreds of satisfied clients who are already earning gift cards by sharing AXO
+            Floors with their community.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={scrollToForm}
+              className="h-14 px-8 text-base font-bold hover:opacity-90 shadow-lg"
+              style={{ backgroundColor: GOLD, color: NAVY }}
+            >
+              Sign Up Now <ArrowRight className="w-5 h-5 ml-1" />
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-14 px-8 text-base font-semibold border-2"
+              style={{ borderColor: NAVY, color: NAVY }}
+            >
+              <a href="tel:+17323518653">
+                <Phone className="w-5 h-5 mr-2" />
+                (732) 351-8653
+              </a>
+            </Button>
           </div>
         </div>
       </section>
