@@ -541,8 +541,8 @@ function LineItemsTable({
         <>
           {/* Table header */}
           <div
-            className="grid grid-cols-[1fr_56px_96px_96px] gap-2 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-white"
-            style={{ backgroundColor: primaryColor }}
+            className="grid grid-cols-[1fr_56px_96px_96px] gap-2 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[1.5px]"
+            style={{ backgroundColor: primaryColor, color: readableText(primaryColor) }}
           >
             <div>Description</div>
             <div className="text-right">Qty</div>
