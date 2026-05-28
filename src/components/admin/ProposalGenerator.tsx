@@ -139,6 +139,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
   const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
+  // True while the mount-time read-only fetch is running to detect an existing proposal.
+  // Distinct from the hook's `isLoading` so a silent hydration doesn't make the "Generate" button
+  // flash "Generating..." in the empty-state card.
+  const [isHydrating, setIsHydrating] = useState(true);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [mode] = useState<'direct'>('direct');
