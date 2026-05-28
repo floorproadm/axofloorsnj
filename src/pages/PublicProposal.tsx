@@ -21,6 +21,17 @@ const fmt = (v: number) =>
     maximumFractionDigits: 2,
   })}`;
 
+/** Returns black or white based on background luminance for WCAG contrast. */
+const readableText = (hex: string): string => {
+  const h = (hex || "").replace("#", "");
+  if (h.length !== 6) return "#ffffff";
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? "#0f172a" : "#ffffff";
+};
+
 type TierKey = "good" | "better" | "best";
 
 const TIER_LABELS: Record<TierKey, { name: string; tag: string }> = {
@@ -341,8 +352,8 @@ export default function PublicProposal() {
           <div className="space-y-3 pt-2">
             <Button
               size="lg"
-              className="w-full font-semibold text-white hover:opacity-90"
-              style={{ backgroundColor: brand.primary }}
+              className="w-full font-semibold hover:opacity-90"
+              style={{ backgroundColor: brand.primary, color: readableText(brand.primary) }}
               onClick={() => handleSelectTier("flat")}
             >
               Approve &amp; Sign
@@ -530,8 +541,8 @@ function LineItemsTable({
         <>
           {/* Table header */}
           <div
-            className="grid grid-cols-[1fr_56px_96px_96px] gap-2 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-white"
-            style={{ backgroundColor: primaryColor }}
+            className="grid grid-cols-[1fr_56px_96px_96px] gap-2 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[1.5px]"
+            style={{ backgroundColor: primaryColor, color: readableText(primaryColor) }}
           >
             <div>Description</div>
             <div className="text-right">Qty</div>
@@ -583,8 +594,7 @@ function LineItemsTable({
             Total
           </span>
           <span
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: primaryColor }}
+            className="text-2xl font-bold tabular-nums text-slate-900"
           >
             {`$${grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           </span>
@@ -644,9 +654,10 @@ function TierCard({
         <p className="text-2xl font-bold text-slate-900 tabular-nums">{fmt(price)}</p>
       </div>
       <Button
-        className="w-full mt-4 text-white hover:opacity-90"
+        className="w-full mt-4 hover:opacity-90"
         style={{
           backgroundColor: recommended ? primaryColor : secondaryColor,
+          color: readableText(recommended ? primaryColor : secondaryColor),
         }}
         disabled={disabled}
         onClick={onSelect}
