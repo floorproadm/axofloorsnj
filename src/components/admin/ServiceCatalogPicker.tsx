@@ -67,27 +67,31 @@ export function ServiceCatalogPicker({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md max-h-[80vh] flex flex-col p-0">
-        <DialogHeader className="px-4 pt-4 pb-2">
-          <DialogTitle className="flex items-center gap-2 text-sm">
-            <Package className="h-4 w-4" />
-            Select a Service from Catalog
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden">
+        {/* Fixed header */}
+        <div className="shrink-0">
+          <DialogHeader className="px-4 pt-4 pb-2">
+            <DialogTitle className="flex items-center gap-2 text-sm">
+              <Package className="h-4 w-4" />
+              Select a Service from Catalog
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="px-4 pb-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Search services..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-sm"
-            />
+          <div className="px-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search services..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-8 h-8 text-sm"
+              />
+            </div>
           </div>
         </div>
 
-        <ScrollArea className="flex-1 px-4 pb-4 min-h-0">
+        {/* Scrollable list */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -139,9 +143,10 @@ export function ServiceCatalogPicker({
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
-        <div className="px-4 py-3 border-t flex justify-end">
+        {/* Fixed footer */}
+        <div className="px-4 py-3 border-t flex justify-end shrink-0">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Cancel
           </Button>
