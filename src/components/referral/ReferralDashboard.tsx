@@ -22,7 +22,8 @@ interface Props {
 export default function ReferralDashboard({ profile, referrals, rewards, tier, isLoading, onAddReferral }: Props) {
   const [copied, setCopied] = useState(false);
 
-  const referralUrl = `${window.location.origin}?ref=${profile.referral_code}`;
+  const SITE_BASE_URL = 'https://www.axofloorsnj.com';
+  const referralUrl = `${SITE_BASE_URL}/referral-program?ref=${profile.referral_code}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralUrl);
