@@ -106,12 +106,12 @@ export default function EmailTemplateEditor() {
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#333;line-height:1.6;margin:0;padding:0}
 .container{max-width:600px;margin:0 auto;padding:32px 24px}
 .header{text-align:center;padding:24px 0;border-bottom:2px solid #8B6914}
-.header h1{color:#8B6914;font-size:24px;margin:0}
+.header img{max-height:56px;width:auto;display:inline-block}
 .content{padding:24px 0}
 .btn{display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0}
 .footer{border-top:1px solid #eee;padding-top:16px;text-align:center;font-size:12px;color:#999}
 </style></head><body><div class="container">
-<div class="header"><h1>AXO Floors</h1></div>
+<div class="header"><img src="https://axofloorsnj.com/axo-logo-official.png" alt="AXO Floors" /></div>
 <div class="content">${html}</div>
 <div class="footer">AXO Floors · New Jersey · (732) 351-8653<br>axofloorsnj@gmail.com</div>
 </div></body></html>`;
