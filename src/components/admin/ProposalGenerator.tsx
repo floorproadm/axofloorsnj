@@ -205,11 +205,23 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   }, [settings?.logo_url]);
 
   // White-label branding with safe fallbacks
+  // Guard against unreadable brand colors (white/very light) saved in company_settings
+  const isUnreadableOnDark = (hex?: string | null) => {
+    if (!hex) return true;
+    const m = hex.trim().match(/^#?([a-f\d]{6})$/i);
+    if (!m) return false;
+    const n = parseInt(m[1], 16);
+    const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.85;
+  };
+  const safePrimary = isUnreadableOnDark(settings?.primary_color) ? '#d97706' : (settings?.primary_color || '#d97706');
+  const safeSecondary = isUnreadableOnDark(settings?.secondary_color) ? '#1e3a5f' : (settings?.secondary_color || '#1e3a5f');
   const brand = {
     name: settings?.trade_name || settings?.company_name || 'AXO Floors',
     tagline: settings?.tagline || 'Professional Flooring Services',
-    primary: settings?.primary_color || '#d97706',
-    secondary: settings?.secondary_color || '#1e3a5f',
+    primary: safePrimary,
+    secondary: safeSecondary,
     phone: settings?.phone || '(732) 351-8653',
     email: settings?.email || 'info@axofloors.com',
     website: settings?.website || 'www.axofloors.com',
