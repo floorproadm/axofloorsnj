@@ -31,6 +31,11 @@ export default function BrandingSettings() {
   const [emailLogoUrl, setEmailLogoUrl] = useState("");
   const [uploadingEmailLogo, setUploadingEmailLogo] = useState(false);
 
+  const [proposalLogoLightUrl, setProposalLogoLightUrl] = useState("");
+  const [proposalLogoDarkUrl, setProposalLogoDarkUrl] = useState("");
+  const [uploadingProposalLight, setUploadingProposalLight] = useState(false);
+  const [uploadingProposalDark, setUploadingProposalDark] = useState(false);
+
   const generateSignedUrl = async (path: string) => {
     if (!path) { setLogoDisplayUrl(""); return; }
     const { data, error } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60);
