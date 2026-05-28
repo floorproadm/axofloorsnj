@@ -631,6 +631,25 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
   };
 
+  // While the mount-time read-only fetch is running, render a neutral skeleton instead of the
+  // "Generate Proposal" empty-state card — otherwise the shared `isLoading` from the hook makes
+  // the button flash "Generating..." for the ~1-2s the hydration takes when a proposal already exists.
+  if (!proposal && isHydrating) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Proposal</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading proposal…
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!proposal) {
     return (
       <Card>
