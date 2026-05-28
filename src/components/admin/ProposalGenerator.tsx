@@ -66,7 +66,7 @@ function SortableLineRow({ line, onUpdate, onRemove }: SortableLineRowProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-1 sm:grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+      className="grid grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2 min-w-[640px]"
     >
       <button
         type="button"
@@ -139,6 +139,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const { fetchProjectData, isLoading, error } = useProposalGeneration();
   const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
+  // True while the mount-time read-only fetch is running to detect an existing proposal.
+  // Distinct from the hook's `isLoading` so a silent hydration doesn't make the "Generate" button
+  // flash "Generating..." in the empty-state card.
+  const [isHydrating, setIsHydrating] = useState(true);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [mode] = useState<'direct'>('direct');
@@ -245,13 +249,17 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   // so returning to the tab never duplicates and the "Generate" CTA only shows
   // when no proposal exists.
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId) {
+      setIsHydrating(false);
+      return;
+    }
     let cancelled = false;
+    setIsHydrating(true);
     (async () => {
       const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0, readOnly: true });
       if (cancelled) return;
       if (data?._isExisting) setProposal(data);
-
+      setIsHydrating(false);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -623,6 +631,25 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
   };
 
+  // While the mount-time read-only fetch is running, render a neutral skeleton instead of the
+  // "Generate Proposal" empty-state card — otherwise the shared `isLoading` from the hook makes
+  // the button flash "Generating..." for the ~1-2s the hydration takes when a proposal already exists.
+  if (!proposal && isHydrating) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Proposal</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading proposal…
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!proposal) {
     return (
       <Card>
@@ -786,37 +813,43 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               )}
             </div>
 
-            {/* Header row */}
-            <div className="hidden sm:grid grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-              <div></div>
-              <div>Description</div>
-              <div className="text-right">Qty</div>
-              <div className="text-right">Unit price</div>
-              <div className="text-right">Total</div>
-              <div></div>
+            {/* Horizontal scroll wrapper so the table layout never collapses inside narrow panels/sheets */}
+            <div className="overflow-x-auto -mx-2 px-2">
+              <div className="min-w-[640px] space-y-2">
+                {/* Header row */}
+                <div className="grid grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <div></div>
+                  <div>Description</div>
+                  <div className="text-right">Qty</div>
+                  <div className="text-right">Unit price</div>
+                  <div className="text-right">Total</div>
+                  <div></div>
+                </div>
+
+                <DndContext
+                  sensors={dndSensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleLineDragEnd}
+                >
+                  <SortableContext
+                    items={editableLines.map((l) => l.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {filteredLines.map((line) => (
+                        <SortableLineRow
+                          key={line.id}
+                          line={line}
+                          onUpdate={updateLine}
+                          onRemove={removeLine}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
             </div>
 
-            <DndContext
-              sensors={dndSensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleLineDragEnd}
-            >
-              <SortableContext
-                items={editableLines.map((l) => l.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-2">
-                  {filteredLines.map((line) => (
-                    <SortableLineRow
-                      key={line.id}
-                      line={line}
-                      onUpdate={updateLine}
-                      onRemove={removeLine}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
 
 
             {filteredLines.length === 0 && (
