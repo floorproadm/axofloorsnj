@@ -656,9 +656,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
 
             {/* Header row */}
-            <div className="hidden md:grid grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="hidden md:grid grid-cols-[1fr_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
               <div>Description</div>
-              <div>Category</div>
               <div className="text-right">Qty</div>
               <div className="text-right">Unit price</div>
               <div className="text-right">Total</div>
@@ -670,7 +669,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               return (
                 <div
                   key={line.id}
-                  className="grid grid-cols-1 md:grid-cols-[1fr_120px_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+                  className="grid grid-cols-1 md:grid-cols-[1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
                 >
                   <Input
                     value={line.description}
@@ -678,15 +677,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
                     placeholder="e.g. Sanding & 3 coats finish — living room"
                     className="h-8 text-sm"
                   />
-                  <select
-                    value={line.category}
-                    onChange={(e) => updateLine(line.id, { category: e.target.value })}
-                    className="h-8 text-sm bg-background border border-input rounded-md px-2"
-                  >
-                    {CATEGORY_OPTIONS.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
                   <Input
                     type="number"
                     inputMode="decimal"
