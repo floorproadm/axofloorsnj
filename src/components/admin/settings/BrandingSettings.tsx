@@ -55,6 +55,8 @@ export default function BrandingSettings() {
       setLogoPath(storedPath);
       generateSignedUrl(storedPath);
       setEmailLogoUrl((settings as any).email_logo_url ?? "");
+      setProposalLogoLightUrl((settings as any).proposal_logo_light_url ?? "");
+      setProposalLogoDarkUrl((settings as any).proposal_logo_dark_url ?? "");
     }
   }, [isLoading, settings]);
 
