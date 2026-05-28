@@ -239,9 +239,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     if (!lineSearch.trim()) return editableLines;
     const q = lineSearch.toLowerCase();
     return editableLines.filter(
-      (l) =>
-        l.description.toLowerCase().includes(q) ||
-        l.category.toLowerCase().includes(q)
+      (l) => l.description.toLowerCase().includes(q)
     );
   }, [editableLines, lineSearch]);
 
