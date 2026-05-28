@@ -66,13 +66,13 @@ function SortableLineRow({ line, onUpdate, onRemove }: SortableLineRowProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-1 md:grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
+      className="grid grid-cols-1 sm:grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2"
     >
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="hidden md:flex items-center justify-center h-8 w-6 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+        className="hidden sm:flex items-center justify-center h-8 w-6 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
         aria-label="Drag to reorder"
       >
         <GripVertical className="h-4 w-4" />
@@ -771,7 +771,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
 
             {/* Header row */}
-            <div className="hidden md:grid grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="hidden sm:grid grid-cols-[24px_1fr_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
               <div></div>
               <div>Description</div>
               <div className="text-right">Qty</div>
