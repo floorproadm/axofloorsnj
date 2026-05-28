@@ -944,8 +944,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           {proposal.mode === 'direct' ? (
             <div style={{ marginBottom: 20 }}>
               <PrintDirectCard
-                price={previewSubtotal}
-                projectType={proposal.project_type}
                 formatCurrency={formatCurrency}
                 brand={brand}
                 theme={theme}
@@ -1105,9 +1103,7 @@ function PrintTierCard({ tier, isRecommended, formatCurrency, sqft, brand, theme
   );
 }
 
-function PrintDirectCard({ price, projectType, formatCurrency, brand, theme, isDark, lines }: {
-  price: number;
-  projectType: string;
+function PrintDirectCard({ formatCurrency, brand, theme, isDark, lines }: {
   formatCurrency: (v: number) => string;
   brand: Brand;
   theme: PreviewTheme;
@@ -1151,13 +1147,6 @@ function PrintDirectCard({ price, projectType, formatCurrency, brand, theme, isD
       }}>
         Total Project Investment
       </div>
-      <h3 style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 22, fontWeight: 700, color: isDark ? theme.text : brand.secondary, marginBottom: 4 }}>
-        {projectType}
-      </h3>
-      <p style={{ fontSize: 42, fontWeight: 700, color: brand.primary, margin: '6px 0 18px 0' }}>
-        {formatCurrency(price)}
-      </p>
-
       {lines.length > 0 && (
         <div style={{ marginTop: 8, marginBottom: 18, background: theme.surface, borderRadius: 8, border: `1px solid ${theme.border}`, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
