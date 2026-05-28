@@ -72,7 +72,7 @@ export default function Automations() {
 
         {/* View Tabs: Flows vs Drip Logs */}
         <Tabs value={view} onValueChange={(v) => setView(v as "flows" | "logs")}>
-          <TabsList className="w-full max-w-xs h-10 bg-muted/50 p-1">
+          <TabsList className="w-full max-w-xs h-10 bg-muted/50 p-1 mx-auto">
             <TabsTrigger value="flows" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <Zap className="w-3.5 h-3.5" />
               Flows
@@ -86,7 +86,7 @@ export default function Automations() {
           <TabsContent value="flows" className="mt-4 space-y-4">
             {/* Pipeline sub-tabs */}
             <Tabs value={pipeline} onValueChange={(v) => setPipeline(v as "sales" | "jobs")}>
-              <TabsList className="w-full max-w-sm h-10 bg-muted/50 p-1">
+              <TabsList className="w-full max-w-sm h-10 bg-muted/50 p-1 mx-auto">
                 <TabsTrigger value="sales" className="flex-1 gap-1.5 text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm">
                   <TrendingUp className="w-3.5 h-3.5" />
                   Sales Pipeline
