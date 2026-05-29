@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, MessageCircle, Link2, Share2 } from "lucide-react";
+import { Check, MessageCircle, Link2, Share2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 // Eagerly load all 39 DuraSeal stain swatches via Vite glob
