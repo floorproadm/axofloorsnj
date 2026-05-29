@@ -21,6 +21,8 @@ import {
   Check,
   Sparkles,
   ChevronRight,
+  ArrowLeft,
+  Folder,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { StainPickerSheet } from "./StainPickerSheet";
