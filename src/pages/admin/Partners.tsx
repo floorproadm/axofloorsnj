@@ -120,7 +120,7 @@ export default function Partners() {
   if (selectedPartner) {
     return (
       <AdminLayout title="Partners">
-        <div className="h-full overflow-hidden rounded-xl border border-border/50 bg-card">
+        <div className="h-[calc(100dvh-6rem)] overflow-hidden rounded-xl border border-border/50 bg-card">
           <PartnerDetailPanel
             key={selectedPartner.id}
             partner={selectedPartner}
