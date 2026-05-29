@@ -56,7 +56,14 @@ export default function ProjectsHub() {
   const { projects, pendingProposals, isLoading } = useProjectsHub();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const [view, setView] = useState<"board" | "list">("board");
+  const [view, setView] = useState<"board" | "list" | "map">(() => {
+    if (typeof window === "undefined") return "board";
+    const v = window.localStorage.getItem("projects-hub-view");
+    return v === "list" || v === "map" || v === "board" ? v : "board";
+  });
+  useMemo(() => {
+    if (typeof window !== "undefined") window.localStorage.setItem("projects-hub-view", view);
+  }, [view]);
   const [search, setSearch] = useState("");
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>(null);
   const [chips, setChips] = useState<Set<SmartFilter>>(new Set());
