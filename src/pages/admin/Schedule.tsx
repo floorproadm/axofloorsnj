@@ -527,7 +527,10 @@ function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit
                     )}
                     style={{ height: `${duration * 60 - 4}px` }}
                   >
-                    <div className={cn("text-xs font-semibold truncate", cfg.text)}>{a.customer_name}</div>
+                    <div className={cn("text-xs font-semibold truncate flex items-center gap-1", cfg.text)}>
+                      <ExecutionBadge startedAt={(a as any).started_at} finishedAt={(a as any).finished_at} />
+                      <span className="truncate">{a.customer_name}</span>
+                    </div>
                     <div className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {a.appointment_time.slice(0, 5)}
@@ -573,9 +576,12 @@ function ListView({ appointments, onEdit, date }: { appointments: Appointment[];
               <Clock className={cn("w-5 h-5", cfg.text)} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-foreground text-sm truncate">{a.customer_name}</span>
-                <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", cfg.bg, cfg.text)}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold text-foreground text-sm truncate flex items-center gap-1.5">
+                  <ExecutionBadge startedAt={(a as any).started_at} finishedAt={(a as any).finished_at} />
+                  <span className="truncate">{a.customer_name}</span>
+                </span>
+                <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0", cfg.bg, cfg.text)}>
                   {cfg.label}
                 </span>
               </div>
