@@ -52,6 +52,7 @@ const ReferralProgram = () => {
               tier={tier}
               isLoading={isLoading}
               onAddReferral={addReferral}
+              onSignOut={signOut}
             />
           </div>
         </section>
