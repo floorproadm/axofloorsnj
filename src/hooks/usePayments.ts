@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AXO_ORG_ID } from "@/lib/constants";
 
+export type RecurrenceType = "weekly" | "biweekly" | "monthly" | "quarterly" | "yearly";
+
 export interface Payment {
   id: string;
   project_id: string | null;
@@ -16,6 +18,10 @@ export interface Payment {
   collaborator_id: string | null;
   created_at: string;
   updated_at: string;
+  recurrence: RecurrenceType | null;
+  recurrence_parent_id: string | null;
+  recurrence_next_date: string | null;
+  recurrence_active: boolean;
   projects?: { customer_name: string; project_type: string } | null;
 }
 
@@ -28,7 +34,10 @@ export interface CreatePaymentInput {
   status?: string;
   description?: string | null;
   notes?: string | null;
+  recurrence?: RecurrenceType | null;
+  recurrence_next_date?: string | null;
 }
+
 
 export function usePayments() {
   return useQuery({
