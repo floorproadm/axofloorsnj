@@ -667,7 +667,7 @@ export default function PartnerDashboard() {
         {view === "gallery" && (
           <PartnerGalleryTab
             partnerCode={partner?.id}
-            partnerName={partner?.contact_name || partner?.name}
+            partnerName={partner?.contact_name || partner?.company_name}
           />
         )}
 
