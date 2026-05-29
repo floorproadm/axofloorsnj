@@ -27,35 +27,16 @@ const NAVY = "#0a1628";
 const GOLD = "#f5a623";
 
 const ReferralProgram = () => {
-  const { profile, referrals, rewards, tier, isLoading, register, lookupByEmail, addReferral } =
-    useReferralProfile();
+  const { profile, referrals, rewards, tier, isLoading, addReferral } = useReferralProfile();
 
-  // Registration
-  const [regName, setRegName] = useState("");
-  const [regEmail, setRegEmail] = useState("");
-  const [regPhone, setRegPhone] = useState("");
-
-  // Login
-  const [loginEmail, setLoginEmail] = useState("");
-  const [showLogin, setShowLogin] = useState(false);
-  const [loginError, setLoginError] = useState("");
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regName.trim() || !regEmail.trim() || !regPhone.trim()) return;
-    await register(regName.trim(), regEmail.trim(), regPhone.trim());
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError("");
-    const result = await lookupByEmail(loginEmail.trim());
-    if (!result) setLoginError("No account found with this email. Register below.");
+  const goToAuth = () => {
+    window.location.href = "/referral/auth";
   };
 
   const scrollToForm = () => {
     document.getElementById("referral-signup")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
 
   // Logged-in dashboard (unchanged behavior)
   if (profile) {
