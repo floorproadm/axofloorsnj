@@ -34,6 +34,8 @@ import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { DayNoteBar, DayNoteStrip } from "@/components/admin/schedule/DayNoteBar";
+import { useDayNotes } from "@/hooks/useDayNotes";
 
 type Appointment = Tables<"appointments">;
 
@@ -426,11 +428,17 @@ export default function Schedule() {
           {isLoading ? (
             <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando...</div>
           ) : viewMode === "day" ? (
-            <DayView appointments={todayAppointments} onEdit={openEdit} />
+            <>
+              <DayNoteBar date={currentDate} />
+              <DayView appointments={todayAppointments} onEdit={openEdit} />
+            </>
           ) : viewMode === "list" ? (
-            <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} />
+            <>
+              <DayNoteBar date={currentDate} />
+              <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} />
+            </>
           ) : (
-            <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} />
+            <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} weekStart={weekStart} weekEnd={weekEnd} />
           )}
         </div>
         </>
@@ -591,11 +599,22 @@ function ListView({ appointments, onEdit, date }: { appointments: Appointment[];
 
 // ─── Week View ──────────────────────────────────────────────
 function WeekView({
-  appointments, weekDays, currentDate, onEdit, onSelectDay
+  appointments, weekDays, currentDate, onEdit, onSelectDay, weekStart, weekEnd
 }: {
   appointments: Appointment[]; weekDays: Date[]; currentDate: Date;
   onEdit: (a: Appointment) => void; onSelectDay: (d: Date) => void;
+  weekStart: Date; weekEnd: Date;
 }) {
+  const { data: dayNotes = [] } = useDayNotes(
+    format(weekStart, "yyyy-MM-dd"),
+    format(weekEnd, "yyyy-MM-dd")
+  );
+  const noteByDate = useMemo(() => {
+    const m: Record<string, typeof dayNotes[0]> = {};
+    dayNotes.forEach((n) => { m[n.note_date] = n; });
+    return m;
+  }, [dayNotes]);
+
   return (
     <div className="overflow-x-auto">
     <div className="grid grid-cols-7 gap-px bg-border/30 min-h-[400px] min-w-[600px]">
@@ -619,6 +638,7 @@ function WeekView({
               {format(day, "EEE d", { locale: ptBR })}
             </div>
             <div className="space-y-1">
+              <DayNoteStrip note={noteByDate[dateStr]} />
               {dayAppts.slice(0, 4).map(a => {
                 const cfg = getTypeConfig(a.appointment_type);
                 return (
