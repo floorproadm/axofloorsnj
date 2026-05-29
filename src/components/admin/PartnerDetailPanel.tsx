@@ -625,36 +625,36 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
 
               {/* Comissões Tab */}
               {showFullTabs && (
-                <TabsContent value="comissoes" className="px-4 pb-4 mt-0">
-                  <div className="pt-3 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-lg border border-emerald-200/60 bg-emerald-500/5 p-3">
+                <TabsContent value="comissoes" className="px-4 pb-3 mt-0">
+                  <div className="pt-2 space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-md border border-emerald-200/60 bg-emerald-500/5 px-2.5 py-1.5">
                         <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-emerald-700 font-semibold">
                           <CheckCircle2 className="w-3 h-3" /> Pagas
                         </div>
-                        <p className="text-xl font-bold tabular-nums text-emerald-700 mt-1">
+                        <p className="text-base font-bold tabular-nums text-emerald-700 leading-tight">
                           ${commissions.totalPaid.toFixed(0)}
                         </p>
                       </div>
-                      <div className="rounded-lg border border-amber-200/60 bg-amber-500/5 p-3">
+                      <div className="rounded-md border border-amber-200/60 bg-amber-500/5 px-2.5 py-1.5">
                         <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-amber-700 font-semibold">
                           <Clock className="w-3 h-3" /> Pendentes
                         </div>
-                        <p className="text-xl font-bold tabular-nums text-amber-700 mt-1">
+                        <p className="text-base font-bold tabular-nums text-amber-700 leading-tight">
                           ${commissions.totalPending.toFixed(0)}
                         </p>
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-muted-foreground px-0.5">
-                      {commissionPercent}% sobre o valor dos projetos indicados. Pagas quando o projeto está marcado como{" "}
+                    <p className="text-[10px] text-muted-foreground px-0.5 leading-snug">
+                      {commissionPercent}% sobre projetos indicados. Pagas quando marcado como{" "}
                       <span className="font-semibold text-foreground">paid</span>.
                     </p>
 
                     {commissions.rows.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <DollarSign className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">Nenhuma comissão ainda</p>
+                      <div className="text-center py-4 text-muted-foreground">
+                        <DollarSign className="w-7 h-7 mx-auto mb-1 opacity-30" />
+                        <p className="text-xs">Nenhuma comissão ainda</p>
                       </div>
                     ) : (
                       <div className="rounded-lg border border-border/40 overflow-hidden">
