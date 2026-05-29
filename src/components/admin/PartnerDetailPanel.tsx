@@ -67,6 +67,7 @@ import { PartnerChecklist } from "@/components/admin/PartnerChecklist";
 import { InvitePartnerDialog } from "@/components/admin/InvitePartnerDialog";
 import { KeyRound, FileText } from "lucide-react";
 import { B2BQuoteSheet } from "@/components/admin/B2BQuoteSheet";
+import { PartnerBalanceTab } from "@/components/admin/partners/PartnerBalanceTab";
 
 
 const statusColors: Record<string, string> = {
@@ -711,6 +712,13 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+              )}
+
+              {/* Balance Tab (B2B aggregated financials) */}
+              {showFullTabs && (
+                <TabsContent value="balance" className="px-4 pb-4 mt-0">
+                  <PartnerBalanceTab partnerId={partner.id} />
                 </TabsContent>
               )}
 
