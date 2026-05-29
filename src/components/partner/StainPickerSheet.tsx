@@ -105,6 +105,15 @@ export function StainPickerSheet({ open, onOpenChange, partnerCode }: Props) {
           <p className="text-xs text-muted-foreground">
             Pick up to {MAX_PICKS} colors to recommend — message auto-tags with your referral.
           </p>
+          <a
+            href={link}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors w-fit mt-1"
+          >
+            <ExternalLink className="w-3 h-3" />
+            View full DuraSeal catalog
+          </a>
         </SheetHeader>
 
         {/* Swatch grid */}
