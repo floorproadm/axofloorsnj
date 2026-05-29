@@ -66,16 +66,11 @@ export function PartnerBottomNav({
     }
   };
 
-  const quickActions = isTrade
-    ? [
-        { key: "whatsapp" as const, label: "WhatsApp AXO", icon: MessageCircle },
-        { key: "call" as const, label: "Call AXO", icon: Phone },
-      ]
-    : [
-        { key: "referral" as const, label: "New Referral", icon: UserPlus },
-        { key: "whatsapp" as const, label: "WhatsApp AXO", icon: MessageCircle },
-        { key: "call" as const, label: "Call AXO", icon: Phone },
-      ];
+  const quickActions = [
+    { key: "referral" as const, label: "New Referral", icon: UserPlus },
+    { key: "whatsapp" as const, label: "WhatsApp AXO", icon: MessageCircle },
+    { key: "call" as const, label: "Call AXO", icon: Phone },
+  ];
 
   const items = NAV_ITEMS;
   // Split around the FAB center: half left, half right
