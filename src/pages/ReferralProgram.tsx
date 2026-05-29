@@ -233,163 +233,62 @@ const ReferralProgram = () => {
         </div>
       </section>
 
-      {/* 4. SIGN UP FORM */}
+      {/* 4. SIGN UP CTA */}
       <section id="referral-signup" className="py-20 bg-white">
         <div className="container mx-auto px-4 max-w-xl">
-          {showLogin ? (
-            <Card className="border border-gray-200 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-heading flex items-center gap-2" style={{ color: NAVY }}>
-                  <LogIn className="w-6 h-6" style={{ color: GOLD }} />
-                  Access Your Dashboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div>
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="your@email.com"
-                      required
-                      className="h-12"
-                    />
-                  </div>
-                  {loginError && <p className="text-sm text-destructive">{loginError}</p>}
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-base font-semibold text-white hover:opacity-90"
-                    style={{ backgroundColor: GOLD, color: NAVY }}
-                    disabled={isLoading}
-                  >
-                    {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                    Access Dashboard
-                  </Button>
-                  <p className="text-center text-sm text-gray-600">
-                    New here?{" "}
-                    <button
-                      type="button"
-                      onClick={() => setShowLogin(false)}
-                      className="font-semibold hover:underline"
-                      style={{ color: GOLD }}
-                    >
-                      Register
-                    </button>
-                  </p>
-                </form>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border border-gray-200 shadow-2xl overflow-hidden">
-              <CardHeader className="text-center pb-4">
-                <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{ backgroundColor: `${GOLD}1a` }}
+          <Card className="border border-gray-200 shadow-2xl overflow-hidden">
+            <CardHeader className="text-center pb-4">
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                style={{ backgroundColor: `${GOLD}1a` }}
+              >
+                <Sparkles className="w-7 h-7" style={{ color: GOLD }} />
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl font-heading" style={{ color: NAVY }}>
+                Join the Referral Program
+              </CardTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                Free signup — secure account with password & email verification
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div
+                className="flex items-start gap-3 p-4 rounded-lg text-sm"
+                style={{ backgroundColor: `${GOLD}10`, border: `1px solid ${GOLD}33` }}
+              >
+                <Info className="w-5 h-5 shrink-0 mt-0.5" style={{ color: GOLD }} />
+                <p className="text-gray-700 leading-relaxed">
+                  Create your account, share your unique link, and earn{" "}
+                  <strong style={{ color: NAVY }}>$100</strong> for every friend that signs a
+                  contract.
+                </p>
+              </div>
+
+              <Button
+                onClick={goToAuth}
+                className="w-full h-14 text-base font-bold hover:opacity-90 shadow-lg"
+                style={{ backgroundColor: GOLD, color: NAVY }}
+              >
+                <Gift className="w-5 h-5 mr-2" />
+                Create Account — It's Free
+              </Button>
+
+              <p className="text-center text-sm text-gray-600 pt-2 border-t border-gray-100">
+                Already a member?{" "}
+                <button
+                  type="button"
+                  onClick={goToAuth}
+                  className="font-semibold hover:underline"
+                  style={{ color: GOLD }}
                 >
-                  <Sparkles className="w-7 h-7" style={{ color: GOLD }} />
-                </div>
-                <CardTitle className="text-2xl sm:text-3xl font-heading" style={{ color: NAVY }}>
-                  Join the Referral Program
-                </CardTitle>
-                <p className="text-sm text-gray-500 mt-1">Free signup — start earning today</p>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div>
-                    <Label htmlFor="reg-name" className="text-sm font-medium" style={{ color: NAVY }}>
-                      Full Name *
-                    </Label>
-                    <Input
-                      id="reg-name"
-                      value={regName}
-                      onChange={(e) => setRegName(e.target.value)}
-                      placeholder="Sarah Johnson"
-                      required
-                      maxLength={100}
-                      className="h-12 mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="reg-email" className="text-sm font-medium" style={{ color: NAVY }}>
-                      Email Address *
-                    </Label>
-                    <Input
-                      id="reg-email"
-                      type="email"
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="sarah@email.com"
-                      required
-                      maxLength={255}
-                      className="h-12 mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="reg-phone" className="text-sm font-medium" style={{ color: NAVY }}>
-                      Phone Number *
-                    </Label>
-                    <Input
-                      id="reg-phone"
-                      value={regPhone}
-                      onChange={(e) => setRegPhone(e.target.value)}
-                      placeholder="(555) 123-4567"
-                      required
-                      maxLength={30}
-                      className="h-12 mt-1"
-                    />
-                  </div>
-
-                  <div
-                    className="flex items-start gap-3 p-4 rounded-lg text-sm"
-                    style={{ backgroundColor: `${GOLD}10`, border: `1px solid ${GOLD}33` }}
-                  >
-                    <Info className="w-5 h-5 shrink-0 mt-0.5" style={{ color: GOLD }} />
-                    <p className="text-gray-700 leading-relaxed">
-                      After signing up, simply share your unique link with friends and ask them to
-                      book a free estimate. When they sign a contract, you get{" "}
-                      <strong style={{ color: NAVY }}>$100</strong>!
-                    </p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-14 text-base font-bold hover:opacity-90 shadow-lg"
-                    style={{ backgroundColor: GOLD, color: NAVY }}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    ) : (
-                      <Gift className="w-5 h-5 mr-2" />
-                    )}
-                    Join the Program — It's Free!
-                  </Button>
-
-                  <p className="text-center text-xs text-gray-500 leading-relaxed">
-                    By signing up, you agree to receive program updates from AXO Floors. No spam,
-                    ever.
-                  </p>
-
-                  <p className="text-center text-sm text-gray-600 pt-2 border-t border-gray-100">
-                    Already registered?{" "}
-                    <button
-                      type="button"
-                      onClick={() => setShowLogin(true)}
-                      className="font-semibold hover:underline"
-                      style={{ color: GOLD }}
-                    >
-                      Access Dashboard
-                    </button>
-                  </p>
-                </form>
-              </CardContent>
-            </Card>
-          )}
+                  Sign in
+                </button>
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </section>
+
 
       {/* 5. TESTIMONIALS */}
       <section className="py-20" style={{ backgroundColor: NAVY }}>
