@@ -13,6 +13,7 @@ import { ProjectsHubHeader, type KpiFilter } from "@/components/admin/projects/P
 import type { SmartFilter } from "@/components/admin/projects/SmartFilterChips";
 import { AwaitingConversionBanner } from "@/components/admin/projects/AwaitingConversionBanner";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
+import { ProjectsMapView } from "@/components/admin/projects/ProjectsMapView";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
