@@ -35,6 +35,15 @@ const METHODS = [
   { value: "bank_transfer", label: "Bank Transfer" },
 ];
 
+const RECURRENCE_OPTIONS = [
+  { value: "none", label: "One-time" },
+  { value: "weekly", label: "Weekly" },
+  { value: "biweekly", label: "Bi-weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "yearly", label: "Yearly" },
+];
+
 export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "received" }: Props) {
   const isIncome = defaultCategory === "received";
   const [projects, setProjects] = useState<Project[]>([]);
@@ -45,6 +54,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
   const [paymentMethod, setPaymentMethod] = useState("");
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
+  const [recurrence, setRecurrence] = useState<string>("none");
   const createPayment = useCreatePayment();
 
   useEffect(() => {
@@ -56,6 +66,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
         .then(({ data }) => setProjects(data || []));
       setPaymentDate(new Date().toISOString().split("T")[0]);
       setCategory(defaultCategory);
+      setRecurrence("none");
     }
   }, [open, defaultCategory]);
 
@@ -65,6 +76,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
     setPaymentMethod("");
     setDescription("");
     setNotes("");
+    setRecurrence("none");
   };
 
   const handleSubmit = () => {
@@ -79,6 +91,8 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
         status: "pending",
         description: description || null,
         notes: notes || null,
+        recurrence: !isIncome && recurrence !== "none" ? (recurrence as any) : null,
+        recurrence_next_date: !isIncome && recurrence !== "none" ? paymentDate : null,
       },
       {
         onSuccess: () => {
@@ -88,6 +102,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
       }
     );
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,20 +129,34 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
             </div>
           </div>
 
-          {/* Expense Category */}
+          {/* Expense Category + Recurrence */}
           {!isIncome && (
-            <div>
-              <Label>Category</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {EXPENSE_CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Category</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {EXPENSE_CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Recurrence</Label>
+                <Select value={recurrence} onValueChange={setRecurrence}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {RECURRENCE_OPTIONS.map((r) => (
+                      <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
+
 
           <div>
             <Label>Project {!isIncome && "(optional)"}</Label>

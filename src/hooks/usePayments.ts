@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AXO_ORG_ID } from "@/lib/constants";
 
+export type RecurrenceType = "weekly" | "biweekly" | "monthly" | "quarterly" | "yearly";
+
 export interface Payment {
   id: string;
   project_id: string | null;
@@ -16,6 +18,10 @@ export interface Payment {
   collaborator_id: string | null;
   created_at: string;
   updated_at: string;
+  recurrence: RecurrenceType | null;
+  recurrence_parent_id: string | null;
+  recurrence_next_date: string | null;
+  recurrence_active: boolean;
   projects?: { customer_name: string; project_type: string } | null;
 }
 
@@ -28,7 +34,10 @@ export interface CreatePaymentInput {
   status?: string;
   description?: string | null;
   notes?: string | null;
+  recurrence?: RecurrenceType | null;
+  recurrence_next_date?: string | null;
 }
+
 
 export function usePayments() {
   return useQuery({
@@ -62,6 +71,10 @@ export function useCreatePayment() {
           description: input.description || null,
           notes: input.notes || null,
           organization_id: AXO_ORG_ID,
+          recurrence: input.recurrence || null,
+          recurrence_next_date: input.recurrence
+            ? (input.recurrence_next_date || input.payment_date)
+            : null,
         })
         .select()
         .single();
@@ -75,6 +88,7 @@ export function useCreatePayment() {
     onError: (err: any) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
+
   });
 }
 
@@ -88,7 +102,30 @@ export interface UpdatePaymentInput {
   status?: string;
   description?: string | null;
   notes?: string | null;
+  recurrence?: RecurrenceType | null;
+  recurrence_active?: boolean;
+  recurrence_next_date?: string | null;
 }
+
+export function useToggleRecurringSeries() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase
+        .from("payments")
+        .update({ recurrence_active: active })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      toast({ title: vars.active ? "Series resumed" : "Series paused" });
+    },
+    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+}
+
 
 export function useUpdatePayment() {
   const qc = useQueryClient();

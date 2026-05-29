@@ -2436,6 +2436,10 @@ export type Database = {
           payment_date: string
           payment_method: string | null
           project_id: string | null
+          recurrence: string | null
+          recurrence_active: boolean
+          recurrence_next_date: string | null
+          recurrence_parent_id: string | null
           status: string
           updated_at: string
         }
@@ -2452,6 +2456,10 @@ export type Database = {
           payment_date?: string
           payment_method?: string | null
           project_id?: string | null
+          recurrence?: string | null
+          recurrence_active?: boolean
+          recurrence_next_date?: string | null
+          recurrence_parent_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -2468,6 +2476,10 @@ export type Database = {
           payment_date?: string
           payment_method?: string | null
           project_id?: string | null
+          recurrence?: string | null
+          recurrence_active?: boolean
+          recurrence_next_date?: string | null
+          recurrence_parent_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -2513,6 +2525,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects_missing_progress_photos"
             referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "payments_recurrence_parent_id_fkey"
+            columns: ["recurrence_parent_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3537,6 +3556,39 @@ export type Database = {
           },
         ]
       }
+      schedule_day_notes: {
+        Row: {
+          color: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          note_date: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note_date: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note_date?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       service_catalog: {
         Row: {
           base_price: number
@@ -4219,6 +4271,7 @@ export type Database = {
         Args: { p_lead_id: string; p_project_type: string }
         Returns: string
       }
+      generate_recurring_expenses: { Args: never; Returns: Json }
       get_customer_portal: { Args: { p_token: string }; Returns: Json }
       get_dashboard_metrics: { Args: never; Returns: Json }
       get_lead_nra: { Args: { p_lead_id: string }; Returns: Json }
@@ -4227,6 +4280,7 @@ export type Database = {
         Returns: Json
       }
       get_leads_nra_batch: { Args: { p_lead_ids: string[] }; Returns: Json }
+      get_partner_balance: { Args: { p_partner_id: string }; Returns: Json }
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }
       get_referral_dashboard: { Args: { p_email: string }; Returns: Json }

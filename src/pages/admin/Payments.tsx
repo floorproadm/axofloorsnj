@@ -23,7 +23,9 @@ import {
   CreditCard,
   CheckSquare,
   Banknote,
+  Repeat,
 } from "lucide-react";
+
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
 import { usePayments, type Payment } from "@/hooks/usePayments";
 import { NewInvoiceDialog } from "@/components/admin/payments/NewInvoiceDialog";
@@ -377,14 +379,19 @@ export default function Payments() {
                                   <Icon className={`w-4 h-4 ${isIncome ? "text-green-600" : "text-muted-foreground"}`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm truncate">
+                                  <p className="font-medium text-sm truncate flex items-center gap-1.5">
                                     {pay.description || (isIncome ? "Client Payment" : pay.category.charAt(0).toUpperCase() + pay.category.slice(1))}
+                                    {(pay.recurrence || pay.recurrence_parent_id) && (
+                                      <Repeat className="w-3 h-3 text-primary shrink-0" />
+                                    )}
                                   </p>
                                   <p className="text-xs text-muted-foreground truncate">
                                     {pay.projects?.customer_name || "No project"}
                                     {pay.payment_method && ` · ${pay.payment_method.replace("_", " ")}`}
+                                    {pay.recurrence && ` · ${pay.recurrence}${pay.recurrence_active === false ? " (paused)" : ""}`}
                                   </p>
                                 </div>
+
                                 <div className="text-right shrink-0">
                                   <p className={`font-bold text-sm ${isIncome ? "text-green-600" : "text-foreground"}`}>
                                     {isIncome ? "+" : "-"}{fmt(Number(pay.amount))}
