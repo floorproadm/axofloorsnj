@@ -234,7 +234,7 @@ function MapDetailPanel({
                 <Badge
                   variant="outline"
                   className="text-[10px] h-5"
-                  style={{ borderColor: colorFor(project.project_status), color: colorFor(project.project_status) }}
+                  style={{ borderColor: pinColor, color: pinColor }}
                 >
                   {project.project_status.replace(/_/g, " ")}
                 </Badge>
