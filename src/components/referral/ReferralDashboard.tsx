@@ -17,9 +17,10 @@ interface Props {
   tier: ReferralTier;
   isLoading: boolean;
   onAddReferral: (name: string, phone: string, email?: string) => Promise<any>;
+  onSignOut?: () => void;
 }
 
-export default function ReferralDashboard({ profile, referrals, rewards, tier, isLoading, onAddReferral }: Props) {
+export default function ReferralDashboard({ profile, referrals, rewards, tier, isLoading, onAddReferral, onSignOut }: Props) {
   const [copied, setCopied] = useState(false);
 
   const SITE_BASE_URL = 'https://www.axofloorsnj.com';
