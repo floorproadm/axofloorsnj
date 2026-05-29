@@ -51,7 +51,7 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
   const { toast } = useToast();
   const [projects, setProjects] = useState<GalleryProject[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCat, setActiveCat] = useState<string>("All");
+  const [openFolder, setOpenFolder] = useState<string | null>(null);
   const [selected, setSelected] = useState<GalleryProject | null>(null);
   const [copied, setCopied] = useState(false);
   const [stainOpen, setStainOpen] = useState(false);
