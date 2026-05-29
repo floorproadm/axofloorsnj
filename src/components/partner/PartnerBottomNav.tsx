@@ -178,11 +178,12 @@ export function PartnerBottomNav({
                       )}
                     />
                   </div>
-                <span className="text-[11px] font-medium text-foreground leading-tight text-center">
-                  {qa.label}
-                </span>
-              </button>
-            ))}
+                  <span className="text-[11px] font-medium text-foreground leading-tight text-center">
+                    {qa.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </DrawerContent>
       </Drawer>
