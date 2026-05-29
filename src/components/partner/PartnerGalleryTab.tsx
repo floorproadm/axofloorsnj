@@ -357,6 +357,18 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
           )}
         </SheetContent>
       </Sheet>
+
+      <StainPickerSheet
+        open={stainOpen}
+        onOpenChange={setStainOpen}
+        partnerCode={partnerCode}
+      />
+      <QuickPitchSheet
+        open={pitchOpen}
+        onOpenChange={setPitchOpen}
+        partnerCode={partnerCode}
+        partnerName={partnerName}
+      />
     </div>
   );
 }
