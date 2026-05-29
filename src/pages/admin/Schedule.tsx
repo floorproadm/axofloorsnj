@@ -420,7 +420,6 @@ export default function Schedule() {
                 <TabsTrigger value="day" className="text-sm px-5">Day</TabsTrigger>
                 <TabsTrigger value="list" className="text-sm px-5">List</TabsTrigger>
                 <TabsTrigger value="week" className="text-sm px-5">Week</TabsTrigger>
-                <TabsTrigger value="map" className="text-sm px-5">Map</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>
@@ -440,11 +439,10 @@ export default function Schedule() {
               <DayNoteBar date={currentDate} />
               <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} />
             </>
-          ) : viewMode === "map" ? (
-            <DispatchMapView appointments={todayAppointments} date={currentDate} />
           ) : (
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} weekStart={weekStart} weekEnd={weekEnd} />
           )}
+
         </div>
         </>
         )}
