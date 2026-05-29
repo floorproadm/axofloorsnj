@@ -741,7 +741,7 @@ export default function PartnerDashboard() {
 
       <Sheet open={diagnosticOpen} onOpenChange={setDiagnosticOpen}>
         <SheetContent side="bottom" className="h-[95vh] overflow-y-auto p-0">
-          <SheetHeader className="px-4 pt-4 pb-2 sticky top-0 bg-background z-10 border-b">
+          <SheetHeader className="px-4 pt-4 pb-2 pr-12 sticky top-0 bg-background z-0 border-b">
             <SheetTitle className="text-lg font-semibold">Floor Diagnostic</SheetTitle>
             <SheetDescription>
               Guided assessment — hand the device to your client or fill it together.
