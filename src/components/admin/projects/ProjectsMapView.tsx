@@ -86,6 +86,14 @@ interface Props {
 
 export function ProjectsMapView({ projects, onSelect }: Props) {
   const [active, setActive] = useState<HubProject | null>(null);
+  const [colorMode, setColorMode] = useState<ColorMode>(() => {
+    if (typeof window === "undefined") return "status";
+    return (localStorage.getItem(COLOR_MODE_KEY) as ColorMode) || "status";
+  });
+
+  useEffect(() => {
+    localStorage.setItem(COLOR_MODE_KEY, colorMode);
+  }, [colorMode]);
 
   const withAddress = useMemo(
     () => projects.filter((p) => p.address && p.address.trim()),
