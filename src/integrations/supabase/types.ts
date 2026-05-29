@@ -3328,6 +3328,7 @@ export type Database = {
           total_credits: number
           total_referrals: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -3341,6 +3342,7 @@ export type Database = {
           total_credits?: number
           total_referrals?: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -3354,6 +3356,7 @@ export type Database = {
           total_credits?: number
           total_referrals?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -4184,6 +4187,29 @@ export type Database = {
           project_id: string
           total_cost: number
         }[]
+      }
+      claim_referral_profile: {
+        Args: { p_name?: string; p_phone?: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          organization_id: string
+          phone: string
+          referral_code: string
+          total_converted: number
+          total_credits: number
+          total_referrals: number
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "referral_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       compute_project_next_action: {
         Args: { p_project_id: string }

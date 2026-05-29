@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { AXO_ORG_ID } from '@/lib/constants';
@@ -38,12 +38,6 @@ export interface ReferralReward {
   created_at: string;
 }
 
-function generateReferralCode(name: string): string {
-  const cleanName = name.split(' ')[0].toUpperCase().slice(0, 6);
-  const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-  return `AXO-${cleanName}-${random}`;
-}
-
 export type ReferralTier = 'starter' | 'bronze' | 'silver' | 'gold' | 'diamond';
 
 export function getTier(converted: number): ReferralTier {
@@ -68,149 +62,139 @@ export function getTierInfo(tier: ReferralTier) {
 export function useReferralProfile() {
   const [profile, setProfile] = useState<ReferralProfile | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [rewards, setRewards] = useState<ReferralReward[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [rewards] = useState<ReferralReward[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const register = useCallback(async (name: string, email: string, phone: string) => {
-    setIsLoading(true);
-    try {
-      // Check if email already registered via secure RPC (no public read access)
-      const { data: existingDash } = await supabase.rpc('get_referral_dashboard', { p_email: email });
-      const existing = (existingDash as any)?.profile ?? null;
-
-      if (existing) {
-        setProfile(existing as ReferralProfile);
-        setReferrals(((existingDash as any)?.referrals ?? []) as Referral[]);
-        await loadRewards(existing.id as string);
-        toast({ title: 'Welcome back!', description: 'Your referral dashboard is ready.' });
-        return existing as ReferralProfile;
-      }
-
-      const referral_code = generateReferralCode(name);
-      const { data, error } = await supabase
-        .from('referral_profiles')
-        .insert({ name, email, phone, referral_code, organization_id: AXO_ORG_ID })
-        .select()
-        .single();
-
-      if (error) throw error;
-      const p = data as unknown as ReferralProfile;
-      setProfile(p);
-      toast({ title: 'Account Created!', description: `Your referral code is ${p.referral_code}` });
-      return p;
-    } catch (err: any) {
-      console.error('Referral registration error:', err);
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
+  // Auth listener — primary source of truth
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user?.id ?? null);
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setUserId(data.session?.user?.id ?? null);
+      if (!data.session) setIsLoading(false);
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
-  const lookupByEmail = useCallback(async (email: string) => {
-    setIsLoading(true);
-    try {
-      const { data } = await supabase.rpc('get_referral_dashboard', { p_email: email });
-      const profileData = (data as any)?.profile ?? null;
-      if (profileData) {
-        const p = profileData as ReferralProfile;
+  // Load / claim profile whenever user changes
+  useEffect(() => {
+    if (!userId) {
+      setProfile(null);
+      setReferrals([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      try {
+        // claim_referral_profile is idempotent: links existing by email, else creates new
+        const meta = (await supabase.auth.getUser()).data.user?.user_metadata || {};
+        const { data: claimed, error } = await supabase.rpc('claim_referral_profile', {
+          p_name: meta.full_name || null,
+          p_phone: meta.phone || null,
+        });
+        if (error) throw error;
+        if (cancelled) return;
+        const p = claimed as unknown as ReferralProfile;
         setProfile(p);
-        setReferrals(((data as any)?.referrals ?? []) as Referral[]);
-        await loadRewards(p.id);
-        return p;
+
+        // Load referrals via secure RPC (works for both auth and email path)
+        const { data: dash } = await supabase.rpc('get_referral_dashboard', { p_email: p.email });
+        if (!cancelled && dash) {
+          setReferrals(((dash as any)?.referrals ?? []) as Referral[]);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          console.error('Referral profile load error:', err);
+          toast({ title: 'Error loading profile', description: err.message, variant: 'destructive' });
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    setProfile(null);
+    setReferrals([]);
   }, []);
 
-  const loadReferrals = async (referrerId: string) => {
-    // Public referral pages now load referrals through get_referral_dashboard.
-    // This helper remains for any authenticated/admin context where direct read is permitted.
-    const { data } = await supabase
-      .from('referrals')
-      .select('*')
-      .eq('referrer_id', referrerId)
-      .order('created_at', { ascending: false });
-    if (data) setReferrals(data as unknown as Referral[]);
-  };
-
-  // Deprecated: referral_rewards table removed. Kept as no-op to preserve hook API.
-  const loadRewards = async (_referrerId: string) => {
-    setRewards([]);
-  };
-
-  const addReferral = useCallback(async (name: string, phone: string, email?: string) => {
-    if (!profile) return null;
-    setIsLoading(true);
-    try {
-      // Create referral record
-      const { data: ref, error: refErr } = await supabase
-        .from('referrals')
-        .insert({
-          referrer_id: profile.id,
-          referred_name: name,
-          referred_phone: phone,
-          referred_email: email || null,
-          organization_id: AXO_ORG_ID,
-        })
-        .select()
-        .single();
-      if (refErr) throw refErr;
-
-      // Also create a lead linked to this referral
-      const { data: lead, error: leadErr } = await supabase
-        .from('leads')
-        .insert({
-          name,
-          phone,
-          email: email || null,
-          lead_source: 'referral',
-          status: 'cold_lead',
-          notes: `Referred by ${profile.name} (${profile.referral_code})`,
-          organization_id: AXO_ORG_ID,
-        })
-        .select()
-        .single();
-
-      if (lead && ref) {
-        // Link lead to referral
-        await supabase
+  const addReferral = useCallback(
+    async (name: string, phone: string, email?: string) => {
+      if (!profile) return null;
+      setIsLoading(true);
+      try {
+        const { data: ref, error: refErr } = await supabase
           .from('referrals')
-          .update({ lead_id: lead.id })
-          .eq('id', (ref as any).id);
+          .insert({
+            referrer_id: profile.id,
+            referred_name: name,
+            referred_phone: phone,
+            referred_email: email || null,
+            organization_id: AXO_ORG_ID,
+          })
+          .select()
+          .single();
+        if (refErr) throw refErr;
+
+        const { data: lead } = await supabase
+          .from('leads')
+          .insert({
+            name,
+            phone,
+            email: email || null,
+            lead_source: 'referral',
+            status: 'cold_lead',
+            notes: `Referred by ${profile.name} (${profile.referral_code})`,
+            organization_id: AXO_ORG_ID,
+          })
+          .select()
+          .single();
+
+        if (lead && ref) {
+          await supabase.from('referrals').update({ lead_id: lead.id }).eq('id', (ref as any).id);
+        }
+
+        await supabase
+          .from('referral_profiles')
+          .update({ total_referrals: profile.total_referrals + 1 })
+          .eq('id', profile.id);
+
+        setProfile((prev) =>
+          prev ? { ...prev, total_referrals: prev.total_referrals + 1 } : null,
+        );
+
+        const { data: dash } = await supabase.rpc('get_referral_dashboard', {
+          p_email: profile.email,
+        });
+        if (dash) setReferrals(((dash as any)?.referrals ?? []) as Referral[]);
+
+        toast({ title: 'Referral Added!', description: `${name} has been added to your referrals.` });
+        return ref;
+      } catch (err: any) {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+        return null;
+      } finally {
+        setIsLoading(false);
       }
-
-      // Update referral count
-      await supabase
-        .from('referral_profiles')
-        .update({ total_referrals: profile.total_referrals + 1 })
-        .eq('id', profile.id);
-
-      setProfile(prev => prev ? { ...prev, total_referrals: prev.total_referrals + 1 } : null);
-      // Refresh via secure RPC (public users can no longer read referrals directly)
-      const { data: dash } = await supabase.rpc('get_referral_dashboard', { p_email: profile.email });
-      if (dash) setReferrals(((dash as any)?.referrals ?? []) as Referral[]);
-
-      toast({ title: 'Referral Added!', description: `${name} has been added to your referrals.` });
-      return ref;
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [profile]);
+    },
+    [profile],
+  );
 
   return {
     profile,
     referrals,
     rewards,
     isLoading,
-    register,
-    lookupByEmail,
     addReferral,
-    tier: profile ? getTier(profile.total_converted) : 'starter' as ReferralTier,
+    signOut,
+    isAuthenticated: !!userId,
+    tier: profile ? getTier(profile.total_converted) : ('starter' as ReferralTier),
   };
 }

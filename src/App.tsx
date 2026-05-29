@@ -83,6 +83,8 @@ import CollaboratorProfile from "./pages/collaborator/CollaboratorProfile";
 import CollaboratorChat from "./pages/collaborator/CollaboratorChat";
 
 import PartnerAuth from "./pages/partner/PartnerAuth";
+import ReferralAuth from "./pages/ReferralAuth";
+import ResetPassword from "./pages/ResetPassword";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
 
@@ -117,6 +119,8 @@ const App = () => {
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/schedule-estimate" element={<ScheduleEstimate />} />
             <Route path="/referral-program" element={<ReferralProgram />} />
+            <Route path="/referral/auth" element={<ReferralAuth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/builders" element={<Builders />} />
             <Route path="/realtors" element={<Realtors />} />
             <Route path="/builder-offer" element={<BuilderPartnerships />} />
