@@ -60,9 +60,22 @@ export default function ReferralDashboard({ profile, referrals, rewards, tier, i
     <div className="space-y-6">
       {/* Welcome + Tier */}
       <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold font-heading text-primary mb-1">
-          Welcome, {profile.name.split(' ')[0]}!
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <h2 className="text-2xl md:text-3xl font-bold font-heading text-primary">
+            Welcome, {profile.name.split(' ')[0]}!
+          </h2>
+          {onSignOut && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSignOut}
+              className="text-muted-foreground hover:text-destructive"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
         <p className="text-muted-foreground mb-4">Your referral code: <span className="font-mono font-bold text-accent">{profile.referral_code}</span></p>
         <ReferralTierBadge tier={tier} converted={profile.total_converted} />
       </div>
