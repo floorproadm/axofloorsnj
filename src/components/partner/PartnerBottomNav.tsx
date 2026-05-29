@@ -1,11 +1,10 @@
 import { useState } from "react";
 import {
   Home,
-  DollarSign,
   Plus,
-  Trophy,
   User,
   FileText,
+  Image as ImageIcon,
   UserPlus,
   MessageCircle,
   Phone,
@@ -20,7 +19,13 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 
-export type PartnerView = "pipeline" | "earnings" | "quotes" | "rewards" | "profile";
+export type PartnerView =
+  | "pipeline"
+  | "earnings"
+  | "quotes"
+  | "rewards"
+  | "gallery"
+  | "profile";
 export type PartnerProgram = "referral" | "trade";
 
 interface PartnerBottomNavProps {
@@ -32,16 +37,10 @@ interface PartnerBottomNavProps {
   phoneNumber?: string;    // e.g. "(732) 351-8653"
 }
 
-const REFERRAL_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
-  { key: "pipeline", label: "Home", icon: Home },
-  { key: "earnings", label: "Earnings", icon: DollarSign },
-  { key: "rewards", label: "Rewards", icon: Trophy },
-  { key: "profile", label: "Profile", icon: User },
-];
-
-const TRADE_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
+const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
   { key: "pipeline", label: "Home", icon: Home },
   { key: "quotes", label: "Quotes", icon: FileText },
+  { key: "gallery", label: "Gallery", icon: ImageIcon },
   { key: "profile", label: "Profile", icon: User },
 ];
 
@@ -78,7 +77,7 @@ export function PartnerBottomNav({
         { key: "call" as const, label: "Call AXO", icon: Phone },
       ];
 
-  const items = isTrade ? TRADE_ITEMS : REFERRAL_ITEMS;
+  const items = NAV_ITEMS;
   // Split around the FAB center: half left, half right
   const mid = Math.ceil(items.length / 2);
   const left = items.slice(0, mid);
