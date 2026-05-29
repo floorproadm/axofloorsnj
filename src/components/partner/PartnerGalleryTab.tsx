@@ -52,6 +52,8 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
   const [activeCat, setActiveCat] = useState<string>("All");
   const [selected, setSelected] = useState<GalleryProject | null>(null);
   const [copied, setCopied] = useState(false);
+  const [stainOpen, setStainOpen] = useState(false);
+  const [pitchOpen, setPitchOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
