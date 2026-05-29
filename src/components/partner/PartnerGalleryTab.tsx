@@ -288,24 +288,6 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
             </Card>
           </button>
 
-          <a
-            href={`${PUBLIC_BASE}/stain-gallery${partnerCode ? `?ref=${partnerCode}` : ""}`}
-            target="_blank"
-            rel="noreferrer"
-            className="block"
-          >
-            <Card className="p-3 flex items-center gap-3 hover:border-primary/40 transition-colors">
-              <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center shrink-0">
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">Public Stain Gallery</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Full DuraSeal catalog on White Oak & Red Oak samples
-                </p>
-              </div>
-            </Card>
-          </a>
         </div>
       </div>
 
