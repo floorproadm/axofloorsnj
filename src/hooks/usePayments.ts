@@ -71,6 +71,10 @@ export function useCreatePayment() {
           description: input.description || null,
           notes: input.notes || null,
           organization_id: AXO_ORG_ID,
+          recurrence: input.recurrence || null,
+          recurrence_next_date: input.recurrence
+            ? (input.recurrence_next_date || input.payment_date)
+            : null,
         })
         .select()
         .single();
@@ -84,6 +88,7 @@ export function useCreatePayment() {
     onError: (err: any) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
+
   });
 }
 
