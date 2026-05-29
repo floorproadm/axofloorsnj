@@ -77,7 +77,7 @@ export function PartnerBottomNav({
         { key: "call" as const, label: "Call AXO", icon: Phone },
       ];
 
-  const items = isTrade ? TRADE_ITEMS : REFERRAL_ITEMS;
+  const items = NAV_ITEMS;
   // Split around the FAB center: half left, half right
   const mid = Math.ceil(items.length / 2);
   const left = items.slice(0, mid);
