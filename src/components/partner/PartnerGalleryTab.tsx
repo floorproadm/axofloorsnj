@@ -70,13 +70,18 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
     })();
   }, []);
 
-  const filtered = useMemo(
-    () =>
-      activeCat === "All"
-        ? projects
-        : projects.filter((p) => p.category === activeCat),
-    [projects, activeCat],
+  const folders = useMemo(() => {
+    return CATEGORIES.map((cat) => {
+      const items = projects.filter((p) => p.category === cat);
+      return { name: cat, items, cover: items[0]?.image_url };
+    }).filter((f) => f.items.length > 0);
+  }, [projects]);
+
+  const currentFolder = useMemo(
+    () => folders.find((f) => f.name === openFolder) || null,
+    [folders, openFolder],
   );
+
 
   // Build a referral-tagged link for a project (deep-link to public gallery)
   const buildShareLink = (project: GalleryProject) => {
