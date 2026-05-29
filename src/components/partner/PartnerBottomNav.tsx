@@ -8,6 +8,7 @@ import {
   UserPlus,
   MessageCircle,
   Phone,
+  Target,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
