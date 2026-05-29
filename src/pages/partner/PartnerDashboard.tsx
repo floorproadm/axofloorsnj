@@ -64,6 +64,7 @@ export default function PartnerDashboard() {
   const [commissionPercent, setCommissionPercent] = useState(7);
   const [authEmail, setAuthEmail] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [diagnosticOpen, setDiagnosticOpen] = useState(false);
   const [activeStage, setActiveStage] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [view, setView] = useState<PartnerView>("pipeline");
