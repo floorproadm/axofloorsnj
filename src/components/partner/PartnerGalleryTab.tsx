@@ -19,8 +19,12 @@ import {
   Palette,
   ExternalLink,
   Check,
+  Sparkles,
+  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { StainPickerSheet } from "./StainPickerSheet";
+import { QuickPitchSheet } from "./QuickPitchSheet";
 
 interface GalleryProject {
   id: string;
