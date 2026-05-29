@@ -61,7 +61,7 @@ export default function ProjectsHub() {
     const v = window.localStorage.getItem("projects-hub-view");
     return v === "list" || v === "map" || v === "board" ? v : "board";
   });
-  useMemo(() => {
+  useEffect(() => {
     if (typeof window !== "undefined") window.localStorage.setItem("projects-hub-view", view);
   }, [view]);
   const [search, setSearch] = useState("");
