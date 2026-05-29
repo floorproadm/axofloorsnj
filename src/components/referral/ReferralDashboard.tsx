@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Check, Share2, MessageCircle, Mail, Users, DollarSign, TrendingUp } from 'lucide-react';
+import { Copy, Check, Share2, MessageCircle, Mail, Users, DollarSign, TrendingUp, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ReferralProfile, Referral, ReferralReward, ReferralTier } from '@/hooks/useReferralProfile';
 import ReferralQRCode from './ReferralQRCode';
@@ -17,9 +17,10 @@ interface Props {
   tier: ReferralTier;
   isLoading: boolean;
   onAddReferral: (name: string, phone: string, email?: string) => Promise<any>;
+  onSignOut?: () => void;
 }
 
-export default function ReferralDashboard({ profile, referrals, rewards, tier, isLoading, onAddReferral }: Props) {
+export default function ReferralDashboard({ profile, referrals, rewards, tier, isLoading, onAddReferral, onSignOut }: Props) {
   const [copied, setCopied] = useState(false);
 
   const SITE_BASE_URL = 'https://www.axofloorsnj.com';
@@ -59,9 +60,22 @@ export default function ReferralDashboard({ profile, referrals, rewards, tier, i
     <div className="space-y-6">
       {/* Welcome + Tier */}
       <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold font-heading text-primary mb-1">
-          Welcome, {profile.name.split(' ')[0]}!
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <h2 className="text-2xl md:text-3xl font-bold font-heading text-primary">
+            Welcome, {profile.name.split(' ')[0]}!
+          </h2>
+          {onSignOut && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSignOut}
+              className="text-muted-foreground hover:text-destructive"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
         <p className="text-muted-foreground mb-4">Your referral code: <span className="font-mono font-bold text-accent">{profile.referral_code}</span></p>
         <ReferralTierBadge tier={tier} converted={profile.total_converted} />
       </div>
