@@ -43,7 +43,7 @@ interface Props {
   partnerName?: string | null;
 }
 
-const CATEGORY_ORDER = ["All", "Installation", "Stairs", "Tile Services", "Custom Jobs"];
+const CATEGORIES = ["Installation", "Stairs", "Tile Services", "Custom Jobs"];
 
 const PUBLIC_BASE = "https://www.axofloorsnj.com";
 
