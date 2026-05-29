@@ -102,7 +102,30 @@ export interface UpdatePaymentInput {
   status?: string;
   description?: string | null;
   notes?: string | null;
+  recurrence?: RecurrenceType | null;
+  recurrence_active?: boolean;
+  recurrence_next_date?: string | null;
 }
+
+export function useToggleRecurringSeries() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase
+        .from("payments")
+        .update({ recurrence_active: active })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      toast({ title: vars.active ? "Series resumed" : "Series paused" });
+    },
+    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+}
+
 
 export function useUpdatePayment() {
   const qc = useQueryClient();
