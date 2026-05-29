@@ -36,6 +36,7 @@ interface PartnerBottomNavProps {
   program?: PartnerProgram;
   whatsappNumber?: string; // e.g. "17323518653"
   phoneNumber?: string;    // e.g. "(732) 351-8653"
+  partnerCode?: string;    // partner referral code for diagnostic attribution
 }
 
 const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
@@ -45,6 +46,8 @@ const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
   { key: "profile", label: "Profile", icon: User },
 ];
 
+const SITE_BASE_URL = "https://www.axofloorsnj.com";
+
 export function PartnerBottomNav({
   active,
   onChange,
@@ -52,14 +55,20 @@ export function PartnerBottomNav({
   program = "referral",
   whatsappNumber = "17323518653",
   phoneNumber = "(732) 351-8653",
+  partnerCode,
 }: PartnerBottomNavProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isTrade = program === "trade";
 
-  const handleAction = (action: "referral" | "whatsapp" | "call") => {
+  const handleAction = (action: "referral" | "diagnostic" | "whatsapp" | "call") => {
     setDrawerOpen(false);
     if (action === "referral") {
       onNewReferral();
+    } else if (action === "diagnostic") {
+      const url = partnerCode
+        ? `${SITE_BASE_URL}/quiz?ref=${partnerCode}`
+        : `${SITE_BASE_URL}/quiz`;
+      window.open(url, "_blank");
     } else if (action === "whatsapp") {
       window.open(`https://wa.me/${whatsappNumber}`, "_blank");
     } else if (action === "call") {
@@ -68,7 +77,8 @@ export function PartnerBottomNav({
   };
 
   const quickActions = [
-    { key: "referral" as const, label: "New Referral", icon: UserPlus },
+    { key: "referral" as const, label: "Quick Referral", icon: UserPlus },
+    { key: "diagnostic" as const, label: "Floor Diagnostic", icon: Target },
     { key: "whatsapp" as const, label: "WhatsApp AXO", icon: MessageCircle },
     { key: "call" as const, label: "Call AXO", icon: Phone },
   ];
