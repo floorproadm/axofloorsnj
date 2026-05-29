@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Check, Share2, MessageCircle, Mail, Users, DollarSign, TrendingUp } from 'lucide-react';
+import { Copy, Check, Share2, MessageCircle, Mail, Users, DollarSign, TrendingUp, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ReferralProfile, Referral, ReferralReward, ReferralTier } from '@/hooks/useReferralProfile';
 import ReferralQRCode from './ReferralQRCode';
