@@ -659,6 +659,60 @@ export default function PartnerDashboard() {
           </>
         )}
 
+        {/* GALLERY VIEW */}
+        {view === "gallery" && (
+          <div className="space-y-3">
+            <div>
+              <h2 className="text-lg font-bold">Share Our Work</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Real AXO Floors projects you can share with your leads.
+              </p>
+            </div>
+
+            <a
+              href="/gallery"
+              target="_blank"
+              rel="noreferrer"
+              className="block"
+            >
+              <Card className="overflow-hidden hover:border-primary/40 transition-colors">
+                <div className="aspect-[16/10] bg-gradient-to-br from-[hsl(var(--navy-primary))] to-[hsl(var(--navy-primary))]/70 flex items-center justify-center">
+                  <div className="text-center text-white px-6">
+                    <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 mb-1">Portfolio</p>
+                    <p className="text-2xl font-bold">Project Gallery</p>
+                    <p className="text-xs opacity-80 mt-2">Before / After photos · Hardwood · Vinyl · Stairs</p>
+                  </div>
+                </div>
+                <div className="p-3 flex items-center justify-between">
+                  <span className="text-sm font-semibold">Open Gallery</span>
+                  <span className="text-xs text-muted-foreground">axofloorsnj.com/gallery →</span>
+                </div>
+              </Card>
+            </a>
+
+            <a
+              href="/stain-gallery"
+              target="_blank"
+              rel="noreferrer"
+              className="block"
+            >
+              <Card className="overflow-hidden hover:border-primary/40 transition-colors">
+                <div className="aspect-[16/10] bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                  <div className="text-center px-6">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Color Tool</p>
+                    <p className="text-2xl font-bold">Stain Gallery</p>
+                    <p className="text-xs text-muted-foreground mt-2">40 DuraSeal colors · White & Red Oak</p>
+                  </div>
+                </div>
+                <div className="p-3 flex items-center justify-between">
+                  <span className="text-sm font-semibold">Open Stain Gallery</span>
+                  <span className="text-xs text-muted-foreground">axofloorsnj.com/stain-gallery →</span>
+                </div>
+              </Card>
+            </a>
+          </div>
+        )}
+
         {/* PROFILE VIEW */}
         {view === "profile" && partner && (
           <PartnerProfileTab
