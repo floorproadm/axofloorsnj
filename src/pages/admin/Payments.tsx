@@ -23,7 +23,9 @@ import {
   CreditCard,
   CheckSquare,
   Banknote,
+  Repeat,
 } from "lucide-react";
+
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
 import { usePayments, type Payment } from "@/hooks/usePayments";
 import { NewInvoiceDialog } from "@/components/admin/payments/NewInvoiceDialog";
