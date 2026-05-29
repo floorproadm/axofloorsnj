@@ -38,11 +38,10 @@ const ReferralProgram = () => {
   };
 
 
-  // Logged-in dashboard (partner-portal style)
+  // Logged-in dashboard (standalone, no site frame)
   if (profile) {
     return (
       <div className="min-h-screen bg-muted/20">
-        <Header />
         <div className="max-w-2xl mx-auto px-4 sm:px-0 py-4">
           <ReferralDashboard
             profile={profile}
@@ -54,7 +53,6 @@ const ReferralProgram = () => {
             onSignOut={signOut}
           />
         </div>
-        <Footer />
       </div>
     );
   }
