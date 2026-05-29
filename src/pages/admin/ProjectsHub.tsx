@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LayoutGrid, List, Plus, Inbox, ArrowUpDown } from "lucide-react";
+import { LayoutGrid, List, Plus, Inbox, ArrowUpDown, Map as MapIcon } from "lucide-react";
 import { useProjectsHub } from "@/hooks/useProjectsHub";
 import { useProjectSignals, computeRisk } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
@@ -13,6 +13,7 @@ import { ProjectsHubHeader, type KpiFilter } from "@/components/admin/projects/P
 import type { SmartFilter } from "@/components/admin/projects/SmartFilterChips";
 import { AwaitingConversionBanner } from "@/components/admin/projects/AwaitingConversionBanner";
 import { NewJobDialog } from "@/components/admin/NewJobDialog";
+import { ProjectsMapView } from "@/components/admin/projects/ProjectsMapView";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -55,7 +56,14 @@ export default function ProjectsHub() {
   const { projects, pendingProposals, isLoading } = useProjectsHub();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const [view, setView] = useState<"board" | "list">("board");
+  const [view, setView] = useState<"board" | "list" | "map">(() => {
+    if (typeof window === "undefined") return "board";
+    const v = window.localStorage.getItem("projects-hub-view");
+    return v === "list" || v === "map" || v === "board" ? v : "board";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") window.localStorage.setItem("projects-hub-view", view);
+  }, [view]);
   const [search, setSearch] = useState("");
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>(null);
   const [chips, setChips] = useState<Set<SmartFilter>>(new Set());
@@ -338,6 +346,15 @@ export default function ProjectsHub() {
             >
               <List className="h-3.5 w-3.5" />
             </Button>
+            <Button
+              variant={view === "map" ? "default" : "ghost"}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setView("map")}
+              title="Map view"
+            >
+              <MapIcon className="h-3.5 w-3.5" />
+            </Button>
           </div>
         </div>
 
@@ -363,8 +380,10 @@ export default function ProjectsHub() {
             onStatusChange={handleStatusChange}
             onNewProject={() => setShowNewJob(true)}
           />
-        ) : (
+        ) : view === "list" ? (
           <ProjectListView projects={filtered} signals={signals} onSelect={openProject} />
+        ) : (
+          <ProjectsMapView projects={filtered} onSelect={openProject} />
         )}
 
         <NewJobDialog open={showNewJob} onOpenChange={setShowNewJob} />
