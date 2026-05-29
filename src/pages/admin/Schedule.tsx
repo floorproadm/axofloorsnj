@@ -36,6 +36,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { DayNoteBar, DayNoteStrip } from "@/components/admin/schedule/DayNoteBar";
 import { useDayNotes } from "@/hooks/useDayNotes";
+import { ExecutionPanel, ExecutionBadge } from "@/components/admin/schedule/ExecutionPanel";
+import { DispatchMapView } from "@/components/admin/schedule/DispatchMapView";
 
 type Appointment = Tables<"appointments">;
 
@@ -92,7 +94,7 @@ export default function Schedule() {
     setSearchParams(next, { replace: true });
   };
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"day" | "list" | "week">("day");
+  const [viewMode, setViewMode] = useState<"day" | "list" | "week" | "map">("day");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
@@ -418,6 +420,7 @@ export default function Schedule() {
                 <TabsTrigger value="day" className="text-sm px-5">Day</TabsTrigger>
                 <TabsTrigger value="list" className="text-sm px-5">List</TabsTrigger>
                 <TabsTrigger value="week" className="text-sm px-5">Week</TabsTrigger>
+                <TabsTrigger value="map" className="text-sm px-5">Map</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>
@@ -437,6 +440,8 @@ export default function Schedule() {
               <DayNoteBar date={currentDate} />
               <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} />
             </>
+          ) : viewMode === "map" ? (
+            <DispatchMapView appointments={todayAppointments} date={currentDate} />
           ) : (
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} weekStart={weekStart} weekEnd={weekEnd} />
           )}
@@ -522,7 +527,10 @@ function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit
                     )}
                     style={{ height: `${duration * 60 - 4}px` }}
                   >
-                    <div className={cn("text-xs font-semibold truncate", cfg.text)}>{a.customer_name}</div>
+                    <div className={cn("text-xs font-semibold truncate flex items-center gap-1", cfg.text)}>
+                      <ExecutionBadge startedAt={(a as any).started_at} finishedAt={(a as any).finished_at} />
+                      <span className="truncate">{a.customer_name}</span>
+                    </div>
                     <div className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {a.appointment_time.slice(0, 5)}
@@ -568,9 +576,12 @@ function ListView({ appointments, onEdit, date }: { appointments: Appointment[];
               <Clock className={cn("w-5 h-5", cfg.text)} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-foreground text-sm truncate">{a.customer_name}</span>
-                <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", cfg.bg, cfg.text)}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold text-foreground text-sm truncate flex items-center gap-1.5">
+                  <ExecutionBadge startedAt={(a as any).started_at} finishedAt={(a as any).finished_at} />
+                  <span className="truncate">{a.customer_name}</span>
+                </span>
+                <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0", cfg.bg, cfg.text)}>
                   {cfg.label}
                 </span>
               </div>
@@ -833,6 +844,18 @@ function AppointmentModal({
                 </div>
               )}
             </div>
+
+            {appointment && (
+              <ExecutionPanel
+                appointmentId={appointment.id}
+                startedAt={(appointment as any).started_at ?? null}
+                finishedAt={(appointment as any).finished_at ?? null}
+                actualMinutes={(appointment as any).actual_duration_minutes ?? null}
+                estimatedHours={appointment.duration_hours || 1}
+              />
+            )}
+
+
 
             <DialogFooter className="flex-row gap-2 justify-end sm:justify-end pt-2">
               <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-1.5">
