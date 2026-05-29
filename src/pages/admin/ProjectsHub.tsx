@@ -380,8 +380,10 @@ export default function ProjectsHub() {
             onStatusChange={handleStatusChange}
             onNewProject={() => setShowNewJob(true)}
           />
-        ) : (
+        ) : view === "list" ? (
           <ProjectListView projects={filtered} signals={signals} onSelect={openProject} />
+        ) : (
+          <ProjectsMapView projects={filtered} onSelect={openProject} />
         )}
 
         <NewJobDialog open={showNewJob} onOpenChange={setShowNewJob} />
