@@ -733,11 +733,32 @@ export default function PartnerDashboard() {
         active={view}
         onChange={setView}
         onNewReferral={() => setSheetOpen(true)}
+        onFloorDiagnostic={() => setDiagnosticOpen(true)}
         program={partner?.partner_program || "referral"}
-        partnerCode={partner?.id}
       />
 
       <NewReferralSheet open={sheetOpen} onOpenChange={setSheetOpen} onCreated={loadData} />
+
+      <Sheet open={diagnosticOpen} onOpenChange={setDiagnosticOpen}>
+        <SheetContent side="bottom" className="h-[95vh] overflow-y-auto p-0">
+          <SheetHeader className="px-4 pt-4 pb-2 sticky top-0 bg-background z-10 border-b">
+            <SheetTitle className="text-lg font-semibold">Floor Diagnostic</SheetTitle>
+            <SheetDescription>
+              Guided assessment — hand the device to your client or fill it together.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="p-4 sm:p-6 pb-12">
+            <QuizFlow
+              embedded
+              partnerId={partner?.id}
+              onComplete={() => {
+                setDiagnosticOpen(false);
+                loadData();
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <PartnerLeadDetailSheet
         lead={selectedLead}
