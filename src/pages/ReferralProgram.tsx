@@ -38,24 +38,22 @@ const ReferralProgram = () => {
   };
 
 
-  // Logged-in dashboard (unchanged behavior)
+  // Logged-in dashboard (partner-portal style)
   if (profile) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-muted/20">
         <Header />
-        <section className="py-8 sm:py-12">
-          <div className="container mx-auto px-4 max-w-2xl">
-            <ReferralDashboard
-              profile={profile}
-              referrals={referrals}
-              rewards={rewards}
-              tier={tier}
-              isLoading={isLoading}
-              onAddReferral={addReferral}
-              onSignOut={signOut}
-            />
-          </div>
-        </section>
+        <div className="max-w-2xl mx-auto px-4 sm:px-0 py-4">
+          <ReferralDashboard
+            profile={profile}
+            referrals={referrals}
+            rewards={rewards}
+            tier={tier}
+            isLoading={isLoading}
+            onAddReferral={addReferral}
+            onSignOut={signOut}
+          />
+        </div>
         <Footer />
       </div>
     );
