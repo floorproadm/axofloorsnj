@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X, Trophy, CheckCircle2, Bell, AlertCircle, Zap } from "lucide-react";
+import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X, Trophy, CheckCircle2, Bell, AlertCircle, Zap, Home } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDistanceToNow } from "date-fns";
 import { NewReferralSheet } from "@/components/partner/NewReferralSheet";
