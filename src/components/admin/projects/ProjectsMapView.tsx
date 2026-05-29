@@ -226,7 +226,7 @@ function MapDetailPanel({
               <div className="flex items-start gap-2">
                 <span
                   className="mt-1.5 h-2.5 w-2.5 rounded-full shrink-0"
-                  style={{ background: colorFor(project.project_status) }}
+                  style={{ background: pinColor }}
                 />
                 <SheetTitle className="text-base leading-tight">{project.customer_name}</SheetTitle>
               </div>
