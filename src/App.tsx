@@ -83,6 +83,8 @@ import CollaboratorProfile from "./pages/collaborator/CollaboratorProfile";
 import CollaboratorChat from "./pages/collaborator/CollaboratorChat";
 
 import PartnerAuth from "./pages/partner/PartnerAuth";
+import ReferralAuth from "./pages/ReferralAuth";
+import ResetPassword from "./pages/ResetPassword";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
 
