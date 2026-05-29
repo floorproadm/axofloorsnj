@@ -149,33 +149,35 @@ export function PartnerBottomNav({
             </DrawerClose>
           </DrawerHeader>
 
-          <div className="grid grid-cols-3 gap-3 px-4 pb-6">
-            {quickActions.map((qa) => (
-              <button
-                key={qa.key}
-                onClick={() => handleAction(qa.key)}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-muted/60 active:scale-95 transition-all",
-                  qa.key === "referral" && "ring-1 ring-primary/20 bg-primary/5",
-                )}
-              >
-                <div
+          <div className="grid grid-cols-4 gap-2 px-4 pb-6">
+            {quickActions.map((qa) => {
+              const isFeatured = qa.key === "referral" || qa.key === "diagnostic";
+              return (
+                <button
+                  key={qa.key}
+                  onClick={() => handleAction(qa.key)}
                   className={cn(
-                    "w-11 h-11 rounded-full flex items-center justify-center",
-                    qa.key === "referral"
-                      ? "bg-primary/20"
-                      : "bg-[hsl(var(--navy-primary))]/10",
+                    "flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-muted/60 active:scale-95 transition-all",
+                    isFeatured && "ring-1 ring-primary/20 bg-primary/5",
                   )}
                 >
-                  <qa.icon
+                  <div
                     className={cn(
-                      "w-5 h-5",
-                      qa.key === "referral"
-                        ? "text-primary"
-                        : "text-[hsl(var(--navy-primary))]",
+                      "w-11 h-11 rounded-full flex items-center justify-center",
+                      isFeatured
+                        ? "bg-primary/20"
+                        : "bg-[hsl(var(--navy-primary))]/10",
                     )}
-                  />
-                </div>
+                  >
+                    <qa.icon
+                      className={cn(
+                        "w-5 h-5",
+                        isFeatured
+                          ? "text-primary"
+                          : "text-[hsl(var(--navy-primary))]",
+                      )}
+                    />
+                  </div>
                 <span className="text-[11px] font-medium text-foreground leading-tight text-center">
                   {qa.label}
                 </span>
