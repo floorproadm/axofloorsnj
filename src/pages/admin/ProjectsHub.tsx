@@ -4,7 +4,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LayoutGrid, List, Plus, Inbox, ArrowUpDown } from "lucide-react";
+import { LayoutGrid, List, Plus, Inbox, ArrowUpDown, Map as MapIcon } from "lucide-react";
 import { useProjectsHub } from "@/hooks/useProjectsHub";
 import { useProjectSignals, computeRisk } from "@/hooks/useProjectSignals";
 import { ProjectPipelineBoard } from "@/components/admin/projects/ProjectPipelineBoard";
