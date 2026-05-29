@@ -16,6 +16,7 @@ import { PartnerPipelineBoard } from "@/components/partner/PartnerPipelineBoard"
 import { PartnerQuotesTab } from "@/components/partner/PartnerQuotesTab";
 import { PartnerReferredProposals } from "@/components/partner/PartnerReferredProposals";
 import { PartnerLeadDetailSheet } from "@/components/partner/PartnerLeadDetailSheet";
+import { PartnerGalleryTab } from "@/components/partner/PartnerGalleryTab";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import QuizFlow from "@/components/quiz/QuizFlow";
