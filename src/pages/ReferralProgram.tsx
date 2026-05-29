@@ -27,7 +27,7 @@ const NAVY = "#0a1628";
 const GOLD = "#f5a623";
 
 const ReferralProgram = () => {
-  const { profile, referrals, rewards, tier, isLoading, addReferral } = useReferralProfile();
+  const { profile, referrals, rewards, tier, isLoading, addReferral, signOut } = useReferralProfile();
 
   const goToAuth = () => {
     window.location.href = "/referral/auth";
