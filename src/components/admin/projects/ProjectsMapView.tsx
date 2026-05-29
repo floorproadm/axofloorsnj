@@ -6,9 +6,12 @@ import "leaflet/dist/leaflet.css";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { MapPin, Loader2, ExternalLink, Calendar, User, Briefcase, DollarSign } from "lucide-react";
+import { MapPin, Loader2, ExternalLink, Calendar, User, Briefcase, DollarSign, Palette } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { HubProject } from "@/hooks/useProjectsHub";
+
+type ColorMode = "status" | "source";
+const COLOR_MODE_KEY = "projects-map-color-mode";
 
 const STATUS_COLORS: Record<string, string> = {
   planning: "#64748b",
@@ -20,7 +23,31 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "#ef4444",
 };
 
-const colorFor = (s: string) => STATUS_COLORS[s] ?? "#6366f1";
+const SOURCE_COLORS = {
+  partner: "#a855f7", // purple — partner referral
+  direct: "#f97316", // orange — direct customer
+};
+
+const isPartner = (p: HubProject) => !!p.partner_name;
+
+function colorFor(p: HubProject, mode: ColorMode): string {
+  if (mode === "source") return isPartner(p) ? SOURCE_COLORS.partner : SOURCE_COLORS.direct;
+  return STATUS_COLORS[p.project_status] ?? "#6366f1";
+}
+
+const LEGENDS: Record<ColorMode, { color: string; label: string }[]> = {
+  status: [
+    { color: STATUS_COLORS.planning, label: "Planning" },
+    { color: STATUS_COLORS.in_progress, label: "In Progress" },
+    { color: STATUS_COLORS.completed, label: "Completed" },
+    { color: STATUS_COLORS.awaiting_payment, label: "Awaiting Pmt" },
+    { color: STATUS_COLORS.paid, label: "Paid" },
+  ],
+  source: [
+    { color: SOURCE_COLORS.partner, label: "Partner referral" },
+    { color: SOURCE_COLORS.direct, label: "Direct customer" },
+  ],
+};
 
 function makePin(color: string) {
   const html = `
@@ -59,6 +86,14 @@ interface Props {
 
 export function ProjectsMapView({ projects, onSelect }: Props) {
   const [active, setActive] = useState<HubProject | null>(null);
+  const [colorMode, setColorMode] = useState<ColorMode>(() => {
+    if (typeof window === "undefined") return "status";
+    return (localStorage.getItem(COLOR_MODE_KEY) as ColorMode) || "status";
+  });
+
+  useEffect(() => {
+    localStorage.setItem(COLOR_MODE_KEY, colorMode);
+  }, [colorMode]);
 
   const withAddress = useMemo(
     () => projects.filter((p) => p.address && p.address.trim()),
@@ -111,6 +146,36 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
             : `${located.length} no mapa · ${missing} sem endereço`}
         </div>
       )}
+
+      {/* Color-by toggle + legend */}
+      <div className="absolute bottom-3 left-3 z-[500] rounded-md bg-background/95 backdrop-blur border shadow-md p-2 space-y-2 max-w-[260px]">
+        <div className="flex items-center gap-1.5">
+          <Palette className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Color by</span>
+          <div className="ml-auto flex rounded-md bg-muted p-0.5">
+            {(["status", "source"] as ColorMode[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => setColorMode(m)}
+                className={`text-[10px] px-2 py-0.5 rounded-sm capitalize transition ${
+                  colorMode === m ? "bg-background shadow-sm font-medium" : "text-muted-foreground"
+                }`}
+              >
+                {m === "source" ? "Source" : "Status"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-x-2.5 gap-y-1">
+          {LEGENDS[colorMode].map((l) => (
+            <div key={l.label} className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full" style={{ background: l.color }} />
+              <span className="text-[10px] text-muted-foreground">{l.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <MapContainer center={center} zoom={11} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -119,9 +184,9 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
         <FitBounds points={points} />
         {located.map(({ project, coords }) => (
           <Marker
-            key={project.id}
+            key={`${project.id}-${colorMode}`}
             position={[coords.lat, coords.lng]}
-            icon={makePin(colorFor(project.project_status))}
+            icon={makePin(colorFor(project, colorMode))}
             eventHandlers={{ click: () => setActive(project) }}
           />
         ))}
@@ -129,6 +194,7 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
 
       <MapDetailPanel
         project={active}
+        colorMode={colorMode}
         onClose={() => setActive(null)}
         onOpen={(p) => {
           setActive(null);
@@ -141,13 +207,16 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
 
 function MapDetailPanel({
   project,
+  colorMode,
   onClose,
   onOpen,
 }: {
   project: HubProject | null;
+  colorMode: ColorMode;
   onClose: () => void;
   onOpen: (p: HubProject) => void;
 }) {
+  const pinColor = project ? colorFor(project, colorMode) : "#6366f1";
   return (
     <Sheet open={!!project} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-[380px] sm:max-w-[380px] p-0 flex flex-col">
@@ -157,7 +226,7 @@ function MapDetailPanel({
               <div className="flex items-start gap-2">
                 <span
                   className="mt-1.5 h-2.5 w-2.5 rounded-full shrink-0"
-                  style={{ background: colorFor(project.project_status) }}
+                  style={{ background: pinColor }}
                 />
                 <SheetTitle className="text-base leading-tight">{project.customer_name}</SheetTitle>
               </div>
@@ -165,7 +234,7 @@ function MapDetailPanel({
                 <Badge
                   variant="outline"
                   className="text-[10px] h-5"
-                  style={{ borderColor: colorFor(project.project_status), color: colorFor(project.project_status) }}
+                  style={{ borderColor: pinColor, color: pinColor }}
                 >
                   {project.project_status.replace(/_/g, " ")}
                 </Badge>
