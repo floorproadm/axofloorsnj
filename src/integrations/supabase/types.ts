@@ -150,6 +150,7 @@ export type Database = {
       }
       appointments: {
         Row: {
+          actual_duration_minutes: number | null
           appointment_date: string
           appointment_time: string
           appointment_type: string
@@ -159,16 +160,19 @@ export type Database = {
           customer_name: string
           customer_phone: string
           duration_hours: number | null
+          finished_at: string | null
           id: string
           location: string | null
           notes: string | null
           organization_id: string
           project_id: string | null
           reminder_sent: boolean | null
+          started_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          actual_duration_minutes?: number | null
           appointment_date: string
           appointment_time: string
           appointment_type: string
@@ -178,16 +182,19 @@ export type Database = {
           customer_name: string
           customer_phone: string
           duration_hours?: number | null
+          finished_at?: string | null
           id?: string
           location?: string | null
           notes?: string | null
           organization_id: string
           project_id?: string | null
           reminder_sent?: boolean | null
+          started_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          actual_duration_minutes?: number | null
           appointment_date?: string
           appointment_time?: string
           appointment_type?: string
@@ -197,12 +204,14 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           duration_hours?: number | null
+          finished_at?: string | null
           id?: string
           location?: string | null
           notes?: string | null
           organization_id?: string
           project_id?: string | null
           reminder_sent?: boolean | null
+          started_at?: string | null
           status?: string
           updated_at?: string
         }
