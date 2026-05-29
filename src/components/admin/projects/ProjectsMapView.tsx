@@ -207,13 +207,16 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
 
 function MapDetailPanel({
   project,
+  colorMode,
   onClose,
   onOpen,
 }: {
   project: HubProject | null;
+  colorMode: ColorMode;
   onClose: () => void;
   onOpen: (p: HubProject) => void;
 }) {
+  const pinColor = project ? colorFor(project, colorMode) : "#6366f1";
   return (
     <Sheet open={!!project} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-[380px] sm:max-w-[380px] p-0 flex flex-col">
