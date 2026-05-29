@@ -731,6 +731,7 @@ export default function PartnerDashboard() {
         onChange={setView}
         onNewReferral={() => setSheetOpen(true)}
         program={partner?.partner_program || "referral"}
+        partnerCode={partner?.id}
       />
 
       <NewReferralSheet open={sheetOpen} onOpenChange={setSheetOpen} onCreated={loadData} />

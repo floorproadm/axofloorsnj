@@ -8,6 +8,7 @@ import {
   UserPlus,
   MessageCircle,
   Phone,
+  Target,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ interface PartnerBottomNavProps {
   program?: PartnerProgram;
   whatsappNumber?: string; // e.g. "17323518653"
   phoneNumber?: string;    // e.g. "(732) 351-8653"
+  partnerCode?: string;    // partner referral code for diagnostic attribution
 }
 
 const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
@@ -44,6 +46,8 @@ const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
   { key: "profile", label: "Profile", icon: User },
 ];
 
+const SITE_BASE_URL = "https://www.axofloorsnj.com";
+
 export function PartnerBottomNav({
   active,
   onChange,
@@ -51,14 +55,20 @@ export function PartnerBottomNav({
   program = "referral",
   whatsappNumber = "17323518653",
   phoneNumber = "(732) 351-8653",
+  partnerCode,
 }: PartnerBottomNavProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isTrade = program === "trade";
 
-  const handleAction = (action: "referral" | "whatsapp" | "call") => {
+  const handleAction = (action: "referral" | "diagnostic" | "whatsapp" | "call") => {
     setDrawerOpen(false);
     if (action === "referral") {
       onNewReferral();
+    } else if (action === "diagnostic") {
+      const url = partnerCode
+        ? `${SITE_BASE_URL}/quiz?ref=${partnerCode}`
+        : `${SITE_BASE_URL}/quiz`;
+      window.open(url, "_blank");
     } else if (action === "whatsapp") {
       window.open(`https://wa.me/${whatsappNumber}`, "_blank");
     } else if (action === "call") {
@@ -67,7 +77,8 @@ export function PartnerBottomNav({
   };
 
   const quickActions = [
-    { key: "referral" as const, label: "New Referral", icon: UserPlus },
+    { key: "referral" as const, label: "Quick Referral", icon: UserPlus },
+    { key: "diagnostic" as const, label: "Floor Diagnostic", icon: Target },
     { key: "whatsapp" as const, label: "WhatsApp AXO", icon: MessageCircle },
     { key: "call" as const, label: "Call AXO", icon: Phone },
   ];
@@ -138,38 +149,41 @@ export function PartnerBottomNav({
             </DrawerClose>
           </DrawerHeader>
 
-          <div className="grid grid-cols-3 gap-3 px-4 pb-6">
-            {quickActions.map((qa) => (
-              <button
-                key={qa.key}
-                onClick={() => handleAction(qa.key)}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-muted/60 active:scale-95 transition-all",
-                  qa.key === "referral" && "ring-1 ring-primary/20 bg-primary/5",
-                )}
-              >
-                <div
+          <div className="grid grid-cols-4 gap-2 px-4 pb-6">
+            {quickActions.map((qa) => {
+              const isFeatured = qa.key === "referral" || qa.key === "diagnostic";
+              return (
+                <button
+                  key={qa.key}
+                  onClick={() => handleAction(qa.key)}
                   className={cn(
-                    "w-11 h-11 rounded-full flex items-center justify-center",
-                    qa.key === "referral"
-                      ? "bg-primary/20"
-                      : "bg-[hsl(var(--navy-primary))]/10",
+                    "flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-muted/60 active:scale-95 transition-all",
+                    isFeatured && "ring-1 ring-primary/20 bg-primary/5",
                   )}
                 >
-                  <qa.icon
+                  <div
                     className={cn(
-                      "w-5 h-5",
-                      qa.key === "referral"
-                        ? "text-primary"
-                        : "text-[hsl(var(--navy-primary))]",
+                      "w-11 h-11 rounded-full flex items-center justify-center",
+                      isFeatured
+                        ? "bg-primary/20"
+                        : "bg-[hsl(var(--navy-primary))]/10",
                     )}
-                  />
-                </div>
-                <span className="text-[11px] font-medium text-foreground leading-tight text-center">
-                  {qa.label}
-                </span>
-              </button>
-            ))}
+                  >
+                    <qa.icon
+                      className={cn(
+                        "w-5 h-5",
+                        isFeatured
+                          ? "text-primary"
+                          : "text-[hsl(var(--navy-primary))]",
+                      )}
+                    />
+                  </div>
+                  <span className="text-[11px] font-medium text-foreground leading-tight text-center">
+                    {qa.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </DrawerContent>
       </Drawer>
