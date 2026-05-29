@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X, Trophy, CheckCircle2, Bell, AlertCircle, Zap } from "lucide-react";
+import { Loader2, Plus, Handshake, DollarSign, TrendingUp, Users, Search, X, Trophy, CheckCircle2, Bell, AlertCircle, Zap, Home } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDistanceToNow } from "date-fns";
 import { NewReferralSheet } from "@/components/partner/NewReferralSheet";
@@ -260,13 +260,24 @@ export default function PartnerDashboard() {
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Handshake className="w-5 h-5 text-primary" />
+            {partner?.partner_type === "realtor" ? (
+              <Home className="w-5 h-5 text-primary" />
+            ) : (
+              <Handshake className="w-5 h-5 text-primary" />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground leading-none">Welcome,</p>
-            <p className="text-sm font-semibold leading-tight truncate">
-              {partner?.contact_name || partner?.company_name}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold leading-tight truncate">
+                {partner?.contact_name || partner?.company_name}
+              </p>
+              {partner?.partner_type === "realtor" && (
+                <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                  Realtor
+                </span>
+              )}
+            </div>
           </div>
           {/* Notification bell */}
           <Popover open={notifOpen} onOpenChange={(o) => { setNotifOpen(o); if (o) markAllNotificationsRead(); }}>
