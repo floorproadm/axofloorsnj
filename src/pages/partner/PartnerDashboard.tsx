@@ -17,6 +17,8 @@ import { PartnerQuotesTab } from "@/components/partner/PartnerQuotesTab";
 import { PartnerReferredProposals } from "@/components/partner/PartnerReferredProposals";
 import { PartnerLeadDetailSheet } from "@/components/partner/PartnerLeadDetailSheet";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import QuizFlow from "@/components/quiz/QuizFlow";
 
 interface Lead {
   id: string;
