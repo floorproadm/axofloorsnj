@@ -33,10 +33,10 @@ interface PartnerBottomNavProps {
   active: PartnerView;
   onChange: (v: PartnerView) => void;
   onNewReferral: () => void;
+  onFloorDiagnostic?: () => void;
   program?: PartnerProgram;
   whatsappNumber?: string; // e.g. "17323518653"
   phoneNumber?: string;    // e.g. "(732) 351-8653"
-  partnerCode?: string;    // partner referral code for diagnostic attribution
 }
 
 const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
@@ -46,16 +46,14 @@ const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
   { key: "profile", label: "Profile", icon: User },
 ];
 
-const SITE_BASE_URL = "https://www.axofloorsnj.com";
-
 export function PartnerBottomNav({
   active,
   onChange,
   onNewReferral,
+  onFloorDiagnostic,
   program = "referral",
   whatsappNumber = "17323518653",
   phoneNumber = "(732) 351-8653",
-  partnerCode,
 }: PartnerBottomNavProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isTrade = program === "trade";
@@ -65,10 +63,7 @@ export function PartnerBottomNav({
     if (action === "referral") {
       onNewReferral();
     } else if (action === "diagnostic") {
-      const url = partnerCode
-        ? `${SITE_BASE_URL}/quiz?ref=${partnerCode}`
-        : `${SITE_BASE_URL}/quiz`;
-      window.open(url, "_blank");
+      onFloorDiagnostic?.();
     } else if (action === "whatsapp") {
       window.open(`https://wa.me/${whatsappNumber}`, "_blank");
     } else if (action === "call") {
