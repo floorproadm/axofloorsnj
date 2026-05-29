@@ -152,46 +152,75 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div>
-        <h2 className="text-lg font-bold">Share Our Work</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Real AXO projects — every share auto-tags with your referral code.
-        </p>
+      <div className="flex items-start gap-2">
+        {currentFolder && (
+          <button
+            onClick={() => setOpenFolder(null)}
+            className="mt-1 -ml-1 p-1 rounded-md hover:bg-muted text-muted-foreground"
+            aria-label="Back to folders"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+        )}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-bold">
+            {currentFolder ? currentFolder.name : "Share Our Work"}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {currentFolder
+              ? `${currentFolder.items.length} ${currentFolder.items.length === 1 ? "project" : "projects"} · tap to share with referral code`
+              : "Real AXO projects organized by service — every share auto-tags your referral code."}
+          </p>
+        </div>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
-        {CATEGORY_ORDER.map((cat) => {
-          const isActive = activeCat === cat;
-          return (
-            <button
-              key={cat}
-              onClick={() => setActiveCat(cat)}
-              className={cn(
-                "shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors",
-                isActive
-                  ? "bg-[hsl(var(--navy-primary))] text-white border-[hsl(var(--navy-primary))]"
-                  : "bg-card text-muted-foreground border-border hover:text-foreground",
-              )}
-            >
-              {cat}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Grid */}
+      {/* Body — Folders or Project grid */}
       {loading ? (
         <div className="flex items-center justify-center py-10">
           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
         </div>
-      ) : filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No projects in this category yet.
-        </p>
+      ) : !currentFolder ? (
+        // Folder list (minimalist)
+        folders.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No projects yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {folders.map((f) => (
+              <button
+                key={f.name}
+                onClick={() => setOpenFolder(f.name)}
+                className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-muted text-left"
+              >
+                {f.cover && (
+                  <img
+                    src={f.cover}
+                    alt={f.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover opacity-70 transition-transform group-hover:scale-105"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/10" />
+                <div className="absolute inset-0 p-3 flex flex-col justify-between">
+                  <Folder className="w-5 h-5 text-white/90" />
+                  <div>
+                    <p className="text-sm font-semibold text-white leading-tight line-clamp-1">
+                      {f.name}
+                    </p>
+                    <p className="text-[10px] text-white/70 mt-0.5">
+                      {f.items.length} {f.items.length === 1 ? "project" : "projects"}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )
       ) : (
+        // Inside folder — project grid
         <div className="grid grid-cols-2 gap-2">
-          {filtered.map((p) => (
+          {currentFolder.items.map((p) => (
             <button
               key={p.id}
               onClick={() => setSelected(p)}
@@ -221,6 +250,7 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
           ))}
         </div>
       )}
+
 
       {/* Sales Toolkit — Stain Picker + Quick Pitch */}
       <div className="pt-1">
