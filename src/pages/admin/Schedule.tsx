@@ -839,6 +839,18 @@ function AppointmentModal({
               )}
             </div>
 
+            {appointment && (
+              <ExecutionPanel
+                appointmentId={appointment.id}
+                startedAt={(appointment as any).started_at ?? null}
+                finishedAt={(appointment as any).finished_at ?? null}
+                actualMinutes={(appointment as any).actual_duration_minutes ?? null}
+                estimatedHours={appointment.duration_hours || 1}
+              />
+            )}
+
+
+
             <DialogFooter className="flex-row gap-2 justify-end sm:justify-end pt-2">
               <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-1.5">
                 <Edit2 className="w-3.5 h-3.5" /> Editar
