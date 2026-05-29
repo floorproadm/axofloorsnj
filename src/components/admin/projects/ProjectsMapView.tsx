@@ -146,6 +146,36 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
             : `${located.length} no mapa · ${missing} sem endereço`}
         </div>
       )}
+
+      {/* Color-by toggle + legend */}
+      <div className="absolute bottom-3 left-3 z-[500] rounded-md bg-background/95 backdrop-blur border shadow-md p-2 space-y-2 max-w-[260px]">
+        <div className="flex items-center gap-1.5">
+          <Palette className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Color by</span>
+          <div className="ml-auto flex rounded-md bg-muted p-0.5">
+            {(["status", "source"] as ColorMode[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => setColorMode(m)}
+                className={`text-[10px] px-2 py-0.5 rounded-sm capitalize transition ${
+                  colorMode === m ? "bg-background shadow-sm font-medium" : "text-muted-foreground"
+                }`}
+              >
+                {m === "source" ? "Source" : "Status"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-x-2.5 gap-y-1">
+          {LEGENDS[colorMode].map((l) => (
+            <div key={l.label} className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full" style={{ background: l.color }} />
+              <span className="text-[10px] text-muted-foreground">{l.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <MapContainer center={center} zoom={11} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -154,9 +184,9 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
         <FitBounds points={points} />
         {located.map(({ project, coords }) => (
           <Marker
-            key={project.id}
+            key={`${project.id}-${colorMode}`}
             position={[coords.lat, coords.lng]}
-            icon={makePin(colorFor(project.project_status))}
+            icon={makePin(colorFor(project, colorMode))}
             eventHandlers={{ click: () => setActive(project) }}
           />
         ))}
@@ -164,6 +194,7 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
 
       <MapDetailPanel
         project={active}
+        colorMode={colorMode}
         onClose={() => setActive(null)}
         onOpen={(p) => {
           setActive(null);
