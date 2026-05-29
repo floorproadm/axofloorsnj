@@ -16,7 +16,7 @@ import {
   Check,
   Star,
   Loader2,
-  LogIn,
+  
   Phone,
   ArrowRight,
   Sparkles,
