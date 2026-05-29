@@ -19,8 +19,12 @@ import {
   Palette,
   ExternalLink,
   Check,
+  Sparkles,
+  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { StainPickerSheet } from "./StainPickerSheet";
+import { QuickPitchSheet } from "./QuickPitchSheet";
 
 interface GalleryProject {
   id: string;
@@ -48,6 +52,8 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
   const [activeCat, setActiveCat] = useState<string>("All");
   const [selected, setSelected] = useState<GalleryProject | null>(null);
   const [copied, setCopied] = useState(false);
+  const [stainOpen, setStainOpen] = useState(false);
+  const [pitchOpen, setPitchOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -209,26 +215,62 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
         </div>
       )}
 
-      {/* Stain Gallery quick link (kept, compact) */}
-      <a
-        href={`${PUBLIC_BASE}/stain-gallery${partnerCode ? `?ref=${partnerCode}` : ""}`}
-        target="_blank"
-        rel="noreferrer"
-        className="block"
-      >
-        <Card className="p-3 flex items-center gap-3 hover:border-primary/40 transition-colors">
-          <div className="w-10 h-10 rounded-md bg-primary/15 flex items-center justify-center shrink-0">
-            <Palette className="w-5 h-5 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">Stain Color Tool</p>
-            <p className="text-[11px] text-muted-foreground">
-              40 DuraSeal colors · send to your client
-            </p>
-          </div>
-          <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
-        </Card>
-      </a>
+      {/* Sales Toolkit — Stain Picker + Quick Pitch */}
+      <div className="pt-1">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-2">
+          Sales Toolkit
+        </p>
+        <div className="grid grid-cols-1 gap-2">
+          <button onClick={() => setStainOpen(true)} className="text-left">
+            <Card className="p-3 flex items-center gap-3 hover:border-primary/40 transition-colors">
+              <div className="w-10 h-10 rounded-md bg-primary/15 flex items-center justify-center shrink-0">
+                <Palette className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">Send Stain Colors</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Pick 3 from 39 DuraSeal colors · client gets WhatsApp message
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            </Card>
+          </button>
+
+          <button onClick={() => setPitchOpen(true)} className="text-left">
+            <Card className="p-3 flex items-center gap-3 hover:border-primary/40 transition-colors">
+              <div className="w-10 h-10 rounded-md bg-[hsl(var(--navy-primary))]/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-[hsl(var(--navy-primary))]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">Ready-to-Send Pitches</p>
+                <p className="text-[11px] text-muted-foreground">
+                  4 pre-written messages · Floor Diagnostic, Why AXO, Quote in 24h
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            </Card>
+          </button>
+
+          <a
+            href={`${PUBLIC_BASE}/stain-gallery${partnerCode ? `?ref=${partnerCode}` : ""}`}
+            target="_blank"
+            rel="noreferrer"
+            className="block"
+          >
+            <Card className="p-3 flex items-center gap-3 hover:border-primary/40 transition-colors">
+              <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center shrink-0">
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">Public Stain Gallery</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Full DuraSeal catalog on White Oak & Red Oak samples
+                </p>
+              </div>
+            </Card>
+          </a>
+        </div>
+      </div>
 
       {/* Detail / Share sheet */}
       <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
@@ -315,6 +357,18 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
           )}
         </SheetContent>
       </Sheet>
+
+      <StainPickerSheet
+        open={stainOpen}
+        onOpenChange={setStainOpen}
+        partnerCode={partnerCode}
+      />
+      <QuickPitchSheet
+        open={pitchOpen}
+        onOpenChange={setPitchOpen}
+        partnerCode={partnerCode}
+        partnerName={partnerName}
+      />
     </div>
   );
 }
