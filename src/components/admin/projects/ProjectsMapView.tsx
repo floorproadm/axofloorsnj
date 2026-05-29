@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { MapPin, Loader2, ExternalLink, Calendar, User, Briefcase, DollarSign } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { HubProject } from "@/hooks/useProjectsHub";
 
@@ -18,9 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "#ef4444",
 };
 
-function colorFor(status: string) {
-  return STATUS_COLORS[status] ?? "#6366f1";
-}
+const colorFor = (s: string) => STATUS_COLORS[s] ?? "#6366f1";
 
 function makePin(color: string) {
   const html = `
@@ -30,7 +30,7 @@ function makePin(color: string) {
         <circle cx="16" cy="15" r="6" fill="white"/>
       </svg>
     </div>`;
-  return L.divIcon({ html, className: "", iconSize: [30, 38], iconAnchor: [15, 38], popupAnchor: [0, -34] });
+  return L.divIcon({ html, className: "", iconSize: [30, 38], iconAnchor: [15, 38] });
 }
 
 async function geocodeAddress(addr: string): Promise<{ lat: number; lng: number } | null> {
@@ -46,12 +46,8 @@ function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
     if (points.length === 0) return;
-    if (points.length === 1) {
-      map.setView(points[0], 13);
-    } else {
-      const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
-    }
+    if (points.length === 1) map.setView(points[0], 13);
+    else map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 14 });
   }, [points, map]);
   return null;
 }
@@ -62,6 +58,8 @@ interface Props {
 }
 
 export function ProjectsMapView({ projects, onSelect }: Props) {
+  const [active, setActive] = useState<HubProject | null>(null);
+
   const withAddress = useMemo(
     () => projects.filter((p) => p.address && p.address.trim()),
     [projects],
@@ -82,19 +80,20 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
 
   const loading = queries.some((q) => q.isLoading);
 
-  const located = useMemo(() => {
-    return withAddress
-      .map((p, i) => ({ project: p, coords: queries[i].data ?? null }))
-      .filter((x): x is { project: HubProject; coords: { lat: number; lng: number } } => x.coords !== null);
-  }, [withAddress, queries]);
+  const located = useMemo(
+    () =>
+      withAddress
+        .map((p, i) => ({ project: p, coords: queries[i].data ?? null }))
+        .filter((x): x is { project: HubProject; coords: { lat: number; lng: number } } => x.coords !== null),
+    [withAddress, queries],
+  );
 
   const points = useMemo<[number, number][]>(
     () => located.map((x) => [x.coords.lat, x.coords.lng]),
     [located],
   );
 
-  const center: [number, number] = points[0] ?? [40.7128, -74.006]; // NY fallback
-
+  const center: [number, number] = points[0] ?? [40.7128, -74.006];
   const missing = projects.length - withAddress.length;
 
   return (
@@ -119,38 +118,125 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
         />
         <FitBounds points={points} />
         {located.map(({ project, coords }) => (
-          <Marker key={project.id} position={[coords.lat, coords.lng]} icon={makePin(colorFor(project.project_status))}>
-            <Popup>
-              <div className="space-y-1.5 min-w-[200px]">
-                <button
-                  onClick={() => onSelect(project)}
-                  className="font-semibold text-sm hover:underline text-left block"
-                >
-                  {project.customer_name}
-                </button>
-                <div className="text-xs text-muted-foreground">{project.address}{project.city ? `, ${project.city}` : ""}</div>
-                <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] h-5"
-                    style={{ borderColor: colorFor(project.project_status), color: colorFor(project.project_status) }}
-                  >
-                    {project.project_status.replace(/_/g, " ")}
-                  </Badge>
-                  {project.project_type && (
-                    <Badge variant="secondary" className="text-[10px] h-5">{project.project_type}</Badge>
-                  )}
-                </div>
-                {project.start_date && (
-                  <div className="text-[11px] text-muted-foreground pt-0.5">
-                    Start: {format(parseISO(project.start_date), "MMM d, yyyy")}
-                  </div>
-                )}
-              </div>
-            </Popup>
-          </Marker>
+          <Marker
+            key={project.id}
+            position={[coords.lat, coords.lng]}
+            icon={makePin(colorFor(project.project_status))}
+            eventHandlers={{ click: () => setActive(project) }}
+          />
         ))}
       </MapContainer>
+
+      <MapDetailPanel
+        project={active}
+        onClose={() => setActive(null)}
+        onOpen={(p) => {
+          setActive(null);
+          onSelect(p);
+        }}
+      />
+    </div>
+  );
+}
+
+function MapDetailPanel({
+  project,
+  onClose,
+  onOpen,
+}: {
+  project: HubProject | null;
+  onClose: () => void;
+  onOpen: (p: HubProject) => void;
+}) {
+  return (
+    <Sheet open={!!project} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="right" className="w-[380px] sm:max-w-[380px] p-0 flex flex-col">
+        {project && (
+          <>
+            <SheetHeader className="p-4 border-b space-y-2">
+              <div className="flex items-start gap-2">
+                <span
+                  className="mt-1.5 h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ background: colorFor(project.project_status) }}
+                />
+                <SheetTitle className="text-base leading-tight">{project.customer_name}</SheetTitle>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-5"
+                  style={{ borderColor: colorFor(project.project_status), color: colorFor(project.project_status) }}
+                >
+                  {project.project_status.replace(/_/g, " ")}
+                </Badge>
+                {project.project_type && (
+                  <Badge variant="secondary" className="text-[10px] h-5">{project.project_type}</Badge>
+                )}
+              </div>
+            </SheetHeader>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
+              <Row icon={MapPin} label="Address">
+                {project.address || "—"}
+                {project.city ? `, ${project.city}` : ""}
+              </Row>
+              {project.partner_name && (
+                <Row icon={User} label="Partner">{project.partner_name}</Row>
+              )}
+              {project.square_footage != null && (
+                <Row icon={Briefcase} label="Size">{project.square_footage} sqft</Row>
+              )}
+              {project.start_date && (
+                <Row icon={Calendar} label="Start">
+                  {format(parseISO(project.start_date), "MMM d, yyyy")}
+                </Row>
+              )}
+              {project.job_costs?.estimated_revenue != null && (
+                <Row icon={DollarSign} label="Revenue">
+                  ${project.job_costs.estimated_revenue.toLocaleString()}
+                  {project.job_costs.margin_percent != null && (
+                    <span className="text-muted-foreground ml-2">
+                      · {project.job_costs.margin_percent.toFixed(0)}% margin
+                    </span>
+                  )}
+                </Row>
+              )}
+              {project.next_action && (
+                <div className="rounded-md border bg-muted/40 p-2.5">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Next action</div>
+                  <div className="text-xs">{project.next_action}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-3 border-t">
+              <Button size="sm" className="w-full gap-1.5" onClick={() => onOpen(project)}>
+                <ExternalLink className="h-3.5 w-3.5" /> Open full project
+              </Button>
+            </div>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function Row({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <Icon className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="text-xs">{children}</div>
+      </div>
     </div>
   );
 }
