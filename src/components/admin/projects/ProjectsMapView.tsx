@@ -97,7 +97,7 @@ export function ProjectsMapView({ projects, onSelect }: Props) {
   const missing = projects.length - withAddress.length;
 
   return (
-    <div className="relative h-[calc(100vh-260px)] min-h-[500px] rounded-lg border overflow-hidden">
+    <div className="relative h-[calc(100dvh-340px)] min-h-[420px] max-h-[720px] rounded-lg border overflow-hidden">
       {loading && (
         <div className="absolute top-3 right-3 z-[500] flex items-center gap-2 rounded-md bg-background/90 backdrop-blur px-3 py-1.5 text-xs border shadow">
           <Loader2 className="h-3 w-3 animate-spin" /> Geocoding addresses...
