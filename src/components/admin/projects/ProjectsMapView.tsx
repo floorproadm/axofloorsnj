@@ -6,9 +6,12 @@ import "leaflet/dist/leaflet.css";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { MapPin, Loader2, ExternalLink, Calendar, User, Briefcase, DollarSign } from "lucide-react";
+import { MapPin, Loader2, ExternalLink, Calendar, User, Briefcase, DollarSign, Palette } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { HubProject } from "@/hooks/useProjectsHub";
+
+type ColorMode = "status" | "source";
+const COLOR_MODE_KEY = "projects-map-color-mode";
 
 const STATUS_COLORS: Record<string, string> = {
   planning: "#64748b",
@@ -20,7 +23,31 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "#ef4444",
 };
 
-const colorFor = (s: string) => STATUS_COLORS[s] ?? "#6366f1";
+const SOURCE_COLORS = {
+  partner: "#a855f7", // purple — partner referral
+  direct: "#f97316", // orange — direct customer
+};
+
+const isPartner = (p: HubProject) => !!p.partner_name;
+
+function colorFor(p: HubProject, mode: ColorMode): string {
+  if (mode === "source") return isPartner(p) ? SOURCE_COLORS.partner : SOURCE_COLORS.direct;
+  return STATUS_COLORS[p.project_status] ?? "#6366f1";
+}
+
+const LEGENDS: Record<ColorMode, { color: string; label: string }[]> = {
+  status: [
+    { color: STATUS_COLORS.planning, label: "Planning" },
+    { color: STATUS_COLORS.in_progress, label: "In Progress" },
+    { color: STATUS_COLORS.completed, label: "Completed" },
+    { color: STATUS_COLORS.awaiting_payment, label: "Awaiting Pmt" },
+    { color: STATUS_COLORS.paid, label: "Paid" },
+  ],
+  source: [
+    { color: SOURCE_COLORS.partner, label: "Partner referral" },
+    { color: SOURCE_COLORS.direct, label: "Direct customer" },
+  ],
+};
 
 function makePin(color: string) {
   const html = `
