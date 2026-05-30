@@ -57,12 +57,13 @@ export function useAllOrgPhotos() {
 export function useUploadProjectPhoto() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ file, projectId }: { file: File; projectId: string }) => {
+    mutationFn: async ({ file, projectId, skipWatermark = false }: { file: File; projectId: string; skipWatermark?: boolean }) => {
       // 1. Geolocation (best-effort, parallel with watermark)
       const [pos, watermarked] = await Promise.all([
         getCurrentPosition(),
-        applyWatermark(file),
+        skipWatermark ? Promise.resolve(file) : applyWatermark(file),
       ]);
+
 
       let latitude: number | null = null;
       let longitude: number | null = null;

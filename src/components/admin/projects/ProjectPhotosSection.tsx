@@ -1,10 +1,12 @@
-import { useRef, useState } from "react";
-import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil, Play, Video as VideoIcon, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { format, isToday, isYesterday } from "date-fns";
 import {
   useProjectPhotos,
   useUploadProjectPhoto,
@@ -15,39 +17,61 @@ import {
   useBeforeAfterPairs,
   useDeleteBeforeAfterPair,
 } from "@/hooks/useBeforeAfter";
+import {
+  useMediaFiles,
+  useDeleteMedia,
+  getMediaSignedUrls,
+  type MediaFile,
+} from "@/hooks/useMediaFiles";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { NewBeforeAfterDialog } from "./NewBeforeAfterDialog";
 import { PhotoAnnotator } from "./PhotoAnnotator";
-import { ProjectProgressGallery } from "@/components/admin/ProjectProgressGallery";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   projectId: string;
 }
 
+type TimelineItem =
+  | { kind: "photo"; at: string; data: ProjectPhoto }
+  | { kind: "media"; at: string; data: MediaFile };
+
 export function ProjectPhotosSection({ projectId }: Props) {
-  const { data: photos = [], isLoading } = useProjectPhotos(projectId);
+  const { data: photos = [], isLoading: loadingPhotos } = useProjectPhotos(projectId);
+  const { data: mediaList = [], isLoading: loadingMedia } = useMediaFiles({
+    projectId,
+    folderType: "job_progress",
+  });
   const { data: pairs = [] } = useBeforeAfterPairs(projectId);
   const upload = useUploadProjectPhoto();
   const del = useDeleteProjectPhoto();
+  const delMedia = useDeleteMedia();
   const delPair = useDeleteBeforeAfterPair();
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [preview, setPreview] = useState<ProjectPhoto | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<MediaFile | null>(null);
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
+  const [applyWm, setApplyWm] = useState(true);
+  const [urlMap, setUrlMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (mediaList.length === 0) return;
+    getMediaSignedUrls(mediaList.map((m) => m.storage_path), 3600).then(setUrlMap);
+  }, [mediaList]);
 
   async function handleFiles(list: FileList | null) {
     if (!list) return;
     const files = Array.from(list);
     for (const f of files) {
       try {
-        await upload.mutateAsync({ file: f, projectId });
+        await upload.mutateAsync({ file: f, projectId, skipWatermark: !applyWm });
       } catch (e: any) {
         toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
       }
     }
-    toast({ title: `${files.length} foto(s) adicionada(s)` });
+    toast({ title: `${files.length} arquivo(s) adicionado(s)` });
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -57,6 +81,32 @@ export function ProjectPhotosSection({ projectId }: Props) {
     toast({ title: "Link copiado", description: url });
   }
 
+  // Unified chronological timeline grouped by day
+  const grouped = useMemo(() => {
+    const items: TimelineItem[] = [
+      ...photos.map((p) => ({ kind: "photo" as const, at: p.taken_at || p.created_at, data: p })),
+      ...mediaList.map((m) => ({ kind: "media" as const, at: m.created_at, data: m })),
+    ].sort((a, b) => +new Date(b.at) - +new Date(a.at));
+
+    const map = new Map<string, TimelineItem[]>();
+    items.forEach((it) => {
+      const day = format(new Date(it.at), "yyyy-MM-dd");
+      if (!map.has(day)) map.set(day, []);
+      map.get(day)!.push(it);
+    });
+    return Array.from(map.entries());
+  }, [photos, mediaList]);
+
+  function labelDay(day: string) {
+    const d = new Date(day);
+    if (isToday(d)) return "Hoje";
+    if (isYesterday(d)) return "Ontem";
+    return format(d, "EEE, dd MMM");
+  }
+
+  const totalItems = photos.length + mediaList.length;
+  const loading = loadingPhotos || loadingMedia;
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -64,7 +114,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
           <Camera className="h-5 w-5" />
           Mídia do Job
           <span className="text-xs font-normal text-muted-foreground tabular-nums">
-            {photos.length} foto{photos.length === 1 ? "" : "s"} · {pairs.length} before/after
+            {totalItems} item{totalItems === 1 ? "" : "s"} · {pairs.length} before/after
           </span>
         </CardTitle>
       </CardHeader>
@@ -72,60 +122,91 @@ export function ProjectPhotosSection({ projectId }: Props) {
         <Tabs defaultValue="progress" className="w-full">
           <TabsList className="bg-navy/40 border border-gold/20">
             <TabsTrigger value="progress" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Progresso</TabsTrigger>
-            <TabsTrigger value="all" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Campo</TabsTrigger>
             <TabsTrigger value="ba" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Before &amp; After</TabsTrigger>
           </TabsList>
 
-          {/* ============ PROGRESS (media_files timeline) ============ */}
-          <TabsContent value="progress" className="pt-3">
-            <ProjectProgressGallery projectId={projectId} />
-          </TabsContent>
-
-          {/* ============ FIELD PHOTOS (geo + watermark) ============ */}
-          <TabsContent value="all" className="space-y-3 pt-3">
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => inputRef.current?.click()}
-                disabled={upload.isPending}
-              >
-                {upload.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                ) : (
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
-                )}
-                Adicionar Foto
-              </Button>
-              <input
-                ref={inputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => handleFiles(e.target.files)}
-              />
+          {/* ============ PROGRESSO (project_photos + media_files timeline) ============ */}
+          <TabsContent value="progress" className="space-y-3 pt-3">
+            <div className="rounded-lg border border-gold/20 bg-navy/30 p-3 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => inputRef.current?.click()}
+                  disabled={upload.isPending}
+                >
+                  {upload.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  ) : (
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  )}
+                  Adicionar foto
+                </Button>
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+                <div className="flex-1" />
+                <div className="flex items-center gap-2 rounded-md border border-gold/30 bg-background/60 px-2.5 py-1.5">
+                  <ShieldCheck className={`h-3.5 w-3.5 ${applyWm ? "text-gold" : "text-muted-foreground"}`} />
+                  <Label htmlFor="wm-toggle" className="text-xs font-medium cursor-pointer select-none">
+                    Watermark AXO FLOORS
+                  </Label>
+                  <Switch id="wm-toggle" checked={applyWm} onCheckedChange={setApplyWm} />
+                </div>
+              </div>
               <p className="text-[11px] text-muted-foreground">
-                Watermark Axo Floors aplicado automaticamente. Localização e timestamp capturados.
+                {applyWm
+                  ? "Watermark AXO FLOORS será aplicado. Localização e timestamp capturados automaticamente."
+                  : "Upload sem watermark. Localização e timestamp ainda são capturados."}
               </p>
             </div>
 
-            {isLoading ? (
+            {loading ? (
               <div className="text-sm text-muted-foreground py-8 text-center">Carregando…</div>
-            ) : photos.length === 0 ? (
+            ) : totalItems === 0 ? (
               <div className="border-2 border-dashed rounded-lg p-10 text-center text-sm text-muted-foreground">
-                Nenhuma foto ainda. Documente o job com fotos timestampadas e geolocalizadas.
+                Nenhum registro ainda. Documente o job cronologicamente com fotos do campo.
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {photos.map((p) => (
-                  <PhotoCard
-                    key={p.id}
-                    photo={p}
-                    onOpen={() => setPreview(p)}
-                    onDelete={() => {
-                      if (confirm("Excluir esta foto?")) del.mutate(p);
-                    }}
-                  />
+              <div className="space-y-5">
+                {grouped.map(([day, items]) => (
+                  <div key={day} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {labelDay(day)}
+                      </h4>
+                      <span className="text-[10px] text-muted-foreground/60 tabular-nums">· {items.length}</span>
+                      <div className="flex-1 h-px bg-border/60" />
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {items.map((it) =>
+                        it.kind === "photo" ? (
+                          <PhotoCard
+                            key={`p-${it.data.id}`}
+                            photo={it.data}
+                            onOpen={() => setPreview(it.data)}
+                            onDelete={() => {
+                              if (confirm("Excluir esta foto?")) del.mutate(it.data);
+                            }}
+                          />
+                        ) : (
+                          <MediaCard
+                            key={`m-${it.data.id}`}
+                            media={it.data}
+                            url={urlMap[it.data.storage_path]}
+                            onOpen={() => setMediaPreview(it.data)}
+                            onDelete={() => {
+                              if (confirm("Excluir este arquivo?")) delMedia.mutate(it.data);
+                            }}
+                          />
+                        )
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -195,7 +276,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
         </Tabs>
       </CardContent>
 
-      {/* Lightbox */}
+      {/* Lightbox - project_photos */}
       {preview && (
         <div
           className="fixed inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center p-4"
@@ -228,6 +309,34 @@ export function ProjectPhotosSection({ projectId }: Props) {
                   Fechar
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox - media_files */}
+      {mediaPreview && (
+        <div
+          className="fixed inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center p-4"
+          onClick={() => setMediaPreview(null)}
+        >
+          <div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+            {mediaPreview.file_type === "video" ? (
+              <video
+                src={urlMap[mediaPreview.storage_path]}
+                controls
+                autoPlay
+                className="max-h-[85vh] max-w-full mx-auto rounded"
+              />
+            ) : (
+              <img
+                src={urlMap[mediaPreview.storage_path]}
+                alt=""
+                className="max-h-[85vh] max-w-full mx-auto object-contain rounded"
+              />
+            )}
+            <div className="text-center mt-3">
+              <Button variant="outline" size="sm" onClick={() => setMediaPreview(null)}>Fechar</Button>
             </div>
           </div>
         </div>
@@ -290,6 +399,60 @@ function PhotoCard({
             <span className="truncate">{photo.location_label}</span>
           </p>
         )}
+      </div>
+    </div>
+  );
+}
+
+function MediaCard({
+  media,
+  url,
+  onOpen,
+  onDelete,
+}: {
+  media: MediaFile;
+  url?: string;
+  onOpen: () => void;
+  onDelete: () => void;
+}) {
+  const isVideo = media.file_type === "video";
+  return (
+    <div
+      className="group relative aspect-square rounded-md overflow-hidden bg-muted border border-border/60 cursor-pointer"
+      onClick={onOpen}
+    >
+      {url ? (
+        isVideo ? (
+          <>
+            <video src={url} className="w-full h-full object-cover" preload="metadata" muted />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <Play className="h-6 w-6 text-white drop-shadow" />
+            </div>
+            <Badge className="absolute top-1 left-1 h-5 text-[9px] px-1.5 gap-0.5 bg-background/90 text-foreground border-0">
+              <VideoIcon className="h-2.5 w-2.5" /> Vídeo
+            </Badge>
+          </>
+        ) : (
+          <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+        )
+      ) : (
+        <div className="w-full h-full animate-pulse bg-muted" />
+      )}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+        className="absolute top-1 right-1 h-6 w-6 rounded bg-background/85 backdrop-blur opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
+      >
+        <Trash2 className="h-3 w-3" />
+      </button>
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 pt-6 pb-1">
+        <p className="text-[10px] text-white tabular-nums flex items-center gap-1">
+          <Clock className="h-2.5 w-2.5" />
+          {format(new Date(media.created_at), "dd/MM HH:mm")}
+        </p>
       </div>
     </div>
   );
