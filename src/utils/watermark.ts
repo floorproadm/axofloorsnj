@@ -63,25 +63,39 @@ export async function applyWatermark(file: File): Promise<File> {
     const config = await loadConfig();
     if (!config.enabled) return file;
 
-    const dataUrl = await fileToDataURL(file);
-    const img = await loadImage(dataUrl);
+    // Faster decode path: createImageBitmap avoids FileReader -> dataURL -> Image
+    let bitmap: ImageBitmap | HTMLImageElement;
+    let srcW: number;
+    let srcH: number;
+    try {
+      const bm = await createImageBitmap(file);
+      bitmap = bm;
+      srcW = bm.width;
+      srcH = bm.height;
+    } catch {
+      const dataUrl = await fileToDataURL(file);
+      const img = await loadImage(dataUrl);
+      bitmap = img;
+      srcW = img.width;
+      srcH = img.height;
+    }
 
     const MAX = 1920;
-    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
-    const w = Math.round(img.width * scale);
-    const h = Math.round(img.height * scale);
+    const scale = Math.min(1, MAX / Math.max(srcW, srcH));
+    const w = Math.round(srcW * scale);
+    const h = Math.round(srcH * scale);
 
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) return file;
-    ctx.drawImage(img, 0, 0, w, h);
+    ctx.drawImage(bitmap as any, 0, 0, w, h);
+    if ("close" in bitmap) (bitmap as ImageBitmap).close();
 
     const margin = Math.max(10, Math.round(w * 0.012));
 
     if (config.imageUrl) {
-      // Image watermark
       try {
         const wmImg = await loadImage(config.imageUrl, true);
         const targetW = Math.round(w * 0.18);
@@ -92,7 +106,6 @@ export async function applyWatermark(file: File): Promise<File> {
         ctx.drawImage(wmImg, x, y, targetW, targetH);
         ctx.globalAlpha = 1;
       } catch (e) {
-        // Fallback to text if image fails
         drawTextWatermark(ctx, w, h, config.position, margin);
       }
     } else {
@@ -174,27 +187,45 @@ function roundRect(
   ctx.closePath();
 }
 
+// Cache geolocation across an upload batch so we don't prompt + wait per file
+let cachedPos: { pos: GeolocationPosition | null; at: number } | null = null;
+const POS_TTL_MS = 5 * 60 * 1000;
+
 export async function getCurrentPosition(): Promise<GeolocationPosition | null> {
-  if (typeof navigator === "undefined" || !navigator.geolocation) return null;
-  return new Promise((res) => {
+  if (cachedPos && Date.now() - cachedPos.at < POS_TTL_MS) return cachedPos.pos;
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    cachedPos = { pos: null, at: Date.now() };
+    return null;
+  }
+  const pos = await new Promise<GeolocationPosition | null>((res) => {
     navigator.geolocation.getCurrentPosition(
       (p) => res(p),
       () => res(null),
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+      { enableHighAccuracy: false, timeout: 4000, maximumAge: 5 * 60 * 1000 }
     );
   });
+  cachedPos = { pos, at: Date.now() };
+  return pos;
 }
+
+// Cache reverse-geocode results by rounded coords (covers all photos at the same site)
+const geoLabelCache = new Map<string, string | null>();
 
 export async function reverseGeocode(
   lat: number,
   lon: number
 ): Promise<string | null> {
+  const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
+  if (geoLabelCache.has(key)) return geoLabelCache.get(key)!;
   try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 2500);
     const r = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=16&addressdetails=1`,
-      { headers: { "Accept-Language": "en" } }
+      { headers: { "Accept-Language": "en" }, signal: ctrl.signal }
     );
-    if (!r.ok) return null;
+    clearTimeout(timer);
+    if (!r.ok) { geoLabelCache.set(key, null); return null; }
     const j = await r.json();
     const a = j.address || {};
     const parts = [
@@ -204,8 +235,11 @@ export async function reverseGeocode(
       a.city || a.town || a.village,
       a.state,
     ].filter(Boolean);
-    return parts.join(", ") || j.display_name || null;
+    const label = parts.join(", ") || j.display_name || null;
+    geoLabelCache.set(key, label);
+    return label;
   } catch {
+    geoLabelCache.set(key, null);
     return null;
   }
 }
