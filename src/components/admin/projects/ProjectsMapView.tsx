@@ -5,7 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { MapPin, Loader2, ExternalLink, Calendar, User, Briefcase, DollarSign, Palette } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { HubProject } from "@/hooks/useProjectsHub";
@@ -218,7 +218,7 @@ function MapDetailPanel({
 }) {
   const pinColor = project ? colorFor(project, colorMode) : "#6366f1";
   return (
-    <Sheet open={!!project} onOpenChange={(o) => !o && onClose()}>
+    <Sheet modal={false} open={!!project} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
         side="right"
         className="w-full sm:w-[380px] sm:max-w-[380px] p-0 flex flex-col pb-[88px] sm:pb-0"
@@ -232,6 +232,9 @@ function MapDetailPanel({
                   style={{ background: pinColor }}
                 />
                 <SheetTitle className="text-base leading-tight">{project.customer_name}</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Project details for the selected map pin, including address, source, schedule, revenue, and next action.
+                </SheetDescription>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Badge
