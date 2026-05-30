@@ -20,6 +20,7 @@ import {
   useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
+  repairHeicMediaFile,
   type MediaFile,
 } from "@/hooks/useMediaFiles";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
@@ -64,6 +65,16 @@ export function ProjectPhotosSection({ projectId }: Props) {
     if (mediaList.length === 0) return;
     getMediaSignedUrls(mediaList.map((m) => m.storage_path), 3600).then(setUrlMap);
   }, [mediaList]);
+
+  useEffect(() => {
+    const brokenHeic = mediaList.filter((m) => /\.hei[cf]$/i.test(m.storage_path));
+    if (brokenHeic.length === 0) return;
+    brokenHeic.forEach((m) => {
+      repairHeicMediaFile(m)
+        .then(() => queryClient.invalidateQueries({ queryKey: ["media-files"] }))
+        .catch((err) => console.error("HEIC repair failed:", err));
+    });
+  }, [mediaList, queryClient]);
 
   async function handleFiles(list: FileList | null) {
     if (!list) return;
