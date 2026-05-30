@@ -38,12 +38,11 @@ const fmt = (v: number) =>
 export default function CrewsVans() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState<"crew" | "schedule" | "vans" | "payroll">(
+  const [tab, setTab] = useState<"crew" | "schedule" | "payroll">(
     (searchParams.get("tab") as any) || "crew"
   );
   const [showNewCrew, setShowNewCrew] = useState(false);
   const [editingCrewId, setEditingCrewId] = useState<string | null>(null);
-  const [showNewVan, setShowNewVan] = useState(false);
   const [payrollPeriodType, setPayrollPeriodType] = useState<PeriodType>("month");
   const [payrollAnchor, setPayrollAnchor] = useState(() => new Date());
   const [filterPaid, setFilterPaid] = useState<"all" | "paid" | "unpaid">("all");
