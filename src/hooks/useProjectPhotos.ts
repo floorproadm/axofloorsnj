@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { applyWatermark, getCurrentPosition, reverseGeocode } from "@/utils/watermark";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { convertHeicToJpeg, isHeicFile } from "@/utils/heicConverter";
 
@@ -63,29 +62,11 @@ export function useUploadProjectPhoto() {
       const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(nameLower);
       const isHeic = isHeicFile(file);
 
-      // Convert HEIC/HEIF to JPEG client-side so browsers can display it (and we can watermark)
-      const workingFile = isHeic ? await convertHeicToJpeg(file) : file;
+      // Fast path: skip watermark, GPS, and reverse geocoding during upload.
+      // HEIC still needs conversion here because project_photos renders public image URLs.
+      const workingFile = isHeic && !isVideo ? await convertHeicToJpeg(file) : file;
       if (isHeic && isHeicFile(workingFile)) {
         throw new Error("HEIC não foi convertido para JPG. Tente novamente ou envie JPG/PNG.");
-      }
-
-      // Canvas/watermark only works on standard browser-decodable images
-      const canWatermark = !isVideo;
-
-      // 1. Geolocation (best-effort) + watermark in parallel when applicable
-      const [pos, processed] = await Promise.all([
-        getCurrentPosition(),
-        canWatermark ? applyWatermark(workingFile) : Promise.resolve(workingFile),
-      ]);
-
-      let latitude: number | null = null;
-      let longitude: number | null = null;
-      let location_label: string | null = "Localização não disponível";
-      if (pos) {
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-        const label = await reverseGeocode(latitude, longitude);
-        location_label = label || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
       }
 
       // 2. Upload to bucket — preserve extension/content-type
@@ -94,14 +75,12 @@ export function useUploadProjectPhoto() {
       const workingNameLower = workingFile.name.toLowerCase();
       const extMatch = workingNameLower.match(/\.([a-z0-9]+)$/);
       const rawExt = extMatch?.[1] ?? (isVideo ? "mp4" : "bin");
-      const ext = canWatermark ? "jpg" : rawExt.replace(/^hei[cf]$/i, "jpg");
+      const ext = rawExt.replace(/^hei[cf]$/i, "jpg");
       const path = `${projectId}/${ts}-${rand}.${ext}`;
-      const contentType = canWatermark
-        ? "image/jpeg"
-        : (file.type || (isVideo ? "video/mp4" : "application/octet-stream"));
+      const contentType = workingFile.type || file.type || (isVideo ? "video/mp4" : "image/jpeg");
       const { error: upErr } = await supabase.storage
         .from(BUCKET)
-        .upload(path, processed, { cacheControl: "3600", upsert: false, contentType });
+        .upload(path, workingFile, { cacheControl: "3600", upsert: false, contentType });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
       const photo_url = pub.publicUrl;
@@ -116,9 +95,9 @@ export function useUploadProjectPhoto() {
           organization_id: AXO_ORG_ID,
           photo_url,
           taken_at: new Date().toISOString(),
-          latitude,
-          longitude,
-          location_label,
+          latitude: null,
+          longitude: null,
+          location_label: "Localização não disponível",
           uploaded_by: user?.user?.id ?? null,
         } as any)
         .select()

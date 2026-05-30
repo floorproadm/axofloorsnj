@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format, isToday, isYesterday } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useProjectPhotos,
-  useUploadProjectPhoto,
   useDeleteProjectPhoto,
   type ProjectPhoto,
 } from "@/hooks/useProjectPhotos";
@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useBeforeAfter";
 import {
   useMediaFiles,
+  useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
   type MediaFile,
@@ -46,12 +47,13 @@ export function ProjectPhotosSection({ projectId }: Props) {
     folderType: "job_progress",
   });
   const { data: pairs = [] } = useBeforeAfterPairs(projectId);
-  const upload = useUploadProjectPhoto();
+  const uploadMedia = useUploadMedia();
   const del = useDeleteProjectPhoto();
   const delMedia = useDeleteMedia();
   const delPair = useDeleteBeforeAfterPair();
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
@@ -69,22 +71,29 @@ export function ProjectPhotosSection({ projectId }: Props) {
     // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
     const CONCURRENCY = 3;
     let okCount = 0;
-    let failCount = 0;
     const queue = [...files];
     const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
       while (queue.length) {
         const f = queue.shift();
         if (!f) break;
         try {
-          await upload.mutateAsync({ file: f, projectId });
+          await uploadMedia.mutateAsync({
+            file: f,
+            projectId,
+            folderType: "job_progress",
+            visibility: "internal",
+            sourceType: "admin_upload",
+            silent: true,
+            deferInvalidate: true,
+          });
           okCount++;
         } catch (e: any) {
-          failCount++;
           toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
         }
       }
     });
     await Promise.all(workers);
+    if (okCount > 0) queryClient.invalidateQueries({ queryKey: ["media-files"] });
     if (okCount > 0) toast({ title: `${okCount} arquivo(s) adicionado(s)` });
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -169,9 +178,9 @@ export function ProjectPhotosSection({ projectId }: Props) {
             <Button
               size="sm"
               onClick={() => inputRef.current?.click()}
-              disabled={upload.isPending}
+              disabled={uploadMedia.isPending}
             >
-              {upload.isPending ? (
+              {uploadMedia.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
               ) : (
                 <Plus className="h-3.5 w-3.5 mr-1.5" />
