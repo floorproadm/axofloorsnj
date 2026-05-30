@@ -30,7 +30,7 @@ const ROLES = [
   "Sanding & Refinishing", "Hardwood Installation", "Vinyl/LVP",
   "Laminate", "Tile", "Demolition", "Trim & Molding", "Supervisor"
 ];
-const VAN_STATUSES = ["Available", "In Use", "Maintenance", "Out of Service"];
+
 
 const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
