@@ -200,17 +200,18 @@ async function replaceHeicWithJpeg(media: MediaFile, file: File) {
   await supabase.storage.from("media").remove([media.storage_path]);
 }
 
-export async function repairHeicMediaFile(media: MediaFile) {
-  if (!isHeicPath(media.storage_path)) return;
+export async function repairHeicMediaFile(media: MediaFile): Promise<boolean> {
+  if (!isHeicPath(media.storage_path)) return false;
   const signedUrl = await getMediaSignedUrl(media.storage_path, 600);
-  if (!signedUrl) return;
+  if (!signedUrl) return false;
   const response = await fetch(signedUrl);
-  if (!response.ok) return;
+  if (!response.ok) return false;
   const blob = await response.blob();
   const file = new File([blob], media.metadata?.original_name || "upload.heic", {
     type: blob.type || "image/heic",
   });
   await replaceHeicWithJpeg(media, file);
+  return true;
 }
 
 // --- Upload mutation ---
