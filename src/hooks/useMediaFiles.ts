@@ -41,6 +41,7 @@ export interface UploadMediaParams {
   folderType?: string;
   displayOrder?: number;
   metadata?: Record<string, any>;
+  silent?: boolean;
 }
 
 // --- Query hook ---
@@ -125,6 +126,18 @@ function detectFileType(file: File): "image" | "video" | "pdf" {
   return "image";
 }
 
+function getUploadContentType(file: File): string {
+  if (file.type) return file.type;
+  const name = file.name.toLowerCase();
+  if (/\.hei[cf]$/.test(name)) return "image/heic";
+  if (/\.mov$/.test(name)) return "video/quicktime";
+  if (/\.mp4$/.test(name)) return "video/mp4";
+  if (/\.jpe?g$/.test(name)) return "image/jpeg";
+  if (/\.png$/.test(name)) return "image/png";
+  if (/\.webp$/.test(name)) return "image/webp";
+  return "application/octet-stream";
+}
+
 // --- Upload mutation ---
 export function useUploadMedia() {
   const queryClient = useQueryClient();
@@ -136,10 +149,17 @@ export function useUploadMedia() {
       const storagePath = buildStoragePath(params, ext);
       const fileType = detectFileType(params.file);
 
-      // Upload to storage
+      const { data: userData } = await supabase.auth.getUser();
+
+      // Fast path: upload the original file immediately. No HEIC conversion,
+      // watermark, GPS lookup, or reverse-geocoding in the critical path.
       const { error: uploadError } = await supabase.storage
         .from("media")
-        .upload(storagePath, params.file);
+        .upload(storagePath, params.file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: getUploadContentType(params.file),
+        });
       if (uploadError) throw uploadError;
 
       // Insert record
@@ -155,6 +175,7 @@ export function useUploadMedia() {
           storage_path: storagePath,
           display_order: params.displayOrder || 0,
           metadata: params.metadata || {},
+          uploaded_by: userData.user?.id || null,
         })
         .select()
         .single();
@@ -162,9 +183,9 @@ export function useUploadMedia() {
 
       return data as MediaFile;
     },
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ["media-files"] });
-      toast({ title: "Arquivo enviado com sucesso" });
+      if (!vars.silent) toast({ title: "Arquivo enviado com sucesso" });
     },
     onError: (err: any) => {
       toast({
