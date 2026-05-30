@@ -42,6 +42,7 @@ export interface UploadMediaParams {
   displayOrder?: number;
   metadata?: Record<string, any>;
   silent?: boolean;
+  deferInvalidate?: boolean;
 }
 
 // --- Query hook ---
@@ -184,15 +185,17 @@ export function useUploadMedia() {
       return data as MediaFile;
     },
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ["media-files"] });
+      if (!vars.deferInvalidate) queryClient.invalidateQueries({ queryKey: ["media-files"] });
       if (!vars.silent) toast({ title: "Arquivo enviado com sucesso" });
     },
-    onError: (err: any) => {
-      toast({
-        title: "Erro no upload",
-        description: err.message,
-        variant: "destructive",
-      });
+    onError: (err: any, vars) => {
+      if (!vars?.silent) {
+        toast({
+          title: "Erro no upload",
+          description: err.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 }
