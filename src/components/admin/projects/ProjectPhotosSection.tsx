@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2 } from "lucide-react";
+import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import {
   useProjectPhotos,
@@ -16,6 +17,7 @@ import {
 } from "@/hooks/useBeforeAfter";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { NewBeforeAfterDialog } from "./NewBeforeAfterDialog";
+import { PhotoAnnotator } from "./PhotoAnnotator";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
@@ -31,6 +33,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [preview, setPreview] = useState<ProjectPhoto | null>(null);
+  const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
 
   async function handleFiles(list: FileList | null) {
@@ -193,7 +196,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
         >
           <div className="max-w-5xl w-full space-y-3" onClick={(e) => e.stopPropagation()}>
             <img
-              src={preview.photo_url}
+              src={preview.annotated_url || preview.photo_url}
               alt=""
               className="max-h-[80vh] mx-auto object-contain rounded"
             />
@@ -206,12 +209,29 @@ export function ProjectPhotosSection({ projectId }: Props) {
                 <MapPin className="h-3.5 w-3.5" />
                 {preview.location_label || "Localização não disponível"}
               </p>
-              <Button variant="outline" size="sm" onClick={() => setPreview(null)}>
-                Fechar
-              </Button>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <Button
+                  size="sm"
+                  onClick={() => { setAnnotating(preview); setPreview(null); }}
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                  Anotar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setPreview(null)}>
+                  Fechar
+                </Button>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {annotating && (
+        <PhotoAnnotator
+          photo={annotating}
+          imageUrl={annotating.photo_url}
+          onClose={() => setAnnotating(null)}
+        />
       )}
     </Card>
   );
@@ -232,11 +252,16 @@ function PhotoCard({
       onClick={onOpen}
     >
       <img
-        src={photo.photo_url}
+        src={photo.annotated_url || photo.photo_url}
         alt=""
         className="w-full h-full object-cover"
         loading="lazy"
       />
+      {photo.annotated_url && (
+        <Badge className="absolute top-1 left-1 h-5 text-[9px] px-1.5 bg-primary/90 backdrop-blur">
+          Anotada
+        </Badge>
+      )}
       <button
         type="button"
         onClick={(e) => {

@@ -9,6 +9,7 @@ export interface ProjectPhoto {
   organization_id: string;
   photo_url: string;
   thumbnail_url: string | null;
+  annotated_url: string | null;
   taken_at: string;
   latitude: number | null;
   longitude: number | null;

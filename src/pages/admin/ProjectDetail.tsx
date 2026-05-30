@@ -21,6 +21,8 @@ import { MaterialsSection, LaborSection } from '@/components/admin/projects/Full
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectPhotosSection } from '@/components/admin/projects/ProjectPhotosSection';
+import { ProjectChecklistTab } from '@/components/admin/projects/ProjectChecklistTab';
+import { ProjectTechSheet } from '@/components/admin/projects/ProjectTechSheet';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
 import {
@@ -209,6 +211,8 @@ export default function ProjectDetail() {
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
             <TabsTrigger value="proof">Job Proof</TabsTrigger>
             <TabsTrigger value="photos">Fotos</TabsTrigger>
+            <TabsTrigger value="checklist">Checklist</TabsTrigger>
+            <TabsTrigger value="tech">Ficha Técnica</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
           </TabsList>
@@ -415,6 +419,17 @@ export default function ProjectDetail() {
           <TabsContent value="photos">
             <ProjectPhotosSection projectId={project.id} />
           </TabsContent>
+
+          {/* CHECKLIST */}
+          <TabsContent value="checklist">
+            <ProjectChecklistTab projectId={project.id} />
+          </TabsContent>
+
+          {/* TECH SHEET */}
+          <TabsContent value="tech">
+            <ProjectTechSheet projectId={project.id} project={project} />
+          </TabsContent>
+
 
           {/* CHAT */}
           <TabsContent value="chat">
