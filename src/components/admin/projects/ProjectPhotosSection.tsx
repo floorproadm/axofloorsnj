@@ -137,19 +137,19 @@ export function ProjectPhotosSection({ projectId }: Props) {
                   ) : (
                     <Plus className="h-3.5 w-3.5 mr-1.5" />
                   )}
-                  Adicionar foto
+                  Adicionar mídia
                 </Button>
                 <input
                   ref={inputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,image/heic,image/heif,video/*,.heic,.heif,.mov,.mp4,.m4v,.webm"
                   multiple
                   className="hidden"
                   onChange={(e) => handleFiles(e.target.files)}
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Watermark, localização e timestamp aplicados conforme configuração em <span className="text-white font-medium">Settings → Watermark</span>.
+                Aceita fotos (JPG, PNG, HEIC) e vídeos (MP4, MOV, WebM). Watermark, localização e timestamp aplicados em fotos conforme <span className="text-white font-medium">Settings → Watermark</span>. Vídeos e HEIC são enviados sem watermark.
               </p>
             </div>
 
