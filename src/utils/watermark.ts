@@ -1,9 +1,68 @@
+import { supabase } from "@/integrations/supabase/client";
+
+type WatermarkPosition = "bottom-right" | "bottom-left" | "bottom-center";
+
+interface WatermarkConfig {
+  enabled: boolean;
+  imageUrl: string | null;
+  position: WatermarkPosition;
+}
+
+let cachedConfig: WatermarkConfig | null = null;
+let cachedAt = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+async function loadConfig(): Promise<WatermarkConfig> {
+  if (cachedConfig && Date.now() - cachedAt < CACHE_TTL_MS) return cachedConfig;
+  const { data } = await supabase
+    .from("company_settings")
+    .select("watermark_enabled, watermark_image_url, watermark_position")
+    .limit(1)
+    .maybeSingle();
+  cachedConfig = {
+    enabled: (data as any)?.watermark_enabled ?? true,
+    imageUrl: (data as any)?.watermark_image_url ?? null,
+    position: ((data as any)?.watermark_position as WatermarkPosition) ?? "bottom-right",
+  };
+  cachedAt = Date.now();
+  return cachedConfig;
+}
+
+/** Invalidate cache after settings change */
+export function invalidateWatermarkConfig() {
+  cachedConfig = null;
+  cachedAt = 0;
+}
+
+function computeXY(
+  canvasW: number,
+  canvasH: number,
+  boxW: number,
+  boxH: number,
+  position: WatermarkPosition,
+  margin: number
+): { x: number; y: number } {
+  const y = canvasH - boxH - margin;
+  switch (position) {
+    case "bottom-left":
+      return { x: margin, y };
+    case "bottom-center":
+      return { x: Math.round((canvasW - boxW) / 2), y };
+    case "bottom-right":
+    default:
+      return { x: canvasW - boxW - margin, y };
+  }
+}
+
 /**
- * Applies an "AXO FLOORS" watermark to an image file using Canvas.
- * Returns a new File (JPEG, ~0.9 quality) ready to upload.
+ * Applies a watermark (custom image or fallback "AXO FLOORS" text) to an image file.
+ * Reads config from company_settings. Returns the original file if disabled or on error.
  */
 export async function applyWatermark(file: File): Promise<File> {
   try {
+    const config = await loadConfig();
+    if (!config.enabled) return file;
+
     const dataUrl = await fileToDataURL(file);
     const img = await loadImage(dataUrl);
 
@@ -19,32 +78,26 @@ export async function applyWatermark(file: File): Promise<File> {
     if (!ctx) return file;
     ctx.drawImage(img, 0, 0, w, h);
 
-    // Watermark sizing
-    const text = "AXO FLOORS";
-    const wmWidth = Math.round(w * 0.18);
-    const fontSize = Math.max(12, Math.round(wmWidth / 7));
-    const padX = Math.round(fontSize * 0.7);
-    const padY = Math.round(fontSize * 0.45);
+    const margin = Math.max(10, Math.round(w * 0.012));
 
-    ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
-    const measured = ctx.measureText(text);
-    const boxW = measured.width + padX * 2;
-    const boxH = fontSize + padY * 2;
-    const margin = 10;
-    const x = w - boxW - margin;
-    const y = h - boxH - margin;
-
-    // Background: navy semi-transparent
-    ctx.globalAlpha = 0.7;
-    ctx.fillStyle = "#0f1b3d";
-    roundRect(ctx, x, y, boxW, boxH, 6);
-    ctx.fill();
-
-    // Text: gold
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "#c9a84c";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, x + padX, y + boxH / 2 + 1);
+    if (config.imageUrl) {
+      // Image watermark
+      try {
+        const wmImg = await loadImage(config.imageUrl, true);
+        const targetW = Math.round(w * 0.18);
+        const ratio = wmImg.height / wmImg.width;
+        const targetH = Math.round(targetW * ratio);
+        const { x, y } = computeXY(w, h, targetW, targetH, config.position, margin);
+        ctx.globalAlpha = 0.92;
+        ctx.drawImage(wmImg, x, y, targetW, targetH);
+        ctx.globalAlpha = 1;
+      } catch (e) {
+        // Fallback to text if image fails
+        drawTextWatermark(ctx, w, h, config.position, margin);
+      }
+    } else {
+      drawTextWatermark(ctx, w, h, config.position, margin);
+    }
 
     const blob: Blob = await new Promise((res) =>
       canvas.toBlob((b) => res(b as Blob), "image/jpeg", 0.9)
@@ -57,6 +110,36 @@ export async function applyWatermark(file: File): Promise<File> {
   }
 }
 
+function drawTextWatermark(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  position: WatermarkPosition,
+  margin: number
+) {
+  const text = "AXO FLOORS";
+  const wmWidth = Math.round(w * 0.18);
+  const fontSize = Math.max(12, Math.round(wmWidth / 7));
+  const padX = Math.round(fontSize * 0.7);
+  const padY = Math.round(fontSize * 0.45);
+
+  ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
+  const measured = ctx.measureText(text);
+  const boxW = measured.width + padX * 2;
+  const boxH = fontSize + padY * 2;
+  const { x, y } = computeXY(w, h, boxW, boxH, position, margin);
+
+  ctx.globalAlpha = 0.7;
+  ctx.fillStyle = "#0f1b3d";
+  roundRect(ctx, x, y, boxW, boxH, 6);
+  ctx.fill();
+
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "#c9a84c";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x + padX, y + boxH / 2 + 1);
+}
+
 function fileToDataURL(f: File): Promise<string> {
   return new Promise((res, rej) => {
     const r = new FileReader();
@@ -65,9 +148,10 @@ function fileToDataURL(f: File): Promise<string> {
     r.readAsDataURL(f);
   });
 }
-function loadImage(src: string): Promise<HTMLImageElement> {
+function loadImage(src: string, crossOrigin = false): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const img = new Image();
+    if (crossOrigin) img.crossOrigin = "anonymous";
     img.onload = () => res(img);
     img.onerror = rej;
     img.src = src;
