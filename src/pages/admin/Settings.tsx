@@ -15,8 +15,9 @@ const EmailLogsSettings = lazy(() => import("@/components/admin/settings/EmailLo
 const EmailTemplateEditor = lazy(() => import("@/components/admin/settings/EmailTemplateEditor"));
 const B2BPricingSettings = lazy(() => import("@/components/admin/settings/B2BPricingSettings"));
 const TrustSettings = lazy(() => import("@/components/admin/settings/TrustSettings"));
+const DemoPortalsSettings = lazy(() => import("@/components/admin/settings/DemoPortalsSettings"));
 
-type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "trust";
+type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "trust" | "demo_portals";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
