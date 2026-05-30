@@ -65,6 +65,9 @@ export function useUploadProjectPhoto() {
 
       // Convert HEIC/HEIF to JPEG client-side so browsers can display it (and we can watermark)
       const workingFile = isHeic ? await convertHeicToJpeg(file) : file;
+      if (isHeic && isHeicFile(workingFile)) {
+        throw new Error("HEIC não foi convertido para JPG. Tente novamente ou envie JPG/PNG.");
+      }
 
       // Canvas/watermark only works on standard browser-decodable images
       const canWatermark = !isVideo;
@@ -90,7 +93,8 @@ export function useUploadProjectPhoto() {
       const rand = Math.random().toString(36).slice(2, 8);
       const workingNameLower = workingFile.name.toLowerCase();
       const extMatch = workingNameLower.match(/\.([a-z0-9]+)$/);
-      const ext = canWatermark ? "jpg" : (extMatch?.[1] ?? (isVideo ? "mp4" : "bin"));
+      const rawExt = extMatch?.[1] ?? (isVideo ? "mp4" : "bin");
+      const ext = canWatermark ? "jpg" : rawExt.replace(/^hei[cf]$/i, "jpg");
       const path = `${projectId}/${ts}-${rand}.${ext}`;
       const contentType = canWatermark
         ? "image/jpeg"
