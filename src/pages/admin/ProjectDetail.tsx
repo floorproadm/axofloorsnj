@@ -209,7 +209,6 @@ export default function ProjectDetail() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
-            <TabsTrigger value="proof">Job Proof</TabsTrigger>
             <TabsTrigger value="photos">Fotos</TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
             <TabsTrigger value="tech">Ficha Técnica</TabsTrigger>
