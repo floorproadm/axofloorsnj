@@ -202,7 +202,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
                           <PhotoCard
                             key={`p-${it.data.id}`}
                             photo={it.data}
-                            onOpen={() => setPreview(it.data)}
+                            onOpen={() => openItem(it)}
                             onDelete={() => {
                               if (confirm("Excluir esta foto?")) del.mutate(it.data);
                             }}
