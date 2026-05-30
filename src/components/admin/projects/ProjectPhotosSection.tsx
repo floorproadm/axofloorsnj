@@ -84,20 +84,47 @@ export function ProjectPhotosSection({ projectId }: Props) {
   }
 
   // Unified chronological timeline grouped by day
-  const grouped = useMemo(() => {
-    const items: TimelineItem[] = [
+  const flatTimeline = useMemo<TimelineItem[]>(() => {
+    return [
       ...photos.map((p) => ({ kind: "photo" as const, at: p.taken_at || p.created_at, data: p })),
       ...mediaList.map((m) => ({ kind: "media" as const, at: m.created_at, data: m })),
     ].sort((a, b) => +new Date(b.at) - +new Date(a.at));
+  }, [photos, mediaList]);
 
+  const grouped = useMemo(() => {
     const map = new Map<string, TimelineItem[]>();
-    items.forEach((it) => {
+    flatTimeline.forEach((it) => {
       const day = format(new Date(it.at), "yyyy-MM-dd");
       if (!map.has(day)) map.set(day, []);
       map.get(day)!.push(it);
     });
     return Array.from(map.entries());
-  }, [photos, mediaList]);
+  }, [flatTimeline]);
+
+  const currentItem = previewIndex != null ? flatTimeline[previewIndex] ?? null : null;
+  const canPrev = previewIndex != null && previewIndex > 0;
+  const canNext = previewIndex != null && previewIndex < flatTimeline.length - 1;
+
+  function openItem(it: TimelineItem) {
+    const idx = flatTimeline.findIndex((x) =>
+      x.kind === it.kind && (x.data as any).id === (it.data as any).id
+    );
+    if (idx >= 0) setPreviewIndex(idx);
+  }
+  function closePreview() { setPreviewIndex(null); }
+  function goPrev() { if (canPrev) setPreviewIndex((i) => (i ?? 0) - 1); }
+  function goNext() { if (canNext) setPreviewIndex((i) => (i ?? 0) + 1); }
+
+  useEffect(() => {
+    if (previewIndex == null) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closePreview();
+      else if (e.key === "ArrowLeft") goPrev();
+      else if (e.key === "ArrowRight") goNext();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [previewIndex, flatTimeline.length]);
 
   function labelDay(day: string) {
     const d = new Date(day);
