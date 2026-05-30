@@ -21,6 +21,8 @@ import { MaterialsSection, LaborSection } from '@/components/admin/projects/Full
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectPhotosSection } from '@/components/admin/projects/ProjectPhotosSection';
+import { ProjectChecklistTab } from '@/components/admin/projects/ProjectChecklistTab';
+import { ProjectTechSheet } from '@/components/admin/projects/ProjectTechSheet';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
 import {
