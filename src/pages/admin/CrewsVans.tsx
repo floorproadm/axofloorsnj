@@ -69,10 +69,6 @@ export default function CrewsVans() {
     employment_type: "", region: "", daily_rate: ""
   });
 
-  const [vanForm, setVanForm] = useState({
-    name: "", plate: "", year: "", make: "", model: "",
-    region: "", status: "Available", notes: ""
-  });
 
   // ─── Crew queries (with new columns) ───
   const { data: crew = [], isLoading: loadingCrew } = useQuery({
