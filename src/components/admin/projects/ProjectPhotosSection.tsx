@@ -79,6 +79,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const repairingHeicRef = useRef(new Set<string>());
   
   const [urlMap, setUrlMap] = useState<Record<string, string>>({});
 
@@ -86,6 +87,15 @@ export function ProjectPhotosSection({ projectId }: Props) {
     if (mediaList.length === 0) return;
     getMediaSignedUrls(mediaList.map((m) => m.storage_path), 3600).then(setUrlMap);
   }, [mediaList]);
+
+  useEffect(() => {
+    const pendingHeic = mediaList.filter((media) => isHeicMedia(media) && !repairingHeicRef.current.has(media.id));
+    if (pendingHeic.length === 0) return;
+    pendingHeic.forEach((media) => repairingHeicRef.current.add(media.id));
+    window.setTimeout(() => {
+      void repairUploadedHeicMedia(pendingHeic.map((media) => ({ media })), queryClient);
+    }, 750);
+  }, [mediaList, queryClient]);
 
   async function handleFiles(list: FileList | null) {
     if (!list || uploading) return;
