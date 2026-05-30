@@ -21,7 +21,7 @@ import {
   Truck,
   FolderKanban,
   Target,
-  CalendarCheck,
+  CalendarDays,
 } from "lucide-react";
 import {
   Sidebar,
