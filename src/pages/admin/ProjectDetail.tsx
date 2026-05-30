@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import { JobCostEditor } from '@/components/admin/JobCostEditor';
 import { MaterialsSection, LaborSection } from '@/components/admin/projects/FullCostsDialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
-import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
+
 import { ProjectPhotosSection } from '@/components/admin/projects/ProjectPhotosSection';
 import { ProjectChecklistTab } from '@/components/admin/projects/ProjectChecklistTab';
 import { ProjectTechSheet } from '@/components/admin/projects/ProjectTechSheet';
@@ -209,7 +209,6 @@ export default function ProjectDetail() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
-            <TabsTrigger value="proof">Job Proof</TabsTrigger>
             <TabsTrigger value="photos">Fotos</TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
             <TabsTrigger value="tech">Ficha Técnica</TabsTrigger>
@@ -398,10 +397,6 @@ export default function ProjectDetail() {
             <ProposalGenerator projectId={project.id} />
           </TabsContent>
 
-          {/* JOB PROOF */}
-          <TabsContent value="proof">
-            <ProjectProgressGallery projectId={project.id} />
-          </TabsContent>
 
           {/* DOCUMENTS */}
           <TabsContent value="documents">
