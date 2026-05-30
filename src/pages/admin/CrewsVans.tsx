@@ -535,53 +535,6 @@ export default function CrewsVans() {
         </DialogContent>
       </Dialog>
 
-      {/* ─── ADD VAN DIALOG ─── */}
-      <Dialog open={showNewVan} onOpenChange={setShowNewVan}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Truck className="w-4 h-4" /> Add Vehicle
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Van Name / ID *</Label>
-                <Input placeholder='e.g. "Van 1"' value={vanForm.name} onChange={e => setVanForm(f => ({ ...f, name: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Year</Label>
-                <Input placeholder="2022" value={vanForm.year} onChange={e => setVanForm(f => ({ ...f, year: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Make / Model</Label>
-                <Input placeholder="Ford Transit" value={vanForm.make} onChange={e => setVanForm(f => ({ ...f, make: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">License Plate</Label>
-                <Input placeholder="NJR 1234" value={vanForm.plate} onChange={e => setVanForm(f => ({ ...f, plate: e.target.value }))} />
-              </div>
-              <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Status</Label>
-                <Select value={vanForm.status} onValueChange={v => setVanForm(f => ({ ...f, status: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>{VAN_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Notes</Label>
-                <Input placeholder="Insurance, mileage..." value={vanForm.notes} onChange={e => setVanForm(f => ({ ...f, notes: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowNewVan(false)}>Cancel</Button>
-              <Button className="flex-1" disabled={!vanForm.name || addVanMutation.isPending} onClick={() => addVanMutation.mutate()}>
-                {addVanMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Van"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
       {/* ─── ADD MANUAL LABOR PAYMENT DIALOG ─── */}
       <Dialog open={showNewLabor} onOpenChange={(o) => { setShowNewLabor(o); if (!o) setLaborForm({ project_id: "", crew_member_id: "", worker_name: "", daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0], is_paid: false, notes: "" }); }}>
         <DialogContent className="max-w-md">
