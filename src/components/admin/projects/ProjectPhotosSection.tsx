@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2 } from "lucide-react";
+import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import {
   useProjectPhotos,
@@ -16,6 +17,7 @@ import {
 } from "@/hooks/useBeforeAfter";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { NewBeforeAfterDialog } from "./NewBeforeAfterDialog";
+import { PhotoAnnotator } from "./PhotoAnnotator";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
