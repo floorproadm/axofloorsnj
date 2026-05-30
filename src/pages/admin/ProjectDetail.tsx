@@ -20,6 +20,7 @@ import { JobCostEditor } from '@/components/admin/JobCostEditor';
 import { MaterialsSection, LaborSection } from '@/components/admin/projects/FullCostsDialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
+import { ProjectPhotosSection } from '@/components/admin/projects/ProjectPhotosSection';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
 import {
@@ -207,6 +208,7 @@ export default function ProjectDetail() {
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
             <TabsTrigger value="proof">Job Proof</TabsTrigger>
+            <TabsTrigger value="photos">Fotos</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
           </TabsList>
@@ -407,6 +409,11 @@ export default function ProjectDetail() {
                 <ProjectDocumentsManager projectId={project.id} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* PHOTOS */}
+          <TabsContent value="photos">
+            <ProjectPhotosSection projectId={project.id} />
           </TabsContent>
 
           {/* CHAT */}
