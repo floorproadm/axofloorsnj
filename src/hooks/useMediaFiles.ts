@@ -80,7 +80,7 @@ export async function getMediaSignedUrl(storagePath: string, expiresIn = 3600): 
     console.error("Error creating signed URL:", error);
     return null;
   }
-  return data.signedUrl;
+  return data.signedUrl || (data as any).signedURL || null;
 }
 
 // --- Batch signed URLs ---
@@ -95,8 +95,9 @@ export async function getMediaSignedUrls(paths: string[], expiresIn = 3600): Pro
   }
   const result: Record<string, string> = {};
   (data || []).forEach((item) => {
-    if (item.signedUrl && item.path) {
-      result[item.path] = item.signedUrl;
+    const signedUrl = item.signedUrl || (item as any).signedURL;
+    if (signedUrl && item.path) {
+      result[item.path] = signedUrl;
     }
   });
   return result;
