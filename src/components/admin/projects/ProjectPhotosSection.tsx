@@ -52,8 +52,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const delPair = useDeleteBeforeAfterPair();
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const [preview, setPreview] = useState<ProjectPhoto | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<MediaFile | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
   
