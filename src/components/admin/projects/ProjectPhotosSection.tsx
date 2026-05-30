@@ -359,18 +359,35 @@ function PhotoCard({
   onOpen: () => void;
   onDelete: () => void;
 }) {
+  const url = photo.annotated_url || photo.photo_url;
+  const video = isVideoUrl(url);
   return (
     <div
       className="group relative aspect-square rounded-md overflow-hidden bg-muted border border-border/60 cursor-pointer"
       onClick={onOpen}
     >
-      <img
-        src={photo.annotated_url || photo.photo_url}
-        alt=""
-        className="w-full h-full object-cover"
-        loading="lazy"
-      />
-      {photo.annotated_url && (
+      {video ? (
+        <video
+          src={url}
+          className="w-full h-full object-cover"
+          preload="metadata"
+          muted
+          playsInline
+        />
+      ) : (
+        <img
+          src={url}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      )}
+      {video && (
+        <Badge className="absolute top-1 left-1 h-5 text-[9px] px-1.5 bg-black/70 backdrop-blur text-white">
+          Vídeo
+        </Badge>
+      )}
+      {!video && photo.annotated_url && (
         <Badge className="absolute top-1 left-1 h-5 text-[9px] px-1.5 bg-primary/90 backdrop-blur">
           Anotada
         </Badge>
