@@ -46,6 +46,14 @@ export interface UploadMediaParams {
   deferInvalidate?: boolean;
 }
 
+const STORAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1`;
+
+function normalizeSignedUrl(url?: string | null): string | null {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${STORAGE_URL}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
 // --- Query hook ---
 export function useMediaFiles(filters: MediaFilters = {}) {
   return useQuery({
@@ -80,7 +88,7 @@ export async function getMediaSignedUrl(storagePath: string, expiresIn = 3600): 
     console.error("Error creating signed URL:", error);
     return null;
   }
-  return data.signedUrl || (data as any).signedURL || null;
+  return normalizeSignedUrl(data.signedUrl || (data as any).signedURL);
 }
 
 // --- Batch signed URLs ---
@@ -95,7 +103,7 @@ export async function getMediaSignedUrls(paths: string[], expiresIn = 3600): Pro
   }
   const result: Record<string, string> = {};
   (data || []).forEach((item) => {
-    const signedUrl = item.signedUrl || (item as any).signedURL;
+    const signedUrl = normalizeSignedUrl(item.signedUrl || (item as any).signedURL);
     if (signedUrl && item.path) {
       result[item.path] = signedUrl;
     }
