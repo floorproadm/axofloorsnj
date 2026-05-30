@@ -41,6 +41,13 @@ type TimelineItem =
   | { kind: "photo"; at: string; data: ProjectPhoto }
   | { kind: "media"; at: string; data: MediaFile };
 
+async function repairUploadedHeicMedia(mediaItems: MediaFile[], queryClient: ReturnType<typeof useQueryClient>) {
+  const repaired = await Promise.allSettled(mediaItems.map((media) => repairHeicMediaFile(media)));
+  if (repaired.some((result) => result.status === "fulfilled")) {
+    queryClient.invalidateQueries({ queryKey: ["media-files"] });
+  }
+}
+
 export function ProjectPhotosSection({ projectId }: Props) {
   const { data: photos = [], isLoading: loadingPhotos } = useProjectPhotos(projectId);
   const { data: mediaList = [], isLoading: loadingMedia } = useMediaFiles({
@@ -58,6 +65,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
   
   const [urlMap, setUrlMap] = useState<Record<string, string>>({});
 
@@ -66,47 +74,50 @@ export function ProjectPhotosSection({ projectId }: Props) {
     getMediaSignedUrls(mediaList.map((m) => m.storage_path), 3600).then(setUrlMap);
   }, [mediaList]);
 
-  useEffect(() => {
-    const brokenHeic = mediaList.filter((m) => /\.hei[cf]$/i.test(m.storage_path));
-    if (brokenHeic.length === 0) return;
-    brokenHeic.forEach((m) => {
-      repairHeicMediaFile(m)
-        .then(() => queryClient.invalidateQueries({ queryKey: ["media-files"] }))
-        .catch((err) => console.error("HEIC repair failed:", err));
-    });
-  }, [mediaList, queryClient]);
-
   async function handleFiles(list: FileList | null) {
-    if (!list) return;
+    if (!list || uploading) return;
     const files = Array.from(list);
-    // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
-    const CONCURRENCY = 3;
-    let okCount = 0;
-    const queue = [...files];
-    const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
-      while (queue.length) {
-        const f = queue.shift();
-        if (!f) break;
-        try {
-          await uploadMedia.mutateAsync({
-            file: f,
-            projectId,
-            folderType: "job_progress",
-            visibility: "internal",
-            sourceType: "admin_upload",
-            silent: true,
-            deferInvalidate: true,
-          });
-          okCount++;
-        } catch (e: any) {
-          toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
+    if (files.length === 0) return;
+    setUploading(true);
+    const heicToRepair: MediaFile[] = [];
+    try {
+      // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
+      const CONCURRENCY = 3;
+      let okCount = 0;
+      const queue = [...files];
+      const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
+        while (queue.length) {
+          const f = queue.shift();
+          if (!f) break;
+          try {
+            const uploaded = await uploadMedia.mutateAsync({
+              file: f,
+              projectId,
+              folderType: "job_progress",
+              visibility: "internal",
+              sourceType: "admin_upload",
+              silent: true,
+              deferInvalidate: true,
+            });
+            if (/\.hei[cf]$/i.test(uploaded.storage_path)) heicToRepair.push(uploaded);
+            okCount++;
+          } catch (e: any) {
+            toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
+          }
         }
+      });
+      await Promise.all(workers);
+      if (okCount > 0) queryClient.invalidateQueries({ queryKey: ["media-files"] });
+      if (okCount > 0) toast({ title: `${okCount} arquivo(s) adicionado(s)` });
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+      if (heicToRepair.length > 0) {
+        window.setTimeout(() => {
+          void repairUploadedHeicMedia(heicToRepair, queryClient);
+        }, 250);
       }
-    });
-    await Promise.all(workers);
-    if (okCount > 0) queryClient.invalidateQueries({ queryKey: ["media-files"] });
-    if (okCount > 0) toast({ title: `${okCount} arquivo(s) adicionado(s)` });
-    if (inputRef.current) inputRef.current.value = "";
+    }
   }
 
   function shareLink(token: string) {
@@ -189,9 +200,9 @@ export function ProjectPhotosSection({ projectId }: Props) {
             <Button
               size="sm"
               onClick={() => inputRef.current?.click()}
-              disabled={uploadMedia.isPending}
+              disabled={uploading}
             >
-              {uploadMedia.isPending ? (
+              {uploading ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
               ) : (
                 <Plus className="h-3.5 w-3.5 mr-1.5" />

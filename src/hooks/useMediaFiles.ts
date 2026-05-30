@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { convertHeicToJpeg, isHeicFile } from "@/utils/heicConverter";
+import { convertHeicToJpeg } from "@/utils/heicConverter";
 
 export interface MediaFile {
   id: string;
@@ -80,7 +80,7 @@ export async function getMediaSignedUrl(storagePath: string, expiresIn = 3600): 
     console.error("Error creating signed URL:", error);
     return null;
   }
-  return data.signedUrl;
+  return data.signedUrl || (data as any).signedURL || null;
 }
 
 // --- Batch signed URLs ---
@@ -95,8 +95,9 @@ export async function getMediaSignedUrls(paths: string[], expiresIn = 3600): Pro
   }
   const result: Record<string, string> = {};
   (data || []).forEach((item) => {
-    if (item.signedUrl && item.path) {
-      result[item.path] = item.signedUrl;
+    const signedUrl = item.signedUrl || (item as any).signedURL;
+    if (signedUrl && item.path) {
+      result[item.path] = signedUrl;
     }
   });
   return result;
@@ -154,6 +155,16 @@ function jpegPathFor(path: string): string {
   return path.replace(/\.[^/.]+$/i, ".jpg");
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), ms);
+    promise
+      .then((value) => resolve(value))
+      .catch((error) => reject(error))
+      .finally(() => window.clearTimeout(timer));
+  });
+}
+
 async function replaceHeicWithJpeg(media: MediaFile, file: File) {
   const jpg = await convertHeicToJpeg(file);
   const jpgPath = jpegPathFor(media.storage_path);
@@ -201,31 +212,26 @@ export function useUploadMedia() {
 
   return useMutation({
     mutationFn: async (params: UploadMediaParams) => {
-      // Convert HEIC → JPEG BEFORE upload so the browser can always render it.
-      // For JPG/PNG/videos this is a no-op and the upload stays instant.
-      let uploadFile = params.file;
-      if (isHeicFile(params.file)) {
-        try {
-          uploadFile = await convertHeicToJpeg(params.file);
-        } catch (err) {
-          console.error("HEIC conversion failed, uploading original:", err);
-          uploadFile = params.file;
-        }
-      }
-
+      // Upload must stay instant. Never run HEIC/video/image processing in this path.
+      // Browser-incompatible formats can be repaired after the row exists, but upload cannot block on it.
+      const uploadFile = params.file;
       const ext = getFileExtension(uploadFile);
       const storagePath = buildStoragePath(params, ext);
       const fileType = detectFileType(uploadFile);
 
       const { data: userData } = await supabase.auth.getUser();
 
-      const { error: uploadError } = await supabase.storage
-        .from("media")
-        .upload(storagePath, uploadFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: getUploadContentType(uploadFile),
-        });
+      const uploadPromise = supabase.storage.from("media").upload(storagePath, uploadFile, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: getUploadContentType(uploadFile),
+      });
+
+      const { error: uploadError } = await withTimeout(
+        uploadPromise,
+        45000,
+        "Upload demorou demais. Tente novamente com sinal melhor."
+      );
       if (uploadError) throw uploadError;
 
       const { data, error: dbError } = await supabase
