@@ -71,7 +71,6 @@ export function ProjectPhotosSection({ projectId }: Props) {
     // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
     const CONCURRENCY = 3;
     let okCount = 0;
-    let failCount = 0;
     const queue = [...files];
     const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
       while (queue.length) {
@@ -89,7 +88,6 @@ export function ProjectPhotosSection({ projectId }: Props) {
           });
           okCount++;
         } catch (e: any) {
-          failCount++;
           toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
         }
       }
