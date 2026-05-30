@@ -40,6 +40,7 @@ import JobDetail from './pages/admin/JobDetail';
 import AdminIntake from './pages/admin/Intake';
 import AdminSettings from './pages/admin/Settings';
 import ProjectDetail from './pages/admin/ProjectDetail';
+import ShareBeforeAfter from './pages/ShareBeforeAfter';
 import ProjectDocuments from './pages/admin/ProjectDocuments';
 import MeasurementsManager from './pages/admin/MeasurementsManager';
 import AdminSchedule from './pages/admin/Schedule';
@@ -132,6 +133,7 @@ const App = () => {
             
             <Route path="/review-request" element={<ReviewRequest />} />
             <Route path="/shared/:token" element={<SharedPost />} />
+            <Route path="/share/before-after/:token" element={<ShareBeforeAfter />} />
             <Route path="/invoice/:token" element={<PublicInvoice />} />
             <Route path="/proposal/:token" element={<PublicProposal />} />
             <Route path="/proposal/:token/invoice" element={<PublicDepositInvoice />} />

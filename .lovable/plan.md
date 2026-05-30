@@ -1,146 +1,109 @@
-## Contexto
+## Fase 1 — Fundação Visual (CompanyCam-style)
 
-Análise E2E do MaidPad cruzada com o estado atual do AXO OS. A maioria dos pontos da proposta original já existe no AXO em versão mais robusta (pipeline 10 estágios, automation engine, invoice gen, reviews, RBAC, etc.). Após filtragem, 3 gaps reais valem implementação:
-
-1. **Despesas recorrentes** — hoje `payments` (categoria expense) é one-shot
-2. **Day Notes no Schedule** — notas livres por data, não atreladas a appointment
-3. **Partner Balance consolidado** — visão de saldo/recorrência por parceiro B2B (não por cliente final, dado o ciclo high-ticket do AXO)
-
-Tudo dentro da filosofia atual: precisão > hype, sem rebuild de features existentes, RLS multi-tenant por `organization_id`.
+Vou implementar 3 features integradas ao admin do Axo OS, reutilizando o design system atual (navy/gold, shadcn).
 
 ---
 
-## 1. Despesas Recorrentes
+### 1. Banco de dados (migration única)
 
-### Objetivo
-Permitir cadastrar overheads que se repetem (aluguel, seguros, software, gasolina mensal) sem precisar lançar manualmente todo mês.
+**Tabela `project_photos`** (multi-tenant via `organization_id`):
+- `id`, `project_id` (FK projects), `organization_id`
+- `photo_url` (storage path), `thumbnail_url` (opcional)
+- `taken_at` (timestamp do upload)
+- `latitude` numeric, `longitude` numeric, `location_label` text
+- `uploaded_by` uuid, `created_at`
 
-### Mudanças
+**Tabela `before_after_pairs`**:
+- `id`, `project_id`, `organization_id`
+- `before_photo_id` / `after_photo_id` (FK project_photos) — vínculo a fotos existentes
+- `title` text, `completed_date` date
+- `share_token` text unique (uuid) — gera link público `/share/before-after/:token`
+- `created_at`
 
-**Schema** (`payments` table — já existe, só adicionar colunas):
-- `recurrence` text — null | `weekly` | `biweekly` | `monthly` | `quarterly` | `yearly`
-- `recurrence_parent_id` uuid — aponta para o registro "template" da série
-- `recurrence_next_date` date — próxima data de geração (null quando não é template)
-- `recurrence_active` boolean default true
+**Storage bucket** novo: `project-photos` (público, para que watermark + share funcione sem signed URL).
 
-**Cron job (pg_cron + edge function `generate-recurring-expenses`)**
-- Roda diariamente às 02:00
-- Para cada `payments` onde `recurrence is not null AND recurrence_active AND recurrence_next_date <= today`:
-  - INSERT nova linha de expense copiando campos, `recurrence_parent_id` = id do template
-  - Avança `recurrence_next_date` conforme intervalo
-- Idempotente (checa se já existe child com mesma data + parent)
+**RLS**: leitura/escrita restrita a membros da organização do projeto (`get_user_org_id()`). Leitura pública só via `share_token` em RPC dedicada (`get_shared_before_after(token)`).
 
-**UI (`/admin/payments`)**
-- Form de novo expense: dropdown "Recurrence" (One-time + 5 frequências)
-- Badge "Recurring" + ícone repeat nas linhas que são template ou filhas
-- Linha de template tem ação "Pause series" / "End series" / "Edit future occurrences"
-- Filtro "Show recurring only"
-
-### Por que vale
-Refinishing tem custos fixos previsíveis (oficina, seguros, ferramentas). Eliminar lançamento manual = dados financeiros sempre completos = margem real correta.
+**GRANTs**: `authenticated` full CRUD, `service_role` ALL, `anon` SELECT apenas via RPC.
 
 ---
 
-## 2. Day Notes no Schedule
+### 2. Watermark (frontend, Canvas API)
 
-### Objetivo
-Anotações soltas por data no calendário (ex: "Equipe folga", "Feriado", "Material chegando", "Não agendar tarde").
-
-### Mudanças
-
-**Nova tabela** `schedule_day_notes`:
-- `note_date` date
-- `content` text
-- `color` text (amber/red/blue/green pra destaque visual)
-- `created_by` uuid, `organization_id` uuid
-- Unique (organization_id, note_date) — uma nota por dia
-
-**RLS**: tenant by `organization_id` (mesmo padrão de `appointments`)
-
-**UI (`src/pages/admin/Schedule.tsx`)**
-- Em cada célula de dia (Day/Week/List views): se houver nota, mostra faixa fina no topo com texto truncado
-- Click na faixa → popover edita/deleta
-- Botão "+ Note" no header do dia quando hover (Week view)
-- Cor da faixa = `color` da nota
-
-### Por que vale
-MaidPad usa pra comunicar exceções operacionais sem poluir o pipeline. Útil pro AXO em dias com restrições (folgas, weather, supply delays).
+Novo util `src/utils/watermark.ts`:
+- `applyWatermark(file: File): Promise<File>` — carrega imagem no canvas, desenha o texto "AXO FLOORS" no canto inferior direito (fundo navy semi-transparente, texto gold bold, ~15% da largura, 10px de margem), exporta como JPEG 0.9.
+- Aplicado automaticamente antes de qualquer upload (feature 1 e 2).
 
 ---
 
-## 3. Partner Balance Consolidado (B2B)
+### 3. Hook compartilhado
 
-### Objetivo
-Para cada parceiro B2B (builder, designer, realtor, property manager), ver: total faturado lifetime, total recebido, saldo em aberto, aging, número de projetos abertos. Justificativa: parceiros são recorrentes (vs. cliente final que volta a cada 5-10 anos).
+`src/hooks/useProjectPhotos.ts`:
+- `useProjectPhotos(projectId)` — lista fotos do projeto.
+- `useUploadProjectPhoto()` — captura geolocalização via `navigator.geolocation.getCurrentPosition`, aplica watermark, faz upload ao bucket, insere em `project_photos`. Faz reverse-geocode opcional via Nominatim (free, sem chave) para `location_label`; se negar permissão grava "Localização não disponível".
+- `useDeleteProjectPhoto()`.
 
-### Mudanças
-
-**Nova RPC** `get_partner_balance(p_partner_id uuid)` retorna jsonb:
-```
-{
-  partner: {...},
-  totals: {
-    lifetime_revenue, lifetime_received, open_balance,
-    open_projects, completed_projects, avg_project_value
-  },
-  aging: { current, days_30, days_60, days_90_plus },
-  recent_projects: [...],   // últimos 10 com status + invoice + balance
-  open_invoices: [...]      // invoices não-pagas com aging
-}
-```
-
-Lógica: agrega `invoices` + `payments` (categoria received) via `customers.referred_by_partner_id` ou via leads referidas pelo partner que viraram projeto.
-
-**Schema check**: precisa garantir que `customers` ou `projects` tem coluna pra ligar ao parceiro originador. Se ainda não existir `customers.acquired_via_partner_id` (uuid → partners.id), criar e migrar dados de `leads.referred_by_partner_id → projects → customer`.
-
-**UI**: nova aba "Balance" dentro do partner detail em `/admin/partners`:
-- Header com 4 KPI cards (Lifetime Revenue, Received, Open Balance, Open Projects)
-- Bar chart de aging (0-30 / 30-60 / 60-90 / 90+)
-- Tabela de invoices abertas com link p/ invoice
-- Tabela de projetos recentes
-- CTA "Send statement" (futuro — gera PDF, fora de escopo agora)
-
-### Por que vale
-Parceiros B2B = núcleo da estratégia (referral booster, partner portal já existem). Hoje não há visão financeira consolidada deles → impossível identificar quais parceiros geram mais receita líquida e quais têm calote crônico.
+`src/hooks/useBeforeAfter.ts`:
+- `useBeforeAfterPairs(projectId)`, `useCreateBeforeAfterPair()`, `useDeleteBeforeAfterPair()`.
 
 ---
 
-## Detalhes técnicos
+### 4. UI — Detalhe do Projeto
 
-```text
-Arquivos novos:
-  supabase/functions/generate-recurring-expenses/index.ts
-  src/components/admin/payments/RecurrenceSelect.tsx
-  src/components/admin/schedule/DayNoteStrip.tsx
-  src/components/admin/schedule/DayNotePopover.tsx
-  src/hooks/useDayNotes.ts
-  src/hooks/usePartnerBalance.ts
-  src/components/admin/partners/PartnerBalanceTab.tsx
+Novo componente `src/components/admin/projects/ProjectPhotosSection.tsx` adicionado à página `src/pages/admin/ProjectDetail.tsx` (nova aba/seção "Fotos do Job"):
 
-Arquivos editados:
-  src/pages/admin/Payments.tsx          (form + filter recurrence)
-  src/hooks/usePayments.ts              (suporte a recurrence)
-  src/pages/admin/Schedule.tsx          (mount day notes nas views)
-  src/pages/admin/Partners.tsx          (tab Balance no detail)
-
-Migrations:
-  payments: ADD COLUMN recurrence + 3 colunas
-  schedule_day_notes: CREATE TABLE + GRANT + RLS + policies
-  customers: ADD COLUMN acquired_via_partner_id (se não existir)
-  RPC get_partner_balance(uuid)
-  pg_cron: schedule diário p/ generate-recurring-expenses
-```
-
-## Fora de escopo (consciente)
-
-- Pipeline de leads em 5 estágios (já temos 10, mais granular)
-- Automações novas (engine já existe, full-featured)
-- Check-in/check-out de execução (deferred — `labor_entries` resolve hoje)
-- Dispatch map com GPS (no `deferred-operational-features` memory)
-- Assinatura digital de contratos (proposals já têm signature dialog)
-- Reviews/NPS (já existe `review_requests` + auto-trigger)
-- Analytics expandido (Performance Hub já cobre)
+- **Tabs internos**: `Todas as Fotos` | `Before & After`
+- **Aba Todas**:
+  - Botão "Adicionar Foto" (input file).
+  - Grid 2/3/4 colunas, cada card mostra thumbnail + overlay com data/hora (`format dd/MM HH:mm`) e label de localização (ou coordenadas truncadas).
+  - Clique → lightbox com EXIF resumido.
+- **Aba Before & After**:
+  - Lista de pares já criados, cada um renderiza um **slider de comparação** (componente `BeforeAfterSlider` — divisor draggable, sem libs externas, apenas mouse/touch handlers + clip-path).
+  - Botão "Novo par" → dialog para escolher 2 fotos do projeto (ou upload direto) + título + data + criar.
+  - Botão "Compartilhar" copia URL pública `/share/before-after/:token`.
 
 ---
 
-Aprovar este plano vai implementar os 3 itens em sequência (recurring expenses → day notes → partner balance). Quer ajustar prioridade ou cortar algum?
+### 5. UI — Gallery Hub
+
+Refatorar `src/pages/admin/GalleryHub.tsx`:
+- Manter painel público existente como aba "Public Gallery".
+- Adicionar nova aba primária **"Fotos dos Projetos"** que lista TODAS as `project_photos` da org em grid, com:
+  - Filtro por projeto (Select)
+  - Filtro por tipo: Todas / Apenas Before / Apenas After / Avulsas
+  - Ordenação por data (asc/desc)
+- A bottom nav já aponta para `/admin/gallery` — sem mudança.
+
+---
+
+### 6. Rota pública de compartilhamento
+
+Nova rota `src/pages/ShareBeforeAfter.tsx` em `/share/before-after/:token`:
+- Chama RPC `get_shared_before_after(token)` (SECURITY DEFINER, retorna apenas URLs + título + data).
+- Renderiza o mesmo `BeforeAfterSlider` em layout limpo branded Axo (logo, CTA "Solicite seu orçamento").
+
+---
+
+### Arquivos novos
+- `supabase/migrations/...` (tabelas + RPC + bucket + policies + GRANTs)
+- `src/utils/watermark.ts`
+- `src/hooks/useProjectPhotos.ts`
+- `src/hooks/useBeforeAfter.ts`
+- `src/components/admin/projects/ProjectPhotosSection.tsx`
+- `src/components/admin/projects/BeforeAfterSlider.tsx`
+- `src/components/admin/projects/NewBeforeAfterDialog.tsx`
+- `src/components/admin/gallery/ProjectPhotosPanel.tsx`
+- `src/pages/ShareBeforeAfter.tsx`
+
+### Arquivos editados
+- `src/pages/admin/ProjectDetail.tsx` (montar nova seção)
+- `src/pages/admin/GalleryHub.tsx` (adicionar tabs)
+- `src/App.tsx` (rota pública)
+
+### Notas técnicas
+- Geolocalização: `navigator.geolocation` requer HTTPS (✓ no Lovable). Permissão negada → grava NULL coords.
+- Reverse geocode: `https://nominatim.openstreetmap.org/reverse?lat=..&lon=..&format=json` (sem chave, rate-limit leve, ok para uso interno; cai no fallback de coords se falhar).
+- Slider before/after: implementação caseira (~80 linhas) com `clip-path: inset()` + listener de pointer.
+- Watermark: dimensiona o canvas para o tamanho original da imagem (limite max 2400px para evitar mobile OOM).
+
+Pronto para implementar? Confirmando, começo pela migration e depois código em paralelo.
