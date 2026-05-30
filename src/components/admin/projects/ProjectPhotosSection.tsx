@@ -271,11 +271,20 @@ export function ProjectPhotosSection({ projectId }: Props) {
           onClick={() => setPreview(null)}
         >
           <div className="max-w-5xl w-full space-y-3" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={preview.annotated_url || preview.photo_url}
-              alt=""
-              className="max-h-[80vh] mx-auto object-contain rounded"
-            />
+            {isVideoUrl(preview.annotated_url || preview.photo_url) ? (
+              <video
+                src={preview.annotated_url || preview.photo_url}
+                controls
+                autoPlay
+                className="max-h-[80vh] mx-auto rounded"
+              />
+            ) : (
+              <img
+                src={preview.annotated_url || preview.photo_url}
+                alt=""
+                className="max-h-[80vh] mx-auto object-contain rounded"
+              />
+            )}
             <div className="text-center text-sm space-y-1">
               <p className="flex items-center justify-center gap-1.5 text-muted-foreground tabular-nums">
                 <Clock className="h-3.5 w-3.5" />
