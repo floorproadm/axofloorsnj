@@ -324,7 +324,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
             </div>
 
             <div
-              className="relative flex-1 flex items-center justify-center min-h-0 pt-6"
+              className="relative flex-1 flex items-center justify-center min-h-0 pt-10"
               onClick={(e) => e.stopPropagation()}
             >
               {canPrev && (
