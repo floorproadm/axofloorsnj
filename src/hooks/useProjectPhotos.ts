@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { applyWatermark, getCurrentPosition, reverseGeocode } from "@/utils/watermark";
 import { AXO_ORG_ID } from "@/lib/constants";
+import { convertHeicToJpeg, isHeicFile } from "@/utils/heicConverter";
 
 export interface ProjectPhoto {
   id: string;
@@ -60,23 +61,10 @@ export function useUploadProjectPhoto() {
     mutationFn: async ({ file, projectId }: { file: File; projectId: string }) => {
       const nameLower = file.name.toLowerCase();
       const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(nameLower);
-      const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(nameLower);
+      const isHeic = isHeicFile(file);
 
       // Convert HEIC/HEIF to JPEG client-side so browsers can display it (and we can watermark)
-      let workingFile: File = file;
-      if (isHeic) {
-        try {
-          const heic2any = (await import("heic2any")).default;
-          const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
-          const blob = Array.isArray(converted) ? converted[0] : converted;
-          workingFile = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
-            type: "image/jpeg",
-          });
-        } catch (e) {
-          console.error("HEIC conversion failed", e);
-          throw new Error("Não foi possível converter o arquivo HEIC. Tente exportar como JPG.");
-        }
-      }
+      const workingFile = isHeic ? await convertHeicToJpeg(file) : file;
 
       // Canvas/watermark only works on standard browser-decodable images
       const canWatermark = !isVideo;
@@ -100,7 +88,8 @@ export function useUploadProjectPhoto() {
       // 2. Upload to bucket — preserve extension/content-type
       const ts = Date.now();
       const rand = Math.random().toString(36).slice(2, 8);
-      const extMatch = nameLower.match(/\.([a-z0-9]+)$/);
+      const workingNameLower = workingFile.name.toLowerCase();
+      const extMatch = workingNameLower.match(/\.([a-z0-9]+)$/);
       const ext = canWatermark ? "jpg" : (extMatch?.[1] ?? (isVideo ? "mp4" : "bin"));
       const path = `${projectId}/${ts}-${rand}.${ext}`;
       const contentType = canWatermark
