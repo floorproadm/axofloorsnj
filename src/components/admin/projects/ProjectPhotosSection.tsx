@@ -20,7 +20,6 @@ import {
   useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
-  repairHeicMediaFile,
   type MediaFile,
 } from "@/hooks/useMediaFiles";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
