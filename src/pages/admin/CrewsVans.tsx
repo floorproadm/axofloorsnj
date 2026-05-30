@@ -38,7 +38,7 @@ const fmt = (v: number) =>
 export default function CrewsVans() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState<"crew" | "vans" | "payroll">(
+  const [tab, setTab] = useState<"crew" | "schedule" | "vans" | "payroll">(
     (searchParams.get("tab") as any) || "crew"
   );
   const [showNewCrew, setShowNewCrew] = useState(false);
