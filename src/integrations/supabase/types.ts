@@ -788,6 +788,36 @@ export type Database = {
           },
         ]
       }
+      crew_unavailability: {
+        Row: {
+          created_at: string
+          crew_member_id: string
+          end_date: string
+          id: string
+          organization_id: string
+          reason: string | null
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          crew_member_id: string
+          end_date: string
+          id?: string
+          organization_id: string
+          reason?: string | null
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          crew_member_id?: string
+          end_date?: string
+          id?: string
+          organization_id?: string
+          reason?: string | null
+          start_date?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null

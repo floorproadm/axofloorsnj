@@ -16,9 +16,10 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Plus, Truck, Users, Phone, Mail,
-  Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase
+  Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase, CalendarDays
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CrewScheduleTab from "@/components/admin/crews/CrewScheduleTab";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import { useAllLaborEntries, useMarkLaborPaid, useAddLaborEntry } from "@/hooks/useLaborEntries";
 import { useCrewEarnings, type CrewMember as CrewMemberType } from "@/hooks/useCrewMembers";
@@ -37,7 +38,7 @@ const fmt = (v: number) =>
 export default function CrewsVans() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState<"crew" | "vans" | "payroll">(
+  const [tab, setTab] = useState<"crew" | "schedule" | "vans" | "payroll">(
     (searchParams.get("tab") as any) || "crew"
   );
   const [showNewCrew, setShowNewCrew] = useState(false);
@@ -257,6 +258,9 @@ export default function CrewsVans() {
               <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Users className="w-4 h-4" /> Crew
               </TabsTrigger>
+              <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <CalendarDays className="w-4 h-4" /> Schedule
+              </TabsTrigger>
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Payroll
               </TabsTrigger>
@@ -264,7 +268,7 @@ export default function CrewsVans() {
                 <Truck className="w-4 h-4" /> Fleet
               </TabsTrigger>
             </TabsList>
-            {tab !== "payroll" && (
+            {tab !== "payroll" && tab !== "schedule" && (
               <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
                 <Plus className="w-4 h-4" /> {addLabel}
               </Button>
@@ -366,6 +370,11 @@ export default function CrewsVans() {
                 })}
               </div>
             )}
+          </TabsContent>
+
+          {/* ─── SCHEDULE TAB ─── */}
+          <TabsContent value="schedule" className="mt-4">
+            <CrewScheduleTab />
           </TabsContent>
 
           {/* ─── VANS TAB ─── */}
