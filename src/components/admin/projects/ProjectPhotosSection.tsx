@@ -26,6 +26,11 @@ import { NewBeforeAfterDialog } from "./NewBeforeAfterDialog";
 import { PhotoAnnotator } from "./PhotoAnnotator";
 import { useToast } from "@/hooks/use-toast";
 
+function isVideoUrl(url?: string | null): boolean {
+  if (!url) return false;
+  return /\.(mp4|mov|m4v|webm|avi|mkv)(\?|$)/i.test(url);
+}
+
 interface Props {
   projectId: string;
 }
