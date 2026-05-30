@@ -1,5 +1,3 @@
-import heic2any from 'heic2any';
-
 export const convertHeicToJpeg = async (file: File): Promise<File> => {
   // Check MIME type and extension because iOS/Safari may provide an empty/odd MIME type.
   if (!isHeicFile(file)) {
@@ -8,6 +6,7 @@ export const convertHeicToJpeg = async (file: File): Promise<File> => {
 
   try {
     // Convert HEIC to JPEG
+    const heic2any = (await import('heic2any')).default;
     const convertedBlob = await heic2any({
       blob: file,
       toType: 'image/jpeg',
