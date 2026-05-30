@@ -20,6 +20,7 @@ import {
   useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
+  convertUploadedHeicMediaFile,
   repairHeicMediaFile,
   type MediaFile,
 } from "@/hooks/useMediaFiles";
@@ -33,6 +34,11 @@ function isVideoUrl(url?: string | null): boolean {
   return /\.(mp4|mov|m4v|webm|avi|mkv)(\?|$)/i.test(url);
 }
 
+function isHeicMedia(media?: MediaFile | null): boolean {
+  if (!media) return false;
+  return /\.hei[cf]$/i.test(media.storage_path);
+}
+
 interface Props {
   projectId: string;
 }
@@ -41,9 +47,16 @@ type TimelineItem =
   | { kind: "photo"; at: string; data: ProjectPhoto }
   | { kind: "media"; at: string; data: MediaFile };
 
-async function repairUploadedHeicMedia(mediaItems: MediaFile[], queryClient: ReturnType<typeof useQueryClient>) {
-  const repaired = await Promise.allSettled(mediaItems.map((media) => repairHeicMediaFile(media)));
-  if (repaired.some((result) => result.status === "fulfilled")) {
+async function repairUploadedHeicMedia(
+  mediaItems: Array<{ media: MediaFile; file?: File }>,
+  queryClient: ReturnType<typeof useQueryClient>
+) {
+  const repaired = await Promise.allSettled(
+    mediaItems.map(({ media, file }) =>
+      file ? convertUploadedHeicMediaFile(media, file) : repairHeicMediaFile(media)
+    )
+  );
+  if (repaired.some((result) => result.status === "fulfilled" && result.value)) {
     queryClient.invalidateQueries({ queryKey: ["media-files"] });
   }
 }
@@ -66,6 +79,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const repairingHeicRef = useRef(new Set<string>());
   
   const [urlMap, setUrlMap] = useState<Record<string, string>>({});
 
@@ -74,12 +88,21 @@ export function ProjectPhotosSection({ projectId }: Props) {
     getMediaSignedUrls(mediaList.map((m) => m.storage_path), 3600).then(setUrlMap);
   }, [mediaList]);
 
+  useEffect(() => {
+    const pendingHeic = mediaList.filter((media) => isHeicMedia(media) && !repairingHeicRef.current.has(media.id));
+    if (pendingHeic.length === 0) return;
+    pendingHeic.forEach((media) => repairingHeicRef.current.add(media.id));
+    window.setTimeout(() => {
+      void repairUploadedHeicMedia(pendingHeic.map((media) => ({ media })), queryClient);
+    }, 750);
+  }, [mediaList, queryClient]);
+
   async function handleFiles(list: FileList | null) {
     if (!list || uploading) return;
     const files = Array.from(list);
     if (files.length === 0) return;
     setUploading(true);
-    const heicToRepair: MediaFile[] = [];
+    const heicToRepair: Array<{ media: MediaFile; file: File }> = [];
     try {
       // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
       const CONCURRENCY = 3;
@@ -99,7 +122,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
               silent: true,
               deferInvalidate: true,
             });
-            if (/\.hei[cf]$/i.test(uploaded.storage_path)) heicToRepair.push(uploaded);
+            if (/\.hei[cf]$/i.test(uploaded.storage_path)) heicToRepair.push({ media: uploaded, file: f });
             okCount++;
           } catch (e: any) {
             toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
@@ -342,6 +365,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
           ? (photo!.annotated_url || photo!.photo_url)
           : urlMap[media!.storage_path];
         const isVideo = isPhoto ? isVideoUrl(src) : media!.file_type === "video";
+        const isUnconvertedHeic = !isPhoto && isHeicMedia(media);
         const dateStr = isPhoto
           ? format(new Date(photo!.taken_at), "dd MMM yyyy 'às' HH:mm")
           : format(new Date(media!.created_at), "dd MMM yyyy 'às' HH:mm");
@@ -391,7 +415,11 @@ export function ProjectPhotosSection({ projectId }: Props) {
                 </button>
               )}
 
-              {isVideo ? (
+              {isUnconvertedHeic ? (
+                <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+                  Convertendo HEIC…
+                </div>
+              ) : isVideo ? (
                 <video
                   key={src}
                   src={src}
@@ -530,12 +558,17 @@ function MediaCard({
   onDelete: () => void;
 }) {
   const isVideo = media.file_type === "video";
+  const isHeic = isHeicMedia(media);
   return (
     <div
       className="group relative aspect-square rounded-md overflow-hidden bg-muted border border-border/60 cursor-pointer"
       onClick={onOpen}
     >
-      {url ? (
+      {isHeic ? (
+        <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-medium text-muted-foreground">
+          HEIC
+        </div>
+      ) : url ? (
         isVideo ? (
           <>
             <video src={url} className="w-full h-full object-cover" preload="metadata" muted />
