@@ -329,65 +329,6 @@ export default function CrewsVans() {
             <CrewScheduleTab />
           </TabsContent>
 
-          {/* ─── VANS TAB ─── */}
-          <TabsContent value="vans" className="mt-4">
-            {loadingVans ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : vanRecords.length === 0 ? (
-              <Card className="border-dashed border-2 border-border/50">
-                <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
-                  <Truck className="w-8 h-8 text-muted-foreground/40" />
-                  <p className="text-sm text-muted-foreground">No vehicles registered</p>
-                  <Button size="sm" variant="outline" onClick={() => setShowNewVan(true)}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Add First Van
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {vanRecords.map((van: any) => {
-                  const isAvailable = van.status === "confirmed";
-                  return (
-                    <Card key={van.id} className="border-border/50 hover:border-primary/30 transition-colors group">
-                      <CardContent className="p-4 flex items-center gap-3">
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                          isAvailable ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-amber-500/10 border border-amber-500/20"
-                        )}>
-                          <Truck className={cn("w-5 h-5", isAvailable ? "text-emerald-500" : "text-amber-500")} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm">{van.description ?? "Vehicle"}</p>
-                          {van.notes && <p className="text-xs text-muted-foreground truncate">{van.notes}</p>}
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <button
-                            onClick={() => toggleVanStatus.mutate({ id: van.id, current: van.status })}
-                            className={cn(
-                              "text-xs px-2.5 py-1 rounded-full border font-medium transition-colors",
-                              isAvailable
-                                ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20"
-                                : "bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20"
-                            )}
-                          >
-                            {isAvailable ? "Available" : "In Use"}
-                          </button>
-                          <Button size="icon" variant="ghost"
-                            className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => deleteVanMutation.mutate(van.id)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
 
           {/* ─── PAYROLL TAB ─── (reads labor_entries — source of truth) */}
           <TabsContent value="payroll" className="mt-4 space-y-4">
