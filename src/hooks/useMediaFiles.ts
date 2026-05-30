@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { convertHeicToJpeg, isHeicFile } from "@/utils/heicConverter";
+import { convertHeicToJpeg } from "@/utils/heicConverter";
 
 export interface MediaFile {
   id: string;
