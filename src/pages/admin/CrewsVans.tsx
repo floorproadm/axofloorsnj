@@ -83,19 +83,6 @@ export default function CrewsVans() {
     },
   });
 
-  // ─── Van queries ───
-  const { data: vanRecords = [], isLoading: loadingVans } = useQuery({
-    queryKey: ["van-records"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("payments")
-        .select("id, description, notes, amount, payment_date, category, status")
-        .eq("category", "fleet")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
 
   // ─── Payroll: real labor entries + earnings ───
   const payrollRange = getPeriodRange(payrollAnchor, payrollPeriodType);
