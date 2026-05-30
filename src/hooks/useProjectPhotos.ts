@@ -61,13 +61,30 @@ export function useUploadProjectPhoto() {
       const nameLower = file.name.toLowerCase();
       const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(nameLower);
       const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(nameLower);
+
+      // Convert HEIC/HEIF to JPEG client-side so browsers can display it (and we can watermark)
+      let workingFile: File = file;
+      if (isHeic) {
+        try {
+          const heic2any = (await import("heic2any")).default;
+          const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+          const blob = Array.isArray(converted) ? converted[0] : converted;
+          workingFile = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
+            type: "image/jpeg",
+          });
+        } catch (e) {
+          console.error("HEIC conversion failed", e);
+          throw new Error("Não foi possível converter o arquivo HEIC. Tente exportar como JPG.");
+        }
+      }
+
       // Canvas/watermark only works on standard browser-decodable images
-      const canWatermark = !isVideo && !isHeic;
+      const canWatermark = !isVideo;
 
       // 1. Geolocation (best-effort) + watermark in parallel when applicable
       const [pos, processed] = await Promise.all([
         getCurrentPosition(),
-        canWatermark ? applyWatermark(file) : Promise.resolve(file),
+        canWatermark ? applyWatermark(workingFile) : Promise.resolve(workingFile),
       ]);
 
       let latitude: number | null = null;
