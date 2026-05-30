@@ -196,7 +196,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
         >
           <div className="max-w-5xl w-full space-y-3" onClick={(e) => e.stopPropagation()}>
             <img
-              src={preview.photo_url}
+              src={preview.annotated_url || preview.photo_url}
               alt=""
               className="max-h-[80vh] mx-auto object-contain rounded"
             />
@@ -209,12 +209,29 @@ export function ProjectPhotosSection({ projectId }: Props) {
                 <MapPin className="h-3.5 w-3.5" />
                 {preview.location_label || "Localização não disponível"}
               </p>
-              <Button variant="outline" size="sm" onClick={() => setPreview(null)}>
-                Fechar
-              </Button>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <Button
+                  size="sm"
+                  onClick={() => { setAnnotating(preview); setPreview(null); }}
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                  Anotar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setPreview(null)}>
+                  Fechar
+                </Button>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {annotating && (
+        <PhotoAnnotator
+          photo={annotating}
+          imageUrl={annotating.photo_url}
+          onClose={() => setAnnotating(null)}
+        />
       )}
     </Card>
   );
