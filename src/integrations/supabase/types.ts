@@ -4543,6 +4543,7 @@ export type Database = {
       get_partner_balance: { Args: { p_partner_id: string }; Returns: Json }
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }
+      get_portal_timeline: { Args: { p_token: string }; Returns: Json }
       get_referral_dashboard: { Args: { p_email: string }; Returns: Json }
       get_shared_before_after: { Args: { p_token: string }; Returns: Json }
       get_user_org_id: { Args: never; Returns: string }
