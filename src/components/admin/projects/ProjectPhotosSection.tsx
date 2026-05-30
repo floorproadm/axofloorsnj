@@ -62,7 +62,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <Camera className="h-5 w-5" />
-          Fotos do Job
+          Mídia do Job
           <span className="text-xs font-normal text-muted-foreground tabular-nums">
             {photos.length} foto{photos.length === 1 ? "" : "s"} · {pairs.length} before/after
           </span>
