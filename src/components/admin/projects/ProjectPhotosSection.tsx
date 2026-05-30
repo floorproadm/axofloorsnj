@@ -290,96 +290,111 @@ export function ProjectPhotosSection({ projectId }: Props) {
         </Tabs>
       </CardContent>
 
-      {/* Lightbox - project_photos */}
-      {preview && (
-        <div
-          className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex items-center justify-center p-4 overflow-y-auto"
-          onClick={() => setPreview(null)}
-        >
-          <button
-            type="button"
-            aria-label="Fechar"
-            onClick={(e) => { e.stopPropagation(); setPreview(null); }}
-            className="fixed top-3 right-3 z-[110] h-10 w-10 rounded-full bg-background border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-accent"
+      {/* Unified Lightbox with navigation */}
+      {currentItem && (() => {
+        const isPhoto = currentItem.kind === "photo";
+        const photo = isPhoto ? (currentItem.data as ProjectPhoto) : null;
+        const media = !isPhoto ? (currentItem.data as MediaFile) : null;
+        const src = isPhoto
+          ? (photo!.annotated_url || photo!.photo_url)
+          : urlMap[media!.storage_path];
+        const isVideo = isPhoto ? isVideoUrl(src) : media!.file_type === "video";
+        const dateStr = isPhoto
+          ? format(new Date(photo!.taken_at), "dd MMM yyyy 'às' HH:mm")
+          : format(new Date(media!.created_at), "dd MMM yyyy 'às' HH:mm");
+        const location = isPhoto ? photo!.location_label : null;
+
+        return (
+          <div
+            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex flex-col p-3 sm:p-4"
+            onClick={closePreview}
           >
-            <X className="h-5 w-5" />
-          </button>
-          <div className="max-w-5xl w-full space-y-3" onClick={(e) => e.stopPropagation()}>
-            {isVideoUrl(preview.annotated_url || preview.photo_url) ? (
-              <video
-                src={preview.annotated_url || preview.photo_url}
-                controls
-                autoPlay
-                className="max-h-[75vh] mx-auto rounded"
-              />
-            ) : (
-              <img
-                src={preview.annotated_url || preview.photo_url}
-                alt=""
-                className="max-h-[75vh] mx-auto object-contain rounded"
-              />
-            )}
-            <div className="text-center text-sm space-y-1 pb-24">
+            <div className="flex items-center justify-between gap-2 pb-2" onClick={(e) => e.stopPropagation()}>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {(previewIndex ?? 0) + 1} / {flatTimeline.length}
+              </span>
+              <button
+                type="button"
+                aria-label="Fechar"
+                onClick={closePreview}
+                className="h-10 w-10 rounded-full bg-background border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-accent"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div
+              className="relative flex-1 flex items-center justify-center min-h-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {canPrev && (
+                <button
+                  type="button"
+                  aria-label="Anterior"
+                  onClick={goPrev}
+                  className="absolute left-1 sm:left-2 z-10 h-11 w-11 rounded-full bg-background/90 border border-border shadow-lg flex items-center justify-center hover:bg-accent"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+              )}
+              {canNext && (
+                <button
+                  type="button"
+                  aria-label="Próxima"
+                  onClick={goNext}
+                  className="absolute right-1 sm:right-2 z-10 h-11 w-11 rounded-full bg-background/90 border border-border shadow-lg flex items-center justify-center hover:bg-accent"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              )}
+
+              {isVideo ? (
+                <video
+                  key={src}
+                  src={src}
+                  controls
+                  autoPlay
+                  className="max-h-full max-w-full object-contain rounded"
+                />
+              ) : (
+                <img
+                  key={src}
+                  src={src}
+                  alt=""
+                  className="max-h-full max-w-full object-contain rounded select-none"
+                />
+              )}
+            </div>
+
+            <div
+              className="text-center text-sm space-y-1 pt-3 pb-[calc(env(safe-area-inset-bottom)+5rem)]"
+              onClick={(e) => e.stopPropagation()}
+            >
               <p className="flex items-center justify-center gap-1.5 text-muted-foreground tabular-nums">
                 <Clock className="h-3.5 w-3.5" />
-                {format(new Date(preview.taken_at), "dd MMM yyyy 'às' HH:mm")}
+                {dateStr}
               </p>
-              <p className="flex items-center justify-center gap-1.5 text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5" />
-                {preview.location_label || "Localização não disponível"}
-              </p>
-              <div className="flex items-center justify-center gap-2 pt-2">
-                <Button
-                  size="sm"
-                  onClick={() => { setAnnotating(preview); setPreview(null); }}
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                  Anotar
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setPreview(null)}>
-                  Fechar
-                </Button>
-              </div>
+              {location && (
+                <p className="flex items-center justify-center gap-1.5 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {location}
+                </p>
+              )}
+              {isPhoto && (
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    onClick={() => { setAnnotating(photo); closePreview(); }}
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                    Anotar
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Lightbox - media_files */}
-      {mediaPreview && (
-        <div
-          className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex items-center justify-center p-4 overflow-y-auto"
-          onClick={() => setMediaPreview(null)}
-        >
-          <button
-            type="button"
-            aria-label="Fechar"
-            onClick={(e) => { e.stopPropagation(); setMediaPreview(null); }}
-            className="fixed top-3 right-3 z-[110] h-10 w-10 rounded-full bg-background border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-accent"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <div className="max-w-5xl w-full pb-24" onClick={(e) => e.stopPropagation()}>
-            {mediaPreview.file_type === "video" ? (
-              <video
-                src={urlMap[mediaPreview.storage_path]}
-                controls
-                autoPlay
-                className="max-h-[80vh] max-w-full mx-auto rounded"
-              />
-            ) : (
-              <img
-                src={urlMap[mediaPreview.storage_path]}
-                alt=""
-                className="max-h-[80vh] max-w-full mx-auto object-contain rounded"
-              />
-            )}
-            <div className="text-center mt-3">
-              <Button variant="outline" size="sm" onClick={() => setMediaPreview(null)}>Fechar</Button>
-            </div>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {annotating && (
         <PhotoAnnotator
