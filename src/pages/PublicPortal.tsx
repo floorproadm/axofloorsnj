@@ -4,11 +4,42 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp, CalendarPlus } from "lucide-react";
+import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp, CalendarPlus, Camera, MapPin, Pencil, ImageIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
 import { RequestAppointmentDialog } from "@/components/portal/RequestAppointmentDialog";
+import { BeforeAfterSlider } from "@/components/admin/projects/BeforeAfterSlider";
+
+interface TimelinePhoto {
+  id: string;
+  photo_url: string;
+  annotated_url: string | null;
+  taken_at: string;
+  location_label: string | null;
+}
+interface TimelineChecklistItem {
+  id: string;
+  title: string;
+  completed: boolean;
+  sort_order: number;
+}
+interface TimelineBeforeAfter {
+  id: string;
+  title: string;
+  before_url: string;
+  after_url: string;
+  completed_date: string | null;
+}
+interface TimelineProject {
+  id: string;
+  project_type: string | null;
+  address: string | null;
+  photos: TimelinePhoto[];
+  checklist: TimelineChecklistItem[];
+  before_after: TimelineBeforeAfter[];
+}
 
 interface Customer {
   id: string;
