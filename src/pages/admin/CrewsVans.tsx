@@ -175,54 +175,12 @@ export default function CrewsVans() {
     setShowNewCrew(true);
   };
 
-  const addVanMutation = useMutation({
-    mutationFn: async () => {
-      const description = [
-        vanForm.year, vanForm.make, vanForm.model,
-        vanForm.plate && `(${vanForm.plate})`,
-        `— ${vanForm.name || "Van"}`
-      ].filter(Boolean).join(" ");
-      const { error } = await supabase.from("payments").insert({
-        amount: 0, category: "fleet", description,
-        notes: [vanForm.region && `Region: ${vanForm.region}`, `Status: ${vanForm.status}`, vanForm.notes].filter(Boolean).join(" · ") || null,
-        payment_date: new Date().toISOString().split("T")[0],
-        status: vanForm.status === "Available" ? "confirmed" : "pending",
-        organization_id: AXO_ORG_ID,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Van added to fleet");
-      qc.invalidateQueries({ queryKey: ["van-records"] });
-      setShowNewVan(false);
-      setVanForm({ name: "", plate: "", year: "", make: "", model: "", region: "", status: "Available", notes: "" });
-    },
-    onError: (e: any) => toast.error(e.message || "Failed to add van"),
-  });
-
   const deleteCrewMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("profiles").update({ is_active_crew: false } as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Marked inactive"); qc.invalidateQueries({ queryKey: ["crew-members"] }); },
-  });
-
-  const deleteVanMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("payments").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Van removed"); qc.invalidateQueries({ queryKey: ["van-records"] }); },
-  });
-
-  const toggleVanStatus = useMutation({
-    mutationFn: async ({ id, current }: { id: string; current: string }) => {
-      const next = current === "confirmed" ? "pending" : "confirmed";
-      const { error } = await supabase.from("payments").update({ status: next }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["van-records"] }),
   });
 
   const initials = (name: string) =>
@@ -235,17 +193,18 @@ export default function CrewsVans() {
     "Tile": "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   };
 
-  const handleAddClick = () => {
-    if (tab === "crew") setShowNewCrew(true);
-    else if (tab === "vans") setShowNewVan(true);
-  };
-
-  const addLabel = tab === "crew" ? "Add Worker" : tab === "vans" ? "Add Van" : "";
   const earningsById = new Map(earnings.map(e => [e.crew_member_id, e]));
 
+  const subtitles: Record<typeof tab, string> = {
+    crew: "Gerencie sua equipe, funções e contratações",
+    schedule: "Visualize e aloque crew nos jobs da semana",
+    payroll: "Registre e acompanhe os pagamentos da equipe",
+  };
+
   return (
-    <AdminLayout title="Crews & Fleet">
+    <AdminLayout title="Crew">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
+        <p className="text-sm text-muted-foreground -mt-2">{subtitles[tab]}</p>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -259,16 +218,14 @@ export default function CrewsVans() {
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Payroll
               </TabsTrigger>
-              <TabsTrigger value="vans" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Truck className="w-4 h-4" /> Fleet
-              </TabsTrigger>
             </TabsList>
-            {tab !== "payroll" && tab !== "schedule" && (
-              <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
-                <Plus className="w-4 h-4" /> {addLabel}
+            {tab === "crew" && (
+              <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={() => setShowNewCrew(true)}>
+                <Plus className="w-4 h-4" /> Add Worker
               </Button>
             )}
           </div>
+
 
           {/* ─── CREW TAB ─── */}
           <TabsContent value="crew" className="mt-4">
