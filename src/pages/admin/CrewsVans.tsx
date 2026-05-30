@@ -524,7 +524,7 @@ export default function CrewsVans() {
 
       {/* ─── ADD MANUAL LABOR PAYMENT DIALOG ─── */}
       <Dialog open={showNewLabor} onOpenChange={(o) => { setShowNewLabor(o); if (!o) setLaborForm({ project_id: "", crew_member_id: "", worker_name: "", daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0], is_paid: false, notes: "" }); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Hammer className="w-4 h-4" /> Add Labor Payment
