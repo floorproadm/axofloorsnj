@@ -219,7 +219,10 @@ function MapDetailPanel({
   const pinColor = project ? colorFor(project, colorMode) : "#6366f1";
   return (
     <Sheet open={!!project} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-[380px] sm:max-w-[380px] p-0 flex flex-col">
+      <SheetContent
+        side="right"
+        className="w-full sm:w-[380px] sm:max-w-[380px] p-0 flex flex-col pb-[88px] sm:pb-0"
+      >
         {project && (
           <>
             <SheetHeader className="p-4 border-b space-y-2">
