@@ -291,20 +291,29 @@ export default function PublicPortal() {
         </div>
 
         <Tabs defaultValue="proposals" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full bg-white border h-auto p-1">
-            <TabsTrigger value="proposals" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white">
-              <FileText className="w-3.5 h-3.5 mr-1.5" />
-              <span className="text-xs sm:text-sm">Proposals</span>
+          <TabsList className="grid grid-cols-4 w-full bg-white border h-auto p-1">
+            <TabsTrigger value="proposals" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
+              <FileText className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="text-[11px] sm:text-sm hidden sm:inline">Proposals</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white">
-              <Receipt className="w-3.5 h-3.5 mr-1.5" />
-              <span className="text-xs sm:text-sm">Invoices</span>
+            <TabsTrigger value="invoices" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
+              <Receipt className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="text-[11px] sm:text-sm hidden sm:inline">Invoices</span>
             </TabsTrigger>
-            <TabsTrigger value="status" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white">
-              <Activity className="w-3.5 h-3.5 mr-1.5" />
-              <span className="text-xs sm:text-sm">Status</span>
+            <TabsTrigger value="timeline" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
+              <Camera className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="text-[11px] sm:text-sm hidden sm:inline">Timeline</span>
+            </TabsTrigger>
+            <TabsTrigger value="status" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
+              <Activity className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="text-[11px] sm:text-sm hidden sm:inline">Status</span>
             </TabsTrigger>
           </TabsList>
+          {/* Mobile labels under tabs */}
+          <div className="grid grid-cols-4 gap-1 mt-1 sm:hidden text-center text-[10px] text-slate-500">
+            <span>Proposals</span><span>Invoices</span><span>Timeline</span><span>Status</span>
+          </div>
+
 
           {/* PROPOSALS */}
           <TabsContent value="proposals" className="space-y-3 mt-4">
