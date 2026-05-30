@@ -54,6 +54,7 @@ import AdminAutomations from './pages/admin/Automations';
 import WeeklyReview from './pages/admin/WeeklyReview';
 import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
+import Fleet from './pages/admin/Fleet';
 import AdminProposals from './pages/admin/Proposals';
 import ProjectsHub from './pages/admin/ProjectsHub';
 import AdminMissionControl from './pages/admin/MissionControl';
