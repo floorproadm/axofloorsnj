@@ -252,11 +252,16 @@ function PhotoCard({
       onClick={onOpen}
     >
       <img
-        src={photo.photo_url}
+        src={photo.annotated_url || photo.photo_url}
         alt=""
         className="w-full h-full object-cover"
         loading="lazy"
       />
+      {photo.annotated_url && (
+        <Badge className="absolute top-1 left-1 h-5 text-[9px] px-1.5 bg-primary/90 backdrop-blur">
+          Anotada
+        </Badge>
+      )}
       <button
         type="button"
         onClick={(e) => {
