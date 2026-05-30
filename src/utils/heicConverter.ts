@@ -10,7 +10,7 @@ export const convertHeicToJpeg = async (file: File): Promise<File> => {
     const convertedBlob = await heic2any({
       blob: file,
       toType: 'image/jpeg',
-      quality: 0.8
+      quality: 0.7
     });
 
     // Create a new File object from the converted blob

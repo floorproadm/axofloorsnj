@@ -66,14 +66,26 @@ export function ProjectPhotosSection({ projectId }: Props) {
   async function handleFiles(list: FileList | null) {
     if (!list) return;
     const files = Array.from(list);
-    for (const f of files) {
-      try {
-        await upload.mutateAsync({ file: f, projectId });
-      } catch (e: any) {
-        toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
+    // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
+    const CONCURRENCY = 3;
+    let okCount = 0;
+    let failCount = 0;
+    const queue = [...files];
+    const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
+      while (queue.length) {
+        const f = queue.shift();
+        if (!f) break;
+        try {
+          await upload.mutateAsync({ file: f, projectId });
+          okCount++;
+        } catch (e: any) {
+          failCount++;
+          toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
+        }
       }
-    }
-    toast({ title: `${files.length} arquivo(s) adicionado(s)` });
+    });
+    await Promise.all(workers);
+    if (okCount > 0) toast({ title: `${okCount} arquivo(s) adicionado(s)` });
     if (inputRef.current) inputRef.current.value = "";
   }
 
