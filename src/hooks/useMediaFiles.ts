@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { convertHeicToJpeg, isHeicFile } from "@/utils/heicConverter";
 
 export interface MediaFile {
   id: string;
@@ -140,6 +141,11 @@ function getUploadContentType(file: File): string {
   return "application/octet-stream";
 }
 
+function getFileExtension(file: File): string {
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  return ext || "bin";
+}
+
 // --- Upload mutation ---
 export function useUploadMedia() {
   const queryClient = useQueryClient();
@@ -147,20 +153,22 @@ export function useUploadMedia() {
 
   return useMutation({
     mutationFn: async (params: UploadMediaParams) => {
-      const ext = params.file.name.split(".").pop() || "bin";
+      const isHeic = isHeicFile(params.file);
+      const uploadFile = isHeic ? await convertHeicToJpeg(params.file) : params.file;
+      const ext = getFileExtension(uploadFile);
       const storagePath = buildStoragePath(params, ext);
-      const fileType = detectFileType(params.file);
+      const fileType = detectFileType(uploadFile);
 
       const { data: userData } = await supabase.auth.getUser();
 
-      // Fast path: upload the original file immediately. No HEIC conversion,
-      // watermark, GPS lookup, or reverse-geocoding in the critical path.
+      // Fast path: only convert HEIC because browsers cannot display it.
+      // No watermark, GPS lookup, or reverse-geocoding in the critical path.
       const { error: uploadError } = await supabase.storage
         .from("media")
-        .upload(storagePath, params.file, {
+        .upload(storagePath, uploadFile, {
           cacheControl: "3600",
           upsert: false,
-          contentType: getUploadContentType(params.file),
+          contentType: getUploadContentType(uploadFile),
         });
       if (uploadError) throw uploadError;
 
@@ -176,7 +184,7 @@ export function useUploadMedia() {
           file_type: fileType,
           storage_path: storagePath,
           display_order: params.displayOrder || 0,
-          metadata: params.metadata || {},
+          metadata: { ...(params.metadata || {}), original_name: params.file.name },
           uploaded_by: userData.user?.id || null,
         })
         .select()
