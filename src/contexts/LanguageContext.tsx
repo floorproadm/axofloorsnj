@@ -34,7 +34,7 @@ const translations = {
   "layout.leadSemContato24h": { pt: "Lead sem contato 24h", en: "Lead no contact 24h" },
   "layout.propostaSemFollowUp": { pt: "Proposta sem follow-up", en: "Proposal without follow-up" },
   "layout.parado48h": { pt: "Parado +48h", en: "Stalled +48h" },
-  "layout.verTodosLeads": { pt: "Ver todos os leads →", en: "View all leads →" },
+  "layout.abrirMissionControl": { pt: "Abrir Mission Control →", en: "Open Mission Control →" },
   "layout.sairDoSistema": { pt: "Sair do sistema", en: "Sign out" },
 
   // Dashboard
