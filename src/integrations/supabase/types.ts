@@ -707,6 +707,9 @@ export type Database = {
           trade_name: string | null
           trust_builders: Json
           updated_at: string
+          watermark_enabled: boolean
+          watermark_image_url: string | null
+          watermark_position: string
           website: string | null
           years_in_business: number
         }
@@ -741,6 +744,9 @@ export type Database = {
           trade_name?: string | null
           trust_builders?: Json
           updated_at?: string
+          watermark_enabled?: boolean
+          watermark_image_url?: string | null
+          watermark_position?: string
           website?: string | null
           years_in_business?: number
         }
@@ -775,6 +781,9 @@ export type Database = {
           trade_name?: string | null
           trust_builders?: Json
           updated_at?: string
+          watermark_enabled?: boolean
+          watermark_image_url?: string | null
+          watermark_position?: string
           website?: string | null
           years_in_business?: number
         }
