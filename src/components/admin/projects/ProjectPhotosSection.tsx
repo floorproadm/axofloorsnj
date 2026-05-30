@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil, Play, Video as VideoIcon, X } from "lucide-react";
+import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil, Play, Video as VideoIcon, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
