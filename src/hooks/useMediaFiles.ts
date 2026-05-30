@@ -122,8 +122,9 @@ function buildStoragePath(params: UploadMediaParams, ext: string): string {
 
 // --- Detect file type ---
 function detectFileType(file: File): "image" | "video" | "pdf" {
+  const name = file.name.toLowerCase();
   if (file.type === "application/pdf") return "pdf";
-  if (file.type.startsWith("video/")) return "video";
+  if (file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|avi|mkv)$/.test(name)) return "video";
   return "image";
 }
 
