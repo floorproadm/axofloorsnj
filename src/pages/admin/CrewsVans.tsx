@@ -258,6 +258,9 @@ export default function CrewsVans() {
               <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Users className="w-4 h-4" /> Crew
               </TabsTrigger>
+              <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <CalendarDays className="w-4 h-4" /> Schedule
+              </TabsTrigger>
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Payroll
               </TabsTrigger>
@@ -265,7 +268,7 @@ export default function CrewsVans() {
                 <Truck className="w-4 h-4" /> Fleet
               </TabsTrigger>
             </TabsList>
-            {tab !== "payroll" && (
+            {tab !== "payroll" && tab !== "schedule" && (
               <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={handleAddClick}>
                 <Plus className="w-4 h-4" /> {addLabel}
               </Button>
