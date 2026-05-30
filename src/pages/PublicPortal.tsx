@@ -151,6 +151,8 @@ export default function PublicPortal() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [changeReqProposal, setChangeReqProposal] = useState<Proposal | null>(null);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
+  const [timeline, setTimeline] = useState<TimelineProject[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Your AXO Portal — Proposals, Invoices & Project Updates";
@@ -161,27 +163,35 @@ export default function PublicPortal() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase.rpc("get_customer_portal", { p_token: token });
+      setTimelineLoading(true);
+      const [portalRes, tlRes] = await Promise.all([
+        supabase.rpc("get_customer_portal", { p_token: token }),
+        supabase.rpc("get_portal_timeline" as any, { p_token: token }),
+      ]);
 
       if (cancelled) return;
+      const { data, error } = portalRes;
       if (error || !data || !(data as any).customer) {
         setCustomer(null);
         setProposals([]);
         setProjects([]);
         setInvoices([]);
-        setLoading(false);
-        return;
+      } else {
+        const payload = data as any;
+        setCustomer(payload.customer as Customer);
+        setProposals((payload.proposals as Proposal[]) || []);
+        setProjects((payload.projects as Project[]) || []);
+        setInvoices((payload.invoices as Invoice[]) || []);
       }
 
-      const payload = data as any;
-      setCustomer(payload.customer as Customer);
-      setProposals((payload.proposals as Proposal[]) || []);
-      setProjects((payload.projects as Project[]) || []);
-      setInvoices((payload.invoices as Invoice[]) || []);
+      const tlData = tlRes.data as any;
+      setTimeline((tlData?.projects as TimelineProject[]) || []);
+      setTimelineLoading(false);
       setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [token]);
+
 
   const firstName = useMemo(
     () => customer?.full_name?.split(" ")[0] || "there",
