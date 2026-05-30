@@ -33,6 +33,11 @@ function isVideoUrl(url?: string | null): boolean {
   return /\.(mp4|mov|m4v|webm|avi|mkv)(\?|$)/i.test(url);
 }
 
+function isHeicMedia(media?: MediaFile | null): boolean {
+  if (!media) return false;
+  return /\.hei[cf]$/i.test(media.storage_path);
+}
+
 interface Props {
   projectId: string;
 }
@@ -342,6 +347,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
           ? (photo!.annotated_url || photo!.photo_url)
           : urlMap[media!.storage_path];
         const isVideo = isPhoto ? isVideoUrl(src) : media!.file_type === "video";
+        const isUnconvertedHeic = !isPhoto && isHeicMedia(media);
         const dateStr = isPhoto
           ? format(new Date(photo!.taken_at), "dd MMM yyyy 'às' HH:mm")
           : format(new Date(media!.created_at), "dd MMM yyyy 'às' HH:mm");
@@ -391,7 +397,11 @@ export function ProjectPhotosSection({ projectId }: Props) {
                 </button>
               )}
 
-              {isVideo ? (
+              {isUnconvertedHeic ? (
+                <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+                  Convertendo HEIC…
+                </div>
+              ) : isVideo ? (
                 <video
                   key={src}
                   src={src}
