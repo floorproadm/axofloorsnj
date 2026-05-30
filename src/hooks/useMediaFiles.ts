@@ -201,31 +201,26 @@ export function useUploadMedia() {
 
   return useMutation({
     mutationFn: async (params: UploadMediaParams) => {
-      // Convert HEIC → JPEG BEFORE upload so the browser can always render it.
-      // For JPG/PNG/videos this is a no-op and the upload stays instant.
-      let uploadFile = params.file;
-      if (isHeicFile(params.file)) {
-        try {
-          uploadFile = await convertHeicToJpeg(params.file);
-        } catch (err) {
-          console.error("HEIC conversion failed, uploading original:", err);
-          uploadFile = params.file;
-        }
-      }
-
+      // Upload must stay instant. Never run HEIC/video/image processing in this path.
+      // Browser-incompatible formats can be repaired after the row exists, but upload cannot block on it.
+      const uploadFile = params.file;
       const ext = getFileExtension(uploadFile);
       const storagePath = buildStoragePath(params, ext);
       const fileType = detectFileType(uploadFile);
 
       const { data: userData } = await supabase.auth.getUser();
 
-      const { error: uploadError } = await supabase.storage
-        .from("media")
-        .upload(storagePath, uploadFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: getUploadContentType(uploadFile),
-        });
+      const uploadPromise = supabase.storage.from("media").upload(storagePath, uploadFile, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: getUploadContentType(uploadFile),
+      });
+
+      const { error: uploadError } = await withTimeout(
+        uploadPromise,
+        45000,
+        "Upload demorou demais. Tente novamente com sinal melhor."
+      );
       if (uploadError) throw uploadError;
 
       const { data, error: dbError } = await supabase
