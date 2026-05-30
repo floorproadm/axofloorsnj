@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import { JobCostEditor } from '@/components/admin/JobCostEditor';
 import { MaterialsSection, LaborSection } from '@/components/admin/projects/FullCostsDialog';
 import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
-import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
+
 import { ProjectPhotosSection } from '@/components/admin/projects/ProjectPhotosSection';
 import { ProjectChecklistTab } from '@/components/admin/projects/ProjectChecklistTab';
 import { ProjectTechSheet } from '@/components/admin/projects/ProjectTechSheet';
