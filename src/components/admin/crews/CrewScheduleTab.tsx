@@ -524,16 +524,10 @@ export default function CrewScheduleTab() {
                         "relative flex-col h-auto min-w-[52px] py-2 px-2.5 rounded-xl border transition-all snap-start",
                         "data-[state=inactive]:bg-muted/40 data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground",
                         "data-[state=active]:bg-primary data-[state=active]:border-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md",
-                        isToday && "ring-1 ring-gold/60"
                       )}
                     >
                       <span className="text-[9px] uppercase tracking-wider font-medium opacity-80 leading-none">{format(d, "EEE")}</span>
                       <span className="text-lg font-bold leading-tight mt-0.5">{format(d, "d")}</span>
-                      {isToday && (
-                        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-gold text-navy text-[8px] font-bold px-1.5 py-0.5 rounded-full leading-none shadow-sm">
-                          hoje
-                        </span>
-                      )}
                     </TabsTrigger>
                   );
                 })}
