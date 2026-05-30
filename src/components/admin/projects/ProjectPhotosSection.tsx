@@ -123,40 +123,35 @@ export function ProjectPhotosSection({ projectId }: Props) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="progress" className="w-full">
-          <TabsList className="bg-navy/40 border border-gold/20">
-            <TabsTrigger value="progress" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Progresso</TabsTrigger>
-            <TabsTrigger value="ba" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Before &amp; After</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <TabsList className="bg-navy/40 border border-gold/20">
+              <TabsTrigger value="progress" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Progresso</TabsTrigger>
+              <TabsTrigger value="ba" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Before &amp; After</TabsTrigger>
+            </TabsList>
+            <Button
+              size="sm"
+              onClick={() => inputRef.current?.click()}
+              disabled={upload.isPending}
+            >
+              {upload.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
+              )}
+              Adicionar mídia
+            </Button>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*,image/heic,image/heif,video/*,.heic,.heif,.mov,.mp4,.m4v,.webm"
+              multiple
+              className="hidden"
+              onChange={(e) => handleFiles(e.target.files)}
+            />
+          </div>
 
           {/* ============ PROGRESSO (project_photos + media_files timeline) ============ */}
           <TabsContent value="progress" className="space-y-3 pt-3">
-            <div className="rounded-lg border border-gold/20 bg-navy/30 p-3 space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => inputRef.current?.click()}
-                  disabled={upload.isPending}
-                >
-                  {upload.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                  ) : (
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  )}
-                  Adicionar mídia
-                </Button>
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept="image/*,image/heic,image/heif,video/*,.heic,.heif,.mov,.mp4,.m4v,.webm"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => handleFiles(e.target.files)}
-                />
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Aceita fotos (JPG, PNG, HEIC) e vídeos (MP4, MOV, WebM). Watermark, localização e timestamp aplicados em fotos conforme <span className="text-white font-medium">Settings → Watermark</span>. Vídeos e HEIC são enviados sem watermark.
-              </p>
-            </div>
 
             {loading ? (
               <div className="text-sm text-muted-foreground py-8 text-center">Carregando…</div>
