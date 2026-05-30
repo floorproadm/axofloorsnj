@@ -201,16 +201,24 @@ export function useUploadMedia() {
 
   return useMutation({
     mutationFn: async (params: UploadMediaParams) => {
-      const isHeic = isHeicFile(params.file);
-      const uploadFile = params.file;
+      // Convert HEIC → JPEG BEFORE upload so the browser can always render it.
+      // For JPG/PNG/videos this is a no-op and the upload stays instant.
+      let uploadFile = params.file;
+      if (isHeicFile(params.file)) {
+        try {
+          uploadFile = await convertHeicToJpeg(params.file);
+        } catch (err) {
+          console.error("HEIC conversion failed, uploading original:", err);
+          uploadFile = params.file;
+        }
+      }
+
       const ext = getFileExtension(uploadFile);
       const storagePath = buildStoragePath(params, ext);
       const fileType = detectFileType(uploadFile);
 
       const { data: userData } = await supabase.auth.getUser();
 
-      // Fast path: upload immediately. HEIC conversion happens after the row exists,
-      // so the user is never stuck waiting on conversion before the upload completes.
       const { error: uploadError } = await supabase.storage
         .from("media")
         .upload(storagePath, uploadFile, {
@@ -220,7 +228,6 @@ export function useUploadMedia() {
         });
       if (uploadError) throw uploadError;
 
-      // Insert record
       const { data, error: dbError } = await supabase
         .from("media_files")
         .insert({
@@ -238,15 +245,6 @@ export function useUploadMedia() {
         .select()
         .single();
       if (dbError) throw dbError;
-
-      if (isHeic) {
-        const row = data as MediaFile;
-        setTimeout(() => {
-          replaceHeicWithJpeg(row, params.file)
-            .then(() => queryClient.invalidateQueries({ queryKey: ["media-files"] }))
-            .catch((err) => console.error("HEIC background conversion failed:", err));
-        }, 0);
-      }
 
       return data as MediaFile;
     },
