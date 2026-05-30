@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format, isToday, isYesterday } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useProjectPhotos,
   useDeleteProjectPhoto,
@@ -52,6 +53,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const delPair = useDeleteBeforeAfterPair();
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
@@ -83,6 +85,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
             visibility: "internal",
             sourceType: "admin_upload",
             silent: true,
+            deferInvalidate: true,
           });
           okCount++;
         } catch (e: any) {
@@ -92,6 +95,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
       }
     });
     await Promise.all(workers);
+    if (okCount > 0) queryClient.invalidateQueries({ queryKey: ["media-files"] });
     if (okCount > 0) toast({ title: `${okCount} arquivo(s) adicionado(s)` });
     if (inputRef.current) inputRef.current.value = "";
   }
