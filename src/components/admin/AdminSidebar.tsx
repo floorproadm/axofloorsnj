@@ -20,7 +20,7 @@ import {
   Zap,
   Truck,
   FolderKanban,
-  Target,
+  
   CalendarDays,
 } from "lucide-react";
 import {
