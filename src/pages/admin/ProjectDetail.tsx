@@ -420,6 +420,17 @@ export default function ProjectDetail() {
             <ProjectPhotosSection projectId={project.id} />
           </TabsContent>
 
+          {/* CHECKLIST */}
+          <TabsContent value="checklist">
+            <ProjectChecklistTab projectId={project.id} />
+          </TabsContent>
+
+          {/* TECH SHEET */}
+          <TabsContent value="tech">
+            <ProjectTechSheet projectId={project.id} project={project} />
+          </TabsContent>
+
+
           {/* CHAT */}
           <TabsContent value="chat">
             <Card>
