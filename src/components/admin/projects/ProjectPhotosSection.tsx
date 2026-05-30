@@ -212,7 +212,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
                             key={`m-${it.data.id}`}
                             media={it.data}
                             url={urlMap[it.data.storage_path]}
-                            onOpen={() => setMediaPreview(it.data)}
+                            onOpen={() => openItem(it)}
                             onDelete={() => {
                               if (confirm("Excluir este arquivo?")) delMedia.mutate(it.data);
                             }}
