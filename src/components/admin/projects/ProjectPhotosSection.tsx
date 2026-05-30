@@ -41,6 +41,13 @@ type TimelineItem =
   | { kind: "photo"; at: string; data: ProjectPhoto }
   | { kind: "media"; at: string; data: MediaFile };
 
+async function repairUploadedHeicMedia(mediaItems: MediaFile[], queryClient: ReturnType<typeof useQueryClient>) {
+  const repaired = await Promise.allSettled(mediaItems.map((media) => repairHeicMediaFile(media)));
+  if (repaired.some((result) => result.status === "fulfilled")) {
+    queryClient.invalidateQueries({ queryKey: ["media-files"] });
+  }
+}
+
 export function ProjectPhotosSection({ projectId }: Props) {
   const { data: photos = [], isLoading: loadingPhotos } = useProjectPhotos(projectId);
   const { data: mediaList = [], isLoading: loadingMedia } = useMediaFiles({
