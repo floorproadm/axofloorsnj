@@ -372,6 +372,11 @@ export default function CrewsVans() {
             )}
           </TabsContent>
 
+          {/* ─── SCHEDULE TAB ─── */}
+          <TabsContent value="schedule" className="mt-4">
+            <CrewScheduleTab />
+          </TabsContent>
+
           {/* ─── VANS TAB ─── */}
           <TabsContent value="vans" className="mt-4">
             {loadingVans ? (
