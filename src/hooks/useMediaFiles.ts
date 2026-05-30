@@ -200,6 +200,12 @@ async function replaceHeicWithJpeg(media: MediaFile, file: File) {
   await supabase.storage.from("media").remove([media.storage_path]);
 }
 
+export async function convertUploadedHeicMediaFile(media: MediaFile, file: File): Promise<boolean> {
+  if (!isHeicPath(media.storage_path)) return false;
+  await replaceHeicWithJpeg(media, file);
+  return true;
+}
+
 export async function repairHeicMediaFile(media: MediaFile): Promise<boolean> {
   if (!isHeicPath(media.storage_path)) return false;
   const signedUrl = await getMediaSignedUrl(media.storage_path, 600);
