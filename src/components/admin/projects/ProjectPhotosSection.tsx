@@ -48,7 +48,7 @@ type TimelineItem =
 
 async function repairUploadedHeicMedia(mediaItems: MediaFile[], queryClient: ReturnType<typeof useQueryClient>) {
   const repaired = await Promise.allSettled(mediaItems.map((media) => repairHeicMediaFile(media)));
-  if (repaired.some((result) => result.status === "fulfilled")) {
+  if (repaired.some((result) => result.status === "fulfilled" && result.value)) {
     queryClient.invalidateQueries({ queryKey: ["media-files"] });
   }
 }
