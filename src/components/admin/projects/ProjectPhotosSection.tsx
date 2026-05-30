@@ -540,12 +540,17 @@ function MediaCard({
   onDelete: () => void;
 }) {
   const isVideo = media.file_type === "video";
+  const isHeic = isHeicMedia(media);
   return (
     <div
       className="group relative aspect-square rounded-md overflow-hidden bg-muted border border-border/60 cursor-pointer"
       onClick={onOpen}
     >
-      {url ? (
+      {isHeic ? (
+        <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-medium text-muted-foreground">
+          HEIC
+        </div>
+      ) : url ? (
         isVideo ? (
           <>
             <video src={url} className="w-full h-full object-cover" preload="metadata" muted />
