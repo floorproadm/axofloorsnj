@@ -306,7 +306,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
 
         return (
           <div
-            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex flex-col p-3 sm:p-4"
+            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex flex-col px-3 sm:px-4 pt-1 pb-0"
             onClick={closePreview}
           >
             <div className="flex items-center justify-between gap-2 pb-2" onClick={(e) => e.stopPropagation()}>
@@ -324,7 +324,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
             </div>
 
             <div
-              className="relative flex-1 flex items-center justify-center min-h-0 pt-10"
+              className="relative flex-1 flex items-center justify-center min-h-0 pt-2"
               onClick={(e) => e.stopPropagation()}
             >
               {canPrev && (
