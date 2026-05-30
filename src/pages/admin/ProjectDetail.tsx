@@ -209,7 +209,7 @@ export default function ProjectDetail() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
-            <TabsTrigger value="photos">Fotos</TabsTrigger>
+            <TabsTrigger value="media">Mídia</TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
             <TabsTrigger value="tech">Ficha Técnica</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -411,7 +411,7 @@ export default function ProjectDetail() {
           </TabsContent>
 
           {/* PHOTOS */}
-          <TabsContent value="photos">
+          <TabsContent value="media">
             <ProjectPhotosSection projectId={project.id} />
           </TabsContent>
 
