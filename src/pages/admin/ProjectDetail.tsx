@@ -397,10 +397,6 @@ export default function ProjectDetail() {
             <ProposalGenerator projectId={project.id} />
           </TabsContent>
 
-          {/* JOB PROOF */}
-          <TabsContent value="proof">
-            <ProjectProgressGallery projectId={project.id} />
-          </TabsContent>
 
           {/* DOCUMENTS */}
           <TabsContent value="documents">
