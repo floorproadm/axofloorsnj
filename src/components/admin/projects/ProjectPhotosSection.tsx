@@ -69,13 +69,19 @@ export function ProjectPhotosSection({ projectId }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList>
-            <TabsTrigger value="all">Todas as Fotos</TabsTrigger>
-            <TabsTrigger value="ba">Before &amp; After</TabsTrigger>
+        <Tabs defaultValue="progress" className="w-full">
+          <TabsList className="bg-navy/40 border border-gold/20">
+            <TabsTrigger value="progress" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Progresso</TabsTrigger>
+            <TabsTrigger value="all" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Campo</TabsTrigger>
+            <TabsTrigger value="ba" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Before &amp; After</TabsTrigger>
           </TabsList>
 
-          {/* ============ ALL PHOTOS ============ */}
+          {/* ============ PROGRESS (media_files timeline) ============ */}
+          <TabsContent value="progress" className="pt-3">
+            <ProjectProgressGallery projectId={projectId} />
+          </TabsContent>
+
+          {/* ============ FIELD PHOTOS (geo + watermark) ============ */}
           <TabsContent value="all" className="space-y-3 pt-3">
             <div className="flex items-center gap-2">
               <Button
