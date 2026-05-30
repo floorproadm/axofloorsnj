@@ -454,7 +454,14 @@ export default function PublicPortal() {
           </TabsContent>
 
           {/* STATUS */}
+          {/* TIMELINE */}
+          <TabsContent value="timeline" className="space-y-6 mt-4">
+            <TimelineTab loading={timelineLoading} projects={timeline} />
+          </TabsContent>
+
+          {/* STATUS */}
           <TabsContent value="status" className="space-y-3 mt-4">
+
             {projects.length === 0 ? (
               <EmptyState
                 icon={Activity}
