@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { format, isToday, isYesterday } from "date-fns";
 import {
   useProjectPhotos,
-  useUploadProjectPhoto,
   useDeleteProjectPhoto,
   type ProjectPhoto,
 } from "@/hooks/useProjectPhotos";
@@ -47,7 +46,6 @@ export function ProjectPhotosSection({ projectId }: Props) {
     folderType: "job_progress",
   });
   const { data: pairs = [] } = useBeforeAfterPairs(projectId);
-  const upload = useUploadProjectPhoto();
   const uploadMedia = useUploadMedia();
   const del = useDeleteProjectPhoto();
   const delMedia = useDeleteMedia();
