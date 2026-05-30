@@ -82,7 +82,8 @@ export function AdminSidebar() {
 
   const manageItems = [
     { title: "Partners", url: "/admin/partners", icon: Handshake },
-    { title: "Crews & Fleet", url: "/admin/crews", icon: Truck },
+    { title: "Crew", url: "/admin/crews", icon: Users },
+    { title: "Fleet", url: "/admin/fleet", icon: Truck },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Gallery", url: "/admin/gallery", icon: Images },
     { title: "Automations", url: "/admin/automations", icon: Zap },
