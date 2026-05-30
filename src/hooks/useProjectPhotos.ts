@@ -58,12 +58,17 @@ export function useUploadProjectPhoto() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ file, projectId }: { file: File; projectId: string }) => {
-      // 1. Geolocation (best-effort, parallel with watermark)
-      const [pos, watermarked] = await Promise.all([
-        getCurrentPosition(),
-        applyWatermark(file),
-      ]);
+      const nameLower = file.name.toLowerCase();
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(nameLower);
+      const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(nameLower);
+      // Canvas/watermark only works on standard browser-decodable images
+      const canWatermark = !isVideo && !isHeic;
 
+      // 1. Geolocation (best-effort) + watermark in parallel when applicable
+      const [pos, processed] = await Promise.all([
+        getCurrentPosition(),
+        canWatermark ? applyWatermark(file) : Promise.resolve(file),
+      ]);
 
       let latitude: number | null = null;
       let longitude: number | null = null;
@@ -75,12 +80,18 @@ export function useUploadProjectPhoto() {
         location_label = label || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
       }
 
-      // 2. Upload to bucket
+      // 2. Upload to bucket — preserve extension/content-type
       const ts = Date.now();
-      const path = `${projectId}/${ts}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const rand = Math.random().toString(36).slice(2, 8);
+      const extMatch = nameLower.match(/\.([a-z0-9]+)$/);
+      const ext = canWatermark ? "jpg" : (extMatch?.[1] ?? (isVideo ? "mp4" : "bin"));
+      const path = `${projectId}/${ts}-${rand}.${ext}`;
+      const contentType = canWatermark
+        ? "image/jpeg"
+        : (file.type || (isVideo ? "video/mp4" : "application/octet-stream"));
       const { error: upErr } = await supabase.storage
         .from(BUCKET)
-        .upload(path, watermarked, { cacheControl: "3600", upsert: false });
+        .upload(path, processed, { cacheControl: "3600", upsert: false, contentType });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
       const photo_url = pub.publicUrl;

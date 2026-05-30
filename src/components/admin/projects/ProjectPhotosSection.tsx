@@ -26,6 +26,11 @@ import { NewBeforeAfterDialog } from "./NewBeforeAfterDialog";
 import { PhotoAnnotator } from "./PhotoAnnotator";
 import { useToast } from "@/hooks/use-toast";
 
+function isVideoUrl(url?: string | null): boolean {
+  if (!url) return false;
+  return /\.(mp4|mov|m4v|webm|avi|mkv)(\?|$)/i.test(url);
+}
+
 interface Props {
   projectId: string;
 }
@@ -137,19 +142,19 @@ export function ProjectPhotosSection({ projectId }: Props) {
                   ) : (
                     <Plus className="h-3.5 w-3.5 mr-1.5" />
                   )}
-                  Adicionar foto
+                  Adicionar mídia
                 </Button>
                 <input
                   ref={inputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,image/heic,image/heif,video/*,.heic,.heif,.mov,.mp4,.m4v,.webm"
                   multiple
                   className="hidden"
                   onChange={(e) => handleFiles(e.target.files)}
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Watermark, localização e timestamp aplicados conforme configuração em <span className="text-white font-medium">Settings → Watermark</span>.
+                Aceita fotos (JPG, PNG, HEIC) e vídeos (MP4, MOV, WebM). Watermark, localização e timestamp aplicados em fotos conforme <span className="text-white font-medium">Settings → Watermark</span>. Vídeos e HEIC são enviados sem watermark.
               </p>
             </div>
 
@@ -271,11 +276,20 @@ export function ProjectPhotosSection({ projectId }: Props) {
           onClick={() => setPreview(null)}
         >
           <div className="max-w-5xl w-full space-y-3" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={preview.annotated_url || preview.photo_url}
-              alt=""
-              className="max-h-[80vh] mx-auto object-contain rounded"
-            />
+            {isVideoUrl(preview.annotated_url || preview.photo_url) ? (
+              <video
+                src={preview.annotated_url || preview.photo_url}
+                controls
+                autoPlay
+                className="max-h-[80vh] mx-auto rounded"
+              />
+            ) : (
+              <img
+                src={preview.annotated_url || preview.photo_url}
+                alt=""
+                className="max-h-[80vh] mx-auto object-contain rounded"
+              />
+            )}
             <div className="text-center text-sm space-y-1">
               <p className="flex items-center justify-center gap-1.5 text-muted-foreground tabular-nums">
                 <Clock className="h-3.5 w-3.5" />
@@ -350,18 +364,35 @@ function PhotoCard({
   onOpen: () => void;
   onDelete: () => void;
 }) {
+  const url = photo.annotated_url || photo.photo_url;
+  const video = isVideoUrl(url);
   return (
     <div
       className="group relative aspect-square rounded-md overflow-hidden bg-muted border border-border/60 cursor-pointer"
       onClick={onOpen}
     >
-      <img
-        src={photo.annotated_url || photo.photo_url}
-        alt=""
-        className="w-full h-full object-cover"
-        loading="lazy"
-      />
-      {photo.annotated_url && (
+      {video ? (
+        <video
+          src={url}
+          className="w-full h-full object-cover"
+          preload="metadata"
+          muted
+          playsInline
+        />
+      ) : (
+        <img
+          src={url}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      )}
+      {video && (
+        <Badge className="absolute top-1 left-1 h-5 text-[9px] px-1.5 bg-black/70 backdrop-blur text-white">
+          Vídeo
+        </Badge>
+      )}
+      {!video && photo.annotated_url && (
         <Badge className="absolute top-1 left-1 h-5 text-[9px] px-1.5 bg-primary/90 backdrop-blur">
           Anotada
         </Badge>
