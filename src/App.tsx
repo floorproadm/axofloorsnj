@@ -268,6 +268,11 @@ const App = () => {
                 <CrewsVans />
               </ProtectedRoute>
             } />
+            <Route path="/admin/fleet" element={
+              <ProtectedRoute>
+                <Fleet />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/proposals" element={
               <ProtectedRoute>
                 <AdminProposals />
