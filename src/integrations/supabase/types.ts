@@ -556,6 +556,80 @@ export type Database = {
         }
         Relationships: []
       }
+      before_after_pairs: {
+        Row: {
+          after_photo_id: string | null
+          after_url: string
+          before_photo_id: string | null
+          before_url: string
+          completed_date: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          project_id: string
+          share_token: string
+          title: string
+        }
+        Insert: {
+          after_photo_id?: string | null
+          after_url: string
+          before_photo_id?: string | null
+          before_url: string
+          completed_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          project_id: string
+          share_token?: string
+          title?: string
+        }
+        Update: {
+          after_photo_id?: string | null
+          after_url?: string
+          before_photo_id?: string | null
+          before_url?: string
+          completed_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          project_id?: string
+          share_token?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "before_after_pairs_after_photo_id_fkey"
+            columns: ["after_photo_id"]
+            isOneToOne: false
+            referencedRelation: "project_photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "before_after_pairs_before_photo_id_fkey"
+            columns: ["before_photo_id"]
+            isOneToOne: false
+            referencedRelation: "project_photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "before_after_pairs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "before_after_pairs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -2815,6 +2889,63 @@ export type Database = {
           },
         ]
       }
+      project_photos: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number | null
+          location_label: string | null
+          longitude: number | null
+          organization_id: string
+          photo_url: string
+          project_id: string
+          taken_at: string
+          thumbnail_url: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_label?: string | null
+          longitude?: number | null
+          organization_id: string
+          photo_url: string
+          project_id: string
+          taken_at?: string
+          thumbnail_url?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_label?: string | null
+          longitude?: number | null
+          organization_id?: string
+          photo_url?: string
+          project_id?: string
+          taken_at?: string
+          thumbnail_url?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_photos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_photos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           actual_cost: number | null
@@ -4293,6 +4424,7 @@ export type Database = {
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }
       get_referral_dashboard: { Args: { p_email: string }; Returns: Json }
+      get_shared_before_after: { Args: { p_token: string }; Returns: Json }
       get_user_org_id: { Args: never; Returns: string }
       has_role: {
         Args: {
