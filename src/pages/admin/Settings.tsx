@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, Tag, ShieldCheck, MonitorPlay } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, Tag, ShieldCheck, MonitorPlay, Stamp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -16,8 +16,9 @@ const EmailTemplateEditor = lazy(() => import("@/components/admin/settings/Email
 const B2BPricingSettings = lazy(() => import("@/components/admin/settings/B2BPricingSettings"));
 const TrustSettings = lazy(() => import("@/components/admin/settings/TrustSettings"));
 const DemoPortalsSettings = lazy(() => import("@/components/admin/settings/DemoPortalsSettings"));
+const WatermarkSettings = lazy(() => import("@/components/admin/settings/WatermarkSettings"));
 
-type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "trust" | "demo_portals";
+type Section = "general" | "branding" | "watermark" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "trust" | "demo_portals";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
@@ -61,6 +62,7 @@ export default function Settings() {
   const sections: { id: Section; label: string; description: string; icon: React.ElementType }[] = [
     { id: "general", label: t("settings.geral"), description: t("settings.geralDesc"), icon: SettingsIcon },
     { id: "branding", label: "Branding", description: t("settings.brandingDesc"), icon: Palette },
+    { id: "watermark", label: "Watermark", description: "Marca d'água em fotos do campo", icon: Stamp },
     { id: "team", label: t("settings.equipe"), description: t("settings.equipeDesc"), icon: Users },
     { id: "language", label: t("settings.idioma"), description: t("settings.idiomaDesc"), icon: Globe },
     { id: "email_logs", label: "Email Logs", description: "Gmail email audit trail", icon: Mail },
@@ -125,6 +127,7 @@ export default function Settings() {
             <Suspense fallback={<LoadingFallback />}>
               {active === "general" && <GeneralSettings />}
               {active === "branding" && <BrandingSettings />}
+              {active === "watermark" && <WatermarkSettings />}
               {active === "team" && <TeamSettings />}
               {active === "language" && <LanguageSettings />}
               {active === "email_logs" && <EmailLogsSettings />}

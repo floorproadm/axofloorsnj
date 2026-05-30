@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil, Play, Video as VideoIcon, ShieldCheck } from "lucide-react";
+import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil, Play, Video as VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { format, isToday, isYesterday } from "date-fns";
 import {
   useProjectPhotos,
@@ -53,7 +51,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const [mediaPreview, setMediaPreview] = useState<MediaFile | null>(null);
   const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
-  const [applyWm, setApplyWm] = useState(true);
+  
   const [urlMap, setUrlMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -66,7 +64,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
     const files = Array.from(list);
     for (const f of files) {
       try {
-        await upload.mutateAsync({ file: f, projectId, skipWatermark: !applyWm });
+        await upload.mutateAsync({ file: f, projectId });
       } catch (e: any) {
         toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
       }
@@ -149,19 +147,9 @@ export function ProjectPhotosSection({ projectId }: Props) {
                   className="hidden"
                   onChange={(e) => handleFiles(e.target.files)}
                 />
-                <div className="flex-1" />
-                <div className="flex items-center gap-2 rounded-md border border-gold/30 bg-background/60 px-2.5 py-1.5">
-                  <ShieldCheck className={`h-3.5 w-3.5 ${applyWm ? "text-gold" : "text-muted-foreground"}`} />
-                  <Label htmlFor="wm-toggle" className="text-xs font-medium cursor-pointer select-none">
-                    Watermark AXO FLOORS
-                  </Label>
-                  <Switch id="wm-toggle" checked={applyWm} onCheckedChange={setApplyWm} />
-                </div>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                {applyWm
-                  ? "Watermark AXO FLOORS será aplicado. Localização e timestamp capturados automaticamente."
-                  : "Upload sem watermark. Localização e timestamp ainda são capturados."}
+                Watermark, localização e timestamp aplicados conforme configuração em <span className="text-gold">Settings → Watermark</span>.
               </p>
             </div>
 
