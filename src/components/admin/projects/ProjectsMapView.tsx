@@ -225,7 +225,7 @@ function MapDetailPanel({
       >
         {project && (
           <>
-            <SheetHeader className="p-4 border-b space-y-2">
+            <SheetHeader className="p-4 pr-10 border-b space-y-2">
               <div className="flex items-start gap-2">
                 <span
                   className="mt-1.5 h-2.5 w-2.5 rounded-full shrink-0"
