@@ -2672,6 +2672,60 @@ export type Database = {
         }
         Relationships: []
       }
+      project_checklists: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          project_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          project_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          project_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_checklists_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_checklists_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       project_comments: {
         Row: {
           author_name: string
@@ -2889,8 +2943,72 @@ export type Database = {
           },
         ]
       }
+      project_notes: {
+        Row: {
+          actual_end_date: string | null
+          actual_start_date: string | null
+          client_notes: string | null
+          coats: number | null
+          created_at: string
+          finish_type: string | null
+          id: string
+          organization_id: string
+          project_id: string
+          stain: string | null
+          tech_notes: string | null
+          updated_at: string
+          wood_type: string | null
+        }
+        Insert: {
+          actual_end_date?: string | null
+          actual_start_date?: string | null
+          client_notes?: string | null
+          coats?: number | null
+          created_at?: string
+          finish_type?: string | null
+          id?: string
+          organization_id: string
+          project_id: string
+          stain?: string | null
+          tech_notes?: string | null
+          updated_at?: string
+          wood_type?: string | null
+        }
+        Update: {
+          actual_end_date?: string | null
+          actual_start_date?: string | null
+          client_notes?: string | null
+          coats?: number | null
+          created_at?: string
+          finish_type?: string | null
+          id?: string
+          organization_id?: string
+          project_id?: string
+          stain?: string | null
+          tech_notes?: string | null
+          updated_at?: string
+          wood_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_notes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_notes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects_missing_progress_photos"
+            referencedColumns: ["project_id"]
+          },
+        ]
+      }
       project_photos: {
         Row: {
+          annotated_url: string | null
           created_at: string
           id: string
           latitude: number | null
@@ -2904,6 +3022,7 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          annotated_url?: string | null
           created_at?: string
           id?: string
           latitude?: number | null
@@ -2917,6 +3036,7 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          annotated_url?: string | null
           created_at?: string
           id?: string
           latitude?: number | null
