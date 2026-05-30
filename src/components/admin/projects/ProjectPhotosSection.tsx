@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useBeforeAfter";
 import {
   useMediaFiles,
+  useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
   type MediaFile,
@@ -47,6 +48,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   });
   const { data: pairs = [] } = useBeforeAfterPairs(projectId);
   const upload = useUploadProjectPhoto();
+  const uploadMedia = useUploadMedia();
   const del = useDeleteProjectPhoto();
   const delMedia = useDeleteMedia();
   const delPair = useDeleteBeforeAfterPair();
@@ -76,7 +78,14 @@ export function ProjectPhotosSection({ projectId }: Props) {
         const f = queue.shift();
         if (!f) break;
         try {
-          await upload.mutateAsync({ file: f, projectId });
+          await uploadMedia.mutateAsync({
+            file: f,
+            projectId,
+            folderType: "job_progress",
+            visibility: "internal",
+            sourceType: "admin_upload",
+            silent: true,
+          });
           okCount++;
         } catch (e: any) {
           failCount++;
@@ -169,9 +178,9 @@ export function ProjectPhotosSection({ projectId }: Props) {
             <Button
               size="sm"
               onClick={() => inputRef.current?.click()}
-              disabled={upload.isPending}
+              disabled={uploadMedia.isPending}
             >
-              {upload.isPending ? (
+              {uploadMedia.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
               ) : (
                 <Plus className="h-3.5 w-3.5 mr-1.5" />
