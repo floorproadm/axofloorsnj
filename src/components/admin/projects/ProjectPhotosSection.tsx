@@ -20,6 +20,7 @@ import {
   useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
+  repairHeicMediaFile,
   type MediaFile,
 } from "@/hooks/useMediaFiles";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
@@ -71,6 +72,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
     const files = Array.from(list);
     if (files.length === 0) return;
     setUploading(true);
+    const heicToRepair: MediaFile[] = [];
     try {
       // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
       const CONCURRENCY = 3;
@@ -81,7 +83,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
           const f = queue.shift();
           if (!f) break;
           try {
-            await uploadMedia.mutateAsync({
+            const uploaded = await uploadMedia.mutateAsync({
               file: f,
               projectId,
               folderType: "job_progress",
@@ -90,6 +92,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
               silent: true,
               deferInvalidate: true,
             });
+            if (/\.hei[cf]$/i.test(uploaded.storage_path)) heicToRepair.push(uploaded);
             okCount++;
           } catch (e: any) {
             toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
@@ -102,6 +105,11 @@ export function ProjectPhotosSection({ projectId }: Props) {
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
+      if (heicToRepair.length > 0) {
+        window.setTimeout(() => {
+          void repairUploadedHeicMedia(heicToRepair, queryClient);
+        }, 250);
+      }
     }
   }
 
