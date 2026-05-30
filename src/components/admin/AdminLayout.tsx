@@ -173,8 +173,8 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
                     </div>
                   )}
                   <div className="px-4 py-2.5 border-t border-border">
-                    <Link to="/admin/leads" className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline">
-                      {t("layout.verTodosLeads")}
+                    <Link to="/admin/mission-control" className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline">
+                      {t("layout.abrirMissionControl")}
                     </Link>
                   </div>
                 </PopoverContent>
