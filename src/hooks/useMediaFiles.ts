@@ -154,6 +154,16 @@ function jpegPathFor(path: string): string {
   return path.replace(/\.[^/.]+$/i, ".jpg");
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), ms);
+    promise
+      .then((value) => resolve(value))
+      .catch((error) => reject(error))
+      .finally(() => window.clearTimeout(timer));
+  });
+}
+
 async function replaceHeicWithJpeg(media: MediaFile, file: File) {
   const jpg = await convertHeicToJpeg(file);
   const jpgPath = jpegPathFor(media.storage_path);
