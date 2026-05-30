@@ -66,7 +66,7 @@ export async function applyWatermark(file: File): Promise<File> {
     const dataUrl = await fileToDataURL(file);
     const img = await loadImage(dataUrl);
 
-    const MAX = 2400;
+    const MAX = 1920;
     const scale = Math.min(1, MAX / Math.max(img.width, img.height));
     const w = Math.round(img.width * scale);
     const h = Math.round(img.height * scale);
@@ -100,7 +100,7 @@ export async function applyWatermark(file: File): Promise<File> {
     }
 
     const blob: Blob = await new Promise((res) =>
-      canvas.toBlob((b) => res(b as Blob), "image/jpeg", 0.9)
+      canvas.toBlob((b) => res(b as Blob), "image/jpeg", 0.82)
     );
     const newName = file.name.replace(/\.[^.]+$/, "") + "_wm.jpg";
     return new File([blob], newName, { type: "image/jpeg" });
