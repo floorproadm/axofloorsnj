@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil, Play, Video as VideoIcon } from "lucide-react";
+import { Camera, MapPin, Clock, Trash2, Plus, Share2, Loader2, Pencil, Play, Video as VideoIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -267,25 +267,33 @@ export function ProjectPhotosSection({ projectId }: Props) {
       {/* Lightbox - project_photos */}
       {preview && (
         <div
-          className="fixed inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex items-center justify-center p-4 overflow-y-auto"
           onClick={() => setPreview(null)}
         >
+          <button
+            type="button"
+            aria-label="Fechar"
+            onClick={(e) => { e.stopPropagation(); setPreview(null); }}
+            className="fixed top-3 right-3 z-[110] h-10 w-10 rounded-full bg-background border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-accent"
+          >
+            <X className="h-5 w-5" />
+          </button>
           <div className="max-w-5xl w-full space-y-3" onClick={(e) => e.stopPropagation()}>
             {isVideoUrl(preview.annotated_url || preview.photo_url) ? (
               <video
                 src={preview.annotated_url || preview.photo_url}
                 controls
                 autoPlay
-                className="max-h-[80vh] mx-auto rounded"
+                className="max-h-[75vh] mx-auto rounded"
               />
             ) : (
               <img
                 src={preview.annotated_url || preview.photo_url}
                 alt=""
-                className="max-h-[80vh] mx-auto object-contain rounded"
+                className="max-h-[75vh] mx-auto object-contain rounded"
               />
             )}
-            <div className="text-center text-sm space-y-1">
+            <div className="text-center text-sm space-y-1 pb-24">
               <p className="flex items-center justify-center gap-1.5 text-muted-foreground tabular-nums">
                 <Clock className="h-3.5 w-3.5" />
                 {format(new Date(preview.taken_at), "dd MMM yyyy 'às' HH:mm")}
@@ -314,22 +322,30 @@ export function ProjectPhotosSection({ projectId }: Props) {
       {/* Lightbox - media_files */}
       {mediaPreview && (
         <div
-          className="fixed inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex items-center justify-center p-4 overflow-y-auto"
           onClick={() => setMediaPreview(null)}
         >
-          <div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            aria-label="Fechar"
+            onClick={(e) => { e.stopPropagation(); setMediaPreview(null); }}
+            className="fixed top-3 right-3 z-[110] h-10 w-10 rounded-full bg-background border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-accent"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <div className="max-w-5xl w-full pb-24" onClick={(e) => e.stopPropagation()}>
             {mediaPreview.file_type === "video" ? (
               <video
                 src={urlMap[mediaPreview.storage_path]}
                 controls
                 autoPlay
-                className="max-h-[85vh] max-w-full mx-auto rounded"
+                className="max-h-[80vh] max-w-full mx-auto rounded"
               />
             ) : (
               <img
                 src={urlMap[mediaPreview.storage_path]}
                 alt=""
-                className="max-h-[85vh] max-w-full mx-auto object-contain rounded"
+                className="max-h-[80vh] max-w-full mx-auto object-contain rounded"
               />
             )}
             <div className="text-center mt-3">
