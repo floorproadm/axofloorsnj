@@ -513,13 +513,30 @@ export default function CrewScheduleTab() {
           {isMobile ? (
             // ───── MOBILE: tabs per day ─────
             <Tabs defaultValue={format(new Date(), "yyyy-MM-dd")}>
-              <TabsList className="w-full overflow-x-auto justify-start">
-                {days.map((d) => (
-                  <TabsTrigger key={d.toISOString()} value={format(d, "yyyy-MM-dd")} className="flex-col h-auto py-1 px-2">
-                    <span className="text-[10px] uppercase opacity-70">{format(d, "EEE")}</span>
-                    <span className="text-sm font-bold">{format(d, "d")}</span>
-                  </TabsTrigger>
-                ))}
+              <TabsList className="w-full h-auto bg-transparent p-0 gap-1.5 justify-start overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1">
+                {days.map((d) => {
+                  const isToday = isSameDay(d, new Date());
+                  return (
+                    <TabsTrigger
+                      key={d.toISOString()}
+                      value={format(d, "yyyy-MM-dd")}
+                      className={cn(
+                        "relative flex-col h-auto min-w-[52px] py-2 px-2.5 rounded-xl border transition-all snap-start",
+                        "data-[state=inactive]:bg-muted/40 data-[state=inactive]:border-transparent data-[state=inactive]:text-muted-foreground",
+                        "data-[state=active]:bg-primary data-[state=active]:border-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md",
+                        isToday && "ring-1 ring-gold/60"
+                      )}
+                    >
+                      <span className="text-[9px] uppercase tracking-wider font-medium opacity-80 leading-none">{format(d, "EEE")}</span>
+                      <span className="text-lg font-bold leading-tight mt-0.5">{format(d, "d")}</span>
+                      {isToday && (
+                        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-gold text-navy text-[8px] font-bold px-1.5 py-0.5 rounded-full leading-none shadow-sm">
+                          hoje
+                        </span>
+                      )}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
               {days.map((d) => (
                 <TabsContent key={d.toISOString()} value={format(d, "yyyy-MM-dd")} className="space-y-2 mt-3">
