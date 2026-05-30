@@ -146,6 +146,54 @@ function getFileExtension(file: File): string {
   return ext || "bin";
 }
 
+function isHeicPath(path: string): boolean {
+  return /\.hei[cf]$/i.test(path);
+}
+
+function jpegPathFor(path: string): string {
+  return path.replace(/\.[^/.]+$/i, ".jpg");
+}
+
+async function replaceHeicWithJpeg(media: MediaFile, file: File) {
+  const jpg = await convertHeicToJpeg(file);
+  const jpgPath = jpegPathFor(media.storage_path);
+
+  const { error: uploadError } = await supabase.storage.from("media").upload(jpgPath, jpg, {
+    cacheControl: "3600",
+    upsert: true,
+    contentType: "image/jpeg",
+  });
+  if (uploadError) throw uploadError;
+
+  const { error: updateError } = await supabase
+    .from("media_files")
+    .update({
+      storage_path: jpgPath,
+      metadata: {
+        ...(media.metadata || {}),
+        original_storage_path: media.storage_path,
+        converted_from_heic: true,
+      },
+    })
+    .eq("id", media.id);
+  if (updateError) throw updateError;
+
+  await supabase.storage.from("media").remove([media.storage_path]);
+}
+
+export async function repairHeicMediaFile(media: MediaFile) {
+  if (!isHeicPath(media.storage_path)) return;
+  const signedUrl = await getMediaSignedUrl(media.storage_path, 600);
+  if (!signedUrl) return;
+  const response = await fetch(signedUrl);
+  if (!response.ok) return;
+  const blob = await response.blob();
+  const file = new File([blob], media.metadata?.original_name || "upload.heic", {
+    type: blob.type || "image/heic",
+  });
+  await replaceHeicWithJpeg(media, file);
+}
+
 // --- Upload mutation ---
 export function useUploadMedia() {
   const queryClient = useQueryClient();
@@ -154,15 +202,15 @@ export function useUploadMedia() {
   return useMutation({
     mutationFn: async (params: UploadMediaParams) => {
       const isHeic = isHeicFile(params.file);
-      const uploadFile = isHeic ? await convertHeicToJpeg(params.file) : params.file;
+      const uploadFile = params.file;
       const ext = getFileExtension(uploadFile);
       const storagePath = buildStoragePath(params, ext);
       const fileType = detectFileType(uploadFile);
 
       const { data: userData } = await supabase.auth.getUser();
 
-      // Fast path: only convert HEIC because browsers cannot display it.
-      // No watermark, GPS lookup, or reverse-geocoding in the critical path.
+      // Fast path: upload immediately. HEIC conversion happens after the row exists,
+      // so the user is never stuck waiting on conversion before the upload completes.
       const { error: uploadError } = await supabase.storage
         .from("media")
         .upload(storagePath, uploadFile, {
@@ -190,6 +238,15 @@ export function useUploadMedia() {
         .select()
         .single();
       if (dbError) throw dbError;
+
+      if (isHeic) {
+        const row = data as MediaFile;
+        setTimeout(() => {
+          replaceHeicWithJpeg(row, params.file)
+            .then(() => queryClient.invalidateQueries({ queryKey: ["media-files"] }))
+            .catch((err) => console.error("HEIC background conversion failed:", err));
+        }, 0);
+      }
 
       return data as MediaFile;
     },
