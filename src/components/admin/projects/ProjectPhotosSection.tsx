@@ -20,6 +20,7 @@ import {
   useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
+  convertUploadedHeicMediaFile,
   repairHeicMediaFile,
   type MediaFile,
 } from "@/hooks/useMediaFiles";
@@ -46,8 +47,15 @@ type TimelineItem =
   | { kind: "photo"; at: string; data: ProjectPhoto }
   | { kind: "media"; at: string; data: MediaFile };
 
-async function repairUploadedHeicMedia(mediaItems: MediaFile[], queryClient: ReturnType<typeof useQueryClient>) {
-  const repaired = await Promise.allSettled(mediaItems.map((media) => repairHeicMediaFile(media)));
+async function repairUploadedHeicMedia(
+  mediaItems: Array<{ media: MediaFile; file?: File }>,
+  queryClient: ReturnType<typeof useQueryClient>
+) {
+  const repaired = await Promise.allSettled(
+    mediaItems.map(({ media, file }) =>
+      file ? convertUploadedHeicMediaFile(media, file) : repairHeicMediaFile(media)
+    )
+  );
   if (repaired.some((result) => result.status === "fulfilled" && result.value)) {
     queryClient.invalidateQueries({ queryKey: ["media-files"] });
   }
@@ -84,7 +92,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
     const files = Array.from(list);
     if (files.length === 0) return;
     setUploading(true);
-    const heicToRepair: MediaFile[] = [];
+    const heicToRepair: Array<{ media: MediaFile; file: File }> = [];
     try {
       // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
       const CONCURRENCY = 3;
@@ -104,7 +112,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
               silent: true,
               deferInvalidate: true,
             });
-            if (/\.hei[cf]$/i.test(uploaded.storage_path)) heicToRepair.push(uploaded);
+            if (/\.hei[cf]$/i.test(uploaded.storage_path)) heicToRepair.push({ media: uploaded, file: f });
             okCount++;
           } catch (e: any) {
             toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
