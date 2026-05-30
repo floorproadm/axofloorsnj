@@ -33,6 +33,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [preview, setPreview] = useState<ProjectPhoto | null>(null);
+  const [annotating, setAnnotating] = useState<ProjectPhoto | null>(null);
   const [newPairOpen, setNewPairOpen] = useState(false);
 
   async function handleFiles(list: FileList | null) {
