@@ -18,6 +18,7 @@ import {
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { NewBeforeAfterDialog } from "./NewBeforeAfterDialog";
 import { PhotoAnnotator } from "./PhotoAnnotator";
+import { ProjectProgressGallery } from "@/components/admin/ProjectProgressGallery";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
