@@ -149,7 +149,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Watermark, localização e timestamp aplicados conforme configuração em <span className="text-gold">Settings → Watermark</span>.
+                Watermark, localização e timestamp aplicados conforme configuração em <span className="text-white font-medium">Settings → Watermark</span>.
               </p>
             </div>
 
