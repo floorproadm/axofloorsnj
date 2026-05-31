@@ -158,7 +158,12 @@ export function AdminSidebar() {
                       `}
                     >
                       <item.icon className="w-5 h-5 flex-shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span className="flex-1">{item.title}</span>}
+                      {(item as any).badge === "chat" && chatUnread > 0 && (
+                        <Badge className="ml-auto h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground">
+                          {chatUnread > 99 ? "99+" : chatUnread}
+                        </Badge>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
