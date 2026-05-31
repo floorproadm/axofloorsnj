@@ -36,7 +36,7 @@ export default function WeeklyReviewTab() {
   const { data: weekLeads = [] } = useQuery({
     queryKey: ["wr-leads", weekOffset],
     queryFn: async () => {
-      const { data, error } = await supabase.from("leads").select("id, status").gte("created_at", weekStart.toISOString()).lte("created_at", weekEnd.toISOString());
+      const { data, error } = await supabase.from("leads").select("id, status").is("deleted_at", null).gte("created_at", weekStart.toISOString()).lte("created_at", weekEnd.toISOString());
       if (error) throw error;
       return data ?? [];
     },
