@@ -6,6 +6,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Valid app_role values (must match the public.app_role enum)
+const VALID_ROLES = ["admin", "manager", "salesperson", "installer", "accountant", "moderator"] as const;
+type AppRole = (typeof VALID_ROLES)[number];
+
+// Map app_role -> org_member_role
+function mapToOrgMemberRole(role: AppRole | null): "owner" | "admin" | "collaborator" {
+  if (role === "admin" || role === "manager") return "admin";
+  return "collaborator";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -16,7 +26,6 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Validate caller is admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Não autorizado" }), {
@@ -41,7 +50,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check admin role
     const { data: isAdmin } = await anonClient.rpc("has_role", {
       _user_id: caller.id,
       _role: "admin",
@@ -54,7 +62,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Parse body
     const { email, full_name, role } = await req.json();
 
     if (!email || !full_name) {
@@ -64,8 +71,26 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role client to invite user
+    // Validate role (null is allowed — collaborator with no special role)
+    let validatedRole: AppRole | null = null;
+    if (role) {
+      if (!VALID_ROLES.includes(role)) {
+        return new Response(
+          JSON.stringify({ error: `Role inválido. Valores aceitos: ${VALID_ROLES.join(", ")}` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      validatedRole = role as AppRole;
+    }
+
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    // Discover caller's organization to also enroll the new user there
+    const { data: callerOrg } = await adminClient
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", caller.id)
+      .maybeSingle();
 
     const { data: inviteData, error: inviteError } =
       await adminClient.auth.admin.inviteUserByEmail(email, {
@@ -80,32 +105,41 @@ Deno.serve(async (req) => {
     }
 
     const newUserId = inviteData.user.id;
+    const warnings: string[] = [];
 
-    // Assign role if admin or moderator
-    if (role === "admin" || role === "moderator") {
+    // Insert app role
+    if (validatedRole) {
       const { error: roleError } = await adminClient
         .from("user_roles")
-        .insert({ user_id: newUserId, role });
-
+        .insert({ user_id: newUserId, role: validatedRole });
       if (roleError) {
         console.error("Role insert error:", roleError);
-        // User was created, but role failed — return partial success
-        return new Response(
-          JSON.stringify({
-            success: true,
-            warning: "Usuário convidado mas a role não foi atribuída: " + roleError.message,
-            user_id: newUserId,
-          }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+        warnings.push(`Role não atribuída: ${roleError.message}`);
+      }
+    }
+
+    // Insert organization membership
+    if (callerOrg?.organization_id) {
+      const orgRole = mapToOrgMemberRole(validatedRole);
+      const { error: orgError } = await adminClient
+        .from("organization_members")
+        .insert({
+          user_id: newUserId,
+          organization_id: callerOrg.organization_id,
+          role: orgRole,
+        });
+      if (orgError) {
+        console.error("Org membership insert error:", orgError);
+        warnings.push(`Membership da organização não criada: ${orgError.message}`);
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, user_id: newUserId }),
+      JSON.stringify({
+        success: true,
+        user_id: newUserId,
+        ...(warnings.length ? { warning: warnings.join(" | ") } : {}),
+      }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
