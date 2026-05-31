@@ -22,6 +22,7 @@ import {
   FolderKanban,
   
   CalendarDays,
+  Clock,
 } from "lucide-react";
 import {
   Sidebar,
