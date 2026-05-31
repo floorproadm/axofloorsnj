@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, MessageCircle, ArrowLeft, Search, Users, UserCircle2 } from "lucide-react";
+import { Loader2, Send, MessageCircle, ArrowLeft, Search, Users, UserCircle2, Paperclip, X } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
+import { MessageAttachment } from "@/components/chat/MessageAttachment";
+import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
+import { useRef as useReactRef } from "react";
 
 type Tab = "clients" | "team";
 
@@ -39,6 +42,9 @@ interface ChatMessage {
   read: boolean;
   created_at: string;
   receiver_id?: string | null;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
+  attachment_name?: string | null;
 }
 
 const initials = (name: string) =>
@@ -65,6 +71,9 @@ export default function AdminChat() {
   const [activeTeamId, setActiveTeamId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useReactRef<HTMLInputElement>(null);
+  const [pending, setPending] = useState<{ url: string; type: string; name: string } | null>(null);
+  const { upload, uploading } = useChatAttachmentUpload("admin");
 
   /* ---------------- Clients list ---------------- */
   const { data: clientConvos = [], isLoading: loadingClients } = useQuery({
@@ -257,15 +266,20 @@ export default function AdminChat() {
   /* ---------------- Send ---------------- */
   const handleSend = async () => {
     const text = input.trim();
-    if (!text || !user) return;
+    if ((!text && !pending) || !user) return;
     setInput("");
+    const att = pending;
+    setPending(null);
     if (tab === "clients" && activeProjectId) {
       await supabase.from("chat_messages").insert({
         project_id: activeProjectId,
         sender_id: user.id,
         sender_name: "Admin",
         content: text,
-      });
+        attachment_url: att?.url ?? null,
+        attachment_type: att?.type ?? null,
+        attachment_name: att?.name ?? null,
+      } as any);
     } else if (tab === "team" && activeTeamId) {
       const recv = teamMembers.find((m) => m.user_id === activeTeamId);
       await supabase.from("direct_messages").insert({
@@ -281,8 +295,19 @@ export default function AdminChat() {
             .maybeSingle()
         ).data?.organization_id,
         content: text,
+        attachment_url: att?.url ?? null,
+        attachment_type: att?.type ?? null,
+        attachment_name: att?.name ?? null,
       } as any);
     }
+  };
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    const result = await upload(f);
+    if (result) setPending(result);
   };
 
   /* ---------------- Filtered lists ---------------- */
@@ -541,13 +566,20 @@ export default function AdminChat() {
                             )}
                             <div
                               className={cn(
-                                "rounded-2xl px-3 py-2 text-sm leading-snug whitespace-pre-wrap break-words",
+                                "rounded-2xl px-3 py-2 text-sm leading-snug whitespace-pre-wrap break-words space-y-2",
                                 mine
                                   ? "bg-[#0f1b3d] text-white rounded-br-md"
                                   : "bg-muted text-foreground rounded-bl-md"
                               )}
                             >
-                              {m.content}
+                              {m.attachment_url && (
+                                <MessageAttachment
+                                  url={m.attachment_url}
+                                  type={m.attachment_type}
+                                  name={m.attachment_name}
+                                />
+                              )}
+                              {m.content && <div>{m.content}</div>}
                             </div>
                             <span className="text-[10px] text-muted-foreground/60 mt-0.5 px-1 tabular-nums">
                               {format(new Date(m.created_at), "HH:mm")}
@@ -561,25 +593,52 @@ export default function AdminChat() {
               </div>
 
               {/* Input */}
-              <div className="border-t border-border p-3 flex gap-2 bg-card">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type a message…"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                />
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim()}
-                  className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+              <div className="border-t border-border p-3 bg-card space-y-2">
+                {pending && (
+                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/60 text-xs">
+                    <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="truncate flex-1">{pending.name}</span>
+                    <button onClick={() => setPending(null)} className="text-muted-foreground hover:text-foreground">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    onChange={handleFile}
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+                  </Button>
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Type a message…"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={handleSend}
+                    disabled={(!input.trim() && !pending) || uploading}
+                    className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </>
           )}

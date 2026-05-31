@@ -7,9 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, MessageCircle } from "lucide-react";
+import { Loader2, Send, MessageCircle, Paperclip, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { MessageAttachment } from "@/components/chat/MessageAttachment";
+import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
 
 interface ChatMessage {
   id: string;
@@ -19,6 +21,9 @@ interface ChatMessage {
   content: string;
   read: boolean;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
+  attachment_name?: string | null;
 }
 
 export default function CollaboratorChat() {
@@ -26,8 +31,11 @@ export default function CollaboratorChat() {
   const { data: projects = [], isLoading: loadingProjects } = useCollaboratorProjects();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [pending, setPending] = useState<{ url: string; type: string; name: string } | null>(null);
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { upload, uploading } = useChatAttachmentUpload("field");
 
   // Auto-select first project
   useEffect(() => {
@@ -84,20 +92,33 @@ export default function CollaboratorChat() {
   // Send message
   const sendMessage = useMutation({
     mutationFn: async () => {
-      if (!message.trim() || !selectedProjectId || !user) return;
+      if ((!message.trim() && !pending) || !selectedProjectId || !user) return;
+      const att = pending;
       const { error } = await supabase.from("chat_messages").insert({
         project_id: selectedProjectId,
         sender_id: user.id,
         sender_name: user.user_metadata?.full_name || user.email || "Colaborador",
         content: message.trim(),
-      });
+        attachment_url: att?.url ?? null,
+        attachment_type: att?.type ?? null,
+        attachment_name: att?.name ?? null,
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       setMessage("");
+      setPending(null);
       queryClient.invalidateQueries({ queryKey: ["chat-messages", selectedProjectId] });
     },
   });
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    const r = await upload(f);
+    if (r) setPending(r);
+  };
 
   if (loadingProjects) {
     return (
@@ -171,13 +192,16 @@ export default function CollaboratorChat() {
                 )}
                 <div
                   className={cn(
-                    "rounded-2xl px-3 py-2 text-sm",
+                    "rounded-2xl px-3 py-2 text-sm space-y-2",
                     isMe
                       ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-muted text-foreground rounded-bl-md"
                   )}
                 >
-                  {msg.content}
+                  {msg.attachment_url && (
+                    <MessageAttachment url={msg.attachment_url} type={msg.attachment_type} name={msg.attachment_name} />
+                  )}
+                  {msg.content && <div className="whitespace-pre-wrap break-words">{msg.content}</div>}
                 </div>
                 <span className="text-[10px] text-muted-foreground/60 mt-0.5 px-1">
                   {format(new Date(msg.created_at), "HH:mm")}
@@ -189,30 +213,57 @@ export default function CollaboratorChat() {
       </div>
 
       {/* Input Area */}
-      <div className="flex gap-2 pt-2 border-t border-border">
-        <Input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Escreva uma mensagem..."
-          className="flex-1"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              sendMessage.mutate();
-            }
-          }}
-        />
-        <Button
-          size="icon"
-          onClick={() => sendMessage.mutate()}
-          disabled={!message.trim() || sendMessage.isPending}
-        >
-          {sendMessage.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </Button>
+      <div className="pt-2 border-t border-border space-y-2">
+        {pending && (
+          <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/60 text-xs">
+            <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="truncate flex-1">{pending.name}</span>
+            <button onClick={() => setPending(null)} className="text-muted-foreground hover:text-foreground">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            className="hidden"
+            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+            onChange={handleFile}
+          />
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+          </Button>
+          <Input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Escreva uma mensagem..."
+            className="flex-1"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage.mutate();
+              }
+            }}
+          />
+          <Button
+            size="icon"
+            onClick={() => sendMessage.mutate()}
+            disabled={(!message.trim() && !pending) || sendMessage.isPending || uploading}
+          >
+            {sendMessage.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
