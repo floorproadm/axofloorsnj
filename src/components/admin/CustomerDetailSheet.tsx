@@ -101,7 +101,7 @@ const statusColor = (s: string) => {
   return "bg-muted text-muted-foreground";
 };
 
-export function CustomerDetailSheet({ customer, open, onOpenChange }: Props) {
+export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }: Props) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
