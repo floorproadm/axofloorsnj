@@ -783,42 +783,60 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
         {/* Footer - Actions */}
         <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center flex-shrink-0">
-          {/* Delete Lead */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={isDeleting}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              >
-                {isDeleting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
-                Deletar
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Deletar lead "{lead.name}"?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta ação é irreversível. O lead e todo o seu histórico de follow-up serão removidos permanentemente.
-                  {hasProject && (
-                    <span className="block mt-2 font-semibold text-destructive">
-                      ⚠️ Este lead possui um projeto vinculado. O projeto NÃO será deletado.
-                    </span>
-                  )}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteLead}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          {/* Delete Lead — admin only, double confirmation */}
+          {isAdmin ? (
+            <AlertDialog open={deleteOpen} onOpenChange={(o) => { setDeleteOpen(o); if (!o) setDeleteConfirmText(''); }}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isDeleting}
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
-                  Sim, deletar permanentemente
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {isDeleting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
+                  Deletar
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Deletar lead "{lead.name}"?</AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                    <div className="space-y-3">
+                      <p>
+                        Esta ação é <strong>irreversível</strong>. O lead, notas e histórico de follow-up serão removidos permanentemente.
+                      </p>
+                      {hasProject && (
+                        <p className="font-semibold text-destructive">
+                          ⚠️ Este lead possui um projeto vinculado. O projeto NÃO será deletado.
+                        </p>
+                      )}
+                      <p className="text-sm">
+                        Para confirmar, digite o nome do lead: <strong>{lead.name}</strong>
+                      </p>
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <Input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder={lead.name}
+                  autoComplete="off"
+                />
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteLead}
+                    disabled={deleteConfirmText.trim() !== lead.name.trim() || isDeleting}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Sim, deletar permanentemente
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <span className="text-xs text-muted-foreground">Somente administradores podem deletar leads</span>
+          )}
 
           {/* Mark as Lost */}
           {canMarkLost && !isTerminal && (
