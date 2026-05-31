@@ -81,7 +81,11 @@ export default function Customers() {
             {customers.map((customer) => (
               <Card
                 key={customer.id}
-                className="p-4 flex items-center justify-between hover:border-primary/30 transition-colors"
+                onClick={() => {
+                  setSelected(customer);
+                  setSheetOpen(true);
+                }}
+                className="p-4 flex items-center justify-between hover:border-primary/30 hover:bg-accent/40 transition-colors cursor-pointer"
               >
                 <div className="min-w-0">
                   <h3 className="font-medium text-foreground truncate">
@@ -105,6 +109,12 @@ export default function Customers() {
             ))}
           </div>
         )}
+
+        <CustomerDetailSheet
+          customer={selected}
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+        />
       </div>
     </AdminLayout>
   );
