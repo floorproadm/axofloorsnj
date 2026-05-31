@@ -566,13 +566,20 @@ export default function AdminChat() {
                             )}
                             <div
                               className={cn(
-                                "rounded-2xl px-3 py-2 text-sm leading-snug whitespace-pre-wrap break-words",
+                                "rounded-2xl px-3 py-2 text-sm leading-snug whitespace-pre-wrap break-words space-y-2",
                                 mine
                                   ? "bg-[#0f1b3d] text-white rounded-br-md"
                                   : "bg-muted text-foreground rounded-bl-md"
                               )}
                             >
-                              {m.content}
+                              {m.attachment_url && (
+                                <MessageAttachment
+                                  url={m.attachment_url}
+                                  type={m.attachment_type}
+                                  name={m.attachment_name}
+                                />
+                              )}
+                              {m.content && <div>{m.content}</div>}
                             </div>
                             <span className="text-[10px] text-muted-foreground/60 mt-0.5 px-1 tabular-nums">
                               {format(new Date(m.created_at), "HH:mm")}
@@ -586,25 +593,52 @@ export default function AdminChat() {
               </div>
 
               {/* Input */}
-              <div className="border-t border-border p-3 flex gap-2 bg-card">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type a message…"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                />
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim()}
-                  className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+              <div className="border-t border-border p-3 bg-card space-y-2">
+                {pending && (
+                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/60 text-xs">
+                    <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="truncate flex-1">{pending.name}</span>
+                    <button onClick={() => setPending(null)} className="text-muted-foreground hover:text-foreground">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    onChange={handleFile}
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+                  </Button>
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Type a message…"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={handleSend}
+                    disabled={(!input.trim() && !pending) || uploading}
+                    className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </>
           )}
