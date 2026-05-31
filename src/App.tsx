@@ -176,6 +176,11 @@ const App = () => {
                 <AdminLeadsManager />
               </ProtectedRoute>
             } />
+            <Route path="/admin/leads/trash" element={
+              <ProtectedRoute>
+                <LeadsTrash />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/leads/:leadId" element={
               <ProtectedRoute>
                 <LeadDetail />
