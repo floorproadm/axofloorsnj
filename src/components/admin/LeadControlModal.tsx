@@ -135,14 +135,18 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      const uid = data.user?.id;
+    const check = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const uid = sessionData.session?.user?.id;
+      console.log('[LeadControlModal] auth uid:', uid);
       if (!uid) return;
-      supabase.rpc('has_role', { _user_id: uid, _role: 'admin' }).then(({ data: ok }) => {
-        if (active) setIsAdmin(!!ok);
-      });
-    });
-    return () => { active = false; };
+      const { data: ok, error } = await supabase.rpc('has_role', { _user_id: uid, _role: 'admin' });
+      console.log('[LeadControlModal] has_role admin:', ok, 'error:', error);
+      if (active) setIsAdmin(!!ok);
+    };
+    check();
+    const { data: sub } = supabase.auth.onAuthStateChange(() => check());
+    return () => { active = false; sub.subscription.unsubscribe(); };
   }, []);
   const [sheetWidth, setSheetWidth] = useState(640);
   const [activeTab, setActiveTab] = useState('resumo');
