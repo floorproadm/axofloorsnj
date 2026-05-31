@@ -445,6 +445,7 @@ export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }:
                 }
                 toast.success("Cliente deletado com sucesso");
                 setConfirmOpen(false);
+                onDeleted?.(customer.id);
                 onOpenChange(false);
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
