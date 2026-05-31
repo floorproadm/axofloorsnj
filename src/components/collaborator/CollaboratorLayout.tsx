@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Loader2, Home, CalendarDays, MessageCircle, User, HardHat, Bell } from "lucide-react";
+import { Loader2, Home, CalendarDays, MessageCircle, User, HardHat, Bell, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useQuery } from "@tanstack/react-query";
@@ -11,8 +11,9 @@ import { useState, useRef, useEffect } from "react";
 const NAV_ITEMS = [
   { path: "/collaborator", icon: Home, label: "Home", exact: true },
   { path: "/collaborator/schedule", icon: CalendarDays, label: "Schedule" },
+  { path: "/collaborator/timesheet", icon: Clock, label: "Horas" },
   { path: "/collaborator/chat", icon: MessageCircle, label: "Chat" },
-  { path: "/collaborator/profile", icon: User, label: "Profile" },
+  { path: "/collaborator/profile", icon: User, label: "Perfil" },
 ];
 
 export default function CollaboratorLayout() {
