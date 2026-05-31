@@ -532,6 +532,12 @@ export default function PublicPortal() {
               })
             )}
           </TabsContent>
+
+          <TabsContent value="messages" className="mt-4">
+            {token && customer ? (
+              <PortalChat token={token} customerName={customer.full_name} />
+            ) : null}
+          </TabsContent>
         </Tabs>
 
         {/* Request Appointment CTA */}
