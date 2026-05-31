@@ -690,14 +690,12 @@ export type Database = {
           deposit_percentage: number
           email: string | null
           email_logo_url: string | null
-          google_rating: number
           id: string
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url: string | null
           organization_id: string | null
           phone: string | null
           primary_color: string | null
-          projects_completed: number
           proposal_logo_dark_url: string | null
           proposal_logo_light_url: string | null
           referral_commission_percent: number
@@ -705,13 +703,11 @@ export type Database = {
           singleton_key: boolean
           tagline: string | null
           trade_name: string | null
-          trust_builders: Json
           updated_at: string
           watermark_enabled: boolean
           watermark_image_url: string | null
           watermark_position: string
           website: string | null
-          years_in_business: number
         }
         Insert: {
           check_mailing_address?: string | null
@@ -727,14 +723,12 @@ export type Database = {
           deposit_percentage?: number
           email?: string | null
           email_logo_url?: string | null
-          google_rating?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           organization_id?: string | null
           phone?: string | null
           primary_color?: string | null
-          projects_completed?: number
           proposal_logo_dark_url?: string | null
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
@@ -742,13 +736,11 @@ export type Database = {
           singleton_key?: boolean
           tagline?: string | null
           trade_name?: string | null
-          trust_builders?: Json
           updated_at?: string
           watermark_enabled?: boolean
           watermark_image_url?: string | null
           watermark_position?: string
           website?: string | null
-          years_in_business?: number
         }
         Update: {
           check_mailing_address?: string | null
@@ -764,14 +756,12 @@ export type Database = {
           deposit_percentage?: number
           email?: string | null
           email_logo_url?: string | null
-          google_rating?: number
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
           organization_id?: string | null
           phone?: string | null
           primary_color?: string | null
-          projects_completed?: number
           proposal_logo_dark_url?: string | null
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
@@ -779,13 +769,11 @@ export type Database = {
           singleton_key?: boolean
           tagline?: string | null
           trade_name?: string | null
-          trust_builders?: Json
           updated_at?: string
           watermark_enabled?: boolean
           watermark_image_url?: string | null
           watermark_position?: string
           website?: string | null
-          years_in_business?: number
         }
         Relationships: [
           {
