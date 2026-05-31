@@ -45,6 +45,7 @@ export function AppointmentRequestsBody() {
         supabase
           .from("leads")
           .select("id, name, email, phone, address, city, services, status, created_at, next_action_date")
+          .is('deleted_at', null)
           .in("status", ["estimate_requested", "estimate_scheduled"])
           .order("created_at", { ascending: false }),
       ]);

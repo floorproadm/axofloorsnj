@@ -42,6 +42,7 @@ export function AdminReferralPipelineTab() {
         .select(
           "id, name, city, phone, budget, status, created_at, referred_by_partner_id, partners:referred_by_partner_id(company_name, contact_name)"
         )
+        .is('deleted_at', null)
         .not("referred_by_partner_id", "is", null)
         .order("created_at", { ascending: false });
       if (!active) return;

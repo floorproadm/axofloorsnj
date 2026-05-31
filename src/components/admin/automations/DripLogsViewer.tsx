@@ -42,6 +42,7 @@ export function DripLogsViewer() {
       const { data, error } = await supabase
         .from("leads")
         .select("id, name, email");
+        .is('deleted_at', null)
       if (error) throw error;
       return data;
     },

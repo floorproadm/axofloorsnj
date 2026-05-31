@@ -45,6 +45,7 @@ async function syncLinkedLeadStatus(projectId: string, newProposalStatus: string
   const { data: lead } = await supabase
     .from("leads")
     .select("id, status")
+    .is('deleted_at', null)
     .eq("converted_to_project_id", projectId)
     .maybeSingle();
   if (!lead) return;
@@ -170,6 +171,7 @@ function NewProposalDialog({ open, onClose, onCreated }: {
       const { data } = await supabase
         .from("leads")
         .select("referred_by_partner_id")
+        .is('deleted_at', null)
         .eq("customer_id", proj.customer_id)
         .not("referred_by_partner_id", "is", null)
         .order("created_at", { ascending: false })
