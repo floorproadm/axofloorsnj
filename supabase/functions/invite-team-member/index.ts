@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // Valid app_role values (must match the public.app_role enum)
-const VALID_ROLES = ["admin", "manager", "salesperson", "installer", "accountant", "moderator"] as const;
+const VALID_ROLES = ["admin", "manager", "salesperson", "installer", "sander", "sander_installer", "accountant", "moderator"] as const;
 type AppRole = (typeof VALID_ROLES)[number];
 
 // Map app_role -> org_member_role

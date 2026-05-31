@@ -55,10 +55,28 @@ export const ROLE_META: Record<AppRole, RoleMeta> = {
     value: "installer",
     label: "Instalador",
     short: "Installer",
-    description: "Equipe de campo — executa serviços e lança próprias diárias/SqFt.",
+    description: "Equipe de campo — executa instalações e lança próprias diárias/SqFt.",
     access: "Apenas projetos atribuídos. Mão de obra: só os próprios lançamentos.",
     badgeClass: "bg-green-500/15 text-green-400 border border-green-500/30",
     dotClass: "bg-green-500",
+  },
+  sander: {
+    value: "sander",
+    label: "Lixador",
+    short: "Lixador",
+    description: "Equipe de campo especializada em lixamento e refinamento.",
+    access: "Apenas projetos atribuídos. Mão de obra: só os próprios lançamentos.",
+    badgeClass: "bg-teal-500/15 text-teal-400 border border-teal-500/30",
+    dotClass: "bg-teal-500",
+  },
+  sander_installer: {
+    value: "sander_installer",
+    label: "Lixador/Instalador",
+    short: "Lixador/Inst.",
+    description: "Equipe de campo que executa tanto lixamento quanto instalação.",
+    access: "Apenas projetos atribuídos. Mão de obra: só os próprios lançamentos.",
+    badgeClass: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+    dotClass: "bg-emerald-500",
   },
   accountant: {
     value: "accountant",
@@ -86,6 +104,8 @@ export const ASSIGNABLE_ROLES: AppRole[] = [
   "manager",
   "salesperson",
   "installer",
+  "sander",
+  "sander_installer",
   "accountant",
 ];
 
