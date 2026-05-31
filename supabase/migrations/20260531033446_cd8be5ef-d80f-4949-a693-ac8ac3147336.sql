@@ -1,0 +1,1 @@
+ALTER TABLE public.b2b_price_list DROP COLUMN IF EXISTS wholesale_price, DROP COLUMN IF EXISTS retail_price;
