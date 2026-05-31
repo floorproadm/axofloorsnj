@@ -8,8 +8,11 @@ export interface LaborEntry {
   organization_id: string;
   worker_name: string;
   role: string;
-  daily_rate: number;
-  days_worked: number;
+  pay_mode: "daily" | "sqft";
+  daily_rate: number | null;
+  days_worked: number | null;
+  sqft_rate: number | null;
+  sqft_worked: number | null;
   total_cost: number;
   work_date: string;
   is_paid: boolean;
@@ -18,6 +21,7 @@ export interface LaborEntry {
   crew_member_id: string | null;
   notes: string | null;
   created_at: string;
+  status?: string;
 }
 
 export function useLaborEntries(projectId: string | undefined) {
