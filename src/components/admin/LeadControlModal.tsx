@@ -278,9 +278,12 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const handleDeleteLead = async () => {
     setIsDeleting(true);
     try {
-      const { error } = await supabase.from('leads').delete().eq('id', lead.id);
+      const { error } = await supabase
+        .from('leads')
+        .update({ deleted_at: new Date().toISOString() } as any)
+        .eq('id', lead.id);
       if (error) throw error;
-      toast.success(`Lead "${lead.name}" deletado com sucesso`);
+      toast.success(`Lead "${lead.name}" movido para a lixeira (recuperável por 30 dias)`);
       onRefresh();
       onClose();
     } catch (err) {
