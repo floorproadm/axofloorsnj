@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2, CalendarIcon, X, Search, SlidersHorizontal, Plus } from "lucide-react";
 import { CustomerDetailSheet } from "@/components/admin/CustomerDetailSheet";
+import { CreateCustomerSheet } from "@/components/admin/CreateCustomerSheet";
 import { DataTable } from "@/components/admin/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
