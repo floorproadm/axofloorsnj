@@ -260,7 +260,7 @@ export default function Customers() {
   return (
     <AdminLayout title="Clientes">
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Users className="w-6 h-6 text-[hsl(var(--gold-warm))]" />
@@ -272,7 +272,7 @@ export default function Customers() {
           </div>
           <Button
             onClick={() => setCreateOpen(true)}
-            className="shrink-0"
+            className="w-full sm:w-auto self-start"
           >
             <Plus className="w-4 h-4 mr-2" />
             Adicionar cliente
