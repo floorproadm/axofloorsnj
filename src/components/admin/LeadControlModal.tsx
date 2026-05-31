@@ -33,6 +33,7 @@ import {
   Paperclip, Image, File, X, Download, ExternalLink, Zap
 } from 'lucide-react';
 import { LeadAutomationsPanel } from '@/components/admin/automations/LeadAutomationsPanel';
+import { useAuth } from '@/contexts/AuthContext';
 import { format, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -111,6 +112,7 @@ const NRA_STYLES: Record<string, { bg: string; border: string; text: string; ico
 
 export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = false }: LeadControlModalProps) {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToProject, isConverting } = useLeadConversion();
@@ -131,23 +133,32 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const [sendingLeadEmail, setSendingLeadEmail] = useState(false);
+  const userId = user?.id;
 
   useEffect(() => {
-    let active = true;
-    const check = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const uid = sessionData.session?.user?.id;
-      console.log('[LeadControlModal] auth uid:', uid);
-      if (!uid) return;
-      const { data: ok, error } = await supabase.rpc('has_role', { _user_id: uid, _role: 'admin' });
-      console.log('[LeadControlModal] has_role admin:', ok, 'error:', error);
-      if (active) setIsAdmin(!!ok);
+    if (authLoading) return;
+
+    if (!userId) {
+      setIsAdmin(false);
+      setIsCheckingAdmin(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsCheckingAdmin(true);
+
+    const checkAdminRole = async () => {
+      const { data, error } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+      if (cancelled) return;
+      setIsAdmin(error ? false : data === true);
+      setIsCheckingAdmin(false);
     };
-    check();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => check());
-    return () => { active = false; sub.subscription.unsubscribe(); };
-  }, []);
+
+    checkAdminRole();
+    return () => { cancelled = true; };
+  }, [authLoading, userId]);
   const [sheetWidth, setSheetWidth] = useState(640);
   const [activeTab, setActiveTab] = useState('resumo');
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -791,7 +802,9 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
         {/* Footer - Actions */}
         <div className="px-4 sm:px-6 py-3 border-t bg-muted/30 flex justify-between items-center flex-shrink-0">
           {/* Delete Lead — admin only, double confirmation */}
-          {isAdmin ? (
+          {isCheckingAdmin ? (
+            <span className="text-xs text-muted-foreground">Verificando permissões...</span>
+          ) : isAdmin ? (
             <AlertDialog open={deleteOpen} onOpenChange={(o) => { setDeleteOpen(o); if (!o) setDeleteConfirmText(''); }}>
               <AlertDialogTrigger asChild>
                 <Button
