@@ -52,6 +52,7 @@ export function AdminSidebar() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const chatUnread = useChatUnreadCount();
 
   useEffect(() => {
     async function fetchLogo() {
