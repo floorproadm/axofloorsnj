@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, UserPlus } from "lucide-react";
+import { ASSIGNABLE_ROLES, ROLE_META, type AppRole } from "./roleConfig";
 
 interface Props {
   open: boolean;
@@ -17,8 +18,10 @@ interface Props {
 export default function InviteTeamMemberDialog({ open, onOpenChange, onSuccess }: Props) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("collaborator");
+  const [role, setRole] = useState<AppRole | "none">("installer");
   const [loading, setLoading] = useState(false);
+
+  const selectedMeta = role !== "none" ? ROLE_META[role as AppRole] : null;
 
   const handleSubmit = async () => {
     if (!fullName.trim() || !email.trim()) {
@@ -32,7 +35,7 @@ export default function InviteTeamMemberDialog({ open, onOpenChange, onSuccess }
         body: {
           email: email.trim(),
           full_name: fullName.trim(),
-          role: role === "collaborator" ? null : role,
+          role: role === "none" ? null : role,
         },
       });
 
@@ -46,7 +49,7 @@ export default function InviteTeamMemberDialog({ open, onOpenChange, onSuccess }
 
       setFullName("");
       setEmail("");
-      setRole("collaborator");
+      setRole("installer");
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
@@ -98,17 +101,32 @@ export default function InviteTeamMemberDialog({ open, onOpenChange, onSuccess }
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="invite-role">Role</Label>
-            <Select value={role} onValueChange={setRole} disabled={loading}>
+            <Label htmlFor="invite-role">Perfil</Label>
+            <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")} disabled={loading}>
               <SelectTrigger id="invite-role">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="collaborator">Colaborador (sem role especial)</SelectItem>
-                <SelectItem value="moderator">Moderador</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
+                {ASSIGNABLE_ROLES.map((r) => {
+                  const m = ROLE_META[r];
+                  return (
+                    <SelectItem key={r} value={r}>
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${m.dotClass}`} />
+                        <span>{m.label}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+                <SelectItem value="none">Sem perfil especial</SelectItem>
               </SelectContent>
             </Select>
+            {selectedMeta && (
+              <div className="text-xs text-muted-foreground space-y-1 pt-1">
+                <p>{selectedMeta.description}</p>
+                <p className="text-[11px] opacity-80">{selectedMeta.access}</p>
+              </div>
+            )}
           </div>
         </div>
 

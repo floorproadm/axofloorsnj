@@ -1803,6 +1803,7 @@ export type Database = {
           next_step: string | null
           notes: string | null
           organization_id: string
+          owner_id: string | null
           phone: string
           priority: string
           referred_by_partner_id: string | null
@@ -1840,6 +1841,7 @@ export type Database = {
           next_step?: string | null
           notes?: string | null
           organization_id: string
+          owner_id?: string | null
           phone: string
           priority?: string
           referred_by_partner_id?: string | null
@@ -1877,6 +1879,7 @@ export type Database = {
           next_step?: string | null
           notes?: string | null
           organization_id?: string
+          owner_id?: string | null
           phone?: string
           priority?: string
           referred_by_partner_id?: string | null
@@ -3418,6 +3421,7 @@ export type Database = {
           margin_better: number
           margin_good: number
           organization_id: string
+          owner_id: string | null
           payment_terms: string | null
           pdf_document_id: string | null
           project_id: string
@@ -3452,6 +3456,7 @@ export type Database = {
           margin_better: number
           margin_good: number
           organization_id: string
+          owner_id?: string | null
           payment_terms?: string | null
           pdf_document_id?: string | null
           project_id: string
@@ -3486,6 +3491,7 @@ export type Database = {
           margin_better?: number
           margin_good?: number
           organization_id?: string
+          owner_id?: string | null
           payment_terms?: string | null
           pdf_document_id?: string | null
           project_id?: string
@@ -4679,7 +4685,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "manager"
+        | "salesperson"
+        | "installer"
+        | "accountant"
       labor_pricing_model: "sqft" | "daily"
       org_member_role: "owner" | "admin" | "collaborator"
       org_plan: "starter" | "pro" | "enterprise"
@@ -4812,7 +4825,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "manager",
+        "salesperson",
+        "installer",
+        "accountant",
+      ],
       labor_pricing_model: ["sqft", "daily"],
       org_member_role: ["owner", "admin", "collaborator"],
       org_plan: ["starter", "pro", "enterprise"],
