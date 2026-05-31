@@ -49,11 +49,9 @@ export default function TimesheetApprovals() {
     );
   };
 
-  const totalDays = entries.reduce((s, e) => s + Number(e.days_worked || 0), 0);
-  const totalCost = entries.reduce(
-    (s, e) => s + Number(e.daily_rate || 0) * Number(e.days_worked || 0),
-    0
-  );
+  const totalCost = entries.reduce((s, e) => s + Number(e.total_cost || 0), 0);
+  const dailyCount = entries.filter((e) => e.pay_mode === "daily").length;
+  const sqftCount = entries.filter((e) => e.pay_mode === "sqft").length;
 
   return (
     <AdminLayout title="Timesheet Approvals">
@@ -64,8 +62,8 @@ export default function TimesheetApprovals() {
             Timesheet Approvals
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Horas marcadas pelos colaboradores aguardando sua aprovação. Apenas aprovadas
-            entram no custo do projeto.
+            Lançamentos dos colaboradores aguardando aprovação. Apenas aprovados entram no
+            custo do projeto.
           </p>
         </div>
 
@@ -79,9 +77,9 @@ export default function TimesheetApprovals() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-xs uppercase text-muted-foreground">Dias totais</p>
+              <p className="text-xs uppercase text-muted-foreground">Mix</p>
               <p className="text-2xl font-bold text-foreground tabular-nums">
-                {totalDays.toFixed(1)}
+                {dailyCount}d · {sqftCount}s
               </p>
             </CardContent>
           </Card>
@@ -109,7 +107,11 @@ export default function TimesheetApprovals() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {entries.map((e) => (
+            {entries.map((e) => {
+              const isSqft = e.pay_mode === "sqft";
+              const qty = isSqft ? Number(e.sqft_worked || 0) : Number(e.days_worked || 0);
+              const rate = isSqft ? Number(e.sqft_rate || 0) : Number(e.daily_rate || 0);
+              return (
               <Card key={e.id}>
                 <CardContent className="p-4 flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -119,16 +121,22 @@ export default function TimesheetApprovals() {
                       <Badge variant="outline" className="text-[10px] capitalize">
                         {e.role || "helper"}
                       </Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {isSqft ? "SqFt" : "Diária"}
+                      </Badge>
                       <span className="text-xs text-muted-foreground">
                         → {e.projects?.customer_name || "Projeto"}
                       </span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-muted-foreground tabular-nums">
                       <span>📅 {format(parseISO(e.work_date), "MMM d, yyyy")}</span>
-                      <span>⏱ {Number(e.days_worked).toFixed(1)} dia(s)</span>
-                      <span>💵 ${Number(e.daily_rate).toFixed(2)}/dia</span>
+                      <span>
+                        {isSqft
+                          ? `📐 ${qty} sqft × $${rate.toFixed(2)}`
+                          : `⏱ ${qty.toFixed(1)}d × $${rate.toFixed(2)}`}
+                      </span>
                       <span className="font-semibold text-foreground">
-                        = ${(Number(e.daily_rate) * Number(e.days_worked)).toFixed(2)}
+                        = ${Number(e.total_cost || 0).toFixed(2)}
                       </span>
                     </div>
                     {e.notes && (
@@ -155,7 +163,8 @@ export default function TimesheetApprovals() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -460,20 +460,29 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
               {(labor ?? []).length === 0 ? (
                 <p className="text-xs text-muted-foreground py-1">No labor entries</p>
               ) : (
-                (labor ?? []).slice(0, 5).map((l) => (
+                (labor ?? []).slice(0, 5).map((l) => {
+                  const isSqft = (l as any).pay_mode === "sqft";
+                  return (
                   <div key={l.id} className="flex items-center justify-between py-1.5 border-b last:border-0">
                     <div>
                       <p className="text-sm">{l.worker_name}</p>
-                      <p className="text-[10px] text-muted-foreground">{l.days_worked}d × ${l.daily_rate}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {isSqft
+                          ? `${(l as any).sqft_worked ?? 0} sqft × $${Number((l as any).sqft_rate ?? 0).toFixed(2)}`
+                          : `${l.days_worked ?? 0}d × $${Number(l.daily_rate ?? 0).toFixed(0)}`}
+                      </p>
                     </div>
                     <span className="text-sm font-bold">{fmt(l.total_cost)}</span>
                   </div>
-                ))
+                  );
+                })
               )}
               {(labor?.length ?? 0) > 5 && (
                 <p className="text-[10px] text-muted-foreground text-center pt-1">+{(labor?.length ?? 0) - 5} more</p>
               )}
             </div>
+
+            <SqftRateEditor projectId={project?.id} />
           </TabsContent>
 
           <TabsContent value="invoices" className="mt-3 space-y-2">
