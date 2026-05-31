@@ -364,15 +364,102 @@ export function CustomerDetailSheet({ customer, open, onOpenChange }: Props) {
             </>
           )}
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <Button asChild variant="outline" className="w-full">
               <Link to={`/admin/projects?customer=${customer.id}`}>
                 Abrir detalhes completos
               </Link>
             </Button>
+            {isAdmin && (
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => {
+                  setConfirmText("");
+                  setConfirmOpen(true);
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Deletar cliente
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar cliente permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é irreversível. O cliente{" "}
+              <span className="font-semibold text-foreground">
+                {customer.full_name || "Sem nome"}
+              </span>{" "}
+              será removido do sistema.
+              {(projects.length > 0 ||
+                invoices.length > 0 ||
+                appointments.length > 0) && (
+                <span className="block mt-2 text-destructive font-medium">
+                  Bloqueado: este cliente possui {projects.length} projeto(s),{" "}
+                  {invoices.length} fatura(s) e {appointments.length}{" "}
+                  compromisso(s) vinculados. Remova ou desvincule antes de deletar.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="confirm-delete-customer" className="text-sm">
+              Digite <span className="font-mono font-semibold">DELETAR</span> para confirmar
+            </Label>
+            <Input
+              id="confirm-delete-customer"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="DELETAR"
+              autoComplete="off"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={
+                deleting ||
+                confirmText !== "DELETAR" ||
+                projects.length > 0 ||
+                invoices.length > 0 ||
+                appointments.length > 0
+              }
+              onClick={async (e) => {
+                e.preventDefault();
+                setDeleting(true);
+                const { error } = await supabase
+                  .from("customers")
+                  .delete()
+                  .eq("id", customer.id);
+                setDeleting(false);
+                if (error) {
+                  toast.error("Erro ao deletar cliente: " + error.message);
+                  return;
+                }
+                toast.success("Cliente deletado com sucesso");
+                setConfirmOpen(false);
+                onOpenChange(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deletando...
+                </>
+              ) : (
+                "Deletar permanentemente"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
