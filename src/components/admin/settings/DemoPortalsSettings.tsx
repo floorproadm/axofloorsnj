@@ -142,6 +142,30 @@ export default function DemoPortalsSettings() {
         </div>
       </Card>
 
+      {/* Referral Portal */}
+      <Card className="border-l-4 border-l-primary shadow-sm p-6 space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Gift className="w-5 h-5 text-primary" />
+            <div>
+              <h4 className="text-base font-semibold text-foreground">Referral Portal</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Programa de indicações gamificado (Bronze→Diamond). Clientes/embaixadores acompanham referrals, comissões e tier.
+              </p>
+            </div>
+          </div>
+          <code className="text-[10px] text-muted-foreground hidden md:block">/referral-program</code>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => open(referralUrl)} className="gap-2">
+            <ExternalLink className="w-4 h-4" /> Open Referral Portal
+          </Button>
+          <Button variant="ghost" onClick={() => copy(referralUrl, "Referral portal")} className="gap-2">
+            <Copy className="w-4 h-4" /> Copy link
+          </Button>
+        </div>
+      </Card>
+
       {/* Collaborator Portal */}
       <Card className="border-l-4 border-l-primary shadow-sm p-6 space-y-4">
         <div className="flex items-start justify-between gap-3">
