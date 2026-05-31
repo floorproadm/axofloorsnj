@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, MessageCircle, ArrowLeft, Search, Users, UserCircle2 } from "lucide-react";
+import { Loader2, Send, MessageCircle, ArrowLeft, Search, Users, UserCircle2, Paperclip, X } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
+import { MessageAttachment } from "@/components/chat/MessageAttachment";
+import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
+import { useRef as useReactRef } from "react";
 
 type Tab = "clients" | "team";
 
@@ -39,6 +42,9 @@ interface ChatMessage {
   read: boolean;
   created_at: string;
   receiver_id?: string | null;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
+  attachment_name?: string | null;
 }
 
 const initials = (name: string) =>
@@ -65,6 +71,9 @@ export default function AdminChat() {
   const [activeTeamId, setActiveTeamId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useReactRef<HTMLInputElement>(null);
+  const [pending, setPending] = useState<{ url: string; type: string; name: string } | null>(null);
+  const { upload, uploading } = useChatAttachmentUpload("admin");
 
   /* ---------------- Clients list ---------------- */
   const { data: clientConvos = [], isLoading: loadingClients } = useQuery({
@@ -257,15 +266,20 @@ export default function AdminChat() {
   /* ---------------- Send ---------------- */
   const handleSend = async () => {
     const text = input.trim();
-    if (!text || !user) return;
+    if ((!text && !pending) || !user) return;
     setInput("");
+    const att = pending;
+    setPending(null);
     if (tab === "clients" && activeProjectId) {
       await supabase.from("chat_messages").insert({
         project_id: activeProjectId,
         sender_id: user.id,
         sender_name: "Admin",
         content: text,
-      });
+        attachment_url: att?.url ?? null,
+        attachment_type: att?.type ?? null,
+        attachment_name: att?.name ?? null,
+      } as any);
     } else if (tab === "team" && activeTeamId) {
       const recv = teamMembers.find((m) => m.user_id === activeTeamId);
       await supabase.from("direct_messages").insert({
@@ -281,8 +295,19 @@ export default function AdminChat() {
             .maybeSingle()
         ).data?.organization_id,
         content: text,
+        attachment_url: att?.url ?? null,
+        attachment_type: att?.type ?? null,
+        attachment_name: att?.name ?? null,
       } as any);
     }
+  };
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    const result = await upload(f);
+    if (result) setPending(result);
   };
 
   /* ---------------- Filtered lists ---------------- */
