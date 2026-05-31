@@ -1803,6 +1803,7 @@ export type Database = {
           next_step: string | null
           notes: string | null
           organization_id: string
+          owner_id: string | null
           phone: string
           priority: string
           referred_by_partner_id: string | null
@@ -1840,6 +1841,7 @@ export type Database = {
           next_step?: string | null
           notes?: string | null
           organization_id: string
+          owner_id?: string | null
           phone: string
           priority?: string
           referred_by_partner_id?: string | null
@@ -1877,6 +1879,7 @@ export type Database = {
           next_step?: string | null
           notes?: string | null
           organization_id?: string
+          owner_id?: string | null
           phone?: string
           priority?: string
           referred_by_partner_id?: string | null
@@ -3418,6 +3421,7 @@ export type Database = {
           margin_better: number
           margin_good: number
           organization_id: string
+          owner_id: string | null
           payment_terms: string | null
           pdf_document_id: string | null
           project_id: string
@@ -3452,6 +3456,7 @@ export type Database = {
           margin_better: number
           margin_good: number
           organization_id: string
+          owner_id?: string | null
           payment_terms?: string | null
           pdf_document_id?: string | null
           project_id: string
@@ -3486,6 +3491,7 @@ export type Database = {
           margin_better?: number
           margin_good?: number
           organization_id?: string
+          owner_id?: string | null
           payment_terms?: string | null
           pdf_document_id?: string | null
           project_id?: string
