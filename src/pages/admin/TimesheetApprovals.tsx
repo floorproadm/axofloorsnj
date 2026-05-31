@@ -56,7 +56,7 @@ export default function TimesheetApprovals() {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Timesheet Approvals">
       <div className="p-6 space-y-6 max-w-5xl mx-auto">
         <div>
           <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
