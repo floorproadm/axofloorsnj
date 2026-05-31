@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -616,9 +616,10 @@ function SqftRateEditor({ projectId }: { projectId: string | undefined }) {
   const [saving, setSaving] = useState(false);
 
   // Sync local input when query data arrives
-  useState(() => {
+  useEffect(() => {
     if (current !== null && value === "") setValue(String(current));
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current]);
 
   const save = async () => {
     if (!projectId) return;
