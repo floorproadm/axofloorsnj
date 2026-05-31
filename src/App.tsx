@@ -301,8 +301,16 @@ const App = () => {
               <Route path="docs" element={<CollaboratorDocs />} />
               <Route path="chat" element={<CollaboratorChat />} />
               <Route path="profile" element={<CollaboratorProfile />} />
+              <Route path="timesheet" element={<CollaboratorTimesheet />} />
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
+
+            {/* Admin: Timesheet Approvals */}
+            <Route path="/admin/timesheet" element={
+              <ProtectedRoute>
+                <TimesheetApprovals />
+              </ProtectedRoute>
+            } />
 
             {/* Partner Portal */}
             <Route path="/partner/auth" element={<PartnerAuth />} />
