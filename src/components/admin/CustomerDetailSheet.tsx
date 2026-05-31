@@ -85,6 +85,7 @@ interface Props {
   customer: Customer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDeleted?: (id: string) => void;
 }
 
 const fmt = (n: number | null | undefined) =>
