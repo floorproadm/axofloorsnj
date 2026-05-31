@@ -7,12 +7,11 @@ import { Users, Loader2 } from "lucide-react";
 
 interface Customer {
   id: string;
-  name: string | null;
+  full_name: string | null;
   email: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
-  state: string | null;
   zip_code: string | null;
   created_at: string;
 }
@@ -27,11 +26,11 @@ export default function Customers() {
       try {
         const { data, error } = await supabase
           .from("customers")
-          .select("id, name, email, phone, address, city, state, zip_code, created_at")
+          .select("id, full_name, email, phone, address, city, zip_code, created_at")
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        setCustomers((data as Customer[]) || []);
+        setCustomers((data as unknown as Customer[]) || []);
       } catch (err: any) {
         toast({
           title: "Erro ao carregar clientes",
@@ -82,7 +81,7 @@ export default function Customers() {
               >
                 <div className="min-w-0">
                   <h3 className="font-medium text-foreground truncate">
-                    {customer.name || "Sem nome"}
+                    {customer.full_name || "Sem nome"}
                   </h3>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-1">
                     {customer.email && <span>{customer.email}</span>}
@@ -91,7 +90,6 @@ export default function Customers() {
                       <span className="truncate">
                         {customer.address}
                         {customer.city && `, ${customer.city}`}
-                        {customer.state && `, ${customer.state}`}
                       </span>
                     )}
                   </div>
