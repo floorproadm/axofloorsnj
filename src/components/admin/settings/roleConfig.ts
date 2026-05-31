@@ -7,6 +7,8 @@ export type AppRole =
   | "manager"
   | "salesperson"
   | "installer"
+  | "sander"
+  | "sander_installer"
   | "accountant"
   | "moderator";
 
