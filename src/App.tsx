@@ -246,6 +246,11 @@ const App = () => {
                 <AdminPartners />
               </ProtectedRoute>
             } />
+            <Route path="/admin/customers" element={
+              <ProtectedRoute>
+                <AdminCustomers />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/payments" element={
               <ProtectedRoute>
                 <AdminPayments />
