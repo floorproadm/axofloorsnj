@@ -522,6 +522,14 @@ export default function Customers() {
             setSelected(null);
           }}
         />
+
+        <CreateCustomerSheet
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={(customer) => {
+            setCustomers((prev) => [customer, ...prev]);
+          }}
+        />
       </div>
     </AdminLayout>
   );
