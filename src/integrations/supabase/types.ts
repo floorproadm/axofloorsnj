@@ -626,7 +626,10 @@ export type Database = {
       }
       chat_messages: {
         Row: {
-          content: string
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
+          content: string | null
           created_at: string
           id: string
           project_id: string | null
@@ -635,7 +638,10 @@ export type Database = {
           sender_name: string
         }
         Insert: {
-          content: string
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string | null
           created_at?: string
           id?: string
           project_id?: string | null
@@ -644,7 +650,10 @@ export type Database = {
           sender_name?: string
         }
         Update: {
-          content?: string
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string | null
           created_at?: string
           id?: string
           project_id?: string | null
@@ -864,7 +873,10 @@ export type Database = {
       }
       direct_messages: {
         Row: {
-          content: string
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
+          content: string | null
           created_at: string
           id: string
           organization_id: string
@@ -875,7 +887,10 @@ export type Database = {
           sender_name: string
         }
         Insert: {
-          content: string
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string | null
           created_at?: string
           id?: string
           organization_id: string
@@ -886,7 +901,10 @@ export type Database = {
           sender_name?: string
         }
         Update: {
-          content?: string
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string | null
           created_at?: string
           id?: string
           organization_id?: string
@@ -4656,10 +4674,22 @@ export type Database = {
       purge_expired_deleted_leads: { Args: never; Returns: undefined }
       retry_failed_review_requests: { Args: never; Returns: Json }
       run_sla_engine: { Args: never; Returns: Json }
-      send_portal_message: {
-        Args: { p_content: string; p_sender_name?: string; p_token: string }
-        Returns: Json
-      }
+      send_portal_message:
+        | {
+            Args: { p_content: string; p_sender_name?: string; p_token: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_attachment_name?: string
+              p_attachment_type?: string
+              p_attachment_url?: string
+              p_content: string
+              p_sender_name?: string
+              p_token: string
+            }
+            Returns: Json
+          }
       submit_partner_referral: {
         Args: {
           p_address?: string
