@@ -31,8 +31,11 @@ export default function CollaboratorChat() {
   const { data: projects = [], isLoading: loadingProjects } = useCollaboratorProjects();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [pending, setPending] = useState<{ url: string; type: string; name: string } | null>(null);
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { upload, uploading } = useChatAttachmentUpload("field");
 
   // Auto-select first project
   useEffect(() => {
