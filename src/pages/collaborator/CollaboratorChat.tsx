@@ -7,9 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, MessageCircle } from "lucide-react";
+import { Loader2, Send, MessageCircle, Paperclip, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { MessageAttachment } from "@/components/chat/MessageAttachment";
+import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
 
 interface ChatMessage {
   id: string;
@@ -19,6 +21,9 @@ interface ChatMessage {
   content: string;
   read: boolean;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
+  attachment_name?: string | null;
 }
 
 export default function CollaboratorChat() {
