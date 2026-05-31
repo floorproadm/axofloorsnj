@@ -72,6 +72,7 @@ export function AdminSidebar() {
   const topItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
+    { title: "Chat", url: "/admin/chat", icon: MessageSquare, badge: "chat" as const },
     { title: "Schedule & Appointments", url: "/admin/schedule", icon: CalendarDays },
     { title: t("sidebar.pagamentos"), url: "/admin/payments", icon: DollarSign },
     { title: "Performance", url: "/admin/performance", icon: BarChart3 },
