@@ -30,6 +30,7 @@ import ReferralProgram from "./pages/ReferralProgram";
 import Builders from "./pages/Builders";
 import Realtors from "./pages/Realtors";
 import AdminDashboard from './pages/admin/Dashboard';
+import AdminChat from './pages/admin/AdminChat';
 
 import FeedPostDetail from './pages/admin/FeedPostDetail';
 import FeedPostEdit from './pages/admin/FeedPostEdit';
@@ -154,6 +155,11 @@ const App = () => {
             <Route path="/admin/dashboard" element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/chat" element={
+              <ProtectedRoute>
+                <AdminChat />
               </ProtectedRoute>
             } />
             <Route path="/admin/gallery" element={

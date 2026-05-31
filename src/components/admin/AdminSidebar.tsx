@@ -24,7 +24,10 @@ import {
   CalendarDays,
   Clock,
   UserCheck,
+  MessageSquare,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useChatUnreadCount } from "@/hooks/useChatUnreadCount";
 import {
   Sidebar,
   SidebarContent,
