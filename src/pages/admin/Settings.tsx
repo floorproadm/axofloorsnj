@@ -132,7 +132,6 @@ export default function Settings() {
               {active === "email_templates" && <EmailTemplateEditor />}
               {active === "b2b_pricing" && <B2BPricingSettings />}
               {active === "demo_portals" && <DemoPortalsSettings />}
-              {active === "demo_portals" && <DemoPortalsSettings />}
             </Suspense>
           </div>
         </div>
