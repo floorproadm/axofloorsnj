@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Handshake, HardHat, ExternalLink, Copy, MonitorPlay, Loader2 } from "lucide-react";
+import { Users, Handshake, HardHat, ExternalLink, Copy, MonitorPlay, Loader2, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,6 +41,7 @@ export default function DemoPortalsSettings() {
   const clientUrl = selectedToken ? `${origin}/portal/${selectedToken}` : "";
   const partnerUrl = `${origin}/partner/dashboard`;
   const collabUrl = `${origin}/collaborator`;
+  const referralUrl = `${origin}/referral-program`;
 
   const copy = (url: string, label: string) => {
     if (!url) return;
@@ -136,6 +137,30 @@ export default function DemoPortalsSettings() {
             <ExternalLink className="w-4 h-4" /> Open Partner Portal
           </Button>
           <Button variant="ghost" onClick={() => copy(partnerUrl, "Partner portal")} className="gap-2">
+            <Copy className="w-4 h-4" /> Copy link
+          </Button>
+        </div>
+      </Card>
+
+      {/* Referral Portal */}
+      <Card className="border-l-4 border-l-primary shadow-sm p-6 space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Gift className="w-5 h-5 text-primary" />
+            <div>
+              <h4 className="text-base font-semibold text-foreground">Referral Portal</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Programa de indicações gamificado (Bronze→Diamond). Clientes/embaixadores acompanham referrals, comissões e tier.
+              </p>
+            </div>
+          </div>
+          <code className="text-[10px] text-muted-foreground hidden md:block">/referral-program</code>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => open(referralUrl)} className="gap-2">
+            <ExternalLink className="w-4 h-4" /> Open Referral Portal
+          </Button>
+          <Button variant="ghost" onClick={() => copy(referralUrl, "Referral portal")} className="gap-2">
             <Copy className="w-4 h-4" /> Copy link
           </Button>
         </div>
