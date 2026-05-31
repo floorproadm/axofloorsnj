@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2 } from "lucide-react";
+import { CustomerDetailSheet } from "@/components/admin/CustomerDetailSheet";
 
 interface Customer {
   id: string;
@@ -13,12 +14,15 @@ interface Customer {
   address: string | null;
   city: string | null;
   zip_code: string | null;
+  notes: string | null;
   created_at: string;
 }
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Customer | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -26,7 +30,7 @@ export default function Customers() {
       try {
         const { data, error } = await supabase
           .from("customers")
-          .select("id, full_name, email, phone, address, city, zip_code, created_at")
+          .select("id, full_name, email, phone, address, city, zip_code, notes, created_at")
           .order("created_at", { ascending: false });
 
         if (error) throw error;
