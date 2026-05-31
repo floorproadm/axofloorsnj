@@ -83,6 +83,8 @@ import CollaboratorSchedule from "./pages/collaborator/CollaboratorSchedule";
 import CollaboratorDocs from "./pages/collaborator/CollaboratorDocs";
 import CollaboratorProfile from "./pages/collaborator/CollaboratorProfile";
 import CollaboratorChat from "./pages/collaborator/CollaboratorChat";
+import CollaboratorTimesheet from "./pages/collaborator/CollaboratorTimesheet";
+import TimesheetApprovals from "./pages/admin/TimesheetApprovals";
 
 import PartnerAuth from "./pages/partner/PartnerAuth";
 import ReferralAuth from "./pages/ReferralAuth";
