@@ -41,6 +41,7 @@ export default function DemoPortalsSettings() {
   const clientUrl = selectedToken ? `${origin}/portal/${selectedToken}` : "";
   const partnerUrl = `${origin}/partner/dashboard`;
   const collabUrl = `${origin}/collaborator`;
+  const referralUrl = `${origin}/referral-program`;
 
   const copy = (url: string, label: string) => {
     if (!url) return;
