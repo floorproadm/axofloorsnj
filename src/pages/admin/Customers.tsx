@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2 } from "lucide-react";
+import { CustomerDetailSheet } from "@/components/admin/CustomerDetailSheet";
 
 interface Customer {
   id: string;
@@ -13,12 +14,15 @@ interface Customer {
   address: string | null;
   city: string | null;
   zip_code: string | null;
+  notes: string | null;
   created_at: string;
 }
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Customer | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -26,7 +30,7 @@ export default function Customers() {
       try {
         const { data, error } = await supabase
           .from("customers")
-          .select("id, full_name, email, phone, address, city, zip_code, created_at")
+          .select("id, full_name, email, phone, address, city, zip_code, notes, created_at")
           .order("created_at", { ascending: false });
 
         if (error) throw error;
@@ -77,7 +81,11 @@ export default function Customers() {
             {customers.map((customer) => (
               <Card
                 key={customer.id}
-                className="p-4 flex items-center justify-between hover:border-primary/30 transition-colors"
+                onClick={() => {
+                  setSelected(customer);
+                  setSheetOpen(true);
+                }}
+                className="p-4 flex items-center justify-between hover:border-primary/30 hover:bg-accent/40 transition-colors cursor-pointer"
               >
                 <div className="min-w-0">
                   <h3 className="font-medium text-foreground truncate">
@@ -101,6 +109,12 @@ export default function Customers() {
             ))}
           </div>
         )}
+
+        <CustomerDetailSheet
+          customer={selected}
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+        />
       </div>
     </AdminLayout>
   );
