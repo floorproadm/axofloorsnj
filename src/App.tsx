@@ -57,6 +57,7 @@ import CrewsVans from './pages/admin/CrewsVans';
 import Fleet from './pages/admin/Fleet';
 import AdminProposals from './pages/admin/Proposals';
 import ProjectsHub from './pages/admin/ProjectsHub';
+import AdminMissionControl from './pages/admin/MissionControl';
 import AdminCustomers from './pages/admin/Customers';
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/admin/AdminAuth";
