@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, Tag, MonitorPlay, Stamp } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, ListChecks, MonitorPlay, Stamp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -66,7 +66,7 @@ export default function Settings() {
     { id: "language", label: t("settings.idioma"), description: t("settings.idiomaDesc"), icon: Globe },
     { id: "email_logs", label: "Email Logs", description: "Gmail email audit trail", icon: Mail },
     { id: "email_templates", label: "Email Templates", description: "Edit email copy & CTAs", icon: FileEdit },
-    { id: "b2b_pricing", label: "Preços B2B", description: "Tabela de atacado para parceiros", icon: Tag },
+    { id: "b2b_pricing", label: "Catálogo B2B", description: "Serviços disponíveis para cotações de parceiros", icon: ListChecks },
     { id: "demo_portals", label: "Demo Portals", description: "Quick access to client-facing portals for live demos", icon: MonitorPlay },
   ];
 

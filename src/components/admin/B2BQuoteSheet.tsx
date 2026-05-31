@@ -11,7 +11,7 @@ import { Loader2, Plus, Trash2, Send, Save } from "lucide-react";
 import { AXO_ORG_ID } from "@/lib/constants";
 
 interface Partner { id: string; company_name: string; contact_name: string; email: string | null; }
-interface Price { id: string; service_name: string; unit: string; wholesale_price: number; }
+interface Price { id: string; service_name: string; unit: string; }
 interface Item { service_id: string; service_name: string; unit: string; quantity: number; unit_price: number; }
 
 interface Props {
@@ -38,7 +38,7 @@ export function B2BQuoteSheet({ open, onOpenChange, defaultPartnerId, onCreated 
     (async () => {
       const [{ data: ps }, { data: pr }] = await Promise.all([
         supabase.from("partners").select("id, company_name, contact_name, email").order("company_name"),
-        supabase.from("b2b_price_list" as any).select("id, service_name, unit, wholesale_price").eq("organization_id", AXO_ORG_ID).eq("is_active", true).order("display_order"),
+        supabase.from("b2b_price_list" as any).select("id, service_name, unit").eq("organization_id", AXO_ORG_ID).eq("is_active", true).order("display_order"),
       ]);
       setPartners((ps as any) || []);
       setPrices((pr as any) || []);
@@ -66,7 +66,7 @@ export function B2BQuoteSheet({ open, onOpenChange, defaultPartnerId, onCreated 
       service_id: p.id,
       service_name: p.service_name,
       unit: p.unit,
-      unit_price: Number(p.wholesale_price),
+      // preço é definido caso a caso — não auto-preenche
     });
   };
 

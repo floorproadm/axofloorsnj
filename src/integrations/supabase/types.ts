@@ -524,11 +524,9 @@ export type Database = {
           id: string
           is_active: boolean
           organization_id: string
-          retail_price: number | null
           service_name: string
           unit: string
           updated_at: string
-          wholesale_price: number
         }
         Insert: {
           created_at?: string
@@ -536,11 +534,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           organization_id: string
-          retail_price?: number | null
           service_name: string
           unit: string
           updated_at?: string
-          wholesale_price?: number
         }
         Update: {
           created_at?: string
@@ -548,11 +544,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           organization_id?: string
-          retail_price?: number | null
           service_name?: string
           unit?: string
           updated_at?: string
-          wholesale_price?: number
         }
         Relationships: []
       }

@@ -1,100 +1,33 @@
-## Suporte a pagamento por Diária OU SqFt no Timesheet
+## Plano: Transformar Preços B2B em catálogo de serviços (sem preço)
 
-Hoje o módulo "Minhas Horas" só registra **diárias**. Vamos adicionar um segundo modelo de pagamento — **por sqft** — escolhido pelo colaborador em cada lançamento, com a rate definida no projeto. Diária e SqFt podem coexistir no mesmo dia/projeto como lançamentos separados.
+### Decisões
+- **Tabela `b2b_price_list`**: vira catálogo simples — só nome, unidade, ativo/inativo, ordem. Colunas de preço somem.
+- **`B2BQuoteSheet`**: continua existindo. Ao selecionar um serviço, **não** preenche mais o `unit_price` (que era o wholesale); usuário digita o preço caso a caso, como já é possível hoje.
 
----
+### Mudanças
 
-### 1. Database (migration)
+**1. Migration DB**
+- `ALTER TABLE b2b_price_list DROP COLUMN wholesale_price, DROP COLUMN retail_price;`
 
-**`labor_entries` — adicionar:**
-- `pay_mode text not null default 'daily'` → `'daily' | 'sqft'`
-- `sqft_worked numeric` → quantidade de sqft (nullable, só usado quando `pay_mode='sqft'`)
-- `sqft_rate numeric` → rate aplicada na hora do lançamento (snapshot, vem do projeto)
-- CHECK: se `pay_mode='daily'` exige `daily_rate` e `days_worked`; se `'sqft'` exige `sqft_rate` e `sqft_worked`
+**2. `B2BPricingSettings.tsx` → `B2BServiceCatalogSettings.tsx`**
+- Renomear arquivo e título da aba para **"Catálogo de Serviços B2B"**.
+- Remover colunas Wholesale ($) e Retail ($) da tabela.
+- Layout fica: Serviço | Unidade | Ativo | Remover.
+- Subtítulo: "Lista de serviços disponíveis ao montar cotações B2B. O preço é definido caso a caso na cotação."
 
-**`total_cost` (coluna gerada):** atualizar fórmula para
-- `daily` → `daily_rate * days_worked`
-- `sqft` → `sqft_rate * sqft_worked`
+**3. `Settings.tsx`**
+- Atualizar import e label da seção de "Preços B2B" para "Catálogo B2B".
 
-**`projects` — adicionar:**
-- `labor_sqft_rate numeric` → rate padrão por sqft daquele projeto (admin define quando o install é negociado assim). Nullable.
+**4. `B2BQuoteSheet.tsx`**
+- Remover `wholesale_price` da query e do tipo `Price`.
+- `pickService()` deixa de setar `unit_price` (mantém só `service_name` e `unit`); usuário digita o preço.
+- Placeholder do campo `$ / Unit` continua igual; nada mais muda no fluxo de envio.
 
-Trigger `sync_labor_entries_to_job_costs` mantém-se igual (já soma `total_cost` aprovado).
+**5. `types.ts`** atualiza automaticamente após migration.
 
----
+### Impacto
+- Nenhum dado crítico perdido (wholesale_price não estava sendo usado em proposals/invoices reais).
+- `B2BQuoteSheet` continua funcional, só sem auto-preenchimento de preço.
+- Settings fica com nome mais honesto (é catálogo, não tabela de preços).
 
-### 2. Admin: definir SqFt rate no projeto
-
-No **ProjectDetailPanel** (ou seção Financial do job detail), adicionar campo:
-- "Labor SqFt Rate" (input em $/sqft) — opcional, só preenchido quando o projeto será pago por sqft.
-- Mostrar abaixo: "Colaboradores poderão lançar trabalho por sqft usando essa rate."
-
----
-
-### 3. Collaborator: novo formulário com toggle
-
-Em `CollaboratorTimesheet.tsx`, dentro do form "Novo lançamento":
-
-```
-[ Diária | SqFt ]   ← toggle (segmented control)
-
-Se Diária (atual):
-  - Data, Dias trabalhados (0.5, 1, 1.5...)
-  - Mostra: rate $X/dia (do perfil) → total $Y
-
-Se SqFt:
-  - Data, SqFt trabalhado (numérico)
-  - Mostra: rate $X/sqft (do projeto) → total $Y
-  - Se projeto não tem sqft_rate: bloqueia com mensagem
-    "Este projeto não está configurado para pagamento por sqft.
-     Peça ao admin para definir a rate, ou lance como diária."
-```
-
-Histórico: cada card mostra badge `Diária` ou `SqFt` ao lado do valor, e o cálculo apropriado.
-
-KPI strip vira 3 cards:
-- Pendentes (count)
-- Aprovado (total $ — soma daily + sqft)
-- Este mês (total $ aprovado no mês corrente)
-
----
-
-### 4. Admin: tela de Approvals
-
-Em `TimesheetApprovals.tsx`, mostrar para cada entry pendente:
-- Badge `Diária 1.0d × $X` ou `SqFt 250 × $0.80`
-- Total calculado
-- Resto do fluxo (aprovar / rejeitar com motivo) permanece igual
-
----
-
-### 5. Hook `useTimesheet.ts`
-
-`useSubmitTimesheet` aceita:
-```ts
-{
-  project_id, work_date, notes?,
-  pay_mode: 'daily' | 'sqft',
-  days_worked?: number,    // se daily
-  sqft_worked?: number,    // se sqft
-}
-```
-- Se `daily`: busca `daily_rate` do profile (como hoje).
-- Se `sqft`: busca `labor_sqft_rate` do projeto; falha se null.
-
-Atualizar `TimesheetEntry` type com os novos campos.
-
----
-
-### 6. Memory
-
-Atualizar `mem://features/management/crews-and-payroll-hub` (ou criar `mem://features/timesheet-pay-modes`) registrando: "Timesheet suporta 2 modelos por lançamento: Diária (rate do perfil) e SqFt (rate por projeto). Coexistem no mesmo dia/projeto."
-
----
-
-### Out of scope (não fazer agora)
-- Lote/bulk approval
-- Edição de entry aprovado
-- Histórico paginado além dos 60 dias
-- Relatórios cross-collaborator
-- API pública (mantém roadmap dual-SaaS)
+Posso seguir?
