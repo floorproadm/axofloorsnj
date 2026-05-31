@@ -128,7 +128,22 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [showAcceptForm, setShowAcceptForm] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [sendingLeadEmail, setSendingLeadEmail] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      supabase.rpc('has_role', { _user_id: uid, _role: 'admin' }).then(({ data: ok }) => {
+        if (active) setIsAdmin(!!ok);
+      });
+    });
+    return () => { active = false; };
+  }, []);
   const [sheetWidth, setSheetWidth] = useState(640);
   const [activeTab, setActiveTab] = useState('resumo');
   const [editingField, setEditingField] = useState<string | null>(null);
