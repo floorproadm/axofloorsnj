@@ -115,6 +115,7 @@ export function PartnerDetailPanel({ partner, onClose }: Props) {
       const { data, error } = await supabase
         .from("leads")
         .select("id, name, phone, status, created_at, converted_to_project_id")
+        .is('deleted_at', null)
         .eq("referred_by_partner_id", partner.id)
         .order("created_at", { ascending: false });
       if (error) throw error;

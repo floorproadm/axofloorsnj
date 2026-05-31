@@ -19,6 +19,7 @@ export default function LeadDetail() {
       const { data, error } = await supabase
         .from('leads')
         .select('*')
+        .is('deleted_at', null)
         .eq('id', leadId)
         .single();
       if (error) throw error;

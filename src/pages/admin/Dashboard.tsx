@@ -93,6 +93,7 @@ export default function Dashboard() {
         supabase
           .from("leads")
           .select("id, name, created_at")
+          .is('deleted_at', null)
           .gte("created_at", cutoff)
           .order("created_at", { ascending: false })
           .limit(5),

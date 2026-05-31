@@ -35,6 +35,7 @@ import FeedPostDetail from './pages/admin/FeedPostDetail';
 import FeedPostEdit from './pages/admin/FeedPostEdit';
 import GalleryHub from './pages/admin/GalleryHub';
 import AdminLeadsManager from './pages/admin/LeadsManager';
+import LeadsTrash from './pages/admin/LeadsTrash';
 import LeadDetail from './pages/admin/LeadDetail';
 import JobDetail from './pages/admin/JobDetail';
 import AdminIntake from './pages/admin/Intake';
@@ -173,6 +174,11 @@ const App = () => {
             <Route path="/admin/leads" element={
               <ProtectedRoute>
                 <AdminLeadsManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/leads/trash" element={
+              <ProtectedRoute>
+                <LeadsTrash />
               </ProtectedRoute>
             } />
             <Route path="/admin/leads/:leadId" element={

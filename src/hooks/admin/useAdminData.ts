@@ -60,6 +60,7 @@ async function fetchLeads() {
   const { data, error } = await supabase
     .from('leads')
     .select(LEAD_COLUMNS)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(200);
   if (error) throw error;

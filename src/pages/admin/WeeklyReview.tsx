@@ -84,6 +84,7 @@ export default function WeeklyReview() {
       const { data, error } = await supabase
         .from("leads")
         .select("id, status, created_at, contact_name, service_type")
+        .is('deleted_at', null)
         .gte("created_at", weekStart.toISOString())
         .lte("created_at", weekEnd.toISOString());
       if (error) throw error;

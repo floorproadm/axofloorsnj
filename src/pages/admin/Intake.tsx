@@ -153,6 +153,7 @@ export default function Intake() {
       const { data, error } = await supabase
         .from('leads')
         .select('id, name, phone, email, lead_source, status, priority, services, budget, city, created_at, updated_at, notes, follow_up_required, next_action_date, follow_up_actions, converted_to_project_id')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .limit(500);
 

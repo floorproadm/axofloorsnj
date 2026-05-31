@@ -109,6 +109,7 @@ export function MobileBottomNav() {
     supabase
       .from("leads")
       .select("id, name, phone, email, services, city, status")
+      .is('deleted_at', null)
       .order("updated_at", { ascending: false })
       .limit(200)
       .then(({ data }) => {
@@ -181,6 +182,7 @@ export function MobileBottomNav() {
           status: 'estimate_scheduled',
         })
         .select('id, name, phone, email, city, status')
+        .is('deleted_at', null)
         .single();
       if (error) throw error;
       const newLead: EligibleLead = {

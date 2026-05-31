@@ -41,7 +41,8 @@ export function DripLogsViewer() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, name, email");
+        .select("id, name, email")
+        .is('deleted_at', null);
       if (error) throw error;
       return data;
     },

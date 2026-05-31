@@ -650,6 +650,7 @@ function QuickApptModal({ open, onOpenChange, leads, onSuccess }: {
             organization_id: AXO_ORG_ID,
           })
           .select('id')
+          .is('deleted_at', null)
           .single();
         if (insertError) throw insertError;
         createdLeadId = newLead.id;
@@ -896,6 +897,7 @@ function QuickRequestModal({ open, onOpenChange, leads, onSuccess }: {
             organization_id: AXO_ORG_ID,
           })
           .select('id')
+          .is('deleted_at', null)
           .single();
         if (insertError) throw insertError;
 

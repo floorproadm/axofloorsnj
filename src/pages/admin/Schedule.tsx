@@ -129,6 +129,7 @@ export default function Schedule() {
         supabase
           .from("leads")
           .select("id, name, phone, address, city, services, next_action_date, status")
+          .is('deleted_at', null)
           .eq("organization_id", AXO_ORG_ID)
           .eq("status", "estimate_scheduled")
           .not("next_action_date", "is", null)
