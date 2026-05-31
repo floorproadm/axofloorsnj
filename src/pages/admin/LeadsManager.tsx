@@ -52,18 +52,18 @@ export default function LeadsManager() {
     <AdminLayout
       title="Leads & Vendas"
       breadcrumbs={[{ label: "Leads & Vendas" }]}
-      actions={
-        isAdmin ? (
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/admin/leads/trash">
-              <Trash2 className="w-4 h-4 mr-1.5" />
-              Lixeira{trashCount > 0 ? ` (${trashCount})` : ""}
-            </Link>
-          </Button>
-        ) : undefined
-      }
     >
-      <div className="animate-fade-in">
+      <div className="animate-fade-in space-y-3">
+        {isAdmin && (
+          <div className="flex justify-end">
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/admin/leads/trash">
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Lixeira{trashCount > 0 ? ` (${trashCount})` : ""}
+              </Link>
+            </Button>
+          </div>
+        )}
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
