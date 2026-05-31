@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
 import { RequestAppointmentDialog } from "@/components/portal/RequestAppointmentDialog";
+import { PortalChat } from "@/components/portal/PortalChat";
 import { BeforeAfterSlider } from "@/components/admin/projects/BeforeAfterSlider";
 
 interface TimelinePhoto {
