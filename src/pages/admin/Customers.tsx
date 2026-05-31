@@ -270,6 +270,13 @@ export default function Customers() {
               Base de clientes ativos e histórico
             </p>
           </div>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className="shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar cliente
+          </Button>
         </div>
 
         {/* Desktop Filters Bar */}
