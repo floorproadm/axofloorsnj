@@ -3,8 +3,9 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Loader2, CalendarIcon, X, Search, SlidersHorizontal } from "lucide-react";
+import { Users, Loader2, CalendarIcon, X, Search, SlidersHorizontal, Plus } from "lucide-react";
 import { CustomerDetailSheet } from "@/components/admin/CustomerDetailSheet";
+import { CreateCustomerSheet } from "@/components/admin/CreateCustomerSheet";
 import { DataTable } from "@/components/admin/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,7 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Customer | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
   // Applied filters
   const [search, setSearch] = useState("");
@@ -268,6 +270,13 @@ export default function Customers() {
               Base de clientes ativos e histórico
             </p>
           </div>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className="shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar cliente
+          </Button>
         </div>
 
         {/* Desktop Filters Bar */}
@@ -511,6 +520,14 @@ export default function Customers() {
           onDeleted={(id) => {
             setCustomers((prev) => prev.filter((c) => c.id !== id));
             setSelected(null);
+          }}
+        />
+
+        <CreateCustomerSheet
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={(customer) => {
+            setCustomers((prev) => [customer, ...prev]);
           }}
         />
       </div>
