@@ -14,11 +14,10 @@ const TeamSettings = lazy(() => import("@/components/admin/settings/TeamSettings
 const EmailLogsSettings = lazy(() => import("@/components/admin/settings/EmailLogsSettings"));
 const EmailTemplateEditor = lazy(() => import("@/components/admin/settings/EmailTemplateEditor"));
 const B2BPricingSettings = lazy(() => import("@/components/admin/settings/B2BPricingSettings"));
-const TrustSettings = lazy(() => import("@/components/admin/settings/TrustSettings"));
 const DemoPortalsSettings = lazy(() => import("@/components/admin/settings/DemoPortalsSettings"));
 const WatermarkSettings = lazy(() => import("@/components/admin/settings/WatermarkSettings"));
 
-type Section = "general" | "branding" | "watermark" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "trust" | "demo_portals";
+type Section = "general" | "branding" | "watermark" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "demo_portals";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
