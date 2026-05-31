@@ -58,6 +58,7 @@ import Fleet from './pages/admin/Fleet';
 import AdminProposals from './pages/admin/Proposals';
 import ProjectsHub from './pages/admin/ProjectsHub';
 import AdminMissionControl from './pages/admin/MissionControl';
+import AdminCustomers from './pages/admin/Customers';
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/admin/AdminAuth";
 import Campaign from "./pages/Campaign";
@@ -243,6 +244,11 @@ const App = () => {
             <Route path="/admin/partners" element={
               <ProtectedRoute>
                 <AdminPartners />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/customers" element={
+              <ProtectedRoute>
+                <AdminCustomers />
               </ProtectedRoute>
             } />
             <Route path="/admin/payments" element={

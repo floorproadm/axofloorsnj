@@ -23,6 +23,7 @@ import {
   
   CalendarDays,
   Clock,
+  UserCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -83,6 +84,7 @@ export function AdminSidebar() {
 
   const manageItems = [
     { title: "Partners", url: "/admin/partners", icon: Handshake },
+    { title: "Customers", url: "/admin/customers", icon: UserCheck },
     { title: "Crew", url: "/admin/crews", icon: Users },
     { title: "Timesheet", url: "/admin/timesheet", icon: Clock },
     { title: "Fleet", url: "/admin/fleet", icon: Truck },
