@@ -1602,10 +1602,13 @@ export type Database = {
           notes: string | null
           organization_id: string
           paid_at: string | null
+          pay_mode: string
           payment_method: string | null
           project_id: string
           rejection_reason: string | null
           role: string | null
+          sqft_rate: number | null
+          sqft_worked: number | null
           status: string
           submitted_by_user_id: string | null
           total_cost: number | null
@@ -1624,10 +1627,13 @@ export type Database = {
           notes?: string | null
           organization_id: string
           paid_at?: string | null
+          pay_mode?: string
           payment_method?: string | null
           project_id: string
           rejection_reason?: string | null
           role?: string | null
+          sqft_rate?: number | null
+          sqft_worked?: number | null
           status?: string
           submitted_by_user_id?: string | null
           total_cost?: number | null
@@ -1646,10 +1652,13 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           paid_at?: string | null
+          pay_mode?: string
           payment_method?: string | null
           project_id?: string
           rejection_reason?: string | null
           role?: string | null
+          sqft_rate?: number | null
+          sqft_worked?: number | null
           status?: string
           submitted_by_user_id?: string | null
           total_cost?: number | null
@@ -3133,6 +3142,7 @@ export type Database = {
           customer_phone: string
           estimated_cost: number | null
           id: string
+          labor_sqft_rate: number | null
           next_action: string | null
           next_action_date: string | null
           notes: string | null
@@ -3161,6 +3171,7 @@ export type Database = {
           customer_phone: string
           estimated_cost?: number | null
           id?: string
+          labor_sqft_rate?: number | null
           next_action?: string | null
           next_action_date?: string | null
           notes?: string | null
@@ -3189,6 +3200,7 @@ export type Database = {
           customer_phone?: string
           estimated_cost?: number | null
           id?: string
+          labor_sqft_rate?: number | null
           next_action?: string | null
           next_action_date?: string | null
           notes?: string | null
