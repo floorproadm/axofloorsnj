@@ -22,14 +22,22 @@ export default function DemoPortalsSettings() {
 
   useEffect(() => {
     (async () => {
+      // Only show customers that still have at least one project (otherwise they're orphans from deleted test data)
       const { data, error } = await supabase
         .from("customers")
-        .select("id, full_name, portal_token, address")
+        .select("id, full_name, portal_token, address, projects!inner(id)")
         .not("portal_token", "is", null)
         .order("created_at", { ascending: false })
         .limit(20);
       if (!error && data) {
-        const list = data as DemoClient[];
+        const seen = new Set<string>();
+        const list = (data as any[])
+          .filter((c) => {
+            if (seen.has(c.id)) return false;
+            seen.add(c.id);
+            return true;
+          })
+          .map(({ projects, ...c }) => c as DemoClient);
         setClients(list);
         if (list.length > 0) setSelectedToken(list[0].portal_token);
       }
