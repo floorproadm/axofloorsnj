@@ -508,6 +508,10 @@ export default function Customers() {
           customer={selected}
           open={sheetOpen}
           onOpenChange={setSheetOpen}
+          onDeleted={(id) => {
+            setCustomers((prev) => prev.filter((c) => c.id !== id));
+            setSelected(null);
+          }}
         />
       </div>
     </AdminLayout>

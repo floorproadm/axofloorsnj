@@ -7,11 +7,25 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import {
   Loader2,
   Mail,
@@ -22,6 +36,7 @@ import {
   Calendar,
   ExternalLink,
   DollarSign,
+  Trash2,
 } from "lucide-react";
 
 interface Customer {
@@ -70,6 +85,7 @@ interface Props {
   customer: Customer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDeleted?: (id: string) => void;
 }
 
 const fmt = (n: number | null | undefined) =>
@@ -85,11 +101,34 @@ const statusColor = (s: string) => {
   return "bg-muted text-muted-foreground";
 };
 
-export function CustomerDetailSheet({ customer, open, onOpenChange }: Props) {
+export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }: Props) {
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.id) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data } = await supabase.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
+      if (!cancelled) setIsAdmin(!!data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!customer || !open) return;
@@ -326,15 +365,103 @@ export function CustomerDetailSheet({ customer, open, onOpenChange }: Props) {
             </>
           )}
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <Button asChild variant="outline" className="w-full">
               <Link to={`/admin/projects?customer=${customer.id}`}>
                 Abrir detalhes completos
               </Link>
             </Button>
+            {isAdmin && (
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => {
+                  setConfirmText("");
+                  setConfirmOpen(true);
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Deletar cliente
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar cliente permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é irreversível. O cliente{" "}
+              <span className="font-semibold text-foreground">
+                {customer.full_name || "Sem nome"}
+              </span>{" "}
+              será removido do sistema.
+              {(projects.length > 0 ||
+                invoices.length > 0 ||
+                appointments.length > 0) && (
+                <span className="block mt-2 text-destructive font-medium">
+                  Bloqueado: este cliente possui {projects.length} projeto(s),{" "}
+                  {invoices.length} fatura(s) e {appointments.length}{" "}
+                  compromisso(s) vinculados. Remova ou desvincule antes de deletar.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="confirm-delete-customer" className="text-sm">
+              Digite <span className="font-mono font-semibold">DELETAR</span> para confirmar
+            </Label>
+            <Input
+              id="confirm-delete-customer"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="DELETAR"
+              autoComplete="off"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={
+                deleting ||
+                confirmText !== "DELETAR" ||
+                projects.length > 0 ||
+                invoices.length > 0 ||
+                appointments.length > 0
+              }
+              onClick={async (e) => {
+                e.preventDefault();
+                setDeleting(true);
+                const { error } = await supabase
+                  .from("customers")
+                  .delete()
+                  .eq("id", customer.id);
+                setDeleting(false);
+                if (error) {
+                  toast.error("Erro ao deletar cliente: " + error.message);
+                  return;
+                }
+                toast.success("Cliente deletado com sucesso");
+                setConfirmOpen(false);
+                onDeleted?.(customer.id);
+                onOpenChange(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deletando...
+                </>
+              ) : (
+                "Deletar permanentemente"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
