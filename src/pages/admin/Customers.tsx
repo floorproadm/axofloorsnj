@@ -1,10 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Loader2 } from "lucide-react";
+import { Users, Loader2, CalendarIcon, X, Search } from "lucide-react";
 import { CustomerDetailSheet } from "@/components/admin/CustomerDetailSheet";
+import { DataTable } from "@/components/admin/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Customer {
   id: string;
@@ -18,26 +38,65 @@ interface Customer {
   created_at: string;
 }
 
+interface Project {
+  id: string;
+  customer_id: string | null;
+  project_type: string;
+  project_status: string;
+  created_at: string;
+}
+
+interface CustomerWithMeta extends Customer {
+  projects: Project[];
+  latestProjectStatus: string | null;
+}
+
+const statusColor = (s: string) => {
+  const k = s.toLowerCase();
+  if (k.includes("paid") || k.includes("complet")) return "bg-emerald-500/15 text-emerald-600";
+  if (k.includes("progress") || k.includes("schedul") || k.includes("in progress")) return "bg-blue-500/15 text-blue-600";
+  if (k.includes("await") || k.includes("pending") || k.includes("draft") || k.includes("planning"))
+    return "bg-amber-500/15 text-amber-600";
+  if (k.includes("cancel") || k.includes("overdue")) return "bg-red-500/15 text-red-600";
+  return "bg-muted text-muted-foreground";
+};
+
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Customer | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  // Filters
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
   const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchCustomers() {
+    async function fetchData() {
       try {
-        const { data, error } = await supabase
-          .from("customers")
-          .select("id, full_name, email, phone, address, city, zip_code, notes, created_at")
-          .order("created_at", { ascending: false });
+        const [custRes, projRes] = await Promise.all([
+          supabase
+            .from("customers")
+            .select("id, full_name, email, phone, address, city, zip_code, notes, created_at")
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("projects")
+            .select("id, customer_id, project_type, project_status, created_at")
+            .order("created_at", { ascending: false }),
+        ]);
 
-        if (error) throw error;
-        setCustomers((data as unknown as Customer[]) || []);
+        if (custRes.error) throw custRes.error;
+        if (projRes.error) throw projRes.error;
+
+        setCustomers((custRes.data as unknown as Customer[]) || []);
+        setProjects((projRes.data as unknown as Project[]) || []);
       } catch (err: any) {
         toast({
-          title: "Erro ao carregar clientes",
+          title: "Erro ao carregar dados",
           description: err.message,
           variant: "destructive",
         });
@@ -46,12 +105,122 @@ export default function Customers() {
       }
     }
 
-    fetchCustomers();
+    fetchData();
   }, [toast]);
+
+  const customersWithMeta: CustomerWithMeta[] = useMemo(() => {
+    const projByCust = new Map<string, Project[]>();
+    for (const p of projects) {
+      if (!p.customer_id) continue;
+      const list = projByCust.get(p.customer_id) || [];
+      list.push(p);
+      projByCust.set(p.customer_id, list);
+    }
+
+    return customers.map((c) => {
+      const cp = projByCust.get(c.id) || [];
+      return {
+        ...c,
+        projects: cp,
+        latestProjectStatus: cp.length > 0 ? cp[0].project_status : null,
+      };
+    });
+  }, [customers, projects]);
+
+  const filteredData = useMemo(() => {
+    let data = [...customersWithMeta];
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      data = data.filter(
+        (c) =>
+          (c.full_name || "").toLowerCase().includes(q) ||
+          (c.email || "").toLowerCase().includes(q) ||
+          (c.phone || "").toLowerCase().includes(q) ||
+          (c.address || "").toLowerCase().includes(q)
+      );
+    }
+
+    if (statusFilter && statusFilter !== "all") {
+      data = data.filter(
+        (c) =>
+          c.projects.some((p) =>
+            p.project_status.toLowerCase() === statusFilter.toLowerCase()
+          )
+      );
+    }
+
+    if (dateRange?.from) {
+      const from = new Date(dateRange.from).setHours(0, 0, 0, 0);
+      data = data.filter((c) => new Date(c.created_at).getTime() >= from);
+    }
+    if (dateRange?.to) {
+      const to = new Date(dateRange.to).setHours(23, 59, 59, 999);
+      data = data.filter((c) => new Date(c.created_at).getTime() <= to);
+    }
+
+    return data;
+  }, [customersWithMeta, search, statusFilter, dateRange]);
+
+  const uniqueStatuses = useMemo(() => {
+    const s = new Set<string>();
+    for (const p of projects) {
+      if (p.project_status) s.add(p.project_status);
+    }
+    return Array.from(s).sort();
+  }, [projects]);
+
+  const columns: ColumnDef<CustomerWithMeta>[] = [
+    {
+      accessorKey: "full_name",
+      header: "Nome",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.full_name || "Sem nome"}</span>
+      ),
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) => row.original.email || "—",
+    },
+    {
+      accessorKey: "phone",
+      header: "Telefone",
+      cell: ({ row }) => row.original.phone || "—",
+    },
+    {
+      accessorKey: "city",
+      header: "Cidade",
+      cell: ({ row }) =>
+        [row.original.city, row.original.zip_code].filter(Boolean).join(" ") || "—",
+    },
+    {
+      accessorKey: "latestProjectStatus",
+      header: "Status do Projeto",
+      cell: ({ row }) => {
+        const status = row.original.latestProjectStatus;
+        if (!status) return <span className="text-muted-foreground text-xs">Sem projeto</span>;
+        return (
+          <Badge className={statusColor(status)} variant="secondary">
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "created_at",
+      header: "Data de cadastro",
+      cell: ({ row }) =>
+        new Date(row.original.created_at).toLocaleDateString("pt-BR"),
+    },
+  ];
+
+  const hasActiveFilters =
+    search.trim() || statusFilter !== "all" || dateRange?.from || dateRange?.to;
 
   return (
     <AdminLayout title="Clientes">
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -64,50 +233,106 @@ export default function Customers() {
           </div>
         </div>
 
+        {/* Filters Bar */}
+        <Card className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search */}
+            <div className="relative flex-1 max-w-full sm:max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome, email, telefone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[200px] h-10">
+                <SelectValue placeholder="Status do projeto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                {uniqueStatuses.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Date Range */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto h-10 justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "dd/MM/yyyy")} -{" "}
+                        {format(dateRange.to, "dd/MM/yyyy")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "dd/MM/yyyy")
+                    )
+                  ) : (
+                    <span className="text-muted-foreground">Faixa de data</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+
+            {/* Clear */}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 px-2 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("all");
+                  setDateRange(undefined);
+                }}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Limpar
+              </Button>
+            )}
+          </div>
+        </Card>
+
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
-        ) : customers.length === 0 ? (
-          <Card className="p-12 text-center border-dashed">
-            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-50" />
-            <h3 className="text-lg font-medium text-foreground">Nenhum cliente encontrado</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Clientes aparecem aqui quando leads são convertidos ou criados manualmente.
-            </p>
-          </Card>
         ) : (
-          <div className="grid gap-3">
-            {customers.map((customer) => (
-              <Card
-                key={customer.id}
-                onClick={() => {
-                  setSelected(customer);
-                  setSheetOpen(true);
-                }}
-                className="p-4 flex items-center justify-between hover:border-primary/30 hover:bg-accent/40 transition-colors cursor-pointer"
-              >
-                <div className="min-w-0">
-                  <h3 className="font-medium text-foreground truncate">
-                    {customer.full_name || "Sem nome"}
-                  </h3>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-1">
-                    {customer.email && <span>{customer.email}</span>}
-                    {customer.phone && <span>{customer.phone}</span>}
-                    {customer.address && (
-                      <span className="truncate">
-                        {customer.address}
-                        {customer.city && `, ${customer.city}`}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                  {new Date(customer.created_at).toLocaleDateString("pt-BR")}
-                </span>
-              </Card>
-            ))}
-          </div>
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            title={`Clientes${filteredData.length !== customersWithMeta.length ? ` (${filteredData.length}/${customersWithMeta.length})` : ""}`}
+            searchable={false}
+            onRowClick={(row) => {
+              const { projects: _, latestProjectStatus: __, ...customer } = row;
+              setSelected(customer as Customer);
+              setSheetOpen(true);
+            }}
+            pageSize={10}
+          />
         )}
 
         <CustomerDetailSheet
