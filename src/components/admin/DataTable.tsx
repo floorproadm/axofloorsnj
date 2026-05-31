@@ -39,7 +39,6 @@ import {
   SortDesc
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -133,9 +132,6 @@ export function DataTable<TData, TValue>({
               {description && <p className="text-xs sm:text-sm text-muted-foreground mt-1">{description}</p>}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                {totalRows} {totalRows === 1 ? 'registro' : 'registros'}
-              </Badge>
               {exportable && onExport && (
                 <Button variant="outline" size="sm" onClick={onExport} className="h-8">
                   <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
