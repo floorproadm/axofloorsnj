@@ -83,6 +83,8 @@ import CollaboratorSchedule from "./pages/collaborator/CollaboratorSchedule";
 import CollaboratorDocs from "./pages/collaborator/CollaboratorDocs";
 import CollaboratorProfile from "./pages/collaborator/CollaboratorProfile";
 import CollaboratorChat from "./pages/collaborator/CollaboratorChat";
+import CollaboratorTimesheet from "./pages/collaborator/CollaboratorTimesheet";
+import TimesheetApprovals from "./pages/admin/TimesheetApprovals";
 
 import PartnerAuth from "./pages/partner/PartnerAuth";
 import ReferralAuth from "./pages/ReferralAuth";
@@ -299,8 +301,16 @@ const App = () => {
               <Route path="docs" element={<CollaboratorDocs />} />
               <Route path="chat" element={<CollaboratorChat />} />
               <Route path="profile" element={<CollaboratorProfile />} />
+              <Route path="timesheet" element={<CollaboratorTimesheet />} />
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
+
+            {/* Admin: Timesheet Approvals */}
+            <Route path="/admin/timesheet" element={
+              <ProtectedRoute>
+                <TimesheetApprovals />
+              </ProtectedRoute>
+            } />
 
             {/* Partner Portal */}
             <Route path="/partner/auth" element={<PartnerAuth />} />

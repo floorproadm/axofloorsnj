@@ -22,6 +22,7 @@ import {
   FolderKanban,
   
   CalendarDays,
+  Clock,
 } from "lucide-react";
 import {
   Sidebar,
@@ -83,6 +84,7 @@ export function AdminSidebar() {
   const manageItems = [
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: "Crew", url: "/admin/crews", icon: Users },
+    { title: "Timesheet", url: "/admin/timesheet", icon: Clock },
     { title: "Fleet", url: "/admin/fleet", icon: Truck },
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Gallery", url: "/admin/gallery", icon: Images },

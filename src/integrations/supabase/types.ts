@@ -1591,6 +1591,8 @@ export type Database = {
       }
       labor_entries: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           created_at: string | null
           crew_member_id: string | null
           daily_rate: number
@@ -1602,12 +1604,17 @@ export type Database = {
           paid_at: string | null
           payment_method: string | null
           project_id: string
+          rejection_reason: string | null
           role: string | null
+          status: string
+          submitted_by_user_id: string | null
           total_cost: number | null
           work_date: string | null
           worker_name: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
           crew_member_id?: string | null
           daily_rate?: number
@@ -1619,12 +1626,17 @@ export type Database = {
           paid_at?: string | null
           payment_method?: string | null
           project_id: string
+          rejection_reason?: string | null
           role?: string | null
+          status?: string
+          submitted_by_user_id?: string | null
           total_cost?: number | null
           work_date?: string | null
           worker_name: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
           crew_member_id?: string | null
           daily_rate?: number
@@ -1636,7 +1648,10 @@ export type Database = {
           paid_at?: string | null
           payment_method?: string | null
           project_id?: string
+          rejection_reason?: string | null
           role?: string | null
+          status?: string
+          submitted_by_user_id?: string | null
           total_cost?: number | null
           work_date?: string | null
           worker_name?: string
