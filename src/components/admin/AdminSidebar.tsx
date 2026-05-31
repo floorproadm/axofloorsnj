@@ -23,6 +23,7 @@ import {
   
   CalendarDays,
   Clock,
+  UserCheck,
 } from "lucide-react";
 import {
   Sidebar,
