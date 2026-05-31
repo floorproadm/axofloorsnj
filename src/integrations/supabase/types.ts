@@ -1767,6 +1767,7 @@ export type Database = {
           converted_to_project_id: string | null
           created_at: string
           customer_id: string | null
+          deleted_at: string | null
           email: string | null
           expected_close_date: string | null
           follow_up_actions: Json | null
@@ -1805,6 +1806,7 @@ export type Database = {
           converted_to_project_id?: string | null
           created_at?: string
           customer_id?: string | null
+          deleted_at?: string | null
           email?: string | null
           expected_close_date?: string | null
           follow_up_actions?: Json | null
@@ -1843,6 +1845,7 @@ export type Database = {
           converted_to_project_id?: string | null
           created_at?: string
           customer_id?: string | null
+          deleted_at?: string | null
           email?: string | null
           expected_close_date?: string | null
           follow_up_actions?: Json | null
@@ -4613,6 +4616,7 @@ export type Database = {
         Returns: string
       }
       partner_nudge_admin: { Args: { p_lead_id: string }; Returns: Json }
+      purge_expired_deleted_leads: { Args: never; Returns: undefined }
       retry_failed_review_requests: { Args: never; Returns: Json }
       run_sla_engine: { Args: never; Returns: Json }
       submit_partner_referral: {
