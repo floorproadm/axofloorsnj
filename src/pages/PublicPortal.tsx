@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
 import { RequestAppointmentDialog } from "@/components/portal/RequestAppointmentDialog";
+import { PortalChat } from "@/components/portal/PortalChat";
 import { BeforeAfterSlider } from "@/components/admin/projects/BeforeAfterSlider";
 
 interface TimelinePhoto {
@@ -291,7 +292,7 @@ export default function PublicPortal() {
         </div>
 
         <Tabs defaultValue="proposals" className="w-full">
-          <TabsList className="grid grid-cols-4 w-full bg-white border h-auto p-1">
+          <TabsList className="grid grid-cols-5 w-full bg-white border h-auto p-1">
             <TabsTrigger value="proposals" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
               <FileText className="w-3.5 h-3.5 sm:mr-1.5" />
               <span className="text-[11px] sm:text-sm hidden sm:inline">Proposals</span>
@@ -308,10 +309,14 @@ export default function PublicPortal() {
               <Activity className="w-3.5 h-3.5 sm:mr-1.5" />
               <span className="text-[11px] sm:text-sm hidden sm:inline">Status</span>
             </TabsTrigger>
+            <TabsTrigger value="messages" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
+              <MessageSquare className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="text-[11px] sm:text-sm hidden sm:inline">Messages</span>
+            </TabsTrigger>
           </TabsList>
           {/* Mobile labels under tabs */}
-          <div className="grid grid-cols-4 gap-1 mt-1 sm:hidden text-center text-[10px] text-slate-500">
-            <span>Proposals</span><span>Invoices</span><span>Timeline</span><span>Status</span>
+          <div className="grid grid-cols-5 gap-1 mt-1 sm:hidden text-center text-[10px] text-slate-500">
+            <span>Proposals</span><span>Invoices</span><span>Timeline</span><span>Status</span><span>Messages</span>
           </div>
 
 
@@ -526,6 +531,12 @@ export default function PublicPortal() {
                 );
               })
             )}
+          </TabsContent>
+
+          <TabsContent value="messages" className="mt-4">
+            {token && customer ? (
+              <PortalChat token={token} customerName={customer.full_name} />
+            ) : null}
           </TabsContent>
         </Tabs>
 

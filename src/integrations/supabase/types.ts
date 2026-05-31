@@ -862,6 +862,42 @@ export type Database = {
           },
         ]
       }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          organization_id: string
+          read: boolean
+          receiver_id: string
+          receiver_name: string
+          sender_id: string
+          sender_name: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          read?: boolean
+          receiver_id: string
+          receiver_name?: string
+          sender_id: string
+          sender_name?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          read?: boolean
+          receiver_id?: string
+          receiver_name?: string
+          sender_id?: string
+          sender_name?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           body_preview: string | null
@@ -4600,6 +4636,7 @@ export type Database = {
       get_partner_balance: { Args: { p_partner_id: string }; Returns: Json }
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }
+      get_portal_messages: { Args: { p_token: string }; Returns: Json }
       get_portal_timeline: { Args: { p_token: string }; Returns: Json }
       get_referral_dashboard: { Args: { p_email: string }; Returns: Json }
       get_shared_before_after: { Args: { p_token: string }; Returns: Json }
@@ -4619,6 +4656,10 @@ export type Database = {
       purge_expired_deleted_leads: { Args: never; Returns: undefined }
       retry_failed_review_requests: { Args: never; Returns: Json }
       run_sla_engine: { Args: never; Returns: Json }
+      send_portal_message: {
+        Args: { p_content: string; p_sender_name?: string; p_token: string }
+        Returns: Json
+      }
       submit_partner_referral: {
         Args: {
           p_address?: string
