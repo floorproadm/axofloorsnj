@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, Tag, ShieldCheck, MonitorPlay, Stamp } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, Tag, MonitorPlay, Stamp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -14,11 +14,10 @@ const TeamSettings = lazy(() => import("@/components/admin/settings/TeamSettings
 const EmailLogsSettings = lazy(() => import("@/components/admin/settings/EmailLogsSettings"));
 const EmailTemplateEditor = lazy(() => import("@/components/admin/settings/EmailTemplateEditor"));
 const B2BPricingSettings = lazy(() => import("@/components/admin/settings/B2BPricingSettings"));
-const TrustSettings = lazy(() => import("@/components/admin/settings/TrustSettings"));
 const DemoPortalsSettings = lazy(() => import("@/components/admin/settings/DemoPortalsSettings"));
 const WatermarkSettings = lazy(() => import("@/components/admin/settings/WatermarkSettings"));
 
-type Section = "general" | "branding" | "watermark" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "trust" | "demo_portals";
+type Section = "general" | "branding" | "watermark" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "demo_portals";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
@@ -68,7 +67,6 @@ export default function Settings() {
     { id: "email_logs", label: "Email Logs", description: "Gmail email audit trail", icon: Mail },
     { id: "email_templates", label: "Email Templates", description: "Edit email copy & CTAs", icon: FileEdit },
     { id: "b2b_pricing", label: "Preços B2B", description: "Tabela de atacado para parceiros", icon: Tag },
-    { id: "trust", label: "Trust & Social Proof", description: "Trust builders and credibility counters", icon: ShieldCheck },
     { id: "demo_portals", label: "Demo Portals", description: "Quick access to client-facing portals for live demos", icon: MonitorPlay },
   ];
 
@@ -133,7 +131,6 @@ export default function Settings() {
               {active === "email_logs" && <EmailLogsSettings />}
               {active === "email_templates" && <EmailTemplateEditor />}
               {active === "b2b_pricing" && <B2BPricingSettings />}
-              {active === "trust" && <TrustSettings />}
               {active === "demo_portals" && <DemoPortalsSettings />}
             </Suspense>
           </div>
