@@ -595,3 +595,79 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
     </Sheet>
   );
 }
+
+function SqftRateEditor({ projectId }: { projectId: string | undefined }) {
+  const qc = useQueryClient();
+  const { data } = useQuery({
+    queryKey: ["project-sqft-rate", projectId],
+    queryFn: async () => {
+      if (!projectId) return null;
+      const { data } = await supabase
+        .from("projects")
+        .select("labor_sqft_rate")
+        .eq("id", projectId)
+        .maybeSingle();
+      return data as { labor_sqft_rate: number | null } | null;
+    },
+    enabled: !!projectId,
+  });
+  const current = data?.labor_sqft_rate ?? null;
+  const [value, setValue] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+
+  // Sync local input when query data arrives
+  useState(() => {
+    if (current !== null && value === "") setValue(String(current));
+  });
+
+  const save = async () => {
+    if (!projectId) return;
+    setSaving(true);
+    const rate = value === "" ? null : Number(value);
+    const { error } = await supabase
+      .from("projects")
+      .update({ labor_sqft_rate: rate } as any)
+      .eq("id", projectId);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message || "Falha ao salvar");
+      return;
+    }
+    toast.success(rate ? `SqFt rate salva: $${rate}/sqft` : "Rate removida");
+    qc.invalidateQueries({ queryKey: ["project-sqft-rate", projectId] });
+  };
+
+  return (
+    <div className="rounded-md border border-border bg-muted/20 p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Labor SqFt Rate
+        </p>
+        {current !== null && current > 0 && (
+          <Badge variant="outline" className="text-[9px]">
+            Active: ${Number(current).toFixed(2)}/sqft
+          </Badge>
+        )}
+      </div>
+      <p className="text-[10px] text-muted-foreground">
+        Só preencha se este projeto será pago aos colaboradores por sqft.
+      </p>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">$</span>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder={current !== null && current > 0 ? String(current) : "ex: 0.80"}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="h-8 flex-1 rounded-md border border-input bg-background px-2 text-xs tabular-nums"
+        />
+        <span className="text-xs text-muted-foreground">/sqft</span>
+        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={save} disabled={saving}>
+          {saving ? "..." : "Save"}
+        </Button>
+      </div>
+    </div>
+  );
+}
