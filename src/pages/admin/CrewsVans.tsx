@@ -231,9 +231,9 @@ export default function CrewsVans() {
               <Card className="border-dashed border-2 border-border/50">
                 <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
                   <Users className="w-8 h-8 text-muted-foreground/40" />
-                  <p className="text-sm text-muted-foreground">No crew members yet</p>
+                  <p className="text-sm text-muted-foreground">Nenhum membro da equipe ainda</p>
                   <Button size="sm" variant="outline" onClick={() => setShowNewCrew(true)}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Add First Worker
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar Primeiro Membro
                   </Button>
                 </CardContent>
               </Card>
