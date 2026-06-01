@@ -638,7 +638,7 @@ export default function CrewsVans() {
                       notes: laborForm.notes || undefined,
                       crew_member_id: laborForm.crew_member_id || null,
                     });
-                    toast.success("Labor payment added");
+                    toast.success("Pagamento adicionado");
                     setShowNewLabor(false);
                     setLaborForm({ project_id: "", crew_member_id: "", worker_name: "", daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0], is_paid: false, notes: "" });
                   } catch (e: any) {
