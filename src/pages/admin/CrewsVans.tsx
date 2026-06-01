@@ -252,7 +252,7 @@ export default function CrewsVans() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-sm">{member.full_name}</p>
-                              {inactive && <span className="text-[9px] text-muted-foreground uppercase">inactive</span>}
+                              {inactive && <span className="text-[9px] text-muted-foreground uppercase">inativo</span>}
                             </div>
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                               {member.role && (
