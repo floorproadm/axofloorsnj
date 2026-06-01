@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
 const VAN_STATUSES = ["Available", "In Use", "Maintenance", "Out of Service"];
 
-export default function Fleet() {
+export function FleetContent() {
   const qc = useQueryClient();
   const [showNewVan, setShowNewVan] = useState(false);
   const [vanForm, setVanForm] = useState({
