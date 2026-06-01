@@ -466,7 +466,13 @@ export default function CrewsVans() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* ─── FLEET TAB ─── */}
+          <TabsContent value="fleet" className="mt-4">
+            <FleetContent />
+          </TabsContent>
         </Tabs>
+
       </div>
 
       {/* ─── ADD CREW DIALOG ─── */}
