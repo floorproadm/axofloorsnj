@@ -73,7 +73,6 @@ export function AdminSidebar() {
   const topItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
-    { title: "Chat", url: "/admin/chat", icon: MessageSquare, badge: "chat" as const },
     { title: "Schedule & Appointments", url: "/admin/schedule", icon: CalendarDays },
     { title: t("sidebar.pagamentos"), url: "/admin/payments", icon: DollarSign },
     { title: "Performance", url: "/admin/performance", icon: BarChart3 },
@@ -88,6 +87,7 @@ export function AdminSidebar() {
   ];
 
   const manageItems = [
+    { title: "Chat", url: "/admin/chat", icon: MessageSquare, badge: "chat" as const },
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: "Customers", url: "/admin/customers", icon: UserCheck },
     { title: "Crew", url: "/admin/crews", icon: Users },
@@ -194,7 +194,12 @@ export function AdminSidebar() {
                         `}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        {!collapsed && <span className="flex-1">{item.title}</span>}
+                        {(item as any).badge === "chat" && chatUnread > 0 && (
+                          <Badge className="ml-auto h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground">
+                            {chatUnread > 99 ? "99+" : chatUnread}
+                          </Badge>
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
