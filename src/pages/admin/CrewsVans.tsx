@@ -405,7 +405,7 @@ export default function CrewsVans() {
                   </div>
                 ) : laborEntries.length === 0 ? (
                   <div className="text-center py-10 text-sm text-muted-foreground">
-                    No labor entries in this period
+                    Nenhum registro neste período
                   </div>
                 ) : (
                   <div className="space-y-1.5">
