@@ -540,7 +540,7 @@ export default function CrewsVans() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Hammer className="w-4 h-4" /> Add Labor Payment
+              <Hammer className="w-4 h-4" /> Adicionar Pagamento
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
