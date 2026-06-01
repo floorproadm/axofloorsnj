@@ -140,7 +140,7 @@ export default function CrewsVans() {
       }
     },
     onSuccess: () => {
-      toast.success(editingCrewId ? "Crew member updated" : "Crew member added");
+      toast.success(editingCrewId ? "Membro da equipe atualizado" : "Membro da equipe adicionado");
       qc.invalidateQueries({ queryKey: ["crew-members"] });
       qc.invalidateQueries({ queryKey: ["crew-earnings"] });
       setShowNewCrew(false);
