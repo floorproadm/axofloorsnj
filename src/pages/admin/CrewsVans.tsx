@@ -478,7 +478,7 @@ export default function CrewsVans() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Users className="w-4 h-4" /> {editingCrewId ? "Edit Crew Member" : "Add Crew Member"}
+              <Users className="w-4 h-4" /> {editingCrewId ? "Editar Membro da Equipe" : "Adicionar Membro da Equipe"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
