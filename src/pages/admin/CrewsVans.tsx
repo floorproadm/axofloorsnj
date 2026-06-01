@@ -365,7 +365,7 @@ export default function CrewsVans() {
               <Select value={filterCrew} onValueChange={setFilterCrew}>
                 <SelectTrigger className="h-8 text-xs w-auto min-w-[140px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All crew</SelectItem>
+                  <SelectItem value="all">Toda a equipe</SelectItem>
                   {crew.filter(c => c.is_active_crew !== false).map(c => (
                     <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
                   ))}
@@ -374,9 +374,9 @@ export default function CrewsVans() {
               <Select value={filterPaid} onValueChange={(v) => setFilterPaid(v as any)}>
                 <SelectTrigger className="h-8 text-xs w-auto min-w-[120px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All status</SelectItem>
-                  <SelectItem value="unpaid">Unpaid only</SelectItem>
-                  <SelectItem value="paid">Paid only</SelectItem>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="unpaid">Apenas pendentes</SelectItem>
+                  <SelectItem value="paid">Apenas pagos</SelectItem>
                 </SelectContent>
               </Select>
               {totalUnpaid > 0 && filterPaid !== "paid" && (
