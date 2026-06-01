@@ -275,11 +275,11 @@ export default function CrewsVans() {
                                   <p className="text-xs font-semibold tabular-nums flex items-center gap-1"><Briefcase className="w-2.5 h-2.5" />{e.jobs_count}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Earned</p>
+                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Ganhos</p>
                                   <p className="text-xs font-semibold tabular-nums">{fmt(Number(e.total_earned))}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Owed</p>
+                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Pendente</p>
                                   <p className={cn("text-xs font-semibold tabular-nums", Number(e.unpaid_amount) > 0 ? "text-amber-500" : "text-muted-foreground")}>
                                     {fmt(Number(e.unpaid_amount))}
                                   </p>
