@@ -140,14 +140,14 @@ export default function CrewsVans() {
       }
     },
     onSuccess: () => {
-      toast.success(editingCrewId ? "Crew member updated" : "Crew member added");
+      toast.success(editingCrewId ? "Membro da equipe atualizado" : "Membro da equipe adicionado");
       qc.invalidateQueries({ queryKey: ["crew-members"] });
       qc.invalidateQueries({ queryKey: ["crew-earnings"] });
       setShowNewCrew(false);
       setEditingCrewId(null);
       setCrewForm({ full_name: "", phone: "", email: "", role: "", bio: "", employment_type: "", region: "", daily_rate: "" });
     },
-    onError: (e: any) => toast.error(e.message || "Failed to save crew member"),
+    onError: (e: any) => toast.error(e.message || "Falha ao salvar membro da equipe"),
   });
 
   const openEditCrew = (m: CrewMemberType) => {
@@ -187,35 +187,35 @@ export default function CrewsVans() {
 
   const subtitles: Record<typeof tab, string> = {
     crew: "Gerencie sua equipe, funções e contratações",
-    schedule: "Visualize e aloque crew nos jobs da semana",
+    schedule: "Visualize e aloque equipe nos jobs da semana",
     payroll: "Registre e acompanhe os pagamentos da equipe",
     fleet: "Gerencie vans, placas e disponibilidade da frota",
   };
 
 
   return (
-    <AdminLayout title="Crew">
+    <AdminLayout title="Equipe">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
               <TabsTrigger value="fleet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Truck className="w-4 h-4" /> Fleet
+                <Truck className="w-4 h-4" /> Frota
               </TabsTrigger>
               <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Users className="w-4 h-4" /> Crew
+                <Users className="w-4 h-4" /> Equipe
               </TabsTrigger>
               <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <CalendarDays className="w-4 h-4" /> Team Schedule
+                <CalendarDays className="w-4 h-4" /> Agenda
               </TabsTrigger>
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Hammer className="w-4 h-4" /> Payroll
+                <Hammer className="w-4 h-4" /> Pagamentos
               </TabsTrigger>
 
             </TabsList>
             {tab === "crew" && (
               <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={() => setShowNewCrew(true)}>
-                <Plus className="w-4 h-4" /> Add Worker
+                <Plus className="w-4 h-4" /> Adicionar Membro
               </Button>
             )}
           </div>
@@ -231,9 +231,9 @@ export default function CrewsVans() {
               <Card className="border-dashed border-2 border-border/50">
                 <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
                   <Users className="w-8 h-8 text-muted-foreground/40" />
-                  <p className="text-sm text-muted-foreground">No crew members yet</p>
+                  <p className="text-sm text-muted-foreground">Nenhum membro da equipe ainda</p>
                   <Button size="sm" variant="outline" onClick={() => setShowNewCrew(true)}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Add First Worker
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar Primeiro Membro
                   </Button>
                 </CardContent>
               </Card>
@@ -252,7 +252,7 @@ export default function CrewsVans() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-sm">{member.full_name}</p>
-                              {inactive && <span className="text-[9px] text-muted-foreground uppercase">inactive</span>}
+                              {inactive && <span className="text-[9px] text-muted-foreground uppercase">inativo</span>}
                             </div>
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                               {member.role && (
@@ -275,11 +275,11 @@ export default function CrewsVans() {
                                   <p className="text-xs font-semibold tabular-nums flex items-center gap-1"><Briefcase className="w-2.5 h-2.5" />{e.jobs_count}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Earned</p>
+                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Ganhos</p>
                                   <p className="text-xs font-semibold tabular-nums">{fmt(Number(e.total_earned))}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Owed</p>
+                                  <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Pendente</p>
                                   <p className={cn("text-xs font-semibold tabular-nums", Number(e.unpaid_amount) > 0 ? "text-amber-500" : "text-muted-foreground")}>
                                     {fmt(Number(e.unpaid_amount))}
                                   </p>
@@ -304,7 +304,7 @@ export default function CrewsVans() {
                               size="icon" variant="ghost"
                               className="h-7 w-7 text-red-400 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                               onClick={(e) => { e.stopPropagation(); deleteCrewMutation.mutate(member.id); }}
-                              title="Mark inactive"
+                              title="Marcar como inativo"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
@@ -347,9 +347,9 @@ export default function CrewsVans() {
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
-                { label: "Total Labor", value: fmt(totalLabor), color: "text-foreground" },
-                { label: "Paid", value: fmt(totalPaid), color: "text-emerald-500" },
-                { label: "Unpaid", value: fmt(totalUnpaid), color: "text-amber-500" },
+                { label: "Total Mão de Obra", value: fmt(totalLabor), color: "text-foreground" },
+                { label: "Pago", value: fmt(totalPaid), color: "text-emerald-500" },
+                { label: "Pendente", value: fmt(totalUnpaid), color: "text-amber-500" },
               ].map((c) => (
                 <Card key={c.label} className="border-border/50">
                   <CardContent className="p-2.5 sm:p-4">
@@ -365,7 +365,7 @@ export default function CrewsVans() {
               <Select value={filterCrew} onValueChange={setFilterCrew}>
                 <SelectTrigger className="h-8 text-xs w-auto min-w-[140px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All crew</SelectItem>
+                  <SelectItem value="all">Toda a equipe</SelectItem>
                   {crew.filter(c => c.is_active_crew !== false).map(c => (
                     <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
                   ))}
@@ -374,9 +374,9 @@ export default function CrewsVans() {
               <Select value={filterPaid} onValueChange={(v) => setFilterPaid(v as any)}>
                 <SelectTrigger className="h-8 text-xs w-auto min-w-[120px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All status</SelectItem>
-                  <SelectItem value="unpaid">Unpaid only</SelectItem>
-                  <SelectItem value="paid">Paid only</SelectItem>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="unpaid">Apenas pendentes</SelectItem>
+                  <SelectItem value="paid">Apenas pagos</SelectItem>
                 </SelectContent>
               </Select>
               {totalUnpaid > 0 && filterPaid !== "paid" && (
@@ -385,10 +385,10 @@ export default function CrewsVans() {
                     const ids = laborEntries.filter((e: any) => !e.is_paid).map((e: any) => e.id);
                     if (!ids.length) return;
                     await markPaid({ ids, paid: true });
-                    toast.success(`Marked ${ids.length} entries paid`);
+                    toast.success(`Marcados ${ids.length} registros como pagos`);
                   }}>
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  Mark all paid ({fmt(totalUnpaid)})
+                  Marcar todos pagos ({fmt(totalUnpaid)})
                 </Button>
               )}
             </div>
@@ -397,7 +397,7 @@ export default function CrewsVans() {
             <Card className="border-border/50">
               <CardContent className="p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Entries — {laborEntries.length} records
+                  Registros — {laborEntries.length} registros
                 </p>
                 {loadingPayroll ? (
                   <div className="flex items-center justify-center py-10">
@@ -405,7 +405,7 @@ export default function CrewsVans() {
                   </div>
                 ) : laborEntries.length === 0 ? (
                   <div className="text-center py-10 text-sm text-muted-foreground">
-                    No labor entries in this period
+                    Nenhum registro neste período
                   </div>
                 ) : (
                   <div className="space-y-1.5">
@@ -422,7 +422,7 @@ export default function CrewsVans() {
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-medium truncate">{entry.worker_name}</p>
-                                {entry.crew_member_id && <span className="text-[9px] text-muted-foreground uppercase">crew</span>}
+                                {entry.crew_member_id && <span className="text-[9px] text-muted-foreground uppercase">equipe</span>}
                               </div>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-xs text-muted-foreground tabular-nums">{format(new Date(entry.work_date), "MMM d")}</span>
@@ -441,16 +441,16 @@ export default function CrewsVans() {
                             {!entry.is_paid ? (
                               <Button size="icon" variant="ghost"
                                 className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={async () => { await markPaid({ ids: [entry.id], paid: true }); toast.success('Marked paid'); }}
-                                title="Mark paid"
+                                onClick={async () => { await markPaid({ ids: [entry.id], paid: true }); toast.success('Marcado como pago'); }}
+                                title="Marcar como pago"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
                               </Button>
                             ) : (
                               <Button size="icon" variant="ghost"
                                 className="h-7 w-7 text-muted-foreground hover:text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={async () => { await markPaid({ ids: [entry.id], paid: false }); toast.success('Marked unpaid'); }}
-                                title="Mark unpaid"
+                                onClick={async () => { await markPaid({ ids: [entry.id], paid: false }); toast.success('Marcado como pendente'); }}
+                                title="Marcar como pendente"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
                               </Button>
@@ -478,57 +478,57 @@ export default function CrewsVans() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Users className="w-4 h-4" /> {editingCrewId ? "Edit Crew Member" : "Add Crew Member"}
+              <Users className="w-4 h-4" /> {editingCrewId ? "Editar Membro da Equipe" : "Adicionar Membro da Equipe"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Full Name *</Label>
-                <Input placeholder="e.g. Carlos Silva" value={crewForm.full_name} onChange={e => setCrewForm(f => ({ ...f, full_name: e.target.value }))} />
+                <Label className="text-xs">Nome Completo *</Label>
+                <Input placeholder="ex: Carlos Silva" value={crewForm.full_name} onChange={e => setCrewForm(f => ({ ...f, full_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Role</Label>
+                <Label className="text-xs">Função</Label>
                 <Select value={crewForm.role} onValueChange={v => setCrewForm(f => ({ ...f, role: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar função" /></SelectTrigger>
                   <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Employment Type</Label>
+                <Label className="text-xs">Tipo de Contratação</Label>
                 <Select value={crewForm.employment_type} onValueChange={v => setCrewForm(f => ({ ...f, employment_type: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar tipo" /></SelectTrigger>
                   <SelectContent>{EMPLOYMENT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Phone</Label>
+                <Label className="text-xs">Telefone</Label>
                 <Input placeholder="(732) 555-0000" value={crewForm.phone} onChange={e => setCrewForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Daily Rate ($)</Label>
+                <Label className="text-xs">Diária ($)</Label>
                 <Input type="number" placeholder="250" value={crewForm.daily_rate} onChange={e => setCrewForm(f => ({ ...f, daily_rate: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Region</Label>
+                <Label className="text-xs">Região</Label>
                 <Select value={crewForm.region} onValueChange={v => setCrewForm(f => ({ ...f, region: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select region" /></SelectTrigger>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar região" /></SelectTrigger>
                   <SelectContent>{REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Email</Label>
-                <Input placeholder="worker@email.com" value={crewForm.email} onChange={e => setCrewForm(f => ({ ...f, email: e.target.value }))} />
+                <Label className="text-xs">E-mail</Label>
+                <Input placeholder="equipe@email.com" value={crewForm.email} onChange={e => setCrewForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Notes</Label>
-                <Input placeholder="Optional notes..." value={crewForm.bio} onChange={e => setCrewForm(f => ({ ...f, bio: e.target.value }))} />
+                <Label className="text-xs">Notas</Label>
+                <Input placeholder="Notas opcionais..." value={crewForm.bio} onChange={e => setCrewForm(f => ({ ...f, bio: e.target.value }))} />
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowNewCrew(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowNewCrew(false)}>Cancelar</Button>
               <Button className="flex-1" disabled={!crewForm.full_name || addCrewMutation.isPending} onClick={() => addCrewMutation.mutate()}>
-                {addCrewMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingCrewId ? "Save Changes" : "Add Member"}
+                {addCrewMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingCrewId ? "Salvar Alterações" : "Adicionar Membro"}
               </Button>
             </div>
           </div>
@@ -540,14 +540,14 @@ export default function CrewsVans() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Hammer className="w-4 h-4" /> Add Labor Payment
+              <Hammer className="w-4 h-4" /> Adicionar Pagamento
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Project *</Label>
+              <Label className="text-xs">Projeto *</Label>
               <Select value={laborForm.project_id} onValueChange={v => setLaborForm(f => ({ ...f, project_id: v }))}>
-                <SelectTrigger className="text-sm"><SelectValue placeholder="Select project" /></SelectTrigger>
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar projeto" /></SelectTrigger>
                 <SelectContent>
                   {projectsList.map((p: any) => (
                     <SelectItem key={p.id} value={p.id}>
@@ -558,7 +558,7 @@ export default function CrewsVans() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Crew Member</Label>
+              <Label className="text-xs">Membro da Equipe</Label>
               <Select
                 value={laborForm.crew_member_id || "__none"}
                 onValueChange={v => {
@@ -575,9 +575,9 @@ export default function CrewsVans() {
                   }
                 }}
               >
-                <SelectTrigger className="text-sm"><SelectValue placeholder="Pick crew or type manually" /></SelectTrigger>
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Escolha a equipe ou digite" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none">— Manual entry —</SelectItem>
+                  <SelectItem value="__none">— Entrada manual —</SelectItem>
                   {crew.filter(c => c.is_active_crew !== false).map(c => (
                     <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
                   ))}
@@ -586,34 +586,34 @@ export default function CrewsVans() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Worker Name *</Label>
-                <Input placeholder="e.g. Carlos Silva" value={laborForm.worker_name}
+                <Label className="text-xs">Nome do Trabalhador *</Label>
+                <Input placeholder="ex: Carlos Silva" value={laborForm.worker_name}
                   onChange={e => setLaborForm(f => ({ ...f, worker_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Daily Rate ($) *</Label>
+                <Label className="text-xs">Diária ($) *</Label>
                 <Input type="number" placeholder="250" value={laborForm.daily_rate}
                   onChange={e => setLaborForm(f => ({ ...f, daily_rate: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Days Worked *</Label>
+                <Label className="text-xs">Dias Trabalhados *</Label>
                 <Input type="number" step="0.5" placeholder="1" value={laborForm.days_worked}
                   onChange={e => setLaborForm(f => ({ ...f, days_worked: e.target.value }))} />
               </div>
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Work Date</Label>
+                <Label className="text-xs">Data do Trabalho</Label>
                 <Input type="date" value={laborForm.work_date}
                   onChange={e => setLaborForm(f => ({ ...f, work_date: e.target.value }))} />
               </div>
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Notes</Label>
-                <Input placeholder="Optional notes..." value={laborForm.notes}
+                <Label className="text-xs">Notas</Label>
+                <Input placeholder="Notas opcionais..." value={laborForm.notes}
                   onChange={e => setLaborForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
               <label className="col-span-2 flex items-center gap-2 text-xs cursor-pointer select-none">
                 <input type="checkbox" className="rounded" checked={laborForm.is_paid}
                   onChange={e => setLaborForm(f => ({ ...f, is_paid: e.target.checked }))} />
-                Already paid
+                Já pago
               </label>
             </div>
             <div className="rounded-md border border-border/50 bg-muted/30 p-2.5 flex items-center justify-between text-xs">
@@ -623,7 +623,7 @@ export default function CrewsVans() {
               </span>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowNewLabor(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowNewLabor(false)}>Cancelar</Button>
               <Button className="flex-1"
                 disabled={!laborForm.project_id || !laborForm.worker_name || !laborForm.daily_rate || addingLabor}
                 onClick={async () => {
@@ -638,14 +638,14 @@ export default function CrewsVans() {
                       notes: laborForm.notes || undefined,
                       crew_member_id: laborForm.crew_member_id || null,
                     });
-                    toast.success("Labor payment added");
+                    toast.success("Pagamento adicionado");
                     setShowNewLabor(false);
                     setLaborForm({ project_id: "", crew_member_id: "", worker_name: "", daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0], is_paid: false, notes: "" });
                   } catch (e: any) {
-                    toast.error(e.message || "Failed to add labor payment");
+                    toast.error(e.message || "Falha ao adicionar pagamento");
                   }
                 }}>
-                {addingLabor ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Payment"}
+                {addingLabor ? <Loader2 className="w-4 h-4 animate-spin" /> : "Adicionar Pagamento"}
               </Button>
             </div>
           </div>
