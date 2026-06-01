@@ -642,7 +642,7 @@ export default function CrewsVans() {
                     setShowNewLabor(false);
                     setLaborForm({ project_id: "", crew_member_id: "", worker_name: "", daily_rate: "", days_worked: "1", work_date: new Date().toISOString().split("T")[0], is_paid: false, notes: "" });
                   } catch (e: any) {
-                    toast.error(e.message || "Failed to add labor payment");
+                    toast.error(e.message || "Falha ao adicionar pagamento");
                   }
                 }}>
                 {addingLabor ? <Loader2 className="w-4 h-4 animate-spin" /> : "Adicionar Pagamento"}
