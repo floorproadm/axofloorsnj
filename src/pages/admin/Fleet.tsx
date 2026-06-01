@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
 const VAN_STATUSES = ["Available", "In Use", "Maintenance", "Out of Service"];
 
-export default function Fleet() {
+export function FleetContent() {
   const qc = useQueryClient();
   const [showNewVan, setShowNewVan] = useState(false);
   const [vanForm, setVanForm] = useState({
@@ -80,14 +80,16 @@ export default function Fleet() {
   });
 
   return (
-    <AdminLayout title="Fleet">
-      <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
+    <>
+      <div className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-sm text-muted-foreground">Gerencie vans, placas e disponibilidade da frota</p>
           <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={() => setShowNewVan(true)}>
             <Plus className="w-4 h-4" /> Add Van
           </Button>
         </div>
+
+
 
         {loadingVans ? (
           <div className="flex items-center justify-center py-12">
@@ -200,6 +202,18 @@ export default function Fleet() {
           </div>
         </DialogContent>
       </Dialog>
+    </>
+
+  );
+}
+
+export default function Fleet() {
+  return (
+    <AdminLayout title="Fleet">
+      <div className="p-4 md:p-6 max-w-4xl mx-auto">
+        <FleetContent />
+      </div>
     </AdminLayout>
   );
 }
+

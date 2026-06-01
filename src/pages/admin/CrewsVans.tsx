@@ -16,13 +16,15 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Plus, Users, Phone, Mail,
-  Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase, CalendarDays
+  Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase, CalendarDays, Truck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CrewScheduleTab from "@/components/admin/crews/CrewScheduleTab";
+import { FleetContent } from "@/pages/admin/Fleet";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import { useAllLaborEntries, useMarkLaborPaid, useAddLaborEntry } from "@/hooks/useLaborEntries";
 import { useCrewEarnings, type CrewMember as CrewMemberType } from "@/hooks/useCrewMembers";
+
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
 const EMPLOYMENT_TYPES = ["Head", "Full-Time Employee", "Daily Rate", "Subcontractor"];
@@ -38,9 +40,10 @@ const fmt = (v: number) =>
 export default function CrewsVans() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState<"crew" | "schedule" | "payroll">(
+  const [tab, setTab] = useState<"crew" | "schedule" | "payroll" | "fleet">(
     (searchParams.get("tab") as any) || "crew"
   );
+
   const [showNewCrew, setShowNewCrew] = useState(false);
   const [editingCrewId, setEditingCrewId] = useState<string | null>(null);
   const [payrollPeriodType, setPayrollPeriodType] = useState<PeriodType>("month");
@@ -186,7 +189,9 @@ export default function CrewsVans() {
     crew: "Gerencie sua equipe, funções e contratações",
     schedule: "Visualize e aloque crew nos jobs da semana",
     payroll: "Registre e acompanhe os pagamentos da equipe",
+    fleet: "Gerencie vans, placas e disponibilidade da frota",
   };
+
 
   return (
     <AdminLayout title="Crew">
@@ -205,6 +210,10 @@ export default function CrewsVans() {
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Payroll
               </TabsTrigger>
+              <TabsTrigger value="fleet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <Truck className="w-4 h-4" /> Fleet
+              </TabsTrigger>
+
             </TabsList>
             {tab === "crew" && (
               <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={() => setShowNewCrew(true)}>
@@ -457,7 +466,13 @@ export default function CrewsVans() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* ─── FLEET TAB ─── */}
+          <TabsContent value="fleet" className="mt-4">
+            <FleetContent />
+          </TabsContent>
         </Tabs>
+
       </div>
 
       {/* ─── ADD CREW DIALOG ─── */}
