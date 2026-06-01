@@ -449,8 +449,8 @@ export default function CrewsVans() {
                             ) : (
                               <Button size="icon" variant="ghost"
                                 className="h-7 w-7 text-muted-foreground hover:text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={async () => { await markPaid({ ids: [entry.id], paid: false }); toast.success('Marked unpaid'); }}
-                                title="Mark unpaid"
+                                onClick={async () => { await markPaid({ ids: [entry.id], paid: false }); toast.success('Marcado como pendente'); }}
+                                title="Marcar como pendente"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
                               </Button>
