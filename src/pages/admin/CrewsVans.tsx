@@ -215,7 +215,7 @@ export default function CrewsVans() {
             </TabsList>
             {tab === "crew" && (
               <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={() => setShowNewCrew(true)}>
-                <Plus className="w-4 h-4" /> Add Worker
+                <Plus className="w-4 h-4" /> Adicionar Membro
               </Button>
             )}
           </div>
