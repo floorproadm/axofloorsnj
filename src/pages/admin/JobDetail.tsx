@@ -525,7 +525,7 @@ function CompactJobDetails({ project, onEditEmpty }: { project: any; onEditEmpty
     { key: 'start_date', label: 'Start', value: project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null },
     { key: 'completion_date', label: 'End', value: project.completion_date ? new Date(project.completion_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null },
     { key: 'team_lead', label: 'Líder da Equipe', value: project.team_lead },
-    { key: 'work_schedule', label: 'Schedule', value: project.work_schedule },
+    { key: 'work_schedule', label: 'Agenda', value: project.work_schedule },
   ];
   const filled = fields.filter(f => f.value);
   const empty = fields.filter(f => !f.value);
