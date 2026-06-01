@@ -147,7 +147,7 @@ export default function CrewsVans() {
       setEditingCrewId(null);
       setCrewForm({ full_name: "", phone: "", email: "", role: "", bio: "", employment_type: "", region: "", daily_rate: "" });
     },
-    onError: (e: any) => toast.error(e.message || "Failed to save crew member"),
+    onError: (e: any) => toast.error(e.message || "Falha ao salvar membro da equipe"),
   });
 
   const openEditCrew = (m: CrewMemberType) => {
