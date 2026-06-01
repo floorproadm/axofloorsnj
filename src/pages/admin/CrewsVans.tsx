@@ -187,29 +187,29 @@ export default function CrewsVans() {
 
   const subtitles: Record<typeof tab, string> = {
     crew: "Gerencie sua equipe, funções e contratações",
-    schedule: "Visualize e aloque crew nos jobs da semana",
+    schedule: "Visualize e aloque equipe nos jobs da semana",
     payroll: "Registre e acompanhe os pagamentos da equipe",
     fleet: "Gerencie vans, placas e disponibilidade da frota",
   };
 
 
   return (
-    <AdminLayout title="Crew">
+    <AdminLayout title="Equipe">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
               <TabsTrigger value="fleet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Truck className="w-4 h-4" /> Fleet
+                <Truck className="w-4 h-4" /> Frota
               </TabsTrigger>
               <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Users className="w-4 h-4" /> Crew
+                <Users className="w-4 h-4" /> Equipe
               </TabsTrigger>
               <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <CalendarDays className="w-4 h-4" /> Team Schedule
+                <CalendarDays className="w-4 h-4" /> Agenda
               </TabsTrigger>
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Hammer className="w-4 h-4" /> Payroll
+                <Hammer className="w-4 h-4" /> Pagamentos
               </TabsTrigger>
 
             </TabsList>
