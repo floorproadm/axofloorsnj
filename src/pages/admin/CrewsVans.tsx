@@ -40,8 +40,8 @@ const fmt = (v: number) =>
 export default function CrewsVans() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState<"crew" | "schedule" | "payroll" | "fleet">(
-    (searchParams.get("tab") as any) || "crew"
+  const [tab, setTab] = useState<"fleet" | "crew" | "schedule" | "payroll">(
+    (searchParams.get("tab") as any) || "fleet"
   );
 
   const [showNewCrew, setShowNewCrew] = useState(false);
@@ -201,17 +201,17 @@ export default function CrewsVans() {
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+              <TabsTrigger value="fleet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <Truck className="w-4 h-4" /> Fleet
+              </TabsTrigger>
               <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Users className="w-4 h-4" /> Crew
               </TabsTrigger>
               <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <CalendarDays className="w-4 h-4" /> Schedule
+                <CalendarDays className="w-4 h-4" /> Team Schedule
               </TabsTrigger>
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Payroll
-              </TabsTrigger>
-              <TabsTrigger value="fleet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Truck className="w-4 h-4" /> Fleet
               </TabsTrigger>
 
             </TabsList>
