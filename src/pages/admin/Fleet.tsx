@@ -202,7 +202,8 @@ export function FleetContent() {
           </div>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
+
   );
 }
 
