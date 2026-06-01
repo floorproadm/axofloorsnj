@@ -586,34 +586,34 @@ export default function CrewsVans() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Worker Name *</Label>
-                <Input placeholder="e.g. Carlos Silva" value={laborForm.worker_name}
+                <Label className="text-xs">Nome do Trabalhador *</Label>
+                <Input placeholder="ex: Carlos Silva" value={laborForm.worker_name}
                   onChange={e => setLaborForm(f => ({ ...f, worker_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Daily Rate ($) *</Label>
+                <Label className="text-xs">Diária ($) *</Label>
                 <Input type="number" placeholder="250" value={laborForm.daily_rate}
                   onChange={e => setLaborForm(f => ({ ...f, daily_rate: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Days Worked *</Label>
+                <Label className="text-xs">Dias Trabalhados *</Label>
                 <Input type="number" step="0.5" placeholder="1" value={laborForm.days_worked}
                   onChange={e => setLaborForm(f => ({ ...f, days_worked: e.target.value }))} />
               </div>
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Work Date</Label>
+                <Label className="text-xs">Data do Trabalho</Label>
                 <Input type="date" value={laborForm.work_date}
                   onChange={e => setLaborForm(f => ({ ...f, work_date: e.target.value }))} />
               </div>
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Notes</Label>
-                <Input placeholder="Optional notes..." value={laborForm.notes}
+                <Label className="text-xs">Notas</Label>
+                <Input placeholder="Notas opcionais..." value={laborForm.notes}
                   onChange={e => setLaborForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
               <label className="col-span-2 flex items-center gap-2 text-xs cursor-pointer select-none">
                 <input type="checkbox" className="rounded" checked={laborForm.is_paid}
                   onChange={e => setLaborForm(f => ({ ...f, is_paid: e.target.checked }))} />
-                Already paid
+                Já pago
               </label>
             </div>
             <div className="rounded-md border border-border/50 bg-muted/30 p-2.5 flex items-center justify-between text-xs">
@@ -623,7 +623,7 @@ export default function CrewsVans() {
               </span>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowNewLabor(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowNewLabor(false)}>Cancelar</Button>
               <Button className="flex-1"
                 disabled={!laborForm.project_id || !laborForm.worker_name || !laborForm.daily_rate || addingLabor}
                 onClick={async () => {
