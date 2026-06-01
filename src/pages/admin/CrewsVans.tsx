@@ -441,8 +441,8 @@ export default function CrewsVans() {
                             {!entry.is_paid ? (
                               <Button size="icon" variant="ghost"
                                 className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={async () => { await markPaid({ ids: [entry.id], paid: true }); toast.success('Marked paid'); }}
-                                title="Mark paid"
+                                onClick={async () => { await markPaid({ ids: [entry.id], paid: true }); toast.success('Marcado como pago'); }}
+                                title="Marcar como pago"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
                               </Button>
