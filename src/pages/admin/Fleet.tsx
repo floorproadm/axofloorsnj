@@ -205,3 +205,14 @@ export function FleetContent() {
     </AdminLayout>
   );
 }
+
+export default function Fleet() {
+  return (
+    <AdminLayout title="Fleet">
+      <div className="p-4 md:p-6 max-w-4xl mx-auto">
+        <FleetContent />
+      </div>
+    </AdminLayout>
+  );
+}
+
