@@ -92,7 +92,7 @@ export function AdminSidebar() {
     { title: "Customers", url: "/admin/customers", icon: UserCheck },
     { title: "Crew", url: "/admin/crews", icon: Users },
     { title: "Timesheet", url: "/admin/timesheet", icon: Clock },
-    { title: "Fleet", url: "/admin/fleet", icon: Truck },
+    
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Gallery", url: "/admin/gallery", icon: Images },
     { title: "Automations", url: "/admin/automations", icon: Zap },
