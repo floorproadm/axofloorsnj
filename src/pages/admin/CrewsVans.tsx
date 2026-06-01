@@ -545,9 +545,9 @@ export default function CrewsVans() {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Project *</Label>
+              <Label className="text-xs">Projeto *</Label>
               <Select value={laborForm.project_id} onValueChange={v => setLaborForm(f => ({ ...f, project_id: v }))}>
-                <SelectTrigger className="text-sm"><SelectValue placeholder="Select project" /></SelectTrigger>
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar projeto" /></SelectTrigger>
                 <SelectContent>
                   {projectsList.map((p: any) => (
                     <SelectItem key={p.id} value={p.id}>
