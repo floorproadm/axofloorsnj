@@ -526,9 +526,9 @@ export default function CrewsVans() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowNewCrew(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowNewCrew(false)}>Cancelar</Button>
               <Button className="flex-1" disabled={!crewForm.full_name || addCrewMutation.isPending} onClick={() => addCrewMutation.mutate()}>
-                {addCrewMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingCrewId ? "Save Changes" : "Add Member"}
+                {addCrewMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : editingCrewId ? "Salvar Alterações" : "Adicionar Membro"}
               </Button>
             </div>
           </div>
