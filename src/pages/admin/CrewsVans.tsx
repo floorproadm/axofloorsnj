@@ -422,7 +422,7 @@ export default function CrewsVans() {
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-medium truncate">{entry.worker_name}</p>
-                                {entry.crew_member_id && <span className="text-[9px] text-muted-foreground uppercase">crew</span>}
+                                {entry.crew_member_id && <span className="text-[9px] text-muted-foreground uppercase">equipe</span>}
                               </div>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-xs text-muted-foreground tabular-nums">{format(new Date(entry.work_date), "MMM d")}</span>
