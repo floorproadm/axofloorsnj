@@ -645,7 +645,7 @@ export default function CrewsVans() {
                     toast.error(e.message || "Failed to add labor payment");
                   }
                 }}>
-                {addingLabor ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add Payment"}
+                {addingLabor ? <Loader2 className="w-4 h-4 animate-spin" /> : "Adicionar Pagamento"}
               </Button>
             </div>
           </div>
