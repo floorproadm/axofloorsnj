@@ -16,13 +16,15 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Plus, Users, Phone, Mail,
-  Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase, CalendarDays
+  Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase, CalendarDays, Truck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CrewScheduleTab from "@/components/admin/crews/CrewScheduleTab";
+import { FleetContent } from "@/pages/admin/Fleet";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import { useAllLaborEntries, useMarkLaborPaid, useAddLaborEntry } from "@/hooks/useLaborEntries";
 import { useCrewEarnings, type CrewMember as CrewMemberType } from "@/hooks/useCrewMembers";
+
 
 const REGIONS = ["North NJ", "Central NJ", "South NJ", "NYC/Tri-State", "All Regions"];
 const EMPLOYMENT_TYPES = ["Head", "Full-Time Employee", "Daily Rate", "Subcontractor"];
