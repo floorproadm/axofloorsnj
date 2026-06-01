@@ -196,8 +196,6 @@ export default function CrewsVans() {
   return (
     <AdminLayout title="Crew">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
-        <p className="text-sm text-muted-foreground -mt-2">{subtitles[tab]}</p>
-
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
