@@ -558,7 +558,7 @@ export default function CrewsVans() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Crew Member</Label>
+              <Label className="text-xs">Membro da Equipe</Label>
               <Select
                 value={laborForm.crew_member_id || "__none"}
                 onValueChange={v => {
@@ -575,9 +575,9 @@ export default function CrewsVans() {
                   }
                 }}
               >
-                <SelectTrigger className="text-sm"><SelectValue placeholder="Pick crew or type manually" /></SelectTrigger>
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Escolha a equipe ou digite" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none">— Manual entry —</SelectItem>
+                  <SelectItem value="__none">— Entrada manual —</SelectItem>
                   {crew.filter(c => c.is_active_crew !== false).map(c => (
                     <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
                   ))}
