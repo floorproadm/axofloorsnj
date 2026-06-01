@@ -385,10 +385,10 @@ export default function CrewsVans() {
                     const ids = laborEntries.filter((e: any) => !e.is_paid).map((e: any) => e.id);
                     if (!ids.length) return;
                     await markPaid({ ids, paid: true });
-                    toast.success(`Marked ${ids.length} entries paid`);
+                    toast.success(`Marcados ${ids.length} registros como pagos`);
                   }}>
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  Mark all paid ({fmt(totalUnpaid)})
+                  Marcar todos pagos ({fmt(totalUnpaid)})
                 </Button>
               )}
             </div>
