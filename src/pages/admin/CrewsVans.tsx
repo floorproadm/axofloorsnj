@@ -397,7 +397,7 @@ export default function CrewsVans() {
             <Card className="border-border/50">
               <CardContent className="p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Entries — {laborEntries.length} records
+                  Registros — {laborEntries.length} registros
                 </p>
                 {loadingPayroll ? (
                   <div className="flex items-center justify-center py-10">
