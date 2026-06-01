@@ -347,9 +347,9 @@ export default function CrewsVans() {
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
-                { label: "Total Labor", value: fmt(totalLabor), color: "text-foreground" },
-                { label: "Paid", value: fmt(totalPaid), color: "text-emerald-500" },
-                { label: "Unpaid", value: fmt(totalUnpaid), color: "text-amber-500" },
+                { label: "Total Mão de Obra", value: fmt(totalLabor), color: "text-foreground" },
+                { label: "Pago", value: fmt(totalPaid), color: "text-emerald-500" },
+                { label: "Pendente", value: fmt(totalUnpaid), color: "text-amber-500" },
               ].map((c) => (
                 <Card key={c.label} className="border-border/50">
                   <CardContent className="p-2.5 sm:p-4">
