@@ -484,45 +484,45 @@ export default function CrewsVans() {
           <div className="space-y-4 pt-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Full Name *</Label>
-                <Input placeholder="e.g. Carlos Silva" value={crewForm.full_name} onChange={e => setCrewForm(f => ({ ...f, full_name: e.target.value }))} />
+                <Label className="text-xs">Nome Completo *</Label>
+                <Input placeholder="ex: Carlos Silva" value={crewForm.full_name} onChange={e => setCrewForm(f => ({ ...f, full_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Role</Label>
+                <Label className="text-xs">Função</Label>
                 <Select value={crewForm.role} onValueChange={v => setCrewForm(f => ({ ...f, role: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar função" /></SelectTrigger>
                   <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Employment Type</Label>
+                <Label className="text-xs">Tipo de Contratação</Label>
                 <Select value={crewForm.employment_type} onValueChange={v => setCrewForm(f => ({ ...f, employment_type: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar tipo" /></SelectTrigger>
                   <SelectContent>{EMPLOYMENT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Phone</Label>
+                <Label className="text-xs">Telefone</Label>
                 <Input placeholder="(732) 555-0000" value={crewForm.phone} onChange={e => setCrewForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Daily Rate ($)</Label>
+                <Label className="text-xs">Diária ($)</Label>
                 <Input type="number" placeholder="250" value={crewForm.daily_rate} onChange={e => setCrewForm(f => ({ ...f, daily_rate: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Region</Label>
+                <Label className="text-xs">Região</Label>
                 <Select value={crewForm.region} onValueChange={v => setCrewForm(f => ({ ...f, region: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Select region" /></SelectTrigger>
+                  <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar região" /></SelectTrigger>
                   <SelectContent>{REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Email</Label>
-                <Input placeholder="worker@email.com" value={crewForm.email} onChange={e => setCrewForm(f => ({ ...f, email: e.target.value }))} />
+                <Label className="text-xs">E-mail</Label>
+                <Input placeholder="equipe@email.com" value={crewForm.email} onChange={e => setCrewForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div className="col-span-2 space-y-1.5">
-                <Label className="text-xs">Notes</Label>
-                <Input placeholder="Optional notes..." value={crewForm.bio} onChange={e => setCrewForm(f => ({ ...f, bio: e.target.value }))} />
+                <Label className="text-xs">Notas</Label>
+                <Input placeholder="Notas opcionais..." value={crewForm.bio} onChange={e => setCrewForm(f => ({ ...f, bio: e.target.value }))} />
               </div>
             </div>
             <div className="flex gap-2">
