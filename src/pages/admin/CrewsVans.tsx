@@ -189,7 +189,9 @@ export default function CrewsVans() {
     crew: "Gerencie sua equipe, funções e contratações",
     schedule: "Visualize e aloque crew nos jobs da semana",
     payroll: "Registre e acompanhe os pagamentos da equipe",
+    fleet: "Gerencie vans, placas e disponibilidade da frota",
   };
+
 
   return (
     <AdminLayout title="Crew">
