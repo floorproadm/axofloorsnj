@@ -740,6 +740,7 @@ function AppointmentModal({
           notes: appointment.notes || "",
           project_id: appointment.project_id,
           assigned_to: (appointment as any).assigned_to || [],
+          arrival_window_minutes: (appointment as any).arrival_window_minutes ?? null,
         });
       } else {
         setIsEditing(true); // edit mode for new
@@ -751,6 +752,7 @@ function AppointmentModal({
           duration_hours: templateDefaults?.duration || 1,
           location: "", notes: "", project_id: null,
           assigned_to: [],
+          arrival_window_minutes: null,
         });
       }
     }
