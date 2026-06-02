@@ -44,12 +44,16 @@ export default function PublicInvoice() {
           await supabase.from("invoices").update({ viewed_at: new Date().toISOString() } as any).eq("share_token", token);
         }
 
-        const [itemsRes, phasesRes] = await Promise.all([
+        const [itemsRes, phasesRes, propertyRes] = await Promise.all([
           supabase.from("invoice_items").select("*").eq("invoice_id", inv.id).order("created_at"),
           supabase.from("invoice_payment_schedule").select("*").eq("invoice_id", inv.id).order("phase_order"),
+          (inv as any).property_id
+            ? supabase.from("customer_properties").select("*").eq("id", (inv as any).property_id).maybeSingle()
+            : Promise.resolve({ data: null }),
         ]);
         setItems(itemsRes.data || []);
         setPhases(phasesRes.data || []);
+        setProperty(propertyRes.data);
       } catch (e: any) {
         setError(e.message || "Failed to load invoice");
       } finally {
