@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ import {
   CheckCircle2, Clock, Trash2, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PendingApprovalTab, ReadyToPayTab, PayrollHistoryTab } from "@/components/admin/LaborPayrollTabs";
 
 const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
