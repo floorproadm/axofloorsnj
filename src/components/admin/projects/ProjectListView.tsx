@@ -40,6 +40,7 @@ interface Props {
 
 export function ProjectListView({ projects, signals, onSelect }: Props) {
   const isMobile = useIsMobile();
+  const { marginMinPercent } = useCompanySettings();
 
   const enriched = projects.map((p) => {
     const hasMissingProof = signals?.missingProof.has(p.id) ?? false;
