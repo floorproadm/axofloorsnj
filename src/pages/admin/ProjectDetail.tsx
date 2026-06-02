@@ -86,6 +86,7 @@ export default function ProjectDetail() {
       zip_code: form.zip_code || null,
       project_type: form.project_type || null,
       square_footage: form.square_footage === '' ? null : Number(form.square_footage),
+      labor_sqft_rate: form.labor_sqft_rate === '' ? null : Number(form.labor_sqft_rate),
       notes: form.notes || null,
     };
     const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
