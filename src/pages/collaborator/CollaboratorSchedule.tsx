@@ -145,7 +145,7 @@ export default function CollaboratorSchedule() {
                           <div className="flex items-center gap-1.5">
                             <Clock className="h-3.5 w-3.5" />
                             <span>
-                              {appt.appointment_time?.slice(0, 5)}
+                              {formatAppointmentTime(appt.appointment_time, appt.arrival_window_minutes, defaultArrivalWindow)}
                               {appt.duration_hours && ` · ${appt.duration_hours}h`}
                             </span>
                           </div>
