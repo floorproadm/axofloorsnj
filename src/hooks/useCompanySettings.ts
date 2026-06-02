@@ -9,6 +9,7 @@ export interface CompanySettings {
   trade_name: string | null;
   tagline: string | null;
   default_margin_min_percent: number;
+  default_arrival_window: number | null;
   labor_pricing_model: LaborPricingModel;
   default_labor_rate: number;
   logo_url: string | null;
