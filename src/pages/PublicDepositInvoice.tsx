@@ -28,6 +28,7 @@ export default function PublicDepositInvoice() {
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
+  const [property, setProperty] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
   const [signature, setSignature] = useState<any>(null);
   const [logoUrl, setLogoUrl] = useState<string>("");
