@@ -28,16 +28,21 @@ export function AdminPWAHead() {
     addLink("apple-touch-icon", "/icons/icon-192.png");
     addLink("manifest", "/admin-manifest.json");
 
-    // Register service worker with /admin scope
+    // Unregister any previously installed service worker and clear caches.
+    // The old SW cached the /admin shell, which caused blank screens on iOS
+    // PWA after deploys (cached HTML pointing to stale JS bundles).
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/admin-sw.js", { scope: "/admin" })
-        .then((reg) => {
-          console.log("[PWA] Service worker registered, scope:", reg.scope);
-        })
-        .catch((err) => {
-          console.warn("[PWA] SW registration failed:", err);
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => {
+          reg.unregister().catch(() => undefined);
         });
+      }).catch(() => undefined);
+
+      if (typeof caches !== "undefined") {
+        caches.keys().then((keys) => {
+          keys.forEach((k) => caches.delete(k).catch(() => undefined));
+        }).catch(() => undefined);
+      }
     }
 
     return () => {
