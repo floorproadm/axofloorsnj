@@ -298,7 +298,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       if (proposal.proposal_id) {
         const { data: rows } = await supabase
           .from('proposal_line_items' as any)
-          .select('description, quantity, unit_price, display_order, service_catalog_id')
+          .select('description, quantity, unit_price, display_order, service_catalog_id, unit_cost_snapshot')
           .eq('proposal_id', proposal.proposal_id)
           .order('display_order', { ascending: true });
         if (rows && rows.length > 0) {
@@ -308,6 +308,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             qty: Number(r.quantity) || 0,
             unit_price: Number(r.unit_price) || 0,
             service_catalog_id: r.service_catalog_id || null,
+            unit_cost_snapshot: r.unit_cost_snapshot != null ? Number(r.unit_cost_snapshot) : null,
           }));
         }
       }
