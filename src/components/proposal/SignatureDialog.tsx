@@ -152,11 +152,10 @@ export function SignatureDialog({
         console.error("Admin notification failed:", notifyErr);
       }
 
-      toast.success("Project confirmed! Redirecting…");
-      // Redirect to the public AXO Floors thank-you page to avoid freezing on dialog
-      setTimeout(() => {
-        window.location.href = "https://axofloorsnj.com/thank-you";
-      }, 600);
+      // Close the signing dialog cleanly, then show the confirmation state
+      onOpenChange(false);
+      // Small delay so the dialog unmount finishes before re-rendering as "done"
+      setTimeout(() => setDone(true), 150);
 
     } catch (e: any) {
       console.error(e);
