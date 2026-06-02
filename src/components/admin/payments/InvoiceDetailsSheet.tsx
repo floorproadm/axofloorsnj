@@ -218,6 +218,14 @@ function PublicLinkModal({ invoice, open, onClose }: { invoice: Invoice; open: b
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Public Link</p>
                 <p className="text-xs text-foreground font-mono break-all">{publicUrl}</p>
               </div>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => window.open(publicUrl, "_blank", "noopener,noreferrer")}
+                disabled={!shareToken}
+              >
+                <Eye className="w-4 h-4" /> Preview as Client
+              </Button>
               <Button variant="outline" className="w-full gap-2" onClick={handleCopy}>
                 {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
                 {copied ? "Copied!" : "Copy Link"}

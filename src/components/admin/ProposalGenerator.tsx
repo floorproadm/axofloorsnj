@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon, Package, Search, GripVertical } from 'lucide-react';
+import { Loader2, FileText, Printer, Check, AlertTriangle, Shield, Sparkles, Clock, Phone, Link2, Layers, DollarSign, Plus, Trash2, Pencil, Save, X, Sun, Moon, Send, Settings as SettingsIcon, Package, Search, GripVertical, Eye } from 'lucide-react';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -728,6 +728,15 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               <Moon className="h-3.5 w-3.5" /> Dark
             </button>
           </div>
+          <Button
+            variant="outline"
+            onClick={() => window.open(`/proposal/${shareToken}`, '_blank', 'noopener,noreferrer')}
+            disabled={!shareToken}
+            title="Open the public proposal page exactly as the client sees it"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Preview as Client
+          </Button>
           <Button variant="outline" onClick={handleCopyLink} disabled={!shareToken}>
             <Link2 className="h-4 w-4 mr-2" />
             Copy Public Link

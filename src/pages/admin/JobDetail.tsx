@@ -34,7 +34,7 @@ import {
   Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
   Package, HardHat, Plus, Target, Receipt, MapPin, ExternalLink,
   DollarSign, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
-  MoreVertical, Link2, CalendarPlus
+  MoreVertical, Link2, CalendarPlus, Eye
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
@@ -287,7 +287,7 @@ export default function JobDetail() {
                     className="h-7 text-xs gap-1.5 border-emerald-500/40 bg-emerald-500/5 text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 dark:text-emerald-400"
                     onClick={() => window.open(`/portal/${project.customer_portal_token}`, '_blank')}
                   >
-                    <ExternalLink className="w-3 h-3" /> Open Customer Portal
+                    <Eye className="w-3 h-3" /> Preview as Client
                   </Button>
                   <Button
                     size="sm"
