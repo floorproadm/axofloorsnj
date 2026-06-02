@@ -14,6 +14,7 @@ export interface CollaboratorAppointment {
   notes: string | null;
   customer_name: string;
   project_id: string | null;
+  arrival_window_minutes: number | null;
 }
 
 export function useCollaboratorSchedule(weekOffset: number = 0) {
