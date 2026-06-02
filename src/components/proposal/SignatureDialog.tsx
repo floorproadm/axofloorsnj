@@ -175,7 +175,13 @@ export function SignatureDialog({
               Thank you, <strong>{name}</strong>. We'll text you within 24h to
               schedule kickoff.
             </p>
-            <Button onClick={() => onOpenChange(false)} className="mt-3">
+            <Button
+              onClick={() => {
+                onOpenChange(false);
+                window.location.assign(`/proposal/${proposalToken}/invoice`);
+              }}
+              className="mt-3"
+            >
               Close
             </Button>
           </div>
