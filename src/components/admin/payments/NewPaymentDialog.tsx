@@ -74,7 +74,8 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
       setPaymentDate(new Date().toISOString().split("T")[0]);
       setCategory(defaultCategory);
       setRecurrence("none");
-      setReceiptUrl(null);
+      setReceiptPath(null);
+      setReceiptPreview(null);
     }
   }, [open, defaultCategory]);
 
@@ -85,7 +86,8 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
     setDescription("");
     setNotes("");
     setRecurrence("none");
-    setReceiptUrl(null);
+    setReceiptPath(null);
+    setReceiptPreview(null);
   };
 
   const handleReceiptUpload = async (file: File) => {
@@ -103,8 +105,12 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
         upsert: false,
       });
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
-      setReceiptUrl(data.publicUrl);
+      // Private bucket — store the path; preview via signed URL.
+      const { data: signed } = await supabase.storage
+        .from("receipts")
+        .createSignedUrl(path, 3600);
+      setReceiptPath(path);
+      setReceiptPreview(signed?.signedUrl ?? null);
       toast({ title: "Receipt attached" });
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
@@ -127,7 +133,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
         notes: notes || null,
         recurrence: !isIncome && recurrence !== "none" ? (recurrence as any) : null,
         recurrence_next_date: !isIncome && recurrence !== "none" ? paymentDate : null,
-        receipt_photo_url: !isIncome ? receiptUrl : null,
+        receipt_photo_url: !isIncome ? receiptPath : null,
       },
       {
         onSuccess: () => {
