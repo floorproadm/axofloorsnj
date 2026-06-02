@@ -34,7 +34,7 @@ import {
   Trash2, ImagePlus, MessageSquare, StickyNote, FileText, FolderOpen,
   Package, HardHat, Plus, Target, Receipt, MapPin, ExternalLink,
   DollarSign, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
-  MoreVertical, Link2, CalendarPlus
+  MoreVertical, Link2, CalendarPlus, Eye
 } from 'lucide-react';
 import { AXO_ORG_ID } from '@/lib/constants';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
