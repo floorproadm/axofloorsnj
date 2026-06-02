@@ -1646,6 +1646,7 @@ export type Database = {
           paid_at: string | null
           pay_mode: string
           payment_method: string | null
+          payroll_period_id: string | null
           project_id: string
           rejection_reason: string | null
           role: string | null
@@ -1671,6 +1672,7 @@ export type Database = {
           paid_at?: string | null
           pay_mode?: string
           payment_method?: string | null
+          payroll_period_id?: string | null
           project_id: string
           rejection_reason?: string | null
           role?: string | null
@@ -1696,6 +1698,7 @@ export type Database = {
           paid_at?: string | null
           pay_mode?: string
           payment_method?: string | null
+          payroll_period_id?: string | null
           project_id?: string
           rejection_reason?: string | null
           role?: string | null
@@ -1727,6 +1730,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labor_entries_payroll_period_id_fkey"
+            columns: ["payroll_period_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_periods"
             referencedColumns: ["id"]
           },
           {
@@ -2728,6 +2738,67 @@ export type Database = {
             columns: ["recurrence_parent_id"]
             isOneToOne: false
             referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_periods: {
+        Row: {
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          status: string
+          total_paid: number | null
+          updated_at: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          status?: string
+          total_paid?: number | null
+          updated_at?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          status?: string
+          total_paid?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_periods_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_periods_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "view_crew_earnings"
+            referencedColumns: ["crew_member_id"]
+          },
+          {
+            foreignKeyName: "payroll_periods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -4663,6 +4734,20 @@ export type Database = {
       get_partner_balance: { Args: { p_partner_id: string }; Returns: Json }
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }
+      get_payroll_summary: {
+        Args: { p_period_end?: string; p_period_start?: string }
+        Returns: {
+          approved_count: number
+          entry_count: number
+          full_name: string
+          paid_count: number
+          pending_count: number
+          technician_id: string
+          total_amount: number
+          total_days: number
+          total_sqft: number
+        }[]
+      }
       get_portal_messages: { Args: { p_token: string }; Returns: Json }
       get_portal_timeline: { Args: { p_token: string }; Returns: Json }
       get_referral_dashboard: { Args: { p_email: string }; Returns: Json }
