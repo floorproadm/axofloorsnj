@@ -88,6 +88,7 @@ export default function GeneralSettings() {
         default_margin_min_percent: marginNum,
         labor_pricing_model: formModel,
         default_labor_rate: rateNum,
+        default_arrival_window: formArrivalWindow === "none" ? null : parseInt(formArrivalWindow, 10),
         default_payment_terms: formPaymentTerms.trim() || null,
         default_tax_rate: taxNum,
         default_terms_text: formTermsText.trim() || null,
