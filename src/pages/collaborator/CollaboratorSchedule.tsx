@@ -7,6 +7,8 @@ import { Loader2, ChevronLeft, ChevronRight, MapPin, Clock, Users, ArrowRight, C
 import { format, startOfWeek, addDays, addWeeks, isSameDay, getISOWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { formatAppointmentTime } from "@/lib/constants";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   scheduled: {
