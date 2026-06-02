@@ -144,6 +144,26 @@ function OverviewTab() {
       .sort((a, b) => b.revenue - a.revenue);
   }, [projectAgg]);
 
+  // Revenue by lead source (RPC)
+  const { data: bySource = [] } = useQuery({
+    queryKey: ["performance-revenue-by-source", period],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_revenue_by_lead_source", {
+        p_org_id: AXO_ORG_ID,
+        p_start: periodStart ? periodStart.toISOString().split("T")[0] : null,
+      });
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        lead_source: string;
+        project_count: number;
+        revenue: number;
+        cost: number;
+        profit: number;
+        margin: number;
+      }>;
+    },
+  });
+
   // Weekly chart: group paid invoices by ISO week
   const chartData = useMemo(() => {
     const byWeek: Record<string, { revenue: number; cost: number }> = {};
