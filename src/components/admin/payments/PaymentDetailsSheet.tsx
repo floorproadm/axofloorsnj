@@ -60,6 +60,27 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [receiptSignedUrl, setReceiptSignedUrl] = useState<string | null>(null);
+
+  // Generate signed URL for private receipt photo
+  useEffect(() => {
+    let cancelled = false;
+    setReceiptSignedUrl(null);
+    const path = payment?.receipt_photo_url;
+    if (!path) return;
+    // Back-compat: if value is already a full URL (legacy public bucket), use as-is.
+    if (path.startsWith("http")) {
+      setReceiptSignedUrl(path);
+      return;
+    }
+    supabase.storage
+      .from("receipts")
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => {
+        if (!cancelled) setReceiptSignedUrl(data?.signedUrl ?? null);
+      });
+    return () => { cancelled = true; };
+  }, [payment?.id, payment?.receipt_photo_url]);
 
   // Edit form state
   const [editAmount, setEditAmount] = useState("");
