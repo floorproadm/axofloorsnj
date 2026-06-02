@@ -77,6 +77,7 @@ export function useCreatePayment() {
           recurrence_next_date: input.recurrence
             ? (input.recurrence_next_date || input.payment_date)
             : null,
+          receipt_photo_url: input.receipt_photo_url || null,
         })
         .select()
         .single();
