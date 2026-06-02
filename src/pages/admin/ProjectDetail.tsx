@@ -304,6 +304,15 @@ export default function ProjectDetail() {
                         onChange={(e) => setForm({ ...form, square_footage: e.target.value })}
                       />
                     </Field>
+                    <Field label="Labor SqFt Rate ($/sqft)">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="ex. 1.50"
+                        value={form.labor_sqft_rate}
+                        onChange={(e) => setForm({ ...form, labor_sqft_rate: e.target.value })}
+                      />
+                    </Field>
                     <div className="sm:col-span-2">
                       <Field label="Notas">
                         <Textarea
