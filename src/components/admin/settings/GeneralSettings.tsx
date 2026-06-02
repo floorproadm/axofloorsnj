@@ -15,9 +15,10 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { LaborPricingModel } from "@/hooks/useCompanySettings";
+import { ARRIVAL_WINDOW_OPTIONS } from "@/lib/constants";
 
 export default function GeneralSettings() {
-  const { settings, isLoading, refetch, companyName, marginMinPercent, laborPricingModel, laborRate } = useCompanySettings();
+  const { settings, isLoading, refetch, companyName, marginMinPercent, laborPricingModel, laborRate, defaultArrivalWindow } = useCompanySettings();
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const [saving, setSaving] = useState(false);
@@ -29,6 +30,7 @@ export default function GeneralSettings() {
   const [formMargin, setFormMargin] = useState("");
   const [formModel, setFormModel] = useState<LaborPricingModel>("sqft");
   const [formRate, setFormRate] = useState("");
+  const [formArrivalWindow, setFormArrivalWindow] = useState<string>("none");
   // Proposal document defaults
   const [formPaymentTerms, setFormPaymentTerms] = useState("");
   const [formTaxRate, setFormTaxRate] = useState("0");
@@ -41,6 +43,7 @@ export default function GeneralSettings() {
       setFormMargin(String(marginMinPercent));
       setFormModel(laborPricingModel);
       setFormRate(String(laborRate));
+      setFormArrivalWindow(defaultArrivalWindow == null ? "none" : String(defaultArrivalWindow));
       const s: any = settings || {};
       setFormPhone(s.phone ?? "");
       setFormEmail(s.email ?? "");
@@ -50,7 +53,7 @@ export default function GeneralSettings() {
       setFormTermsText(s.default_terms_text ?? "");
       setFormDepositPercent(String(s.deposit_percentage ?? 50));
     }
-  }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate, settings]);
+  }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate, defaultArrivalWindow, settings]);
 
   const handleSave = async () => {
     const marginNum = parseFloat(formMargin);
@@ -85,6 +88,7 @@ export default function GeneralSettings() {
         default_margin_min_percent: marginNum,
         labor_pricing_model: formModel,
         default_labor_rate: rateNum,
+        default_arrival_window: formArrivalWindow === "none" ? null : parseInt(formArrivalWindow, 10),
         default_payment_terms: formPaymentTerms.trim() || null,
         default_tax_rate: taxNum,
         default_terms_text: formTermsText.trim() || null,
@@ -214,6 +218,19 @@ export default function GeneralSettings() {
             <div className="space-y-2">
               <Label htmlFor="labor_rate">{t("general.laborRatePadrao")} ({formModel === "sqft" ? "$/sq ft" : "$/dia"})</Label>
               <Input id="labor_rate" type="number" min={0} step={0.25} value={formRate} onChange={(e) => setFormRate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="arrival_window">Default Arrival Window</Label>
+              <Select value={formArrivalWindow} onValueChange={setFormArrivalWindow}>
+                <SelectTrigger id="arrival_window"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No window (exact time)</SelectItem>
+                  {ARRIVAL_WINDOW_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Appointments inherit this window unless overridden. Shown as a range (e.g. 9:00 AM – 10:00 AM) on schedules and client-facing views.</p>
             </div>
           </div>
         </CardContent>

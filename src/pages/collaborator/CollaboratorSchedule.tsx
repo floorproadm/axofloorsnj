@@ -7,6 +7,8 @@ import { Loader2, ChevronLeft, ChevronRight, MapPin, Clock, Users, ArrowRight, C
 import { format, startOfWeek, addDays, addWeeks, isSameDay, getISOWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { formatAppointmentTime } from "@/lib/constants";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   scheduled: {
@@ -34,6 +36,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 export default function CollaboratorSchedule() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { data: appointments = [], isLoading } = useCollaboratorSchedule(weekOffset);
+  const { defaultArrivalWindow } = useCompanySettings();
   const navigate = useNavigate();
 
   const adjustedDate = addWeeks(new Date(), weekOffset);
@@ -142,7 +145,7 @@ export default function CollaboratorSchedule() {
                           <div className="flex items-center gap-1.5">
                             <Clock className="h-3.5 w-3.5" />
                             <span>
-                              {appt.appointment_time?.slice(0, 5)}
+                              {formatAppointmentTime(appt.appointment_time, appt.arrival_window_minutes, defaultArrivalWindow)}
                               {appt.duration_hours && ` · ${appt.duration_hours}h`}
                             </span>
                           </div>

@@ -154,6 +154,7 @@ export type Database = {
           appointment_date: string
           appointment_time: string
           appointment_type: string
+          arrival_window_minutes: number | null
           assigned_to: string[] | null
           created_at: string
           customer_id: string | null
@@ -176,6 +177,7 @@ export type Database = {
           appointment_date: string
           appointment_time: string
           appointment_type: string
+          arrival_window_minutes?: number | null
           assigned_to?: string[] | null
           created_at?: string
           customer_id?: string | null
@@ -198,6 +200,7 @@ export type Database = {
           appointment_date?: string
           appointment_time?: string
           appointment_type?: string
+          arrival_window_minutes?: number | null
           assigned_to?: string[] | null
           created_at?: string
           customer_id?: string | null
@@ -684,6 +687,7 @@ export type Database = {
           company_name: string
           created_at: string
           custom_send_time: string
+          default_arrival_window: number | null
           default_job_start_time: string
           default_labor_rate: number
           default_margin_min_percent: number
@@ -717,6 +721,7 @@ export type Database = {
           company_name?: string
           created_at?: string
           custom_send_time?: string
+          default_arrival_window?: number | null
           default_job_start_time?: string
           default_labor_rate?: number
           default_margin_min_percent?: number
@@ -750,6 +755,7 @@ export type Database = {
           company_name?: string
           created_at?: string
           custom_send_time?: string
+          default_arrival_window?: number | null
           default_job_start_time?: string
           default_labor_rate?: number
           default_margin_min_percent?: number

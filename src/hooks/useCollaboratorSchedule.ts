@@ -14,6 +14,7 @@ export interface CollaboratorAppointment {
   notes: string | null;
   customer_name: string;
   project_id: string | null;
+  arrival_window_minutes: number | null;
 }
 
 export function useCollaboratorSchedule(weekOffset: number = 0) {
@@ -41,7 +42,7 @@ export function useCollaboratorSchedule(weekOffset: number = 0) {
       // Get appointments for those projects in the week range
       const { data, error } = await supabase
         .from("appointments")
-        .select("id, appointment_date, appointment_time, appointment_type, duration_hours, status, location, notes, customer_name, project_id")
+        .select("id, appointment_date, appointment_time, appointment_type, duration_hours, status, location, notes, customer_name, project_id, arrival_window_minutes")
         .in("project_id", projectIds)
         .gte("appointment_date", format(weekStart, "yyyy-MM-dd"))
         .lte("appointment_date", format(weekEnd, "yyyy-MM-dd"))

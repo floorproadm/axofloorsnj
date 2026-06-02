@@ -9,6 +9,7 @@ export interface CompanySettings {
   trade_name: string | null;
   tagline: string | null;
   default_margin_min_percent: number;
+  default_arrival_window: number | null;
   labor_pricing_model: LaborPricingModel;
   default_labor_rate: number;
   logo_url: string | null;
@@ -28,6 +29,7 @@ const DEFAULT_SETTINGS: Omit<CompanySettings, 'id' | 'created_at' | 'updated_at'
   trade_name: 'AXO Floors',
   tagline: 'Professional Flooring Services',
   default_margin_min_percent: 30,
+  default_arrival_window: null,
   labor_pricing_model: 'sqft',
   default_labor_rate: 3.50,
   logo_url: null,
@@ -103,6 +105,7 @@ export function useCompanySettings() {
     marginMinPercent: settings?.default_margin_min_percent ?? DEFAULT_SETTINGS.default_margin_min_percent,
     laborPricingModel: settings?.labor_pricing_model ?? DEFAULT_SETTINGS.labor_pricing_model,
     laborRate: settings?.default_labor_rate ?? DEFAULT_SETTINGS.default_labor_rate,
+    defaultArrivalWindow: settings?.default_arrival_window ?? DEFAULT_SETTINGS.default_arrival_window,
   };
 }
 
@@ -140,6 +143,7 @@ export async function getCompanySettingsWithDefaults(): Promise<Omit<CompanySett
     trade_name: settings.trade_name,
     tagline: settings.tagline,
     default_margin_min_percent: settings.default_margin_min_percent,
+    default_arrival_window: settings.default_arrival_window,
     labor_pricing_model: settings.labor_pricing_model,
     default_labor_rate: settings.default_labor_rate,
     logo_url: settings.logo_url,

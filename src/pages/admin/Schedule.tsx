@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AXO_ORG_ID } from "@/lib/constants";
+import { AXO_ORG_ID, ARRIVAL_WINDOW_OPTIONS, formatAppointmentTime } from "@/lib/constants";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -84,6 +85,7 @@ export default function Schedule() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { defaultArrivalWindow } = useCompanySettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : searchParams.get("tab") === "settings" ? "settings" : "schedule") as "schedule" | "appointments" | "settings";
   const setMainTab = (v: "schedule" | "appointments" | "settings") => {
@@ -433,12 +435,12 @@ export default function Schedule() {
           ) : viewMode === "day" ? (
             <>
               <DayNoteBar date={currentDate} />
-              <DayView appointments={todayAppointments} onEdit={openEdit} />
+              <DayView appointments={todayAppointments} onEdit={openEdit} defaultWindow={defaultArrivalWindow} />
             </>
           ) : viewMode === "list" ? (
             <>
               <DayNoteBar date={currentDate} />
-              <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} />
+              <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} defaultWindow={defaultArrivalWindow} />
             </>
           ) : (
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} weekStart={weekStart} weekEnd={weekEnd} />
@@ -460,6 +462,7 @@ export default function Schedule() {
         onDelete={(id) => deleteMutation.mutate(id)}
         saving={saveMutation.isPending}
         templateDefaults={templateDefaults}
+        defaultWindow={defaultArrivalWindow}
       />
 
       {/* Template Picker Dialog */}
@@ -499,7 +502,7 @@ export default function Schedule() {
 }
 
 // ─── Day View ──────────────────────────────────────────────
-function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit: (a: Appointment) => void }) {
+function DayView({ appointments, onEdit, defaultWindow }: { appointments: Appointment[]; onEdit: (a: Appointment) => void; defaultWindow: number | null }) {
   return (
     <div className="relative">
       {HOURS.map(hour => (
@@ -532,7 +535,7 @@ function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit
                     </div>
                     <div className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {a.appointment_time.slice(0, 5)}
+                      {formatAppointmentTime(a.appointment_time, (a as any).arrival_window_minutes, defaultWindow)}
                       {a.location && <><MapPin className="w-3 h-3 ml-1" />{a.location}</>}
                     </div>
                   </button>
@@ -551,7 +554,7 @@ function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit
 }
 
 // ─── List View ──────────────────────────────────────────────
-function ListView({ appointments, onEdit, date }: { appointments: Appointment[]; onEdit: (a: Appointment) => void; date: Date }) {
+function ListView({ appointments, onEdit, date, defaultWindow }: { appointments: Appointment[]; onEdit: (a: Appointment) => void; date: Date; defaultWindow: number | null }) {
   return (
     <div className="p-4 space-y-3">
       <div className="text-sm font-medium text-muted-foreground mb-2">
@@ -586,7 +589,7 @@ function ListView({ appointments, onEdit, date }: { appointments: Appointment[];
               </div>
               <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-3 h-3" /> {a.appointment_time.slice(0, 5)} · {a.duration_hours || 1}h
+                  <Clock className="w-3 h-3" /> {formatAppointmentTime(a.appointment_time, (a as any).arrival_window_minutes, defaultWindow)} · {a.duration_hours || 1}h
                 </div>
                 {a.location && (
                   <div className="flex items-center gap-1.5 truncate">
@@ -678,7 +681,7 @@ function WeekView({
 
 // ─── Appointment Modal ──────────────────────────────────────
 function AppointmentModal({
-  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving, templateDefaults
+  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving, templateDefaults, defaultWindow
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -689,6 +692,7 @@ function AppointmentModal({
   onDelete: (id: string) => void;
   saving: boolean;
   templateDefaults?: { type: string; duration: number; time: string } | null;
+  defaultWindow: number | null;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
@@ -702,6 +706,7 @@ function AppointmentModal({
     notes: "",
     project_id: null as string | null,
     assigned_to: [] as string[],
+    arrival_window_minutes: null as number | null,
   });
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [teamPickerOpen, setTeamPickerOpen] = useState(false);
@@ -735,6 +740,7 @@ function AppointmentModal({
           notes: appointment.notes || "",
           project_id: appointment.project_id,
           assigned_to: (appointment as any).assigned_to || [],
+          arrival_window_minutes: (appointment as any).arrival_window_minutes ?? null,
         });
       } else {
         setIsEditing(true); // edit mode for new
@@ -746,6 +752,7 @@ function AppointmentModal({
           duration_hours: templateDefaults?.duration || 1,
           location: "", notes: "", project_id: null,
           assigned_to: [],
+          arrival_window_minutes: null,
         });
       }
     }
@@ -808,7 +815,7 @@ function AppointmentModal({
               <div className="flex items-center gap-2.5">
                 <CalendarIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <p className="text-sm text-foreground">
-                  {format(parseISO(form.appointment_date), "dd/MM/yyyy")} às {form.appointment_time}
+                  {format(parseISO(form.appointment_date), "dd/MM/yyyy")} às {formatAppointmentTime(form.appointment_time, form.arrival_window_minutes, defaultWindow)}
                   <span className="text-muted-foreground ml-1">· {form.duration_hours}h</span>
                 </p>
               </div>
@@ -937,6 +944,27 @@ function AppointmentModal({
                   <Input type="number" min={0.5} step={0.5} value={form.duration_hours} onChange={e => setForm(f => ({ ...f, duration_hours: Number(e.target.value) }))} className="h-9" />
                 </div>
               </div>
+
+              <div>
+                <Label className="text-xs">Arrival Window</Label>
+                <Select
+                  value={form.arrival_window_minutes == null ? "default" : String(form.arrival_window_minutes)}
+                  onValueChange={(v) => setForm(f => ({ ...f, arrival_window_minutes: v === "default" ? null : parseInt(v, 10) }))}
+                >
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">
+                      Use company default{defaultWindow ? ` (${defaultWindow >= 60 ? `${defaultWindow / 60}h` : `${defaultWindow}m`})` : " (none)"}
+                    </SelectItem>
+                    <SelectItem value="0">No window (exact time)</SelectItem>
+                    {ARRIVAL_WINDOW_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">Overrides the company default for this appointment only.</p>
+              </div>
+
 
               <div>
                 <Label className="text-xs">Local</Label>
