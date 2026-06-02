@@ -4666,6 +4666,17 @@ export type Database = {
       get_portal_messages: { Args: { p_token: string }; Returns: Json }
       get_portal_timeline: { Args: { p_token: string }; Returns: Json }
       get_referral_dashboard: { Args: { p_email: string }; Returns: Json }
+      get_revenue_by_lead_source: {
+        Args: { p_org_id: string; p_start?: string }
+        Returns: {
+          cost: number
+          lead_source: string
+          margin: number
+          profit: number
+          project_count: number
+          revenue: number
+        }[]
+      }
       get_shared_before_after: { Args: { p_token: string }; Returns: Json }
       get_user_org_id: { Args: never; Returns: string }
       has_role: {
