@@ -28,6 +28,7 @@ export default function PublicDepositInvoice() {
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
+  const [property, setProperty] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
   const [signature, setSignature] = useState<any>(null);
   const [logoUrl, setLogoUrl] = useState<string>("");
@@ -64,10 +65,13 @@ export default function PublicDepositInvoice() {
         }
         setProposal(prop);
 
-        const [projRes, custRes, companyRes, sigRes] = await Promise.all([
+        const [projRes, custRes, propertyRes, companyRes, sigRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           prop.customer_id
             ? supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+          prop.property_id
+            ? supabase.from("customer_properties").select("*").eq("id", prop.property_id).maybeSingle()
             : Promise.resolve({ data: null }),
           supabase.from("company_settings").select("*").limit(1).maybeSingle(),
           supabase
@@ -80,6 +84,7 @@ export default function PublicDepositInvoice() {
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
+        setProperty(propertyRes.data);
         setCompany(companyRes.data);
         setSignature(sigRes.data);
 
@@ -119,10 +124,18 @@ export default function PublicDepositInvoice() {
     signature?.signer_name || customer?.full_name || project?.customer_name || "Client";
   const displayEmail = customer?.email || project?.customer_email || signature?.signer_email || null;
   const displayPhone = customer?.phone || project?.customer_phone || null;
+  const propertyAddress = property
+    ? [property.address_line1, property.address_line2, property.city, property.state, property.zip]
+        .filter(Boolean)
+        .join(", ")
+    : "";
   const displayAddress =
+    propertyAddress ||
     project?.address ||
     customer?.address ||
     [project?.city, project?.zip_code].filter(Boolean).join(", ");
+  const displayUnit = property?.unit_identifier || null;
+  const displayResident = property?.resident_name || null;
 
   if (loading) {
     return (
@@ -224,6 +237,13 @@ export default function PublicDepositInvoice() {
               Bill To
             </p>
             <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+            {(displayUnit || displayResident) && (
+              <p className="text-sm text-slate-700 mt-0.5">
+                {displayUnit}
+                {displayUnit && displayResident ? " · " : ""}
+                {displayResident}
+              </p>
+            )}
             {displayEmail && (
               <p className="text-sm text-slate-600 mt-0.5">{displayEmail}</p>
             )}

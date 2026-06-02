@@ -56,6 +56,7 @@ export default function PublicProposal() {
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
+  const [property, setProperty] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -112,10 +113,13 @@ export default function PublicProposal() {
             .eq("share_token", token);
         }
 
-        const [projRes, custRes, companyRes, itemsRes] = await Promise.all([
+        const [projRes, custRes, propertyRes, companyRes, itemsRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           prop.customer_id
             ? supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+          prop.property_id
+            ? supabase.from("customer_properties").select("*").eq("id", prop.property_id).maybeSingle()
             : Promise.resolve({ data: null }),
           supabase.from("company_settings").select("*").limit(1).maybeSingle(),
           supabase
@@ -126,6 +130,7 @@ export default function PublicProposal() {
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
+        setProperty(propertyRes.data);
         setCompany(companyRes.data);
         setLineItems(((itemsRes.data as any[]) || []).map((r) => ({
           description: r.description || "",
@@ -161,10 +166,19 @@ export default function PublicProposal() {
   const displayName = customer?.full_name || project?.customer_name || "Client";
   const displayPhone = customer?.phone || project?.customer_phone || null;
   const displayEmail = customer?.email || project?.customer_email || null;
+  // Property-aware address: when proposal is bound to a specific unit, prefer it.
+  const propertyAddress = property
+    ? [property.address_line1, property.address_line2, property.city, property.state, property.zip]
+        .filter(Boolean)
+        .join(", ")
+    : "";
   const displayAddress =
+    propertyAddress ||
     project?.address ||
     customer?.address ||
     [project?.city, project?.zip_code].filter(Boolean).join(", ");
+  const displayUnit = property?.unit_identifier || null;
+  const displayResident = property?.resident_name || null;
 
   const tiers: Array<{ key: TierKey; price: number }> = useMemo(() => {
     if (!proposal || !proposal.use_tiers) return [];
@@ -273,6 +287,13 @@ export default function PublicProposal() {
               Bill To
             </p>
             <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+            {(displayUnit || displayResident) && (
+              <p className="text-sm text-slate-700 mt-0.5">
+                {displayUnit}
+                {displayUnit && displayResident ? " · " : ""}
+                {displayResident}
+              </p>
+            )}
             {displayEmail && (
               <p className="text-sm text-slate-600 mt-0.5">{displayEmail}</p>
             )}
