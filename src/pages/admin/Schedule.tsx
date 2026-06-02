@@ -462,6 +462,7 @@ export default function Schedule() {
         onDelete={(id) => deleteMutation.mutate(id)}
         saving={saveMutation.isPending}
         templateDefaults={templateDefaults}
+        defaultWindow={defaultArrivalWindow}
       />
 
       {/* Template Picker Dialog */}
