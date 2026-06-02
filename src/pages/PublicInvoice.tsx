@@ -120,13 +120,26 @@ export default function PublicInvoice() {
           <div>
             <p className="text-[9px] uppercase tracking-[1.5px] text-slate-400 mb-0.5">Bill To</p>
             <p className="text-sm font-semibold text-slate-800">{invoice.projects?.customer_name || "—"}</p>
+            {(property?.unit_identifier || property?.resident_name) && (
+              <p className="text-xs text-slate-600 mt-0.5">
+                {property?.unit_identifier}
+                {property?.unit_identifier && property?.resident_name ? " · " : ""}
+                {property?.resident_name}
+              </p>
+            )}
             {invoice.customers?.email && <p className="text-xs text-slate-500 mt-0.5">{invoice.customers.email}</p>}
             {invoice.customers?.phone && <p className="text-xs text-slate-500">{invoice.customers.phone}</p>}
           </div>
           <div>
             <p className="text-[9px] uppercase tracking-[1.5px] text-slate-400 mb-0.5">Project</p>
             <p className="text-sm font-semibold text-slate-800">{invoice.projects?.project_type || "—"}</p>
-            {invoice.projects?.address && <p className="text-xs text-slate-500 mt-0.5">{invoice.projects.address}</p>}
+            {(() => {
+              const propAddr = property
+                ? [property.address_line1, property.city, property.state, property.zip].filter(Boolean).join(", ")
+                : "";
+              const addr = propAddr || invoice.projects?.address;
+              return addr ? <p className="text-xs text-slate-500 mt-0.5">{addr}</p> : null;
+            })()}
           </div>
           <div>
             <p className="text-[9px] uppercase tracking-[1.5px] text-slate-400 mb-0.5">Invoice Date</p>
