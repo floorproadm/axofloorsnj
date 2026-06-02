@@ -152,6 +152,13 @@ export function JobMarginDisplay({ projectId }: JobMarginDisplayProps) {
               <p className={`font-bold text-lg ${parseFloat(marginPercent) < minMargin ? 'text-destructive' : 'text-green-600'}`}>
                 {marginPercent}%
               </p>
+              {jobCost && formData.estimated_revenue > 0 && minMargin > 0 && (
+                parseFloat(marginPercent) < minMargin ? (
+                  <Badge variant="destructive" className="mt-1 text-[10px]">Below minimum margin</Badge>
+                ) : (
+                  <Badge variant="outline" className="mt-1 text-[10px] border-green-600 text-green-600">Margin OK</Badge>
+                )
+              )}
             </div>
           </div>
         </div>
