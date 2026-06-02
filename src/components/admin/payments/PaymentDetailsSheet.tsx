@@ -354,14 +354,14 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
                 </>
               )}
 
-              {payment.receipt_photo_url && (
+              {payment.receipt_photo_url && receiptSignedUrl && (
                 <>
                   <Separator />
                   <div>
                     <h4 className="text-sm font-semibold mb-2">Receipt</h4>
-                    <a href={payment.receipt_photo_url} target="_blank" rel="noopener noreferrer">
+                    <a href={receiptSignedUrl} target="_blank" rel="noopener noreferrer">
                       <img
-                        src={payment.receipt_photo_url}
+                        src={receiptSignedUrl}
                         alt="Receipt"
                         className="max-h-64 rounded-md border hover:opacity-90 transition-opacity"
                       />
