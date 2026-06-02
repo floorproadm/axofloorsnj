@@ -238,6 +238,8 @@ export default function Catalog() {
       default_finish: item.default_finish,
       base_price: item.base_price,
       price_unit: item.price_unit,
+      unit_cost: item.unit_cost ?? null,
+      markup_percent: item.markup_percent ?? null,
       is_active: item.is_active,
       display_order: item.display_order,
       image_url: item.image_url,
