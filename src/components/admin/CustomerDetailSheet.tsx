@@ -38,6 +38,7 @@ import {
   DollarSign,
   Trash2,
 } from "lucide-react";
+import { CustomerPropertiesSection } from "./CustomerPropertiesSection";
 
 interface Customer {
   id: string;
@@ -249,6 +250,9 @@ export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }:
               </div>
             </Card>
           </div>
+
+          {/* Properties (multi-unit support) */}
+          <CustomerPropertiesSection customerId={customer.id} />
 
           {loading ? (
             <div className="flex justify-center py-8">

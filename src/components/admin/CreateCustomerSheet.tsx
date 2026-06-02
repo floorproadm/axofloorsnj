@@ -76,6 +76,25 @@ export function CreateCustomerSheet({ open, onOpenChange, onCreated }: CreateCus
 
       if (error) throw error;
 
+      // Auto-create matching primary property when address provided
+      if (form.address.trim() || form.city.trim() || form.zip_code.trim()) {
+        const { error: propErr } = await supabase
+          .from("customer_properties")
+          .insert({
+            organization_id: AXO_ORG_ID,
+            customer_id: (data as any).id,
+            unit_identifier: "Primary",
+            address_line1: form.address.trim() || null,
+            city: form.city.trim() || null,
+            zip: form.zip_code.trim() || null,
+            is_primary: true,
+          });
+        if (propErr) {
+          // Non-blocking — customer was created
+          console.warn("Failed to create primary property:", propErr.message);
+        }
+      }
+
       toast.success("Cliente criado com sucesso");
       onCreated(data as any);
       setForm(initialForm);
