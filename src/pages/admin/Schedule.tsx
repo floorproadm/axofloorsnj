@@ -241,6 +241,18 @@ export default function Schedule() {
         }
       } catch { /* non-blocking */ }
 
+      // Auto-inherit property_id from linked project when not explicitly set
+      if (data.project_id && !(data as any).property_id) {
+        const { data: proj } = await supabase
+          .from("projects")
+          .select("property_id")
+          .eq("id", data.project_id)
+          .maybeSingle();
+        if (proj && (proj as any).property_id) {
+          (data as any).property_id = (proj as any).property_id;
+        }
+      }
+
       if (data.id) {
         const { id, ...rest } = data;
         const { error } = await supabase.from("appointments").update(rest).eq("id", id);

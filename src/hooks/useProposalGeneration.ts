@@ -243,6 +243,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
           .insert({
             project_id: projectId,
             customer_id: project.customer_id ?? null,
+            property_id: (project as any).property_id ?? null,
             referring_partner_id: options.referringPartnerId ?? null,
             use_tiers: false,
             flat_price: flatPrice,
@@ -307,6 +308,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         .insert({
           project_id: projectId,
           customer_id: project.customer_id ?? null,
+          property_id: (project as any).property_id ?? null,
           referring_partner_id: options.referringPartnerId ?? null,
           use_tiers: true,
           good_price: goodTier.price,
