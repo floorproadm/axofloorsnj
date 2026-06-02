@@ -152,11 +152,9 @@ export function SignatureDialog({
         console.error("Admin notification failed:", notifyErr);
       }
 
-      toast.success("Project confirmed! Redirecting…");
-      // Redirect to the public AXO Floors thank-you page to avoid freezing on dialog
-      setTimeout(() => {
-        window.location.href = "https://axofloorsnj.com/thank-you";
-      }, 600);
+      // Transition dialog into the confirmation ("done") state.
+      // No auto-redirect — user clicks Close to proceed to the deposit invoice.
+      setDone(true);
 
     } catch (e: any) {
       console.error(e);
@@ -177,7 +175,13 @@ export function SignatureDialog({
               Thank you, <strong>{name}</strong>. We'll text you within 24h to
               schedule kickoff.
             </p>
-            <Button onClick={() => onOpenChange(false)} className="mt-3">
+            <Button
+              onClick={() => {
+                onOpenChange(false);
+                window.location.assign(`/proposal/${proposalToken}/invoice`);
+              }}
+              className="mt-3"
+            >
               Close
             </Button>
           </div>
