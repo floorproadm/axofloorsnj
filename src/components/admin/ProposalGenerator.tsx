@@ -381,7 +381,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     setEditableLines((prev) => [...prev, { id: uid(), description: '', qty: 1, unit_price: 0, service_catalog_id: null }]);
     setLinesDirty(true);
   };
-  const addCatalogLine = (item: { id: string; name: string; description: string | null; base_price: number; category: string | null }) => {
+  const addCatalogLine = (item: { id: string; name: string; description: string | null; base_price: number; category: string | null; unit_cost?: number | null }) => {
     setEditableLines((prev) => [
       ...prev,
       {
@@ -390,6 +390,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         qty: 1,
         unit_price: Number(item.base_price) || 0,
         service_catalog_id: item.id,
+        unit_cost_snapshot: item.unit_cost != null ? Number(item.unit_cost) : null,
       },
     ]);
     setLinesDirty(true);
