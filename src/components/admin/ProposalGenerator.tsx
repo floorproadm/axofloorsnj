@@ -533,7 +533,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       toast.error('Public link is being generated. Try again in a moment.');
       return;
     }
-    const url = `${window.location.origin}/proposal/${shareToken}`;
+    const url = `${PUBLIC_SITE_URL}/proposal/${shareToken}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success('Public proposal link copied to clipboard');
@@ -546,7 +546,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     if (!proposal || !shareToken) return;
     setSendingEmail(true);
     try {
-      const proposalLink = `${window.location.origin}/proposal/${shareToken}`;
+      const proposalLink = `${PUBLIC_SITE_URL}/proposal/${shareToken}`;
       await sendGmailEmail('proposal_sent', {
         recipient_email: proposal.customer_email || '',
         customer_name: proposal.customer_name || 'Valued Customer',

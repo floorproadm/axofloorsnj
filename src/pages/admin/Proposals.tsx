@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { PUBLIC_SITE_URL } from "@/lib/constants";
 import { toast } from "sonner";
 import { format, isPast, parseISO } from "date-fns";
 import {
@@ -304,7 +305,7 @@ function ShareModal({ proposal, open, onClose }: {
   const [copied, setCopied] = useState(false);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [tokenLoading, setTokenLoading] = useState(true);
-  const publicUrl = shareToken ? `${window.location.origin}/proposal/${shareToken}` : "";
+  const publicUrl = shareToken ? `${PUBLIC_SITE_URL}/proposal/${shareToken}` : "";
   const client = proposal.projects;
   const selectedPrice = proposal.selected_tier
     ? proposal[`${proposal.selected_tier}_price` as keyof ProposalWithRelations] as number
