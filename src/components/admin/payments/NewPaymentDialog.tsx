@@ -262,12 +262,12 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
                   e.target.value = "";
                 }}
               />
-              {receiptUrl ? (
+              {receiptPath ? (
                 <div className="mt-2 relative inline-block">
-                  <img src={receiptUrl} alt="Receipt" className="h-24 w-24 object-cover rounded-md border" />
+                  <img src={receiptPreview ?? undefined} alt="Receipt" className="h-24 w-24 object-cover rounded-md border" />
                   <button
                     type="button"
-                    onClick={() => setReceiptUrl(null)}
+                    onClick={() => { setReceiptPath(null); setReceiptPreview(null); }}
                     className="absolute -top-2 -right-2 bg-background border rounded-full p-1 shadow-sm"
                   >
                     <X className="h-3 w-3" />
