@@ -333,6 +333,22 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
                 </>
               )}
 
+              {payment.receipt_photo_url && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2">Receipt</h4>
+                    <a href={payment.receipt_photo_url} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={payment.receipt_photo_url}
+                        alt="Receipt"
+                        className="max-h-64 rounded-md border hover:opacity-90 transition-opacity"
+                      />
+                    </a>
+                  </div>
+                </>
+              )}
+
               <Separator />
 
               {payment.status === "pending" && (

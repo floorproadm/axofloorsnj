@@ -22,6 +22,7 @@ export interface Payment {
   recurrence_parent_id: string | null;
   recurrence_next_date: string | null;
   recurrence_active: boolean;
+  receipt_photo_url: string | null;
   projects?: { customer_name: string; project_type: string } | null;
 }
 
@@ -36,6 +37,7 @@ export interface CreatePaymentInput {
   notes?: string | null;
   recurrence?: RecurrenceType | null;
   recurrence_next_date?: string | null;
+  receipt_photo_url?: string | null;
 }
 
 
@@ -75,6 +77,7 @@ export function useCreatePayment() {
           recurrence_next_date: input.recurrence
             ? (input.recurrence_next_date || input.payment_date)
             : null,
+          receipt_photo_url: input.receipt_photo_url || null,
         })
         .select()
         .single();

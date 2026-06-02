@@ -2630,6 +2630,7 @@ export type Database = {
           payment_date: string
           payment_method: string | null
           project_id: string | null
+          receipt_photo_url: string | null
           recurrence: string | null
           recurrence_active: boolean
           recurrence_next_date: string | null
@@ -2650,6 +2651,7 @@ export type Database = {
           payment_date?: string
           payment_method?: string | null
           project_id?: string | null
+          receipt_photo_url?: string | null
           recurrence?: string | null
           recurrence_active?: boolean
           recurrence_next_date?: string | null
@@ -2670,6 +2672,7 @@ export type Database = {
           payment_date?: string
           payment_method?: string | null
           project_id?: string | null
+          receipt_photo_url?: string | null
           recurrence?: string | null
           recurrence_active?: boolean
           recurrence_next_date?: string | null

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useCreatePayment } from "@/hooks/usePayments";
+import { useToast } from "@/hooks/use-toast";
+import { Camera, X, Loader2 } from "lucide-react";
 
 interface Project {
   id: string;
@@ -55,7 +57,11 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [recurrence, setRecurrence] = useState<string>("none");
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const createPayment = useCreatePayment();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
@@ -67,6 +73,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
       setPaymentDate(new Date().toISOString().split("T")[0]);
       setCategory(defaultCategory);
       setRecurrence("none");
+      setReceiptUrl(null);
     }
   }, [open, defaultCategory]);
 
@@ -77,6 +84,32 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
     setDescription("");
     setNotes("");
     setRecurrence("none");
+    setReceiptUrl(null);
+  };
+
+  const handleReceiptUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 10MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingReceipt(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
+      setReceiptUrl(data.publicUrl);
+      toast({ title: "Receipt attached" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingReceipt(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -93,6 +126,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
         notes: notes || null,
         recurrence: !isIncome && recurrence !== "none" ? (recurrence as any) : null,
         recurrence_next_date: !isIncome && recurrence !== "none" ? paymentDate : null,
+        receipt_photo_url: !isIncome ? receiptUrl : null,
       },
       {
         onSuccess: () => {
@@ -205,6 +239,51 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
             <Label>Notes (optional)</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Internal notes..." rows={2} />
           </div>
+
+          {!isIncome && (
+            <div>
+              <Label>Receipt Photo (optional)</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleReceiptUpload(f);
+                  e.target.value = "";
+                }}
+              />
+              {receiptUrl ? (
+                <div className="mt-2 relative inline-block">
+                  <img src={receiptUrl} alt="Receipt" className="h-24 w-24 object-cover rounded-md border" />
+                  <button
+                    type="button"
+                    onClick={() => setReceiptUrl(null)}
+                    className="absolute -top-2 -right-2 bg-background border rounded-full p-1 shadow-sm"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingReceipt}
+                >
+                  {uploadingReceipt ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Camera className="h-4 w-4 mr-2" /> Attach Receipt</>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
 
           <Button className="w-full" onClick={handleSubmit} disabled={createPayment.isPending || !amount}>
             {createPayment.isPending ? "Saving..." : isIncome ? "Record Income" : "Record Expense"}
