@@ -426,6 +426,19 @@ export default function JobDetail() {
               <PropRow label="Address" value={addressFull || null} action={
                 mapsUrl ? <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-0.5"><Navigation className="w-3 h-3" /> Maps</a> : null
               } />
+              {project.customer_id && (
+                <div className="py-2">
+                  <PropertyPicker
+                    customerId={project.customer_id}
+                    value={(project as any).property_id}
+                    onChange={async (pid) => {
+                      await supabase.from('projects').update({ property_id: pid }).eq('id', project.id);
+                      refetch();
+                      toast.success(pid ? 'Property linked' : 'Property cleared');
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
         </Section>
