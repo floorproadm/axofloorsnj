@@ -1646,6 +1646,7 @@ export type Database = {
           paid_at: string | null
           pay_mode: string
           payment_method: string | null
+          payroll_period_id: string | null
           project_id: string
           rejection_reason: string | null
           role: string | null
@@ -1671,6 +1672,7 @@ export type Database = {
           paid_at?: string | null
           pay_mode?: string
           payment_method?: string | null
+          payroll_period_id?: string | null
           project_id: string
           rejection_reason?: string | null
           role?: string | null
@@ -1696,6 +1698,7 @@ export type Database = {
           paid_at?: string | null
           pay_mode?: string
           payment_method?: string | null
+          payroll_period_id?: string | null
           project_id?: string
           rejection_reason?: string | null
           role?: string | null
@@ -1727,6 +1730,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labor_entries_payroll_period_id_fkey"
+            columns: ["payroll_period_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_periods"
             referencedColumns: ["id"]
           },
           {
