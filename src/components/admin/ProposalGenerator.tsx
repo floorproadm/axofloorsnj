@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ServiceCatalogPicker } from '@/components/admin/ServiceCatalogPicker';
+import { PUBLIC_SITE_URL } from '@/lib/constants';
 import {
   DndContext,
   closestCenter,
