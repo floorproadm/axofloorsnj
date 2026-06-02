@@ -588,7 +588,7 @@ function ListView({ appointments, onEdit, date, defaultWindow }: { appointments:
               </div>
               <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-3 h-3" /> {a.appointment_time.slice(0, 5)} · {a.duration_hours || 1}h
+                  <Clock className="w-3 h-3" /> {formatAppointmentTime(a.appointment_time, (a as any).arrival_window_minutes, defaultWindow)} · {a.duration_hours || 1}h
                 </div>
                 {a.location && (
                   <div className="flex items-center gap-1.5 truncate">
