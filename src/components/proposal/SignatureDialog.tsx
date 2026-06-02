@@ -152,10 +152,9 @@ export function SignatureDialog({
         console.error("Admin notification failed:", notifyErr);
       }
 
-      // Close the signing dialog cleanly, then show the confirmation state
-      onOpenChange(false);
-      // Small delay so the dialog unmount finishes before re-rendering as "done"
-      setTimeout(() => setDone(true), 150);
+      // Transition dialog into the confirmation ("done") state.
+      // No auto-redirect — user clicks Close to proceed to the deposit invoice.
+      setDone(true);
 
     } catch (e: any) {
       console.error(e);
