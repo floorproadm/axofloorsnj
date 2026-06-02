@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { toast as sonnerToast } from "sonner";
+import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 
 export interface Invoice {
   id: string;
@@ -85,11 +86,11 @@ export function useInvoices() {
           }
           qc.invalidateQueries({ queryKey: ["invoices"] });
         }
-      )
-      .subscribe();
+      );
+    const subscription = subscribeSafely(channel, "invoices-realtime");
 
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(subscription ?? channel);
     };
   }, [qc]);
 
