@@ -60,6 +60,27 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [receiptSignedUrl, setReceiptSignedUrl] = useState<string | null>(null);
+
+  // Generate signed URL for private receipt photo
+  useEffect(() => {
+    let cancelled = false;
+    setReceiptSignedUrl(null);
+    const path = payment?.receipt_photo_url;
+    if (!path) return;
+    // Back-compat: if value is already a full URL (legacy public bucket), use as-is.
+    if (path.startsWith("http")) {
+      setReceiptSignedUrl(path);
+      return;
+    }
+    supabase.storage
+      .from("receipts")
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => {
+        if (!cancelled) setReceiptSignedUrl(data?.signedUrl ?? null);
+      });
+    return () => { cancelled = true; };
+  }, [payment?.id, payment?.receipt_photo_url]);
 
   // Edit form state
   const [editAmount, setEditAmount] = useState("");
@@ -333,14 +354,14 @@ export function PaymentDetailsSheet({ payment, open, onOpenChange }: Props) {
                 </>
               )}
 
-              {payment.receipt_photo_url && (
+              {payment.receipt_photo_url && receiptSignedUrl && (
                 <>
                   <Separator />
                   <div>
                     <h4 className="text-sm font-semibold mb-2">Receipt</h4>
-                    <a href={payment.receipt_photo_url} target="_blank" rel="noopener noreferrer">
+                    <a href={receiptSignedUrl} target="_blank" rel="noopener noreferrer">
                       <img
-                        src={payment.receipt_photo_url}
+                        src={receiptSignedUrl}
                         alt="Receipt"
                         className="max-h-64 rounded-md border hover:opacity-90 transition-opacity"
                       />
