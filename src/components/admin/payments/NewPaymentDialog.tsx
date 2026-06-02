@@ -240,6 +240,51 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Internal notes..." rows={2} />
           </div>
 
+          {!isIncome && (
+            <div>
+              <Label>Receipt Photo (optional)</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleReceiptUpload(f);
+                  e.target.value = "";
+                }}
+              />
+              {receiptUrl ? (
+                <div className="mt-2 relative inline-block">
+                  <img src={receiptUrl} alt="Receipt" className="h-24 w-24 object-cover rounded-md border" />
+                  <button
+                    type="button"
+                    onClick={() => setReceiptUrl(null)}
+                    className="absolute -top-2 -right-2 bg-background border rounded-full p-1 shadow-sm"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingReceipt}
+                >
+                  {uploadingReceipt ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Camera className="h-4 w-4 mr-2" /> Attach Receipt</>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
+
           <Button className="w-full" onClick={handleSubmit} disabled={createPayment.isPending || !amount}>
             {createPayment.isPending ? "Saving..." : isIncome ? "Record Income" : "Record Expense"}
           </Button>
