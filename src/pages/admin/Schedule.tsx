@@ -680,7 +680,7 @@ function WeekView({
 
 // ─── Appointment Modal ──────────────────────────────────────
 function AppointmentModal({
-  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving, templateDefaults
+  open, onOpenChange, appointment, projects, currentDate, onSave, onDelete, saving, templateDefaults, defaultWindow
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -691,6 +691,7 @@ function AppointmentModal({
   onDelete: (id: string) => void;
   saving: boolean;
   templateDefaults?: { type: string; duration: number; time: string } | null;
+  defaultWindow: number | null;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
