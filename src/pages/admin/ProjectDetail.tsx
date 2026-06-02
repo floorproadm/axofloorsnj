@@ -56,6 +56,7 @@ export default function ProjectDetail() {
     zip_code: '',
     project_type: '',
     square_footage: '' as string | number,
+    labor_sqft_rate: '' as string | number,
     notes: '',
   });
 
@@ -85,6 +86,7 @@ export default function ProjectDetail() {
       zip_code: form.zip_code || null,
       project_type: form.project_type || null,
       square_footage: form.square_footage === '' ? null : Number(form.square_footage),
+      labor_sqft_rate: form.labor_sqft_rate === '' ? null : Number(form.labor_sqft_rate),
       notes: form.notes || null,
     };
     const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
@@ -126,6 +128,7 @@ export default function ProjectDetail() {
         zip_code: project.zip_code || '',
         project_type: project.project_type || '',
         square_footage: project.square_footage ?? '',
+        labor_sqft_rate: (project as any).labor_sqft_rate ?? '',
         notes: project.notes || '',
       });
     }
@@ -301,6 +304,15 @@ export default function ProjectDetail() {
                         onChange={(e) => setForm({ ...form, square_footage: e.target.value })}
                       />
                     </Field>
+                    <Field label="Labor SqFt Rate ($/sqft)">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="ex. 1.50"
+                        value={form.labor_sqft_rate}
+                        onChange={(e) => setForm({ ...form, labor_sqft_rate: e.target.value })}
+                      />
+                    </Field>
                     <div className="sm:col-span-2">
                       <Field label="Notas">
                         <Textarea
@@ -330,6 +342,11 @@ export default function ProjectDetail() {
                       <ReadItem
                         label="Área"
                         value={project.square_footage ? `${project.square_footage} sq ft` : null}
+                      />
+                      <ReadItem
+                        label="Labor SqFt Rate"
+                        value={(project as any).labor_sqft_rate ? `$${Number((project as any).labor_sqft_rate).toFixed(2)}/sqft` : null}
+                        emptyHint="—"
                       />
                       <ReadItem
                         label="Criado em"

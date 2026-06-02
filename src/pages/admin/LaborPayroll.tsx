@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ import {
   CheckCircle2, Clock, Trash2, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PendingApprovalTab, ReadyToPayTab, PayrollHistoryTab } from "@/components/admin/LaborPayrollTabs";
 
 const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -181,96 +183,120 @@ export default function LaborPayroll() {
           </Button>
         </div>
 
-        {/* Month selector */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setMonthOffset(m => m + 1)}>‹</Button>
-          <span className="text-sm font-medium min-w-[120px] text-center">{monthLabel}</span>
-          <Button variant="outline" size="sm" disabled={monthOffset === 0} onClick={() => setMonthOffset(m => m - 1)}>›</Button>
-        </div>
+        <Tabs defaultValue="pending" className="w-full">
+          <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
+            <TabsTrigger value="pending">Pending Approval</TabsTrigger>
+            <TabsTrigger value="ready">Ready to Pay</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="quick">Quick Payments</TabsTrigger>
+          </TabsList>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "Total Labor", value: fmt(totalCost), color: "text-foreground", icon: DollarSign },
-            { label: "Confirmed", value: fmt(totalPaid), color: "text-emerald-500", icon: CheckCircle2 },
-            { label: "Pending", value: fmt(totalPending), color: "text-amber-500", icon: Clock },
-          ].map((c) => (
-            <Card key={c.label} className="border-border/50">
+          <TabsContent value="pending" className="mt-4">
+            <PendingApprovalTab />
+          </TabsContent>
+
+          <TabsContent value="ready" className="mt-4">
+            <ReadyToPayTab />
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4">
+            <PayrollHistoryTab />
+          </TabsContent>
+
+          <TabsContent value="quick" className="mt-4 space-y-5">
+            {/* Month selector */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setMonthOffset(m => m + 1)}>‹</Button>
+              <span className="text-sm font-medium min-w-[120px] text-center">{monthLabel}</span>
+              <Button variant="outline" size="sm" disabled={monthOffset === 0} onClick={() => setMonthOffset(m => m - 1)}>›</Button>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Total Labor", value: fmt(totalCost), color: "text-foreground", icon: DollarSign },
+                { label: "Confirmed", value: fmt(totalPaid), color: "text-emerald-500", icon: CheckCircle2 },
+                { label: "Pending", value: fmt(totalPending), color: "text-amber-500", icon: Clock },
+              ].map((c) => (
+                <Card key={c.label} className="border-border/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{c.label}</span>
+                      <c.icon className={cn("w-3.5 h-3.5", c.color)} />
+                    </div>
+                    <p className={cn("text-xl font-bold", c.color)}>{c.value}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Entries List */}
+            <Card className="border-border/50">
               <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{c.label}</span>
-                  <c.icon className={cn("w-3.5 h-3.5", c.color)} />
-                </div>
-                <p className={cn("text-xl font-bold", c.color)}>{c.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Entries List */}
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Entries — {entries.length} records
-            </p>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : entries.length === 0 ? (
-              <div className="text-center py-10 text-sm text-muted-foreground">
-                No labor payments this month
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {entries.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full flex-shrink-0",
-                        entry.status === "confirmed" ? "bg-emerald-500" : "bg-amber-500"
-                      )} />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{entry.description ?? "—"}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">{format(new Date(entry.payment_date), "MMM d")}</span>
-                          {entry.project && (
-                            <span className="text-xs text-muted-foreground">· {entry.project.customer_name}</span>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  Entries — {entries.length} records
+                </p>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-10">
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : entries.length === 0 ? (
+                  <div className="text-center py-10 text-sm text-muted-foreground">
+                    No labor payments this month
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {entries.map((entry) => (
+                      <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full flex-shrink-0",
+                            entry.status === "confirmed" ? "bg-emerald-500" : "bg-amber-500"
+                          )} />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{entry.description ?? "—"}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-muted-foreground">{format(new Date(entry.payment_date), "MMM d")}</span>
+                              {entry.project && (
+                                <span className="text-xs text-muted-foreground">· {entry.project.customer_name}</span>
+                              )}
+                              {entry.payment_method && (
+                                <Badge variant="outline" className="text-[9px] h-4 px-1">{entry.payment_method}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-sm font-semibold">{fmt(entry.amount)}</span>
+                          {entry.status === "pending" && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => confirmMutation.mutate(entry.id)}
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                            </Button>
                           )}
-                          {entry.payment_method && (
-                            <Badge variant="outline" className="text-[9px] h-4 px-1">{entry.payment_method}</Badge>
-                          )}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => setDeleteTarget(entry)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-sm font-semibold">{fmt(entry.amount)}</span>
-                      {entry.status === "pending" && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => confirmMutation.mutate(entry.id)}
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => setDeleteTarget(entry)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
+
 
       {/* Add Entry Dialog */}
       <Dialog open={showNew} onOpenChange={setShowNew}>
