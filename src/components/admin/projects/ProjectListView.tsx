@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { MapPin, MessageCircle, Camera, FileWarning } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { computeRisk, type ProjectSignals } from "@/hooks/useProjectSignals";
 
