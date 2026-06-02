@@ -43,7 +43,7 @@ export default function CollaboratorDashboard() {
 
   // Week strip data
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   // Today's appointments
   const todayAppointments = appointments.filter((a) =>
