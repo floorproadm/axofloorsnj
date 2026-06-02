@@ -113,10 +113,13 @@ export default function PublicProposal() {
             .eq("share_token", token);
         }
 
-        const [projRes, custRes, companyRes, itemsRes] = await Promise.all([
+        const [projRes, custRes, propertyRes, companyRes, itemsRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           prop.customer_id
             ? supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+          prop.property_id
+            ? supabase.from("customer_properties").select("*").eq("id", prop.property_id).maybeSingle()
             : Promise.resolve({ data: null }),
           supabase.from("company_settings").select("*").limit(1).maybeSingle(),
           supabase
@@ -127,6 +130,7 @@ export default function PublicProposal() {
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
+        setProperty(propertyRes.data);
         setCompany(companyRes.data);
         setLineItems(((itemsRes.data as any[]) || []).map((r) => ({
           description: r.description || "",
