@@ -30,6 +30,7 @@ export default function GeneralSettings() {
   const [formMargin, setFormMargin] = useState("");
   const [formModel, setFormModel] = useState<LaborPricingModel>("sqft");
   const [formRate, setFormRate] = useState("");
+  const [formArrivalWindow, setFormArrivalWindow] = useState<string>("none");
   // Proposal document defaults
   const [formPaymentTerms, setFormPaymentTerms] = useState("");
   const [formTaxRate, setFormTaxRate] = useState("0");
