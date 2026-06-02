@@ -85,6 +85,7 @@ export default function Schedule() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { defaultArrivalWindow } = useCompanySettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const mainTab = (searchParams.get("tab") === "appointments" ? "appointments" : searchParams.get("tab") === "settings" ? "settings" : "schedule") as "schedule" | "appointments" | "settings";
   const setMainTab = (v: "schedule" | "appointments" | "settings") => {
