@@ -219,6 +219,19 @@ export default function GeneralSettings() {
               <Label htmlFor="labor_rate">{t("general.laborRatePadrao")} ({formModel === "sqft" ? "$/sq ft" : "$/dia"})</Label>
               <Input id="labor_rate" type="number" min={0} step={0.25} value={formRate} onChange={(e) => setFormRate(e.target.value)} />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="arrival_window">Default Arrival Window</Label>
+              <Select value={formArrivalWindow} onValueChange={setFormArrivalWindow}>
+                <SelectTrigger id="arrival_window"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No window (exact time)</SelectItem>
+                  {ARRIVAL_WINDOW_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Appointments inherit this window unless overridden. Shown as a range (e.g. 9:00 AM – 10:00 AM) on schedules and client-facing views.</p>
+            </div>
           </div>
         </CardContent>
         <Separator />
