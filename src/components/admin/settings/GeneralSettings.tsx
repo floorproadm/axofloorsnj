@@ -43,6 +43,7 @@ export default function GeneralSettings() {
       setFormMargin(String(marginMinPercent));
       setFormModel(laborPricingModel);
       setFormRate(String(laborRate));
+      setFormArrivalWindow(defaultArrivalWindow == null ? "none" : String(defaultArrivalWindow));
       const s: any = settings || {};
       setFormPhone(s.phone ?? "");
       setFormEmail(s.email ?? "");
