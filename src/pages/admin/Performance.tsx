@@ -144,6 +144,26 @@ function OverviewTab() {
       .sort((a, b) => b.revenue - a.revenue);
   }, [projectAgg]);
 
+  // Revenue by lead source (RPC)
+  const { data: bySource = [] } = useQuery({
+    queryKey: ["performance-revenue-by-source", period],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_revenue_by_lead_source", {
+        p_org_id: AXO_ORG_ID,
+        p_start: periodStart ? periodStart.toISOString().split("T")[0] : null,
+      });
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        lead_source: string;
+        project_count: number;
+        revenue: number;
+        cost: number;
+        profit: number;
+        margin: number;
+      }>;
+    },
+  });
+
   // Weekly chart: group paid invoices by ISO week
   const chartData = useMemo(() => {
     const byWeek: Record<string, { revenue: number; cost: number }> = {};
@@ -290,6 +310,36 @@ function OverviewTab() {
           </CardContent>
         </Card>
       </div>
+
+      {/* By Lead Source */}
+      <Card className="border-border/50">
+        <CardContent className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Revenue by Lead Source</p>
+          {bySource.length === 0 ? (
+            <div className="h-20 flex items-center justify-center text-sm text-muted-foreground">No source data for this period</div>
+          ) : (
+            <div className="space-y-2">
+              {bySource.map((s) => {
+                const top = bySource[0]?.revenue ?? 1;
+                const pct = Math.min(100, (Number(s.revenue) / Number(top)) * 100);
+                return (
+                  <div key={s.lead_source} className="flex items-center gap-2">
+                    <div className="w-28 truncate text-xs text-muted-foreground flex-shrink-0 capitalize">{s.lead_source}</div>
+                    <div className="flex-1 h-5 bg-muted/30 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="text-right flex-shrink-0 min-w-[120px]">
+                      <span className="text-xs font-semibold">{fmt(Number(s.revenue))}</span>
+                      <span className="text-[10px] text-muted-foreground ml-1">· {s.project_count} job{s.project_count !== 1 ? "s" : ""}</span>
+                      <span className={cn("text-[10px] ml-1", marginColor(Number(s.margin)))}>{Number(s.margin).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent Projects */}
       <Card className="border-border/50">
