@@ -451,6 +451,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         unit_price: Number(l.unit_price) || 0,
         display_order: idx,
         service_catalog_id: l.service_catalog_id || null,
+        unit_cost_snapshot: l.unit_cost_snapshot ?? null,
       }));
       if (rows.length > 0) {
         const { error: insErr } = await supabase
