@@ -435,12 +435,12 @@ export default function Schedule() {
           ) : viewMode === "day" ? (
             <>
               <DayNoteBar date={currentDate} />
-              <DayView appointments={todayAppointments} onEdit={openEdit} />
+              <DayView appointments={todayAppointments} onEdit={openEdit} defaultWindow={defaultArrivalWindow} />
             </>
           ) : viewMode === "list" ? (
             <>
               <DayNoteBar date={currentDate} />
-              <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} />
+              <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} defaultWindow={defaultArrivalWindow} />
             </>
           ) : (
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} weekStart={weekStart} weekEnd={weekEnd} />
