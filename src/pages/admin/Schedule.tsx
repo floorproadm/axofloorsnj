@@ -815,7 +815,7 @@ function AppointmentModal({
               <div className="flex items-center gap-2.5">
                 <CalendarIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <p className="text-sm text-foreground">
-                  {format(parseISO(form.appointment_date), "dd/MM/yyyy")} às {form.appointment_time}
+                  {format(parseISO(form.appointment_date), "dd/MM/yyyy")} às {formatAppointmentTime(form.appointment_time, form.arrival_window_minutes, defaultWindow)}
                   <span className="text-muted-foreground ml-1">· {form.duration_hours}h</span>
                 </p>
               </div>
