@@ -36,6 +36,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 export default function CollaboratorSchedule() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { data: appointments = [], isLoading } = useCollaboratorSchedule(weekOffset);
+  const { defaultArrivalWindow } = useCompanySettings();
   const navigate = useNavigate();
 
   const adjustedDate = addWeeks(new Date(), weekOffset);
