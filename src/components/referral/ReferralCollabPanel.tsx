@@ -7,6 +7,7 @@ import { Loader2, Send, Pencil, Check, X, Calendar, ListChecks, Lock } from "luc
 import { toast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 
 interface ReferralMessage {
   id: string;
@@ -93,10 +94,10 @@ export function ReferralCollabPanel({ leadId, mode, authorName, organizationId }
             return [...prev, payload.new as any];
           });
         }
-      )
-      .subscribe();
+      );
+    const subscription = subscribeSafely(channel, `referral_messages_${leadId}`);
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(subscription ?? channel);
     };
   }, [leadId]);
 

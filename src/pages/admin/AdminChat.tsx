@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
 import { useRef as useReactRef } from "react";
+import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 
 type Tab = "clients" | "team";
 
@@ -226,10 +227,10 @@ export default function AdminChat() {
           qc.invalidateQueries({ queryKey: ["admin-chat-msgs", "team", activeTeamId] });
         }
         qc.invalidateQueries({ queryKey: ["admin-chat-unread-total"] });
-      })
-      .subscribe();
+      });
+    const subscription = subscribeSafely(ch, "admin-chat-realtime");
     return () => {
-      supabase.removeChannel(ch);
+      removeRealtimeChannel(subscription ?? ch);
     };
   }, [user, qc, tab, activeProjectId, activeTeamId]);
 

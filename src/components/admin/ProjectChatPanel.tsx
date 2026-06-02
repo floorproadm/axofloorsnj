@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
+import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 
 interface ChatMessage {
   id: string;
@@ -57,9 +58,9 @@ export function ProjectChatPanel({ projectId }: ProjectChatPanelProps) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_messages", filter: `project_id=eq.${projectId}` },
         () => queryClient.invalidateQueries({ queryKey: ["admin-chat-messages", projectId] })
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+      );
+    const subscription = subscribeSafely(channel, `admin-chat-${projectId}`);
+    return () => { removeRealtimeChannel(subscription ?? channel); };
   }, [projectId, queryClient]);
 
   useEffect(() => {

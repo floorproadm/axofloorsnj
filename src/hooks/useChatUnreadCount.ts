@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 
 export function useChatUnreadCount() {
   const { user } = useAuth();
@@ -38,10 +39,10 @@ export function useChatUnreadCount() {
       )
       .on("postgres_changes", { event: "*", schema: "public", table: "direct_messages" }, () =>
         qc.invalidateQueries({ queryKey: ["admin-chat-unread-total"] })
-      )
-      .subscribe();
+      );
+    const subscription = subscribeSafely(ch, "chat-unread-watch");
     return () => {
-      supabase.removeChannel(ch);
+      removeRealtimeChannel(subscription ?? ch);
     };
   }, [user, qc]);
 

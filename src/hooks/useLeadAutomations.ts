@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 
 export interface LeadAutomationDripLog {
   id: string;
@@ -112,10 +113,10 @@ export function useLeadAutomations(leadId: string | null | undefined) {
         "postgres_changes",
         { event: "*", schema: "public", table: "automation_enrollments", filter: `lead_id=eq.${leadId}` },
         () => queryClient.invalidateQueries({ queryKey })
-      )
-      .subscribe();
+      );
+    const subscription = subscribeSafely(channel, `lead-automations-${leadId}`);
     return () => {
-      supabase.removeChannel(channel);
+      removeRealtimeChannel(subscription ?? channel);
     };
   }, [leadId, queryClient]);
 
