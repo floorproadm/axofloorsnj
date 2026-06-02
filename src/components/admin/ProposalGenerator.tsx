@@ -40,6 +40,8 @@ interface EditableLine {
   qty: number;
   unit_price: number;
   service_catalog_id?: string | null;
+  /** Snapshot of catalog unit_cost at time of add — used for historical margin accuracy */
+  unit_cost_snapshot?: number | null;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -296,7 +298,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       if (proposal.proposal_id) {
         const { data: rows } = await supabase
           .from('proposal_line_items' as any)
-          .select('description, quantity, unit_price, display_order, service_catalog_id')
+          .select('description, quantity, unit_price, display_order, service_catalog_id, unit_cost_snapshot')
           .eq('proposal_id', proposal.proposal_id)
           .order('display_order', { ascending: true });
         if (rows && rows.length > 0) {
@@ -306,6 +308,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             qty: Number(r.quantity) || 0,
             unit_price: Number(r.unit_price) || 0,
             service_catalog_id: r.service_catalog_id || null,
+            unit_cost_snapshot: r.unit_cost_snapshot != null ? Number(r.unit_cost_snapshot) : null,
           }));
         }
       }
@@ -378,7 +381,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
     setEditableLines((prev) => [...prev, { id: uid(), description: '', qty: 1, unit_price: 0, service_catalog_id: null }]);
     setLinesDirty(true);
   };
-  const addCatalogLine = (item: { id: string; name: string; description: string | null; base_price: number; category: string | null }) => {
+  const addCatalogLine = (item: { id: string; name: string; description: string | null; base_price: number; category: string | null; unit_cost?: number | null }) => {
     setEditableLines((prev) => [
       ...prev,
       {
@@ -387,6 +390,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         qty: 1,
         unit_price: Number(item.base_price) || 0,
         service_catalog_id: item.id,
+        unit_cost_snapshot: item.unit_cost != null ? Number(item.unit_cost) : null,
       },
     ]);
     setLinesDirty(true);
@@ -447,6 +451,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         unit_price: Number(l.unit_price) || 0,
         display_order: idx,
         service_catalog_id: l.service_catalog_id || null,
+        unit_cost_snapshot: l.unit_cost_snapshot ?? null,
       }));
       if (rows.length > 0) {
         const { error: insErr } = await supabase

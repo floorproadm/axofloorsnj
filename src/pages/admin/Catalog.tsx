@@ -86,6 +86,8 @@ const EMPTY_FORM: CatalogItemInsert = {
   default_finish: null,
   base_price: 0,
   price_unit: "sqft",
+  unit_cost: null,
+  markup_percent: null,
   is_active: true,
   display_order: 0,
   image_url: null,
@@ -236,6 +238,8 @@ export default function Catalog() {
       default_finish: item.default_finish,
       base_price: item.base_price,
       price_unit: item.price_unit,
+      unit_cost: item.unit_cost ?? null,
+      markup_percent: item.markup_percent ?? null,
       is_active: item.is_active,
       display_order: item.display_order,
       image_url: item.image_url,
@@ -627,6 +631,67 @@ export default function Catalog() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Internal cost & markup — never shown to client */}
+            <div className="space-y-3 rounded-md border border-dashed border-border/60 bg-muted/20 p-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {pt ? "Custo Interno (opcional)" : "Internal Cost (optional)"}
+                </Label>
+                <span className="text-[10px] text-muted-foreground">
+                  {pt ? "Nunca visível ao cliente" : "Never visible to client"}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{pt ? "Custo ($/unidade)" : "Cost ($/unit)"}</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={form.unit_cost ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setForm((f) => ({ ...f, unit_cost: v === "" ? null : parseFloat(v) || 0 }));
+                      }}
+                      placeholder="—"
+                      className="pl-7"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{pt ? "Markup %" : "Markup %"}</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={form.markup_percent ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setForm((f) => ({ ...f, markup_percent: v === "" ? null : parseFloat(v) || 0 }));
+                    }}
+                    placeholder="—"
+                  />
+                </div>
+              </div>
+              {form.unit_cost != null && form.markup_percent != null && form.unit_cost > 0 && (
+                <div className="flex items-baseline justify-between pt-1 border-t border-border/40">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">
+                      {pt ? "Preço sugerido" : "Suggested price"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/70">
+                      {pt ? "auto-calculado de custo + markup" : "auto-computed from cost + markup"}
+                    </span>
+                  </div>
+                  <span className="text-base font-semibold text-primary tabular-nums">
+                    ${(form.unit_cost * (1 + form.markup_percent / 100)).toFixed(2)}
+                  </span>
+                </div>
+              )}
             </div>
 
           </div>

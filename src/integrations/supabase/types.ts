@@ -3521,6 +3521,7 @@ export type Database = {
           proposal_id: string
           quantity: number
           service_catalog_id: string | null
+          unit_cost_snapshot: number | null
           unit_price: number
         }
         Insert: {
@@ -3533,6 +3534,7 @@ export type Database = {
           proposal_id: string
           quantity?: number
           service_catalog_id?: string | null
+          unit_cost_snapshot?: number | null
           unit_price?: number
         }
         Update: {
@@ -3545,6 +3547,7 @@ export type Database = {
           proposal_id?: string
           quantity?: number
           service_catalog_id?: string | null
+          unit_cost_snapshot?: number | null
           unit_price?: number
         }
         Relationships: []
@@ -4152,8 +4155,10 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           item_type: string
+          markup_percent: number | null
           name: string
           price_unit: string
+          unit_cost: number | null
           updated_at: string
         }
         Insert: {
@@ -4168,8 +4173,10 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           item_type?: string
+          markup_percent?: number | null
           name: string
           price_unit?: string
+          unit_cost?: number | null
           updated_at?: string
         }
         Update: {
@@ -4184,8 +4191,10 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           item_type?: string
+          markup_percent?: number | null
           name?: string
           price_unit?: string
+          unit_cost?: number | null
           updated_at?: string
         }
         Relationships: []

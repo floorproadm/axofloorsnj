@@ -14,6 +14,8 @@ export interface CatalogItem {
   default_finish: string | null;
   base_price: number;
   price_unit: PriceUnit;
+  unit_cost: number | null;
+  markup_percent: number | null;
   is_active: boolean;
   display_order: number;
   image_url: string | null;
