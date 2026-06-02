@@ -23,6 +23,7 @@ export default function PublicInvoice() {
   const [invoice, setInvoice] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [phases, setPhases] = useState<any[]>([]);
+  const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
