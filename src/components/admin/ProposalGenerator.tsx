@@ -728,6 +728,15 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
               <Moon className="h-3.5 w-3.5" /> Dark
             </button>
           </div>
+          <Button
+            variant="outline"
+            onClick={() => window.open(`/proposal/${shareToken}`, '_blank', 'noopener,noreferrer')}
+            disabled={!shareToken}
+            title="Open the public proposal page exactly as the client sees it"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Preview as Client
+          </Button>
           <Button variant="outline" onClick={handleCopyLink} disabled={!shareToken}>
             <Link2 className="h-4 w-4 mr-2" />
             Copy Public Link
