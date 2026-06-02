@@ -7,13 +7,30 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function createRawEmail(to: string, subject: string, htmlBody: string, from?: string): string {
+// RFC 2047 encoded-word for non-ASCII header values (Subject, From name, etc.)
+function encodeHeader(value: string): string {
+  if (/^[\x00-\x7F]*$/.test(value)) return value; // ASCII-only → no encoding needed
+  const b64 = btoa(unescape(encodeURIComponent(value)));
+  return `=?UTF-8?B?${b64}?=`;
+}
+
+function createRawEmail(to: string, subject: string, htmlBody: string, from?: string, replyTo?: string): string {
+  const fromAddr = from || "AXO Floors <axofloorsnj@gmail.com>";
+  // Encode the display-name portion of From if non-ASCII (keep the <email> intact)
+  const fromEncoded = fromAddr.replace(/^(.+?)\s*<(.+)>$/, (_m, name, addr) => `${encodeHeader(name.trim())} <${addr}>`);
+  const messageId = `<${crypto.randomUUID()}@axofloorsnj.com>`;
+  const date = new Date().toUTCString().replace(/GMT$/, '+0000');
+
   const lines = [
-    `From: ${from || "AXO Floors <axofloorsnj@gmail.com>"}`,
+    `From: ${fromEncoded}`,
     `To: ${to}`,
-    `Subject: ${subject}`,
+    `Reply-To: ${replyTo || 'axofloorsnj@gmail.com'}`,
+    `Subject: ${encodeHeader(subject)}`,
+    `Date: ${date}`,
+    `Message-ID: ${messageId}`,
     'MIME-Version: 1.0',
     'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 8bit',
     '',
     htmlBody,
   ];
