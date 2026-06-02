@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
+import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 
 interface ChatMessage {
   id: string;
@@ -76,10 +77,10 @@ export default function CollaboratorChat() {
         () => {
           queryClient.invalidateQueries({ queryKey: ["chat-messages", selectedProjectId] });
         }
-      )
-      .subscribe();
+      );
+    const subscription = subscribeSafely(channel, `collaborator-chat-${selectedProjectId}`);
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { removeRealtimeChannel(subscription ?? channel); };
   }, [selectedProjectId, queryClient]);
 
   // Scroll to bottom on new messages
