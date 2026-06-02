@@ -1,34 +1,29 @@
-const CACHE_NAME = 'axo-admin-v1';
-const ADMIN_SHELL = [
-  '/admin',
-  '/admin/auth',
-  '/admin-manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-];
+// Self-destructing service worker.
+// The previous version cached the /admin shell, which caused blank white
+// screens on iOS PWA after deploys (cached HTML referenced stale JS bundles).
+// This version unregisters itself and clears all caches on activation.
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ADMIN_SHELL))
-  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    } catch (e) {
+      // ignore
+    }
+    try {
+      await self.registration.unregister();
+    } catch (e) {
+      // ignore
+    }
+    const clients = await self.clients.matchAll({ type: 'window' });
+    clients.forEach((client) => client.navigate(client.url));
+  })());
 });
 
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  // Only handle admin routes, skip OAuth
-  if (!url.pathname.startsWith('/admin') || url.pathname.includes('~oauth')) return;
-
-  event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
-  );
-});
+// Pass-through: never serve from cache.
+self.addEventListener('fetch', () => {});
