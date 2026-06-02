@@ -142,6 +142,7 @@ export async function getCompanySettingsWithDefaults(): Promise<Omit<CompanySett
     trade_name: settings.trade_name,
     tagline: settings.tagline,
     default_margin_min_percent: settings.default_margin_min_percent,
+    default_arrival_window: settings.default_arrival_window,
     labor_pricing_model: settings.labor_pricing_model,
     default_labor_rate: settings.default_labor_rate,
     logo_url: settings.logo_url,
