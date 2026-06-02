@@ -706,6 +706,7 @@ function AppointmentModal({
     notes: "",
     project_id: null as string | null,
     assigned_to: [] as string[],
+    arrival_window_minutes: null as number | null,
   });
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [teamPickerOpen, setTeamPickerOpen] = useState(false);
