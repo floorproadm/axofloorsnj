@@ -37,6 +37,7 @@ export interface CreatePaymentInput {
   notes?: string | null;
   recurrence?: RecurrenceType | null;
   recurrence_next_date?: string | null;
+  receipt_photo_url?: string | null;
 }
 
 
