@@ -1,0 +1,2 @@
+DELETE FROM labor_entries WHERE worker_name IN ('Eduardo','Carlos','Pedro') AND organization_id='a0000000-0000-0000-0000-000000000001';
+DELETE FROM payroll_periods WHERE id='1be0f798-8d35-4201-85fd-2329da091e40';
