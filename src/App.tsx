@@ -109,6 +109,7 @@ const App = () => {
         <BrowserRouter>
           <SecurityHeaders />
           <ScrollToTop />
+          <ErrorBoundary scope="app">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/installation" element={<Installation />} />
