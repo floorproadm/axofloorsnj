@@ -56,6 +56,7 @@ export default function ProjectDetail() {
     zip_code: '',
     project_type: '',
     square_footage: '' as string | number,
+    labor_sqft_rate: '' as string | number,
     notes: '',
   });
 
