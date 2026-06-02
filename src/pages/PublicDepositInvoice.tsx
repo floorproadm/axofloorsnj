@@ -124,10 +124,18 @@ export default function PublicDepositInvoice() {
     signature?.signer_name || customer?.full_name || project?.customer_name || "Client";
   const displayEmail = customer?.email || project?.customer_email || signature?.signer_email || null;
   const displayPhone = customer?.phone || project?.customer_phone || null;
+  const propertyAddress = property
+    ? [property.address_line1, property.address_line2, property.city, property.state, property.zip]
+        .filter(Boolean)
+        .join(", ")
+    : "";
   const displayAddress =
+    propertyAddress ||
     project?.address ||
     customer?.address ||
     [project?.city, project?.zip_code].filter(Boolean).join(", ");
+  const displayUnit = property?.unit_identifier || null;
+  const displayResident = property?.resident_name || null;
 
   if (loading) {
     return (
