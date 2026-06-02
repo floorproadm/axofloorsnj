@@ -319,7 +319,8 @@ const App = () => {
               <Route path="docs" element={<CollaboratorDocs />} />
               <Route path="chat" element={<CollaboratorChat />} />
               <Route path="profile" element={<CollaboratorProfile />} />
-              <Route path="timesheet" element={<CollaboratorTimesheet />} />
+              <Route path="daysheet" element={<CollaboratorTimesheet />} />
+              <Route path="timesheet" element={<Navigate to="/collaborator/daysheet" replace />} />
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
 
