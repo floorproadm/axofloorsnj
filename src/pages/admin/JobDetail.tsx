@@ -40,6 +40,7 @@ import { AXO_ORG_ID } from '@/lib/constants';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
 import { AddressAutocomplete } from '@/components/admin/AddressAutocomplete';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { OnMyWayButton } from '@/components/shared/OnMyWayButton';
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pending', color: 'bg-amber-500', textColor: 'text-amber-700 dark:text-amber-400' },
@@ -279,6 +280,11 @@ export default function JobDetail() {
 
             {/* Risk / signal badges */}
             <div className="flex items-center gap-2 flex-wrap">
+              <OnMyWayButton
+                phone={project.customer_phone}
+                customerName={project.customer_name}
+                className="h-7 text-xs"
+              />
               {project.customer_portal_token && (
                 <>
                   <Button

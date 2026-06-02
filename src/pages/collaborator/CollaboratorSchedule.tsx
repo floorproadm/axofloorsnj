@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { formatAppointmentTime } from "@/lib/constants";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
+import { OnMyWayButton } from "@/components/shared/OnMyWayButton";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   scheduled: {
@@ -155,16 +156,23 @@ export default function CollaboratorSchedule() {
                           </div>
                         </div>
 
-                        {/* View Details Link */}
-                        {appt.project_id && (
-                          <button
-                            onClick={() => navigate(`/collaborator/project/${appt.project_id}`)}
-                            className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline pt-1 mx-auto"
-                          >
-                            View Details
-                            <ArrowRight className="h-3 w-3" />
-                          </button>
-                        )}
+                        {/* Actions */}
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <OnMyWayButton
+                            phone={appt.customer_phone}
+                            customerName={appt.customer_name}
+                            className="h-8 text-xs"
+                          />
+                          {appt.project_id && (
+                            <button
+                              onClick={() => navigate(`/collaborator/project/${appt.project_id}`)}
+                              className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                            >
+                              View Details
+                              <ArrowRight className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   );
