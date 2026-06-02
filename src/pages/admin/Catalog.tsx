@@ -86,6 +86,8 @@ const EMPTY_FORM: CatalogItemInsert = {
   default_finish: null,
   base_price: 0,
   price_unit: "sqft",
+  unit_cost: null,
+  markup_percent: null,
   is_active: true,
   display_order: 0,
   image_url: null,
