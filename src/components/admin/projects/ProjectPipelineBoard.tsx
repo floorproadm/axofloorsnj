@@ -145,6 +145,7 @@ function ProjectCard({
   onClick: () => void;
 }) {
   const qc = useQueryClient();
+  const { marginMinPercent } = useCompanySettings();
   const dateStr = project.start_date || project.created_at;
   const formattedDate = dateStr ? format(new Date(dateStr), "MMM d, yyyy") : null;
 
