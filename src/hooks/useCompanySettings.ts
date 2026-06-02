@@ -29,6 +29,7 @@ const DEFAULT_SETTINGS: Omit<CompanySettings, 'id' | 'created_at' | 'updated_at'
   trade_name: 'AXO Floors',
   tagline: 'Professional Flooring Services',
   default_margin_min_percent: 30,
+  default_arrival_window: null,
   labor_pricing_model: 'sqft',
   default_labor_rate: 3.50,
   logo_url: null,
