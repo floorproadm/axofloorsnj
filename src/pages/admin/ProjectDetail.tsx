@@ -344,6 +344,11 @@ export default function ProjectDetail() {
                         value={project.square_footage ? `${project.square_footage} sq ft` : null}
                       />
                       <ReadItem
+                        label="Labor SqFt Rate"
+                        value={(project as any).labor_sqft_rate ? `$${Number((project as any).labor_sqft_rate).toFixed(2)}/sqft` : null}
+                        emptyHint="—"
+                      />
+                      <ReadItem
                         label="Criado em"
                         value={format(new Date(project.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                       />
