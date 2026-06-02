@@ -15,6 +15,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { LaborPricingModel } from "@/hooks/useCompanySettings";
+import { ARRIVAL_WINDOW_OPTIONS } from "@/lib/constants";
 
 export default function GeneralSettings() {
   const { settings, isLoading, refetch, companyName, marginMinPercent, laborPricingModel, laborRate } = useCompanySettings();
