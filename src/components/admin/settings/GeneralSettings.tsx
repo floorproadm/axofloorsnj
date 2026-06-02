@@ -199,6 +199,7 @@ export default function GeneralSettings() {
               <Label htmlFor="margin">{t("general.margemMinima")}</Label>
               <Input id="margin" type="number" min={0} max={100} step={1} value={formMargin} onChange={(e) => setFormMargin(e.target.value)} />
               <p className="text-xs text-muted-foreground">{t("general.margemDesc")}</p>
+              <p className="text-xs text-muted-foreground">Jobs below this margin will be flagged with an alert.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="pricing_model">{t("general.modeloPrecificacao")}</Label>

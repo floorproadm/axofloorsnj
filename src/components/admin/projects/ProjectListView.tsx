@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { MapPin, MessageCircle, Camera, FileWarning } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { computeRisk, type ProjectSignals } from "@/hooks/useProjectSignals";
 
@@ -39,6 +40,7 @@ interface Props {
 
 export function ProjectListView({ projects, signals, onSelect }: Props) {
   const isMobile = useIsMobile();
+  const { marginMinPercent } = useCompanySettings();
 
   const enriched = projects.map((p) => {
     const hasMissingProof = signals?.missingProof.has(p.id) ?? false;
@@ -127,7 +129,17 @@ export function ProjectListView({ projects, signals, onSelect }: Props) {
                 {p.address || "—"}
               </span>
             </TableCell>
-            <TableCell>{p.customer_name}</TableCell>
+            <TableCell>
+              <span className="inline-flex items-center gap-1.5">
+                {p.job_costs?.margin_percent != null && p.job_costs.margin_percent < marginMinPercent && (
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--state-blocked))] shrink-0"
+                    title={`Margin ${p.job_costs.margin_percent.toFixed(0)}% below minimum ${marginMinPercent}%`}
+                  />
+                )}
+                {p.customer_name}
+              </span>
+            </TableCell>
             <TableCell>
               <Badge variant="outline" className="text-[10px]">{p.project_type}</Badge>
             </TableCell>

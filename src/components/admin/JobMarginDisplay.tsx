@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, XCircle, DollarSign } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -151,6 +152,13 @@ export function JobMarginDisplay({ projectId }: JobMarginDisplayProps) {
               <p className={`font-bold text-lg ${parseFloat(marginPercent) < minMargin ? 'text-destructive' : 'text-green-600'}`}>
                 {marginPercent}%
               </p>
+              {jobCost && formData.estimated_revenue > 0 && minMargin > 0 && (
+                parseFloat(marginPercent) < minMargin ? (
+                  <Badge variant="destructive" className="mt-1 text-[10px]">Below minimum margin</Badge>
+                ) : (
+                  <Badge variant="outline" className="mt-1 text-[10px] border-green-600 text-green-600">Margin OK</Badge>
+                )
+              )}
             </div>
           </div>
         </div>

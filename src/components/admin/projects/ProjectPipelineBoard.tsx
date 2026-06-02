@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 import type { HubProject } from "@/hooks/useProjectsHub";
 import { computeRisk, type ProjectSignals } from "@/hooks/useProjectSignals";
 
@@ -144,6 +145,7 @@ function ProjectCard({
   onClick: () => void;
 }) {
   const qc = useQueryClient();
+  const { marginMinPercent } = useCompanySettings();
   const dateStr = project.start_date || project.created_at;
   const formattedDate = dateStr ? format(new Date(dateStr), "MMM d, yyyy") : null;
 
@@ -302,9 +304,9 @@ function ProjectCard({
       )}
 
       {/* Footer alert chips */}
-      {(showProofBadge || hasOverdueInvoice || (margin != null && margin < 15)) && (
+      {(showProofBadge || hasOverdueInvoice || (margin != null && margin < marginMinPercent)) && (
         <div className="flex flex-wrap items-center gap-1 pt-0.5">
-          {margin != null && margin < 15 && (
+          {margin != null && margin < marginMinPercent && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[hsl(var(--state-blocked-bg))] text-[hsl(var(--state-blocked))]">
               {margin.toFixed(0)}% margin
             </span>
