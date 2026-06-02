@@ -152,8 +152,11 @@ export function SignatureDialog({
         console.error("Admin notification failed:", notifyErr);
       }
 
-      setDone(true);
-      window.location.href = `/proposal/${proposalToken}/invoice`;
+      toast.success("Project confirmed! Redirecting…");
+      // Redirect to the public AXO Floors thank-you page to avoid freezing on dialog
+      setTimeout(() => {
+        window.location.href = "https://axofloorsnj.com/thank-you";
+      }, 600);
 
     } catch (e: any) {
       console.error(e);
