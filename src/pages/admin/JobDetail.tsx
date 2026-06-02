@@ -284,6 +284,7 @@ export default function JobDetail() {
                 customerName={project.customer_name}
                 className="h-7 text-xs"
               />
+              {project.customer_portal_token && (
                 <>
                   <Button
                     size="sm"
