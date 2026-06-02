@@ -153,7 +153,7 @@ export default function CollaboratorTimesheet() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-heading font-bold text-foreground">Minhas Diarias</h1>
+          <h1 className="text-xl font-heading font-bold text-foreground">Minhas Diárias</h1>
           <p className="text-sm text-muted-foreground">Registre diárias ou sqft trabalhado</p>
         </div>
         <Button size="sm" onClick={() => setShowForm((s) => !s)} className="gap-1">
