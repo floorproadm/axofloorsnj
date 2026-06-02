@@ -304,9 +304,9 @@ function ProjectCard({
       )}
 
       {/* Footer alert chips */}
-      {(showProofBadge || hasOverdueInvoice || (margin != null && margin < 15)) && (
+      {(showProofBadge || hasOverdueInvoice || (margin != null && margin < marginMinPercent)) && (
         <div className="flex flex-wrap items-center gap-1 pt-0.5">
-          {margin != null && margin < 15 && (
+          {margin != null && margin < marginMinPercent && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[hsl(var(--state-blocked-bg))] text-[hsl(var(--state-blocked))]">
               {margin.toFixed(0)}% margin
             </span>
