@@ -279,7 +279,11 @@ export default function JobDetail() {
 
             {/* Risk / signal badges */}
             <div className="flex items-center gap-2 flex-wrap">
-              {project.customer_portal_token && (
+              <OnMyWayButton
+                phone={project.customer_phone}
+                customerName={project.customer_name}
+                className="h-7 text-xs"
+              />
                 <>
                   <Button
                     size="sm"
