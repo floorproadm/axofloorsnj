@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   ScrollText,
   AlertTriangle,
+  Clock,
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
 import { DeclineDialog } from "@/components/proposal/DeclineDialog";
@@ -52,6 +53,7 @@ export default function PublicProposal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const printMode = searchParams.get("print") === "1";
+  const isAdminPreview = searchParams.get("preview") === "admin";
 
   const [proposal, setProposal] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
@@ -162,6 +164,23 @@ export default function PublicProposal() {
     return new Date(proposal.valid_until) < new Date() && !isAccepted && !isRejected;
   }, [proposal, isAccepted, isRejected]);
   const canAct = !isAccepted && !isRejected && !isExpired;
+
+  const daysLeft = useMemo(() => {
+    if (!proposal?.valid_until || isExpired) return null;
+    const end = new Date(proposal.valid_until);
+    const now = new Date();
+    end.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    return Math.round((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }, [proposal, isExpired]);
+
+  const showUrgencyBanner =
+    !isAdminPreview &&
+    !isAccepted &&
+    proposal?.status !== "expired" &&
+    daysLeft !== null &&
+    daysLeft <= 7 &&
+    daysLeft >= 0;
 
   const displayName = customer?.full_name || project?.customer_name || "Client";
   const displayPhone = customer?.phone || project?.customer_phone || null;
@@ -333,6 +352,46 @@ export default function PublicProposal() {
                   {proposal.client_note}
                 </p>
               </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Pre-expiration urgency banner */}
+        {showUrgencyBanner && daysLeft !== null && (
+          <Card
+            className={`p-4 flex items-start gap-3 ${
+              daysLeft === 0
+                ? "bg-red-50 border-red-200"
+                : daysLeft <= 3
+                ? "bg-orange-50 border-orange-200"
+                : "bg-yellow-50 border-yellow-200"
+            }`}
+          >
+            <Clock
+              className={`w-5 h-5 shrink-0 mt-0.5 ${
+                daysLeft === 0
+                  ? "text-red-600"
+                  : daysLeft <= 3
+                  ? "text-orange-600"
+                  : "text-yellow-600"
+              }`}
+            />
+            <div>
+              <p
+                className={`font-semibold text-sm ${
+                  daysLeft === 0
+                    ? "text-red-900"
+                    : daysLeft <= 3
+                    ? "text-orange-900"
+                    : "text-yellow-900"
+                }`}
+              >
+                {daysLeft === 0
+                  ? "This proposal expires today"
+                  : daysLeft <= 3
+                  ? `Expires soon — only ${daysLeft} day${daysLeft === 1 ? "" : "s"} left to approve`
+                  : `This proposal is valid until ${format(new Date(proposal.valid_until), "MMM d, yyyy")} — ${daysLeft} days left`}
+              </p>
             </div>
           </Card>
         )}
