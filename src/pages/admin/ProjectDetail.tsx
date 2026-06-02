@@ -128,6 +128,7 @@ export default function ProjectDetail() {
         zip_code: project.zip_code || '',
         project_type: project.project_type || '',
         square_footage: project.square_footage ?? '',
+        labor_sqft_rate: (project as any).labor_sqft_rate ?? '',
         notes: project.notes || '',
       });
     }
