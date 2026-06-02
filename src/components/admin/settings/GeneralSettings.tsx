@@ -53,7 +53,7 @@ export default function GeneralSettings() {
       setFormTermsText(s.default_terms_text ?? "");
       setFormDepositPercent(String(s.deposit_percentage ?? 50));
     }
-  }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate, settings]);
+  }, [isLoading, companyName, marginMinPercent, laborPricingModel, laborRate, defaultArrivalWindow, settings]);
 
   const handleSave = async () => {
     const marginNum = parseFloat(formMargin);
