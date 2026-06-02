@@ -40,6 +40,8 @@ interface EditableLine {
   qty: number;
   unit_price: number;
   service_catalog_id?: string | null;
+  /** Snapshot of catalog unit_cost at time of add — used for historical margin accuracy */
+  unit_cost_snapshot?: number | null;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
