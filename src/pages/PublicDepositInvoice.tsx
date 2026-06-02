@@ -237,6 +237,13 @@ export default function PublicDepositInvoice() {
               Bill To
             </p>
             <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+            {(displayUnit || displayResident) && (
+              <p className="text-sm text-slate-700 mt-0.5">
+                {displayUnit}
+                {displayUnit && displayResident ? " · " : ""}
+                {displayResident}
+              </p>
+            )}
             {displayEmail && (
               <p className="text-sm text-slate-600 mt-0.5">{displayEmail}</p>
             )}
