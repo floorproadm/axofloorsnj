@@ -65,10 +65,13 @@ export default function PublicDepositInvoice() {
         }
         setProposal(prop);
 
-        const [projRes, custRes, companyRes, sigRes] = await Promise.all([
+        const [projRes, custRes, propertyRes, companyRes, sigRes] = await Promise.all([
           supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
           prop.customer_id
             ? supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+          prop.property_id
+            ? supabase.from("customer_properties").select("*").eq("id", prop.property_id).maybeSingle()
             : Promise.resolve({ data: null }),
           supabase.from("company_settings").select("*").limit(1).maybeSingle(),
           supabase
@@ -81,6 +84,7 @@ export default function PublicDepositInvoice() {
         ]);
         setProject(projRes.data);
         setCustomer(custRes.data);
+        setProperty(propertyRes.data);
         setCompany(companyRes.data);
         setSignature(sigRes.data);
 
