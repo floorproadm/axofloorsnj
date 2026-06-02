@@ -946,6 +946,27 @@ function AppointmentModal({
               </div>
 
               <div>
+                <Label className="text-xs">Arrival Window</Label>
+                <Select
+                  value={form.arrival_window_minutes == null ? "default" : String(form.arrival_window_minutes)}
+                  onValueChange={(v) => setForm(f => ({ ...f, arrival_window_minutes: v === "default" ? null : parseInt(v, 10) }))}
+                >
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">
+                      Use company default{defaultWindow ? ` (${defaultWindow >= 60 ? `${defaultWindow / 60}h` : `${defaultWindow}m`})` : " (none)"}
+                    </SelectItem>
+                    <SelectItem value="0">No window (exact time)</SelectItem>
+                    {ARRIVAL_WINDOW_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">Overrides the company default for this appointment only.</p>
+              </div>
+
+
+              <div>
                 <Label className="text-xs">Local</Label>
                 <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Endereço" className="h-9" />
               </div>
