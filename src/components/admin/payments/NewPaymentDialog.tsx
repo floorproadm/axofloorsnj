@@ -57,7 +57,11 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [recurrence, setRecurrence] = useState<string>("none");
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const createPayment = useCreatePayment();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
@@ -69,6 +73,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
       setPaymentDate(new Date().toISOString().split("T")[0]);
       setCategory(defaultCategory);
       setRecurrence("none");
+      setReceiptUrl(null);
     }
   }, [open, defaultCategory]);
 
@@ -79,6 +84,32 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
     setDescription("");
     setNotes("");
     setRecurrence("none");
+    setReceiptUrl(null);
+  };
+
+  const handleReceiptUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 10MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingReceipt(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
+      setReceiptUrl(data.publicUrl);
+      toast({ title: "Receipt attached" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingReceipt(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -95,6 +126,7 @@ export function NewPaymentDialog({ open, onOpenChange, defaultCategory = "receiv
         notes: notes || null,
         recurrence: !isIncome && recurrence !== "none" ? (recurrence as any) : null,
         recurrence_next_date: !isIncome && recurrence !== "none" ? paymentDate : null,
+        receipt_photo_url: !isIncome ? receiptUrl : null,
       },
       {
         onSuccess: () => {
