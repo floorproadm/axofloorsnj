@@ -501,7 +501,7 @@ export default function Schedule() {
 }
 
 // ─── Day View ──────────────────────────────────────────────
-function DayView({ appointments, onEdit }: { appointments: Appointment[]; onEdit: (a: Appointment) => void }) {
+function DayView({ appointments, onEdit, defaultWindow }: { appointments: Appointment[]; onEdit: (a: Appointment) => void; defaultWindow: number | null }) {
   return (
     <div className="relative">
       {HOURS.map(hour => (
