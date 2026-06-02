@@ -167,6 +167,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           project_id: string | null
+          property_id: string | null
           reminder_sent: boolean | null
           started_at: string | null
           status: string
@@ -190,6 +191,7 @@ export type Database = {
           notes?: string | null
           organization_id: string
           project_id?: string | null
+          property_id?: string | null
           reminder_sent?: boolean | null
           started_at?: string | null
           status?: string
@@ -213,6 +215,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           project_id?: string | null
+          property_id?: string | null
           reminder_sent?: boolean | null
           started_at?: string | null
           status?: string
@@ -246,6 +249,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects_missing_progress_photos"
             referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "appointments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "customer_properties"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -823,6 +833,65 @@ export type Database = {
           start_date?: string
         }
         Relationships: []
+      }
+      customer_properties: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          is_primary: boolean
+          notes: string | null
+          organization_id: string
+          resident_name: string | null
+          state: string | null
+          unit_identifier: string
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          organization_id: string
+          resident_name?: string | null
+          state?: string | null
+          unit_identifier: string
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          organization_id?: string
+          resident_name?: string | null
+          state?: string | null
+          unit_identifier?: string
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_properties_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
@@ -1417,6 +1486,7 @@ export type Database = {
           paid_at: string | null
           payment_method: string | null
           project_id: string
+          property_id: string | null
           share_token: string | null
           status: string
           tax_amount: number
@@ -1438,6 +1508,7 @@ export type Database = {
           paid_at?: string | null
           payment_method?: string | null
           project_id: string
+          property_id?: string | null
           share_token?: string | null
           status?: string
           tax_amount?: number
@@ -1459,6 +1530,7 @@ export type Database = {
           paid_at?: string | null
           payment_method?: string | null
           project_id?: string
+          property_id?: string | null
           share_token?: string | null
           status?: string
           tax_amount?: number
@@ -1494,6 +1566,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects_missing_progress_photos"
             referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "invoices_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "customer_properties"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3271,6 +3350,7 @@ export type Database = {
           organization_id: string
           project_status: string
           project_type: string
+          property_id: string | null
           referred_by_partner_id: string | null
           requires_progress_photos: boolean
           square_footage: number | null
@@ -3300,6 +3380,7 @@ export type Database = {
           organization_id: string
           project_status?: string
           project_type: string
+          property_id?: string | null
           referred_by_partner_id?: string | null
           requires_progress_photos?: boolean
           square_footage?: number | null
@@ -3329,6 +3410,7 @@ export type Database = {
           organization_id?: string
           project_status?: string
           project_type?: string
+          property_id?: string | null
           referred_by_partner_id?: string | null
           requires_progress_photos?: boolean
           square_footage?: number | null
@@ -3352,6 +3434,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "customer_properties"
             referencedColumns: ["id"]
           },
           {
@@ -3544,6 +3633,7 @@ export type Database = {
           payment_terms: string | null
           pdf_document_id: string | null
           project_id: string
+          property_id: string | null
           proposal_number: string
           referring_partner_id: string | null
           rejected_at: string | null
@@ -3579,6 +3669,7 @@ export type Database = {
           payment_terms?: string | null
           pdf_document_id?: string | null
           project_id: string
+          property_id?: string | null
           proposal_number: string
           referring_partner_id?: string | null
           rejected_at?: string | null
@@ -3614,6 +3705,7 @@ export type Database = {
           payment_terms?: string | null
           pdf_document_id?: string | null
           project_id?: string
+          property_id?: string | null
           proposal_number?: string
           referring_partner_id?: string | null
           rejected_at?: string | null
@@ -3664,6 +3756,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects_missing_progress_photos"
             referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "proposals_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "customer_properties"
+            referencedColumns: ["id"]
           },
         ]
       }
