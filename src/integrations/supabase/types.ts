@@ -4734,6 +4734,20 @@ export type Database = {
       get_partner_balance: { Args: { p_partner_id: string }; Returns: Json }
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }
+      get_payroll_summary: {
+        Args: { p_period_end?: string; p_period_start?: string }
+        Returns: {
+          approved_count: number
+          entry_count: number
+          full_name: string
+          paid_count: number
+          pending_count: number
+          technician_id: string
+          total_amount: number
+          total_days: number
+          total_sqft: number
+        }[]
+      }
       get_portal_messages: { Args: { p_token: string }; Returns: Json }
       get_portal_timeline: { Args: { p_token: string }; Returns: Json }
       get_referral_dashboard: { Args: { p_email: string }; Returns: Json }
