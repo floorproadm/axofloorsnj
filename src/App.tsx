@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import SecurityHeaders from "@/components/SecurityHeaders";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
