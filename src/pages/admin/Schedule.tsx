@@ -534,7 +534,7 @@ function DayView({ appointments, onEdit, defaultWindow }: { appointments: Appoin
                     </div>
                     <div className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {a.appointment_time.slice(0, 5)}
+                      {formatAppointmentTime(a.appointment_time, (a as any).arrival_window_minutes, defaultWindow)}
                       {a.location && <><MapPin className="w-3 h-3 ml-1" />{a.location}</>}
                     </div>
                   </button>
