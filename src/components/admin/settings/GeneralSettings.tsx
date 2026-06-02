@@ -18,7 +18,7 @@ import type { LaborPricingModel } from "@/hooks/useCompanySettings";
 import { ARRIVAL_WINDOW_OPTIONS } from "@/lib/constants";
 
 export default function GeneralSettings() {
-  const { settings, isLoading, refetch, companyName, marginMinPercent, laborPricingModel, laborRate } = useCompanySettings();
+  const { settings, isLoading, refetch, companyName, marginMinPercent, laborPricingModel, laborRate, defaultArrivalWindow } = useCompanySettings();
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const [saving, setSaving] = useState(false);
