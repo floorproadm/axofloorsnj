@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AXO_ORG_ID } from "@/lib/constants";
+import { AXO_ORG_ID, ARRIVAL_WINDOW_OPTIONS, formatAppointmentTime } from "@/lib/constants";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
