@@ -11,7 +11,7 @@ import { useState, useRef, useEffect } from "react";
 const NAV_ITEMS = [
   { path: "/collaborator", icon: Home, label: "Home", exact: true },
   { path: "/collaborator/schedule", icon: CalendarDays, label: "Schedule" },
-  { path: "/collaborator/daysheet", icon: Clock, label: "Horas" },
+  { path: "/collaborator/daysheet", icon: Clock, label: "Diarias" },
   { path: "/collaborator/chat", icon: MessageCircle, label: "Chat" },
   { path: "/collaborator/profile", icon: User, label: "Perfil" },
 ];
