@@ -553,7 +553,7 @@ function DayView({ appointments, onEdit, defaultWindow }: { appointments: Appoin
 }
 
 // ─── List View ──────────────────────────────────────────────
-function ListView({ appointments, onEdit, date }: { appointments: Appointment[]; onEdit: (a: Appointment) => void; date: Date }) {
+function ListView({ appointments, onEdit, date, defaultWindow }: { appointments: Appointment[]; onEdit: (a: Appointment) => void; date: Date; defaultWindow: number | null }) {
   return (
     <div className="p-4 space-y-3">
       <div className="text-sm font-medium text-muted-foreground mb-2">
