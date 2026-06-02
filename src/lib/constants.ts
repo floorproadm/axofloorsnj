@@ -1,6 +1,15 @@
 // AXO Floors tenant UUID — used for all insert operations
 export const AXO_ORG_ID = 'a0000000-0000-0000-0000-000000000001';
 
+/**
+ * Public-facing site URL. Always used when generating links that go OUT to
+ * clients (emails, WhatsApp, copy-link), so they never see the lovable preview
+ * or sandbox URL. Override per-environment via VITE_PUBLIC_SITE_URL if needed.
+ */
+export const PUBLIC_SITE_URL = (
+  (import.meta as any).env?.VITE_PUBLIC_SITE_URL || 'https://axofloorsnj.com'
+).replace(/\/$/, '');
+
 // ─── Arrival Windows ───────────────────────────────────────
 // Options offered in settings + per-appointment override (in minutes).
 export const ARRIVAL_WINDOW_OPTIONS = [
