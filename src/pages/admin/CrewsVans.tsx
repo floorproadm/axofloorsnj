@@ -191,7 +191,7 @@ export default function CrewsVans() {
 
   const subtitles: Record<typeof tab, string> = {
     crew: "Gerencie sua equipe, funções e contratações",
-    schedule: "Visualize e aloque equipe nos jobs da semana",
+    schedule: "Despache equipe e veículos para os jobs do dia",
     payroll: "Registre e acompanhe os pagamentos da equipe",
     fleet: "Gerencie vans, placas e disponibilidade da frota",
     daysheet: "Aprove ou rejeite lançamentos diários dos colaboradores",
@@ -212,8 +212,9 @@ export default function CrewsVans() {
                 <Users className="w-4 h-4" /> Equipe
               </TabsTrigger>
               <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <CalendarDays className="w-4 h-4" /> Agenda
+                <CalendarDays className="w-4 h-4" /> Dispatch
               </TabsTrigger>
+
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Pagamentos
               </TabsTrigger>
