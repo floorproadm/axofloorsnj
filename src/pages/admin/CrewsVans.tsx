@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CrewScheduleTab from "@/components/admin/crews/CrewScheduleTab";
+import { DaySheetApprovalsContent } from "@/pages/admin/TimesheetApprovals";
+
 import { FleetContent } from "@/pages/admin/Fleet";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import { useAllLaborEntries, useMarkLaborPaid, useAddLaborEntry } from "@/hooks/useLaborEntries";
