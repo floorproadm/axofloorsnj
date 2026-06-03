@@ -91,7 +91,7 @@ export function AdminSidebar() {
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: "Customers", url: "/admin/customers", icon: UserCheck },
     { title: "Equipe", url: "/admin/crews", icon: Users },
-    { title: "Timesheet", url: "/admin/timesheet", icon: Clock },
+    
     
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Gallery", url: "/admin/gallery", icon: Images },
