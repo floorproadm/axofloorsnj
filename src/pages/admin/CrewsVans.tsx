@@ -480,7 +480,13 @@ export default function CrewsVans() {
           <TabsContent value="fleet" className="mt-4">
             <FleetContent />
           </TabsContent>
+
+          {/* ─── DAYSHEET TAB ─── */}
+          <TabsContent value="daysheet" className="mt-4">
+            <DaySheetApprovalsContent showHeader={false} />
+          </TabsContent>
         </Tabs>
+
 
       </div>
 
