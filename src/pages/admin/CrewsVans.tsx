@@ -191,7 +191,7 @@ export default function CrewsVans() {
 
   const subtitles: Record<typeof tab, string> = {
     crew: "Gerencie sua equipe, funções e contratações",
-    schedule: "Visualize e aloque equipe nos jobs da semana",
+    schedule: "Despache equipe e veículos para os jobs do dia",
     payroll: "Registre e acompanhe os pagamentos da equipe",
     fleet: "Gerencie vans, placas e disponibilidade da frota",
     daysheet: "Aprove ou rejeite lançamentos diários dos colaboradores",
