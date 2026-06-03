@@ -204,6 +204,17 @@ export function DaySheetApprovalsContent({ showHeader = true }: { showHeader?: b
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+export default function TimesheetApprovals() {
+  return (
+    <AdminLayout title="DaySheet Approvals">
+      <div className="p-6 max-w-5xl mx-auto">
+        <DaySheetApprovalsContent />
+      </div>
     </AdminLayout>
   );
 }
+
