@@ -18,7 +18,7 @@ import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-export default function TimesheetApprovals() {
+export function DaySheetApprovalsContent({ showHeader = true }: { showHeader?: boolean }) {
   const { data: entries = [], isLoading } = usePendingTimesheet();
   const approve = useApproveTimesheet();
   const reject = useRejectTimesheet();
@@ -54,18 +54,21 @@ export default function TimesheetApprovals() {
   const sqftCount = entries.filter((e) => e.pay_mode === "sqft").length;
 
   return (
-    <AdminLayout title="Timesheet Approvals">
-      <div className="p-6 space-y-6 max-w-5xl mx-auto">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-            <Inbox className="h-6 w-6" />
-            Timesheet Approvals
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Lançamentos dos colaboradores aguardando aprovação. Apenas aprovados entram no
-            custo do projeto.
-          </p>
-        </div>
+    <>
+      <div className="space-y-6">
+        {showHeader && (
+          <div>
+            <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
+              <Inbox className="h-6 w-6" />
+              DaySheet Approvals
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Lançamentos dos colaboradores aguardando aprovação. Apenas aprovados entram no
+              custo do projeto.
+            </p>
+          </div>
+        )}
+
 
         {/* KPIs */}
         <div className="grid grid-cols-3 gap-3">
@@ -201,6 +204,17 @@ export default function TimesheetApprovals() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+export default function TimesheetApprovals() {
+  return (
+    <AdminLayout title="DaySheet Approvals">
+      <div className="p-6 max-w-5xl mx-auto">
+        <DaySheetApprovalsContent />
+      </div>
     </AdminLayout>
   );
 }
+

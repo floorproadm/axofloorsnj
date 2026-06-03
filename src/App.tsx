@@ -326,12 +326,10 @@ const App = () => {
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
 
-            {/* Admin: Timesheet Approvals */}
-            <Route path="/admin/timesheet" element={
-              <ProtectedRoute>
-                <TimesheetApprovals />
-              </ProtectedRoute>
-            } />
+            {/* Admin: DaySheet Approvals — now lives as a tab inside Equipe */}
+            <Route path="/admin/timesheet" element={<Navigate to="/admin/crews?tab=daysheet" replace />} />
+            <Route path="/admin/daysheet" element={<Navigate to="/admin/crews?tab=daysheet" replace />} />
+
 
             {/* Partner Portal */}
             <Route path="/partner/auth" element={<PartnerAuth />} />

@@ -15,11 +15,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import {
-  Plus, Users, Phone, Mail,
+  Plus, Users, Phone, Mail, Clock,
   Loader2, Trash2, CheckCircle2, Hammer, ExternalLink, Briefcase, CalendarDays, Truck
+
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CrewScheduleTab from "@/components/admin/crews/CrewScheduleTab";
+import { DaySheetApprovalsContent } from "@/pages/admin/TimesheetApprovals";
+
 import { FleetContent } from "@/pages/admin/Fleet";
 import { PeriodSelector, getPeriodRange, type PeriodType } from "@/components/admin/payments/PeriodSelector";
 import { useAllLaborEntries, useMarkLaborPaid, useAddLaborEntry } from "@/hooks/useLaborEntries";
@@ -40,9 +43,10 @@ const fmt = (v: number) =>
 export default function CrewsVans() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState<"fleet" | "crew" | "schedule" | "payroll">(
+  const [tab, setTab] = useState<"fleet" | "crew" | "schedule" | "payroll" | "daysheet">(
     (searchParams.get("tab") as any) || "fleet"
   );
+
 
   const [showNewCrew, setShowNewCrew] = useState(false);
   const [editingCrewId, setEditingCrewId] = useState<string | null>(null);
@@ -190,7 +194,9 @@ export default function CrewsVans() {
     schedule: "Visualize e aloque equipe nos jobs da semana",
     payroll: "Registre e acompanhe os pagamentos da equipe",
     fleet: "Gerencie vans, placas e disponibilidade da frota",
+    daysheet: "Aprove ou rejeite lançamentos diários dos colaboradores",
   };
+
 
 
   return (
@@ -211,6 +217,11 @@ export default function CrewsVans() {
               <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
                 <Hammer className="w-4 h-4" /> Pagamentos
               </TabsTrigger>
+              <TabsTrigger value="daysheet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
+                <Clock className="w-4 h-4" /> DaySheet
+              </TabsTrigger>
+
+
 
             </TabsList>
             {tab === "crew" && (
@@ -469,7 +480,13 @@ export default function CrewsVans() {
           <TabsContent value="fleet" className="mt-4">
             <FleetContent />
           </TabsContent>
+
+          {/* ─── DAYSHEET TAB ─── */}
+          <TabsContent value="daysheet" className="mt-4">
+            <DaySheetApprovalsContent showHeader={false} />
+          </TabsContent>
         </Tabs>
+
 
       </div>
 
