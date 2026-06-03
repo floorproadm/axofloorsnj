@@ -193,7 +193,9 @@ export default function CrewsVans() {
     schedule: "Visualize e aloque equipe nos jobs da semana",
     payroll: "Registre e acompanhe os pagamentos da equipe",
     fleet: "Gerencie vans, placas e disponibilidade da frota",
+    daysheet: "Aprove ou rejeite lançamentos diários dos colaboradores",
   };
+
 
 
   return (
