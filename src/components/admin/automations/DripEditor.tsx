@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, Trash2, Mail, Phone, MessageSquare, Pencil, X, Check } from "lucide-react";
+import { Clock, Trash2, Mail, Phone, MessageSquare, Pencil, X, Check, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DripPreviewDialog } from "./DripPreviewDialog";
 
 const CHANNEL_CONFIG: Record<string, { label: string; icon: typeof Mail; badgeClass: string }> = {
   sms: { label: "SMS", icon: Phone, badgeClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
