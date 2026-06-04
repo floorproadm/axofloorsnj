@@ -32,6 +32,7 @@ function formatDelay(days: number, hours: number): string {
 
 export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
   const [editing, setEditing] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [template, setTemplate] = useState(drip.message_template);
   const [subject, setSubject] = useState(drip.subject || "");
   const [delayDays, setDelayDays] = useState(drip.delay_days);
