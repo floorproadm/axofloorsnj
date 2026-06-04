@@ -1032,8 +1032,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
 
   const salesLeads = useMemo(() => {
     let filtered = leads.filter(l =>
-      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage) &&
-      !l.referred_by_partner_id
+      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
     );
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -1048,10 +1047,10 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   }, [leads, searchQuery]);
 
   // Unfiltered sales leads for stats (funnel bar uses all data)
+  // Includes partner referrals — they appear in the main sales pipeline AND in the partner detail view.
   const allSalesLeads = useMemo(() => {
     return leads.filter(l =>
-      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage) &&
-      !l.referred_by_partner_id
+      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
     );
   }, [leads]);
 
