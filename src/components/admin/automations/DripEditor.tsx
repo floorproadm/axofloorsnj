@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, Trash2, Mail, Phone, MessageSquare, Pencil, X, Check } from "lucide-react";
+import { Clock, Trash2, Mail, Phone, MessageSquare, Pencil, X, Check, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DripPreviewDialog } from "./DripPreviewDialog";
 
 const CHANNEL_CONFIG: Record<string, { label: string; icon: typeof Mail; badgeClass: string }> = {
   sms: { label: "SMS", icon: Phone, badgeClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
@@ -31,6 +32,7 @@ function formatDelay(days: number, hours: number): string {
 
 export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
   const [editing, setEditing] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [template, setTemplate] = useState(drip.message_template);
   const [subject, setSubject] = useState(drip.subject || "");
   const [delayDays, setDelayDays] = useState(drip.delay_days);
@@ -115,7 +117,16 @@ export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
           placeholder="Message template... use {{first_name}}, {{company_name}}, etc."
         />
 
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-2 justify-end items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs gap-1 mr-auto text-muted-foreground hover:text-foreground"
+            onClick={() => setPreviewOpen(true)}
+          >
+            <Eye className="w-3 h-3" />
+            Preview
+          </Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={handleCancel}>
             <X className="w-3 h-3" />
             Cancel
@@ -125,6 +136,13 @@ export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
             Save
           </Button>
         </div>
+        <DripPreviewDialog
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          channel={channel}
+          subject={subject}
+          template={template}
+        />
       </div>
     );
   }
@@ -170,6 +188,9 @@ export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
             onCheckedChange={(checked) => onUpdate({ id: drip.id, is_active: checked })}
             className="scale-[0.6]"
           />
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => setPreviewOpen(true)} title="Preview">
+            <Eye className="w-3 h-3" />
+          </Button>
           <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => setEditing(true)}>
             <Pencil className="w-3 h-3" />
           </Button>
@@ -178,6 +199,13 @@ export function DripEditor({ drip, onUpdate, onDelete }: DripEditorProps) {
           </Button>
         </div>
       </div>
+      <DripPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        channel={drip.channel}
+        subject={drip.subject}
+        template={drip.message_template}
+      />
     </div>
   );
 }
