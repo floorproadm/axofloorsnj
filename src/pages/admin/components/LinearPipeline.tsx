@@ -1032,8 +1032,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
 
   const salesLeads = useMemo(() => {
     let filtered = leads.filter(l =>
-      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage) &&
-      !l.referred_by_partner_id
+      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
     );
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
