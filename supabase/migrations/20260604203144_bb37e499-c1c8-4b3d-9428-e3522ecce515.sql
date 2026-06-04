@@ -1,0 +1,2 @@
+ALTER TABLE public.automation_drip_logs DROP CONSTRAINT IF EXISTS automation_drip_logs_status_check;
+ALTER TABLE public.automation_drip_logs ADD CONSTRAINT automation_drip_logs_status_check CHECK (status = ANY (ARRAY['pending'::text, 'sent'::text, 'failed'::text, 'skipped'::text, 'cancelled'::text]));
