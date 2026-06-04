@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush, Phone, Mail, Globe } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+const WatermarkSettings = lazy(() => import("./WatermarkSettings"));
 
 export default function BrandingSettings() {
   const { settings, isLoading, refetch } = useCompanySettings();
@@ -515,6 +517,11 @@ export default function BrandingSettings() {
           )}
         </CardFooter>
       </Card>
+
+      {/* Card 5: Watermark */}
+      <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>}>
+        <WatermarkSettings />
+      </Suspense>
     </div>
   );
 }
