@@ -102,7 +102,7 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
               <div
                 className="px-6 py-5 text-sm text-neutral-800 leading-relaxed"
                 style={{ fontFamily: "Arial, sans-serif" }}
-                dangerouslySetInnerHTML={{ __html: toHtmlBody(rendered) }}
+                dangerouslySetInnerHTML={{ __html: emailHtml }}
               />
             </div>
           </div>
@@ -112,7 +112,7 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
                 {meta.label} message
               </div>
-              <div className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">{toPlainBody(rendered)}</div>
+              <div className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">{plainBody}</div>
             </div>
           </div>
         )}
