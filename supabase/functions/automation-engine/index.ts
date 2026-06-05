@@ -259,7 +259,8 @@ Deno.serve(async (req) => {
       const subject = interpolate(drip.subject || "Message from " + companyName)
         .replace(/<br>/g, " ") // subjects must be single-line plain text
         .trim();
-      const body = interpolate(drip.message_template || "");
+      const body = interpolate(drip.message_template || "")
+        .replace(/(?:<br>\s*){3,}/g, "<br><br>"); // collapse 3+ blank lines
 
       console.log(`Sending drip to ${lead.email}: "${subject}"`);
 
