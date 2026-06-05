@@ -41,12 +41,12 @@ const PIPELINE_STAGES = [
   { key: "sent",     label: "Sent",     dot: "bg-blue-500" },
   { key: "viewed",   label: "Viewed",   dot: "bg-violet-500" },
   { key: "accepted", label: "Accepted", dot: "bg-emerald-500" },
-  { key: "declined", label: "Declined", dot: "bg-red-500" },
+  { key: "rejected", label: "Declined", dot: "bg-red-500" },
 ];
 
 function getStageKey(p: ProposalWithRelations): string {
-  if (p.status === "rejected") return "declined";
-  if (isPast(parseISO(p.valid_until)) && !["accepted", "rejected"].includes(p.status)) return "declined";
+  if (p.status === "rejected") return "rejected";
+  if (isPast(parseISO(p.valid_until)) && !["accepted", "rejected"].includes(p.status)) return "rejected";
   return p.status;
 }
 
