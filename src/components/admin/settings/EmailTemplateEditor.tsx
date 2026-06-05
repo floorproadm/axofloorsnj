@@ -99,6 +99,9 @@ export default function EmailTemplateEditor() {
   const renderPreview = () => {
     if (!active) return "";
     let html = editBody;
+    // Neutralize variables inside HTML attribute values (e.g. href="{{cta_link}}")
+    // so they don't break the markup when we wrap remaining vars in <span> chips.
+    html = html.replace(/="([^"]*)"/g, (_m, val) => `="${val.replace(/\{\{[^}]+\}\}/g, "#")}"`);
     for (const v of active.variables) {
       html = html.split(`{{${v}}}`).join(`<span style="background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px">{{${v}}}</span>`);
     }
