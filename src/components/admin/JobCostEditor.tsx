@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useJobCost, useUpsertJobCost } from '@/hooks/useJobCosts';
+import { useJobCost, useUpsertJobCost, usePendingLaborCost } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useMaterialCosts } from '@/hooks/useMaterialCosts';
 import { useLaborEntries } from '@/hooks/useLaborEntries';
@@ -24,6 +24,7 @@ export function JobCostEditor({ projectId, onSaved }: JobCostEditorProps) {
   const { marginMinPercent } = useCompanySettings();
   const { data: materialCosts = [] } = useMaterialCosts(projectId);
   const { data: laborEntries = [] } = useLaborEntries(projectId);
+  const { data: pendingLaborCost = 0 } = usePendingLaborCost(projectId);
   const { toast } = useToast();
 
   // Project sqft (lives on projects.square_footage)
@@ -188,6 +189,11 @@ export function JobCostEditor({ projectId, onSaved }: JobCostEditorProps) {
           <p className="text-[11px] text-muted-foreground uppercase">Labor</p>
           <p className="text-sm font-bold">${laborTotal.toFixed(0)}</p>
           {laborEntries.length > 0 && <p className="text-[10px] text-muted-foreground">{laborEntries.length} entries (auto)</p>}
+          {pendingLaborCost > 0 && (
+            <p className="text-[10px] italic text-amber-600 dark:text-amber-500 mt-0.5">
+              ⚠ ${pendingLaborCost.toFixed(0)} pending approval (not included)
+            </p>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useJobCost, useMarginValidation, useUpsertJobCost, JobCostInput } from '@/hooks/useJobCosts';
+import { useJobCost, useMarginValidation, useUpsertJobCost, usePendingLaborCost, JobCostInput } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ export function JobMarginDisplay({ projectId }: JobMarginDisplayProps) {
   const { marginMinPercent } = useCompanySettings();
   const validation = useMarginValidation(projectId);
   const upsertMutation = useUpsertJobCost();
+  const { data: pendingLaborCost = 0 } = usePendingLaborCost(projectId);
   
   const [formData, setFormData] = useState({
     labor_cost: 0,
@@ -95,6 +96,13 @@ export function JobMarginDisplay({ projectId }: JobMarginDisplayProps) {
               onChange={(e) => setFormData(prev => ({ ...prev, labor_cost: parseFloat(e.target.value) || 0 }))}
             />
           </div>
+          {pendingLaborCost > 0 && (
+            <div className="col-span-2 -mt-2">
+              <p className="text-[11px] italic text-amber-600 dark:text-amber-500">
+                ⚠ ${pendingLaborCost.toFixed(0)} labor pending approval (not included above)
+              </p>
+            </div>
+          )}
           <div>
             <Label htmlFor="material_cost">Custo de Material ($)</Label>
             <Input
