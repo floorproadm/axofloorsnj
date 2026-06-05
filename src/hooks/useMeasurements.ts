@@ -36,6 +36,8 @@ export interface ProjectMeasurement {
     address: string | null;
     city: string | null;
     project_type: string;
+    referred_by_partner_id?: string | null;
+    partner?: { id: string; name: string } | null;
   };
 }
 
