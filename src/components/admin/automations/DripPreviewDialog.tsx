@@ -37,7 +37,9 @@ function toHtmlBody(text: string): string {
 }
 
 function renderEmailHtml(tpl: string, sample: Record<string, string>): string {
-  return toHtmlBody(tpl).replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`);
+  return toHtmlBody(tpl)
+    .replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`)
+    .replace(/(?:<br>\s*){3,}/g, "<br><br>");
 }
 
 function renderPlain(tpl: string, sample: Record<string, string>): string {
