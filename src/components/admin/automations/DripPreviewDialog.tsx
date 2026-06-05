@@ -30,16 +30,26 @@ function buildSampleData(company: { companyName: string; phone: string; email: s
   };
 }
 
-// Convert raw template newlines (real \n and literal \\n) to <br> BEFORE
-// interpolating placeholders so newlines inside HTML buttons aren't broken.
-function toHtmlBody(text: string): string {
-  return text.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+
+// Mirror engine: split into paragraphs by blank line(s), single \n => <br>.
+function toParagraphHtml(text: string): string {
+  const normalized = text.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
+  return normalized
+    .split(/\n\s*\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map(
+      (p) =>
+        `<p style="margin:0 0 16px 0;line-height:1.6">${p.replace(/\n/g, "<br>")}</p>`
+    )
+    .join("");
 }
 
 function renderEmailHtml(tpl: string, sample: Record<string, string>): string {
-  return toHtmlBody(tpl)
-    .replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`)
-    .replace(/(?:<br>\s*){3,}/g, "<br><br>");
+  return toParagraphHtml(tpl).replace(
+    /\{\{\s*([\w_]+)\s*\}\}/g,
+    (_, key) => sample[key] ?? `{{${key}}}`
+  );
 }
 
 function renderPlain(tpl: string, sample: Record<string, string>): string {
