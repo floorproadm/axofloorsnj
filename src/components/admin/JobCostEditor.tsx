@@ -189,6 +189,11 @@ export function JobCostEditor({ projectId, onSaved }: JobCostEditorProps) {
           <p className="text-[11px] text-muted-foreground uppercase">Labor</p>
           <p className="text-sm font-bold">${laborTotal.toFixed(0)}</p>
           {laborEntries.length > 0 && <p className="text-[10px] text-muted-foreground">{laborEntries.length} entries (auto)</p>}
+          {pendingLaborCost > 0 && (
+            <p className="text-[10px] italic text-amber-600 dark:text-amber-500 mt-0.5">
+              ⚠ ${pendingLaborCost.toFixed(0)} pending approval (not included)
+            </p>
+          )}
         </div>
       </div>
 
