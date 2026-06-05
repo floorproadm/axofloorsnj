@@ -20,6 +20,7 @@ import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { InvoicesPaymentsSection } from '@/components/admin/job-detail/InvoicesPaymentsSection';
+import { PartnerPickerInline } from '@/components/admin/job-detail/PartnerPickerInline';
 import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/hooks/useMaterialCosts';
 import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry, useMarkLaborPaid } from '@/hooks/useLaborEntries';
 import { CrewMemberPicker } from '@/components/admin/crew/CrewMemberPicker';
