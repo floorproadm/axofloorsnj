@@ -30,17 +30,21 @@ function buildSampleData(company: { companyName: string; phone: string; email: s
   };
 }
 
-function renderTemplate(tpl: string, sample: Record<string, string>): string {
-  return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`);
-}
-
-// Mirror automation-engine: convert literal "\n" and real newlines to <br> for HTML render.
+// Convert raw template newlines (real \n and literal \\n) to <br> BEFORE
+// interpolating placeholders so newlines inside HTML buttons aren't broken.
 function toHtmlBody(text: string): string {
   return text.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
 }
 
-function toPlainBody(text: string): string {
-  return text.replace(/\\n/g, "\n");
+function renderEmailHtml(tpl: string, sample: Record<string, string>): string {
+  return toHtmlBody(tpl)
+    .replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`)
+    .replace(/(?:<br>\s*){3,}/g, "<br><br>");
+}
+
+function renderPlain(tpl: string, sample: Record<string, string>): string {
+  const normalized = tpl.replace(/\\n/g, "\n");
+  return normalized.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`);
 }
 
 interface Props {
@@ -66,8 +70,11 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
   });
   const meta = CHANNEL_META[channel] || CHANNEL_META.email;
   const Icon = meta.icon;
-  const rendered = renderTemplate(template || "", sample);
-  const renderedSubject = subject ? renderTemplate(subject, sample) : "";
+  const emailHtml = renderEmailHtml(template || "", sample);
+  const plainBody = renderPlain(template || "", sample);
+  const renderedSubject = subject
+    ? renderPlain(subject, sample).replace(/\n/g, " ").trim()
+    : "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,7 +104,7 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
               <div
                 className="px-6 py-5 text-sm text-neutral-800 leading-relaxed"
                 style={{ fontFamily: "Arial, sans-serif" }}
-                dangerouslySetInnerHTML={{ __html: toHtmlBody(rendered) }}
+                dangerouslySetInnerHTML={{ __html: emailHtml }}
               />
             </div>
           </div>
@@ -107,7 +114,7 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
                 {meta.label} message
               </div>
-              <div className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">{toPlainBody(rendered)}</div>
+              <div className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">{plainBody}</div>
             </div>
           </div>
         )}
