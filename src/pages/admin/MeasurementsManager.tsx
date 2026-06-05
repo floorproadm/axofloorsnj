@@ -224,12 +224,21 @@ function MeasurementCard({ measurement: m, onClick }: { measurement: ProjectMeas
           <h3 className="font-semibold text-foreground truncate">
             {(() => {
               const name = m.project?.customer_name;
-              if (!name || /^TBD/i.test(name)) return 'Cliente pendente (via parceiro)';
+              if (!name || /^TBD/i.test(name)) return 'Cliente pendente';
               return name;
             })()}
           </h3>
+          {m.project?.partner?.name && (
+            <Badge
+              variant="outline"
+              className="mt-1 bg-amber-50 text-amber-700 border-amber-200 text-[10px] font-medium gap-1 px-1.5 py-0"
+            >
+              <Handshake className="w-3 h-3" />
+              Parceiro: {m.project.partner.name}
+            </Badge>
+          )}
           {m.project?.address && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
+            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">{m.project.address}{m.project.city ? `, ${m.project.city}` : ''}</span>
             </p>
