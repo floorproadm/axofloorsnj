@@ -248,16 +248,16 @@ Deno.serve(async (req) => {
       };
 
 
-      // Normalize escaped newlines, then split into paragraphs (separated by 1+ blank lines).
-      // Inside a paragraph, single newlines become <br>. Paragraphs become <p> blocks with
-      // real margin spacing — much cleaner than chained <br><br>.
+      // Every non-empty line becomes its own <p> with consistent spacing.
+      // This makes templates render uniformly regardless of whether the author
+      // used single or double newlines between paragraphs.
       const toParagraphHtml = (s: string) => {
         const normalized = s.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
         return normalized
-          .split(/\n\s*\n+/)
+          .split(/\n+/)
           .map((p) => p.trim())
           .filter(Boolean)
-          .map((p) => `<p style="margin:0 0 16px 0;line-height:1.6">${p.replace(/\n/g, "<br>")}</p>`)
+          .map((p) => `<p style="margin:0 0 16px 0;line-height:1.6">${p}</p>`)
           .join("");
       };
 
