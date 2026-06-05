@@ -18,6 +18,7 @@ export function JobMarginDisplay({ projectId }: JobMarginDisplayProps) {
   const { marginMinPercent } = useCompanySettings();
   const validation = useMarginValidation(projectId);
   const upsertMutation = useUpsertJobCost();
+  const { data: pendingLaborCost = 0 } = usePendingLaborCost(projectId);
   
   const [formData, setFormData] = useState({
     labor_cost: 0,
