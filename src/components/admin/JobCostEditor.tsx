@@ -24,6 +24,7 @@ export function JobCostEditor({ projectId, onSaved }: JobCostEditorProps) {
   const { marginMinPercent } = useCompanySettings();
   const { data: materialCosts = [] } = useMaterialCosts(projectId);
   const { data: laborEntries = [] } = useLaborEntries(projectId);
+  const { data: pendingLaborCost = 0 } = usePendingLaborCost(projectId);
   const { toast } = useToast();
 
   // Project sqft (lives on projects.square_footage)
