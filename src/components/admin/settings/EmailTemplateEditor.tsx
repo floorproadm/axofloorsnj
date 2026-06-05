@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Save, Eye, EyeOff, FileEdit, RotateCcw } from "lucide-react";
+import { renderEmailPreviewBody } from "./renderEmailPreview";
 
 interface EmailTemplate {
   id: string;
@@ -98,13 +99,7 @@ export default function EmailTemplateEditor() {
 
   const renderPreview = () => {
     if (!active) return "";
-    let html = editBody;
-    // Neutralize variables inside HTML attribute values (e.g. href="{{cta_link}}")
-    // so they don't break the markup when we wrap remaining vars in <span> chips.
-    html = html.replace(/="([^"]*)"/g, (_m, val) => `="${val.replace(/\{\{[^}]+\}\}/g, "#")}"`);
-    for (const v of active.variables) {
-      html = html.split(`{{${v}}}`).join(`<span style="background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px">{{${v}}}</span>`);
-    }
+    const html = renderEmailPreviewBody(editBody, active.variables);
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#333;line-height:1.6;margin:0;padding:0}
 .container{max-width:600px;margin:0 auto;padding:32px 24px}
