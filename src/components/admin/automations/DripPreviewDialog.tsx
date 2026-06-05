@@ -34,6 +34,15 @@ function renderTemplate(tpl: string, sample: Record<string, string>): string {
   return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`);
 }
 
+// Mirror automation-engine: convert literal "\n" and real newlines to <br> for HTML render.
+function toHtmlBody(text: string): string {
+  return text.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+}
+
+function toPlainBody(text: string): string {
+  return text.replace(/\\n/g, "\n");
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -86,9 +95,9 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
                 </div>
               </div>
               <div
-                className="px-6 py-5 text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap"
+                className="px-6 py-5 text-sm text-neutral-800 leading-relaxed"
                 style={{ fontFamily: "Arial, sans-serif" }}
-                dangerouslySetInnerHTML={{ __html: rendered }}
+                dangerouslySetInnerHTML={{ __html: toHtmlBody(rendered) }}
               />
             </div>
           </div>
@@ -98,7 +107,7 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
                 {meta.label} message
               </div>
-              <div className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">{rendered}</div>
+              <div className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">{toPlainBody(rendered)}</div>
             </div>
           </div>
         )}
