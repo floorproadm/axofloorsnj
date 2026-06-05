@@ -248,19 +248,29 @@ Deno.serve(async (req) => {
       };
 
 
-      // Convert \n to <br> on the RAW template first, so that newlines inside
-      // interpolated HTML (e.g. {{view_request_button}} table markup) are NOT
-      // turned into stray <br> tags that break the layout.
-      const toHtml = (s: string) => s.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+      // Normalize escaped newlines, then split into paragraphs (separated by 1+ blank lines).
+      // Inside a paragraph, single newlines become <br>. Paragraphs become <p> blocks with
+      // real margin spacing — much cleaner than chained <br><br>.
+      const toParagraphHtml = (s: string) => {
+        const normalized = s.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
+        return normalized
+          .split(/\n\s*\n+/)
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .map((p) => `<p style="margin:0 0 16px 0;line-height:1.6">${p.replace(/\n/g, "<br>")}</p>`)
+          .join("");
+      };
 
       const interpolate = (tpl: string) =>
-        toHtml(tpl).replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k) => vars[k] ?? "");
+        toParagraphHtml(tpl).replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k) => vars[k] ?? "");
 
-      const subject = interpolate(drip.subject || "Message from " + companyName)
-        .replace(/<br>/g, " ") // subjects must be single-line plain text
+      const subject = (drip.subject || "Message from " + companyName)
+        .replace(/\\n/g, " ")
+        .replace(/\n/g, " ")
+        .replace(/\{\{\s*(\w+)\s*\}\}/g, (_: string, k: string) => vars[k] ?? "")
+        .replace(/\s+/g, " ")
         .trim();
-      const body = interpolate(drip.message_template || "")
-        .replace(/(?:<br>\s*){3,}/g, "<br><br>"); // collapse 3+ blank lines
+      const body = interpolate(drip.message_template || "");
 
       console.log(`Sending drip to ${lead.email}: "${subject}"`);
 
