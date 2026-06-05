@@ -248,14 +248,18 @@ Deno.serve(async (req) => {
       };
 
 
+      // Convert \n to <br> on the RAW template first, so that newlines inside
+      // interpolated HTML (e.g. {{view_request_button}} table markup) are NOT
+      // turned into stray <br> tags that break the layout.
+      const toHtml = (s: string) => s.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+
       const interpolate = (tpl: string) =>
-        tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? "");
+        toHtml(tpl).replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k) => vars[k] ?? "");
 
-      const subject = interpolate(drip.subject || "Message from " + companyName);
-      let body = interpolate(drip.message_template || "");
-
-      // Convert \n to <br> for HTML rendering (literal \n in DB text)
-      body = body.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+      const subject = interpolate(drip.subject || "Message from " + companyName)
+        .replace(/<br>/g, " ") // subjects must be single-line plain text
+        .trim();
+      const body = interpolate(drip.message_template || "");
 
       console.log(`Sending drip to ${lead.email}: "${subject}"`);
 
