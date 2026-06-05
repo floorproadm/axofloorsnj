@@ -30,8 +30,8 @@ function buildSampleData(company: { companyName: string; phone: string; email: s
   };
 }
 
-function renderTemplate(tpl: string): string {
-  return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => SAMPLE_DATA[key] ?? `{{${key}}}`);
+function renderTemplate(tpl: string, sample: Record<string, string>): string {
+  return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`);
 }
 
 interface Props {
@@ -49,10 +49,12 @@ const CHANNEL_META: Record<string, { label: string; icon: typeof Mail; className
 };
 
 export function DripPreviewDialog({ open, onOpenChange, channel, subject, template }: Props) {
+  const { companyName, phone, email } = useCompanySettings();
+  const sample = buildSampleData({ companyName, phone, email });
   const meta = CHANNEL_META[channel] || CHANNEL_META.email;
   const Icon = meta.icon;
-  const rendered = renderTemplate(template || "");
-  const renderedSubject = subject ? renderTemplate(subject) : "";
+  const rendered = renderTemplate(template || "", sample);
+  const renderedSubject = subject ? renderTemplate(subject, sample) : "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
