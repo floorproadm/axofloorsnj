@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useJobCost, useUpsertJobCost } from '@/hooks/useJobCosts';
+import { useJobCost, useUpsertJobCost, usePendingLaborCost } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useMaterialCosts } from '@/hooks/useMaterialCosts';
 import { useLaborEntries } from '@/hooks/useLaborEntries';
