@@ -96,6 +96,13 @@ export function JobMarginDisplay({ projectId }: JobMarginDisplayProps) {
               onChange={(e) => setFormData(prev => ({ ...prev, labor_cost: parseFloat(e.target.value) || 0 }))}
             />
           </div>
+          {pendingLaborCost > 0 && (
+            <div className="col-span-2 -mt-2">
+              <p className="text-[11px] italic text-amber-600 dark:text-amber-500">
+                ⚠ ${pendingLaborCost.toFixed(0)} labor pending approval (not included above)
+              </p>
+            </div>
+          )}
           <div>
             <Label htmlFor="material_cost">Custo de Material ($)</Label>
             <Input
@@ -106,13 +113,6 @@ export function JobMarginDisplay({ projectId }: JobMarginDisplayProps) {
               onChange={(e) => setFormData(prev => ({ ...prev, material_cost: parseFloat(e.target.value) || 0 }))}
             />
           </div>
-          {pendingLaborCost > 0 && (
-            <div className="col-span-2 -mt-2">
-              <p className="text-[11px] italic text-amber-600 dark:text-amber-500">
-                ⚠ ${pendingLaborCost.toFixed(0)} labor pending approval (not included above)
-              </p>
-            </div>
-          )}
           <div>
             <Label htmlFor="additional_costs">Custos Adicionais ($)</Label>
             <Input
