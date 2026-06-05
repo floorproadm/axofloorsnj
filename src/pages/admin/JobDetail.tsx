@@ -20,7 +20,6 @@ import { ProposalGenerator } from '@/components/admin/ProposalGenerator';
 import { ProjectProgressGallery } from '@/components/admin/ProjectProgressGallery';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { InvoicesPaymentsSection } from '@/components/admin/job-detail/InvoicesPaymentsSection';
-import { PartnerPickerInline } from '@/components/admin/job-detail/PartnerPickerInline';
 import { useMaterialCosts, useAddMaterialCost, useDeleteMaterialCost } from '@/hooks/useMaterialCosts';
 import { useLaborEntries, useAddLaborEntry, useDeleteLaborEntry, useMarkLaborPaid } from '@/hooks/useLaborEntries';
 import { CrewMemberPicker } from '@/components/admin/crew/CrewMemberPicker';
@@ -311,11 +310,11 @@ export default function JobDetail() {
                   </Button>
                 </>
               )}
-              <PartnerPickerInline
-                projectId={project.id}
-                currentPartnerId={project.referred_by_partner_id}
-                currentPartnerName={project.partner_name}
-              />
+              {project.partner_name && (
+                <Badge variant="outline" className="text-xs gap-1.5 font-normal">
+                  <Users className="w-3 h-3 text-primary" /> Partner: {project.partner_name}
+                </Badge>
+              )}
               {hasOverdueInvoice && (
                 <Badge variant="outline" className="text-xs gap-1.5 font-normal border-red-500/30 bg-red-500/5 text-red-700 dark:text-red-400">
                   <AlertTriangle className="w-3 h-3" /> Overdue invoice
