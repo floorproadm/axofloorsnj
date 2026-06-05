@@ -49,8 +49,12 @@ const CHANNEL_META: Record<string, { label: string; icon: typeof Mail; className
 };
 
 export function DripPreviewDialog({ open, onOpenChange, channel, subject, template }: Props) {
-  const { companyName, phone, email } = useCompanySettings();
-  const sample = buildSampleData({ companyName, phone, email });
+  const { companyName, settings } = useCompanySettings();
+  const sample = buildSampleData({
+    companyName,
+    phone: settings?.phone || "",
+    email: settings?.email || "",
+  });
   const meta = CHANNEL_META[channel] || CHANNEL_META.email;
   const Icon = meta.icon;
   const rendered = renderTemplate(template || "", sample);
