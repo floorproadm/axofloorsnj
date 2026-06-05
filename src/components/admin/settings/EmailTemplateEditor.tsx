@@ -19,7 +19,7 @@ interface EmailTemplate {
 }
 
 const TEMPLATE_LABELS: Record<string, string> = {
-  lead_followup: "Lead Follow-up",
+  lead_followup: "Lead Follow-up (Manual)",
   proposal_sent: "Proposal Sent",
   appointment_confirmed: "Appointment Confirmed",
   project_started: "Project Started",
