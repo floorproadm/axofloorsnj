@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
+import { wrapEmailChrome } from "@/lib/email/wrapEmailChrome";
 
 function buildSampleData(company: { companyName: string; phone: string; email: string }): Record<string, string> {
   return {
@@ -77,7 +78,15 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
   });
   const meta = CHANNEL_META[channel] || CHANNEL_META.email;
   const Icon = meta.icon;
-  const emailHtml = renderEmailHtml(template || "", sample);
+  const emailBodyHtml = renderEmailHtml(template || "", sample);
+  // Wrap with the SAME chrome that gmail-send applies on real sends
+  // (logo, gold border header, footer) so the preview matches the inbox.
+  const emailDocument = wrapEmailChrome(emailBodyHtml, {
+    logoUrl: settings?.email_logo_url,
+    companyName,
+    companyPhone: settings?.phone || undefined,
+    companyEmail: settings?.email || undefined,
+  });
   const plainBody = renderPlain(template || "", sample);
   const renderedSubject = subject
     ? renderPlain(subject, sample).replace(/\n/g, " ").trim()
@@ -105,13 +114,15 @@ export function DripPreviewDialog({ open, onOpenChange, channel, subject, templa
                   {renderedSubject || <span className="text-muted-foreground italic">(no subject)</span>}
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-2">
-                  From: AXO Floors &lt;noreply@axofloorsnj.com&gt; • To: sarah@example.com
+                  From: {companyName} &lt;noreply@axofloorsnj.com&gt; • To: sarah@example.com
                 </div>
               </div>
-              <div
-                className="px-6 py-5 text-sm text-neutral-800 leading-relaxed"
-                style={{ fontFamily: "Arial, sans-serif" }}
-                dangerouslySetInnerHTML={{ __html: emailHtml }}
+              <iframe
+                title="Email preview"
+                srcDoc={emailDocument}
+                sandbox=""
+                className="w-full bg-white"
+                style={{ height: "60vh", border: 0 }}
               />
             </div>
           </div>
