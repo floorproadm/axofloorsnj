@@ -34,6 +34,15 @@ function renderTemplate(tpl: string, sample: Record<string, string>): string {
   return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => sample[key] ?? `{{${key}}}`);
 }
 
+// Mirror automation-engine: convert literal "\n" and real newlines to <br> for HTML render.
+function toHtmlBody(text: string): string {
+  return text.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+}
+
+function toPlainBody(text: string): string {
+  return text.replace(/\\n/g, "\n");
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
