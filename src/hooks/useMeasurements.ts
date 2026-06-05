@@ -36,6 +36,8 @@ export interface ProjectMeasurement {
     address: string | null;
     city: string | null;
     project_type: string;
+    referred_by_partner_id?: string | null;
+    partner?: { id: string; name: string } | null;
   };
 }
 
@@ -45,7 +47,7 @@ export function useMeasurements(projectId?: string) {
     queryFn: async (): Promise<ProjectMeasurement[]> => {
       let query = supabase
         .from('project_measurements')
-        .select('*, projects(customer_name, address, city, project_type)')
+        .select('*, projects(customer_name, address, city, project_type, referred_by_partner_id, partner:partners!projects_referred_by_partner_id_fkey(id, name))')
         .order('created_at', { ascending: false });
 
       if (projectId) {
@@ -71,7 +73,7 @@ export function useMeasurementDetail(measurementId: string | undefined) {
 
       const { data: measurement, error } = await supabase
         .from('project_measurements')
-        .select('*, projects(customer_name, address, city, project_type)')
+        .select('*, projects(customer_name, address, city, project_type, referred_by_partner_id, partner:partners!projects_referred_by_partner_id_fkey(id, name))')
         .eq('id', measurementId)
         .single();
 
