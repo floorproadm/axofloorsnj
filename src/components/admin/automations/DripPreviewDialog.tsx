@@ -2,22 +2,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
-const SAMPLE_DATA: Record<string, string> = {
-  first_name: "Sarah",
-  last_name: "Johnson",
-  full_name: "Sarah Johnson",
-  company_name: "AXO Floors",
-  company_phone: "(973) 555-0123",
-  salesperson_name: "Eduardo",
-  services: "Hardwood Refinishing",
-  view_request_button:
-    '<a href="#" style="display:inline-block;background:#0a0a0a;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin:8px 0">View Your Request</a>',
-  unsubscribe_url: "#",
-  address: "123 Oak Street, Montclair, NJ",
-  appointment_date: "Friday, Dec 12 at 2:00 PM",
-  proposal_link: "#",
-};
+function buildSampleData(company: { companyName: string; phone: string; email: string }): Record<string, string> {
+  return {
+    first_name: "Sarah",
+    last_name: "Johnson",
+    full_name: "Sarah Johnson",
+    name: "Sarah Johnson",
+    company_name: company.companyName,
+    company_phone: company.phone,
+    company_email: company.email,
+    phone: company.phone,
+    salesperson_name: "Eduardo",
+    Eduardo: "Eduardo",
+    services: "Hardwood Refinishing",
+    view_request_button:
+      '<a href="#" style="display:inline-block;background:#0a0a0a;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin:8px 0">View Your Request</a>',
+    view_quote_button:
+      '<a href="#" style="display:inline-block;background:#8B6914;color:#fff;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0">View Your Proposal</a>',
+    unsubscribe_url: "#",
+    address: "123 Oak Street, Montclair, NJ",
+    appointment_date: "Friday, Dec 12",
+    appointment_time: "2:00 PM",
+    appointment_location: "123 Oak Street, Montclair, NJ",
+    proposal_link: "#",
+  };
+}
 
 function renderTemplate(tpl: string): string {
   return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, key) => SAMPLE_DATA[key] ?? `{{${key}}}`);
