@@ -221,7 +221,13 @@ function MeasurementCard({ measurement: m, onClick }: { measurement: ProjectMeas
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground truncate">{m.project?.customer_name || 'Cliente'}</h3>
+          <h3 className="font-semibold text-foreground truncate">
+            {(() => {
+              const name = m.project?.customer_name;
+              if (!name || /^TBD/i.test(name)) return 'Cliente pendente (via parceiro)';
+              return name;
+            })()}
+          </h3>
           {m.project?.address && (
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
