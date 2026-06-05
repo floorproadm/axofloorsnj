@@ -1,4 +1,4 @@
-import { useJobCost, useMarginValidation, useUpsertJobCost, JobCostInput } from '@/hooks/useJobCosts';
+import { useJobCost, useMarginValidation, useUpsertJobCost, usePendingLaborCost, JobCostInput } from '@/hooks/useJobCosts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
