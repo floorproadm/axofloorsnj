@@ -31,17 +31,14 @@ function buildSampleData(company: { companyName: string; phone: string; email: s
 }
 
 
-// Mirror engine: split into paragraphs by blank line(s), single \n => <br>.
+// Mirror engine: every non-empty line becomes its own <p> with consistent spacing.
 function toParagraphHtml(text: string): string {
   const normalized = text.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
   return normalized
-    .split(/\n\s*\n+/)
+    .split(/\n+/)
     .map((p) => p.trim())
     .filter(Boolean)
-    .map(
-      (p) =>
-        `<p style="margin:0 0 16px 0;line-height:1.6">${p.replace(/\n/g, "<br>")}</p>`
-    )
+    .map((p) => `<p style="margin:0 0 16px 0;line-height:1.6">${p}</p>`)
     .join("");
 }
 
