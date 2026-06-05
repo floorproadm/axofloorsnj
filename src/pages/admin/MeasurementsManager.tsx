@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Ruler, Plus, Search, MapPin, Calendar, User, ArrowLeft,
-  Pencil, Trash2, X, ChevronRight, SquareStack, Move,
+  Pencil, Trash2, X, ChevronRight, SquareStack, Move, Handshake,
 } from 'lucide-react';
 import {
   useMeasurements, useMeasurementDetail, useCreateMeasurement,
