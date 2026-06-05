@@ -51,6 +51,27 @@ export function useJobCost(projectId: string | undefined) {
   });
 }
 
+/**
+ * Sum of labor_entries.total_cost where status='pending' for a project.
+ * Informational only — NOT included in job_costs.labor_cost (which counts approved/paid).
+ */
+export function usePendingLaborCost(projectId: string | undefined) {
+  return useQuery({
+    queryKey: ['pending-labor-cost', projectId],
+    queryFn: async (): Promise<number> => {
+      if (!projectId) return 0;
+      const { data, error } = await supabase
+        .from('labor_entries')
+        .select('total_cost')
+        .eq('project_id', projectId)
+        .eq('status', 'pending');
+      if (error) throw error;
+      return (data ?? []).reduce((sum, r: any) => sum + Number(r.total_cost ?? 0), 0);
+    },
+    enabled: !!projectId,
+  });
+}
+
 export function useUpsertJobCost() {
   const queryClient = useQueryClient();
   
