@@ -44,6 +44,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import floorproLogo from "@/assets/floorpro-logo.png.asset.json";
 
 export function AdminSidebar() {
   const { state } = useSidebar();
@@ -106,11 +107,13 @@ export function AdminSidebar() {
         {/* Brand */}
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
-            {!collapsed && (
-              <div className="animate-fade-in">
-                <h2 className="font-bold text-foreground text-lg">FloorPRO</h2>
+            {!collapsed ? (
+              <div className="animate-fade-in flex flex-col gap-1">
+                <img src={floorproLogo.url} alt="FloorPro" className="h-8 w-auto object-contain" />
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Field Operations Platform</p>
               </div>
+            ) : (
+              <img src={floorproLogo.url} alt="FloorPro" className="h-7 w-auto object-contain mx-auto" />
             )}
           </div>
         </div>
