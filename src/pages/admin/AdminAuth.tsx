@@ -37,8 +37,8 @@ export default function AdminAuth() {
   }, [mode]);
 
   useEffect(() => {
-    if (user && view !== 'reset') {
-      navigate('/admin');
+    if (user && view !== 'reset' && window.location.pathname.startsWith('/admin/auth')) {
+      navigate('/admin', { replace: true });
     }
   }, [user, navigate, view]);
 
