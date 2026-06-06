@@ -693,6 +693,7 @@ export type Database = {
       }
       company_settings: {
         Row: {
+          admin_base_url: string | null
           check_mailing_address: string | null
           company_name: string
           created_at: string
@@ -706,10 +707,14 @@ export type Database = {
           default_terms_text: string | null
           deposit_percentage: number
           email: string | null
+          email_from_name: string | null
           email_logo_url: string | null
+          facebook_pixel_id: string | null
+          google_review_url: string | null
           id: string
           labor_pricing_model: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url: string | null
+          notion_database_id: string | null
           organization_id: string | null
           phone: string | null
           primary_color: string | null
@@ -727,6 +732,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          admin_base_url?: string | null
           check_mailing_address?: string | null
           company_name?: string
           created_at?: string
@@ -740,10 +746,14 @@ export type Database = {
           default_terms_text?: string | null
           deposit_percentage?: number
           email?: string | null
+          email_from_name?: string | null
           email_logo_url?: string | null
+          facebook_pixel_id?: string | null
+          google_review_url?: string | null
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
+          notion_database_id?: string | null
           organization_id?: string | null
           phone?: string | null
           primary_color?: string | null
@@ -761,6 +771,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          admin_base_url?: string | null
           check_mailing_address?: string | null
           company_name?: string
           created_at?: string
@@ -774,10 +785,14 @@ export type Database = {
           default_terms_text?: string | null
           deposit_percentage?: number
           email?: string | null
+          email_from_name?: string | null
           email_logo_url?: string | null
+          facebook_pixel_id?: string | null
+          google_review_url?: string | null
           id?: string
           labor_pricing_model?: Database["public"]["Enums"]["labor_pricing_model"]
           logo_url?: string | null
+          notion_database_id?: string | null
           organization_id?: string | null
           phone?: string | null
           primary_color?: string | null
