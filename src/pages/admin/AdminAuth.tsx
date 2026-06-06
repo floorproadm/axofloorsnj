@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
+import floorproLogo from '@/assets/floorpro-logo.png.asset.json';
 
 export default function AdminAuth() {
   const [searchParams] = useSearchParams();
@@ -174,10 +175,8 @@ export default function AdminAuth() {
       <div className="w-full max-w-md">
         <Card className="border-2 border-gold/20 shadow-xl bg-black text-white">
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <span className="text-3xl font-bold tracking-tight text-white">
-                FloorPRO
-              </span>
+            <div className="flex justify-center mb-4 bg-white rounded-lg p-3">
+              <img src={floorproLogo.url} alt="FloorPro" className="h-12 w-auto object-contain" />
             </div>
             {view !== 'login' && (
               <CardTitle className="text-white">
