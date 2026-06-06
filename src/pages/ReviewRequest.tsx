@@ -409,7 +409,7 @@ export default function ReviewRequest() {
         </div>
       </section>
 
-      <Footer />
+      
     </div>
   );
 }

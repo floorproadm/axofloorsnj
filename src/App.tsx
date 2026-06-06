@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -11,28 +10,9 @@ import SecurityHeaders from "@/components/SecurityHeaders";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import Index from "./pages/Index";
-import Installation from "./pages/Installation";
-import Refinishing from "./pages/Refinishing";
-import VinylPlankFlooring from "./pages/VinylPlankFlooring";
-import Staircase from "./pages/Staircase";
-import BaseBoards from "./pages/BaseBoards";
-import Gallery from "./pages/Gallery";
-import Contact from "./pages/Contact";
-import About from "./pages/About";
 
-import StainGallery from "./pages/StainGallery";
-import BuilderPartnerships from "./pages/BuilderPartnerships";
-import PartnerProgram from "./pages/PartnerProgram";
-import Quiz from "./pages/Quiz";
-import ThankYou from "./pages/ThankYou";
-import ScheduleEstimate from "./pages/ScheduleEstimate";
-import ReferralProgram from "./pages/ReferralProgram";
-import Builders from "./pages/Builders";
-import Realtors from "./pages/Realtors";
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminChat from './pages/admin/AdminChat';
-
 import FeedPostDetail from './pages/admin/FeedPostDetail';
 import FeedPostEdit from './pages/admin/FeedPostEdit';
 import GalleryHub from './pages/admin/GalleryHub';
@@ -64,12 +44,6 @@ import AdminMissionControl from './pages/admin/MissionControl';
 import AdminCustomers from './pages/admin/Customers';
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/admin/AdminAuth";
-import Campaign from "./pages/Campaign";
-
-
-import AxoMasterSystem from "./pages/AxoMasterSystem";
-import WowPack from "./pages/WowPack";
-
 import ReviewRequest from "./pages/ReviewRequest";
 import AppointmentRequests from "./pages/admin/AppointmentRequests";
 import NotFound from "./pages/NotFound";
@@ -78,7 +52,6 @@ import PublicInvoice from "./pages/PublicInvoice";
 import PublicProposal from "./pages/PublicProposal";
 import PublicDepositInvoice from "./pages/PublicDepositInvoice";
 import PublicPortal from "./pages/PublicPortal";
-import Links from "./pages/Links";
 
 import CollaboratorLayout from "./components/collaborator/CollaboratorLayout";
 import CollaboratorDashboard from "./pages/collaborator/CollaboratorDashboard";
@@ -91,7 +64,6 @@ import CollaboratorTimesheet from "./pages/collaborator/CollaboratorTimesheet";
 import TimesheetApprovals from "./pages/admin/TimesheetApprovals";
 
 import PartnerAuth from "./pages/partner/PartnerAuth";
-import ReferralAuth from "./pages/ReferralAuth";
 import ResetPassword from "./pages/ResetPassword";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
@@ -111,34 +83,15 @@ const App = () => {
           <ScrollToTop />
           <ErrorBoundary scope="app">
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/installation" element={<Installation />} />
-            <Route path="/hardwood-flooring" element={<Navigate to="/installation" replace />} />
-            <Route path="/refinishing" element={<Refinishing />} />
-            <Route path="/sanding-and-refinish" element={<Navigate to="/refinishing" replace />} />
-            <Route path="/vinyl-plank-flooring" element={<VinylPlankFlooring />} />
-            <Route path="/staircase" element={<Staircase />} />
-            <Route path="/base-boards" element={<BaseBoards />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/stain-gallery" element={<StainGallery />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/campaign" element={<Campaign />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/thank-you" element={<ThankYou />} />
-            <Route path="/schedule-estimate" element={<ScheduleEstimate />} />
-            <Route path="/referral-program" element={<ReferralProgram />} />
-            <Route path="/referral/auth" element={<ReferralAuth />} />
+            <Route path="/" element={<Navigate to="/admin/auth" replace />} />
+
+            {/* Auth */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/admin/auth" element={<AdminAuth />} />
+            <Route path="/partner/auth" element={<PartnerAuth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/builders" element={<Builders />} />
-            <Route path="/realtors" element={<Realtors />} />
-            <Route path="/builder-offer" element={<BuilderPartnerships />} />
-            <Route path="/partner-program" element={<PartnerProgram />} />
-            
-            <Route path="/floor-diagnostic" element={<Navigate to="/quiz" replace />} />
-            <Route path="/axo-master-system" element={<AxoMasterSystem />} />
-            <Route path="/wow-pack" element={<WowPack />} />
-            
+
+            {/* Public token-based routes (kept) */}
             <Route path="/review-request" element={<ReviewRequest />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/share/before-after/:token" element={<ShareBeforeAfter />} />
@@ -146,170 +99,44 @@ const App = () => {
             <Route path="/proposal/:token" element={<PublicProposal />} />
             <Route path="/proposal/:token/invoice" element={<PublicDepositInvoice />} />
             <Route path="/portal/:token" element={<PublicPortal />} />
-            <Route path="/hub" element={<Links />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin/auth" element={<AdminAuth />} />
-            <Route path="/admin" element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/dashboard" element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/chat" element={
-              <ProtectedRoute>
-                <AdminChat />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/gallery" element={
-              <ProtectedRoute>
-                <GalleryHub />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/feed/:postId" element={
-              <ProtectedRoute>
-                <FeedPostDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/feed/:postId/edit" element={
-              <ProtectedRoute>
-                <FeedPostEdit />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/leads" element={
-              <ProtectedRoute>
-                <AdminLeadsManager />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/leads/trash" element={
-              <ProtectedRoute>
-                <LeadsTrash />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/leads/:leadId" element={
-              <ProtectedRoute>
-                <LeadDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/jobs/:jobId" element={
-              <ProtectedRoute>
-                <JobDetail />
-              </ProtectedRoute>
-            } />
+
+            {/* Admin */}
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/chat" element={<ProtectedRoute><AdminChat /></ProtectedRoute>} />
+            <Route path="/admin/gallery" element={<ProtectedRoute><GalleryHub /></ProtectedRoute>} />
+            <Route path="/admin/feed/:postId" element={<ProtectedRoute><FeedPostDetail /></ProtectedRoute>} />
+            <Route path="/admin/feed/:postId/edit" element={<ProtectedRoute><FeedPostEdit /></ProtectedRoute>} />
+            <Route path="/admin/leads" element={<ProtectedRoute><AdminLeadsManager /></ProtectedRoute>} />
+            <Route path="/admin/leads/trash" element={<ProtectedRoute><LeadsTrash /></ProtectedRoute>} />
+            <Route path="/admin/leads/:leadId" element={<ProtectedRoute><LeadDetail /></ProtectedRoute>} />
+            <Route path="/admin/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
             <Route path="/admin/jobs" element={<Navigate to="/admin/projects" replace />} />
-            <Route path="/admin/intake" element={
-              <ProtectedRoute>
-                <AdminIntake />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/mission-control" element={
-              <ProtectedRoute>
-                <AdminMissionControl />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/settings" element={
-              <ProtectedRoute>
-                <AdminSettings />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/projects/:projectId" element={
-              <ProtectedRoute>
-                <ProjectDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/jobs/:projectId/documents" element={
-              <ProtectedRoute>
-                <ProjectDocuments />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/measurements" element={
-              <ProtectedRoute>
-                <MeasurementsManager />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/schedule" element={
-              <ProtectedRoute>
-                <AdminSchedule />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/performance" element={
-              <ProtectedRoute>
-                <AdminPerformance />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/reputation" element={
-              <ProtectedRoute>
-                <AdminReputation />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/catalog" element={
-              <ProtectedRoute>
-                <AdminCatalog />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/help" element={
-              <ProtectedRoute>
-                <AdminHelp />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/partners" element={
-              <ProtectedRoute>
-                <AdminPartners />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/customers" element={
-              <ProtectedRoute>
-                <AdminCustomers />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/payments" element={
-              <ProtectedRoute>
-                <AdminPayments />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/automations" element={
-              <ProtectedRoute>
-                <AdminAutomations />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/weekly-review" element={
-              <ProtectedRoute>
-                <WeeklyReview />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/labor-payroll" element={
-              <ProtectedRoute>
-                <LaborPayroll />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/crews" element={
-              <ProtectedRoute>
-                <CrewsVans />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/fleet" element={
-              <ProtectedRoute>
-                <Fleet />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/proposals" element={
-              <ProtectedRoute>
-                <AdminProposals />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/projects" element={
-              <ProtectedRoute>
-                <ProjectsHub />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/appointment-requests" element={
-              <ProtectedRoute>
-                <AppointmentRequests />
-              </ProtectedRoute>
-            } />
+            <Route path="/admin/intake" element={<ProtectedRoute><AdminIntake /></ProtectedRoute>} />
+            <Route path="/admin/mission-control" element={<ProtectedRoute><AdminMissionControl /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+            <Route path="/admin/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+            <Route path="/admin/jobs/:projectId/documents" element={<ProtectedRoute><ProjectDocuments /></ProtectedRoute>} />
+            <Route path="/admin/measurements" element={<ProtectedRoute><MeasurementsManager /></ProtectedRoute>} />
+            <Route path="/admin/schedule" element={<ProtectedRoute><AdminSchedule /></ProtectedRoute>} />
+            <Route path="/admin/performance" element={<ProtectedRoute><AdminPerformance /></ProtectedRoute>} />
+            <Route path="/admin/reputation" element={<ProtectedRoute><AdminReputation /></ProtectedRoute>} />
+            <Route path="/admin/catalog" element={<ProtectedRoute><AdminCatalog /></ProtectedRoute>} />
+            <Route path="/admin/help" element={<ProtectedRoute><AdminHelp /></ProtectedRoute>} />
+            <Route path="/admin/partners" element={<ProtectedRoute><AdminPartners /></ProtectedRoute>} />
+            <Route path="/admin/customers" element={<ProtectedRoute><AdminCustomers /></ProtectedRoute>} />
+            <Route path="/admin/payments" element={<ProtectedRoute><AdminPayments /></ProtectedRoute>} />
+            <Route path="/admin/automations" element={<ProtectedRoute><AdminAutomations /></ProtectedRoute>} />
+            <Route path="/admin/weekly-review" element={<ProtectedRoute><WeeklyReview /></ProtectedRoute>} />
+            <Route path="/admin/labor-payroll" element={<ProtectedRoute><LaborPayroll /></ProtectedRoute>} />
+            <Route path="/admin/crews" element={<ProtectedRoute><CrewsVans /></ProtectedRoute>} />
+            <Route path="/admin/fleet" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
+            <Route path="/admin/proposals" element={<ProtectedRoute><AdminProposals /></ProtectedRoute>} />
+            <Route path="/admin/projects" element={<ProtectedRoute><ProjectsHub /></ProtectedRoute>} />
+            <Route path="/admin/appointment-requests" element={<ProtectedRoute><AppointmentRequests /></ProtectedRoute>} />
+            <Route path="/admin/timesheet" element={<Navigate to="/admin/crews?tab=daysheet" replace />} />
+            <Route path="/admin/daysheet" element={<Navigate to="/admin/crews?tab=daysheet" replace />} />
+
             {/* Collaborator Portal */}
             <Route path="/collaborator" element={
               <ProtectedRoute requireAdmin={false}>
@@ -326,13 +153,7 @@ const App = () => {
               <Route path="project/:projectId" element={<CollaboratorProjectDetail />} />
             </Route>
 
-            {/* Admin: DaySheet Approvals — now lives as a tab inside Equipe */}
-            <Route path="/admin/timesheet" element={<Navigate to="/admin/crews?tab=daysheet" replace />} />
-            <Route path="/admin/daysheet" element={<Navigate to="/admin/crews?tab=daysheet" replace />} />
-
-
             {/* Partner Portal */}
-            <Route path="/partner/auth" element={<PartnerAuth />} />
             <Route path="/partner/welcome" element={<PartnerWelcome />} />
             <Route path="/partner/dashboard" element={<PartnerDashboard />} />
             <Route path="/partner" element={<Navigate to="/partner/dashboard" replace />} />
