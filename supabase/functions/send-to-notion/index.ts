@@ -1,9 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const NOTION_API_KEY = Deno.env.get('NOTION_API_KEY');
-const NOTION_DATABASE_ID = Deno.env.get('NOTION_DATABASE_ID');
+const NOTION_DATABASE_ID_ENV = Deno.env.get('NOTION_DATABASE_ID');
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/notion/v1';
+const AXO_ORG_ID = 'a0000000-0000-0000-0000-000000000001';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +26,7 @@ interface LeadData {
   message?: string;
   priority?: string;
   status?: string;
+  organization_id?: string;
 }
 
 serve(async (req) => {
@@ -32,12 +35,41 @@ serve(async (req) => {
   }
 
   try {
-    if (!LOVABLE_API_KEY || !NOTION_API_KEY || !NOTION_DATABASE_ID) {
-      throw new Error('Missing required env vars (LOVABLE_API_KEY / NOTION_API_KEY / NOTION_DATABASE_ID)');
+    const leadData: LeadData = await req.json();
+    console.log('send-to-notion received:', { name: leadData.name, source: leadData.source });
+
+    // Resolve per-tenant Notion database ID, fall back to env var.
+    const orgId = leadData.organization_id || AXO_ORG_ID;
+    let notionDatabaseId: string | null = null;
+
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data: settings } = await supabase
+          .from('company_settings')
+          .select('notion_database_id')
+          .eq('organization_id', orgId)
+          .maybeSingle();
+        notionDatabaseId = settings?.notion_database_id || null;
+      }
+    } catch (e) {
+      console.warn('send-to-notion: settings lookup failed:', (e as Error).message);
     }
 
-    const leadData: LeadData = await req.json();
-    console.log('Sending lead to Notion via gateway:', { name: leadData.name, source: leadData.source });
+    if (!notionDatabaseId) {
+      notionDatabaseId = NOTION_DATABASE_ID_ENV || null;
+    }
+
+    // Skip silently when Notion isn't configured for this tenant.
+    if (!LOVABLE_API_KEY || !NOTION_API_KEY || !notionDatabaseId) {
+      console.log(`send-to-notion: skipping (org=${orgId}) — Notion not configured`);
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: 'notion_not_configured' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
 
     const properties: Record<string, any> = {
       "Name": { title: [{ text: { content: leadData.name } }] },
@@ -65,7 +97,7 @@ serve(async (req) => {
     }
 
     const notionPayload = {
-      parent: { database_id: NOTION_DATABASE_ID },
+      parent: { database_id: notionDatabaseId },
       properties,
     };
 

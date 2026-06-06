@@ -1,9 +1,16 @@
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
-
-const NOTIFY_TO = "axofloorsnj@gmail.com";
-const ADMIN_BASE_URL = "https://axofloorsnj.com/admin";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
+const AXO_ORG_ID = "a0000000-0000-0000-0000-000000000001";
+
+// Safe defaults preserve AXO behavior if company_settings is unreachable.
+const DEFAULTS = {
+  email: "axofloorsnj@gmail.com",
+  phone: "(732) 351-8653",
+  company_name: "AXO Floors",
+  admin_base_url: "https://axofloorsnj.com/admin",
+};
 
 function escapeHtml(s: string): string {
   return String(s ?? "")
@@ -15,7 +22,6 @@ function escapeHtml(s: string): string {
 }
 
 function b64url(s: string): string {
-  // UTF-8 safe base64url
   const bytes = new TextEncoder().encode(s);
   let bin = "";
   for (const b of bytes) bin += String.fromCharCode(b);
@@ -58,6 +64,25 @@ Deno.serve(async (req) => {
       throw new Error("Email gateway credentials not configured");
     }
 
+    // Multi-tenant: resolve tenant branding from company_settings.
+    const orgId = lead.organization_id || body?.organization_id || AXO_ORG_ID;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: settingsRow } = await supabase
+      .from("company_settings")
+      .select("email, phone, company_name, admin_base_url, email_logo_url, email_from_name")
+      .eq("organization_id", orgId)
+      .maybeSingle();
+
+    const settings = {
+      email: settingsRow?.email || DEFAULTS.email,
+      phone: settingsRow?.phone || DEFAULTS.phone,
+      company_name: settingsRow?.company_name || DEFAULTS.company_name,
+      admin_base_url: settingsRow?.admin_base_url || DEFAULTS.admin_base_url,
+    };
+
     const followUp = lead.follow_up_actions ?? {};
     const serviceNeeded =
       followUp?.service_needed ??
@@ -68,8 +93,7 @@ Deno.serve(async (req) => {
     const sourceLabel = formatSourceLabel(lead.lead_source);
 
     const subject = `🔔 New Lead: ${lead.name ?? "Unnamed"} (${sourceLabel})`;
-
-    const adminLink = `${ADMIN_BASE_URL}/leads?focus=${lead.id}`;
+    const adminLink = `${settings.admin_base_url}/leads?focus=${lead.id}`;
 
     const rows: Array<[string, string | null | undefined]> = [
       ["Name", lead.name],
@@ -106,18 +130,18 @@ Deno.serve(async (req) => {
       ${rowsHtml}
     </table>
     <div style="padding:24px;text-align:center;background:#f8fafc;">
-      <a href="${escapeHtml(adminLink)}" style="display:inline-block;padding:12px 28px;background:#0f172a;color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">Open Lead in AXO OS →</a>
+      <a href="${escapeHtml(adminLink)}" style="display:inline-block;padding:12px 28px;background:#0f172a;color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">Open Lead in ${escapeHtml(settings.company_name)} OS →</a>
     </div>
     <div style="padding:16px 24px;text-align:center;color:#94a3b8;font-size:11px;background:#f8fafc;border-top:1px solid #e2e8f0;">
-      AXO Floors · Automated lead notification
+      ${escapeHtml(settings.company_name)} · Automated lead notification
     </div>
   </div>
 </body>
 </html>`;
 
     const rfc2822 = [
-      `To: ${NOTIFY_TO}`,
-      `From: ${NOTIFY_TO}`,
+      `To: ${settings.email}`,
+      `From: ${settings.email}`,
       `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
       `MIME-Version: 1.0`,
       `Content-Type: text/html; charset="UTF-8"`,
