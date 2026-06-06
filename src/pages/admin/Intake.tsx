@@ -77,15 +77,15 @@ interface SourceStats {
 }
 
 const SOURCE_LABELS: Record<string, { label: string; type: string; icon: React.ComponentType<any>; url?: string }> = {
-  'contact': { label: 'Formulário de Contato', type: 'Página', icon: FileText, url: '/contact' },
-  'quiz': { label: 'Quiz Qualificador', type: 'Qualificador', icon: CheckCircle, url: '/quiz' },
-  'floor-diagnostic': { label: 'Diagnóstico de Piso', type: 'Qualificador', icon: CheckCircle, url: '/floor-diagnostic' },
-  'builders_page': { label: 'Página Builders', type: 'B2B', icon: Building, url: '/builders' },
-  'realtors_page': { label: 'Página Realtors', type: 'B2B', icon: Home, url: '/realtors' },
-  'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp, url: '/gallery' },
+  'contact': { label: 'Formulário de Contato', type: 'Página', icon: FileText, url: 'https://axofloorsnj.com/contact' },
+  'quiz': { label: 'Quiz Qualificador', type: 'Qualificador', icon: CheckCircle, url: 'https://axofloorsnj.com/quiz' },
+  'floor-diagnostic': { label: 'Diagnóstico de Piso', type: 'Qualificador', icon: CheckCircle, url: 'https://axofloorsnj.com/floor-diagnostic' },
+  'builders_page': { label: 'Página Builders', type: 'B2B', icon: Building, url: 'https://axofloorsnj.com/builders' },
+  'realtors_page': { label: 'Página Realtors', type: 'B2B', icon: Home, url: 'https://axofloorsnj.com/realtors' },
+  'lead_magnet': { label: 'Lead Magnet', type: 'Isca', icon: TrendingUp, url: 'https://axofloorsnj.com/gallery' },
   'manual': { label: 'Entrada Manual', type: 'Interno', icon: Pencil },
   'quick_quote': { label: 'Quick Quote', type: 'Ação Rápida', icon: Zap },
-  'project_wizard': { label: 'Project Wizard', type: 'Qualificador', icon: CheckCircle, url: '/project-wizard' },
+  'project_wizard': { label: 'Project Wizard', type: 'Qualificador', icon: CheckCircle, url: 'https://axofloorsnj.com/project-wizard' },
     'google':          { label: 'Google',          type: 'Digital',    icon: TrendingUp },
     'facebook':        { label: 'Facebook',        type: 'Digital',    icon: TrendingUp },
     'instagram':       { label: 'Instagram',       type: 'Digital',    icon: TrendingUp },
