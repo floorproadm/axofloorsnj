@@ -24,7 +24,7 @@ export function AdminPWAHead() {
     // Apple PWA meta tags
     addMeta("apple-mobile-web-app-capable", "yes");
     addMeta("apple-mobile-web-app-status-bar-style", "black-translucent");
-    addMeta("apple-mobile-web-app-title", "AXO OS");
+    addMeta("apple-mobile-web-app-title", "FloorPRO");
     addLink("apple-touch-icon", "/icons/icon-192.png");
     addLink("manifest", "/admin-manifest.json");
 
