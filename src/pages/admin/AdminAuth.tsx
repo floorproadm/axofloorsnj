@@ -9,7 +9,7 @@ import { AlertCircle, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import axoLogoOfficial from '@/assets/axo-logo-official.png';
+import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
 import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
 
 export default function AdminAuth() {
@@ -157,7 +157,7 @@ export default function AdminAuth() {
     switch (view) {
       case 'forgot': return 'Recuperar Senha';
       case 'reset': return 'Nova Senha';
-      default: return 'AXO OS';
+      default: return 'FloorPRO';
     }
   };
 
@@ -176,11 +176,9 @@ export default function AdminAuth() {
         <Card className="border-2 border-gold/20 shadow-xl bg-black text-white">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <img
-                src={axoLogoOfficial}
-                alt="AXO Floors Logo"
-                className="h-16 w-auto"
-              />
+              <span className="text-3xl font-bold tracking-tight text-white">
+                FloorPRO
+              </span>
             </div>
             {view !== 'login' && (
               <CardTitle className="text-white">
