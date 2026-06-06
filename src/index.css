@@ -67,8 +67,8 @@
     /* Admin State Colors - Sistema de Sinais Visuais */
     --state-blocked: 0 72% 45%; /* Vermelho escuro - ação impossível */
     --state-blocked-bg: 0 72% 95%;
-    --state-risk: 38 92% 50%; /* Âmbar - ação atrasada */
-    --state-risk-bg: 38 92% 95%;
+    --state-risk: 217 100% 50%; /* FloorPro Blue Primary - ação que requer atenção */
+    --state-risk-bg: 217 100% 95%;
     --state-success: 142 71% 45%; /* Verde - condição satisfeita */
     --state-success-bg: 142 71% 95%;
     --state-neutral: 215 20% 65%; /* Cinza azulado - aguardando */
