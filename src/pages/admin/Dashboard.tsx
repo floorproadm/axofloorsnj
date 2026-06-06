@@ -382,7 +382,7 @@ export default function Dashboard() {
             </h2>
             <Link
               to="/admin/leads"
-              className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline"
+              className="text-xs font-semibold text-[hsl(var(--state-risk))] hover:underline"
             >
               {t("dashboard.verTudo")}
             </Link>
