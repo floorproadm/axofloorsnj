@@ -1,30 +1,59 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
+const AXO_ORG_ID = "a0000000-0000-0000-0000-000000000001";
+
+const DEFAULTS = {
+  company_name: "AXO Floors",
+  email_from_name: "AXO Floors",
+  email: "axofloorsnj@gmail.com",
+  phone: "(732) 351-8653",
+  email_logo_url: "https://dcfmrqrbsfxvqhihpamd.supabase.co/storage/v1/object/public/feed-media/brand/axo-logo-email.png?v=2",
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// RFC 2047 encoded-word for non-ASCII header values (Subject, From name, etc.)
+// RFC 2047 encoded-word for non-ASCII header values.
 function encodeHeader(value: string): string {
-  if (/^[\x00-\x7F]*$/.test(value)) return value; // ASCII-only → no encoding needed
+  if (/^[\x00-\x7F]*$/.test(value)) return value;
   const b64 = btoa(unescape(encodeURIComponent(value)));
   return `=?UTF-8?B?${b64}?=`;
 }
 
-function createRawEmail(to: string, subject: string, htmlBody: string, from?: string, replyTo?: string): string {
-  const fromAddr = from || "AXO Floors <axofloorsnj@gmail.com>";
-  // Encode the display-name portion of From if non-ASCII (keep the <email> intact)
+function domainFromEmail(email: string, fallback = "axofloorsnj.com"): string {
+  const at = email.indexOf("@");
+  if (at === -1 || at === email.length - 1) return fallback;
+  return email.slice(at + 1);
+}
+
+interface TenantBrand {
+  company_name: string;
+  email_from_name: string;
+  email: string;
+  phone: string;
+  email_logo_url: string;
+}
+
+function createRawEmail(
+  to: string,
+  subject: string,
+  htmlBody: string,
+  brand: TenantBrand,
+  from?: string,
+  replyTo?: string,
+): string {
+  const fromAddr = from || `${brand.email_from_name} <${brand.email}>`;
   const fromEncoded = fromAddr.replace(/^(.+?)\s*<(.+)>$/, (_m, name, addr) => `${encodeHeader(name.trim())} <${addr}>`);
-  const messageId = `<${crypto.randomUUID()}@axofloorsnj.com>`;
+  const messageId = `<${crypto.randomUUID()}@${domainFromEmail(brand.email)}>`;
   const date = new Date().toUTCString().replace(/GMT$/, '+0000');
 
   const lines = [
     `From: ${fromEncoded}`,
     `To: ${to}`,
-    `Reply-To: ${replyTo || 'axofloorsnj@gmail.com'}`,
+    `Reply-To: ${replyTo || brand.email}`,
     `Subject: ${encodeHeader(subject)}`,
     `Date: ${date}`,
     `Message-ID: ${messageId}`,
@@ -38,9 +67,7 @@ function createRawEmail(to: string, subject: string, htmlBody: string, from?: st
   return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-const DEFAULT_EMAIL_LOGO = "https://dcfmrqrbsfxvqhihpamd.supabase.co/storage/v1/object/public/feed-media/brand/axo-logo-email.png?v=2";
-
-function wrapHtml(content: string, logoUrl: string): string {
+function wrapHtml(content: string, brand: TenantBrand): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#333;line-height:1.6;margin:0;padding:0}
 .container{max-width:600px;margin:0 auto;padding:32px 24px}
@@ -50,13 +77,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;c
 .btn{display:inline-block;background:#8B6914;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;margin:16px 0}
 .footer{border-top:1px solid #eee;padding-top:16px;text-align:center;font-size:12px;color:#999}
 </style></head><body><div class="container">
-<div class="header"><img src="${logoUrl}" alt="AXO Floors" /></div>
+<div class="header"><img src="${brand.email_logo_url}" alt="${brand.company_name}" /></div>
 <div class="content">${content}</div>
-<div class="footer">AXO Floors · New Jersey · (732) 351-8653<br>axofloorsnj@gmail.com</div>
+<div class="footer">${brand.company_name} · ${brand.phone} · ${brand.email}</div>
 </div></body></html>`;
 }
 
-// Interpolate {{variable}} placeholders in a template string
 function interpolate(tpl: string, data: Record<string, any>): string {
   return tpl.replace(/\{\{(\w+)\}\}/g, (_, key) => {
     const val = data[key];
@@ -64,31 +90,31 @@ function interpolate(tpl: string, data: Record<string, any>): string {
   });
 }
 
-// Hardcoded fallback templates (used if DB has no entry)
+// Tenant-agnostic fallback templates. {{company_name}} is interpolated from settings.
 const FALLBACK_TEMPLATES: Record<string, { subject: string; body: string }> = {
   lead_followup: {
-    subject: "Thanks for reaching out – AXO Floors",
-    body: '<h2>Hi {{name}},</h2><p>Thank you for reaching out to AXO Floors! We received your inquiry about <strong>{{services}}</strong> and we\'re excited to help.</p><p>Our team will review your request and get back to you within 24 hours.</p><p style="text-align:center"><a class="btn" href="{{cta_link}}">Schedule a Free Consultation</a></p><p>Best regards,<br><strong>AXO Floors Team</strong></p>',
+    subject: "Thanks for reaching out – {{company_name}}",
+    body: '<h2>Hi {{name}},</h2><p>Thank you for reaching out to {{company_name}}! We received your inquiry about <strong>{{services}}</strong> and we\'re excited to help.</p><p>Our team will review your request and get back to you within 24 hours.</p><p style="text-align:center"><a class="btn" href="{{cta_link}}">Schedule a Free Consultation</a></p><p>Best regards,<br><strong>{{company_name}} Team</strong></p>',
   },
   proposal_sent: {
-    subject: "Your AXO Floors Proposal is Ready – #{{proposal_number}}",
-    body: '<h2>Hi {{customer_name}},</h2><p>Your proposal is ready.</p><p><strong>Proposal #{{proposal_number}}</strong> — Total: <strong>${{total}}</strong></p><p style="text-align:center"><a class="btn" href="{{proposal_link}}">View Your Proposal</a></p><p>Best,<br><strong>AXO Floors Team</strong></p>',
+    subject: "Your {{company_name}} Proposal is Ready – #{{proposal_number}}",
+    body: '<h2>Hi {{customer_name}},</h2><p>Your proposal is ready.</p><p><strong>Proposal #{{proposal_number}}</strong> — Total: <strong>${{total}}</strong></p><p style="text-align:center"><a class="btn" href="{{proposal_link}}">View Your Proposal</a></p><p>Best,<br><strong>{{company_name}} Team</strong></p>',
   },
   appointment_confirmed: {
-    subject: "Your appointment is confirmed – AXO Floors",
-    body: '<h2>Hi {{name}},</h2><p>Your appointment is <strong style="color:#16a34a">confirmed</strong>!</p><p>📅 {{date}} at {{time}}</p><p>📍 {{address}}</p><p>See you soon!<br><strong>AXO Floors Team</strong></p>',
+    subject: "Your appointment is confirmed – {{company_name}}",
+    body: '<h2>Hi {{name}},</h2><p>Your appointment is <strong style="color:#16a34a">confirmed</strong>!</p><p>📅 {{date}} at {{time}}</p><p>📍 {{address}}</p><p>See you soon!<br><strong>{{company_name}} Team</strong></p>',
   },
   project_started: {
-    subject: "Your project has started – AXO Floors",
-    body: '<h2>Hi {{customer_name}},</h2><p>Your flooring project has officially <strong>started</strong>! 🎉</p><p>📍 {{address}}</p><p>Best,<br><strong>AXO Floors Team</strong></p>',
+    subject: "Your project has started – {{company_name}}",
+    body: '<h2>Hi {{customer_name}},</h2><p>Your flooring project has officially <strong>started</strong>! 🎉</p><p>📍 {{address}}</p><p>Best,<br><strong>{{company_name}} Team</strong></p>',
   },
   project_completed: {
-    subject: "Your project is complete! – AXO Floors",
-    body: '<h2>Hi {{customer_name}},</h2><p>Your project is <strong style="color:#16a34a">complete</strong>! ✨</p><p style="text-align:center"><a class="btn" href="{{review_link}}">Leave a Review</a></p><p>Thank you!<br><strong>The AXO Floors Team</strong></p>',
+    subject: "Your project is complete! – {{company_name}}",
+    body: '<h2>Hi {{customer_name}},</h2><p>Your project is <strong style="color:#16a34a">complete</strong>! ✨</p><p style="text-align:center"><a class="btn" href="{{review_link}}">Leave a Review</a></p><p>Thank you!<br><strong>The {{company_name}} Team</strong></p>',
   },
   invoice_sent: {
-    subject: "Invoice #{{invoice_number}} from AXO Floors – ${{amount}} due",
-    body: '<h2>Hi {{customer_name}},</h2><p>Invoice #{{invoice_number}} — Amount Due: <strong>${{amount}}</strong></p><p style="text-align:center"><a class="btn" href="{{invoice_link}}">View & Pay Invoice</a></p><p>Thank you,<br><strong>AXO Floors Team</strong></p>',
+    subject: "Invoice #{{invoice_number}} from {{company_name}} – ${{amount}} due",
+    body: '<h2>Hi {{customer_name}},</h2><p>Invoice #{{invoice_number}} — Amount Due: <strong>${{amount}}</strong></p><p style="text-align:center"><a class="btn" href="{{invoice_link}}">View & Pay Invoice</a></p><p>Thank you,<br><strong>{{company_name}} Team</strong></p>',
   },
 };
 
@@ -108,7 +134,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { template, data, organization_id } = await req.json();
-    const orgId = organization_id || "a0000000-0000-0000-0000-000000000001";
+    const orgId = organization_id || AXO_ORG_ID;
 
     if (!template) {
       return new Response(JSON.stringify({ error: "template required" }), {
@@ -122,13 +148,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 1. Resolve template (raw passthrough or DB/fallback)
+    // Resolve tenant brand (safe defaults if row missing).
+    const { data: settingsRow } = await supabase
+      .from("company_settings")
+      .select("company_name, email, phone, email_logo_url, email_from_name")
+      .eq("organization_id", orgId)
+      .maybeSingle();
+
+    const brand: TenantBrand = {
+      company_name: settingsRow?.company_name || DEFAULTS.company_name,
+      email_from_name:
+        settingsRow?.email_from_name || settingsRow?.company_name || DEFAULTS.email_from_name,
+      email: settingsRow?.email || DEFAULTS.email,
+      phone: settingsRow?.phone || DEFAULTS.phone,
+      email_logo_url: settingsRow?.email_logo_url || DEFAULTS.email_logo_url,
+    };
+
+    // Resolve template (raw passthrough or DB/fallback).
     let subjectTpl: string;
     let bodyTpl: string;
 
     if (template === "__raw__") {
-      // Direct subject/body from automation engine
-      subjectTpl = data.raw_subject || "Message from AXO Floors";
+      subjectTpl = data.raw_subject || `Message from ${brand.company_name}`;
       bodyTpl = data.raw_body || "";
     } else {
       const { data: dbTemplate } = await supabase
@@ -151,20 +192,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2. Resolve email logo (from company_settings, with fallback)
-    const { data: settingsRow } = await supabase
-      .from("company_settings")
-      .select("email_logo_url")
-      .eq("organization_id", orgId)
-      .maybeSingle();
-    const logoUrl = (settingsRow as any)?.email_logo_url || DEFAULT_EMAIL_LOGO;
+    // Interpolate with tenant context merged in.
+    const interpolationData = { company_name: brand.company_name, ...data };
+    const subject = interpolate(subjectTpl, interpolationData);
+    const html = wrapHtml(interpolate(bodyTpl, interpolationData), brand);
+    const raw = createRawEmail(data.recipient_email, subject, html, brand);
 
-    // 3. Interpolate + wrap
-    const subject = interpolate(subjectTpl, data);
-    const html = wrapHtml(interpolate(bodyTpl, data), logoUrl);
-    const raw = createRawEmail(data.recipient_email, subject, html);
-
-    // 3. Send via Gmail
     const gmailRes = await fetch(`${GATEWAY_URL}/users/me/messages/send`, {
       method: "POST",
       headers: {
@@ -200,7 +233,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("gmail-send error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

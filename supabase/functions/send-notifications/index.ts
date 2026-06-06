@@ -1,7 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+
 const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
 const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
 const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
+
+const AXO_ORG_ID = "a0000000-0000-0000-0000-000000000001";
+const DEFAULT_COMPANY_NAME = "AXO Floors";
+const DEFAULT_EMAIL_FROM_NAME = "AXO Floors";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,24 +18,15 @@ const corsHeaders = {
   "Referrer-Policy": "strict-origin-when-cross-origin"
 };
 
-// Utility to sanitize sensitive data for logging
 const sanitizeForLogging = (data: any): any => {
-  if (typeof data !== 'object' || data === null) {
-    return data;
-  }
-
+  if (typeof data !== 'object' || data === null) return data;
   const sanitized = { ...data };
-  
-  // Remove or mask sensitive fields
   const sensitiveFields = ['password', 'token', 'api_key', 'secret', 'auth'];
-  
   for (const key in sanitized) {
     if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
       delete sanitized[key];
       continue;
     }
-    
-    // Mask email addresses
     if (key.toLowerCase() === 'email' && typeof sanitized[key] === 'string') {
       const email = sanitized[key];
       const [localPart, domain] = email.split('@');
@@ -37,30 +34,22 @@ const sanitizeForLogging = (data: any): any => {
         sanitized[key] = `${localPart.substring(0, 3)}***@${domain}`;
       }
     }
-    
-    // Mask phone numbers
     if (key.toLowerCase().includes('phone') && typeof sanitized[key] === 'string') {
       const phone = sanitized[key].replace(/\D/g, '');
       if (phone.length >= 4) {
         sanitized[key] = `***-***-${phone.slice(-4)}`;
       }
     }
-    
-    // Recursively sanitize nested objects
     if (typeof sanitized[key] === 'object') {
       sanitized[key] = sanitizeForLogging(sanitized[key]);
     }
   }
-  
   return sanitized;
 };
 
-// Validate request size
 const validateRequestSize = (req: Request, maxSizeBytes: number = 1024 * 1024): boolean => {
   const contentLength = req.headers.get('content-length');
-  if (contentLength && parseInt(contentLength) > maxSizeBytes) {
-    return false;
-  }
+  if (contentLength && parseInt(contentLength) > maxSizeBytes) return false;
   return true;
 };
 
@@ -77,34 +66,51 @@ interface NotificationRequest {
   };
   adminEmail: string;
   adminPhone?: string;
+  organization_id?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("[NOTIFICATIONS] Function called");
 
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate request size first
   if (!validateRequestSize(req)) {
     console.warn('[NOTIFICATIONS] Request size exceeded limit');
     return new Response(
       JSON.stringify({ error: 'Request too large' }),
-      { 
-        status: 413, 
-        headers: { "Content-Type": "application/json", ...corsHeaders }
-      }
+      { status: 413, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 
   try {
     const requestData: NotificationRequest = await req.json();
-    const { leadData, adminEmail, adminPhone } = requestData;
-    
-    // Log sanitized request data
-    console.log("[NOTIFICATIONS] Processing notification for lead:", sanitizeForLogging({ 
+    const { leadData, adminEmail, adminPhone, organization_id } = requestData;
+    const orgId = organization_id || AXO_ORG_ID;
+
+    // Resolve tenant settings (graceful fallback to defaults if missing).
+    let companyName = DEFAULT_COMPANY_NAME;
+    let emailFromName = DEFAULT_EMAIL_FROM_NAME;
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data: settings } = await supabase
+          .from("company_settings")
+          .select("company_name, email_from_name")
+          .eq("organization_id", orgId)
+          .maybeSingle();
+        if (settings?.company_name) companyName = settings.company_name;
+        if (settings?.email_from_name) emailFromName = settings.email_from_name;
+        else if (settings?.company_name) emailFromName = settings.company_name;
+      }
+    } catch (e) {
+      console.warn("[NOTIFICATIONS] Settings lookup failed, using defaults:", (e as Error).message);
+    }
+
+    console.log("[NOTIFICATIONS] Processing notification for lead:", sanitizeForLogging({
       name: leadData.name,
       source: leadData.source,
       adminEmail: adminEmail.substring(0, 3) + '***@' + adminEmail.split('@')[1]
@@ -115,41 +121,36 @@ const handler = async (req: Request): Promise<Response> => {
       sms: { success: false, error: null }
     };
 
-    // Send email notification
     try {
-      const emailSubject = `🚨 Novo Lead Recebido - ${leadData.name}`;
+      const emailSubject = `🚨 New Lead — ${leadData.name}`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
-            Novo Lead Recebido!
+            New Lead Received!
           </h2>
-          
           <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #1e40af; margin-top: 0;">Informações do Lead:</h3>
-            
+            <h3 style="color: #1e40af; margin-top: 0;">Lead Information:</h3>
             <div style="display: grid; gap: 10px;">
-              <div><strong>Nome:</strong> ${leadData.name}</div>
+              <div><strong>Name:</strong> ${leadData.name}</div>
               <div><strong>Email:</strong> ${leadData.email}</div>
-              <div><strong>Telefone:</strong> ${leadData.phone}</div>
-              ${leadData.city ? `<div><strong>Cidade:</strong> ${leadData.city}</div>` : ''}
-              ${leadData.room_size ? `<div><strong>Tamanho do Ambiente:</strong> ${leadData.room_size}</div>` : ''}
-              ${leadData.services && leadData.services.length > 0 ? 
-                `<div><strong>Serviços:</strong> ${leadData.services.join(', ')}</div>` : ''}
-              ${leadData.budget ? `<div><strong>Orçamento:</strong> $${leadData.budget.toLocaleString()}</div>` : ''}
-              <div><strong>Origem:</strong> ${leadData.source === 'quiz' ? 'Quiz do Site' : leadData.source}</div>
+              <div><strong>Phone:</strong> ${leadData.phone}</div>
+              ${leadData.city ? `<div><strong>City:</strong> ${leadData.city}</div>` : ''}
+              ${leadData.room_size ? `<div><strong>Room Size:</strong> ${leadData.room_size}</div>` : ''}
+              ${leadData.services && leadData.services.length > 0 ?
+                `<div><strong>Services:</strong> ${leadData.services.join(', ')}</div>` : ''}
+              ${leadData.budget ? `<div><strong>Budget:</strong> $${leadData.budget.toLocaleString()}</div>` : ''}
+              <div><strong>Source:</strong> ${leadData.source === 'quiz' ? 'Website Quiz' : leadData.source}</div>
             </div>
           </div>
-          
           <div style="background-color: #dcfce7; padding: 15px; border-radius: 8px; border-left: 4px solid #16a34a;">
             <p style="margin: 0; color: #15803d;">
-              <strong>💡 Ação Recomendada:</strong> Entre em contato com o lead o mais rápido possível. 
-              Leads que recebem resposta em até 5 minutos têm 9x mais chances de conversão!
+              <strong>💡 Recommended Action:</strong> Contact this lead as quickly as possible.
+              Leads responded to within 5 minutes have 9x higher conversion rates.
             </p>
           </div>
-          
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
             <p style="color: #64748b; font-size: 14px;">
-              Notificação automática do sistema AXO Floors
+              ${companyName} notification
             </p>
           </div>
         </div>
@@ -162,7 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "AXO Floors <notifications@resend.dev>",
+          from: `${emailFromName} <notifications@resend.dev>`,
           to: [adminEmail],
           subject: emailSubject,
           html: emailHtml,
@@ -176,7 +177,6 @@ const handler = async (req: Request): Promise<Response> => {
       results.email.success = true;
       console.log("[NOTIFICATIONS] Email sent successfully to admin");
     } catch (error) {
-      // Secure error logging
       const sanitizedError = {
         message: (error as Error).message?.substring(0, 100) || 'Unknown error',
         type: (error as Error).name || 'Error'
@@ -185,13 +185,11 @@ const handler = async (req: Request): Promise<Response> => {
       results.email.error = 'Email service temporarily unavailable' as any;
     }
 
-    // Send SMS notification (if phone number provided)
     if (adminPhone && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
       try {
-        const smsMessage = `🚨 NOVO LEAD AXO FLOORS 🚨\n\nNome: ${leadData.name}\nTelefone: ${leadData.phone}\nEmail: ${leadData.email}\nOrigem: ${leadData.source === 'quiz' ? 'Quiz do Site' : leadData.source}\n\nEntre em contato AGORA para aumentar as chances de conversão!`;
+        const smsMessage = `🚨 NEW LEAD — ${companyName} 🚨\n\nName: ${leadData.name}\nPhone: ${leadData.phone}\nEmail: ${leadData.email}\nSource: ${leadData.source === 'quiz' ? 'Website Quiz' : leadData.source}\n\nContact NOW to maximize conversion.`;
 
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
-        
         const smsResponse = await fetch(twilioUrl, {
           method: 'POST',
           headers: {
@@ -213,7 +211,6 @@ const handler = async (req: Request): Promise<Response> => {
         results.sms.success = true;
         console.log("[NOTIFICATIONS] SMS sent successfully");
       } catch (error) {
-        // Secure error logging
         const sanitizedError = {
           message: (error as Error).message?.substring(0, 100) || 'Unknown error',
           type: (error as Error).name || 'Error'
@@ -225,37 +222,28 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("[NOTIFICATIONS] SMS skipped - missing configuration");
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       results,
       timestamp: new Date().toISOString()
     }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
 
   } catch (error: any) {
-    // Secure error logging - don't expose sensitive details
     const sanitizedError = {
       message: error.message?.substring(0, 100) || 'Unknown error',
       type: error.name || 'Error',
       timestamp: new Date().toISOString()
     };
-    
     console.error("[NOTIFICATIONS] Function error:", sanitizedError);
-    
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Notification service temporarily unavailable',
         timestamp: new Date().toISOString()
       }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 };
