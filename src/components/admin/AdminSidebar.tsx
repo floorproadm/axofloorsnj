@@ -108,10 +108,7 @@ export function AdminSidebar() {
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
             {!collapsed ? (
-              <div className="animate-fade-in flex flex-col gap-1">
-                <img src={floorproLogo.url} alt="FloorPro" className="h-8 w-auto object-contain" />
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Field Operations Platform</p>
-              </div>
+              <img src={floorproLogo.url} alt="FloorPro" className="h-9 w-auto object-contain animate-fade-in" />
             ) : (
               <img src={floorproLogo.url} alt="FloorPro" className="h-7 w-auto object-contain mx-auto" />
             )}
