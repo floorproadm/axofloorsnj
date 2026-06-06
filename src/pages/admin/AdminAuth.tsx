@@ -10,7 +10,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
-import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
 
 export default function AdminAuth() {
   const [searchParams] = useSearchParams();
