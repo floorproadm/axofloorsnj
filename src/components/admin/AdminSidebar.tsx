@@ -51,24 +51,7 @@ export function AdminSidebar() {
   const { signOut } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const chatUnread = useChatUnreadCount();
-
-  useEffect(() => {
-    async function fetchLogo() {
-      const { data } = await supabase
-        .from("company_settings")
-        .select("logo_url")
-        .limit(1)
-        .maybeSingle();
-      const path = (data as any)?.logo_url;
-      if (path) {
-        const { data: signed } = await supabase.storage.from("media").createSignedUrl(path, 3600);
-        if (signed) setLogoUrl(signed.signedUrl);
-      }
-    }
-    fetchLogo();
-  }, []);
 
   const topItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
@@ -123,13 +106,6 @@ export function AdminSidebar() {
         {/* Brand */}
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
-            {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-14 h-14 rounded-xl object-contain flex-shrink-0" />
-            ) : (
-              <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-lg">F</span>
-              </div>
-            )}
             {!collapsed && (
               <div className="animate-fade-in">
                 <h2 className="font-bold text-foreground text-lg">FloorPRO</h2>
