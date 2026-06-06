@@ -106,13 +106,6 @@ export function AdminSidebar() {
         {/* Brand */}
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
-            {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-14 h-14 rounded-xl object-contain flex-shrink-0" />
-            ) : (
-              <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-lg">F</span>
-              </div>
-            )}
             {!collapsed && (
               <div className="animate-fade-in">
                 <h2 className="font-bold text-foreground text-lg">FloorPRO</h2>
