@@ -334,7 +334,7 @@ export default function Dashboard() {
             </h2>
             <Link
               to="/admin/schedule"
-              className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline"
+              className="text-xs font-semibold text-[hsl(var(--state-risk))] hover:underline"
             >
               {t("dashboard.verAgenda")}
             </Link>
