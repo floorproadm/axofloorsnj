@@ -105,8 +105,8 @@ export function AdminSidebar() {
     <Sidebar collapsible="offcanvas">
       <SidebarContent className="bg-card/95 backdrop-blur-sm border-r border-border/50">
         {/* Brand */}
-        <div className="py-6 pl-5 pr-4 border-b border-border/50">
-          <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-start'}`}>
+        <div className="py-6 px-4 border-b border-border/50">
+          <div className="flex items-center justify-center">
             {!collapsed ? (
               <img src={floorproLogo.url} alt="FloorPro" className="h-14 w-auto object-contain animate-fade-in" />
             ) : (
