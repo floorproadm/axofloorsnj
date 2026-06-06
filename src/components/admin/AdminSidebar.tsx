@@ -108,9 +108,9 @@ export function AdminSidebar() {
         <div className="py-6 px-4 border-b border-border/50">
           <div className="flex items-center justify-center">
             {!collapsed ? (
-              <img src={floorproLogo.url} alt="FloorPro" className="h-14 w-auto object-contain animate-fade-in" />
+              <img src={floorproLogo.url} alt="FloorPro" className="h-16 w-auto object-contain animate-fade-in" />
             ) : (
-              <img src={floorproLogo.url} alt="FloorPro" className="h-10 w-auto object-contain" />
+              <img src={floorproLogo.url} alt="FloorPro" className="h-12 w-auto object-contain" />
             )}
           </div>
         </div>
