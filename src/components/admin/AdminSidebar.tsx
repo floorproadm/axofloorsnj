@@ -243,7 +243,7 @@ export function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <a
-                    href="/"
+                    href="https://axofloorsnj.com/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-150"
