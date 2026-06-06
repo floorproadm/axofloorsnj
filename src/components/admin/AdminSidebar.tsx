@@ -51,24 +51,7 @@ export function AdminSidebar() {
   const { signOut } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const chatUnread = useChatUnreadCount();
-
-  useEffect(() => {
-    async function fetchLogo() {
-      const { data } = await supabase
-        .from("company_settings")
-        .select("logo_url")
-        .limit(1)
-        .maybeSingle();
-      const path = (data as any)?.logo_url;
-      if (path) {
-        const { data: signed } = await supabase.storage.from("media").createSignedUrl(path, 3600);
-        if (signed) setLogoUrl(signed.signedUrl);
-      }
-    }
-    fetchLogo();
-  }, []);
 
   const topItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
