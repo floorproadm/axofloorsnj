@@ -334,7 +334,7 @@ export default function Dashboard() {
             </h2>
             <Link
               to="/admin/schedule"
-              className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline"
+              className="text-xs font-semibold text-[hsl(var(--state-risk))] hover:underline"
             >
               {t("dashboard.verAgenda")}
             </Link>
@@ -348,7 +348,7 @@ export default function Dashboard() {
                 className={cn(
                   "flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg transition-colors",
                   d.isToday
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] ring-1 ring-[hsl(var(--state-risk)/0.3)]"
                     : "bg-card text-muted-foreground"
                 )}
               >
@@ -382,7 +382,7 @@ export default function Dashboard() {
             </h2>
             <Link
               to="/admin/leads"
-              className="text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline"
+              className="text-xs font-semibold text-[hsl(var(--state-risk))] hover:underline"
             >
               {t("dashboard.verTudo")}
             </Link>
