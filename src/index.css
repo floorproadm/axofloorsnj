@@ -19,11 +19,11 @@
     min-width: 320px;
   }
   :root {
-    /* AXO Floors Brand Colors - Melhor contraste */
-    --navy-primary: 210 85% 15%; /* #0B1426 - Navy mais escuro para melhor contraste */
-    --navy-dark: 210 85% 10%; /* Navy ainda mais escuro */
-    --gold-accent: 45 100% 50%; /* #FFCC00 - Gold mais vibrante */
-    --gold-warm: 42 95% 45%; /* Gold mais escuro para texto */
+    /* FloorPro Brand Colors - Paleta Azul */
+    --navy-primary: 217 82% 53%; /* #2563eb - Primary Blue */
+    --navy-dark: 217 82% 40%; /* Azul mais escuro para gradientes */
+    --gold-accent: 207 89% 86%; /* #bbdefb - Light Blue */
+    --gold-warm: 207 89% 76%; /* Light Blue mais escuro para texto */
     --grey-secondary: 210 15% 25%; /* #3A4049 - Texto secundário mais legível */
     --grey-light: 210 20% 98%; /* #F8F9FA - Fundo mais suave */
     --white-pure: 0 0% 100%; /* Pure white */
