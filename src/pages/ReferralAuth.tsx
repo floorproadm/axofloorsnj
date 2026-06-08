@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Gift, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import floorproLogo from "@/assets/floorpro-logo.png.asset.json";
 
 export default function ReferralAuth() {
   const navigate = useNavigate();
@@ -107,8 +108,8 @@ export default function ReferralAuth() {
         </Link>
 
         <div className="flex flex-col items-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-            <Gift className="w-7 h-7 text-primary" />
+          <div className="w-full flex justify-center bg-white rounded-lg p-4 mb-4">
+            <img src={floorproLogo.url} alt="FloorPro" className="h-20 w-auto object-contain" />
           </div>
           <h1 className="text-2xl font-bold">Referral Program</h1>
           <p className="text-sm text-muted-foreground mt-1 text-center">

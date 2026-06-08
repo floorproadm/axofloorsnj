@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Handshake } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import floorproLogo from "@/assets/floorpro-logo.png.asset.json";
 
 export default function PartnerAuth() {
   const navigate = useNavigate();
@@ -54,8 +55,8 @@ export default function PartnerAuth() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 shadow-xl">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-            <Handshake className="w-7 h-7 text-primary" />
+          <div className="w-full flex justify-center bg-white rounded-lg p-4 mb-4">
+            <img src={floorproLogo.url} alt="FloorPro" className="h-20 w-auto object-contain" />
           </div>
           <h1 className="text-2xl font-bold">Partner Portal</h1>
           <p className="text-sm text-muted-foreground mt-1">Send referrals and track commissions</p>
