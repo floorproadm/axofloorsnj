@@ -105,17 +105,17 @@
   }
 
   .dark {
-    --background: var(--navy-primary);
+    --background: var(--navy-darkest);
     --foreground: var(--white-pure);
 
-    --card: var(--navy-primary);
+    --card: var(--navy-darkest);
     --card-foreground: var(--white-pure);
 
-    --popover: var(--navy-primary);
+    --popover: var(--navy-darkest);
     --popover-foreground: var(--white-pure);
 
     --primary: var(--gold-accent);
-    --primary-foreground: var(--navy-primary);
+    --primary-foreground: var(--navy-darkest);
 
     --secondary: var(--navy-dark);
     --secondary-foreground: var(--white-pure);
@@ -124,7 +124,7 @@
     --muted-foreground: var(--grey-light);
 
     --accent: var(--gold-accent);
-    --accent-foreground: var(--navy-primary);
+    --accent-foreground: var(--navy-darkest);
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: var(--white-pure);
