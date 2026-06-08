@@ -9,7 +9,7 @@ import { AlertCircle, ArrowLeft, Loader2, Eye, EyeOff, CheckCircle } from 'lucid
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import axoLogoOfficial from '@/assets/axo-logo-official.png';
+import floorproLogo from '@/assets/floorpro-logo.png.asset.json';
 import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
 
 export default function Auth() {
@@ -341,11 +341,11 @@ export default function Auth() {
 
         <Card className="border-2 border-gold/20 shadow-xl bg-black text-white">
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <img 
-                src={axoLogoOfficial} 
-                alt="AXO Floors Logo" 
-                className="h-16 w-auto"
+            <div className="w-full flex justify-center bg-white rounded-lg p-4 mb-4">
+              <img
+                src={floorproLogo.url}
+                alt="FloorPro"
+                className="h-20 w-auto object-contain"
               />
             </div>
             <CardTitle className="text-white">
