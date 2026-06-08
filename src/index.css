@@ -19,11 +19,11 @@
     min-width: 320px;
   }
   :root {
-    /* FloorPro Brand Colors - Paleta Azul */
-    --navy-primary: 217 82% 53%; /* #2563eb - Primary Blue */
-    --navy-dark: 217 82% 40%; /* Azul mais escuro para gradientes */
-    --gold-accent: 207 89% 86%; /* #bbdefb - Light Blue */
-    --gold-warm: 207 89% 76%; /* Light Blue mais escuro para texto */
+    /* AXO Floors Brand Colors - Melhor contraste */
+    --navy-primary: 210 85% 15%; /* #0B1426 - Navy mais escuro para melhor contraste */
+    --navy-dark: 210 85% 10%; /* Navy ainda mais escuro */
+    --gold-accent: 45 100% 50%; /* #FFCC00 - Gold mais vibrante */
+    --gold-warm: 42 95% 45%; /* Gold mais escuro para texto */
     --grey-secondary: 210 15% 25%; /* #3A4049 - Texto secundário mais legível */
     --grey-light: 210 20% 98%; /* #F8F9FA - Fundo mais suave */
     --white-pure: 0 0% 100%; /* Pure white */
@@ -80,9 +80,6 @@
     --shadow-elegant: 0 10px 30px -5px hsl(var(--navy-primary) / 0.15);
     --shadow-gold: 0 8px 25px -5px hsl(var(--gold-accent) / 0.4);
     
-    /* Dark mode azul escuro */
-    --navy-darkest: 217 60% 12%; /* Azul bem escuro para dark mode */
-    
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -105,17 +102,17 @@
   }
 
   .dark {
-    --background: var(--navy-darkest);
+    --background: var(--navy-primary);
     --foreground: var(--white-pure);
 
-    --card: var(--navy-darkest);
+    --card: var(--navy-primary);
     --card-foreground: var(--white-pure);
 
-    --popover: var(--navy-darkest);
+    --popover: var(--navy-primary);
     --popover-foreground: var(--white-pure);
 
     --primary: var(--gold-accent);
-    --primary-foreground: var(--navy-darkest);
+    --primary-foreground: var(--navy-primary);
 
     --secondary: var(--navy-dark);
     --secondary-foreground: var(--white-pure);
@@ -124,7 +121,7 @@
     --muted-foreground: var(--grey-light);
 
     --accent: var(--gold-accent);
-    --accent-foreground: var(--navy-darkest);
+    --accent-foreground: var(--navy-primary);
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: var(--white-pure);
