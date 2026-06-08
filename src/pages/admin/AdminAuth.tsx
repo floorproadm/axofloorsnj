@@ -170,20 +170,20 @@ export default function AdminAuth() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <AdminPWAHead />
       <div className="w-full max-w-md">
-        <Card className="border-2 border-gold/20 shadow-xl bg-black text-white">
+        <Card className="border-2 border-[#bbdefb] shadow-xl bg-white text-foreground">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4 bg-white rounded-lg p-3">
               <img src={floorproLogo.url} alt="FloorPro" className="h-12 w-auto object-contain" />
             </div>
             {view !== 'login' && (
-              <CardTitle className="text-white">
+              <CardTitle className="text-foreground">
                 {getTitle()}
               </CardTitle>
             )}
-            <CardDescription className="text-gray-300">
+            <CardDescription className="text-muted-foreground">
               {getDescription()}
             </CardDescription>
           </CardHeader>
@@ -205,7 +205,7 @@ export default function AdminAuth() {
             {view === 'login' && (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <Label htmlFor="email" className="text-foreground">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -213,12 +213,12 @@ export default function AdminAuth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="bg-white border-input text-foreground"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white">Senha</Label>
+                  <Label htmlFor="password" className="text-foreground">Senha</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -227,12 +227,12 @@ export default function AdminAuth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="bg-gray-800 border-gray-600 text-white pr-10"
+                      className="bg-white border-input text-foreground pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
@@ -241,7 +241,7 @@ export default function AdminAuth() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gold hover:bg-gold/90"
+                  className="w-full bg-[#2563eb] hover:bg-[#1d4fd1] text-white"
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -252,7 +252,7 @@ export default function AdminAuth() {
                   <button
                     type="button"
                     onClick={() => setView('forgot')}
-                    className="text-sm text-gold hover:text-gold/80 underline"
+                    className="text-sm text-[#2563eb] hover:text-[#1d4fd1] underline"
                   >
                     Esqueci minha senha
                   </button>
@@ -263,7 +263,7 @@ export default function AdminAuth() {
             {view === 'forgot' && (
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <Label htmlFor="email" className="text-foreground">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -271,13 +271,13 @@ export default function AdminAuth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="bg-white border-input text-foreground"
                   />
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-gold hover:bg-gold/90"
+                  className="w-full bg-[#2563eb] hover:bg-[#1d4fd1] text-white"
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -288,7 +288,7 @@ export default function AdminAuth() {
                   <button
                     type="button"
                     onClick={() => setView('login')}
-                    className="text-sm text-gray-400 hover:text-white underline"
+                    className="text-sm text-muted-foreground hover:text-foreground underline"
                   >
                     Voltar ao login
                   </button>
@@ -299,7 +299,7 @@ export default function AdminAuth() {
             {view === 'reset' && (
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-white">Nova Senha</Label>
+                  <Label htmlFor="newPassword" className="text-foreground">Nova Senha</Label>
                   <div className="relative">
                     <Input
                       id="newPassword"
@@ -309,12 +309,12 @@ export default function AdminAuth() {
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
                       minLength={6}
-                      className="bg-gray-800 border-gray-600 text-white pr-10"
+                      className="bg-white border-input text-foreground pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
@@ -322,7 +322,7 @@ export default function AdminAuth() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-white">Confirmar Senha</Label>
+                  <Label htmlFor="confirmPassword" className="text-foreground">Confirmar Senha</Label>
                   <Input
                     id="confirmPassword"
                     type={showPassword ? "text" : "password"}
@@ -331,13 +331,13 @@ export default function AdminAuth() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="bg-white border-input text-foreground"
                   />
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-gold hover:bg-gold/90"
+                  className="w-full bg-[#2563eb] hover:bg-[#1d4fd1] text-white"
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
