@@ -176,7 +176,7 @@ export default function AdminAuth() {
         <Card className="border-2 border-[#bbdefb] shadow-xl bg-white text-foreground">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4 bg-white rounded-lg p-4">
-              <img src={floorproLogo.url} alt="FloorPro" className="h-24 w-auto object-contain" />
+              <img src={floorproLogo.url} alt="FloorPro" className="h-20 w-auto object-contain" />
             </div>
             {view !== 'login' && (
               <CardTitle className="text-foreground">
