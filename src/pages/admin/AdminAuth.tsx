@@ -12,6 +12,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminPWAHead } from '@/components/admin/AdminPWAHead';
 import floorproLogo from '@/assets/floorpro-logo.png.asset.json';
 
+const hasAdminAccess = async (userId: string) => {
+  const { data, error } = await supabase.rpc('has_role', {
+    _user_id: userId,
+    _role: 'admin',
+  });
+
+  return !error && data === true;
+};
+
 export default function AdminAuth() {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode');
@@ -37,10 +46,20 @@ export default function AdminAuth() {
   }, [mode]);
 
   useEffect(() => {
-    if (user && view !== 'reset' && window.location.pathname.startsWith('/admin/auth')) {
-      navigate('/admin', { replace: true });
-    }
-  }, [user, navigate, view]);
+    if (!user?.id || view === 'reset' || !window.location.pathname.startsWith('/admin/auth')) return;
+
+    let cancelled = false;
+
+    hasAdminAccess(user.id).then((isAdmin) => {
+      if (!cancelled && isAdmin) {
+        navigate('/admin', { replace: true });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, navigate, view]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,11 +70,26 @@ export default function AdminAuth() {
     try {
       const result = await signIn(email, password);
       if (!result.error) {
+        const { data: { user: signedInUser } } = await supabase.auth.getUser();
+        const isAdmin = signedInUser?.id ? await hasAdminAccess(signedInUser.id) : false;
+
+        if (!isAdmin) {
+          const message = 'Esta conta não tem acesso administrativo.';
+          await supabase.auth.signOut();
+          setError(message);
+          toast({
+            title: "Acesso negado",
+            description: message,
+            variant: "destructive",
+          });
+          return;
+        }
+
         toast({
           title: "Login realizado com sucesso!",
           description: "Redirecionando para a área administrativa...",
         });
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
         setError(result.error.message);
         toast({
