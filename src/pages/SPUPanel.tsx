@@ -339,6 +339,8 @@ function OrgsTab() {
           </table>
         </div>
       </div>
+
+      <OrgDetailModal orgId={viewOrgId} onClose={() => setViewOrgId(null)} />
     </div>
   );
 }
