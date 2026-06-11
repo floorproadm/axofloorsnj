@@ -198,7 +198,50 @@ function OverviewTab() {
           </div>
         </Card>
       </div>
+
+      <OrphanUsersCard />
     </div>
+  );
+}
+
+function OrphanUsersCard() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    supabase.rpc("spu_orphan_users" as any).then(({ data, error }) => {
+      if (error) toast.error(error.message);
+      else setRows((data as any[]) || []);
+      setLoading(false);
+    });
+  }, []);
+  return (
+    <Card title={`Users without organization (${rows.length})`} icon={<Users className="w-4 h-4" />}>
+      {loading ? (
+        <div className="text-xs text-white/50">Loading…</div>
+      ) : rows.length === 0 ? (
+        <div className="text-xs text-white/50">All users are linked to an organization.</div>
+      ) : (
+        <div className="divide-y divide-white/5">
+          {rows.map((u) => (
+            <div key={u.user_id} className="py-2 flex items-center justify-between gap-3 text-sm">
+              <div className="min-w-0">
+                <div className="font-medium truncate">{u.full_name ?? "—"}</div>
+                <div className="text-xs text-white/50 truncate">{u.email ?? "—"}{u.phone ? ` · ${u.phone}` : ""}</div>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {(u.roles ?? []).length === 0 ? (
+                  <Badge variant="outline" className="border-amber-500/40 text-amber-300/90 text-[10px]">no role</Badge>
+                ) : (
+                  (u.roles as string[]).map((r) => (
+                    <Badge key={r} variant="outline" className="border-white/20 text-white/70 text-[10px]">{r}</Badge>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 
