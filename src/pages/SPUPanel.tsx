@@ -410,7 +410,16 @@ function OrgsTab() {
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
-        <div className="ml-auto text-xs text-white/50 self-center">{filtered.length} / {rows.length}</div>
+        <div className="ml-auto flex items-center gap-3">
+          <div className="text-xs text-white/50 self-center">{filtered.length} / {rows.length}</div>
+          <Button
+            size="sm"
+            onClick={() => setCreateOpen(true)}
+            className="h-8 px-3 bg-[#0066FF] hover:bg-[#0052CC] text-white"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" /> New organization
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-white/10 overflow-hidden">
