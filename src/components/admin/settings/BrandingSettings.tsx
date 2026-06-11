@@ -199,7 +199,8 @@ export default function BrandingSettings() {
           .eq("id", settings.id);
         if (updateError) throw updateError;
         await refetch();
-        toast({ title: "✓ Logo da sidebar atualizado", description: "Recarregue a página para ver na sidebar." });
+        await queryClient.invalidateQueries({ queryKey: ["admin-sidebar-tenant-logo"] });
+        toast({ title: "✓ Logo da sidebar atualizado" });
       } else {
         toast({ title: "Logo enviado", description: "Clique em Salvar para aplicar." });
       }
