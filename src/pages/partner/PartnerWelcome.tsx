@@ -16,19 +16,38 @@ export default function PartnerWelcome() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [companyName, setCompanyName] = useState("FloorPRO");
 
   useEffect(() => {
     // Supabase auto-parses the magic-link hash and establishes a session.
     const sub = supabase.auth.onAuthStateChange((_evt, session) => {
       setHasSession(!!session);
       setChecking(false);
+      if (session?.user?.id) loadBranding(session.user.id);
     });
     supabase.auth.getSession().then(({ data }) => {
       setHasSession(!!data.session);
       setChecking(false);
+      if (data.session?.user?.id) loadBranding(data.session.user.id);
     });
     return () => sub.data.subscription.unsubscribe();
   }, []);
+
+  const loadBranding = async (userId: string) => {
+    const { data: pu } = await supabase
+      .from("partner_users" as any)
+      .select("organization_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const orgId = (pu as any)?.organization_id;
+    if (!orgId) return;
+    const { data: cs } = await supabase
+      .from("company_settings")
+      .select("company_name")
+      .eq("organization_id", orgId)
+      .maybeSingle();
+    if (cs?.company_name) setCompanyName(cs.company_name);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +84,7 @@ export default function PartnerWelcome() {
         <Card className="w-full max-w-md p-8 text-center">
           <h1 className="text-xl font-bold mb-2">Invitation link expired</h1>
           <p className="text-sm text-muted-foreground mb-6">
-            This invite link is no longer valid. Please contact AXO Floors to receive a new one.
+            This invite link is no longer valid. Please contact {companyName} to receive a new one.
           </p>
           <Button onClick={() => navigate("/partner/auth")} className="w-full">
             Go to Partner Login

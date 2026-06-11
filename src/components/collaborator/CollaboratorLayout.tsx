@@ -24,6 +24,24 @@ export default function CollaboratorLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Tenant branding
+  const { data: companyName = "FloorPRO" } = useQuery({
+    queryKey: ["collab-company-name", user?.id],
+    queryFn: async () => {
+      const { data: orgRes } = await supabase.rpc("get_user_org_id");
+      const orgId = orgRes as string | null;
+      if (!orgId) return "FloorPRO";
+      const { data } = await supabase
+        .from("company_settings")
+        .select("company_name")
+        .eq("organization_id", orgId)
+        .maybeSingle();
+      return (data?.company_name as string) || "FloorPRO";
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Unread chat messages count
   const { data: unreadChatCount = 0 } = useQuery({
     queryKey: ["unread-chat-count", user?.id],
@@ -85,7 +103,7 @@ export default function CollaboratorLayout() {
         <button onClick={() => navigate("/collaborator")} className="flex items-center gap-2">
           <HardHat className="h-5 w-5 text-primary" />
           <span className="font-heading font-semibold text-foreground">
-            AXO Field
+            {companyName} Field
           </span>
         </button>
 
