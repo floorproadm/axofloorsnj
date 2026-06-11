@@ -68,6 +68,7 @@ import ResetPassword from "./pages/ResetPassword";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
 import OnboardingWizard from "./pages/OnboardingWizard";
+import LandingPage from "./pages/LandingPage";
 
 
 
