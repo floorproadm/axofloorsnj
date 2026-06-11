@@ -1182,46 +1182,6 @@ function UserDetailModal({
               )}
             </Section>
 
-            <Section title="Organization">
-              {data.membership ? (
-                <div className="rounded-lg border border-white/10 p-4 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-medium">{data.membership.organization_name}</div>
-                    <div className="text-xs text-white/50 mt-0.5 flex items-center gap-3">
-                      <Badge variant="outline" className="border-white/20 text-white/70 text-[10px] capitalize">{data.membership.role}</Badge>
-                      <span>Joined {fmtDate(data.membership.joined_at)}</span>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline" disabled={busy} onClick={removeFromOrg}
-                    className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200">
-                    Remove from org
-                  </Button>
-                </div>
-              ) : (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-                  <div className="text-sm text-amber-200/90">No organization linked.</div>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <Select value={assignOrg} onValueChange={setAssignOrg}>
-                      <SelectTrigger className="w-56 bg-white/5 border-white/10"><SelectValue placeholder="Select organization" /></SelectTrigger>
-                      <SelectContent>
-                        {orgs.map(([id, name]) => <SelectItem key={id} value={id}>{name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Select value={assignRole} onValueChange={setAssignRole}>
-                      <SelectTrigger className="w-32 bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">member</SelectItem>
-                        <SelectItem value="admin">admin</SelectItem>
-                        <SelectItem value="owner">owner</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" disabled={busy || !assignOrg} onClick={assignToOrg}>Assign</Button>
-                  </div>
-                </div>
-              )}
-            </Section>
-
-            <Section title="Employment">
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <Meta label="Type">{data.profile.employment_type ?? "—"}</Meta>
                 <Meta label="Daily rate">{data.profile.daily_rate ? `$${Number(data.profile.daily_rate).toFixed(0)}` : "—"}</Meta>
