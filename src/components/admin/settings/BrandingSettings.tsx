@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
+import { useOrgPlan } from "@/hooks/useOrgPlan";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,14 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush, Phone, Mail, Globe } from "lucide-react";
+import { Save, Loader2, Palette, Upload, X, Clock, Paintbrush, Phone, Mail, Globe, Lock, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import floorproLogo from "@/assets/floorpro-logo.png.asset.json";
 
 const WatermarkSettings = lazy(() => import("./WatermarkSettings"));
 
 export default function BrandingSettings() {
   const { settings, isLoading, refetch } = useCompanySettings();
+  const { isPro, isLoading: planLoading } = useOrgPlan();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
@@ -226,91 +229,52 @@ export default function BrandingSettings() {
             <p className="text-xs text-muted-foreground">Frase curta exibida abaixo do nome em propostas e materiais.</p>
           </div>
 
-          <div className="space-y-2">
-            <Label>Logo da Empresa</Label>
-            <div className="flex items-center gap-4">
-              {logoDisplayUrl ? (
-                <div className="relative w-20 h-20 rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
-                  <img src={logoDisplayUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
-                  <button
-                    onClick={handleClearLogo}
-                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-muted-foreground" />
-                </div>
-              )}
-              <div>
-                <Button variant="outline" size="sm" disabled={uploading} asChild>
-                  <label className="cursor-pointer">
-                    {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                    {logoDisplayUrl ? "Trocar" : "Enviar"} Logo
-                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                  </label>
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1">PNG ou JPG, máximo 2MB. Usado em propostas, materiais e tela.</p>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <Label>Logo para E-mails</Label>
-            <p className="text-xs text-muted-foreground -mt-1">
-              Versão escura sobre fundo branco — usada no cabeçalho de todos os e-mails transacionais. O logo principal acima costuma ser claro/transparente e não aparece bem em fundos brancos.
-            </p>
-            <div className="flex items-center gap-4 pt-1">
-              {emailLogoUrl ? (
-                <div className="relative w-32 h-20 rounded-lg border bg-white flex items-center justify-center overflow-hidden p-2">
-                  <img src={emailLogoUrl} alt="Email Logo" className="max-w-full max-h-full object-contain" />
-                  <button
-                    onClick={handleClearEmailLogo}
-                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                    type="button"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-32 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-white">
-                  <Upload className="w-6 h-6 text-muted-foreground" />
-                </div>
-              )}
-              <div>
-                <Button variant="outline" size="sm" disabled={uploadingEmailLogo} asChild>
-                  <label className="cursor-pointer">
-                    {uploadingEmailLogo ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                    {emailLogoUrl ? "Trocar" : "Enviar"} Logo de E-mail
-                    <input type="file" accept="image/*" className="hidden" onChange={handleEmailLogoUpload} />
-                  </label>
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1">PNG transparente recomendado · máx 2MB</p>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-3">
-            <Label>Logos da Proposta (Light / Dark)</Label>
-            <p className="text-xs text-muted-foreground -mt-1">
-              Versões otimizadas para cada tema do preview da proposta. Use uma versão escura sobre fundo branco (Light) e uma versão clara sobre fundo escuro (Dark). Se vazio, usa o logo da empresa.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-              {/* Light variant */}
+          {isPro ? (
+            <>
               <div className="space-y-2">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Light Mode</div>
-                <div className="flex items-center gap-3">
-                  {proposalLogoLightUrl ? (
-                    <div className="relative w-28 h-20 rounded-lg border bg-white flex items-center justify-center overflow-hidden p-2">
-                      <img src={proposalLogoLightUrl} alt="Logo Light" className="max-w-full max-h-full object-contain" />
+                <Label>Logo da Empresa</Label>
+                <div className="flex items-center gap-4">
+                  {logoDisplayUrl ? (
+                    <div className="relative w-20 h-20 rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
+                      <img src={logoDisplayUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
                       <button
-                        onClick={() => setProposalLogoLightUrl("")}
+                        onClick={handleClearLogo}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div>
+                    <Button variant="outline" size="sm" disabled={uploading} asChild>
+                      <label className="cursor-pointer">
+                        {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                        {logoDisplayUrl ? "Trocar" : "Enviar"} Logo
+                        <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                      </label>
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">PNG ou JPG, máximo 2MB. Usado em propostas, materiais e tela.</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label>Logo para E-mails</Label>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Versão escura sobre fundo branco — usada no cabeçalho de todos os e-mails transacionais. O logo principal acima costuma ser claro/transparente e não aparece bem em fundos brancos.
+                </p>
+                <div className="flex items-center gap-4 pt-1">
+                  {emailLogoUrl ? (
+                    <div className="relative w-32 h-20 rounded-lg border bg-white flex items-center justify-center overflow-hidden p-2">
+                      <img src={emailLogoUrl} alt="Email Logo" className="max-w-full max-h-full object-contain" />
+                      <button
+                        onClick={handleClearEmailLogo}
                         className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
                         type="button"
                       >
@@ -318,50 +282,127 @@ export default function BrandingSettings() {
                       </button>
                     </div>
                   ) : (
-                    <div className="w-28 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-white">
-                      <Upload className="w-5 h-5 text-muted-foreground" />
+                    <div className="w-32 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-white">
+                      <Upload className="w-6 h-6 text-muted-foreground" />
                     </div>
                   )}
-                  <Button variant="outline" size="sm" disabled={uploadingProposalLight} asChild>
-                    <label className="cursor-pointer">
-                      {uploadingProposalLight ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                      {proposalLogoLightUrl ? "Trocar" : "Enviar"}
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleProposalLogoUpload(e, "light")} />
-                    </label>
-                  </Button>
+                  <div>
+                    <Button variant="outline" size="sm" disabled={uploadingEmailLogo} asChild>
+                      <label className="cursor-pointer">
+                        {uploadingEmailLogo ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                        {emailLogoUrl ? "Trocar" : "Enviar"} Logo de E-mail
+                        <input type="file" accept="image/*" className="hidden" onChange={handleEmailLogoUpload} />
+                      </label>
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">PNG transparente recomendado · máx 2MB</p>
+                  </div>
                 </div>
               </div>
-              {/* Dark variant */}
-              <div className="space-y-2">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Dark Mode</div>
-                <div className="flex items-center gap-3">
-                  {proposalLogoDarkUrl ? (
-                    <div className="relative w-28 h-20 rounded-lg border bg-neutral-900 flex items-center justify-center overflow-hidden p-2">
-                      <img src={proposalLogoDarkUrl} alt="Logo Dark" className="max-w-full max-h-full object-contain" />
-                      <button
-                        onClick={() => setProposalLogoDarkUrl("")}
-                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                        type="button"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <Label>Logos da Proposta (Light / Dark)</Label>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Versões otimizadas para cada tema do preview da proposta. Use uma versão escura sobre fundo branco (Light) e uma versão clara sobre fundo escuro (Dark). Se vazio, usa o logo da empresa.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  {/* Light variant */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Light Mode</div>
+                    <div className="flex items-center gap-3">
+                      {proposalLogoLightUrl ? (
+                        <div className="relative w-28 h-20 rounded-lg border bg-white flex items-center justify-center overflow-hidden p-2">
+                          <img src={proposalLogoLightUrl} alt="Logo Light" className="max-w-full max-h-full object-contain" />
+                          <button
+                            onClick={() => setProposalLogoLightUrl("")}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                            type="button"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-28 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-white">
+                          <Upload className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <Button variant="outline" size="sm" disabled={uploadingProposalLight} asChild>
+                        <label className="cursor-pointer">
+                          {uploadingProposalLight ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                          {proposalLogoLightUrl ? "Trocar" : "Enviar"}
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleProposalLogoUpload(e, "light")} />
+                        </label>
+                      </Button>
                     </div>
-                  ) : (
-                    <div className="w-28 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-neutral-900">
-                      <Upload className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  {/* Dark variant */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Dark Mode</div>
+                    <div className="flex items-center gap-3">
+                      {proposalLogoDarkUrl ? (
+                        <div className="relative w-28 h-20 rounded-lg border bg-neutral-900 flex items-center justify-center overflow-hidden p-2">
+                          <img src={proposalLogoDarkUrl} alt="Logo Dark" className="max-w-full max-h-full object-contain" />
+                          <button
+                            onClick={() => setProposalLogoDarkUrl("")}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                            type="button"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-28 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-neutral-900">
+                          <Upload className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <Button variant="outline" size="sm" disabled={uploadingProposalDark} asChild>
+                        <label className="cursor-pointer">
+                          {uploadingProposalDark ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                          {proposalLogoDarkUrl ? "Trocar" : "Enviar"}
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleProposalLogoUpload(e, "dark")} />
+                        </label>
+                      </Button>
                     </div>
-                  )}
-                  <Button variant="outline" size="sm" disabled={uploadingProposalDark} asChild>
-                    <label className="cursor-pointer">
-                      {uploadingProposalDark ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                      {proposalLogoDarkUrl ? "Trocar" : "Enviar"}
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleProposalLogoUpload(e, "dark")} />
-                    </label>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* BASIC PLAN — locked logo card with PRO upgrade CTA */
+            <div className="space-y-4">
+              <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-16 rounded-lg bg-white border flex items-center justify-center flex-shrink-0">
+                    <img src={floorproLogo.url} alt="FloorPro" className="max-w-full max-h-full object-contain p-1" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                      <p className="text-sm font-semibold">Logo da Empresa</p>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-primary/40 text-primary">PRO</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Seu plano <strong>Basic</strong> usa o logo oficial FloorPro em todas as telas, propostas, faturas e portal do cliente. Faça upgrade para o plano <strong>PRO</strong> para subir seu próprio logo.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3 pt-3 border-t border-primary/20">
+                  <p className="text-xs text-muted-foreground">
+                    PRO inclui logo customizado + domínio próprio.
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => window.location.href = "mailto:support@floorpro.app?subject=Upgrade para PRO"}
+                    className="gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Upgrade para PRO
                   </Button>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
