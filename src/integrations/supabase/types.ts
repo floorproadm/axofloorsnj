@@ -4974,6 +4974,20 @@ export type Database = {
         }[]
       }
       spu_platform_overview: { Args: never; Returns: Json }
+      spu_users_list: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          org_role: string
+          organization_id: string
+          organization_name: string
+          phone: string
+          roles: string[]
+          user_id: string
+        }[]
+      }
       spu_waitlist_list: {
         Args: never
         Returns: {
