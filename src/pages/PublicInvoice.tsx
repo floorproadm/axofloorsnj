@@ -124,13 +124,13 @@ export default function PublicInvoice() {
       <div className="max-w-[760px] mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-[#0f172a] text-white px-8 py-7 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">
-              AXO <span className="text-amber-500">Floors</span> NJ
+          <div className="flex items-center gap-3 min-w-0">
+            {logoSignedUrl && (
+              <img src={logoSignedUrl} alt={brand.company_name} className="h-10 max-w-[120px] object-contain bg-white rounded p-1" />
+            )}
+            <h1 className="text-2xl font-extrabold tracking-tight truncate">
+              {brand.company_name}
             </h1>
-            <p className="text-[10px] text-slate-400 uppercase tracking-[2px] mt-0.5">
-              Hardwood · Refinishing · Installation
-            </p>
           </div>
           <div className="text-right">
             <p className="text-base font-bold">{invoice.invoice_number}</p>
@@ -254,8 +254,7 @@ export default function PublicInvoice() {
 
         {/* Footer */}
         <div className="text-center py-5 border-t border-slate-200 text-[10px] text-slate-400 space-y-0.5">
-          <p>AXO Floors NJ · (732) 351-8653 · axofloorsnj.com · NJ Licensed & Insured</p>
-          <p>13A License # 13VH13302100</p>
+          <p>{[brand.company_name, brand.phone, brand.website].filter(Boolean).join(" · ")}</p>
         </div>
       </div>
     </div>
