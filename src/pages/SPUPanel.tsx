@@ -490,6 +490,11 @@ function OrgsTab() {
       </div>
 
       <OrgDetailModal orgId={viewOrgId} onClose={() => setViewOrgId(null)} />
+      <CreateOrgModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={() => { setCreateOpen(false); load(); }}
+      />
     </div>
   );
 }
