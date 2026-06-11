@@ -978,6 +978,53 @@ function OrgDetailModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               )}
             </Section>
 
+            {/* Onboarding CTA */}
+            {!data.org.onboarded_at && data.owner && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm text-amber-100">Owner onboarding pending</div>
+                    <div className="text-xs text-amber-200/70 mt-1">
+                      {data.owner.full_name ?? data.owner.email} hasn't completed onboarding yet. Resend the invite or open the owner login page.
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={resendInvite}
+                    disabled={resending}
+                    className="border-white/20 text-white hover:bg-white/10 bg-white/5"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${resending ? "animate-spin" : ""}`} />
+                    {resending ? "Sending…" : "Resend invite"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(`${window.location.origin}/admin/auth`, "_blank")}
+                    className="border-white/20 text-white hover:bg-white/10 bg-white/5"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                    Open /admin/auth
+                  </Button>
+                  {resentLink && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => copyLink(resentLink)}
+                      className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/20"
+                    >
+                      <Copy className="w-3.5 h-3.5 mr-1.5" />
+                      Copy onboarding link
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Members */}
             <Section title={`Members (${data.members?.length ?? 0})`}>
               {!data.members || data.members.length === 0 ? (
