@@ -1082,31 +1082,6 @@ function UserDetailModal({
     return true;
   };
 
-  const assignToOrg = async () => {
-    if (!assignOrg || !userId) return;
-    const ok = await run(() =>
-      supabase.rpc("spu_user_set_org" as any, { p_user_id: userId, p_org_id: assignOrg, p_role: assignRole })
-    );
-    if (ok) { toast.success("Assigned to organization"); refresh(); }
-  };
-  const removeFromOrg = async () => {
-    if (!userId) return;
-    if (!confirm("Remove this user from the organization?")) return;
-    const ok = await run(() => supabase.rpc("spu_user_remove_org" as any, { p_user_id: userId }));
-    if (ok) { toast.success("Removed from organization"); refresh(); }
-  };
-  const addPlatformRole = async () => {
-    if (!addRole || !userId) return;
-    const ok = await run(() => supabase.rpc("spu_user_add_role" as any, { p_user_id: userId, p_role: addRole as any }));
-    if (ok) { toast.success(`Role ${addRole} added`); setAddRole(""); refresh(); }
-  };
-  const removePlatformRole = async (role: string) => {
-    if (!userId) return;
-    if (!confirm(`Remove role "${role}"?`)) return;
-    const ok = await run(() => supabase.rpc("spu_user_remove_role" as any, { p_user_id: userId, p_role: role as any }));
-    if (ok) { toast.success(`Role ${role} removed`); refresh(); }
-  };
-
   const dangerAction = async (action: "reset_password" | "disable" | "enable" | "impersonate") => {
     if (!userId) return;
     const confirms: Record<string, string> = {
