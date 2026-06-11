@@ -682,6 +682,29 @@ function OrgDetailModal({ orgId, onClose }: { orgId: string | null; onClose: () 
               )}
             </Section>
 
+            {/* Members */}
+            <Section title={`Members (${data.members?.length ?? 0})`}>
+              {!data.members || data.members.length === 0 ? (
+                <div className="text-sm text-white/50">No members.</div>
+              ) : (
+                <div className="rounded-lg border border-white/10 divide-y divide-white/5">
+                  {data.members.map((m: any) => (
+                    <div key={m.user_id ?? m.email} className="p-3 flex items-center justify-between gap-3 text-sm">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium truncate">{m.full_name ?? "—"}</div>
+                        <div className="text-xs text-white/50 truncate flex items-center gap-3 flex-wrap">
+                          {m.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {m.email}</span>}
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="border-white/20 text-white/70 text-xs capitalize">
+                        {m.role ?? "member"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Section>
+
             {/* Totals */}
             <Section title="Totals">
               <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
