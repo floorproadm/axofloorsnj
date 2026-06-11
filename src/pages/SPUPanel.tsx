@@ -884,10 +884,13 @@ type OrgDetail = {
 function OrgDetailModal({ orgId, onClose }: { orgId: string | null; onClose: () => void }) {
   const [data, setData] = useState<OrgDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resentLink, setResentLink] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orgId) {
       setData(null);
+      setResentLink(null);
       return;
     }
     setLoading(true);
@@ -897,6 +900,29 @@ function OrgDetailModal({ orgId, onClose }: { orgId: string | null; onClose: () 
       setLoading(false);
     });
   }, [orgId]);
+
+  const resendInvite = async () => {
+    if (!orgId) return;
+    setResending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("spu-owner-invite-resend", {
+        body: { org_id: orgId, origin: window.location.origin },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setResentLink((data as any)?.action_link ?? null);
+      toast.success("Invite resent to owner");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to resend invite");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const copyLink = (link: string) => {
+    navigator.clipboard.writeText(link);
+    toast.success("Onboarding link copied");
+  };
 
   const leadEntries = data ? Object.entries(data.lead_summary) : [];
 
