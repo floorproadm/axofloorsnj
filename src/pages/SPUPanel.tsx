@@ -1004,9 +1004,6 @@ function Loading() {
 
 /* ---------- User Detail Modal ---------- */
 
-const ALL_PLATFORM_ROLES = [
-  "admin","moderator","user","manager","salesperson","installer","accountant","sander","sander_installer","platform_admin",
-] as const;
 
 type UserDetail = {
   profile: {
