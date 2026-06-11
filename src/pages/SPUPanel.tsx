@@ -117,12 +117,14 @@ export default function SPUPanel() {
           <TabsList className="bg-white/5 border border-white/10">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="orgs">Organizations</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
             <TabsTrigger value="diag">Diagnostics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview"><OverviewTab /></TabsContent>
           <TabsContent value="orgs"><OrgsTab /></TabsContent>
+          <TabsContent value="users"><UsersTab /></TabsContent>
           <TabsContent value="waitlist"><WaitlistTab /></TabsContent>
           <TabsContent value="diag"><DiagnosticsTab /></TabsContent>
         </Tabs>
