@@ -1190,37 +1190,6 @@ function UserDetailModal({
               </div>
             </Section>
 
-            <Section title="Platform roles">
-              <div className="flex flex-wrap items-center gap-2">
-                {data.platform_roles.length === 0 && <span className="text-xs text-white/40">No roles</span>}
-                {data.platform_roles.map((r) => (
-                  <Badge key={r} variant="outline" className="border-white/20 text-white/80 text-xs flex items-center gap-1.5 pr-1">
-                    {r}
-                    <button
-                      onClick={() => removePlatformRole(r)}
-                      disabled={busy || (r === "platform_admin" && data.is_self)}
-                      className="ml-1 hover:text-red-300 disabled:opacity-30"
-                      title={r === "platform_admin" && data.is_self ? "Cannot remove your own platform_admin" : "Remove role"}
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                    </button>
-                  </Badge>
-                ))}
-                {availableRolesToAdd.length > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <Select value={addRole} onValueChange={setAddRole}>
-                      <SelectTrigger className="w-44 h-8 bg-white/5 border-white/10 text-xs"><SelectValue placeholder="+ Add role" /></SelectTrigger>
-                      <SelectContent>
-                        {availableRolesToAdd.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" variant="outline" disabled={busy || !addRole} onClick={addPlatformRole}
-                      className="border-white/10 h-8 text-xs">Add</Button>
-                  </div>
-                )}
-              </div>
-            </Section>
-
             <Section title="Activity">
               <div className="grid grid-cols-4 gap-3">
                 <MiniStat label="Projects" value={data.activity.projects_assigned} />
