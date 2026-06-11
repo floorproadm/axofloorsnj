@@ -4944,6 +4944,15 @@ export type Database = {
             Returns: Json
           }
       spu_org_detail: { Args: { p_org_id: string }; Returns: Json }
+      spu_organization_create: {
+        Args: {
+          p_name: string
+          p_owner_email: string
+          p_plan?: string
+          p_trial_days?: number
+        }
+        Returns: Json
+      }
       spu_organizations_list: {
         Args: never
         Returns: {
