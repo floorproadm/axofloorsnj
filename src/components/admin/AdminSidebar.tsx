@@ -58,8 +58,9 @@ export function AdminSidebar() {
   const chatUnread = useChatUnreadCount();
   const { isPro } = useOrgPlan();
 
-  // Only fetch tenant logo when the org is on PRO. Prefer the dedicated
-  // sidebar logo; fall back to the general company logo.
+  // Only fetch tenant sidebar logo when the org is on PRO.
+  // If sidebar_logo_url is not set, fall back DIRECTLY to the FloorPro logo
+  // (do NOT use the general company logo — that one is for proposals/emails).
   const { data: tenantLogoUrl } = useQuery({
     queryKey: ["admin-sidebar-tenant-logo", isPro],
     enabled: isPro,
@@ -70,11 +71,10 @@ export function AdminSidebar() {
       if (!orgId) return "";
       const { data: cs } = await supabase
         .from("company_settings")
-        .select("sidebar_logo_url, logo_url")
+        .select("sidebar_logo_url")
         .eq("organization_id", orgId)
         .maybeSingle();
-      const path = (cs as any)?.sidebar_logo_url || (cs as any)?.logo_url;
-      return await resolveLogoUrl(path);
+      return await resolveLogoUrl((cs as any)?.sidebar_logo_url);
     },
   });
 
