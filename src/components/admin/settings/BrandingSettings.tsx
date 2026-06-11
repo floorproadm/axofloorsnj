@@ -337,6 +337,44 @@ export default function BrandingSettings() {
               <Separator />
 
               <div className="space-y-2">
+                <Label>Logo da Sidebar (Admin)</Label>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Versão otimizada para o menu lateral do painel admin (fundo escuro). Se vazio, usa o logo da empresa.
+                </p>
+                <div className="flex items-center gap-4 pt-1">
+                  {sidebarLogoDisplayUrl ? (
+                    <div className="relative w-20 h-20 rounded-lg border bg-neutral-900 flex items-center justify-center overflow-hidden p-2">
+                      <img src={sidebarLogoDisplayUrl} alt="Sidebar Logo" className="max-w-full max-h-full object-contain" />
+                      <button
+                        onClick={handleClearSidebarLogo}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        type="button"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-neutral-900">
+                      <Upload className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div>
+                    <Button variant="outline" size="sm" disabled={uploadingSidebar} asChild>
+                      <label className="cursor-pointer">
+                        {uploadingSidebar ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                        {sidebarLogoDisplayUrl ? "Trocar" : "Enviar"} Logo da Sidebar
+                        <input type="file" accept="image/*" className="hidden" onChange={handleSidebarLogoUpload} />
+                      </label>
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">PNG transparente recomendado · máx 2MB</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+
+              <div className="space-y-2">
                 <Label>Logo para E-mails</Label>
                 <p className="text-xs text-muted-foreground -mt-1">
                   Versão escura sobre fundo branco — usada no cabeçalho de todos os e-mails transacionais. O logo principal acima costuma ser claro/transparente e não aparece bem em fundos brancos.
