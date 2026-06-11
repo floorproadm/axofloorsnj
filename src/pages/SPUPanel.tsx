@@ -228,7 +228,7 @@ function OrgsTab() {
   }, [rows, search, planFilter, statusFilter]);
 
   const updatePlan = async (org_id: string, plan: string) => {
-    const { error } = await supabase.from("organizations").update({ plan }).eq("id", org_id);
+    const { error } = await supabase.from("organizations").update({ plan: plan as any }).eq("id", org_id);
     if (error) return toast.error(error.message);
     toast.success(`Plan updated to ${plan}`);
     load();
