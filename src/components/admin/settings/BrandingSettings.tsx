@@ -239,6 +239,7 @@ export default function BrandingSettings() {
           email: email.trim() || null,
           website: website.trim() || null,
           logo_url: logoPath || null,
+          sidebar_logo_url: sidebarLogoPath || null,
           email_logo_url: emailLogoUrl || null,
           proposal_logo_light_url: proposalLogoLightUrl || null,
           proposal_logo_dark_url: proposalLogoDarkUrl || null,
