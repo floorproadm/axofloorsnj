@@ -201,49 +201,129 @@ function OverviewTab() {
         </Card>
       </div>
 
-      <OrphanUsersCard />
     </div>
   );
 }
 
-function OrphanUsersCard() {
-  const [rows, setRows] = useState<any[]>([]);
+/* ---------- Users ---------- */
+
+type UserRow = {
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  phone: string | null;
+  created_at: string;
+  organization_id: string | null;
+  organization_name: string | null;
+  org_role: string | null;
+  roles: string[];
+};
+
+function UsersTab() {
+  const [rows, setRows] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [orgFilter, setOrgFilter] = useState<string>("all");
+
   useEffect(() => {
-    supabase.rpc("spu_orphan_users" as any).then(({ data, error }) => {
+    supabase.rpc("spu_users_list" as any).then(({ data, error }) => {
       if (error) toast.error(error.message);
-      else setRows((data as any[]) || []);
+      else setRows((data as UserRow[]) || []);
       setLoading(false);
     });
   }, []);
+
+  const orgOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    rows.forEach((r) => {
+      if (r.organization_id && r.organization_name) map.set(r.organization_id, r.organization_name);
+    });
+    return Array.from(map.entries());
+  }, [rows]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (orgFilter === "none" && r.organization_id) return false;
+      if (orgFilter !== "all" && orgFilter !== "none" && r.organization_id !== orgFilter) return false;
+      if (q && !`${r.full_name ?? ""} ${r.email ?? ""} ${r.organization_name ?? ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [rows, search, orgFilter]);
+
+  if (loading) return <Loading />;
+
   return (
-    <Card title={`Users without organization (${rows.length})`} icon={<Users className="w-4 h-4" />}>
-      {loading ? (
-        <div className="text-xs text-white/50">Loading…</div>
-      ) : rows.length === 0 ? (
-        <div className="text-xs text-white/50">All users are linked to an organization.</div>
-      ) : (
-        <div className="divide-y divide-white/5">
-          {rows.map((u) => (
-            <div key={u.user_id} className="py-2 flex items-center justify-between gap-3 text-sm">
-              <div className="min-w-0">
-                <div className="font-medium truncate">{u.full_name ?? "—"}</div>
-                <div className="text-xs text-white/50 truncate">{u.email ?? "—"}{u.phone ? ` · ${u.phone}` : ""}</div>
-              </div>
-              <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                {(u.roles ?? []).length === 0 ? (
-                  <Badge variant="outline" className="border-amber-500/40 text-amber-300/90 text-[10px]">no role</Badge>
-                ) : (
-                  (u.roles as string[]).map((r) => (
-                    <Badge key={r} variant="outline" className="border-white/20 text-white/70 text-[10px]">{r}</Badge>
-                  ))
-                )}
-              </div>
-            </div>
-          ))}
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2 items-center">
+        <Input
+          placeholder="Search name, email or org…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs bg-white/5 border-white/10 text-white"
+        />
+        <Select value={orgFilter} onValueChange={setOrgFilter}>
+          <SelectTrigger className="w-56 bg-white/5 border-white/10"><SelectValue placeholder="Organization" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All organizations</SelectItem>
+            <SelectItem value="none">No organization</SelectItem>
+            {orgOptions.map(([id, name]) => (
+              <SelectItem key={id} value={id}>{name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="ml-auto text-xs text-white/50 tabular-nums">{filtered.length} / {rows.length}</div>
+      </div>
+
+      <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="grid grid-cols-12 gap-3 px-4 py-2 text-[11px] uppercase tracking-wider text-white/50 bg-white/[0.03] border-b border-white/10">
+          <div className="col-span-3">User</div>
+          <div className="col-span-3">Email</div>
+          <div className="col-span-3">Organization</div>
+          <div className="col-span-2">Roles</div>
+          <div className="col-span-1 text-right">Joined</div>
         </div>
-      )}
-    </Card>
+        {filtered.length === 0 ? (
+          <div className="p-8 text-center text-sm text-white/50">No users match.</div>
+        ) : (
+          <div className="divide-y divide-white/5">
+            {filtered.map((u) => (
+              <div key={u.user_id} className="grid grid-cols-12 gap-3 px-4 py-3 text-sm items-center">
+                <div className="col-span-3 min-w-0">
+                  <div className="font-medium truncate">{u.full_name ?? "—"}</div>
+                  {u.phone && <div className="text-xs text-white/50 truncate">{u.phone}</div>}
+                </div>
+                <div className="col-span-3 text-white/80 text-xs truncate">{u.email ?? "—"}</div>
+                <div className="col-span-3 min-w-0">
+                  {u.organization_name ? (
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="truncate">{u.organization_name}</span>
+                      {u.org_role && (
+                        <Badge variant="outline" className="border-white/20 text-white/70 text-[10px] capitalize shrink-0">
+                          {u.org_role}
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <Badge variant="outline" className="border-amber-500/40 text-amber-300/90 text-[10px]">no organization</Badge>
+                  )}
+                </div>
+                <div className="col-span-2 flex flex-wrap gap-1">
+                  {u.roles.length === 0 ? (
+                    <span className="text-[11px] text-white/40">—</span>
+                  ) : (
+                    u.roles.map((r) => (
+                      <Badge key={r} variant="outline" className="border-white/20 text-white/70 text-[10px]">{r}</Badge>
+                    ))
+                  )}
+                </div>
+                <div className="col-span-1 text-right text-xs text-white/50 tabular-nums">{fmtDate(u.created_at)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
