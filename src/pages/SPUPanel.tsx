@@ -505,6 +505,120 @@ function computeStatus(r: OrgRow): "active" | "trial" | "inactive" {
   return "active";
 }
 
+/* ---------- Create Organization Modal ---------- */
+
+function CreateOrgModal({
+  open,
+  onClose,
+  onCreated,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [plan, setPlan] = useState<"starter" | "pro" | "enterprise">("starter");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setName("");
+      setOwnerEmail("");
+      setPlan("starter");
+    }
+  }, [open]);
+
+  const submit = async () => {
+    if (name.trim().length < 2) return toast.error("Enter a company name");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail.trim())) return toast.error("Invalid email");
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("spu-organization-create", {
+        body: {
+          name: name.trim(),
+          owner_email: ownerEmail.trim().toLowerCase(),
+          plan,
+          origin: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`Organization created — invite sent to ${ownerEmail.trim()}`);
+      onCreated();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to create organization");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="bg-[#0B1120] border-white/10 text-white max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-white">New organization</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <label className="text-xs text-white/60 uppercase tracking-wider">Company name</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Acme Floors LLC"
+              className="bg-white/5 border-white/10 text-white"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs text-white/60 uppercase tracking-wider">Owner email</label>
+            <Input
+              type="email"
+              value={ownerEmail}
+              onChange={(e) => setOwnerEmail(e.target.value)}
+              placeholder="owner@company.com"
+              className="bg-white/5 border-white/10 text-white"
+            />
+            <p className="text-[11px] text-white/40">
+              An invite email will be sent. The owner sets a password and completes onboarding.
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs text-white/60 uppercase tracking-wider">Plan</label>
+            <Select value={plan} onValueChange={(v) => setPlan(v as any)}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="starter">Starter</SelectItem>
+                <SelectItem value="pro">Pro</SelectItem>
+                <SelectItem value="enterprise">Enterprise</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-white/40">14-day trial starts immediately.</p>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              disabled={submitting}
+              className="text-white/70 hover:text-white hover:bg-white/10"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={submit}
+              disabled={submitting}
+              className="bg-[#0066FF] hover:bg-[#0052CC] text-white"
+            >
+              {submitting ? "Creating…" : "Create & invite owner"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ---------- Waitlist ---------- */
 
 function WaitlistTab() {
