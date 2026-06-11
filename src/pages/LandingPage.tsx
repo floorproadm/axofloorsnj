@@ -25,7 +25,7 @@ const COPY = {
     heroTitle1: "The Operating System for ",
     heroTitle2: "Flooring Contractors",
     heroSub:
-      "Stop running your business on WhatsApp and spreadsheets. FloorPRO gives you leads, projects, proposals, payroll and your team — in one place.",
+      "Stop running your business on messages and spreadsheets. FloorPRO gives you leads, projects, proposals, payroll and your team — in one place.",
     ctaPrimary: "Get Early Access",
     ctaSecondary: "See how it works",
     socialProof: "Built by a flooring contractor. Used by AXO Floors NJ.",
@@ -76,7 +76,7 @@ const COPY = {
     heroTitle1: "O Sistema Operacional para ",
     heroTitle2: "Empresas de Piso",
     heroSub:
-      "Pare de tocar a empresa no WhatsApp e em planilhas. O FloorPRO te dá leads, projetos, propostas, folha de pagamento e sua equipe — em um só lugar.",
+      "Pare de tocar a empresa em mensagens e planilhas. O FloorPRO te dá leads, projetos, propostas, folha de pagamento e sua equipe — em um só lugar.",
     ctaPrimary: "Quero Acesso Antecipado",
     ctaSecondary: "Veja como funciona",
     socialProof: "Feito por um contratante de piso. Usado pela AXO Floors NJ.",
