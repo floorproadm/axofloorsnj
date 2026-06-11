@@ -1083,7 +1083,7 @@ function UserDetailModal({
 
   const refresh = async () => { await fetchData(); onMutated(); };
 
-  const run = async (fn: () => Promise<{ error: any }>) => {
+  const run = async (fn: () => PromiseLike<{ error: any }>) => {
     setBusy(true);
     const { error } = await fn();
     setBusy(false);
