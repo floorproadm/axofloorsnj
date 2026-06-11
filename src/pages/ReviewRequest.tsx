@@ -399,7 +399,7 @@ export default function ReviewRequest() {
                   <Phone className="w-4 h-4 mr-2" /> Call Eduardo
                 </a>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+              <Button asChild size="lg" variant="outline" className="bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
                 <a href={`sms:${EDUARDO_PHONE}`}>
                   <MessageCircle className="w-4 h-4 mr-2" /> Text Eduardo
                 </a>
