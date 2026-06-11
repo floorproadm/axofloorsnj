@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { useOrgPlan } from "@/hooks/useOrgPlan";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,7 @@ const WatermarkSettings = lazy(() => import("./WatermarkSettings"));
 
 export default function BrandingSettings() {
   const { settings, isLoading, refetch } = useCompanySettings();
+  const queryClient = useQueryClient();
   const { isPro, isLoading: planLoading } = useOrgPlan();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
@@ -156,7 +158,8 @@ export default function BrandingSettings() {
           .eq("id", settings.id);
         if (updateError) throw updateError;
         await refetch();
-        toast({ title: "✓ Logo atualizado", description: "Recarregue a página para ver na sidebar." });
+        await queryClient.invalidateQueries({ queryKey: ["admin-sidebar-tenant-logo"] });
+        toast({ title: "✓ Logo atualizado" });
       } else {
         toast({ title: "Logo enviado", description: "Clique em Salvar para aplicar." });
       }
@@ -197,7 +200,8 @@ export default function BrandingSettings() {
           .eq("id", settings.id);
         if (updateError) throw updateError;
         await refetch();
-        toast({ title: "✓ Logo da sidebar atualizado", description: "Recarregue a página para ver na sidebar." });
+        await queryClient.invalidateQueries({ queryKey: ["admin-sidebar-tenant-logo"] });
+        toast({ title: "✓ Logo da sidebar atualizado" });
       } else {
         toast({ title: "Logo enviado", description: "Clique em Salvar para aplicar." });
       }
@@ -217,6 +221,7 @@ export default function BrandingSettings() {
         .update({ sidebar_logo_url: null, updated_at: new Date().toISOString() } as any)
         .eq("id", settings.id);
       await refetch();
+      await queryClient.invalidateQueries({ queryKey: ["admin-sidebar-tenant-logo"] });
     }
   };
 
