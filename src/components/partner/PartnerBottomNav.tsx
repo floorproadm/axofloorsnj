@@ -147,7 +147,7 @@ export function PartnerBottomNav({
             </DrawerClose>
           </DrawerHeader>
 
-          <div className="grid grid-cols-4 gap-2 px-4 pb-6">
+          <div className={cn("grid gap-2 px-4 pb-6", quickActions.length === 2 ? "grid-cols-2" : quickActions.length === 3 ? "grid-cols-3" : "grid-cols-4")}>
             {quickActions.map((qa) => {
               const isFeatured = qa.key === "referral" || qa.key === "diagnostic";
               return (
