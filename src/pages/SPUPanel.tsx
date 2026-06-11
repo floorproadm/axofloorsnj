@@ -1051,12 +1051,10 @@ function UserDetailModal({
   userId,
   onClose,
   onMutated,
-  orgs,
 }: {
   userId: string | null;
   onClose: () => void;
   onMutated: () => void;
-  orgs: Array<[string, string]>;
 }) {
   const [data, setData] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
