@@ -36,6 +36,10 @@ export default function BrandingSettings() {
   const [emailLogoUrl, setEmailLogoUrl] = useState("");
   const [uploadingEmailLogo, setUploadingEmailLogo] = useState(false);
 
+  const [sidebarLogoPath, setSidebarLogoPath] = useState("");
+  const [sidebarLogoDisplayUrl, setSidebarLogoDisplayUrl] = useState("");
+  const [uploadingSidebar, setUploadingSidebar] = useState(false);
+
   const [proposalLogoLightUrl, setProposalLogoLightUrl] = useState("");
   const [proposalLogoDarkUrl, setProposalLogoDarkUrl] = useState("");
   const [uploadingProposalLight, setUploadingProposalLight] = useState(false);
@@ -62,6 +66,13 @@ export default function BrandingSettings() {
       setEmailLogoUrl((settings as any).email_logo_url ?? "");
       setProposalLogoLightUrl((settings as any).proposal_logo_light_url ?? "");
       setProposalLogoDarkUrl((settings as any).proposal_logo_dark_url ?? "");
+      const sidebarStored = (settings as any).sidebar_logo_url ?? "";
+      setSidebarLogoPath(sidebarStored);
+      (async () => {
+        if (!sidebarStored) { setSidebarLogoDisplayUrl(""); return; }
+        const { data } = await supabase.storage.from("media").createSignedUrl(sidebarStored, 60 * 60);
+        if (data) setSidebarLogoDisplayUrl(data.signedUrl);
+      })();
     }
   }, [isLoading, settings]);
 
@@ -161,6 +172,54 @@ export default function BrandingSettings() {
     setLogoDisplayUrl("");
   };
 
+  const handleSidebarLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB", variant: "destructive" });
+      return;
+    }
+    setUploadingSidebar(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `branding/sidebar-logo-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("media").upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      setSidebarLogoPath(fileName);
+      const { data: signed } = await supabase.storage.from("media").createSignedUrl(fileName, 60 * 60);
+      if (signed) setSidebarLogoDisplayUrl(signed.signedUrl);
+
+      if (settings?.id) {
+        const { error: updateError } = await supabase
+          .from("company_settings")
+          .update({ sidebar_logo_url: fileName, updated_at: new Date().toISOString() } as any)
+          .eq("id", settings.id);
+        if (updateError) throw updateError;
+        await refetch();
+        toast({ title: "✓ Logo da sidebar atualizado", description: "Recarregue a página para ver na sidebar." });
+      } else {
+        toast({ title: "Logo enviado", description: "Clique em Salvar para aplicar." });
+      }
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingSidebar(false);
+    }
+  };
+
+  const handleClearSidebarLogo = async () => {
+    setSidebarLogoPath("");
+    setSidebarLogoDisplayUrl("");
+    if (settings?.id) {
+      await supabase
+        .from("company_settings")
+        .update({ sidebar_logo_url: null, updated_at: new Date().toISOString() } as any)
+        .eq("id", settings.id);
+      await refetch();
+    }
+  };
+
   const handleSave = async () => {
     if (!settings?.id) {
       toast({ title: "Erro", description: "Salve as configurações gerais primeiro", variant: "destructive" });
@@ -180,6 +239,7 @@ export default function BrandingSettings() {
           email: email.trim() || null,
           website: website.trim() || null,
           logo_url: logoPath || null,
+          sidebar_logo_url: sidebarLogoPath || null,
           email_logo_url: emailLogoUrl || null,
           proposal_logo_light_url: proposalLogoLightUrl || null,
           proposal_logo_dark_url: proposalLogoDarkUrl || null,
@@ -275,6 +335,44 @@ export default function BrandingSettings() {
               </div>
 
               <Separator />
+
+              <div className="space-y-2">
+                <Label>Logo da Sidebar (Admin)</Label>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Versão otimizada para o menu lateral do painel admin (fundo escuro). Se vazio, usa o logo da empresa.
+                </p>
+                <div className="flex items-center gap-4 pt-1">
+                  {sidebarLogoDisplayUrl ? (
+                    <div className="relative w-20 h-20 rounded-lg border bg-neutral-900 flex items-center justify-center overflow-hidden p-2">
+                      <img src={sidebarLogoDisplayUrl} alt="Sidebar Logo" className="max-w-full max-h-full object-contain" />
+                      <button
+                        onClick={handleClearSidebarLogo}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        type="button"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-neutral-900">
+                      <Upload className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div>
+                    <Button variant="outline" size="sm" disabled={uploadingSidebar} asChild>
+                      <label className="cursor-pointer">
+                        {uploadingSidebar ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                        {sidebarLogoDisplayUrl ? "Trocar" : "Enviar"} Logo da Sidebar
+                        <input type="file" accept="image/*" className="hidden" onChange={handleSidebarLogoUpload} />
+                      </label>
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">PNG transparente recomendado · máx 2MB</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
 
               <div className="space-y-2">
                 <Label>Logo para E-mails</Label>

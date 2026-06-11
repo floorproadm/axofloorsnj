@@ -722,6 +722,7 @@ export type Database = {
           proposal_logo_light_url: string | null
           referral_commission_percent: number
           secondary_color: string | null
+          sidebar_logo_url: string | null
           singleton_key: boolean
           tagline: string | null
           trade_name: string | null
@@ -761,6 +762,7 @@ export type Database = {
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
+          sidebar_logo_url?: string | null
           singleton_key?: boolean
           tagline?: string | null
           trade_name?: string | null
@@ -800,6 +802,7 @@ export type Database = {
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
+          sidebar_logo_url?: string | null
           singleton_key?: boolean
           tagline?: string | null
           trade_name?: string | null
