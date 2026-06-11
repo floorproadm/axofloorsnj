@@ -722,9 +722,11 @@ export type Database = {
           proposal_logo_light_url: string | null
           referral_commission_percent: number
           secondary_color: string | null
+          services_offered: string[] | null
           sidebar_logo_url: string | null
           singleton_key: boolean
           tagline: string | null
+          team_size: string | null
           trade_name: string | null
           updated_at: string
           watermark_enabled: boolean
@@ -762,9 +764,11 @@ export type Database = {
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
+          services_offered?: string[] | null
           sidebar_logo_url?: string | null
           singleton_key?: boolean
           tagline?: string | null
+          team_size?: string | null
           trade_name?: string | null
           updated_at?: string
           watermark_enabled?: boolean
@@ -802,9 +806,11 @@ export type Database = {
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
           secondary_color?: string | null
+          services_offered?: string[] | null
           sidebar_logo_url?: string | null
           singleton_key?: boolean
           tagline?: string | null
+          team_size?: string | null
           trade_name?: string | null
           updated_at?: string
           watermark_enabled?: boolean
@@ -2438,6 +2444,7 @@ export type Database = {
           is_active: boolean | null
           logo_url: string | null
           name: string
+          onboarded_at: string | null
           phone: string | null
           plan: Database["public"]["Enums"]["org_plan"] | null
           primary_color: string | null
@@ -2458,6 +2465,7 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name: string
+          onboarded_at?: string | null
           phone?: string | null
           plan?: Database["public"]["Enums"]["org_plan"] | null
           primary_color?: string | null
@@ -2478,6 +2486,7 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name?: string
+          onboarded_at?: string | null
           phone?: string | null
           plan?: Database["public"]["Enums"]["org_plan"] | null
           primary_color?: string | null
@@ -4846,6 +4855,18 @@ export type Database = {
       }
       convert_lead_to_project: {
         Args: { p_lead_id: string; p_project_type: string }
+        Returns: string
+      }
+      create_organization_with_owner: {
+        Args: {
+          p_city?: string
+          p_email: string
+          p_name: string
+          p_phone: string
+          p_services_offered?: string[]
+          p_state?: string
+          p_team_size?: string
+        }
         Returns: string
       }
       generate_recurring_expenses: { Args: never; Returns: Json }

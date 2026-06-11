@@ -67,6 +67,9 @@ import PartnerAuth from "./pages/partner/PartnerAuth";
 import ResetPassword from "./pages/ResetPassword";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
+import OnboardingWizard from "./pages/OnboardingWizard";
+
+
 
 const queryClient = new QueryClient();
 
@@ -88,6 +91,7 @@ const App = () => {
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/auth" element={<AdminAuth />} />
+            <Route path="/onboarding" element={<OnboardingWizard />} />
             <Route path="/partner/auth" element={<PartnerAuth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
