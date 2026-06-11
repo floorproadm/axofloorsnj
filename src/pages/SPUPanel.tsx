@@ -15,6 +15,10 @@ import {
   Download,
   CheckCircle2,
   XCircle,
+  Eye,
+  Mail,
+  Phone,
+  Calendar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const BG = "#0B1120";
@@ -205,6 +210,8 @@ function OrgsTab() {
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewOrgId, setViewOrgId] = useState<string | null>(null);
+
 
   const load = () => {
     setLoading(true);
@@ -301,16 +308,26 @@ function OrgsTab() {
                     <Td className="text-white/70">{fmtDate(r.trial_ends_at)}</Td>
                     <Td className="text-white/70">{fmtDate(r.created_at)}</Td>
                     <Td>
-                      <Select value={r.plan} onValueChange={(v) => updatePlan(r.org_id, v)}>
-                        <SelectTrigger className="h-8 w-28 bg-white/5 border-white/10 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="starter">Starter</SelectItem>
-                          <SelectItem value="pro">Pro</SelectItem>
-                          <SelectItem value="enterprise">Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setViewOrgId(r.org_id)}
+                          className="h-8 px-2 text-white/80 hover:text-white hover:bg-white/10"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" /> View
+                        </Button>
+                        <Select value={r.plan} onValueChange={(v) => updatePlan(r.org_id, v)}>
+                          <SelectTrigger className="h-8 w-28 bg-white/5 border-white/10 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="starter">Starter</SelectItem>
+                            <SelectItem value="pro">Pro</SelectItem>
+                            <SelectItem value="enterprise">Enterprise</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </Td>
                   </tr>
                 );
@@ -322,6 +339,8 @@ function OrgsTab() {
           </table>
         </div>
       </div>
+
+      <OrgDetailModal orgId={viewOrgId} onClose={() => setViewOrgId(null)} />
     </div>
   );
 }
@@ -561,6 +580,196 @@ function EdgeList() {
       <div className="p-3 text-xs text-white/40">
         Last-invocation tracking requires logs access — view in backend console.
       </div>
+    </div>
+  );
+}
+
+/* ---------- Org Detail Modal ---------- */
+
+type OrgDetail = {
+  org: any;
+  owner: { user_id: string; full_name: string | null; email: string | null; phone: string | null; created_at: string } | null;
+  members: Array<{ user_id: string; full_name: string | null; email: string | null; role: string }>;
+  recent_projects: Array<{
+    id: string;
+    customer_name: string | null;
+    address: string | null;
+    project_status: string | null;
+    project_type: string | null;
+    start_date: string | null;
+    completion_date: string | null;
+    created_at: string;
+  }>;
+  lead_summary: Record<string, number>;
+  totals: {
+    total_projects: number;
+    total_leads: number;
+    total_members: number;
+    total_customers: number;
+    total_proposals: number;
+    total_invoices: number;
+  };
+};
+
+function OrgDetailModal({ orgId, onClose }: { orgId: string | null; onClose: () => void }) {
+  const [data, setData] = useState<OrgDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!orgId) {
+      setData(null);
+      return;
+    }
+    setLoading(true);
+    supabase.rpc("spu_org_detail" as any, { p_org_id: orgId }).then(({ data, error }) => {
+      if (error) toast.error(error.message);
+      else setData(data as OrgDetail);
+      setLoading(false);
+    });
+  }, [orgId]);
+
+  const leadEntries = data ? Object.entries(data.lead_summary) : [];
+
+  return (
+    <Dialog open={!!orgId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        className="max-w-3xl text-white border-white/10 max-h-[85vh] overflow-y-auto"
+        style={{ background: BG }}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <Building2 className="w-4 h-4" style={{ color: BLUE }} />
+            {data?.org?.name ?? "Organization"}
+          </DialogTitle>
+          {data?.org?.slug && (
+            <div className="text-xs text-white/50">{data.org.slug}</div>
+          )}
+        </DialogHeader>
+
+        {loading || !data ? (
+          <Loading />
+        ) : (
+          <div className="space-y-6 pt-2">
+            {/* Org meta */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <Meta label="Plan"><PlanBadge plan={data.org.plan} /></Meta>
+              <Meta label="Status"><StatusBadge status={data.org.is_active ? (data.org.trial_ends_at && new Date(data.org.trial_ends_at) > new Date() ? "trial" : "active") : "inactive"} /></Meta>
+              <Meta label="Trial ends">{fmtDate(data.org.trial_ends_at)}</Meta>
+              <Meta label="Onboarded">{fmtDate(data.org.onboarded_at)}</Meta>
+              <Meta label="Created">{fmtDate(data.org.created_at)}</Meta>
+              <Meta label="Email">{data.org.email ?? "—"}</Meta>
+              <Meta label="Phone">{data.org.phone ?? "—"}</Meta>
+              <Meta label="State">{data.org.state ?? "—"}</Meta>
+            </div>
+
+            {/* Owner */}
+            <Section title="Owner">
+              {data.owner ? (
+                <div className="rounded-lg border border-white/10 p-4 space-y-2 text-sm">
+                  <div className="font-medium text-base">{data.owner.full_name ?? "—"}</div>
+                  <div className="flex items-center gap-4 text-white/70 flex-wrap">
+                    {data.owner.email && (
+                      <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {data.owner.email}</span>
+                    )}
+                    {data.owner.phone && (
+                      <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> {data.owner.phone}</span>
+                    )}
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Joined {fmtDate(data.owner.created_at)}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-white/50">No owner registered.</div>
+              )}
+            </Section>
+
+            {/* Totals */}
+            <Section title="Totals">
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                <MiniStat label="Members" value={data.totals.total_members} />
+                <MiniStat label="Customers" value={data.totals.total_customers} />
+                <MiniStat label="Projects" value={data.totals.total_projects} />
+                <MiniStat label="Leads" value={data.totals.total_leads} />
+                <MiniStat label="Proposals" value={data.totals.total_proposals} />
+                <MiniStat label="Invoices" value={data.totals.total_invoices} />
+              </div>
+            </Section>
+
+            {/* Lead summary */}
+            <Section title="Leads by status">
+              {leadEntries.length === 0 ? (
+                <div className="text-sm text-white/50">No leads yet.</div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {leadEntries
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([status, count]) => (
+                      <div
+                        key={status}
+                        className="px-3 py-1.5 rounded-md border border-white/10 bg-white/[0.03] text-xs flex items-center gap-2"
+                      >
+                        <span className="text-white/60">{status}</span>
+                        <span className="font-semibold tabular-nums">{count}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </Section>
+
+            {/* Recent projects */}
+            <Section title={`Recent projects (${data.recent_projects.length})`}>
+              {data.recent_projects.length === 0 ? (
+                <div className="text-sm text-white/50">No projects yet.</div>
+              ) : (
+                <div className="rounded-lg border border-white/10 divide-y divide-white/5">
+                  {data.recent_projects.map((p) => (
+                    <div key={p.id} className="p-3 flex items-start justify-between gap-3 text-sm">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium truncate">{p.customer_name ?? "—"}</div>
+                        <div className="text-xs text-white/50 truncate">
+                          {p.address ?? "—"} {p.project_type ? `· ${p.project_type}` : ""}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <Badge variant="outline" className="border-white/20 text-white/70 text-xs">
+                          {p.project_status ?? "—"}
+                        </Badge>
+                        <div className="text-[11px] text-white/40 mt-1">{fmtDate(p.created_at)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Section>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-xs uppercase tracking-wider text-white/50 font-semibold mb-2">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function Meta({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-wider text-white/40 mb-1">{label}</div>
+      <div className="text-sm">{children}</div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-md border border-white/10 bg-white/[0.03] p-2.5 text-center">
+      <div className="text-lg font-semibold tabular-nums">{value.toLocaleString()}</div>
+      <div className="text-[10px] uppercase tracking-wider text-white/50">{label}</div>
     </div>
   );
 }

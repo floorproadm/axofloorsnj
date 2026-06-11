@@ -4943,6 +4943,7 @@ export type Database = {
             }
             Returns: Json
           }
+      spu_org_detail: { Args: { p_org_id: string }; Returns: Json }
       spu_organizations_list: {
         Args: never
         Returns: {
