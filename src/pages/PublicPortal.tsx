@@ -88,8 +88,20 @@ interface Invoice {
   project_id: string;
 }
 
-const COMPANY_PHONE = "(732) 351-8653";
-const COMPANY_PHONE_TEL = "+17323518653";
+interface TenantBrand {
+  company_name: string;
+  phone: string;
+  email: string;
+  website: string;
+  logo_url: string | null;
+}
+const DEFAULT_BRAND: TenantBrand = {
+  company_name: "FloorPRO",
+  phone: "",
+  email: "",
+  website: "",
+  logo_url: null,
+};
 
 const formatMoney = (n: number | null | undefined) =>
   n == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
@@ -154,10 +166,11 @@ export default function PublicPortal() {
   const [appointmentOpen, setAppointmentOpen] = useState(false);
   const [timeline, setTimeline] = useState<TimelineProject[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(true);
+  const [brand, setBrand] = useState<TenantBrand>(DEFAULT_BRAND);
 
   useEffect(() => {
-    document.title = "Your AXO Portal — Proposals, Invoices & Project Updates";
-  }, []);
+    document.title = `Your ${brand.company_name} Portal — Proposals, Invoices & Project Updates`;
+  }, [brand.company_name]);
 
   useEffect(() => {
     if (!token) return;
@@ -179,10 +192,29 @@ export default function PublicPortal() {
         setInvoices([]);
       } else {
         const payload = data as any;
-        setCustomer(payload.customer as Customer);
+        const cust = payload.customer as Customer;
+        setCustomer(cust);
         setProposals((payload.proposals as Proposal[]) || []);
         setProjects((payload.projects as Project[]) || []);
         setInvoices((payload.invoices as Invoice[]) || []);
+
+        // Fetch tenant branding from customer's organization
+        if (cust?.organization_id) {
+          const { data: cs } = await supabase
+            .from("company_settings")
+            .select("company_name, phone, email, website, logo_url")
+            .eq("organization_id", cust.organization_id)
+            .maybeSingle();
+          if (cs && !cancelled) {
+            setBrand({
+              company_name: (cs as any).company_name || "FloorPRO",
+              phone: (cs as any).phone || "",
+              email: (cs as any).email || "",
+              website: (cs as any).website || "",
+              logo_url: (cs as any).logo_url || null,
+            });
+          }
+        }
       }
 
       const tlData = tlRes.data as any;
