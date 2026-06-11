@@ -224,14 +224,17 @@ function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [orgFilter, setOrgFilter] = useState<string>("all");
+  const [viewUserId, setViewUserId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
     supabase.rpc("spu_users_list" as any).then(({ data, error }) => {
       if (error) toast.error(error.message);
       else setRows((data as UserRow[]) || []);
       setLoading(false);
     });
-  }, []);
+  };
+  useEffect(() => { load(); }, []);
 
   const orgOptions = useMemo(() => {
     const map = new Map<string, string>();
