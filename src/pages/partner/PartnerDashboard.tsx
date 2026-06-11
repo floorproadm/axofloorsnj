@@ -138,9 +138,14 @@ export default function PartnerDashboard() {
     if (ls) setLeads(ls as any);
     if (cs) {
       setCommissionPercent(Number((cs as any).referral_commission_percent) || 7);
+      // Gate brand by org plan
+      const { data: planRes } = await supabase.rpc("get_org_plan" as any, {
+        p_org_id: (pu as any).organization_id,
+      });
+      const isPro = planRes === "pro" || planRes === "enterprise";
       setTenantBrand({
-        company_name: (cs as any).company_name || "FloorPRO",
-        phone: (cs as any).phone || "",
+        company_name: isPro ? ((cs as any).company_name || "FloorPRO") : "FloorPRO",
+        phone: isPro ? ((cs as any).phone || "") : "",
       });
     }
 

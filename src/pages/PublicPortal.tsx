@@ -198,20 +198,24 @@ export default function PublicPortal() {
         setProjects((payload.projects as Project[]) || []);
         setInvoices((payload.invoices as Invoice[]) || []);
 
-        // Fetch tenant branding from customer's organization
+        // Fetch tenant branding from customer's organization (gated by plan)
         if (cust?.organization_id) {
-          const { data: cs } = await supabase
-            .from("company_settings")
-            .select("company_name, phone, email, website, logo_url")
-            .eq("organization_id", cust.organization_id)
-            .maybeSingle();
+          const [{ data: cs }, { data: planRes }] = await Promise.all([
+            supabase
+              .from("company_settings")
+              .select("company_name, phone, email, website, logo_url")
+              .eq("organization_id", cust.organization_id)
+              .maybeSingle(),
+            supabase.rpc("get_org_plan" as any, { p_org_id: cust.organization_id }),
+          ]);
+          const isPro = planRes === "pro" || planRes === "enterprise";
           if (cs && !cancelled) {
             setBrand({
-              company_name: (cs as any).company_name || "FloorPRO",
-              phone: (cs as any).phone || "",
-              email: (cs as any).email || "",
-              website: (cs as any).website || "",
-              logo_url: (cs as any).logo_url || null,
+              company_name: isPro ? ((cs as any).company_name || "FloorPRO") : "FloorPRO",
+              phone: isPro ? ((cs as any).phone || "") : "",
+              email: isPro ? ((cs as any).email || "") : "",
+              website: isPro ? ((cs as any).website || "") : "",
+              logo_url: isPro ? ((cs as any).logo_url || null) : null,
             });
           }
         }

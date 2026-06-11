@@ -133,7 +133,29 @@ export default function PublicProposal() {
         setProject(projRes.data);
         setCustomer(custRes.data);
         setProperty(propertyRes.data);
-        setCompany(companyRes.data);
+
+        // Gate branding by org plan
+        const orgId = (prop as any).organization_id || (projRes.data as any)?.organization_id;
+        const { data: planRes } = orgId
+          ? await supabase.rpc("get_org_plan" as any, { p_org_id: orgId })
+          : { data: null };
+        const isPro = planRes === "pro" || planRes === "enterprise";
+
+        if (isPro) {
+          setCompany(companyRes.data);
+          const logoPath = (companyRes.data as any)?.logo_url;
+          if (logoPath) {
+            const { data: signed } = await supabase.storage
+              .from("media")
+              .createSignedUrl(logoPath, 3600);
+            if (signed?.signedUrl) setLogoUrl(signed.signedUrl);
+          }
+        } else {
+          // Basic plan: present as neutral FloorPRO (no tenant branding leak)
+          setCompany(null);
+          setLogoUrl("");
+        }
+
         setLineItems(((itemsRes.data as any[]) || []).map((r) => ({
           description: r.description || "",
           category: r.category || "other",
@@ -141,14 +163,6 @@ export default function PublicProposal() {
           unit_price: Number(r.unit_price) || 0,
           amount: Number(r.amount) || 0,
         })));
-
-        const logoPath = (companyRes.data as any)?.logo_url;
-        if (logoPath) {
-          const { data: signed } = await supabase.storage
-            .from("media")
-            .createSignedUrl(logoPath, 3600);
-          if (signed?.signedUrl) setLogoUrl(signed.signedUrl);
-        }
       } catch (e: any) {
         setError(e.message || "Failed to load proposal");
       } finally {
