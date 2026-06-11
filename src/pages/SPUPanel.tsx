@@ -1110,7 +1110,6 @@ function UserDetailModal({
   };
 
   const disabled = !!data?.auth?.banned_until && new Date(data.auth.banned_until) > new Date();
-  const availableRolesToAdd = ALL_PLATFORM_ROLES.filter((r) => !(data?.platform_roles ?? []).includes(r));
 
   return (
     <Dialog open={!!userId} onOpenChange={(o) => !o && onClose()}>
