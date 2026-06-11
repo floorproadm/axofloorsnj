@@ -220,6 +220,7 @@ export default function BrandingSettings() {
         .update({ sidebar_logo_url: null, updated_at: new Date().toISOString() } as any)
         .eq("id", settings.id);
       await refetch();
+      await queryClient.invalidateQueries({ queryKey: ["admin-sidebar-tenant-logo"] });
     }
   };
 
