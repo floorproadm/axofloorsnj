@@ -330,6 +330,13 @@ function UsersTab() {
           </div>
         )}
       </div>
+
+      <UserDetailModal
+        userId={viewUserId}
+        onClose={() => setViewUserId(null)}
+        onMutated={load}
+        orgs={orgOptions}
+      />
     </div>
   );
 }
