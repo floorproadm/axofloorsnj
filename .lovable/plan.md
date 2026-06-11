@@ -1,33 +1,92 @@
-## Plano: Transformar Preços B2B em catálogo de serviços (sem preço)
+## User Detail Modal (SPU Panel)
 
-### Decisões
-- **Tabela `b2b_price_list`**: vira catálogo simples — só nome, unidade, ativo/inativo, ordem. Colunas de preço somem.
-- **`B2BQuoteSheet`**: continua existindo. Ao selecionar um serviço, **não** preenche mais o `unit_price` (que era o wholesale); usuário digita o preço caso a caso, como já é possível hoje.
+Modal acionado ao clicar numa linha da aba **Users**. Foco: dar ao super admin visibilidade total + ações controladas, sem entrar na org do usuário.
 
-### Mudanças
+### Layout (Dialog, max-w-2xl, dark Linear)
 
-**1. Migration DB**
-- `ALTER TABLE b2b_price_list DROP COLUMN wholesale_price, DROP COLUMN retail_price;`
+```text
+┌─────────────────────────────────────────────────┐
+│ [avatar] Full Name                    [● status]│
+│          email · phone                          │
+├─────────────────────────────────────────────────┤
+│ Identity        | Organization                  │
+│  birthdate      |  AXO Floors LLC [owner]       │
+│  region         |  joined 12 Mar 2026           │
+│  bio            |  [Remove from org]            │
+├─────────────────────────────────────────────────┤
+│ Employment                                      │
+│  type · daily_rate · is_active_crew             │
+├─────────────────────────────────────────────────┤
+│ Platform roles                                  │
+│  [admin] [salesperson] [+ add role]             │
+├─────────────────────────────────────────────────┤
+│ Activity                                        │
+│  Last sign-in · Created · Projects · Labor      │
+│  entries · Leads owned · Appointments           │
+├─────────────────────────────────────────────────┤
+│ Danger zone                          [▼ expand] │
+│  [Send password reset] [Disable] [Impersonate]  │
+└─────────────────────────────────────────────────┘
+```
 
-**2. `B2BPricingSettings.tsx` → `B2BServiceCatalogSettings.tsx`**
-- Renomear arquivo e título da aba para **"Catálogo de Serviços B2B"**.
-- Remover colunas Wholesale ($) e Retail ($) da tabela.
-- Layout fica: Serviço | Unidade | Ativo | Remover.
-- Subtítulo: "Lista de serviços disponíveis ao montar cotações B2B. O preço é definido caso a caso na cotação."
+### Seções e dados
 
-**3. `Settings.tsx`**
-- Atualizar import e label da seção de "Preços B2B" para "Catálogo B2B".
+**1. Header** — avatar, full_name, email, phone, status dot (active/disabled), badge "Platform Admin" se aplicável.
 
-**4. `B2BQuoteSheet.tsx`**
-- Remover `wholesale_price` da query e do tipo `Price`.
-- `pickService()` deixa de setar `unit_price` (mantém só `service_name` e `unit`); usuário digita o preço.
-- Placeholder do campo `$ / Unit` continua igual; nada mais muda no fluxo de envio.
+**2. Identity (read-only)** — birthdate, region, bio.
 
-**5. `types.ts`** atualiza automaticamente após migration.
+**3. Organization** — nome da org + role (`owner`/`admin`/`member`), data de entrada. Botão **Remove from org** (deleta de `organization_members`). Se órfão: select de org + select de role + botão **Assign to organization**.
 
-### Impacto
-- Nenhum dado crítico perdido (wholesale_price não estava sendo usado em proposals/invoices reais).
-- `B2BQuoteSheet` continua funcional, só sem auto-preenchimento de preço.
-- Settings fica com nome mais honesto (é catálogo, não tabela de preços).
+**4. Employment (read-only)** — employment_type, daily_rate, is_active_crew.
 
-Posso seguir?
+**5. Platform roles** — chips com cada role de `user_roles`. Botão **+ add role** abre dropdown com roles do enum `app_role` ainda não atribuídas. X em cada chip remove. Guardrail: impedir remover a própria role `platform_admin`.
+
+**6. Activity** — last_sign_in_at (de `auth.users`), created_at, contagens: projects (assigned via `project_members`), labor_entries, leads (owner_id), appointment_assignees.
+
+**7. Danger zone (colapsado por padrão, exige confirm)**
+- **Send password reset** — dispara recovery email.
+- **Disable user** — bane no auth (ban_until = '2099'). Toggle Enable se já banido.
+- **Impersonate** — gera magic link de login e abre em nova aba.
+
+### Backend
+
+**Nova RPC `spu_user_detail(p_user_id uuid)`** retorna JSONB:
+```text
+{ profile, auth: {last_sign_in_at, banned_until, email_confirmed_at},
+  membership: {org_id, org_name, role, joined_at} | null,
+  platform_roles: [...],
+  activity: {projects, labor_entries, leads_owned, appointments},
+  is_self: boolean }
+```
+Protegida por `has_role(auth.uid(), 'platform_admin')`. Lê `auth.users` direto (security definer).
+
+**Novas RPCs mutativas (todas com check platform_admin):**
+- `spu_user_set_org(p_user_id, p_org_id, p_role)` — upsert em `organization_members`.
+- `spu_user_remove_org(p_user_id)` — delete de `organization_members`.
+- `spu_user_add_role(p_user_id, p_role)` — insert em `user_roles`.
+- `spu_user_remove_role(p_user_id, p_role)` — delete, bloqueia self-revoke de platform_admin.
+
+**Nova edge function `spu-user-action` (service role)** para ações que precisam do Admin API do Auth:
+- action: `reset_password` → `auth.admin.generateLink({type:'recovery'})` + send email.
+- action: `disable` / `enable` → `auth.admin.updateUserById({ban_duration})`.
+- action: `impersonate` → `auth.admin.generateLink({type:'magiclink'})`, retorna URL.
+
+Função valida JWT do caller e checa `has_role(..., 'platform_admin')` antes de qualquer operação. Loga em `audit_log`.
+
+### Frontend (`src/pages/SPUPanel.tsx`)
+
+- Adicionar estado `viewUserId` em `UsersTab`. Linha da tabela vira clicável + botão `<Eye>`.
+- Novo componente `UserDetailModal({ userId, onClose, onMutated })`. Faz `supabase.rpc("spu_user_detail")`. `onMutated` re-fetcha a lista após assign/remove.
+- Confirmações via `AlertDialog` para Remove from org, Disable, Impersonate, role removal.
+- Toasts para sucesso/erro. Toda chamada à edge function via `supabase.functions.invoke("spu-user-action", { body: { user_id, action, ... }})`.
+
+### Out of scope (fica para depois)
+- Editar campos do profile (você escolheu read-only).
+- Delete profile permanente (perigoso, exigiria cascata manual).
+- Histórico completo de auditoria por usuário.
+
+### Ordem de implementação
+1. Migrations: `spu_user_detail` + 4 RPCs mutativas.
+2. Edge function `spu-user-action` com 3 actions.
+3. Componente `UserDetailModal` + integração em `UsersTab`.
+4. Smoke test: abrir modal do Eduardo, atribuir à AXO Floors como `member`, conferir que ele aparece em **View** da org.

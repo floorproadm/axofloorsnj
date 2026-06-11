@@ -4974,6 +4974,26 @@ export type Database = {
         }[]
       }
       spu_platform_overview: { Args: never; Returns: Json }
+      spu_user_add_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      spu_user_detail: { Args: { p_user_id: string }; Returns: Json }
+      spu_user_remove_org: { Args: { p_user_id: string }; Returns: undefined }
+      spu_user_remove_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      spu_user_set_org: {
+        Args: { p_org_id: string; p_role: string; p_user_id: string }
+        Returns: undefined
+      }
       spu_users_list: {
         Args: never
         Returns: {
