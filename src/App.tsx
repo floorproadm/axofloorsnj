@@ -69,6 +69,9 @@ import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import LandingPage from "./pages/LandingPage";
+import SPUPanel from "./pages/SPUPanel";
+import PlatformAdminRoute from "@/components/shared/PlatformAdminRoute";
+
 
 
 
