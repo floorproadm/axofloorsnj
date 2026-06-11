@@ -15,6 +15,10 @@ import {
   Download,
   CheckCircle2,
   XCircle,
+  Eye,
+  Mail,
+  Phone,
+  Calendar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
