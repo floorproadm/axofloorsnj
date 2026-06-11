@@ -87,7 +87,8 @@ const App = () => {
           <ScrollToTop />
           <ErrorBoundary scope="app">
           <Routes>
-            <Route path="/" element={<Navigate to="/admin/auth" replace />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/home" element={<Navigate to="/admin/auth" replace />} />
 
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
