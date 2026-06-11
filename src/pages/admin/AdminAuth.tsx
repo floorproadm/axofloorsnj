@@ -21,6 +21,16 @@ const hasAdminAccess = async (userId: string) => {
   return !error && data === true;
 };
 
+const hasOrgMembership = async (userId: string) => {
+  const { data } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return !!data?.organization_id;
+};
+
 export default function AdminAuth() {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode');
@@ -50,11 +60,18 @@ export default function AdminAuth() {
 
     let cancelled = false;
 
-    hasAdminAccess(user.id).then((isAdmin) => {
+    (async () => {
+      const hasOrg = await hasOrgMembership(user.id);
+      if (cancelled) return;
+      if (!hasOrg) {
+        navigate('/onboarding', { replace: true });
+        return;
+      }
+      const isAdmin = await hasAdminAccess(user.id);
       if (!cancelled && isAdmin) {
         navigate('/admin', { replace: true });
       }
-    });
+    })();
 
     return () => {
       cancelled = true;
@@ -71,8 +88,17 @@ export default function AdminAuth() {
       const result = await signIn(email, password);
       if (!result.error) {
         const { data: { user: signedInUser } } = await supabase.auth.getUser();
-        const isAdmin = signedInUser?.id ? await hasAdminAccess(signedInUser.id) : false;
+        const uid = signedInUser?.id;
 
+        // New tenant path: no org membership → onboarding wizard
+        const hasOrg = uid ? await hasOrgMembership(uid) : false;
+        if (!hasOrg) {
+          toast({ title: 'Welcome to FloorPRO', description: 'Let\'s set up your company.' });
+          navigate('/onboarding', { replace: true });
+          return;
+        }
+
+        const isAdmin = uid ? await hasAdminAccess(uid) : false;
         if (!isAdmin) {
           const message = 'Esta conta não tem acesso administrativo.';
           await supabase.auth.signOut();
