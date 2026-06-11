@@ -36,6 +36,10 @@ export default function BrandingSettings() {
   const [emailLogoUrl, setEmailLogoUrl] = useState("");
   const [uploadingEmailLogo, setUploadingEmailLogo] = useState(false);
 
+  const [sidebarLogoPath, setSidebarLogoPath] = useState("");
+  const [sidebarLogoDisplayUrl, setSidebarLogoDisplayUrl] = useState("");
+  const [uploadingSidebar, setUploadingSidebar] = useState(false);
+
   const [proposalLogoLightUrl, setProposalLogoLightUrl] = useState("");
   const [proposalLogoDarkUrl, setProposalLogoDarkUrl] = useState("");
   const [uploadingProposalLight, setUploadingProposalLight] = useState(false);
