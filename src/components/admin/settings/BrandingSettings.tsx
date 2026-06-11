@@ -19,6 +19,7 @@ const WatermarkSettings = lazy(() => import("./WatermarkSettings"));
 
 export default function BrandingSettings() {
   const { settings, isLoading, refetch } = useCompanySettings();
+  const queryClient = useQueryClient();
   const { isPro, isLoading: planLoading } = useOrgPlan();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
