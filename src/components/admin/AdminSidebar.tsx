@@ -25,7 +25,9 @@ import {
   Clock,
   UserCheck,
   MessageSquare,
+  Shield,
 } from "lucide-react";
+import { usePlatformAdmin } from "@/hooks/usePlatformAdmin";
 import { Badge } from "@/components/ui/badge";
 import { useChatUnreadCount } from "@/hooks/useChatUnreadCount";
 import {
