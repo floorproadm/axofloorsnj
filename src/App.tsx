@@ -69,6 +69,9 @@ import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import LandingPage from "./pages/LandingPage";
+import SPUPanel from "./pages/SPUPanel";
+import PlatformAdminRoute from "@/components/shared/PlatformAdminRoute";
+
 
 
 
@@ -105,6 +108,9 @@ const App = () => {
             <Route path="/proposal/:token" element={<PublicProposal />} />
             <Route path="/proposal/:token/invoice" element={<PublicDepositInvoice />} />
             <Route path="/portal/:token" element={<PublicPortal />} />
+
+            {/* Platform Super Admin */}
+            <Route path="/platform" element={<PlatformAdminRoute><SPUPanel /></PlatformAdminRoute>} />
 
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

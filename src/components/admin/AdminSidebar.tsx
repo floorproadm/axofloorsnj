@@ -25,7 +25,9 @@ import {
   Clock,
   UserCheck,
   MessageSquare,
+  Shield,
 } from "lucide-react";
+import { usePlatformAdmin } from "@/hooks/usePlatformAdmin";
 import { Badge } from "@/components/ui/badge";
 import { useChatUnreadCount } from "@/hooks/useChatUnreadCount";
 import {
@@ -57,6 +59,7 @@ export function AdminSidebar() {
   const { t } = useLanguage();
   const chatUnread = useChatUnreadCount();
   const { isPro } = useOrgPlan();
+  const { isPlatformAdmin } = usePlatformAdmin();
 
   // Only fetch tenant sidebar logo when the org is on PRO.
   // If sidebar_logo_url is not set, fall back DIRECTLY to the FloorPro logo
@@ -117,6 +120,7 @@ export function AdminSidebar() {
   const footerNavItems = [
     { title: t("sidebar.ajuda"), url: "/admin/help", icon: HelpCircle },
     { title: "Settings", url: "/admin/settings", icon: Settings },
+    ...(isPlatformAdmin ? [{ title: "Platform Admin", url: "/platform", icon: Shield }] : []),
   ];
 
   const handleLogout = async () => {

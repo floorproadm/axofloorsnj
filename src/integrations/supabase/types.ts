@@ -4943,6 +4943,38 @@ export type Database = {
             }
             Returns: Json
           }
+      spu_organizations_list: {
+        Args: never
+        Returns: {
+          created_at: string
+          is_active: boolean
+          lead_count: number
+          name: string
+          onboarded_at: string
+          org_id: string
+          owner_email: string
+          owner_name: string
+          plan: string
+          project_count: number
+          slug: string
+          trial_ends_at: string
+          user_count: number
+        }[]
+      }
+      spu_platform_overview: { Args: never; Returns: Json }
+      spu_waitlist_list: {
+        Args: never
+        Returns: {
+          city: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          notes: string
+          phone: string
+          status: string
+        }[]
+      }
       submit_partner_referral: {
         Args: {
           p_address?: string
@@ -5005,6 +5037,7 @@ export type Database = {
         | "accountant"
         | "sander"
         | "sander_installer"
+        | "platform_admin"
       labor_pricing_model: "sqft" | "daily"
       org_member_role: "owner" | "admin" | "collaborator"
       org_plan: "starter" | "pro" | "enterprise"
@@ -5147,6 +5180,7 @@ export const Constants = {
         "accountant",
         "sander",
         "sander_installer",
+        "platform_admin",
       ],
       labor_pricing_model: ["sqft", "daily"],
       org_member_role: ["owner", "admin", "collaborator"],
