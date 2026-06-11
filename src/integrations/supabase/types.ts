@@ -5005,6 +5005,7 @@ export type Database = {
         | "accountant"
         | "sander"
         | "sander_installer"
+        | "platform_admin"
       labor_pricing_model: "sqft" | "daily"
       org_member_role: "owner" | "admin" | "collaborator"
       org_plan: "starter" | "pro" | "enterprise"
@@ -5147,6 +5148,7 @@ export const Constants = {
         "accountant",
         "sander",
         "sander_installer",
+        "platform_admin",
       ],
       labor_pricing_model: ["sqft", "daily"],
       org_member_role: ["owner", "admin", "collaborator"],
