@@ -68,6 +68,7 @@ import ResetPassword from "./pages/ResetPassword";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerWelcome from "./pages/partner/PartnerWelcome";
 import OnboardingWizard from "./pages/OnboardingWizard";
+import LandingPage from "./pages/LandingPage";
 
 
 
@@ -86,7 +87,8 @@ const App = () => {
           <ScrollToTop />
           <ErrorBoundary scope="app">
           <Routes>
-            <Route path="/" element={<Navigate to="/admin/auth" replace />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/home" element={<Navigate to="/admin/auth" replace />} />
 
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
