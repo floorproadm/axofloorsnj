@@ -335,7 +335,6 @@ function UsersTab() {
         userId={viewUserId}
         onClose={() => setViewUserId(null)}
         onMutated={load}
-        orgs={orgOptions}
       />
     </div>
   );
