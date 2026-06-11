@@ -210,6 +210,8 @@ function OrgsTab() {
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewOrgId, setViewOrgId] = useState<string | null>(null);
+
 
   const load = () => {
     setLoading(true);
