@@ -308,16 +308,26 @@ function OrgsTab() {
                     <Td className="text-white/70">{fmtDate(r.trial_ends_at)}</Td>
                     <Td className="text-white/70">{fmtDate(r.created_at)}</Td>
                     <Td>
-                      <Select value={r.plan} onValueChange={(v) => updatePlan(r.org_id, v)}>
-                        <SelectTrigger className="h-8 w-28 bg-white/5 border-white/10 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="starter">Starter</SelectItem>
-                          <SelectItem value="pro">Pro</SelectItem>
-                          <SelectItem value="enterprise">Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setViewOrgId(r.org_id)}
+                          className="h-8 px-2 text-white/80 hover:text-white hover:bg-white/10"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" /> View
+                        </Button>
+                        <Select value={r.plan} onValueChange={(v) => updatePlan(r.org_id, v)}>
+                          <SelectTrigger className="h-8 w-28 bg-white/5 border-white/10 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="starter">Starter</SelectItem>
+                            <SelectItem value="pro">Pro</SelectItem>
+                            <SelectItem value="enterprise">Enterprise</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </Td>
                   </tr>
                 );
