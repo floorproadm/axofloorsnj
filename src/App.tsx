@@ -109,6 +109,9 @@ const App = () => {
             <Route path="/proposal/:token/invoice" element={<PublicDepositInvoice />} />
             <Route path="/portal/:token" element={<PublicPortal />} />
 
+            {/* Platform Super Admin */}
+            <Route path="/platform" element={<PlatformAdminRoute><SPUPanel /></PlatformAdminRoute>} />
+
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
