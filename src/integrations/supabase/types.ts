@@ -4854,6 +4854,7 @@ export type Database = {
         Returns: Json
       }
       get_leads_nra_batch: { Args: { p_lead_ids: string[] }; Returns: Json }
+      get_org_plan: { Args: { p_org_id: string }; Returns: string }
       get_partner_balance: { Args: { p_partner_id: string }; Returns: Json }
       get_partner_id_for_user: { Args: never; Returns: string }
       get_partner_org_for_user: { Args: never; Returns: string }

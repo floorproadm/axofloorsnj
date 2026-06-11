@@ -24,13 +24,16 @@ export default function CollaboratorLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Tenant branding
+  // Tenant branding — gated by plan (Basic always shows "FloorPRO")
   const { data: companyName = "FloorPRO" } = useQuery({
     queryKey: ["collab-company-name", user?.id],
     queryFn: async () => {
       const { data: orgRes } = await supabase.rpc("get_user_org_id");
       const orgId = orgRes as string | null;
       if (!orgId) return "FloorPRO";
+      const { data: planRes } = await supabase.rpc("get_org_plan" as any, { p_org_id: orgId });
+      const isPro = planRes === "pro" || planRes === "enterprise";
+      if (!isPro) return "FloorPRO";
       const { data } = await supabase
         .from("company_settings")
         .select("company_name")

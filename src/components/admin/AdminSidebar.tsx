@@ -45,6 +45,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import floorproLogo from "@/assets/floorpro-logo.png.asset.json";
+import { useOrgPlan } from "@/hooks/useOrgPlan";
+import { useQuery } from "@tanstack/react-query";
+import { resolveLogoUrl } from "@/hooks/useCompanySettings";
 
 export function AdminSidebar() {
   const { state } = useSidebar();
@@ -53,6 +56,28 @@ export function AdminSidebar() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const chatUnread = useChatUnreadCount();
+  const { isPro } = useOrgPlan();
+
+  // Only fetch tenant logo when the org is on PRO
+  const { data: tenantLogoUrl } = useQuery({
+    queryKey: ["admin-sidebar-tenant-logo", isPro],
+    enabled: isPro,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<string> => {
+      const { data: orgIdRes } = await supabase.rpc("get_user_org_id");
+      const orgId = orgIdRes as string | null;
+      if (!orgId) return "";
+      const { data: cs } = await supabase
+        .from("company_settings")
+        .select("logo_url")
+        .eq("organization_id", orgId)
+        .maybeSingle();
+      return await resolveLogoUrl((cs as any)?.logo_url);
+    },
+  });
+
+  const brandLogoUrl = isPro && tenantLogoUrl ? tenantLogoUrl : floorproLogo.url;
+  const brandLogoAlt = isPro && tenantLogoUrl ? "Logo" : "FloorPro";
 
   const topItems = [
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
@@ -107,11 +132,11 @@ export function AdminSidebar() {
         {/* Brand */}
         <div className="py-6 px-4 border-b border-border/50">
           <div className="flex items-center justify-center">
-            {!collapsed ? (
-              <img src={floorproLogo.url} alt="FloorPro" className="h-16 w-auto object-contain animate-fade-in" />
-            ) : (
-              <img src={floorproLogo.url} alt="FloorPro" className="h-12 w-auto object-contain" />
-            )}
+            <img
+              src={brandLogoUrl}
+              alt={brandLogoAlt}
+              className={`${collapsed ? "h-12" : "h-16"} w-auto object-contain animate-fade-in`}
+            />
           </div>
         </div>
 

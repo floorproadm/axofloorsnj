@@ -54,7 +54,7 @@ export default function PublicInvoice() {
         }
 
         const orgId = (inv as any).projects?.organization_id;
-        const [itemsRes, phasesRes, propertyRes, csRes] = await Promise.all([
+        const [itemsRes, phasesRes, propertyRes, csRes, planRes] = await Promise.all([
           supabase.from("invoice_items").select("*").eq("invoice_id", inv.id).order("created_at"),
           supabase.from("invoice_payment_schedule").select("*").eq("invoice_id", inv.id).order("phase_order"),
           (inv as any).property_id
@@ -63,11 +63,15 @@ export default function PublicInvoice() {
           orgId
             ? supabase.from("company_settings").select("company_name, phone, email, website, logo_url").eq("organization_id", orgId).maybeSingle()
             : Promise.resolve({ data: null }),
+          orgId
+            ? supabase.rpc("get_org_plan" as any, { p_org_id: orgId })
+            : Promise.resolve({ data: null }),
         ]);
         setItems(itemsRes.data || []);
         setPhases(phasesRes.data || []);
         setProperty(propertyRes.data);
-        if (csRes.data) {
+        const isPro = (planRes as any)?.data === "pro" || (planRes as any)?.data === "enterprise";
+        if (csRes.data && isPro) {
           const cs = csRes.data as any;
           setBrand({
             company_name: cs.company_name || "FloorPRO",
@@ -81,6 +85,7 @@ export default function PublicInvoice() {
             if (signed?.signedUrl) setLogoSignedUrl(signed.signedUrl);
           }
         }
+        // Basic plan: keep FloorPRO defaults (no logo, no custom contact info)
       } catch (e: any) {
         setError(e.message || "Failed to load invoice");
       } finally {
