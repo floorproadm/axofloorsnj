@@ -59,6 +59,7 @@ export function AdminSidebar() {
   const { t } = useLanguage();
   const chatUnread = useChatUnreadCount();
   const { isPro } = useOrgPlan();
+  const { isPlatformAdmin } = usePlatformAdmin();
 
   // Only fetch tenant sidebar logo when the org is on PRO.
   // If sidebar_logo_url is not set, fall back DIRECTLY to the FloorPro logo
