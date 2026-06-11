@@ -1182,6 +1182,7 @@ function UserDetailModal({
               )}
             </Section>
 
+            <Section title="Employment">
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <Meta label="Type">{data.profile.employment_type ?? "—"}</Meta>
                 <Meta label="Daily rate">{data.profile.daily_rate ? `$${Number(data.profile.daily_rate).toFixed(0)}` : "—"}</Meta>
