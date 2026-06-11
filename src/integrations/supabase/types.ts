@@ -4962,6 +4962,17 @@ export type Database = {
           user_count: number
         }[]
       }
+      spu_orphan_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          phone: string
+          roles: string[]
+          user_id: string
+        }[]
+      }
       spu_platform_overview: { Args: never; Returns: Json }
       spu_waitlist_list: {
         Args: never
