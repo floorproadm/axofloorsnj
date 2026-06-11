@@ -66,6 +66,13 @@ export default function BrandingSettings() {
       setEmailLogoUrl((settings as any).email_logo_url ?? "");
       setProposalLogoLightUrl((settings as any).proposal_logo_light_url ?? "");
       setProposalLogoDarkUrl((settings as any).proposal_logo_dark_url ?? "");
+      const sidebarStored = (settings as any).sidebar_logo_url ?? "";
+      setSidebarLogoPath(sidebarStored);
+      (async () => {
+        if (!sidebarStored) { setSidebarLogoDisplayUrl(""); return; }
+        const { data } = await supabase.storage.from("media").createSignedUrl(sidebarStored, 60 * 60);
+        if (data) setSidebarLogoDisplayUrl(data.signedUrl);
+      })();
     }
   }, [isLoading, settings]);
 
