@@ -41,6 +41,13 @@ export default function PartnerWelcome() {
       .maybeSingle();
     const orgId = (pu as any)?.organization_id;
     if (!orgId) return;
+    // Gate by plan — Basic tenants always present as "FloorPRO"
+    const { data: planRes } = await supabase.rpc("get_org_plan" as any, { p_org_id: orgId });
+    const isPro = planRes === "pro" || planRes === "enterprise";
+    if (!isPro) {
+      setCompanyName("FloorPRO");
+      return;
+    }
     const { data: cs } = await supabase
       .from("company_settings")
       .select("company_name")
