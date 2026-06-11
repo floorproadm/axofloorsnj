@@ -70,11 +70,11 @@ export default function PublicProposal() {
 
   // White-label brand with safe fallbacks
   const brand = {
-    name: company?.trade_name || company?.company_name || "AXO Floors",
-    tagline: company?.tagline || "Professional Flooring · NJ",
-    phone: company?.phone || "(732) 351-8653",
-    email: company?.email || "info@axofloors.com",
-    website: company?.website || "axofloorsnj.com",
+    name: company?.trade_name || company?.company_name || "FloorPRO",
+    tagline: company?.tagline || "",
+    phone: company?.phone || "",
+    email: company?.email || "",
+    website: company?.website || "",
     primary: company?.primary_color || "#d97706",
     secondary: company?.secondary_color || "#0B1426",
     logoUrl,
