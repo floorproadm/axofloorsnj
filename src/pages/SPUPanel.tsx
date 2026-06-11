@@ -1055,9 +1055,6 @@ function UserDetailModal({
   const [data, setData] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [assignOrg, setAssignOrg] = useState<string>("");
-  const [assignRole, setAssignRole] = useState<string>("member");
-  const [addRole, setAddRole] = useState<string>("");
   const [showDanger, setShowDanger] = useState(false);
 
   const fetchData = async () => {
