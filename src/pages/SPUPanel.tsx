@@ -1002,3 +1002,301 @@ function fmtDate(d: string | null | undefined) {
 function Loading() {
   return <div className="py-12 text-center text-white/50 text-sm">Loading…</div>;
 }
+
+/* ---------- User Detail Modal ---------- */
+
+const ALL_PLATFORM_ROLES = [
+  "admin","moderator","user","manager","salesperson","installer","accountant","sander","sander_installer","platform_admin",
+] as const;
+
+type UserDetail = {
+  profile: {
+    user_id: string;
+    full_name: string | null;
+    email: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+    bio: string | null;
+    birthdate: string | null;
+    region: string | null;
+    employment_type: string | null;
+    daily_rate: number | null;
+    is_active_crew: boolean | null;
+    created_at: string;
+  };
+  auth: {
+    last_sign_in_at: string | null;
+    email_confirmed_at: string | null;
+    banned_until: string | null;
+    created_at: string | null;
+    provider: string | null;
+  } | null;
+  membership: {
+    organization_id: string;
+    organization_name: string;
+    role: string;
+    joined_at: string;
+  } | null;
+  platform_roles: string[];
+  activity: {
+    projects_assigned: number;
+    labor_entries: number;
+    leads_owned: number;
+    appointments: number;
+  };
+  is_self: boolean;
+};
+
+function UserDetailModal({
+  userId,
+  onClose,
+  onMutated,
+  orgs,
+}: {
+  userId: string | null;
+  onClose: () => void;
+  onMutated: () => void;
+  orgs: Array<[string, string]>;
+}) {
+  const [data, setData] = useState<UserDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [assignOrg, setAssignOrg] = useState<string>("");
+  const [assignRole, setAssignRole] = useState<string>("member");
+  const [addRole, setAddRole] = useState<string>("");
+  const [showDanger, setShowDanger] = useState(false);
+
+  const fetchData = async () => {
+    if (!userId) return;
+    setLoading(true);
+    const { data, error } = await supabase.rpc("spu_user_detail" as any, { p_user_id: userId });
+    if (error) toast.error(error.message);
+    else setData(data as UserDetail);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!userId) { setData(null); return; }
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  const refresh = async () => { await fetchData(); onMutated(); };
+
+  const run = async (fn: () => Promise<{ error: any }>) => {
+    setBusy(true);
+    const { error } = await fn();
+    setBusy(false);
+    if (error) { toast.error(error.message ?? String(error)); return false; }
+    return true;
+  };
+
+  const assignToOrg = async () => {
+    if (!assignOrg || !userId) return;
+    const ok = await run(() =>
+      supabase.rpc("spu_user_set_org" as any, { p_user_id: userId, p_org_id: assignOrg, p_role: assignRole })
+    );
+    if (ok) { toast.success("Assigned to organization"); refresh(); }
+  };
+  const removeFromOrg = async () => {
+    if (!userId) return;
+    if (!confirm("Remove this user from the organization?")) return;
+    const ok = await run(() => supabase.rpc("spu_user_remove_org" as any, { p_user_id: userId }));
+    if (ok) { toast.success("Removed from organization"); refresh(); }
+  };
+  const addPlatformRole = async () => {
+    if (!addRole || !userId) return;
+    const ok = await run(() => supabase.rpc("spu_user_add_role" as any, { p_user_id: userId, p_role: addRole as any }));
+    if (ok) { toast.success(`Role ${addRole} added`); setAddRole(""); refresh(); }
+  };
+  const removePlatformRole = async (role: string) => {
+    if (!userId) return;
+    if (!confirm(`Remove role "${role}"?`)) return;
+    const ok = await run(() => supabase.rpc("spu_user_remove_role" as any, { p_user_id: userId, p_role: role as any }));
+    if (ok) { toast.success(`Role ${role} removed`); refresh(); }
+  };
+
+  const dangerAction = async (action: "reset_password" | "disable" | "enable" | "impersonate") => {
+    if (!userId) return;
+    const confirms: Record<string, string> = {
+      reset_password: "Send password reset email?",
+      disable: "Disable this user? They won't be able to sign in.",
+      enable: "Re-enable this user?",
+      impersonate: "Generate a magic link to sign in as this user?",
+    };
+    if (!confirm(confirms[action])) return;
+    setBusy(true);
+    const { data: res, error } = await supabase.functions.invoke("spu-user-action", {
+      body: { user_id: userId, action },
+    });
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    if ((res as any)?.error) { toast.error((res as any).error); return; }
+    if (action === "impersonate" && (res as any)?.action_link) {
+      window.open((res as any).action_link, "_blank");
+      toast.success("Magic link opened in new tab");
+    } else if (action === "reset_password") {
+      toast.success("Recovery link generated. Email will be sent if SMTP is configured.");
+    } else {
+      toast.success("Done");
+    }
+    refresh();
+  };
+
+  const disabled = !!data?.auth?.banned_until && new Date(data.auth.banned_until) > new Date();
+  const availableRolesToAdd = ALL_PLATFORM_ROLES.filter((r) => !(data?.platform_roles ?? []).includes(r));
+
+  return (
+    <Dialog open={!!userId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        className="max-w-2xl text-white border-white/10 max-h-[88vh] overflow-y-auto"
+        style={{ background: BG }}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2 flex-wrap">
+            <Users className="w-4 h-4" style={{ color: "#3b82f6" }} />
+            {data?.profile?.full_name ?? "User"}
+            {disabled && <Badge className="bg-red-500/20 text-red-300 border-red-500/40 text-[10px]">DISABLED</Badge>}
+            {data?.platform_roles?.includes("platform_admin") && (
+              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px]">PLATFORM ADMIN</Badge>
+            )}
+          </DialogTitle>
+          {data?.profile?.email && <div className="text-xs text-white/50">{data.profile.email}</div>}
+        </DialogHeader>
+
+        {loading || !data ? (
+          <Loading />
+        ) : (
+          <div className="space-y-6 pt-2">
+            <Section title="Identity">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                <Meta label="Phone">{data.profile.phone ?? "—"}</Meta>
+                <Meta label="Region">{data.profile.region ?? "—"}</Meta>
+                <Meta label="Birthdate">{fmtDate(data.profile.birthdate)}</Meta>
+                <Meta label="Created">{fmtDate(data.profile.created_at)}</Meta>
+                <Meta label="Last sign-in">{fmtDate(data.auth?.last_sign_in_at ?? null)}</Meta>
+                <Meta label="Provider">{data.auth?.provider ?? "email"}</Meta>
+              </div>
+              {data.profile.bio && (
+                <div className="mt-3 text-sm text-white/80 italic border-l-2 border-white/10 pl-3">{data.profile.bio}</div>
+              )}
+            </Section>
+
+            <Section title="Organization">
+              {data.membership ? (
+                <div className="rounded-lg border border-white/10 p-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium">{data.membership.organization_name}</div>
+                    <div className="text-xs text-white/50 mt-0.5 flex items-center gap-3">
+                      <Badge variant="outline" className="border-white/20 text-white/70 text-[10px] capitalize">{data.membership.role}</Badge>
+                      <span>Joined {fmtDate(data.membership.joined_at)}</span>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" disabled={busy} onClick={removeFromOrg}
+                    className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200">
+                    Remove from org
+                  </Button>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+                  <div className="text-sm text-amber-200/90">No organization linked.</div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <Select value={assignOrg} onValueChange={setAssignOrg}>
+                      <SelectTrigger className="w-56 bg-white/5 border-white/10"><SelectValue placeholder="Select organization" /></SelectTrigger>
+                      <SelectContent>
+                        {orgs.map(([id, name]) => <SelectItem key={id} value={id}>{name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={assignRole} onValueChange={setAssignRole}>
+                      <SelectTrigger className="w-32 bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="member">member</SelectItem>
+                        <SelectItem value="admin">admin</SelectItem>
+                        <SelectItem value="owner">owner</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" disabled={busy || !assignOrg} onClick={assignToOrg}>Assign</Button>
+                  </div>
+                </div>
+              )}
+            </Section>
+
+            <Section title="Employment">
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                <Meta label="Type">{data.profile.employment_type ?? "—"}</Meta>
+                <Meta label="Daily rate">{data.profile.daily_rate ? `$${Number(data.profile.daily_rate).toFixed(0)}` : "—"}</Meta>
+                <Meta label="Active crew">{data.profile.is_active_crew ? "Yes" : "No"}</Meta>
+              </div>
+            </Section>
+
+            <Section title="Platform roles">
+              <div className="flex flex-wrap items-center gap-2">
+                {data.platform_roles.length === 0 && <span className="text-xs text-white/40">No roles</span>}
+                {data.platform_roles.map((r) => (
+                  <Badge key={r} variant="outline" className="border-white/20 text-white/80 text-xs flex items-center gap-1.5 pr-1">
+                    {r}
+                    <button
+                      onClick={() => removePlatformRole(r)}
+                      disabled={busy || (r === "platform_admin" && data.is_self)}
+                      className="ml-1 hover:text-red-300 disabled:opacity-30"
+                      title={r === "platform_admin" && data.is_self ? "Cannot remove your own platform_admin" : "Remove role"}
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                    </button>
+                  </Badge>
+                ))}
+                {availableRolesToAdd.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <Select value={addRole} onValueChange={setAddRole}>
+                      <SelectTrigger className="w-44 h-8 bg-white/5 border-white/10 text-xs"><SelectValue placeholder="+ Add role" /></SelectTrigger>
+                      <SelectContent>
+                        {availableRolesToAdd.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" variant="outline" disabled={busy || !addRole} onClick={addPlatformRole}
+                      className="border-white/10 h-8 text-xs">Add</Button>
+                  </div>
+                )}
+              </div>
+            </Section>
+
+            <Section title="Activity">
+              <div className="grid grid-cols-4 gap-3">
+                <MiniStat label="Projects" value={data.activity.projects_assigned} />
+                <MiniStat label="Labor entries" value={data.activity.labor_entries} />
+                <MiniStat label="Leads owned" value={data.activity.leads_owned} />
+                <MiniStat label="Appointments" value={data.activity.appointments} />
+              </div>
+            </Section>
+
+            <div className="border-t border-white/10 pt-4">
+              <button
+                onClick={() => setShowDanger((v) => !v)}
+                className="text-xs uppercase tracking-wider font-semibold text-red-400/80 hover:text-red-300 flex items-center gap-2"
+              >
+                Danger zone {showDanger ? "▲" : "▼"}
+              </button>
+              {showDanger && (
+                <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/[0.03] p-4 flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" disabled={busy} onClick={() => dangerAction("reset_password")}
+                    className="border-white/15 text-white/80 hover:bg-white/5">Send password reset</Button>
+                  {disabled ? (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => dangerAction("enable")}
+                      className="border-green-500/30 text-green-300 hover:bg-green-500/10">Enable user</Button>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled={busy || data.is_self} onClick={() => dangerAction("disable")}
+                      className="border-red-500/30 text-red-300 hover:bg-red-500/10">Disable user</Button>
+                  )}
+                  <Button size="sm" variant="outline" disabled={busy || data.is_self} onClick={() => dangerAction("impersonate")}
+                    className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10">Impersonate</Button>
+                  {data.is_self && <span className="text-[11px] text-white/40 w-full">Some actions disabled — this is you.</span>}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
