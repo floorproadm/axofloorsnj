@@ -136,7 +136,19 @@ export default function BrandingSettings() {
 
       setLogoPath(fileName);
       await generateSignedUrl(fileName);
-      toast({ title: "Logo enviado" });
+
+      // Persist immediately to DB so sidebar reflects change without requiring a separate "Salvar"
+      if (settings?.id) {
+        const { error: updateError } = await supabase
+          .from("company_settings")
+          .update({ logo_url: fileName, updated_at: new Date().toISOString() } as any)
+          .eq("id", settings.id);
+        if (updateError) throw updateError;
+        await refetch();
+        toast({ title: "✓ Logo atualizado", description: "Recarregue a página para ver na sidebar." });
+      } else {
+        toast({ title: "Logo enviado", description: "Clique em Salvar para aplicar." });
+      }
     } catch (err: any) {
       toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
     } finally {
