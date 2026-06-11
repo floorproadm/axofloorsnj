@@ -172,6 +172,54 @@ export default function BrandingSettings() {
     setLogoDisplayUrl("");
   };
 
+  const handleSidebarLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB", variant: "destructive" });
+      return;
+    }
+    setUploadingSidebar(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `branding/sidebar-logo-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("media").upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      setSidebarLogoPath(fileName);
+      const { data: signed } = await supabase.storage.from("media").createSignedUrl(fileName, 60 * 60);
+      if (signed) setSidebarLogoDisplayUrl(signed.signedUrl);
+
+      if (settings?.id) {
+        const { error: updateError } = await supabase
+          .from("company_settings")
+          .update({ sidebar_logo_url: fileName, updated_at: new Date().toISOString() } as any)
+          .eq("id", settings.id);
+        if (updateError) throw updateError;
+        await refetch();
+        toast({ title: "✓ Logo da sidebar atualizado", description: "Recarregue a página para ver na sidebar." });
+      } else {
+        toast({ title: "Logo enviado", description: "Clique em Salvar para aplicar." });
+      }
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingSidebar(false);
+    }
+  };
+
+  const handleClearSidebarLogo = async () => {
+    setSidebarLogoPath("");
+    setSidebarLogoDisplayUrl("");
+    if (settings?.id) {
+      await supabase
+        .from("company_settings")
+        .update({ sidebar_logo_url: null, updated_at: new Date().toISOString() } as any)
+        .eq("id", settings.id);
+      await refetch();
+    }
+  };
+
   const handleSave = async () => {
     if (!settings?.id) {
       toast({ title: "Erro", description: "Salve as configurações gerais primeiro", variant: "destructive" });
