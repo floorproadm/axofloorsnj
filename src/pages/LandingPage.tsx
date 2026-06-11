@@ -79,7 +79,7 @@ const COPY = {
       "Pare de tocar a empresa em mensagens e planilhas. O FloorPRO te dá leads, projetos, propostas, folha de pagamento e sua equipe — em um só lugar.",
     ctaPrimary: "Quero Acesso Antecipado",
     ctaSecondary: "Veja como funciona",
-    socialProof: "Feito por um contratante de piso. Usado pela AXO Floors NJ.",
+    socialProof: "Desenvolvido por quem vive o dia a dia do Flooring. Usado pela AXO Floors NJ.",
     painTitle: "Familiar?",
     pains: [
       "Eu fecho talvez 20% dos meus orçamentos — o resto simplesmente some.",
