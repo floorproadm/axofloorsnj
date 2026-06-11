@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { useOrgPlan } from "@/hooks/useOrgPlan";
 import { supabase } from "@/integrations/supabase/client";
