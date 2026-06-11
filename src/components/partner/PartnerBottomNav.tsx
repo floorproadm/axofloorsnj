@@ -35,8 +35,9 @@ interface PartnerBottomNavProps {
   onNewReferral: () => void;
   onFloorDiagnostic?: () => void;
   program?: PartnerProgram;
-  whatsappNumber?: string; // e.g. "17323518653"
-  phoneNumber?: string;    // e.g. "(732) 351-8653"
+  companyName?: string;
+  whatsappNumber?: string; // digits only
+  phoneNumber?: string;    // display format
 }
 
 const NAV_ITEMS: { key: PartnerView; label: string; icon: typeof Home }[] = [
@@ -52,11 +53,13 @@ export function PartnerBottomNav({
   onNewReferral,
   onFloorDiagnostic,
   program = "referral",
-  whatsappNumber = "17323518653",
-  phoneNumber = "(732) 351-8653",
+  companyName = "FloorPRO",
+  whatsappNumber = "",
+  phoneNumber = "",
 }: PartnerBottomNavProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const isTrade = program === "trade";
+  const hasPhone = !!phoneNumber;
+  const hasWhatsapp = !!whatsappNumber;
 
   const handleAction = (action: "referral" | "diagnostic" | "whatsapp" | "call") => {
     setDrawerOpen(false);
@@ -64,19 +67,19 @@ export function PartnerBottomNav({
       onNewReferral();
     } else if (action === "diagnostic") {
       onFloorDiagnostic?.();
-    } else if (action === "whatsapp") {
+    } else if (action === "whatsapp" && hasWhatsapp) {
       window.open(`https://wa.me/${whatsappNumber}`, "_blank");
-    } else if (action === "call") {
+    } else if (action === "call" && hasPhone) {
       window.location.href = `tel:${phoneNumber.replace(/[^\d+]/g, "")}`;
     }
   };
 
   const quickActions = [
-    { key: "referral" as const, label: "Quick Referral", icon: UserPlus },
-    { key: "diagnostic" as const, label: "Floor Diagnostic", icon: Target },
-    { key: "whatsapp" as const, label: "WhatsApp AXO", icon: MessageCircle },
-    { key: "call" as const, label: "Call AXO", icon: Phone },
-  ];
+    { key: "referral" as const, label: "Quick Referral", icon: UserPlus, visible: true },
+    { key: "diagnostic" as const, label: "Floor Diagnostic", icon: Target, visible: true },
+    { key: "whatsapp" as const, label: `WhatsApp ${companyName}`, icon: MessageCircle, visible: hasWhatsapp },
+    { key: "call" as const, label: `Call ${companyName}`, icon: Phone, visible: hasPhone },
+  ].filter(qa => qa.visible);
 
   const items = NAV_ITEMS;
   // Split around the FAB center: half left, half right
@@ -144,7 +147,7 @@ export function PartnerBottomNav({
             </DrawerClose>
           </DrawerHeader>
 
-          <div className="grid grid-cols-4 gap-2 px-4 pb-6">
+          <div className={cn("grid gap-2 px-4 pb-6", quickActions.length === 2 ? "grid-cols-2" : quickActions.length === 3 ? "grid-cols-3" : "grid-cols-4")}>
             {quickActions.map((qa) => {
               const isFeatured = qa.key === "referral" || qa.key === "diagnostic";
               return (

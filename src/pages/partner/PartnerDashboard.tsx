@@ -63,6 +63,10 @@ export default function PartnerDashboard() {
   const [partner, setPartner] = useState<PartnerInfo | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [commissionPercent, setCommissionPercent] = useState(7);
+  const [tenantBrand, setTenantBrand] = useState<{ company_name: string; phone: string }>({
+    company_name: "FloorPRO",
+    phone: "",
+  });
   const [authEmail, setAuthEmail] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [diagnosticOpen, setDiagnosticOpen] = useState(false);
@@ -71,7 +75,7 @@ export default function PartnerDashboard() {
   const [view, setView] = useState<PartnerView>("pipeline");
   const [pipelineMode, setPipelineMode] = useState<"list" | "board">(() => {
     if (typeof window === "undefined") return "list";
-    return (localStorage.getItem("axo.partner.pipelineMode") as "list" | "board") || "list";
+    return (localStorage.getItem("floorpro.partner.pipelineMode") as "list" | "board") || "list";
   });
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [notifications, setNotifications] = useState<PartnerNotification[]>([]);
@@ -80,7 +84,7 @@ export default function PartnerDashboard() {
 
   const updatePipelineMode = (m: "list" | "board") => {
     setPipelineMode(m);
-    try { localStorage.setItem("axo.partner.pipelineMode", m); } catch {}
+    try { localStorage.setItem("floorpro.partner.pipelineMode", m); } catch {}
   };
 
   const loadData = async () => {
@@ -119,7 +123,7 @@ export default function PartnerDashboard() {
         .order("created_at", { ascending: false }),
       supabase
         .from("company_settings")
-        .select("referral_commission_percent")
+        .select("referral_commission_percent, company_name, phone")
         .eq("organization_id", (pu as any).organization_id)
         .maybeSingle(),
     ]);
@@ -132,7 +136,13 @@ export default function PartnerDashboard() {
       }
     }
     if (ls) setLeads(ls as any);
-    if (cs) setCommissionPercent(Number((cs as any).referral_commission_percent) || 7);
+    if (cs) {
+      setCommissionPercent(Number((cs as any).referral_commission_percent) || 7);
+      setTenantBrand({
+        company_name: (cs as any).company_name || "FloorPRO",
+        phone: (cs as any).phone || "",
+      });
+    }
 
     // Load notifications for this partner user
     const { data: notifs } = await supabase
@@ -701,6 +711,9 @@ export default function PartnerDashboard() {
         onNewReferral={() => setSheetOpen(true)}
         onFloorDiagnostic={() => setDiagnosticOpen(true)}
         program={partner?.partner_program || "referral"}
+        companyName={tenantBrand.company_name}
+        phoneNumber={tenantBrand.phone}
+        whatsappNumber={tenantBrand.phone ? tenantBrand.phone.replace(/[^\d]/g, "") : ""}
       />
 
       <NewReferralSheet open={sheetOpen} onOpenChange={setSheetOpen} onCreated={loadData} />

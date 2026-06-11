@@ -24,6 +24,14 @@ export default function PublicInvoice() {
   const [items, setItems] = useState<any[]>([]);
   const [phases, setPhases] = useState<any[]>([]);
   const [property, setProperty] = useState<any>(null);
+  const [brand, setBrand] = useState<{ company_name: string; phone: string; email: string; website: string; logo_url: string | null }>({
+    company_name: "FloorPRO",
+    phone: "",
+    email: "",
+    website: "",
+    logo_url: null,
+  });
+  const [logoSignedUrl, setLogoSignedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +41,7 @@ export default function PublicInvoice() {
       try {
         const { data: inv, error: invErr } = await supabase
           .from("invoices")
-          .select("*, projects(customer_name, project_type, address), customers(full_name, email, phone)")
+          .select("*, projects(customer_name, project_type, address, organization_id), customers(full_name, email, phone)")
           .eq("share_token", token)
           .maybeSingle();
         if (invErr) throw invErr;
@@ -45,16 +53,34 @@ export default function PublicInvoice() {
           await supabase.from("invoices").update({ viewed_at: new Date().toISOString() } as any).eq("share_token", token);
         }
 
-        const [itemsRes, phasesRes, propertyRes] = await Promise.all([
+        const orgId = (inv as any).projects?.organization_id;
+        const [itemsRes, phasesRes, propertyRes, csRes] = await Promise.all([
           supabase.from("invoice_items").select("*").eq("invoice_id", inv.id).order("created_at"),
           supabase.from("invoice_payment_schedule").select("*").eq("invoice_id", inv.id).order("phase_order"),
           (inv as any).property_id
             ? supabase.from("customer_properties").select("*").eq("id", (inv as any).property_id).maybeSingle()
             : Promise.resolve({ data: null }),
+          orgId
+            ? supabase.from("company_settings").select("company_name, phone, email, website, logo_url").eq("organization_id", orgId).maybeSingle()
+            : Promise.resolve({ data: null }),
         ]);
         setItems(itemsRes.data || []);
         setPhases(phasesRes.data || []);
         setProperty(propertyRes.data);
+        if (csRes.data) {
+          const cs = csRes.data as any;
+          setBrand({
+            company_name: cs.company_name || "FloorPRO",
+            phone: cs.phone || "",
+            email: cs.email || "",
+            website: cs.website || "",
+            logo_url: cs.logo_url || null,
+          });
+          if (cs.logo_url) {
+            const { data: signed } = await supabase.storage.from("media").createSignedUrl(cs.logo_url, 3600);
+            if (signed?.signedUrl) setLogoSignedUrl(signed.signedUrl);
+          }
+        }
       } catch (e: any) {
         setError(e.message || "Failed to load invoice");
       } finally {
@@ -98,13 +124,13 @@ export default function PublicInvoice() {
       <div className="max-w-[760px] mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-[#0f172a] text-white px-8 py-7 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">
-              AXO <span className="text-amber-500">Floors</span> NJ
+          <div className="flex items-center gap-3 min-w-0">
+            {logoSignedUrl && (
+              <img src={logoSignedUrl} alt={brand.company_name} className="h-10 max-w-[120px] object-contain bg-white rounded p-1" />
+            )}
+            <h1 className="text-2xl font-extrabold tracking-tight truncate">
+              {brand.company_name}
             </h1>
-            <p className="text-[10px] text-slate-400 uppercase tracking-[2px] mt-0.5">
-              Hardwood · Refinishing · Installation
-            </p>
           </div>
           <div className="text-right">
             <p className="text-base font-bold">{invoice.invoice_number}</p>
@@ -228,8 +254,7 @@ export default function PublicInvoice() {
 
         {/* Footer */}
         <div className="text-center py-5 border-t border-slate-200 text-[10px] text-slate-400 space-y-0.5">
-          <p>AXO Floors NJ · (732) 351-8653 · axofloorsnj.com · NJ Licensed & Insured</p>
-          <p>13A License # 13VH13302100</p>
+          <p>{[brand.company_name, brand.phone, brand.website].filter(Boolean).join(" · ")}</p>
         </div>
       </div>
     </div>

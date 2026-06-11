@@ -88,8 +88,20 @@ interface Invoice {
   project_id: string;
 }
 
-const COMPANY_PHONE = "(732) 351-8653";
-const COMPANY_PHONE_TEL = "+17323518653";
+interface TenantBrand {
+  company_name: string;
+  phone: string;
+  email: string;
+  website: string;
+  logo_url: string | null;
+}
+const DEFAULT_BRAND: TenantBrand = {
+  company_name: "FloorPRO",
+  phone: "",
+  email: "",
+  website: "",
+  logo_url: null,
+};
 
 const formatMoney = (n: number | null | undefined) =>
   n == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
@@ -154,10 +166,11 @@ export default function PublicPortal() {
   const [appointmentOpen, setAppointmentOpen] = useState(false);
   const [timeline, setTimeline] = useState<TimelineProject[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(true);
+  const [brand, setBrand] = useState<TenantBrand>(DEFAULT_BRAND);
 
   useEffect(() => {
-    document.title = "Your AXO Portal — Proposals, Invoices & Project Updates";
-  }, []);
+    document.title = `Your ${brand.company_name} Portal — Proposals, Invoices & Project Updates`;
+  }, [brand.company_name]);
 
   useEffect(() => {
     if (!token) return;
@@ -179,10 +192,29 @@ export default function PublicPortal() {
         setInvoices([]);
       } else {
         const payload = data as any;
-        setCustomer(payload.customer as Customer);
+        const cust = payload.customer as Customer;
+        setCustomer(cust);
         setProposals((payload.proposals as Proposal[]) || []);
         setProjects((payload.projects as Project[]) || []);
         setInvoices((payload.invoices as Invoice[]) || []);
+
+        // Fetch tenant branding from customer's organization
+        if (cust?.organization_id) {
+          const { data: cs } = await supabase
+            .from("company_settings")
+            .select("company_name, phone, email, website, logo_url")
+            .eq("organization_id", cust.organization_id)
+            .maybeSingle();
+          if (cs && !cancelled) {
+            setBrand({
+              company_name: (cs as any).company_name || "FloorPRO",
+              phone: (cs as any).phone || "",
+              email: (cs as any).email || "",
+              website: (cs as any).website || "",
+              logo_url: (cs as any).logo_url || null,
+            });
+          }
+        }
       }
 
       const tlData = tlRes.data as any;
@@ -250,11 +282,13 @@ export default function PublicPortal() {
           <p className="text-sm text-slate-600 mt-2">
             This link is invalid or has expired. Please contact us and we'll send you a fresh link.
           </p>
-          <Button asChild className="mt-5 bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
-            <a href={`tel:${COMPANY_PHONE_TEL}`}>
-              <Phone className="w-4 h-4 mr-2" /> Call {COMPANY_PHONE}
-            </a>
-          </Button>
+          {brand.phone && (
+            <Button asChild className="mt-5 bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
+              <a href={`tel:${brand.phone.replace(/[^\d+]/g, "")}`}>
+                <Phone className="w-4 h-4 mr-2" /> Call {brand.phone}
+              </a>
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -266,26 +300,32 @@ export default function PublicPortal() {
       <header className="bg-[#0f1b3d] text-white">
         <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-amber-400 text-[#0f1b3d] flex items-center justify-center font-black text-sm">
-              AXO
-            </div>
+            {brand.logo_url ? (
+              <img src={brand.logo_url} alt={brand.company_name} className="h-9 max-w-[120px] object-contain bg-white rounded p-1" />
+            ) : (
+              <div className="w-9 h-9 rounded-md bg-amber-400 text-[#0f1b3d] flex items-center justify-center font-black text-[10px] px-1">
+                {brand.company_name.slice(0, 4).toUpperCase()}
+              </div>
+            )}
             <div>
-              <div className="text-[11px] uppercase tracking-widest text-amber-300/90">AXO Floors</div>
+              <div className="text-[11px] uppercase tracking-widest text-amber-300/90">{brand.company_name}</div>
               <div className="text-sm font-semibold">Hi, {firstName}</div>
             </div>
           </div>
-          <a
-            href={`tel:${COMPANY_PHONE_TEL}`}
-            className="flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200"
-          >
-            <Phone className="w-3.5 h-3.5" /> {COMPANY_PHONE}
-          </a>
+          {brand.phone && (
+            <a
+              href={`tel:${brand.phone.replace(/[^\d+]/g, "")}`}
+              className="flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200"
+            >
+              <Phone className="w-3.5 h-3.5" /> {brand.phone}
+            </a>
+          )}
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="mb-5">
-          <h1 className="text-2xl font-bold text-slate-900">Your AXO Portal</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Your {brand.company_name} Portal</h1>
           <p className="text-sm text-slate-600 mt-1">
             Proposals, invoices and project updates — all in one place.
           </p>
@@ -566,21 +606,25 @@ export default function PublicPortal() {
             <div className="text-xs text-slate-500 mt-0.5">We typically reply within an hour.</div>
           </div>
           <div className="flex gap-2">
-            <Button asChild size="sm" variant="outline">
-              <a href={`tel:${COMPANY_PHONE_TEL}`}>
-                <Phone className="w-3.5 h-3.5 mr-1.5" /> Call
-              </a>
-            </Button>
-            <Button asChild size="sm" className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
-              <a href={`sms:${COMPANY_PHONE_TEL}`}>
-                <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Text
-              </a>
-            </Button>
+            {brand.phone && (
+              <Button asChild size="sm" variant="outline">
+                <a href={`tel:${brand.phone.replace(/[^\d+]/g, "")}`}>
+                  <Phone className="w-3.5 h-3.5 mr-1.5" /> Call
+                </a>
+              </Button>
+            )}
+            {brand.phone && (
+              <Button asChild size="sm" className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
+                <a href={`sms:${brand.phone.replace(/[^\d+]/g, "")}`}>
+                  <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Text
+                </a>
+              </Button>
+            )}
           </div>
         </div>
 
         <p className="text-center text-[11px] text-slate-400 mt-6">
-          AXO Floors · Tri-State Hardwood Specialists
+          {[brand.company_name, brand.phone, brand.email].filter(Boolean).join(" · ")}
         </p>
       </main>
 
