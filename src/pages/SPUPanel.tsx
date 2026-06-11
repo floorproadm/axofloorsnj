@@ -291,7 +291,11 @@ function UsersTab() {
         ) : (
           <div className="divide-y divide-white/5">
             {filtered.map((u) => (
-              <div key={u.user_id} className="grid grid-cols-12 gap-3 px-4 py-3 text-sm items-center">
+              <div
+                key={u.user_id}
+                onClick={() => setViewUserId(u.user_id)}
+                className="grid grid-cols-12 gap-3 px-4 py-3 text-sm items-center cursor-pointer hover:bg-white/[0.04] transition-colors"
+              >
                 <div className="col-span-3 min-w-0">
                   <div className="font-medium truncate">{u.full_name ?? "—"}</div>
                   {u.phone && <div className="text-xs text-white/50 truncate">{u.phone}</div>}
