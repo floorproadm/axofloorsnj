@@ -56,15 +56,22 @@ export function ProjectKernelOverview({ project }: Props) {
   const { data: members = [] } = useQuery({
     queryKey: ['project-members', project.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: links } = await supabase
         .from('project_members')
-        .select('user_id, role, profiles:profiles!project_members_user_id_fkey(full_name, avatar_url)')
+        .select('user_id, role')
         .eq('project_id', project.id);
-      return (data ?? []).map((m: any) => ({
-        user_id: m.user_id,
-        role: m.role,
-        full_name: m.profiles?.full_name,
-        avatar_url: m.profiles?.avatar_url,
+      if (!links || links.length === 0) return [];
+      const userIds = links.map((l: any) => l.user_id);
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url')
+        .in('id', userIds);
+      const byId = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      return links.map((l: any) => ({
+        user_id: l.user_id,
+        role: l.role,
+        full_name: byId.get(l.user_id)?.full_name,
+        avatar_url: byId.get(l.user_id)?.avatar_url,
       }));
     },
   });
