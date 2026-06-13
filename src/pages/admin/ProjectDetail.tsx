@@ -33,12 +33,12 @@ export default function ProjectDetail() {
       costs: 'finance',
       measurements: 'operations',
       proposal: 'proposal',
-      media: 'media',
+      media: 'operations',
       checklist: 'operations',
       tech: 'client',
       documents: 'client',
       operations: 'operations',
-      chat: 'chat',
+      chat: 'operations',
     };
     const t = searchParams.get('tab');
     if (t && oldToNew[t] && oldToNew[t] !== t) {
