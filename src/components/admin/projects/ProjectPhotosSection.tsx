@@ -20,10 +20,10 @@ import {
   useUploadMedia,
   useDeleteMedia,
   getMediaSignedUrls,
-  convertUploadedHeicMediaFile,
   repairHeicMediaFile,
   type MediaFile,
 } from "@/hooks/useMediaFiles";
+import { convertHeicToJpeg, isHeicFile } from "@/utils/heicConverter";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { NewBeforeAfterDialog } from "./NewBeforeAfterDialog";
 import { PhotoAnnotator } from "./PhotoAnnotator";
