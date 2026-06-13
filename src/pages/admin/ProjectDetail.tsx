@@ -92,17 +92,17 @@ export default function ProjectDetail() {
             <TabsTrigger value="kernel" className="gap-1.5">
               <LayoutDashboard className="h-3.5 w-3.5" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="finance" className="gap-1.5">
-              <DollarSign className="h-3.5 w-3.5" /> Financeiro
-            </TabsTrigger>
-            <TabsTrigger value="proposal" className="gap-1.5">
-              <FileText className="h-3.5 w-3.5" /> Proposta
+            <TabsTrigger value="client" className="gap-1.5">
+              <UserIcon className="h-3.5 w-3.5" /> Cliente
             </TabsTrigger>
             <TabsTrigger value="operations" className="gap-1.5">
               <Wrench className="h-3.5 w-3.5" /> Operação
             </TabsTrigger>
-            <TabsTrigger value="client" className="gap-1.5">
-              <UserIcon className="h-3.5 w-3.5" /> Cliente
+            <TabsTrigger value="proposal" className="gap-1.5">
+              <FileText className="h-3.5 w-3.5" /> Proposta
+            </TabsTrigger>
+            <TabsTrigger value="finance" className="gap-1.5">
+              <DollarSign className="h-3.5 w-3.5" /> Financeiro
             </TabsTrigger>
           </TabsList>
 
