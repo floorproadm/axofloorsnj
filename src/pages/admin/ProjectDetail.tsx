@@ -163,13 +163,13 @@ export default function ProjectDetail() {
             <Tabs defaultValue="checklist">
               <TabsList>
                 <TabsTrigger value="checklist">Checklist</TabsTrigger>
-                <TabsTrigger value="media">Mídia</TabsTrigger>
+                <TabsTrigger value="measurements">Medidas</TabsTrigger>
               </TabsList>
               <TabsContent value="checklist" className="mt-4">
                 <ProjectChecklistTab projectId={project.id} />
               </TabsContent>
-              <TabsContent value="media" className="mt-4">
-                <ProjectPhotosSection projectId={project.id} />
+              <TabsContent value="measurements" className="mt-4">
+                <ProjectMeasurementsTab projectId={project.id} />
               </TabsContent>
             </Tabs>
           </TabsContent>
