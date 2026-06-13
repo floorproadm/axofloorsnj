@@ -100,18 +100,31 @@ export function ProjectPhotosSection({ projectId }: Props) {
     const files = Array.from(list);
     if (files.length === 0) return;
     setUploading(true);
-    const heicToRepair: Array<{ media: MediaFile; file: File }> = [];
     try {
+      // Pre-convert HEIC client-side so the stored file is immediately viewable in any browser.
+      // This eliminates the post-upload repair race and shows the thumbnail right away.
+      const prepared = await Promise.all(
+        files.map(async (f) => {
+          if (!isHeicFile(f)) return f;
+          try {
+            return await convertHeicToJpeg(f);
+          } catch (e) {
+            console.error("HEIC conversion failed, uploading original:", e);
+            return f;
+          }
+        })
+      );
+
       // Upload in parallel (limit to 3 concurrent to avoid memory spikes on mobile)
       const CONCURRENCY = 3;
       let okCount = 0;
-      const queue = [...files];
+      const queue = [...prepared];
       const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
         while (queue.length) {
           const f = queue.shift();
           if (!f) break;
           try {
-            const uploaded = await uploadMedia.mutateAsync({
+            await uploadMedia.mutateAsync({
               file: f,
               projectId,
               folderType: "job_progress",
@@ -120,7 +133,6 @@ export function ProjectPhotosSection({ projectId }: Props) {
               silent: true,
               deferInvalidate: true,
             });
-            if (/\.hei[cf]$/i.test(uploaded.storage_path)) heicToRepair.push({ media: uploaded, file: f });
             okCount++;
           } catch (e: any) {
             toast({ title: "Falha no upload", description: e.message, variant: "destructive" });
@@ -128,16 +140,13 @@ export function ProjectPhotosSection({ projectId }: Props) {
         }
       });
       await Promise.all(workers);
-      if (okCount > 0) queryClient.invalidateQueries({ queryKey: ["media-files"] });
-      if (okCount > 0) toast({ title: `${okCount} arquivo(s) adicionado(s)` });
+      if (okCount > 0) {
+        queryClient.invalidateQueries({ queryKey: ["media-files"] });
+        toast({ title: `${okCount} arquivo(s) adicionado(s)` });
+      }
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
-      if (heicToRepair.length > 0) {
-        window.setTimeout(() => {
-          void repairUploadedHeicMedia(heicToRepair, queryClient);
-        }, 250);
-      }
     }
   }
 
