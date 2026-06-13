@@ -6,7 +6,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler } from 'lucide-react';
+import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler, ClipboardList, FolderOpen } from 'lucide-react';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
