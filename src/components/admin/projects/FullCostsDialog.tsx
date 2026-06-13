@@ -19,7 +19,13 @@ import {
   useLaborEntries,
   useAddLaborEntry,
   useDeleteLaborEntry,
+  useMarkLaborPaid,
+  type LaborEntry,
 } from "@/hooks/useLaborEntries";
+import { useCrewMembers } from "@/hooks/useCrewMembers";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, Users, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
