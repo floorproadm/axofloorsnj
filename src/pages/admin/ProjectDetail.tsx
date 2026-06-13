@@ -215,8 +215,12 @@ export default function ProjectDetail() {
           <TabsContent value="client" className="mt-4">
             <Tabs defaultValue="tech">
               <TabsList>
-                <TabsTrigger value="tech">Ficha Técnica</TabsTrigger>
-                <TabsTrigger value="documents">Documentos</TabsTrigger>
+                <TabsTrigger value="tech" className="gap-1.5">
+                  <ClipboardList className="h-3.5 w-3.5" /> Ficha Técnica
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="gap-1.5">
+                  <FolderOpen className="h-3.5 w-3.5" /> Documentos
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="tech" className="mt-4">
                 <ProjectTechSheet projectId={project.id} project={project} />
