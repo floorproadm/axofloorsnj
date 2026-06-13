@@ -164,22 +164,23 @@ export function ProjectTechSheet({ projectId, project }: Props) {
 
   return (
     <Card>
-      <CardHeader className="pb-3 flex flex-row items-center justify-between">
+      <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <FileText className="h-5 w-5" />
+          <FileText className="h-5 w-5 shrink-0" />
           Ficha Técnica
         </CardTitle>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={save} disabled={upsert.isPending}>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button size="sm" variant="outline" onClick={save} disabled={upsert.isPending} className="flex-1 sm:flex-none">
             {upsert.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
             Salvar
           </Button>
-          <Button size="sm" onClick={exportPDF} disabled={exporting}>
+          <Button size="sm" onClick={exportPDF} disabled={exporting} className="flex-1 sm:flex-none">
             {exporting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
             Exportar PDF
           </Button>
         </div>
       </CardHeader>
+
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
