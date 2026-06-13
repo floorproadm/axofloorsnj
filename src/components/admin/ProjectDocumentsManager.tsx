@@ -58,7 +58,7 @@ function getFileIcon(fileType: string) {
 
 export function ProjectDocumentsManager({ projectId }: ProjectDocumentsManagerProps) {
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
-  const [uploadFolder, setUploadFolder] = useState<DocumentFolder>('photos');
+  const [uploadFolder, setUploadFolder] = useState<DocumentFolder>('contracts');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: documents = [], isLoading } = useProjectDocuments(
