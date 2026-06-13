@@ -150,14 +150,10 @@ export default function ProjectDetail() {
             <Tabs defaultValue="builder">
               <TabsList>
                 <TabsTrigger value="builder">Builder</TabsTrigger>
-                <TabsTrigger value="measurements">Medidas</TabsTrigger>
               </TabsList>
               <TabsContent value="builder" className="mt-4 space-y-3">
                 <ProjectMeasurementsReference projectId={project.id} />
                 <ProposalGenerator projectId={project.id} />
-              </TabsContent>
-              <TabsContent value="measurements" className="mt-4">
-                <ProjectMeasurementsTab projectId={project.id} />
               </TabsContent>
             </Tabs>
           </TabsContent>
