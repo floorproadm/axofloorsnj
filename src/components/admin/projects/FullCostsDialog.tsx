@@ -237,10 +237,16 @@ export function LaborSection({ projectId }: { projectId: string }) {
   function selectCrewMember(id: string) {
     setCrewMemberId(id);
     const m = crew.find((c) => c.id === id);
-    if (m) {
-      setWorker(m.full_name);
-      if (m.daily_rate) setRate(String(m.daily_rate));
-      if (m.role) setRole(m.role);
+    if (!m) return;
+    setWorker(m.full_name);
+    // Always autofill from profile, even if 0/empty (lets user see what's on file)
+    setRate(m.daily_rate != null ? String(m.daily_rate) : "");
+    setRole(m.role || "helper");
+    const missing: string[] = [];
+    if (!m.daily_rate) missing.push("daily rate");
+    if (!m.role) missing.push("role");
+    if (missing.length) {
+      toast.info(`${m.full_name}'s profile has no ${missing.join(" or ")} on file — fill in manually or update the crew profile.`);
     }
   }
 
