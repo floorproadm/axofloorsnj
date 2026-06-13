@@ -224,7 +224,7 @@ export function ProjectPhotosSection({ projectId }: Props) {
         <Tabs defaultValue="progress" className="w-full">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <TabsList>
-              <TabsTrigger value="progress">Progresso</TabsTrigger>
+              <TabsTrigger value="progress">Mídia do Projeto</TabsTrigger>
               <TabsTrigger value="ba">Before &amp; After</TabsTrigger>
             </TabsList>
             <Button
