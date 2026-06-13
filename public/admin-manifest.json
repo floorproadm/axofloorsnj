@@ -1,11 +1,11 @@
 {
-  "name": "AXO OS",
-  "short_name": "AXO",
+  "name": "FloorPro",
+  "short_name": "FloorPro",
   "start_url": "/admin",
   "scope": "/admin",
   "display": "standalone",
-  "background_color": "#0B1F3B",
-  "theme_color": "#0B1F3B",
+  "background_color": "#0066FF",
+  "theme_color": "#0066FF",
   "orientation": "portrait",
   "icons": [
     {
