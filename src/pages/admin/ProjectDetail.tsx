@@ -6,7 +6,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon } from 'lucide-react';
+import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle } from 'lucide-react';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
@@ -37,7 +37,8 @@ export default function ProjectDetail() {
       checklist: 'operations',
       tech: 'client',
       documents: 'client',
-      chat: 'operations',
+      operations: 'operations',
+      chat: 'chat',
     };
     const t = searchParams.get('tab');
     if (t && oldToNew[t] && oldToNew[t] !== t) {
@@ -104,6 +105,9 @@ export default function ProjectDetail() {
             <TabsTrigger value="finance" className="gap-1.5">
               <DollarSign className="h-3.5 w-3.5" /> Financeiro
             </TabsTrigger>
+            <TabsTrigger value="chat" className="gap-1.5">
+              <MessageCircle className="h-3.5 w-3.5" /> Chat
+            </TabsTrigger>
           </TabsList>
 
           {/* KERNEL */}
@@ -161,7 +165,6 @@ export default function ProjectDetail() {
               <TabsList>
                 <TabsTrigger value="checklist">Checklist</TabsTrigger>
                 <TabsTrigger value="media">Mídia</TabsTrigger>
-                <TabsTrigger value="chat">Chat</TabsTrigger>
               </TabsList>
               <TabsContent value="checklist" className="mt-4">
                 <ProjectChecklistTab projectId={project.id} />
@@ -169,13 +172,39 @@ export default function ProjectDetail() {
               <TabsContent value="media" className="mt-4">
                 <ProjectPhotosSection projectId={project.id} />
               </TabsContent>
-              <TabsContent value="chat" className="mt-4">
+            </Tabs>
+          </TabsContent>
+
+          {/* CHAT */}
+          <TabsContent value="chat" className="mt-4">
+            <Tabs defaultValue="team">
+              <TabsList>
+                <TabsTrigger value="team" className="gap-1.5">
+                  <Wrench className="h-3.5 w-3.5" /> Equipe
+                </TabsTrigger>
+                <TabsTrigger value="client" className="gap-1.5">
+                  <UserIcon className="h-3.5 w-3.5" /> Cliente
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="team" className="mt-4">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Chat com Equipe</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ProjectChatPanel projectId={project.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="client" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Chat com Cliente</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      O chat com o cliente acontece pelo Portal do Cliente. Envie o link do portal pela aba <strong>Cliente</strong> para iniciar a conversa.
+                    </p>
                   </CardContent>
                 </Card>
               </TabsContent>
