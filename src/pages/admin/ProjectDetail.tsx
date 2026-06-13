@@ -150,8 +150,12 @@ export default function ProjectDetail() {
           <TabsContent value="operations" className="mt-4">
             <Tabs defaultValue="checklist">
               <TabsList>
-                <TabsTrigger value="checklist">Checklist</TabsTrigger>
-                <TabsTrigger value="measurements">Medidas</TabsTrigger>
+                <TabsTrigger value="checklist" className="gap-1.5">
+                  <ListChecks className="h-3.5 w-3.5" /> Checklist
+                </TabsTrigger>
+                <TabsTrigger value="measurements" className="gap-1.5">
+                  <Ruler className="h-3.5 w-3.5" /> Medidas
+                </TabsTrigger>
                 <TabsTrigger value="media" className="gap-1.5">
                   <Image className="h-3.5 w-3.5" /> Mídia
                 </TabsTrigger>
