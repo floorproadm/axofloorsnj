@@ -37,7 +37,8 @@ export default function ProjectDetail() {
       checklist: 'operations',
       tech: 'client',
       documents: 'client',
-      chat: 'operations',
+      operations: 'operations',
+      chat: 'chat',
     };
     const t = searchParams.get('tab');
     if (t && oldToNew[t] && oldToNew[t] !== t) {
