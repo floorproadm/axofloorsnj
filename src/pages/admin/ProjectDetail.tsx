@@ -90,7 +90,7 @@ export default function ProjectDetail() {
         <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
             <TabsTrigger value="kernel" className="gap-1.5">
-              <LayoutDashboard className="h-3.5 w-3.5" /> Kernel
+              <LayoutDashboard className="h-3.5 w-3.5" /> Overview
             </TabsTrigger>
             <TabsTrigger value="finance" className="gap-1.5">
               <DollarSign className="h-3.5 w-3.5" /> Financeiro
