@@ -25,6 +25,7 @@ import { ProjectChecklistTab } from '@/components/admin/projects/ProjectChecklis
 import { ProjectTechSheet } from '@/components/admin/projects/ProjectTechSheet';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
+import { ProjectMeasurementsTab, ProjectMeasurementsReference } from '@/components/admin/projects/ProjectMeasurementsTab';
 import {
   Loader2,
   ArrowLeft,
@@ -211,6 +212,7 @@ export default function ProjectDetail() {
           <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
+            <TabsTrigger value="measurements">Medidas</TabsTrigger>
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
             <TabsTrigger value="media">Mídia</TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
@@ -409,10 +411,17 @@ export default function ProjectDetail() {
             </Card>
           </TabsContent>
 
+          {/* MEASUREMENTS */}
+          <TabsContent value="measurements">
+            <ProjectMeasurementsTab projectId={project.id} />
+          </TabsContent>
+
           {/* PROPOSAL */}
           <TabsContent value="proposal">
+            <ProjectMeasurementsReference projectId={project.id} />
             <ProposalGenerator projectId={project.id} />
           </TabsContent>
+
 
 
           {/* DOCUMENTS */}
