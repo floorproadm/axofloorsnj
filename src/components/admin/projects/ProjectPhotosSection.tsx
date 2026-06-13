@@ -223,9 +223,9 @@ export function ProjectPhotosSection({ projectId }: Props) {
       <CardContent>
         <Tabs defaultValue="progress" className="w-full">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <TabsList className="bg-navy/40 border border-gold/20">
-              <TabsTrigger value="progress" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Progresso</TabsTrigger>
-              <TabsTrigger value="ba" className="data-[state=active]:bg-gold data-[state=active]:text-navy">Before &amp; After</TabsTrigger>
+            <TabsList>
+              <TabsTrigger value="progress">Progresso</TabsTrigger>
+              <TabsTrigger value="ba">Before &amp; After</TabsTrigger>
             </TabsList>
             <Button
               size="sm"
