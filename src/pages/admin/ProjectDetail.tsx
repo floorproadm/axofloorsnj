@@ -146,16 +146,9 @@ export default function ProjectDetail() {
           </TabsContent>
 
           {/* PROPOSTA */}
-          <TabsContent value="proposal" className="mt-4">
-            <Tabs defaultValue="builder">
-              <TabsList>
-                <TabsTrigger value="builder">Builder</TabsTrigger>
-              </TabsList>
-              <TabsContent value="builder" className="mt-4 space-y-3">
-                <ProjectMeasurementsReference projectId={project.id} />
-                <ProposalGenerator projectId={project.id} />
-              </TabsContent>
-            </Tabs>
+          <TabsContent value="proposal" className="mt-4 space-y-3">
+            <ProjectMeasurementsReference projectId={project.id} />
+            <ProposalGenerator projectId={project.id} />
           </TabsContent>
 
           {/* OPERAÇÃO */}
