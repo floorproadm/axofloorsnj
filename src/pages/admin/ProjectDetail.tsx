@@ -25,6 +25,7 @@ import { ProjectChecklistTab } from '@/components/admin/projects/ProjectChecklis
 import { ProjectTechSheet } from '@/components/admin/projects/ProjectTechSheet';
 import { ProjectDocumentsManager } from '@/components/admin/ProjectDocumentsManager';
 import { ProjectChatPanel } from '@/components/admin/ProjectChatPanel';
+import { ProjectMeasurementsTab, ProjectMeasurementsReference } from '@/components/admin/projects/ProjectMeasurementsTab';
 import {
   Loader2,
   ArrowLeft,
