@@ -6,7 +6,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image } from 'lucide-react';
+import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler } from 'lucide-react';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
@@ -150,8 +150,12 @@ export default function ProjectDetail() {
           <TabsContent value="operations" className="mt-4">
             <Tabs defaultValue="checklist">
               <TabsList>
-                <TabsTrigger value="checklist">Checklist</TabsTrigger>
-                <TabsTrigger value="measurements">Medidas</TabsTrigger>
+                <TabsTrigger value="checklist" className="gap-1.5">
+                  <ListChecks className="h-3.5 w-3.5" /> Checklist
+                </TabsTrigger>
+                <TabsTrigger value="measurements" className="gap-1.5">
+                  <Ruler className="h-3.5 w-3.5" /> Medidas
+                </TabsTrigger>
                 <TabsTrigger value="media" className="gap-1.5">
                   <Image className="h-3.5 w-3.5" /> Mídia
                 </TabsTrigger>
