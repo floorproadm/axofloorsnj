@@ -37,16 +37,16 @@ export function ProjectKPIBar({ estimatedRevenue, totalCost, className }: Projec
   ];
 
   return (
-    <div className={cn("grid grid-cols-5 gap-2", className)}>
+    <div className={cn("grid grid-cols-5 gap-1 sm:gap-2", className)}>
       {cells.map((c) => (
         <div
           key={c.label}
-          className="rounded-lg border border-border/40 bg-muted/30 p-3 text-left"
+          className="rounded-lg border border-border/40 bg-muted/30 p-1.5 sm:p-3 text-left min-w-0"
         >
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+          <p className="text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-wider text-muted-foreground truncate">
             {c.label}
           </p>
-          <p className={cn("text-lg font-bold leading-tight mt-0.5 text-foreground", c.color)}>
+          <p className={cn("text-sm sm:text-lg font-bold leading-tight mt-0.5 text-foreground truncate", c.color)}>
             {c.value}
           </p>
         </div>
