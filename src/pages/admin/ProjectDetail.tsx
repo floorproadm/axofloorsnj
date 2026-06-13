@@ -31,9 +31,9 @@ export default function ProjectDetail() {
     const oldToNew: Record<string, string> = {
       overview: 'kernel',
       costs: 'finance',
-      measurements: 'proposal',
+      measurements: 'operations',
       proposal: 'proposal',
-      media: 'operations',
+      media: 'media',
       checklist: 'operations',
       tech: 'client',
       documents: 'client',
