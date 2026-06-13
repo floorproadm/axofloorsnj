@@ -105,6 +105,9 @@ export default function ProjectDetail() {
             <TabsTrigger value="finance" className="gap-1.5">
               <DollarSign className="h-3.5 w-3.5" /> Financeiro
             </TabsTrigger>
+            <TabsTrigger value="chat" className="gap-1.5">
+              <MessageCircle className="h-3.5 w-3.5" /> Chat
+            </TabsTrigger>
           </TabsList>
 
           {/* KERNEL */}
