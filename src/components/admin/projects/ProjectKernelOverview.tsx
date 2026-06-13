@@ -130,7 +130,7 @@ export function ProjectKernelOverview({ project }: Props) {
       {/* Identity — main column */}
       <Card className="lg:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between py-3">
-          <CardTitle className="text-base">Identidade</CardTitle>
+          <CardTitle className="text-base">Resumo do projeto</CardTitle>
           {!editing ? (
             <Button variant="ghost" size="sm" onClick={() => setEditing(true)} className="gap-1.5 h-7">
               <Pencil className="h-3.5 w-3.5" /> Editar
