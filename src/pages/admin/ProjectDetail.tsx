@@ -210,6 +210,11 @@ export default function ProjectDetail() {
             </Tabs>
           </TabsContent>
 
+          {/* MÍDIA */}
+          <TabsContent value="media" className="mt-4">
+            <ProjectPhotosSection projectId={project.id} />
+          </TabsContent>
+
           {/* CLIENTE */}
           <TabsContent value="client" className="mt-4">
             <Tabs defaultValue="tech">
