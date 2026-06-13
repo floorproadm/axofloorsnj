@@ -212,6 +212,7 @@ export default function ProjectDetail() {
           <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="costs">Job Costs</TabsTrigger>
+            <TabsTrigger value="measurements">Medidas</TabsTrigger>
             <TabsTrigger value="proposal">Proposal</TabsTrigger>
             <TabsTrigger value="media">Mídia</TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
