@@ -3,11 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export const DOCUMENT_FOLDERS = [
-  { value: 'photos', label: 'Fotos' },
   { value: 'contracts', label: 'Contratos' },
   { value: 'drawings', label: 'Desenhos' },
-  { value: 'specifications', label: 'Especificações' },
-  { value: 'communication', label: 'Comunicação' },
   { value: 'other', label: 'Outros' },
 ] as const;
 
