@@ -528,13 +528,6 @@ export default function CrewsVans() {
                 <Input type="number" placeholder="250" value={crewForm.daily_rate} onChange={e => setCrewForm(f => ({ ...f, daily_rate: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Região</Label>
-                <Select value={crewForm.region} onValueChange={v => setCrewForm(f => ({ ...f, region: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue placeholder="Selecionar região" /></SelectTrigger>
-                  <SelectContent>{REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
                 <Label className="text-xs">E-mail</Label>
                 <Input placeholder="equipe@email.com" value={crewForm.email} onChange={e => setCrewForm(f => ({ ...f, email: e.target.value }))} />
               </div>
