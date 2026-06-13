@@ -45,13 +45,18 @@ const getAreaUnit = (areaType: string) => AREA_TYPES.find(t => t.value === areaT
 export default function MeasurementsManager() {
   const [searchParams] = useSearchParams();
   const projectFromUrl = searchParams.get('project');
+  const idFromUrl = searchParams.get('id');
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(idFromUrl);
   const [showCreate, setShowCreate] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (idFromUrl) setSelectedId(idFromUrl);
+  }, [idFromUrl]);
 
   const { data: measurements = [], isLoading } = useMeasurements();
   const { data: detail } = useMeasurementDetail(selectedId ?? undefined);
