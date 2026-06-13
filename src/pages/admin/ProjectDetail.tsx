@@ -89,23 +89,24 @@ export default function ProjectDetail() {
         <ProjectKernelHeader project={project} />
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
-            <TabsTrigger value="kernel" className="gap-1.5">
+          <TabsList className="w-full grid grid-cols-5 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/50 p-1">
+            <TabsTrigger value="kernel" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
               <LayoutDashboard className="h-3.5 w-3.5" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="client" className="gap-1.5">
+            <TabsTrigger value="client" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
               <UserIcon className="h-3.5 w-3.5" /> Cliente
             </TabsTrigger>
-            <TabsTrigger value="operations" className="gap-1.5">
+            <TabsTrigger value="operations" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
               <Wrench className="h-3.5 w-3.5" /> Operação
             </TabsTrigger>
-            <TabsTrigger value="proposal" className="gap-1.5">
+            <TabsTrigger value="proposal" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
               <FileText className="h-3.5 w-3.5" /> Proposta
             </TabsTrigger>
-            <TabsTrigger value="finance" className="gap-1.5">
+            <TabsTrigger value="finance" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
               <DollarSign className="h-3.5 w-3.5" /> Financeiro
             </TabsTrigger>
           </TabsList>
+
 
 
           {/* KERNEL */}
