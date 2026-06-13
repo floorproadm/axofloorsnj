@@ -6,7 +6,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image } from 'lucide-react';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
@@ -31,9 +31,9 @@ export default function ProjectDetail() {
     const oldToNew: Record<string, string> = {
       overview: 'kernel',
       costs: 'finance',
-      measurements: 'proposal',
+      measurements: 'operations',
       proposal: 'proposal',
-      media: 'operations',
+      media: 'media',
       checklist: 'operations',
       tech: 'client',
       documents: 'client',
@@ -108,6 +108,9 @@ export default function ProjectDetail() {
             <TabsTrigger value="chat" className="gap-1.5">
               <MessageCircle className="h-3.5 w-3.5" /> Chat
             </TabsTrigger>
+            <TabsTrigger value="media" className="gap-1.5">
+              <Image className="h-3.5 w-3.5" /> Mídia
+            </TabsTrigger>
           </TabsList>
 
           {/* KERNEL */}
@@ -147,14 +150,10 @@ export default function ProjectDetail() {
             <Tabs defaultValue="builder">
               <TabsList>
                 <TabsTrigger value="builder">Builder</TabsTrigger>
-                <TabsTrigger value="measurements">Medidas</TabsTrigger>
               </TabsList>
               <TabsContent value="builder" className="mt-4 space-y-3">
                 <ProjectMeasurementsReference projectId={project.id} />
                 <ProposalGenerator projectId={project.id} />
-              </TabsContent>
-              <TabsContent value="measurements" className="mt-4">
-                <ProjectMeasurementsTab projectId={project.id} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -164,13 +163,13 @@ export default function ProjectDetail() {
             <Tabs defaultValue="checklist">
               <TabsList>
                 <TabsTrigger value="checklist">Checklist</TabsTrigger>
-                <TabsTrigger value="media">Mídia</TabsTrigger>
+                <TabsTrigger value="measurements">Medidas</TabsTrigger>
               </TabsList>
               <TabsContent value="checklist" className="mt-4">
                 <ProjectChecklistTab projectId={project.id} />
               </TabsContent>
-              <TabsContent value="media" className="mt-4">
-                <ProjectPhotosSection projectId={project.id} />
+              <TabsContent value="measurements" className="mt-4">
+                <ProjectMeasurementsTab projectId={project.id} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -209,6 +208,11 @@ export default function ProjectDetail() {
                 </Card>
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          {/* MÍDIA */}
+          <TabsContent value="media" className="mt-4">
+            <ProjectPhotosSection projectId={project.id} />
           </TabsContent>
 
           {/* CLIENTE */}
