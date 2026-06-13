@@ -89,23 +89,24 @@ export default function ProjectDetail() {
         <ProjectKernelHeader project={project} />
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-5 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/50 p-1">
-            <TabsTrigger value="kernel" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
-              <LayoutDashboard className="h-3.5 w-3.5" /> Overview
+          <TabsList className="w-full grid grid-cols-5 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/40 p-1 rounded-xl">
+            <TabsTrigger value="kernel" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
+              <LayoutDashboard className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="client" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
-              <UserIcon className="h-3.5 w-3.5" /> Cliente
+            <TabsTrigger value="client" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
+              <UserIcon className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Cliente
             </TabsTrigger>
-            <TabsTrigger value="operations" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
-              <Wrench className="h-3.5 w-3.5" /> Operação
+            <TabsTrigger value="operations" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
+              <Wrench className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Operação
             </TabsTrigger>
-            <TabsTrigger value="proposal" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
-              <FileText className="h-3.5 w-3.5" /> Proposta
+            <TabsTrigger value="proposal" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
+              <FileText className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Proposta
             </TabsTrigger>
-            <TabsTrigger value="finance" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm">
-              <DollarSign className="h-3.5 w-3.5" /> Financeiro
+            <TabsTrigger value="finance" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
+              <DollarSign className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Financeiro
             </TabsTrigger>
           </TabsList>
+
 
 
 

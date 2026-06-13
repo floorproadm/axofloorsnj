@@ -295,3 +295,7 @@
     width: calc(100vw - 16px) !important;
   }
 }
+
+/* Hide scrollbar but keep functionality (horizontal scrollers) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -88,38 +88,21 @@ export function ProjectKernelHeader({ project }: Props) {
   const statusCfg = STATUSES.find((s) => s.value === project.project_status);
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border space-y-3">
-      {/* Row 1: Back, title, actions */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition mb-1"
-          >
-            <ArrowLeft className="h-3 w-3" /> Voltar
-          </button>
-          <h1 className="text-lg sm:text-xl font-bold truncate leading-tight">
-            {project.customer_name || 'Sem cliente'}
-          </h1>
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5 truncate">
-            <MapPin className="h-3 w-3 shrink-0" />
-            <span className="truncate">
-              {project.address ? `${project.address}${project.city ? `, ${project.city}` : ''}` : 'Sem endereço'}
-            </span>
-            {project.project_type && (
-              <>
-                <span className="mx-1">·</span>
-                <Badge variant="outline" className="text-[10px] py-0">{project.project_type}</Badge>
-              </>
-            )}
-          </p>
-        </div>
+    <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2.5 pb-3 sm:py-3 bg-background/95 backdrop-blur border-b border-border space-y-2.5 sm:space-y-3">
+      {/* Row 1: Back + Status + Menu (compact top bar on mobile) */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar
+        </button>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <Select value={project.project_status} onValueChange={onStatusChange}>
-            <SelectTrigger className="h-8 text-xs w-32">
+            <SelectTrigger className="h-7 text-xs w-auto min-w-[96px] px-2 gap-1">
               <SelectValue>
-                <Badge variant="outline" className={`${statusCfg?.color || ''} text-[10px] py-0`}>
+                <Badge variant="outline" className={`${statusCfg?.color || ''} text-[10px] py-0 px-1.5`}>
                   {statusCfg?.label || project.project_status}
                 </Badge>
               </SelectValue>
@@ -133,7 +116,7 @@ export function ProjectKernelHeader({ project }: Props) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-7 w-7">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -153,8 +136,27 @@ export function ProjectKernelHeader({ project }: Props) {
         </div>
       </div>
 
-      {/* Row 2: KPI Bar */}
+      {/* Row 2: Title + Address + Type pill */}
+      <div className="min-w-0">
+        <h1 className="text-lg sm:text-xl font-bold tracking-tight truncate leading-tight">
+          {project.customer_name || 'Sem cliente'}
+        </h1>
+        <div className="flex items-center gap-1.5 mt-1 min-w-0">
+          <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">
+            {project.address ? `${project.address}${project.city ? `, ${project.city}` : ''}` : 'Sem endereço'}
+          </span>
+          {project.project_type && (
+            <Badge variant="outline" className="text-[10px] py-0 px-1.5 shrink-0 max-w-[140px] truncate">
+              {project.project_type}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Row 3: KPI Bar */}
       <ProjectKPIBar estimatedRevenue={revenue} totalCost={totalCosts} />
+
 
       {/* Row 3: Next Action banner */}
       {project.next_action && (
