@@ -411,10 +411,17 @@ export default function ProjectDetail() {
             </Card>
           </TabsContent>
 
+          {/* MEASUREMENTS */}
+          <TabsContent value="measurements">
+            <ProjectMeasurementsTab projectId={project.id} />
+          </TabsContent>
+
           {/* PROPOSAL */}
           <TabsContent value="proposal">
+            <ProjectMeasurementsReference projectId={project.id} />
             <ProposalGenerator projectId={project.id} />
           </TabsContent>
+
 
 
           {/* DOCUMENTS */}
