@@ -33,12 +33,12 @@ export default function ProjectDetail() {
       costs: 'finance',
       measurements: 'operations',
       proposal: 'proposal',
-      media: 'media',
+      media: 'operations',
       checklist: 'operations',
       tech: 'client',
       documents: 'client',
       operations: 'operations',
-      chat: 'chat',
+      chat: 'operations',
     };
     const t = searchParams.get('tab');
     if (t && oldToNew[t] && oldToNew[t] !== t) {
@@ -105,13 +105,8 @@ export default function ProjectDetail() {
             <TabsTrigger value="finance" className="gap-1.5">
               <DollarSign className="h-3.5 w-3.5" /> Financeiro
             </TabsTrigger>
-            <TabsTrigger value="chat" className="gap-1.5">
-              <MessageCircle className="h-3.5 w-3.5" /> Chat
-            </TabsTrigger>
-            <TabsTrigger value="media" className="gap-1.5">
-              <Image className="h-3.5 w-3.5" /> Mídia
-            </TabsTrigger>
           </TabsList>
+
 
           {/* KERNEL */}
           <TabsContent value="kernel" className="mt-4">
@@ -157,6 +152,12 @@ export default function ProjectDetail() {
               <TabsList>
                 <TabsTrigger value="checklist">Checklist</TabsTrigger>
                 <TabsTrigger value="measurements">Medidas</TabsTrigger>
+                <TabsTrigger value="media" className="gap-1.5">
+                  <Image className="h-3.5 w-3.5" /> Mídia
+                </TabsTrigger>
+                <TabsTrigger value="chat" className="gap-1.5">
+                  <MessageCircle className="h-3.5 w-3.5" /> Chat
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="checklist" className="mt-4">
                 <ProjectChecklistTab projectId={project.id} />
@@ -164,49 +165,47 @@ export default function ProjectDetail() {
               <TabsContent value="measurements" className="mt-4">
                 <ProjectMeasurementsTab projectId={project.id} />
               </TabsContent>
+              <TabsContent value="media" className="mt-4">
+                <ProjectPhotosSection projectId={project.id} />
+              </TabsContent>
+              <TabsContent value="chat" className="mt-4">
+                <Tabs defaultValue="team">
+                  <TabsList>
+                    <TabsTrigger value="team" className="gap-1.5">
+                      <Wrench className="h-3.5 w-3.5" /> Equipe
+                    </TabsTrigger>
+                    <TabsTrigger value="client" className="gap-1.5">
+                      <UserIcon className="h-3.5 w-3.5" /> Cliente
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="team" className="mt-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Chat com Equipe</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <ProjectChatPanel projectId={project.id} />
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  <TabsContent value="client" className="mt-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Chat com Cliente</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          O chat com o cliente acontece pelo Portal do Cliente. Envie o link do portal pela aba <strong>Cliente</strong> para iniciar a conversa.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
             </Tabs>
           </TabsContent>
 
-          {/* CHAT */}
-          <TabsContent value="chat" className="mt-4">
-            <Tabs defaultValue="team">
-              <TabsList>
-                <TabsTrigger value="team" className="gap-1.5">
-                  <Wrench className="h-3.5 w-3.5" /> Equipe
-                </TabsTrigger>
-                <TabsTrigger value="client" className="gap-1.5">
-                  <UserIcon className="h-3.5 w-3.5" /> Cliente
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="team" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Chat com Equipe</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <ProjectChatPanel projectId={project.id} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="client" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Chat com Cliente</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      O chat com o cliente acontece pelo Portal do Cliente. Envie o link do portal pela aba <strong>Cliente</strong> para iniciar a conversa.
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
 
-          {/* MÍDIA */}
-          <TabsContent value="media" className="mt-4">
-            <ProjectPhotosSection projectId={project.id} />
-          </TabsContent>
 
           {/* CLIENTE */}
           <TabsContent value="client" className="mt-4">
