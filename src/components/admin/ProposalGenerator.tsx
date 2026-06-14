@@ -829,13 +829,13 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
 
             {/* Horizontal scroll wrapper so the table layout never collapses inside narrow panels/sheets */}
-            <div className="overflow-x-auto -mx-2 px-2 pb-2">
+            <div className="line-items-scroll overflow-x-auto -mx-2 px-2 pb-2">
               <style>{`
                 .line-items-scroll::-webkit-scrollbar { height: 6px; }
                 .line-items-scroll::-webkit-scrollbar-track { background: transparent; }
                 .line-items-scroll::-webkit-scrollbar-thumb { background-color: hsl(var(--muted-foreground) / 0.3); border-radius: 3px; }
               `}</style>
-              <div className="line-items-scroll min-w-[480px] sm:min-w-[640px] space-y-2">
+              <div className="min-w-[480px] sm:min-w-[640px] space-y-2">
                 {/* Header row */}
                 <div className="grid grid-cols-[20px_minmax(120px,1fr)_60px_80px_100px_32px] sm:grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
                   <div></div>
