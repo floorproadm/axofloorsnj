@@ -124,6 +124,15 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Require trusted server-to-server webhook secret or authenticated admin/manager/owner JWT.
+  // Public lead flows must route through trusted server triggers, never call gmail-send directly.
+  const auth = await authorize(req, { requireAdmin: true });
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.reason }), {
+      status: auth.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -140,6 +149,14 @@ Deno.serve(async (req) => {
     if (!template) {
       return new Response(JSON.stringify({ error: "template required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Raw HTML email template is dangerous — restrict to webhook callers (DB triggers),
+    // never user JWTs even with admin role.
+    if (template === "__raw__" && !req.headers.get("x-edge-webhook-secret")) {
+      return new Response(JSON.stringify({ error: "forbidden_template" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
