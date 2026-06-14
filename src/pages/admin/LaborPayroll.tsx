@@ -128,7 +128,7 @@ export default function LaborPayroll() {
         category: "labor",
         description: `${form.name} – ${form.role} (${form.days_worked} days @ ${fmt(dailyRate)}/day)`,
         payment_date: form.service_date,
-        project_id: form.project_id || null,
+        project_id: form.project_id && form.project_id !== "none" ? form.project_id : null,
         notes: form.notes || null,
         payment_method: form.payment_method,
         status: "pending",
