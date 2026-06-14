@@ -1217,14 +1217,14 @@ function PrintDirectCard({ formatCurrency, brand, theme, isDark, lines }: {
         Total Project Investment
       </div>
       {lines.length > 0 && (
-        <div style={{ marginTop: 8, marginBottom: 18, background: theme.surface, borderRadius: 8, border: `1px solid ${theme.border}`, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ marginTop: 8, marginBottom: 18, background: theme.surface, borderRadius: 8, border: `1px solid ${theme.border}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <table style={{ width: '100%', minWidth: 460, borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 <th style={thStyle}>Description</th>
-                <th style={{ ...thStyle, textAlign: 'right', width: 70 }}>Qty</th>
-                <th style={{ ...thStyle, textAlign: 'right', width: 110 }}>Unit Price</th>
-                <th style={{ ...thStyle, textAlign: 'right', width: 110 }}>Total</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 60 }}>Qty</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 100 }}>Unit Price</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 100 }}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -1234,9 +1234,9 @@ function PrintDirectCard({ formatCurrency, brand, theme, isDark, lines }: {
                 return (
                   <tr key={l.id}>
                     <td style={tdStyle}>{l.description || <span style={{ color: theme.textDim, fontStyle: 'italic' }}>Untitled item</span>}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{qty}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{formatCurrency(unit)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600 }}>{formatCurrency(qty * unit)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>{qty}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>{formatCurrency(unit)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>{formatCurrency(qty * unit)}</td>
                   </tr>
                 );
               })}
