@@ -342,10 +342,10 @@ export default function LaborPayroll() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Project (optional)</Label>
-                <Select value={form.project_id} onValueChange={v => setForm(f => ({ ...f, project_id: v }))}>
+                <Select value={form.project_id || "none"} onValueChange={v => setForm(f => ({ ...f, project_id: v === "none" ? "" : v }))}>
                   <SelectTrigger className="text-sm"><SelectValue placeholder="Link to job" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— None —</SelectItem>
+                    <SelectItem value="none">— None —</SelectItem>
                     {projects.map((p: any) => (
                       <SelectItem key={p.id} value={p.id}>{p.customer_name} · {p.project_type}</SelectItem>
                     ))}
