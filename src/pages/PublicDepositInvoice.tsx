@@ -52,51 +52,27 @@ export default function PublicDepositInvoice() {
     if (!token) return;
     (async () => {
       try {
-        const { data: prop, error: propErr } = await supabase
-          .from("proposals")
-          .select("*")
-          .eq("share_token", token)
-          .maybeSingle();
-        if (propErr) throw propErr;
-        if (!prop) {
+        const { data: bundle, error: bundleErr } = await supabase.rpc(
+          "public_get_deposit_invoice_bundle" as any,
+          { p_token: token },
+        );
+        if (bundleErr) throw bundleErr;
+        if (!bundle) {
           setError("Invoice not found");
           setLoading(false);
           return;
         }
-        setProposal(prop);
+        const b: any = bundle;
+        setProposal(b.proposal);
+        setProject(b.project ?? null);
+        setCustomer(b.customer ?? null);
+        setProperty(b.property ?? null);
+        setSignature(b.signature ?? null);
 
-        const [projRes, custRes, propertyRes, companyRes, sigRes] = await Promise.all([
-          supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
-          prop.customer_id
-            ? supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle()
-            : Promise.resolve({ data: null }),
-          prop.property_id
-            ? supabase.from("customer_properties").select("*").eq("id", prop.property_id).maybeSingle()
-            : Promise.resolve({ data: null }),
-          supabase.from("company_settings").select("*").limit(1).maybeSingle(),
-          supabase
-            .from("proposal_signatures" as any)
-            .select("*")
-            .eq("proposal_id", prop.id)
-            .order("signed_at", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-        ]);
-        setProject(projRes.data);
-        setCustomer(custRes.data);
-        setProperty(propertyRes.data);
-        setSignature(sigRes.data);
-
-        // Gate branding by org plan
-        const orgId = (prop as any).organization_id || (projRes.data as any)?.organization_id;
-        const { data: planRes } = orgId
-          ? await supabase.rpc("get_org_plan" as any, { p_org_id: orgId })
-          : { data: null };
-        const isPro = planRes === "pro" || planRes === "enterprise";
-
-        if (isPro) {
-          setCompany(companyRes.data);
-          const logoPath = (companyRes.data as any)?.logo_url;
+        const isPro = b.plan === "pro" || b.plan === "enterprise";
+        if (isPro && b.company) {
+          setCompany(b.company);
+          const logoPath = (b.company as any)?.logo_url;
           if (logoPath) {
             const { data: signed } = await supabase.storage
               .from("media")

@@ -39,40 +39,31 @@ export default function PublicInvoice() {
     if (!token) return;
     (async () => {
       try {
-        const { data: inv, error: invErr } = await supabase
-          .from("invoices")
-          .select("*, projects(customer_name, project_type, address, organization_id), customers(full_name, email, phone)")
-          .eq("share_token", token)
-          .maybeSingle();
-        if (invErr) throw invErr;
-        if (!inv) { setError("Invoice not found"); setLoading(false); return; }
+        const { data: bundle, error: bundleErr } = await supabase.rpc(
+          "public_get_invoice_bundle" as any,
+          { p_token: token },
+        );
+        if (bundleErr) throw bundleErr;
+        if (!bundle) { setError("Invoice not found"); setLoading(false); return; }
+        const b: any = bundle;
+        const inv = b.invoice;
         setInvoice(inv);
+        setItems(b.items || []);
+        setPhases(b.schedule || []);
+        setProperty(b.property || null);
 
-        // Mark as viewed
-        if (!inv.viewed_at) {
-          await supabase.from("invoices").update({ viewed_at: new Date().toISOString() } as any).eq("share_token", token);
+        if (inv && !inv.viewed_at) {
+          await supabase.rpc("public_mark_invoice_viewed" as any, { p_token: token });
         }
 
-        const orgId = (inv as any).projects?.organization_id;
-        const [itemsRes, phasesRes, propertyRes, csRes, planRes] = await Promise.all([
-          supabase.from("invoice_items").select("*").eq("invoice_id", inv.id).order("created_at"),
-          supabase.from("invoice_payment_schedule").select("*").eq("invoice_id", inv.id).order("phase_order"),
-          (inv as any).property_id
-            ? supabase.from("customer_properties").select("*").eq("id", (inv as any).property_id).maybeSingle()
-            : Promise.resolve({ data: null }),
-          orgId
-            ? supabase.from("company_settings").select("company_name, phone, email, website, logo_url").eq("organization_id", orgId).maybeSingle()
-            : Promise.resolve({ data: null }),
-          orgId
-            ? supabase.rpc("get_org_plan" as any, { p_org_id: orgId })
-            : Promise.resolve({ data: null }),
-        ]);
-        setItems(itemsRes.data || []);
-        setPhases(phasesRes.data || []);
-        setProperty(propertyRes.data);
-        const isPro = (planRes as any)?.data === "pro" || (planRes as any)?.data === "enterprise";
-        if (csRes.data && isPro) {
-          const cs = csRes.data as any;
+        // Plan-gated branding
+        const orgId = inv?.organization_id;
+        const { data: planRes } = orgId
+          ? await supabase.rpc("get_org_plan" as any, { p_org_id: orgId })
+          : { data: null };
+        const isPro = planRes === "pro" || planRes === "enterprise";
+        if (isPro && b.company) {
+          const cs = b.company as any;
           setBrand({
             company_name: cs.company_name || "FloorPRO",
             phone: cs.phone || "",
@@ -85,7 +76,6 @@ export default function PublicInvoice() {
             if (signed?.signedUrl) setLogoSignedUrl(signed.signedUrl);
           }
         }
-        // Basic plan: keep FloorPRO defaults (no logo, no custom contact info)
       } catch (e: any) {
         setError(e.message || "Failed to load invoice");
       } finally {

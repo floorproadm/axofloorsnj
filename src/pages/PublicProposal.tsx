@@ -91,59 +91,32 @@ export default function PublicProposal() {
     if (!token) return;
     (async () => {
       try {
-        const { data: prop, error: propErr } = await supabase
-          .from("proposals")
-          .select("*")
-          .eq("share_token", token)
-          .maybeSingle();
-        if (propErr) throw propErr;
-        if (!prop) {
+        const { data: bundle, error: bundleErr } = await supabase.rpc(
+          "public_get_proposal_bundle" as any,
+          { p_token: token },
+        );
+        if (bundleErr) throw bundleErr;
+        if (!bundle) {
           setError("Proposal not found");
           setLoading(false);
           return;
         }
+        const b: any = bundle;
+        const prop = b.proposal;
         setProposal(prop);
 
-        // Mark as viewed (first time only)
-        if (!prop.viewed_at) {
-          await supabase
-            .from("proposals")
-            .update({
-              viewed_at: new Date().toISOString(),
-              status: prop.status === "sent" ? "viewed" : prop.status,
-            } as any)
-            .eq("share_token", token);
+        if (prop && !prop.viewed_at) {
+          await supabase.rpc("public_mark_proposal_viewed" as any, { p_token: token });
         }
 
-        const [projRes, custRes, propertyRes, companyRes, itemsRes] = await Promise.all([
-          supabase.from("projects").select("*").eq("id", prop.project_id).maybeSingle(),
-          prop.customer_id
-            ? supabase.from("customers").select("*").eq("id", prop.customer_id).maybeSingle()
-            : Promise.resolve({ data: null }),
-          prop.property_id
-            ? supabase.from("customer_properties").select("*").eq("id", prop.property_id).maybeSingle()
-            : Promise.resolve({ data: null }),
-          supabase.from("company_settings").select("*").limit(1).maybeSingle(),
-          supabase
-            .from("proposal_line_items" as any)
-            .select("description, category, quantity, unit_price, amount, display_order")
-            .eq("proposal_id", prop.id)
-            .order("display_order", { ascending: true }),
-        ]);
-        setProject(projRes.data);
-        setCustomer(custRes.data);
-        setProperty(propertyRes.data);
+        setProject(b.project ?? null);
+        setCustomer(b.customer ?? null);
+        setProperty(b.property ?? null);
 
-        // Gate branding by org plan
-        const orgId = (prop as any).organization_id || (projRes.data as any)?.organization_id;
-        const { data: planRes } = orgId
-          ? await supabase.rpc("get_org_plan" as any, { p_org_id: orgId })
-          : { data: null };
-        const isPro = planRes === "pro" || planRes === "enterprise";
-
-        if (isPro) {
-          setCompany(companyRes.data);
-          const logoPath = (companyRes.data as any)?.logo_url;
+        const isPro = b.plan === "pro" || b.plan === "enterprise";
+        if (isPro && b.company) {
+          setCompany(b.company);
+          const logoPath = (b.company as any)?.logo_url;
           if (logoPath) {
             const { data: signed } = await supabase.storage
               .from("media")
@@ -151,12 +124,11 @@ export default function PublicProposal() {
             if (signed?.signedUrl) setLogoUrl(signed.signedUrl);
           }
         } else {
-          // Basic plan: present as neutral FloorPRO (no tenant branding leak)
           setCompany(null);
           setLogoUrl("");
         }
 
-        setLineItems(((itemsRes.data as any[]) || []).map((r) => ({
+        setLineItems(((b.line_items as any[]) || []).map((r: any) => ({
           description: r.description || "",
           category: r.category || "other",
           quantity: Number(r.quantity) || 0,

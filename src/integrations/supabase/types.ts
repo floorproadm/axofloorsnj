@@ -4925,6 +4925,36 @@ export type Database = {
         Returns: string
       }
       partner_nudge_admin: { Args: { p_lead_id: string }; Returns: Json }
+      public_accept_proposal: {
+        Args: {
+          p_payment_method?: string
+          p_selected_tier?: string
+          p_signature_url: string
+          p_signer_email: string
+          p_signer_name: string
+          p_token: string
+          p_user_agent?: string
+        }
+        Returns: Json
+      }
+      public_decline_proposal: {
+        Args: { p_reason?: string; p_token: string }
+        Returns: undefined
+      }
+      public_get_deposit_invoice_bundle: {
+        Args: { p_token: string }
+        Returns: Json
+      }
+      public_get_invoice_bundle: { Args: { p_token: string }; Returns: Json }
+      public_get_proposal_bundle: { Args: { p_token: string }; Returns: Json }
+      public_mark_invoice_viewed: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
+      public_mark_proposal_viewed: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
       purge_expired_deleted_leads: { Args: never; Returns: undefined }
       retry_failed_review_requests: { Args: never; Returns: Json }
       run_sla_engine: { Args: never; Returns: Json }

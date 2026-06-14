@@ -66,6 +66,11 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Webhook-only: require shared edge secret (set by DB triggers / trusted callers)
+  const auth = await authorize(req, { allowUserJwt: false });
+  if (!auth.ok) return unauthorized(auth.reason, auth.status, corsHeaders);
+
+
   // Validate request size first
   if (!validateRequestSize(req)) {
     console.warn('[FOLLOW-UP] Request size exceeded limit');
