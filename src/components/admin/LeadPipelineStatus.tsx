@@ -40,10 +40,8 @@ export function LeadPipelineStatus({
 
   const handleStatusChange = async (newStatus: PipelineStage) => {
     setIsOpen(false);
-    const success = await updateLeadStatus(leadId, newStatus);
-    if (success && onStatusChange) {
-      onStatusChange();
-    }
+    await updateLeadStatus(leadId, newStatus);
+    onStatusChange?.();
   };
 
   // Terminal states - no dropdown
