@@ -457,7 +457,7 @@ export default function Catalog() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>
               {editingItem
@@ -475,7 +475,7 @@ export default function Catalog() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="flex-1 overflow-y-auto space-y-4 py-2">
             {/* Image upload area */}
             <div className="space-y-1.5">
               <Label>{pt ? "Foto" : "Photo"}</Label>
@@ -696,7 +696,7 @@ export default function Catalog() {
 
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               {pt ? "Cancelar" : "Cancel"}
             </Button>
