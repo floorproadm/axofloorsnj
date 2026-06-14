@@ -69,7 +69,7 @@ function SortableLineRow({ line, onUpdate, onRemove }: SortableLineRowProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2 min-w-[640px]"
+      className="grid grid-cols-[20px_minmax(120px,1fr)_60px_80px_100px_32px] sm:grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 items-center bg-muted/30 rounded-md p-2 min-w-[480px] sm:min-w-[640px]"
     >
       <button
         type="button"
@@ -829,10 +829,15 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             </div>
 
             {/* Horizontal scroll wrapper so the table layout never collapses inside narrow panels/sheets */}
-            <div className="overflow-x-auto -mx-2 px-2">
-              <div className="min-w-[640px] space-y-2">
+            <div className="line-items-scroll overflow-x-auto -mx-2 px-2 pb-2">
+              <style>{`
+                .line-items-scroll::-webkit-scrollbar { height: 6px; }
+                .line-items-scroll::-webkit-scrollbar-track { background: transparent; }
+                .line-items-scroll::-webkit-scrollbar-thumb { background-color: hsl(var(--muted-foreground) / 0.3); border-radius: 3px; }
+              `}</style>
+              <div className="min-w-[480px] sm:min-w-[640px] space-y-2">
                 {/* Header row */}
-                <div className="grid grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <div className="grid grid-cols-[20px_minmax(120px,1fr)_60px_80px_100px_32px] sm:grid-cols-[24px_minmax(180px,1fr)_90px_110px_110px_36px] gap-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground">
                   <div></div>
                   <div>Description</div>
                   <div className="text-right">Qty</div>
@@ -1212,14 +1217,14 @@ function PrintDirectCard({ formatCurrency, brand, theme, isDark, lines }: {
         Total Project Investment
       </div>
       {lines.length > 0 && (
-        <div style={{ marginTop: 8, marginBottom: 18, background: theme.surface, borderRadius: 8, border: `1px solid ${theme.border}`, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ marginTop: 8, marginBottom: 18, background: theme.surface, borderRadius: 8, border: `1px solid ${theme.border}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <table style={{ width: '100%', minWidth: 460, borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 <th style={thStyle}>Description</th>
-                <th style={{ ...thStyle, textAlign: 'right', width: 70 }}>Qty</th>
-                <th style={{ ...thStyle, textAlign: 'right', width: 110 }}>Unit Price</th>
-                <th style={{ ...thStyle, textAlign: 'right', width: 110 }}>Total</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 60 }}>Qty</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 100 }}>Unit Price</th>
+                <th style={{ ...thStyle, textAlign: 'right', width: 100 }}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -1229,9 +1234,9 @@ function PrintDirectCard({ formatCurrency, brand, theme, isDark, lines }: {
                 return (
                   <tr key={l.id}>
                     <td style={tdStyle}>{l.description || <span style={{ color: theme.textDim, fontStyle: 'italic' }}>Untitled item</span>}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{qty}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{formatCurrency(unit)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600 }}>{formatCurrency(qty * unit)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>{qty}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>{formatCurrency(unit)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>{formatCurrency(qty * unit)}</td>
                   </tr>
                 );
               })}
