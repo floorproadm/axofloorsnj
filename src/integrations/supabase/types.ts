@@ -4812,6 +4812,7 @@ export type Database = {
       }
     }
     Functions: {
+      _get_edge_webhook_secret: { Args: never; Returns: string }
       calculate_job_margin: {
         Args: { p_project_id: string }
         Returns: {
