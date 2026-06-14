@@ -84,7 +84,7 @@ export function SignatureDialog({
 
       // Submit acceptance via SECURITY DEFINER RPC (validates token, inserts signature, marks accepted)
       const { error: acceptErr } = await supabase.rpc("public_accept_proposal" as any, {
-        p_token: shareToken,
+        p_token: proposalToken,
         p_signer_name: name.trim(),
         p_signer_email: email.trim() || null,
         p_signature_url: signature_url,
