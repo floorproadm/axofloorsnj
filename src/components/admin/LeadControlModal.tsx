@@ -310,6 +310,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
     await updateLeadStatus(lead.id, newStatus);
+    refreshNRA();
     onRefresh();
   };
 
