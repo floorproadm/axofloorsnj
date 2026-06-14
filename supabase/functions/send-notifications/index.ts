@@ -77,6 +77,11 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Webhook-only: trusted server-to-server (DB triggers) or admin JWT
+  const auth = await authorize(req, { allowUserJwt: false });
+  if (!auth.ok) return unauthorized(auth.reason, auth.status, corsHeaders);
+
+
   if (!validateRequestSize(req)) {
     console.warn('[NOTIFICATIONS] Request size exceeded limit');
     return new Response(
