@@ -1191,23 +1191,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     return nra && (nra.severity === 'critical' || nra.severity === 'blocked');
   };
 
-  if (allSalesLeads.length === 0 && !searchQuery) {
-    return (
-      <>
-        <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed rounded-lg bg-muted/20">
-          <Clock className="w-12 h-12 text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-semibold text-muted-foreground">Nenhum lead ativo. Verifique campanhas ou site.</h3>
-          <p className="text-sm text-muted-foreground/70 mt-2">
-            Sem leads no funil, nao ha faturamento futuro.
-          </p>
-          <Button onClick={() => setShowNewLeadModal(true)} className="mt-4 bg-primary text-primary-foreground">
-            <UserPlus className="w-4 h-4 mr-1" /> Criar Lead Manual
-          </Button>
-        </div>
-        <QuickNewLeadModal open={showNewLeadModal} onOpenChange={setShowNewLeadModal} onSuccess={onRefresh} />
-      </>
-    );
-  }
 
   return (
     <div className="space-y-3">
