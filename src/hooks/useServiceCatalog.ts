@@ -6,6 +6,7 @@ export type PriceUnit = "sqft" | "unit" | "step" | "linear_ft";
 
 export interface CatalogItem {
   id: string;
+  organization_id: string;
   item_type: CatalogItemType;
   name: string;
   description: string | null;
@@ -23,7 +24,7 @@ export interface CatalogItem {
   updated_at: string;
 }
 
-export type CatalogItemInsert = Omit<CatalogItem, "id" | "created_at" | "updated_at">;
+export type CatalogItemInsert = Omit<CatalogItem, "id" | "organization_id" | "created_at" | "updated_at">;
 export type CatalogItemUpdate = Partial<CatalogItemInsert> & { id: string };
 
 const QUERY_KEY = "service_catalog";
@@ -54,9 +55,13 @@ export function useCreateCatalogItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (item: CatalogItemInsert) => {
+      const { data: orgId, error: orgErr } = await supabase.rpc("get_user_org_id" as any);
+      if (orgErr) throw orgErr;
+      if (!orgId) throw new Error("No organization found for current user");
+
       const { data, error } = await supabase
         .from("service_catalog" as any)
-        .insert(item as any)
+        .insert({ ...item, organization_id: orgId } as any)
         .select()
         .single();
       if (error) throw error;

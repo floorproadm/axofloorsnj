@@ -4184,6 +4184,7 @@ export type Database = {
           item_type: string
           markup_percent: number | null
           name: string
+          organization_id: string
           price_unit: string
           unit_cost: number | null
           updated_at: string
@@ -4202,6 +4203,7 @@ export type Database = {
           item_type?: string
           markup_percent?: number | null
           name: string
+          organization_id: string
           price_unit?: string
           unit_cost?: number | null
           updated_at?: string
@@ -4220,11 +4222,20 @@ export type Database = {
           item_type?: string
           markup_percent?: number | null
           name?: string
+          organization_id?: string
           price_unit?: string
           unit_cost?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "service_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supply_connections: {
         Row: {
