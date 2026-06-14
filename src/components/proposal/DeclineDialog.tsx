@@ -36,14 +36,10 @@ export function DeclineDialog({
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("proposals")
-        .update({
-          status: "rejected",
-          rejected_at: new Date().toISOString(),
-          rejection_reason: reason.trim() || null,
-        } as any)
-        .eq("share_token", shareToken);
+      const { error } = await supabase.rpc("public_decline_proposal" as any, {
+        p_token: shareToken,
+        p_reason: reason.trim() || null,
+      });
       if (error) throw error;
       setDone(true);
       onDeclined?.();
