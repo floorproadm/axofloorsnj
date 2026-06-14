@@ -309,10 +309,8 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   };
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
-    const success = await updateLeadStatus(lead.id, newStatus);
-    if (success) {
-      onRefresh();
-    }
+    await updateLeadStatus(lead.id, newStatus);
+    onRefresh();
   };
 
   const handleAddFollowUp = async () => {
