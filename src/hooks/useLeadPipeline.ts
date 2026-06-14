@@ -157,7 +157,17 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
       });
 
       if (error) {
-        const msg = error.message?.replace(/^.*?ERROR:\s*/, '') || error.message;
+        const msg = error.message || error.details || 'Transição bloqueada pelo sistema';
+        toast({
+          title: "⚠️ Transição Bloqueada",
+          description: msg,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (!data || (typeof data === 'object' && 'error' in data && data.error)) {
+        const msg = (data as any)?.error || 'Transição bloqueada pelo sistema';
         toast({
           title: "⚠️ Transição Bloqueada",
           description: msg,
@@ -172,11 +182,12 @@ export function useLeadPipeline(): UseLeadPipelineReturn {
       });
       
       return true;
-    } catch (err) {
+    } catch (err: any) {
       console.error('Transition RPC exception:', err);
+      const msg = err?.message || err?.details || String(err);
       toast({
-        title: "Erro",
-        description: "Falha ao atualizar status do lead",
+        title: "⚠️ Transição Bloqueada",
+        description: msg,
         variant: "destructive"
       });
       return false;
