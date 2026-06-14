@@ -5044,6 +5044,10 @@ export type Database = {
         }
         Returns: string
       }
+      submit_proposal_change_request: {
+        Args: { p_message: string; p_proposal_id: string; p_token: string }
+        Returns: string
+      }
       supply_has_access: { Args: { p_org_id: string }; Returns: boolean }
       transition_lead_status: {
         Args: { p_lead_id: string; p_new_status: string }
