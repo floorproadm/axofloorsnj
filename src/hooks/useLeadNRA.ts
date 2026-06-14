@@ -13,7 +13,7 @@ interface UseLeadNRAReturn {
   refresh: () => void;
 }
 
-export function useLeadNRA(leadId?: string): UseLeadNRAReturn {
+export function useLeadNRA(leadId?: string, status?: string): UseLeadNRAReturn {
   const [nra, setNra] = useState<LeadNRA | null>(null);
   const [loading, setLoading] = useState(false);
   const [trigger, setTrigger] = useState(0);
@@ -40,7 +40,7 @@ export function useLeadNRA(leadId?: string): UseLeadNRAReturn {
         setLoading(false);
       }
     })();
-  }, [leadId, trigger]);
+  }, [leadId, status, trigger]);
 
   return { nra, loading, refresh };
 }

@@ -116,7 +116,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToProject, isConverting } = useLeadConversion();
-  const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id);
+  const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id, lead?.status);
   const { useProposalByProject, updateProposalStatus } = useProposals();
   
   const projectId = lead?.converted_to_project_id || undefined;
@@ -310,6 +310,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
   const handleAdvanceStatus = async (newStatus: PipelineStage) => {
     await updateLeadStatus(lead.id, newStatus);
+    refreshNRA();
     onRefresh();
   };
 
