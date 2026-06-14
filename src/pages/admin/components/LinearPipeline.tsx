@@ -1447,7 +1447,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                         <div className="p-1.5 space-y-1.5">
                           {stageLeads.length === 0 ? (
                             <div className="text-center py-16 text-muted-foreground/60 text-xs">
-                              Sem leads neste estagio
+                              Nenhum lead
                             </div>
                           ) : (
                             stageLeads.map(lead => (
