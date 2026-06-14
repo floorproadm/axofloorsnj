@@ -35,6 +35,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Webhook-only: trusted server-to-server callers
+  const auth = await authorize(req, { allowUserJwt: false });
+  if (!auth.ok) return unauthorized(auth.reason, auth.status, corsHeaders);
+
+
   try {
     const leadData: LeadData = await req.json();
     console.log('send-to-notion received:', { name: leadData.name, source: leadData.source });
