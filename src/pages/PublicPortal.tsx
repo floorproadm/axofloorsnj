@@ -632,13 +632,12 @@ export default function PublicPortal() {
         </p>
       </main>
 
-      {changeReqProposal && customer && (
+      {changeReqProposal && customer && token && (
         <ChangeRequestDialog
           open={!!changeReqProposal}
           onOpenChange={(v) => !v && setChangeReqProposal(null)}
           proposalId={changeReqProposal.id}
-          customerId={customer.id}
-          organizationId={changeReqProposal.organization_id}
+          portalToken={token}
         />
       )}
 

@@ -3,6 +3,7 @@
 // Designed to run once per day via pg_cron (e.g. 18:00 local).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authorize, unauthorized } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,10 @@ interface ProjectRow {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const auth = await authorize(req, { requireAdmin: true });
+  if (!auth.ok) return unauthorized(auth.reason, auth.status, corsHeaders);
+
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

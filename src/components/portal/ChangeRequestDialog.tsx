@@ -11,16 +11,14 @@ interface ChangeRequestDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   proposalId: string;
-  customerId: string;
-  organizationId: string;
+  portalToken: string;
 }
 
 export function ChangeRequestDialog({
   open,
   onOpenChange,
   proposalId,
-  customerId,
-  organizationId,
+  portalToken,
 }: ChangeRequestDialogProps) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -35,11 +33,10 @@ export function ChangeRequestDialog({
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("proposal_change_requests").insert({
-      proposal_id: proposalId,
-      customer_id: customerId,
-      organization_id: organizationId,
-      message: message.trim(),
+    const { error } = await supabase.rpc("submit_proposal_change_request" as any, {
+      p_token: portalToken,
+      p_proposal_id: proposalId,
+      p_message: message.trim(),
     });
     setSubmitting(false);
     if (error) {

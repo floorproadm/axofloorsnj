@@ -52,69 +52,12 @@ export const useLeadCapture = () => {
         throw new Error(`Failed to save lead: ${saveError.message}`);
       }
 
-      // Send Gmail follow-up email
-      try {
-        await supabase.functions.invoke('gmail-send', {
-          body: {
-            template: 'lead_followup',
-            data: {
-              recipient_email: leadData.email,
-              name: leadData.name,
-              services: leadData.category || '',
-              related_id: savedLead?.id,
-              related_type: 'lead',
-            }
-          }
-        });
-      } catch (emailError) {
-        console.warn('Failed to send Gmail follow-up:', emailError);
-      }
-
-      // Legacy follow-up (fallback)
-      try {
-        await supabase.functions.invoke('send-follow-up', {
-          body: {
-            name: leadData.name,
-            email: leadData.email,
-            source: leadData.source,
-            leadType: 'lead_magnet',
-            downloadTitle: leadData.downloadTitle
-          }
-        });
-      } catch (emailError) {
-        console.warn('Failed to send follow-up email:', emailError);
-      }
-
-      // Send admin notification
-      try {
-        await supabase.functions.invoke('send-notifications', {
-          body: {
-            leadData: dbData,
-            adminEmail: 'axofloorsnj@gmail.com',
-            adminPhone: '+17323518653'
-          }
-        });
-      } catch (notificationError) {
-        console.warn('Failed to send admin notification:', notificationError);
-      }
-
-      // Send to Notion
-      try {
-        await supabase.functions.invoke('send-to-notion', {
-          body: {
-            name: leadData.name,
-            email: leadData.email,
-            phone: dbData.phone,
-            source: leadData.source,
-            services: leadData.category ? [leadData.category] : ['lead_magnet'],
-            notes: leadData.downloadTitle ? `Downloaded: ${leadData.downloadTitle}` : 'Lead magnet download'
-          }
-        });
-        console.log('Lead sent to Notion successfully');
-      } catch (notionError) {
-        console.warn('Failed to send to Notion:', notionError);
-        // Don't fail the whole process for Notion errors
-      }
+      // NOTE: Admin notification (email) and Notion sync are handled server-side
+      // by the `notify_new_lead_email` DB trigger after this INSERT. Direct invocations
+      // from the browser were removed because those edge functions were publicly callable
+      // and could be abused to spam customers, admins, and the Notion CRM. If the
+      // automated server-side flow needs to be extended, do it in a DB trigger or a
+      // trusted server-side function rather than from anonymous client code.
 
       toast({
         title: "Success! 🎉",

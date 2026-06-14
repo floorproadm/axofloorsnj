@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { authorize, unauthorized } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,10 @@ const RETRY_DELAY_MS = 60 * 60 * 1000; // 1 hour
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  const auth = await authorize(req, { requireAdmin: true });
+  if (!auth.ok) return unauthorized(auth.reason, auth.status, corsHeaders);
+
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,

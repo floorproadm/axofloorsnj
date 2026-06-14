@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { authorize, unauthorized } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,10 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+
+  const auth = await authorize(req, { requireAdmin: true });
+  if (!auth.ok) return unauthorized(auth.reason, auth.status, corsHeaders);
+
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

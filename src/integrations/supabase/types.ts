@@ -4812,6 +4812,7 @@ export type Database = {
       }
     }
     Functions: {
+      _get_edge_webhook_secret: { Args: never; Returns: string }
       calculate_job_margin: {
         Args: { p_project_id: string }
         Returns: {
@@ -5042,6 +5043,10 @@ export type Database = {
           p_urgency?: string
           p_zip_code?: string
         }
+        Returns: string
+      }
+      submit_proposal_change_request: {
+        Args: { p_message: string; p_proposal_id: string; p_token: string }
         Returns: string
       }
       supply_has_access: { Args: { p_org_id: string }; Returns: boolean }

@@ -1,5 +1,6 @@
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { authorize, unauthorized } from "../_shared/auth.ts";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 const AXO_ORG_ID = "a0000000-0000-0000-0000-000000000001";
@@ -46,6 +47,10 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+
+  const auth = await authorize(req, { allowUserJwt: false });
+  if (!auth.ok) return unauthorized(auth.reason, auth.status, corsHeaders);
+
 
   try {
     const body = await req.json();
