@@ -444,7 +444,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   <ChevronRight className="w-3 h-3" /> Avançar
                 </Button>
               )}
-              {!hasProject && stage === 'estimate_scheduled' && (
+              {!hasProject && ['estimate_requested','estimate_scheduled','in_draft'].includes(stage) && (
                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => setShowConvertForm(true)}>
                   <ArrowRightLeft className="w-3 h-3" /> Converter
                 </Button>
