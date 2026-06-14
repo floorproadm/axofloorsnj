@@ -82,34 +82,17 @@ export function SignatureDialog({
         .getPublicUrl(fileName);
       const signature_url = pub.publicUrl;
 
-      // Insert signature row
-      const { error: sigErr } = await supabase
-        .from("proposal_signatures")
-        .insert({
-          proposal_id: proposalId,
-          organization_id: organizationId,
-          signer_name: name.trim(),
-          signer_email: email.trim() || null,
-          signature_url,
-          selected_tier: selectedTier,
-          payment_method: paymentMethod,
-          user_agent: navigator.userAgent,
-        } as any);
-      if (sigErr) throw sigErr;
-
-      // Update proposal
-      const updates: any = {
-        status: "accepted",
-        accepted_at: new Date().toISOString(),
-      };
-      if (selectedTier && selectedTier !== "flat") {
-        updates.selected_tier = selectedTier;
-      }
-      const { error: propErr } = await supabase
-        .from("proposals")
-        .update(updates)
-        .eq("id", proposalId);
-      if (propErr) throw propErr;
+      // Submit acceptance via SECURITY DEFINER RPC (validates token, inserts signature, marks accepted)
+      const { error: acceptErr } = await supabase.rpc("public_accept_proposal" as any, {
+        p_token: shareToken,
+        p_signer_name: name.trim(),
+        p_signer_email: email.trim() || null,
+        p_signature_url: signature_url,
+        p_selected_tier: selectedTier && selectedTier !== "flat" ? selectedTier : null,
+        p_payment_method: paymentMethod,
+        p_user_agent: navigator.userAgent,
+      });
+      if (acceptErr) throw acceptErr;
 
       // Notify admin via Gmail (best-effort)
       try {
