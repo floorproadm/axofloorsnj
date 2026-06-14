@@ -272,23 +272,10 @@ const QuizFlow = ({ embedded = false, partnerId, onComplete }: QuizFlowProps) =>
       const { data: savedLead, error: saveError } = await supabase.from("leads").insert([quizData]).select().single();
       if (saveError) throw new Error(`Failed to save quiz response: ${saveError.message}`);
 
-      // Fire-and-forget integrations
-      supabase.functions.invoke("send-to-notion", {
-        body: {
-          name: quizData.name, email: quizData.email, phone: quizData.phone,
-          source: quizData.lead_source, services: quizData.services, budget: quizData.budget,
-          room_size: quizData.room_size, city: quizData.city, priority: quizData.priority,
-          status: "cold_lead", notes: notesString,
-        },
-      }).catch(() => {});
-
-      supabase.functions.invoke("send-follow-up", {
-        body: { name: formData.name, email: formData.email, source: quizData.lead_source, leadType: "quiz" },
-      }).catch(() => {});
-
-      supabase.functions.invoke("send-notifications", {
-        body: { leadData: quizData, adminEmail: "axofloorsnj@gmail.com", adminPhone: "+17323518653" },
-      }).catch(() => {});
+      // Admin notification & Notion sync run server-side via the
+      // `notify_new_lead_email` DB trigger after this INSERT. Browser-side
+      // invocations were removed because those edge functions were publicly
+      // callable and could be abused to spam customers, admins, and the CRM.
 
       toast({
         title: partnerId ? "Referral sent!" : "Thank you!",
