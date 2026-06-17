@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Scale, CheckCircle2, AlertCircle } from "lucide-react";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 const fmt = (v: number) =>
   `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
