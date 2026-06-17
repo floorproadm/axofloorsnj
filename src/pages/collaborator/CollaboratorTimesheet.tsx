@@ -18,8 +18,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Calendar as CalendarComp } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Loader2, Plus, CheckCircle2, Clock, XCircle, Trash2, Calendar, AlertTriangle,
+  Loader2, Plus, CheckCircle2, Clock, XCircle, Trash2, Calendar, AlertTriangle, CalendarIcon,
 } from "lucide-react";
 import { format, parseISO, startOfMonth } from "date-fns";
 import { toast } from "sonner";
@@ -49,9 +52,9 @@ export default function CollaboratorTimesheet() {
 
   const [showForm, setShowForm] = useState(false);
   const [payMode, setPayMode] = useState<PayMode>("daily");
+  const [workDates, setWorkDates] = useState<Date[]>([new Date()]);
   const [form, setForm] = useState({
     project_id: "",
-    work_date: format(new Date(), "yyyy-MM-dd"),
     days_worked: "1",
     sqft_worked: "",
     notes: "",
@@ -75,16 +78,17 @@ export default function CollaboratorTimesheet() {
   const sqftRate = Number(selectedProject?.labor_sqft_rate ?? 0);
   const dailyRate = Number(profile?.daily_rate ?? 0);
 
+  const dayCount = Math.max(1, workDates.length);
   const previewTotal = useMemo(() => {
-    if (payMode === "daily") return dailyRate * (Number(form.days_worked) || 0);
-    return sqftRate * (Number(form.sqft_worked) || 0);
-  }, [payMode, dailyRate, sqftRate, form.days_worked, form.sqft_worked]);
+    if (payMode === "daily") return dailyRate * (Number(form.days_worked) || 0) * dayCount;
+    return sqftRate * (Number(form.sqft_worked) || 0) * dayCount;
+  }, [payMode, dailyRate, sqftRate, form.days_worked, form.sqft_worked, dayCount]);
 
   const resetForm = () => {
     setPayMode("daily");
+    setWorkDates([new Date()]);
     setForm({
       project_id: "",
-      work_date: format(new Date(), "yyyy-MM-dd"),
       days_worked: "1",
       sqft_worked: "",
       notes: "",
@@ -92,50 +96,51 @@ export default function CollaboratorTimesheet() {
     setShowForm(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.project_id) return toast.error("Selecione um projeto");
+    if (workDates.length === 0) return toast.error("Selecione pelo menos uma data");
 
     if (payMode === "daily") {
       const days = Number(form.days_worked);
       if (!days || days <= 0) return toast.error("Quantidade de dias inválida");
-      submit.mutate(
-        {
-          pay_mode: "daily",
-          project_id: form.project_id,
-          work_date: form.work_date,
-          days_worked: days,
-          notes: form.notes,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Lançamento enviado para aprovação");
-            resetForm();
-          },
-          onError: (e: any) => toast.error(e.message || "Falha ao enviar"),
-        }
-      );
     } else {
       const sqft = Number(form.sqft_worked);
       if (!sqft || sqft <= 0) return toast.error("Quantidade de sqft inválida");
       if (!sqftRate || sqftRate <= 0) {
         return toast.error("Projeto sem rate por sqft definida pelo admin");
       }
-      submit.mutate(
-        {
-          pay_mode: "sqft",
-          project_id: form.project_id,
-          work_date: form.work_date,
-          sqft_worked: sqft,
-          notes: form.notes,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Lançamento enviado para aprovação");
-            resetForm();
-          },
-          onError: (e: any) => toast.error(e.message || "Falha ao enviar"),
+    }
+
+    try {
+      const sorted = [...workDates].sort((a, b) => a.getTime() - b.getTime());
+      for (const d of sorted) {
+        const work_date = format(d, "yyyy-MM-dd");
+        if (payMode === "daily") {
+          await submit.mutateAsync({
+            pay_mode: "daily",
+            project_id: form.project_id,
+            work_date,
+            days_worked: Number(form.days_worked),
+            notes: form.notes,
+          });
+        } else {
+          await submit.mutateAsync({
+            pay_mode: "sqft",
+            project_id: form.project_id,
+            work_date,
+            sqft_worked: Number(form.sqft_worked),
+            notes: form.notes,
+          });
         }
+      }
+      toast.success(
+        sorted.length > 1
+          ? `${sorted.length} lançamentos enviados para aprovação`
+          : "Lançamento enviado para aprovação"
       );
+      resetForm();
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao enviar");
     }
   };
 
