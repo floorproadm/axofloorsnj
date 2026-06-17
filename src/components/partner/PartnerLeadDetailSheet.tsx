@@ -259,22 +259,6 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
             authorName={partnerName}
           />
 
-          {/* Nudge AXO — last-resort ping */}
-          {!["completed", "lost"].includes(lead.status) && (
-            <Button
-              onClick={handleNudge}
-              disabled={nudging}
-              variant="outline"
-              className="w-full gap-2"
-            >
-              {nudging ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Bell className="w-4 h-4" />
-              )}
-              Nudge AXO for update
-            </Button>
-          )}
         </div>
       </SheetContent>
     </Sheet>
