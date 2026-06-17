@@ -27,6 +27,7 @@ import {
 import { format, parseISO, startOfMonth } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 export default function CollaboratorTimesheet() {
   const { user } = useAuth();
