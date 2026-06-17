@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import { convertHeicToJpeg } from "@/utils/heicConverter";
 import { OnMyWayButton } from "@/components/shared/OnMyWayButton";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 export default function CollaboratorProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
