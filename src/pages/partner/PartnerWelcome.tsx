@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Handshake, CheckCircle2 } from "lucide-react";
+import { resolveLogoUrl } from "@/hooks/useCompanySettings";
 
 export default function PartnerWelcome() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function PartnerWelcome() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [companyName, setCompanyName] = useState("FloorPRO");
+  const [logoUrl, setLogoUrl] = useState<string>("");
 
   useEffect(() => {
     // Supabase auto-parses the magic-link hash and establishes a session.
@@ -50,10 +52,14 @@ export default function PartnerWelcome() {
     }
     const { data: cs } = await supabase
       .from("company_settings")
-      .select("company_name")
+      .select("company_name, logo_url")
       .eq("organization_id", orgId)
       .maybeSingle();
     if (cs?.company_name) setCompanyName(cs.company_name);
+    if ((cs as any)?.logo_url) {
+      const url = await resolveLogoUrl((cs as any).logo_url);
+      if (url) setLogoUrl(url);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,9 +111,20 @@ export default function PartnerWelcome() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 shadow-xl">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-            <Handshake className="w-7 h-7 text-primary" />
-          </div>
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={`${companyName} logo`}
+              className="h-14 w-auto max-w-[200px] object-contain mb-3"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
+              <Handshake className="w-7 h-7 text-primary" />
+            </div>
+          )}
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+            Welcome to the {companyName} Partner Portal
+          </p>
           <h1 className="text-2xl font-bold">Set your password</h1>
           <p className="text-sm text-muted-foreground mt-1 text-center">
             One last step — choose a password to secure your Partner Portal account.
