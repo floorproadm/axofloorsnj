@@ -302,12 +302,6 @@ export default function PartnerDashboard() {
             <p className="text-sm font-bold leading-tight truncate">{tenantBrand.company_name}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider leading-none mt-0.5">Partner Portal</p>
           </div>
-          {/* Tier badge */}
-          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary whitespace-nowrap">
-            {partner?.partner_program === "trade" ? "Trade" : tier.name}
-          </span>
-
-
           {/* Notification bell */}
           <Popover open={notifOpen} onOpenChange={(o) => { setNotifOpen(o); if (o) markAllNotificationsRead(); }}>
             <PopoverTrigger asChild>
@@ -341,11 +335,23 @@ export default function PartnerDashboard() {
               </div>
             </PopoverContent>
           </Popover>
-          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
+        </div>
+        {/* Row 2 — Partner identity (subtle) */}
+        <div className="max-w-2xl mx-auto px-4 pb-2.5 pt-0.5 flex items-center gap-2 border-t border-border/40">
+          <p className="text-xs text-muted-foreground flex-1 truncate pt-2">
+            Welcome, <span className="font-medium text-foreground">{partner?.contact_name || partner?.company_name}</span>
+          </p>
+          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary whitespace-nowrap mt-1.5">
             {partner?.partner_program === "trade" ? "Trade" : tier.name}
           </span>
+          {partner?.partner_type === "realtor" && (
+            <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground whitespace-nowrap mt-1.5">
+              Realtor
+            </span>
+          )}
         </div>
       </header>
+
 
 
       <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
