@@ -171,7 +171,7 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
           <p className="text-xs text-muted-foreground mt-0.5">
             {currentFolder
               ? `${currentFolder.items.length} ${currentFolder.items.length === 1 ? "project" : "projects"} · tap to share with referral code`
-              : "Real AXO projects organized by service — every share auto-tags your referral code."}
+              : `Real ${companyName} projects organized by service — every share auto-tags your referral code.`}
           </p>
         </div>
       </div>
