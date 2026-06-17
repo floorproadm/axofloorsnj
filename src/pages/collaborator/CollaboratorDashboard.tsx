@@ -221,7 +221,7 @@ export default function CollaboratorDashboard() {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-heading font-semibold text-foreground">
-                {todayProject.customer_name}
+                {projectDisplayName(todayProject.customer_name, todayProject.location)}
               </h2>
               <Badge variant="default" className="text-xs">
                 {todayProject.appointment_type}
