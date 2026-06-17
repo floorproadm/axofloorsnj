@@ -120,7 +120,7 @@ export default function CollaboratorSchedule() {
                                appt.appointment_type}
                             </h3>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {appt.customer_name}
+                              {projectDisplayName(appt.customer_name, appt.location)}
                             </p>
                           </div>
                           <Badge
