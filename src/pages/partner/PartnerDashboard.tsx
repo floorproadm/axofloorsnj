@@ -64,9 +64,10 @@ export default function PartnerDashboard() {
   const [partner, setPartner] = useState<PartnerInfo | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [commissionPercent, setCommissionPercent] = useState(7);
-  const [tenantBrand, setTenantBrand] = useState<{ company_name: string; phone: string }>({
+  const [tenantBrand, setTenantBrand] = useState<{ company_name: string; phone: string; logo_url: string | null }>({
     company_name: "FloorPRO",
     phone: "",
+    logo_url: null,
   });
   const [authEmail, setAuthEmail] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
