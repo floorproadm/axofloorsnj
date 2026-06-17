@@ -259,12 +259,14 @@ export default function PublicProposal() {
             )}
             <div className="min-w-0">
               <h1 className="text-xl font-bold tracking-tight truncate">{brand.name}</h1>
-              <p
-                className="text-[10px] uppercase tracking-[2px] mt-0.5"
-                style={{ color: brand.primary }}
-              >
-                {brand.tagline}
-              </p>
+              {brand.tagline && (
+                <p
+                  className="text-[10px] uppercase tracking-[2px] mt-0.5"
+                  style={{ color: brand.primary }}
+                >
+                  {brand.tagline}
+                </p>
+              )}
             </div>
           </div>
           <StatusBadge status={proposal.status} expired={isExpired} />
