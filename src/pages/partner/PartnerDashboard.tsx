@@ -120,7 +120,7 @@ export default function PartnerDashboard() {
         .maybeSingle(),
       supabase
         .from("leads")
-        .select("id, name, phone, email, status, city, budget, created_at, status_changed_at, converted_to_project_id")
+        .select("id, name, phone, email, status, address, city, zip_code, budget, services, room_size, message, next_step, expected_close_date, internal_note_for_partner, last_contacted_at, created_at, status_changed_at, converted_to_project_id")
         .eq("referred_by_partner_id", partnerId)
         .order("created_at", { ascending: false }),
       supabase
