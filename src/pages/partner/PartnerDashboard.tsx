@@ -565,6 +565,40 @@ export default function PartnerDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Contact tenant */}
+            {tenantBrand.phone && (
+              <Card className="p-3 border-primary/10 bg-primary/5">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold text-foreground leading-tight">
+                      Contact {tenantBrand.company_name}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Quick questions about a referral?
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`https://wa.me/${tenantBrand.phone.replace(/[^\d]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold hover:bg-emerald-700 transition-colors"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      WhatsApp
+                    </a>
+                    <a
+                      href={`tel:${tenantBrand.phone.replace(/[^\d]/g, "")}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      Call
+                    </a>
+                  </div>
+                </div>
+              </Card>
+            )}
           </>
         )}
 
