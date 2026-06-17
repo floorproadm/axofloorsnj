@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { formatAppointmentTime } from "@/lib/constants";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { OnMyWayButton } from "@/components/shared/OnMyWayButton";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   scheduled: {
@@ -119,7 +120,7 @@ export default function CollaboratorSchedule() {
                                appt.appointment_type}
                             </h3>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {appt.customer_name}
+                              {projectDisplayName(appt.customer_name, appt.location)}
                             </p>
                           </div>
                           <Badge
@@ -160,7 +161,7 @@ export default function CollaboratorSchedule() {
                         <div className="flex items-center justify-between gap-2 pt-1">
                           <OnMyWayButton
                             phone={appt.customer_phone}
-                            customerName={appt.customer_name}
+                            customerName={projectDisplayName(appt.customer_name, appt.location)}
                             className="h-8 text-xs"
                           />
                           {appt.project_id && (

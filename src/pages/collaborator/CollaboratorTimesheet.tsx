@@ -27,6 +27,7 @@ import {
 import { format, parseISO, startOfMonth } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 export default function CollaboratorTimesheet() {
   const { user } = useAuth();
@@ -237,8 +238,7 @@ export default function CollaboratorTimesheet() {
                   ) : (
                     projects.map((p) => (
                       <SelectItem key={p.project_id} value={p.project_id}>
-                        {p.customer_name}
-                        {p.address ? ` — ${p.address}` : ""}
+                        {projectDisplayName(p.customer_name, p.address)}
                       </SelectItem>
                     ))
                   )}
@@ -407,7 +407,7 @@ export default function CollaboratorTimesheet() {
                       <div className="flex items-center gap-2">
                         <StatusIcon className={cn("h-3.5 w-3.5 shrink-0", statusColor)} />
                         <span className="text-sm font-medium text-foreground truncate">
-                          {e.projects?.customer_name || "Projeto"}
+                          {projectDisplayName(e.projects?.customer_name, e.projects?.address, "Projeto")}
                         </span>
                         <Badge variant="outline" className="text-[9px]">
                           {isSqft ? "SqFt" : "Diária"}

@@ -14,6 +14,7 @@ import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
 import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 import { toast } from "sonner";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 interface ChatMessage {
   id: string;
@@ -190,7 +191,7 @@ export default function CollaboratorChat() {
                 : "bg-card text-foreground border-border hover:bg-accent"
             )}
           >
-            {p.customer_name}
+            {projectDisplayName(p.customer_name, p.address)}
           </button>
         ))}
       </div>

@@ -17,6 +17,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 export default function CollaboratorProfile() {
   const { user, signOut } = useAuth();
@@ -83,11 +84,12 @@ export default function CollaboratorProfile() {
     queryFn: async () => {
       const { data } = await supabase
         .from("project_members")
-        .select(`project_id, role, projects!inner (customer_name, project_status)`)
+        .select(`project_id, role, projects!inner (customer_name, address, project_status)`)
         .eq("user_id", user!.id);
       return (data || []).map((r: any) => ({
         id: r.project_id,
         customer_name: r.projects.customer_name,
+        address: r.projects.address,
         status: r.projects.project_status,
       }));
     },
@@ -391,7 +393,7 @@ export default function CollaboratorProfile() {
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
               >
                 <div className="text-left">
-                  <p className="text-sm font-medium text-foreground">{p.customer_name}</p>
+                  <p className="text-sm font-medium text-foreground">{projectDisplayName(p.customer_name, p.address)}</p>
                   <p className="text-xs text-muted-foreground">
                     {statusLabels[p.status] || p.status}
                   </p>
