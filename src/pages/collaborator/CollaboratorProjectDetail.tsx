@@ -9,6 +9,7 @@ import { Loader2, Camera, MapPin, ArrowLeft, ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import { convertHeicToJpeg } from "@/utils/heicConverter";
+import { OnMyWayButton } from "@/components/shared/OnMyWayButton";
 
 export default function CollaboratorProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
