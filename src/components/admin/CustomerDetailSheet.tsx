@@ -37,8 +37,10 @@ import {
   ExternalLink,
   DollarSign,
   Trash2,
+  Link2,
 } from "lucide-react";
 import { CustomerPropertiesSection } from "./CustomerPropertiesSection";
+import { CustomerPortalShareDialog } from "./CustomerPortalShareDialog";
 
 interface Customer {
   id: string;
@@ -112,6 +114,7 @@ export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }:
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -370,6 +373,14 @@ export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }:
           )}
 
           <div className="pt-2 space-y-2">
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => setPortalOpen(true)}
+            >
+              <Link2 className="w-4 h-4" />
+              Enviar Portal do Cliente
+            </Button>
             <Button asChild variant="outline" className="w-full">
               <Link to={`/admin/projects?customer=${customer.id}`}>
                 Abrir detalhes completos
@@ -466,6 +477,17 @@ export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }:
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <CustomerPortalShareDialog
+        open={portalOpen}
+        onOpenChange={setPortalOpen}
+        customerId={customer.id}
+        customerName={customer.full_name}
+        customerEmail={customer.email}
+        customerPhone={customer.phone}
+        relatedId={customer.id}
+        relatedType="customer"
+      />
     </Sheet>
   );
 }
