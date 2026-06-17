@@ -11,6 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2,
   Package, Plus, X
@@ -35,6 +38,7 @@ export default function CollaboratorDashboard() {
   const [uploadProjectId, setUploadProjectId] = useState<string | null>(null);
   const [showMaterialForm, setShowMaterialForm] = useState(false);
   const [materialForm, setMaterialForm] = useState({
+    project_id: "",
     item_name: "",
     quantity: "1",
     unit: "unit",
@@ -118,11 +122,26 @@ export default function CollaboratorDashboard() {
     }
   };
 
+  const handleOpenMaterialForm = () => {
+    setMaterialForm((f) => ({
+      ...f,
+      project_id: f.project_id || todayProjectId || projects[0]?.project_id || "",
+    }));
+    setShowMaterialForm(true);
+  };
+
   const handleSubmitMaterial = () => {
-    if (!materialForm.item_name.trim()) return;
+    if (!materialForm.item_name.trim()) {
+      toast.error("Informe o nome do material");
+      return;
+    }
+    if (!materialForm.project_id) {
+      toast.error("Selecione um projeto");
+      return;
+    }
     createRequest.mutate(
       {
-        project_id: todayProjectId || null,
+        project_id: materialForm.project_id,
         item_name: materialForm.item_name.trim(),
         quantity: Number(materialForm.quantity) || 1,
         unit: materialForm.unit,
@@ -131,9 +150,10 @@ export default function CollaboratorDashboard() {
       {
         onSuccess: () => {
           toast.success("Material solicitado!");
-          setMaterialForm({ item_name: "", quantity: "1", unit: "unit", notes: "" });
+          setMaterialForm({ project_id: "", item_name: "", quantity: "1", unit: "unit", notes: "" });
           setShowMaterialForm(false);
         },
+        onError: (e: any) => toast.error(e?.message || "Falha ao enviar solicitação"),
       }
     );
   };
@@ -308,66 +328,125 @@ export default function CollaboratorDashboard() {
               variant="ghost"
               size="sm"
               className="h-7 text-xs gap-1"
-              onClick={() => setShowMaterialForm(!showMaterialForm)}
+              onClick={handleOpenMaterialForm}
             >
-              {showMaterialForm ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-              {showMaterialForm ? "Cancelar" : "Solicitar"}
+              <Plus className="h-3 w-3" />
+              Solicitar
             </Button>
           </div>
 
-          {/* Form */}
-          {showMaterialForm && (
-            <div className="space-y-2 p-3 rounded-lg bg-muted/50 border border-border">
-              <Input
-                placeholder="Nome do material (ex: Stain Dark Walnut)"
-                value={materialForm.item_name}
-                onChange={(e) => setMaterialForm((f) => ({ ...f, item_name: e.target.value }))}
-                className="h-9 text-sm"
-              />
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Qtd"
-                  value={materialForm.quantity}
-                  onChange={(e) => setMaterialForm((f) => ({ ...f, quantity: e.target.value }))}
-                  className="h-9 text-sm w-20"
-                />
-                <Select
-                  value={materialForm.unit}
-                  onValueChange={(v) => setMaterialForm((f) => ({ ...f, unit: v }))}
-                >
-                  <SelectTrigger className="h-9 text-sm flex-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unit">Unidade</SelectItem>
-                    <SelectItem value="gallon">Galão</SelectItem>
-                    <SelectItem value="box">Caixa</SelectItem>
-                    <SelectItem value="sqft">Sq Ft</SelectItem>
-                    <SelectItem value="roll">Rolo</SelectItem>
-                  </SelectContent>
-                </Select>
+          <Dialog open={showMaterialForm} onOpenChange={setShowMaterialForm}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Solicitar Material
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-3 py-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Projeto</Label>
+                  <Select
+                    value={materialForm.project_id}
+                    onValueChange={(v) => setMaterialForm((f) => ({ ...f, project_id: v }))}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Selecione o projeto" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.length === 0 ? (
+                        <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                          Nenhum projeto atribuído
+                        </div>
+                      ) : (
+                        projects.map((p) => (
+                          <SelectItem key={p.project_id} value={p.project_id}>
+                            {p.customer_name}
+                            {p.address ? ` — ${p.address}` : ""}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Material</Label>
+                  <Input
+                    placeholder="Ex: Stain Dark Walnut"
+                    value={materialForm.item_name}
+                    onChange={(e) => setMaterialForm((f) => ({ ...f, item_name: e.target.value }))}
+                    className="h-9 text-sm"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Quantidade</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={materialForm.quantity}
+                      onChange={(e) => setMaterialForm((f) => ({ ...f, quantity: e.target.value }))}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Unidade</Label>
+                    <Select
+                      value={materialForm.unit}
+                      onValueChange={(v) => setMaterialForm((f) => ({ ...f, unit: v }))}
+                    >
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unit">Unidade</SelectItem>
+                        <SelectItem value="gallon">Galão</SelectItem>
+                        <SelectItem value="box">Caixa</SelectItem>
+                        <SelectItem value="sqft">Sq Ft</SelectItem>
+                        <SelectItem value="roll">Rolo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Notas (opcional)</Label>
+                  <Textarea
+                    placeholder="Detalhes adicionais, cor, marca preferida..."
+                    value={materialForm.notes}
+                    onChange={(e) => setMaterialForm((f) => ({ ...f, notes: e.target.value }))}
+                    className="text-sm min-h-[64px]"
+                  />
+                </div>
               </div>
-              <Input
-                placeholder="Notas (opcional)"
-                value={materialForm.notes}
-                onChange={(e) => setMaterialForm((f) => ({ ...f, notes: e.target.value }))}
-                className="h-9 text-sm"
-              />
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={handleSubmitMaterial}
-                disabled={!materialForm.item_name.trim() || createRequest.isPending}
-              >
-                {createRequest.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Enviar Solicitação"
-                )}
-              </Button>
-            </div>
-          )}
+
+              <DialogFooter className="gap-2 sm:gap-2">
+                <Button variant="outline" size="sm" onClick={() => setShowMaterialForm(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSubmitMaterial}
+                  disabled={
+                    !materialForm.item_name.trim() ||
+                    !materialForm.project_id ||
+                    createRequest.isPending
+                  }
+                >
+                  {createRequest.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Enviar Solicitação"
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
 
           {/* Recent requests */}
           {recentRequests.length > 0 ? (
