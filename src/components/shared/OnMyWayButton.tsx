@@ -37,6 +37,7 @@ export function OnMyWayButton({
     const cleanPhone = phone.replace(/[^\d+]/g, "");
     const href = `sms:${cleanPhone}?&body=${encodeURIComponent(body)}`;
     window.location.href = href;
+    toast.success("Client notified ✓");
   };
 
   return (
