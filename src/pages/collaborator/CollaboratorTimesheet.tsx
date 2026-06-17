@@ -193,10 +193,14 @@ export default function CollaboratorTimesheet() {
         </Card>
       </div>
 
-      {/* New entry form */}
-      {showForm && (
-        <Card className="border-primary/40">
-          <CardContent className="p-4 space-y-3">
+      {/* New entry modal */}
+      <Dialog open={showForm} onOpenChange={(o) => (o ? setShowForm(true) : resetForm())}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Novo Lançamento</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3">
             {/* Pay mode toggle */}
             <div className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1">
               {(["daily", "sqft"] as PayMode[]).map((mode) => (
@@ -242,19 +246,46 @@ export default function CollaboratorTimesheet() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label className="text-xs">Data</Label>
-                <Input
-                  type="date"
-                  value={form.work_date}
-                  onChange={(e) => setForm((f) => ({ ...f, work_date: e.target.value }))}
-                  className="h-9 text-sm mt-1"
-                />
-              </div>
+            <div>
+              <Label className="text-xs">Datas trabalhadas</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "h-9 w-full justify-start text-left font-normal text-sm mt-1",
+                      workDates.length === 0 && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {workDates.length === 0
+                      ? "Selecione uma ou mais datas"
+                      : workDates.length === 1
+                      ? format(workDates[0], "PPP")
+                      : `${workDates.length} dias selecionados`}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComp
+                    mode="multiple"
+                    selected={workDates}
+                    onSelect={(dates) => setWorkDates(dates ?? [])}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              {workDates.length > 1 && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Será criado 1 lançamento por dia.
+                </p>
+              )}
+            </div>
+
+            <div>
               {payMode === "daily" ? (
-                <div>
-                  <Label className="text-xs">Dias trabalhados</Label>
+                <>
+                  <Label className="text-xs">Dias trabalhados (por data)</Label>
                   <Input
                     type="number"
                     step="0.5"
@@ -264,10 +295,10 @@ export default function CollaboratorTimesheet() {
                     className="h-9 text-sm mt-1"
                     placeholder="Ex: 1 ou 0.5"
                   />
-                </div>
+                </>
               ) : (
-                <div>
-                  <Label className="text-xs">SqFt trabalhado</Label>
+                <>
+                  <Label className="text-xs">SqFt trabalhado (por data)</Label>
                   <Input
                     type="number"
                     step="1"
@@ -277,7 +308,7 @@ export default function CollaboratorTimesheet() {
                     className="h-9 text-sm mt-1"
                     placeholder="Ex: 250"
                   />
-                </div>
+                </>
               )}
             </div>
 
@@ -285,7 +316,8 @@ export default function CollaboratorTimesheet() {
             {payMode === "daily" ? (
               <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2 text-xs">
                 <span className="text-muted-foreground tabular-nums">
-                  ${dailyRate.toFixed(0)}/dia × {Number(form.days_worked) || 0}d
+                  ${dailyRate.toFixed(0)}/dia × {Number(form.days_worked) || 0}d × {dayCount}{" "}
+                  {dayCount > 1 ? "datas" : "data"}
                 </span>
                 <span className="font-bold tabular-nums text-foreground">
                   ${previewTotal.toFixed(2)}
@@ -301,7 +333,8 @@ export default function CollaboratorTimesheet() {
             ) : (
               <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2 text-xs">
                 <span className="text-muted-foreground tabular-nums">
-                  ${sqftRate.toFixed(2)}/sqft × {Number(form.sqft_worked) || 0}
+                  ${sqftRate.toFixed(2)}/sqft × {Number(form.sqft_worked) || 0} × {dayCount}{" "}
+                  {dayCount > 1 ? "datas" : "data"}
                 </span>
                 <span className="font-bold tabular-nums text-foreground">
                   ${previewTotal.toFixed(2)}
@@ -318,28 +351,24 @@ export default function CollaboratorTimesheet() {
                 className="text-sm mt-1 min-h-[60px]"
               />
             </div>
+          </div>
 
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetForm}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSubmit}
-                disabled={submit.isPending}
-                className="flex-1"
-              >
-                {submit.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enviar"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" size="sm" onClick={resetForm} className="flex-1">
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={submit.isPending}
+              className="flex-1"
+            >
+              {submit.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enviar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* History list */}
       <div className="space-y-2">
