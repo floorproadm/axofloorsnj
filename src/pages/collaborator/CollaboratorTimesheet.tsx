@@ -238,9 +238,7 @@ export default function CollaboratorTimesheet() {
                   ) : (
                     projects.map((p) => (
                       <SelectItem key={p.project_id} value={p.project_id}>
-                      <SelectItem key={p.project_id} value={p.project_id}>
                         {projectDisplayName(p.customer_name, p.address)}
-                      </SelectItem>
                       </SelectItem>
                     ))
                   )}
