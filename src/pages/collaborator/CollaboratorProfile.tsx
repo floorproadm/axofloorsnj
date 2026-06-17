@@ -17,6 +17,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 export default function CollaboratorProfile() {
   const { user, signOut } = useAuth();
