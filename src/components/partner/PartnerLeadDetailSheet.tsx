@@ -39,8 +39,6 @@ interface Props {
 }
 
 export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent, partnerName }: Props) {
-  const [nudging, setNudging] = useState(false);
-
   if (!lead) return null;
 
   const stageIndex = PARTNER_LEAD_STAGES.findIndex((s) => s.key === lead.status);
@@ -62,28 +60,6 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
     toast({ title: "Phone copied" });
   };
 
-  const handleNudge = async () => {
-    setNudging(true);
-    try {
-      const { data, error } = await supabase.rpc("partner_nudge_admin" as any, {
-        p_lead_id: lead.id,
-      });
-      if (error) throw error;
-      const notified = (data as any)?.notified ?? 0;
-      toast({
-        title: "Nudge sent",
-        description: notified > 0 ? `${notified} team member(s) notified.` : "Team notified.",
-      });
-    } catch (e: any) {
-      toast({
-        title: "Could not send nudge",
-        description: e.message || "Try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setNudging(false);
-    }
-  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
