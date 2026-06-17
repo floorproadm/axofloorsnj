@@ -151,7 +151,7 @@ export function QuickPitchSheet({
                     <Icon className="w-4 h-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold leading-tight">{t.label}</p>
+                    <p className="text-sm font-semibold leading-tight">{t.label.replace("{company}", companyName)}</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {t.description}
                     </p>
