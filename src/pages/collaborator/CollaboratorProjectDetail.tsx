@@ -96,7 +96,7 @@ export default function CollaboratorProjectDetail() {
           </div>
           <OnMyWayButton
             phone={project.customer_phone}
-            customerName={project.customer_name}
+            customerName={projectDisplayName(project.customer_name, project.address)}
             label="On My Way"
             className="w-full"
           />
