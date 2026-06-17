@@ -302,18 +302,11 @@ export default function PartnerDashboard() {
             <p className="text-sm font-bold leading-tight truncate">{tenantBrand.company_name}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider leading-none mt-0.5">Partner Portal</p>
           </div>
-          {/* Notification bell */}
-          <Popover open={notifOpen} onOpenChange={(o) => { setNotifOpen(o); if (o) markAllNotificationsRead(); }}>
-            <PopoverTrigger asChild>
-              <button className="relative w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted transition-colors">
-                <Bell className="w-4 h-4 text-muted-foreground" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center tabular-nums">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
-            </PopoverTrigger>
+          {/* Tier badge */}
+          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary whitespace-nowrap">
+            {partner?.partner_program === "trade" ? "Trade" : tier.name}
+          </span>
+
 
           {/* Notification bell */}
           <Popover open={notifOpen} onOpenChange={(o) => { setNotifOpen(o); if (o) markAllNotificationsRead(); }}>
