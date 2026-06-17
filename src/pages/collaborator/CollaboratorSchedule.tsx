@@ -161,7 +161,7 @@ export default function CollaboratorSchedule() {
                         <div className="flex items-center justify-between gap-2 pt-1">
                           <OnMyWayButton
                             phone={appt.customer_phone}
-                            customerName={appt.customer_name}
+                            customerName={projectDisplayName(appt.customer_name, appt.location)}
                             className="h-8 text-xs"
                           />
                           {appt.project_id && (
