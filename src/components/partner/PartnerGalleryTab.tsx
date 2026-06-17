@@ -27,6 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { StainPickerSheet } from "./StainPickerSheet";
 import { QuickPitchSheet } from "./QuickPitchSheet";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
 interface GalleryProject {
   id: string;
