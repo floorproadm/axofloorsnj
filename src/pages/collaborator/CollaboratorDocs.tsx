@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ImageIcon } from "lucide-react";
 import { useState, useEffect } from "react";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 export default function CollaboratorDocs() {
   const { data: projects = [], isLoading: loadingProjects } = useCollaboratorProjects();
