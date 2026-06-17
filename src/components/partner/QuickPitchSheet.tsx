@@ -19,6 +19,7 @@ import {
   Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
 interface Props {
   open: boolean;
@@ -27,14 +28,18 @@ interface Props {
   partnerName?: string | null;
 }
 
-const PUBLIC_BASE = "https://www.axofloorsnj.com";
+interface BrandCtx {
+  companyName: string;
+  link: (path: string) => string;
+  partnerName: string;
+}
 
 interface Template {
   id: string;
   label: string;
   icon: typeof Zap;
   description: string;
-  build: (ctx: { link: (path: string) => string; partnerName: string }) => string;
+  build: (ctx: BrandCtx) => string;
 }
 
 const TEMPLATES: Template[] = [
@@ -43,32 +48,32 @@ const TEMPLATES: Template[] = [
     label: "Quick Intro",
     icon: Sparkles,
     description: "Short pitch — good for a first WhatsApp message.",
-    build: ({ link, partnerName }) =>
-      `Hey! I work with AXO Floors — they're the team I trust for hardwood refinishing, installation, and stairs in NJ.\n\nIf you're thinking about your floors, take 60 seconds to do their free Floor Diagnostic and they'll get back with a precise quote:\n${link("/quiz")}\n\n— ${partnerName}`,
+    build: ({ link, partnerName, companyName }) =>
+      `Hey! I work with ${companyName} — they're the team I trust for hardwood refinishing, installation, and stairs.\n\nIf you're thinking about your floors, take 60 seconds to do their free Floor Diagnostic and they'll get back with a precise quote:\n${link("/quiz")}\n\n— ${partnerName}`,
   },
   {
     id: "diagnostic",
     label: "Floor Diagnostic Invite",
     icon: Target,
     description: "Sends the client to the 60-second guided diagnostic.",
-    build: ({ link, partnerName }) =>
-      `Quick favor — before AXO Floors can give you a real number, they need 60 seconds of info on your floor (rooms, condition, what you want done).\n\nHere's the link, it's quick:\n${link("/quiz")}\n\nOnce you finish, their team will reach out with a quote and timeline. Any questions, just ask me.\n\n— ${partnerName}`,
+    build: ({ link, partnerName, companyName }) =>
+      `Quick favor — before ${companyName} can give you a real number, they need 60 seconds of info on your floor (rooms, condition, what you want done).\n\nHere's the link, it's quick:\n${link("/quiz")}\n\nOnce you finish, their team will reach out with a quote and timeline. Any questions, just ask me.\n\n— ${partnerName}`,
   },
   {
     id: "why-axo",
-    label: "Why AXO",
+    label: "Why {company}",
     icon: Award,
     description: "Trust pitch — credentials and guarantee.",
-    build: ({ link, partnerName }) =>
-      `Why I send my clients to AXO Floors:\n\n• 10+ years in NJ — hardwood refinishing, installation, stairs\n• Woody's Guarantee on every job\n• Clear pricing, on-time finish, no surprises\n\nSee their work + get a quote here:\n${link("/gallery")}\n\n— ${partnerName}`,
+    build: ({ link, partnerName, companyName }) =>
+      `Why I send my clients to ${companyName}:\n\n• 10+ years of experience — hardwood refinishing, installation, stairs\n• Workmanship guarantee on every job\n• Clear pricing, on-time finish, no surprises\n\nSee their work + get a quote here:\n${link("/gallery")}\n\n— ${partnerName}`,
   },
   {
     id: "quote-24h",
     label: "Quote in 24h",
     icon: Zap,
     description: "Urgency pitch — for clients ready to move.",
-    build: ({ link, partnerName }) =>
-      `If you're ready to get your floors done, AXO Floors turns around quotes in 24 hours.\n\nFill the 60-second diagnostic and they'll come back fast:\n${link("/quiz")}\n\n— ${partnerName}`,
+    build: ({ link, partnerName, companyName }) =>
+      `If you're ready to get your floors done, ${companyName} turns around quotes in 24 hours.\n\nFill the 60-second diagnostic and they'll come back fast:\n${link("/quiz")}\n\n— ${partnerName}`,
   },
 ];
 
@@ -79,13 +84,22 @@ export function QuickPitchSheet({
   partnerName,
 }: Props) {
   const { toast } = useToast();
+  const { settings } = useCompanySettings();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const companyName = settings?.company_name || "our team";
+  const publicBase =
+    (typeof window !== "undefined" && window.location?.origin) || "";
+
   const link = (path: string) =>
-    `${PUBLIC_BASE}${path}${partnerCode ? `?ref=${partnerCode}` : ""}`;
+    `${publicBase}${path}${partnerCode ? `?ref=${partnerCode}` : ""}`;
 
   const buildMessage = (t: Template) =>
-    t.build({ link, partnerName: partnerName || "Your referral partner" });
+    t.build({
+      link,
+      companyName,
+      partnerName: partnerName || "Your referral partner",
+    });
 
   const handleWhatsApp = (t: Template) => {
     const msg = encodeURIComponent(buildMessage(t));
@@ -137,7 +151,7 @@ export function QuickPitchSheet({
                     <Icon className="w-4 h-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold leading-tight">{t.label}</p>
+                    <p className="text-sm font-semibold leading-tight">{t.label.replace("{company}", companyName)}</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {t.description}
                     </p>
