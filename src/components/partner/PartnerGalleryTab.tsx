@@ -27,6 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { StainPickerSheet } from "./StainPickerSheet";
 import { QuickPitchSheet } from "./QuickPitchSheet";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
 interface GalleryProject {
   id: string;
@@ -49,6 +50,7 @@ const PUBLIC_BASE = "https://www.axofloorsnj.com";
 
 export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
   const { toast } = useToast();
+  const { companyName } = useCompanySettings();
   const [projects, setProjects] = useState<GalleryProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [openFolder, setOpenFolder] = useState<string | null>(null);
@@ -91,7 +93,7 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
 
   const buildShareMessage = (project: GalleryProject) => {
     const link = buildShareLink(project);
-    return `Check out this floor we did in ${project.location} — ${project.title}.\n\nAXO Floors handles refinishing, installation, and stairs across NJ. Free diagnostic here:\n${link}`;
+    return `Check out this floor we did in ${project.location} — ${project.title}.\n\n${companyName} handles refinishing, installation, and stairs across NJ. Free diagnostic here:\n${link}`;
   };
 
   const handleWhatsApp = (project: GalleryProject) => {
@@ -169,7 +171,7 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
           <p className="text-xs text-muted-foreground mt-0.5">
             {currentFolder
               ? `${currentFolder.items.length} ${currentFolder.items.length === 1 ? "project" : "projects"} · tap to share with referral code`
-              : "Real AXO projects organized by service — every share auto-tags your referral code."}
+              : `Real ${companyName} projects organized by service — every share auto-tags your referral code.`}
           </p>
         </div>
       </div>
