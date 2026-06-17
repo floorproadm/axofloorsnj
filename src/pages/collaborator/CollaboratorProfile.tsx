@@ -83,11 +83,12 @@ export default function CollaboratorProfile() {
     queryFn: async () => {
       const { data } = await supabase
         .from("project_members")
-        .select(`project_id, role, projects!inner (customer_name, project_status)`)
+        .select(`project_id, role, projects!inner (customer_name, address, project_status)`)
         .eq("user_id", user!.id);
       return (data || []).map((r: any) => ({
         id: r.project_id,
         customer_name: r.projects.customer_name,
+        address: r.projects.address,
         status: r.projects.project_status,
       }));
     },
