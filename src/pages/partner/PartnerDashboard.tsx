@@ -125,7 +125,7 @@ export default function PartnerDashboard() {
         .order("created_at", { ascending: false }),
       supabase
         .from("company_settings")
-        .select("referral_commission_percent, company_name, phone")
+        .select("referral_commission_percent, company_name, phone, logo_url")
         .eq("organization_id", (pu as any).organization_id)
         .maybeSingle(),
     ]);
