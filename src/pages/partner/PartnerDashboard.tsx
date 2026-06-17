@@ -396,26 +396,6 @@ export default function PartnerDashboard() {
               )}
             </div>
 
-            {/* Global pipeline progress */}
-            {activeLeadsForProgress.length > 0 && (
-              <Card className="p-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
-                    Pipeline Progress
-                  </p>
-                  <p className="text-[11px] tabular-nums font-semibold">{pipelineProgress.toFixed(0)}%</p>
-                </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-500 via-amber-500 to-emerald-500 transition-all"
-                    style={{ width: `${pipelineProgress}%` }}
-                  />
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-1.5">
-                  {activeLeadsForProgress.length} active referral{activeLeadsForProgress.length > 1 ? "s" : ""} moving through the pipeline
-                </p>
-              </Card>
-            )}
 
 
             {leads.length > 0 && (
