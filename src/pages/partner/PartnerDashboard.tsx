@@ -20,6 +20,7 @@ import { PartnerGalleryTab } from "@/components/partner/PartnerGalleryTab";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import QuizFlow from "@/components/quiz/QuizFlow";
+import { resolveLogoUrl } from "@/hooks/useCompanySettings";
 
 interface Lead {
   id: string;
