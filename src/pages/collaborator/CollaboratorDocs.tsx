@@ -69,7 +69,7 @@ export default function CollaboratorDocs() {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-sm text-foreground">
-                {project.customer_name}
+                {projectDisplayName(project.customer_name, project.address)}
               </span>
               <Badge variant="outline" className="text-[10px]">
                 {project.photos.length} foto{project.photos.length > 1 ? "s" : ""}
