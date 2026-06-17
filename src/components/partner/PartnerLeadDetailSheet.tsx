@@ -11,6 +11,13 @@ import {
   CheckCircle2,
   MessageSquare,
   Copy,
+  Sparkles,
+  ExternalLink,
+  Clock,
+  Send,
+  Trophy,
+  XCircle,
+  FileText,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -23,8 +30,17 @@ interface Lead {
   phone: string;
   email: string | null;
   status: string;
+  address?: string | null;
   city: string | null;
+  zip_code?: string | null;
   budget: number | null;
+  services?: any;
+  room_size?: string | null;
+  message?: string | null;
+  next_step?: string | null;
+  expected_close_date?: string | null;
+  internal_note_for_partner?: string | null;
+  last_contacted_at?: string | null;
   created_at: string;
   status_changed_at?: string | null;
   converted_to_project_id: string | null;
@@ -36,6 +52,66 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   commissionPercent: number;
   partnerName: string;
+}
+
+type NextAction = {
+  tone: "info" | "warn" | "success" | "danger";
+  title: string;
+  body: string;
+};
+
+function computeNextAction(lead: Lead): NextAction | null {
+  const ageDays =
+    (Date.now() - new Date(lead.status_changed_at || lead.created_at).getTime()) /
+    (1000 * 60 * 60 * 24);
+
+  switch (lead.status) {
+    case "cold_lead":
+    case "estimate_requested":
+      return {
+        tone: ageDays > 2 ? "warn" : "info",
+        title: "AXO is reviewing this referral",
+        body:
+          ageDays > 2
+            ? `It's been ${Math.floor(ageDays)} days. You can give the client a heads-up that AXO will reach out.`
+            : "The AXO team will reach out within 24h. A quick courtesy text from you helps close faster.",
+      };
+    case "visit_scheduled":
+      return {
+        tone: "info",
+        title: "Site visit scheduled",
+        body: "Let the client know they'll meet a trusted AXO specialist — this boosts conversion by ~30%.",
+      };
+    case "proposal_sent":
+      return {
+        tone: ageDays > 3 ? "warn" : "info",
+        title: "Proposal in client's hands",
+        body:
+          ageDays > 3
+            ? `Sent ${Math.floor(ageDays)} days ago. A short follow-up call from you can unblock the decision.`
+            : "Give it 2–3 days. If silent, a friendly nudge from you often closes the deal.",
+      };
+    case "negotiation":
+      return {
+        tone: "warn",
+        title: "Client is negotiating",
+        body: "If you have context (budget concerns, timing), share it in the thread below — AXO will adapt.",
+      };
+    case "completed":
+      return {
+        tone: "success",
+        title: "Commission earned 🎉",
+        body: "Payment goes out on the next monthly cycle. Ask the client for a referral to keep momentum.",
+      };
+    case "lost":
+      return {
+        tone: "danger",
+        title: "Referral didn't close",
+        body: "It happens. Check the thread for context — useful intel for your next referral.",
+      };
+    default:
+      return null;
+  }
 }
 
 export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent, partnerName }: Props) {
@@ -51,15 +127,83 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
       : 0;
 
   const cleanPhone = (lead.phone || "").replace(/\D/g, "");
-  const waMessage = encodeURIComponent(
+  const smsMessage = encodeURIComponent(
     `Hi ${lead.name.split(" ")[0]}, this is regarding your flooring project. The AXO team will reach out shortly.`
   );
+
+  const fullAddress = [lead.address, lead.city, lead.zip_code].filter(Boolean).join(", ");
+  const mapsUrl = fullAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
+    : null;
+
+  const services: string[] = Array.isArray(lead.services)
+    ? lead.services
+    : typeof lead.services === "string"
+    ? [lead.services]
+    : [];
+
+  const action = computeNextAction(lead);
 
   const copyPhone = async () => {
     await navigator.clipboard.writeText(lead.phone);
     toast({ title: "Phone copied" });
   };
 
+  // Build richer timeline from lead fields
+  type Event = { label: string; date: string; dotClass: string; icon?: React.ReactNode };
+  const events: Event[] = [];
+  events.push({
+    label: "Referral submitted",
+    date: lead.created_at,
+    dotClass: "bg-foreground",
+    icon: <Send className="w-3 h-3" />,
+  });
+  if (lead.last_contacted_at) {
+    events.push({
+      label: "AXO contacted the client",
+      date: lead.last_contacted_at,
+      dotClass: "bg-blue-500",
+      icon: <Phone className="w-3 h-3" />,
+    });
+  }
+  if (
+    lead.status_changed_at &&
+    lead.status !== "cold_lead" &&
+    lead.status !== "estimate_requested" &&
+    stage
+  ) {
+    events.push({
+      label: `Moved to ${stage.label}`,
+      date: lead.status_changed_at,
+      dotClass: stage.dot,
+      icon:
+        lead.status === "completed" ? (
+          <Trophy className="w-3 h-3" />
+        ) : lead.status === "lost" ? (
+          <XCircle className="w-3 h-3" />
+        ) : lead.status === "proposal_sent" ? (
+          <FileText className="w-3 h-3" />
+        ) : (
+          <Clock className="w-3 h-3" />
+        ),
+    });
+  }
+  if (lead.expected_close_date && !["completed", "lost"].includes(lead.status)) {
+    events.push({
+      label: "Expected close",
+      date: lead.expected_close_date,
+      dotClass: "bg-amber-500",
+      icon: <Calendar className="w-3 h-3" />,
+    });
+  }
+  events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const toneStyles: Record<NextAction["tone"], string> = {
+    info: "border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-300",
+    warn: "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-300",
+    success: "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300",
+    danger: "border-red-500/30 bg-red-500/5 text-red-700 dark:text-red-300",
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -75,9 +219,26 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
           <SheetDescription>Referral details</SheetDescription>
         </SheetHeader>
 
+        {/* Next Action smart banner */}
+        {action && (
+          <div className={cn("mt-4 rounded-lg border p-3", toneStyles[action.tone])}>
+            <div className="flex items-start gap-2">
+              <Sparkles className="w-4 h-4 mt-0.5 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wider">
+                  {action.title}
+                </p>
+                <p className="text-[12px] mt-1 leading-snug text-foreground/80">
+                  {action.body}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quick contact actions */}
         {cleanPhone && (
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <Button asChild variant="outline" size="sm" className="gap-1.5">
               <a href={`tel:${cleanPhone}`}>
                 <Phone className="w-3.5 h-3.5" />
@@ -85,45 +246,37 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
               </a>
             </Button>
             <Button asChild variant="outline" size="sm" className="gap-1.5">
-              <a href={`sms:${cleanPhone}`}>
+              <a href={`sms:${cleanPhone}?&body=${smsMessage}`}>
                 <MessageSquare className="w-3.5 h-3.5" />
                 SMS
-              </a>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="gap-1.5">
-              <a
-                href={`https://wa.me/${cleanPhone}?text=${waMessage}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
-                  <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9s-.5-.1-.6.1c-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.9-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2 0 1.3.9 2.5 1.1 2.7.1.2 1.9 2.9 4.6 4.1.6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.6-.3M12 22c-1.7 0-3.4-.5-4.9-1.3l-5.5 1.4 1.5-5.3C2.4 15.2 2 13.6 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 10-10 10" />
-                </svg>
-                WA
               </a>
             </Button>
           </div>
         )}
 
         <div className="mt-6 space-y-4">
-          {/* Stage timeline */}
+          {/* Richer Timeline */}
           <div className="rounded-lg border border-border bg-card p-3">
-            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-2">
-              Progress
+            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">
+              Timeline
             </p>
-            <div className="space-y-2">
-              <TimelineRow
-                label="Submitted"
-                value={formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
-                dotClass="bg-foreground"
-              />
-              {lead.status_changed_at && lead.status !== "cold_lead" && stage && (
-                <TimelineRow
-                  label={`Moved to ${stage.label}`}
-                  value={formatDistanceToNow(new Date(lead.status_changed_at), { addSuffix: true })}
-                  dotClass={stage.dot}
-                />
-              )}
+            <div className="space-y-2.5">
+              {events.map((ev, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <span
+                    className={cn(
+                      "w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-white",
+                      ev.dotClass
+                    )}
+                  >
+                    {ev.icon}
+                  </span>
+                  <span className="text-xs font-medium flex-1 truncate">{ev.label}</span>
+                  <span className="text-[11px] text-muted-foreground tabular-nums">
+                    {formatDistanceToNow(new Date(ev.date), { addSuffix: true })}
+                  </span>
+                </div>
+              ))}
             </div>
             {stageIndex >= 0 && (
               <div className="mt-3">
@@ -144,6 +297,34 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
               </div>
             )}
           </div>
+
+          {/* Project scope (services + room) */}
+          {(services.length > 0 || lead.room_size || lead.message) && (
+            <div className="rounded-lg border border-border bg-card p-3 space-y-2">
+              <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                Project scope
+              </p>
+              {services.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {services.map((s, i) => (
+                    <Badge key={i} variant="outline" className="text-[10px]">
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {lead.room_size && (
+                <p className="text-xs text-muted-foreground">
+                  Size: <span className="text-foreground font-medium">{lead.room_size}</span>
+                </p>
+              )}
+              {lead.message && (
+                <p className="text-xs text-muted-foreground italic border-l-2 border-border pl-2">
+                  "{lead.message}"
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Contact details */}
           <div className="space-y-3">
@@ -171,9 +352,37 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
             {lead.email && (
               <DetailRow icon={<Mail className="w-4 h-4" />} label="Email" value={lead.email} />
             )}
-            {lead.city && (
-              <DetailRow icon={<MapPin className="w-4 h-4" />} label="City" value={lead.city} />
+
+            {/* Full address with Google Maps link */}
+            {fullAddress ? (
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    Location
+                  </p>
+                  <p className="text-sm font-medium break-words">{fullAddress}</p>
+                  {mapsUrl && (
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline mt-1"
+                    >
+                      Open in Google Maps
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : (
+              lead.city && (
+                <DetailRow icon={<MapPin className="w-4 h-4" />} label="City" value={lead.city} />
+              )
             )}
+
             {lead.budget && lead.budget > 0 && (
               <DetailRow
                 icon={<DollarSign className="w-4 h-4" />}
@@ -191,6 +400,16 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
               })}
             />
           </div>
+
+          {/* Internal note from AXO to partner */}
+          {lead.internal_note_for_partner && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <p className="text-[10px] uppercase tracking-wider font-semibold text-primary mb-1">
+                Note from AXO
+              </p>
+              <p className="text-xs text-foreground/90">{lead.internal_note_for_partner}</p>
+            </div>
+          )}
 
           {/* Commission cards */}
           {commission > 0 && (
@@ -234,16 +453,6 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function TimelineRow({ label, value, dotClass }: { label: string; value: string; dotClass: string }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className={cn("w-2 h-2 rounded-full shrink-0", dotClass)} />
-      <span className="text-xs font-medium flex-1 truncate">{label}</span>
-      <span className="text-[11px] text-muted-foreground tabular-nums">{value}</span>
-    </div>
   );
 }
 
