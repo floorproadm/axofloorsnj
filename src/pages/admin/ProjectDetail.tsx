@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,7 +6,8 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler, ClipboardList, FolderOpen, Calculator, Package, Users } from 'lucide-react';
+import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler, ClipboardList, FolderOpen, Calculator, Package, Users, Link2 } from 'lucide-react';
+import { CustomerPortalShareDialog } from '@/components/admin/CustomerPortalShareDialog';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
@@ -25,6 +26,7 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'kernel';
+  const [portalOpen, setPortalOpen] = useState(false);
 
   // Backward-compat: map old tab names to new structure
   useEffect(() => {
@@ -86,7 +88,34 @@ export default function ProjectDetail() {
   return (
     <AdminLayout title={project.customer_name || 'Projeto'}>
       <div className="space-y-4">
-        <ProjectKernelHeader project={project} />
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <ProjectKernelHeader project={project} />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 shrink-0"
+            onClick={() => setPortalOpen(true)}
+            disabled={!project.customer_id}
+            title={project.customer_id ? 'Compartilhar Portal do Cliente' : 'Projeto sem cliente vinculado'}
+          >
+            <Link2 className="w-4 h-4" />
+            Portal do Cliente
+          </Button>
+        </div>
+
+        <CustomerPortalShareDialog
+          open={portalOpen}
+          onOpenChange={setPortalOpen}
+          customerId={project.customer_id}
+          customerName={project.customer_name}
+          customerEmail={project.customer_email}
+          customerPhone={project.customer_phone}
+          relatedId={project.id}
+          relatedType="project"
+        />
+
 
         <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="w-full grid grid-cols-5 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/40 p-1 rounded-xl">
