@@ -145,9 +145,12 @@ export default function PartnerDashboard() {
         p_org_id: (pu as any).organization_id,
       });
       const isPro = planRes === "pro" || planRes === "enterprise";
+      const rawLogo = (cs as any).logo_url || null;
+      const resolvedLogo = rawLogo ? await resolveLogoUrl(rawLogo) : null;
       setTenantBrand({
         company_name: isPro ? ((cs as any).company_name || "FloorPRO") : "FloorPRO",
         phone: isPro ? ((cs as any).phone || "") : "",
+        logo_url: isPro ? resolvedLogo : null,
       });
     }
 
