@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
 import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
+import { toast } from "sonner";
 
 interface ChatMessage {
   id: string;
@@ -90,25 +91,61 @@ export default function CollaboratorChat() {
     }
   }, [messages]);
 
-  // Send message
+  // Send message (with optimistic update)
   const sendMessage = useMutation({
     mutationFn: async () => {
-      if ((!message.trim() && !pending) || !selectedProjectId || !user) return;
+      const trimmed = message.trim();
+      if ((!trimmed && !pending) || !selectedProjectId || !user) {
+        throw new Error("Nada para enviar");
+      }
       const att = pending;
-      const { error } = await supabase.from("chat_messages").insert({
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .insert({
+          project_id: selectedProjectId,
+          sender_id: user.id,
+          sender_name: user.user_metadata?.full_name || user.email || "Colaborador",
+          content: trimmed,
+          attachment_url: att?.url ?? null,
+          attachment_type: att?.type ?? null,
+          attachment_name: att?.name ?? null,
+        } as any)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as ChatMessage;
+    },
+    onMutate: async () => {
+      const trimmed = message.trim();
+      if ((!trimmed && !pending) || !selectedProjectId || !user) return;
+      const att = pending;
+      const key = ["chat-messages", selectedProjectId];
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<ChatMessage[]>(key) || [];
+      const optimistic: ChatMessage = {
+        id: `optimistic-${Date.now()}`,
         project_id: selectedProjectId,
         sender_id: user.id,
         sender_name: user.user_metadata?.full_name || user.email || "Colaborador",
-        content: message.trim(),
+        content: trimmed,
+        read: false,
+        created_at: new Date().toISOString(),
         attachment_url: att?.url ?? null,
         attachment_type: att?.type ?? null,
         attachment_name: att?.name ?? null,
-      } as any);
-      if (error) throw error;
-    },
-    onSuccess: () => {
+      };
+      queryClient.setQueryData<ChatMessage[]>(key, [...previous, optimistic]);
       setMessage("");
       setPending(null);
+      return { previous, key };
+    },
+    onError: (err: any, _vars, ctx) => {
+      if (ctx?.previous && ctx?.key) {
+        queryClient.setQueryData(ctx.key, ctx.previous);
+      }
+      toast.error(err?.message || "Falha ao enviar mensagem");
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chat-messages", selectedProjectId] });
     },
   });
