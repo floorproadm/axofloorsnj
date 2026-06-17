@@ -181,6 +181,12 @@ export default function PartnerDashboard() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (tenantBrand.company_name) {
+      document.title = `${tenantBrand.company_name} Partner Portal`;
+    }
+  }, [tenantBrand.company_name]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/partner/auth", { replace: true });
