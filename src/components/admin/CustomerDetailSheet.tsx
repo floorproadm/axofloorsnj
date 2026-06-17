@@ -477,6 +477,17 @@ export function CustomerDetailSheet({ customer, open, onOpenChange, onDeleted }:
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <CustomerPortalShareDialog
+        open={portalOpen}
+        onOpenChange={setPortalOpen}
+        customerId={customer.id}
+        customerName={customer.full_name}
+        customerEmail={customer.email}
+        customerPhone={customer.phone}
+        relatedId={customer.id}
+        relatedType="customer"
+      />
     </Sheet>
   );
 }
