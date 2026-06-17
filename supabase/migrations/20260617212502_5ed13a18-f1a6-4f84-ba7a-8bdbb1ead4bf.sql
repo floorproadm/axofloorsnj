@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS idx_chat_messages_project_read_sender ON public.chat_messages (project_id, read, sender_id);
+CREATE INDEX IF NOT EXISTS idx_project_members_project_user ON public.project_members (project_id, user_id);
