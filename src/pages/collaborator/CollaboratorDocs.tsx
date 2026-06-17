@@ -96,9 +96,9 @@ export default function CollaboratorDocs() {
                   )}
                   <Badge
                     variant="secondary"
-                    className="absolute bottom-0.5 left-0.5 text-[8px] px-1 py-0"
+                    className="absolute bottom-0.5 left-0.5 text-[10px] px-1 py-0 whitespace-nowrap"
                   >
-                    {photo.folder_type === "before_after" ? "B/A" : "Prog"}
+                    {photo.folder_type === "before_after" ? "B/A" : "Progresso"}
                   </Badge>
                 </div>
               ))}
