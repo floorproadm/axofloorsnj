@@ -284,44 +284,23 @@ export default function PartnerDashboard() {
     <div className="min-h-screen bg-muted/20 pb-24">
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 pt-2 pb-1">
-          {/* Tenant brand */}
-          <div className="flex items-center gap-1.5 mb-1">
-            {tenantBrand.logo_url ? (
-              <img
-                src={tenantBrand.logo_url}
-                alt={`${tenantBrand.company_name} logo`}
-                className="h-4 w-auto object-contain opacity-80"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            ) : (
-              <Handshake className="w-3.5 h-3.5 text-muted-foreground" />
-            )}
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider leading-none">
-              {tenantBrand.company_name}
-            </span>
-          </div>
-        </div>
-        <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-            {partner?.partner_type === "realtor" ? (
-              <Home className="w-5 h-5 text-primary" />
-            ) : (
-              <Handshake className="w-5 h-5 text-primary" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground leading-none">Welcome,</p>
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-semibold leading-tight truncate">
-                {partner?.contact_name || partner?.company_name}
-              </p>
-              {partner?.partner_type === "realtor" && (
-                <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                  Realtor
-                </span>
-              )}
+        {/* Row 1 — Tenant brand (dominant) + bell */}
+        <div className="max-w-2xl mx-auto px-4 pt-3 pb-2 flex items-center gap-2.5">
+          {tenantBrand.logo_url ? (
+            <img
+              src={tenantBrand.logo_url}
+              alt={`${tenantBrand.company_name} logo`}
+              className="h-8 w-auto object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Handshake className="w-4 h-4 text-primary" />
             </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold leading-tight truncate">{tenantBrand.company_name}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider leading-none mt-0.5">Partner Portal</p>
           </div>
           {/* Notification bell */}
           <Popover open={notifOpen} onOpenChange={(o) => { setNotifOpen(o); if (o) markAllNotificationsRead(); }}>
@@ -356,11 +335,23 @@ export default function PartnerDashboard() {
               </div>
             </PopoverContent>
           </Popover>
-          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
+        </div>
+        {/* Row 2 — Partner identity (subtle) */}
+        <div className="max-w-2xl mx-auto px-4 pb-2.5 pt-0.5 flex items-center gap-2 border-t border-border/40">
+          <p className="text-xs text-muted-foreground flex-1 truncate pt-2">
+            Welcome, <span className="font-medium text-foreground">{partner?.contact_name || partner?.company_name}</span>
+          </p>
+          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary whitespace-nowrap mt-1.5">
             {partner?.partner_program === "trade" ? "Trade" : tier.name}
           </span>
+          {partner?.partner_type === "realtor" && (
+            <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground whitespace-nowrap mt-1.5">
+              Realtor
+            </span>
+          )}
         </div>
       </header>
+
 
 
       <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
