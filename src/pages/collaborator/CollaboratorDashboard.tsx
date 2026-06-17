@@ -363,8 +363,8 @@ export default function CollaboratorDashboard() {
                       ) : (
                         projects.map((p) => (
                           <SelectItem key={p.project_id} value={p.project_id}>
-                            {p.customer_name}
-                            {p.address ? ` — ${p.address}` : ""}
+                            {projectDisplayName(p.customer_name, p.address)}
+                            {p.address && !/^TBD/i.test(p.customer_name || "") && !/parceiro/i.test(p.customer_name || "") ? ` — ${p.address}` : ""}
                           </SelectItem>
                         ))
                       )}
