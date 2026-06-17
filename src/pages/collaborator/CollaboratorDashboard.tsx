@@ -11,6 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2,
   Package, Plus, X
@@ -35,6 +38,7 @@ export default function CollaboratorDashboard() {
   const [uploadProjectId, setUploadProjectId] = useState<string | null>(null);
   const [showMaterialForm, setShowMaterialForm] = useState(false);
   const [materialForm, setMaterialForm] = useState({
+    project_id: "",
     item_name: "",
     quantity: "1",
     unit: "unit",
@@ -118,11 +122,26 @@ export default function CollaboratorDashboard() {
     }
   };
 
+  const handleOpenMaterialForm = () => {
+    setMaterialForm((f) => ({
+      ...f,
+      project_id: f.project_id || todayProjectId || projects[0]?.project_id || "",
+    }));
+    setShowMaterialForm(true);
+  };
+
   const handleSubmitMaterial = () => {
-    if (!materialForm.item_name.trim()) return;
+    if (!materialForm.item_name.trim()) {
+      toast.error("Informe o nome do material");
+      return;
+    }
+    if (!materialForm.project_id) {
+      toast.error("Selecione um projeto");
+      return;
+    }
     createRequest.mutate(
       {
-        project_id: todayProjectId || null,
+        project_id: materialForm.project_id,
         item_name: materialForm.item_name.trim(),
         quantity: Number(materialForm.quantity) || 1,
         unit: materialForm.unit,
@@ -131,9 +150,10 @@ export default function CollaboratorDashboard() {
       {
         onSuccess: () => {
           toast.success("Material solicitado!");
-          setMaterialForm({ item_name: "", quantity: "1", unit: "unit", notes: "" });
+          setMaterialForm({ project_id: "", item_name: "", quantity: "1", unit: "unit", notes: "" });
           setShowMaterialForm(false);
         },
+        onError: (e: any) => toast.error(e?.message || "Falha ao enviar solicitação"),
       }
     );
   };
