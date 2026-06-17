@@ -337,15 +337,15 @@ export default function PartnerDashboard() {
           </Popover>
         </div>
         {/* Row 2 — Partner identity (subtle) */}
-        <div className="max-w-2xl mx-auto px-4 pb-2.5 pt-0.5 flex items-center gap-2 border-t border-border/40">
-          <p className="text-xs text-muted-foreground flex-1 truncate pt-2">
-            Welcome, <span className="font-medium text-foreground">{partner?.contact_name || partner?.company_name}</span>
+        <div className="max-w-2xl mx-auto px-4 pb-2.5 pt-1 flex items-center gap-2 border-t border-border/40">
+          <p className="text-sm text-muted-foreground flex-1 truncate pt-2">
+            Welcome, <span className="font-semibold text-foreground">{partner?.contact_name || partner?.company_name}</span>
           </p>
-          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary whitespace-nowrap mt-1.5">
+          <span className="text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary whitespace-nowrap mt-1.5">
             {partner?.partner_program === "trade" ? "Trade" : tier.name}
           </span>
           {partner?.partner_type === "realtor" && (
-            <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground whitespace-nowrap mt-1.5">
+            <span className="text-xs uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground whitespace-nowrap mt-1.5">
               Realtor
             </span>
           )}
