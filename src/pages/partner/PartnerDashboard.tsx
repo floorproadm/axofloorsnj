@@ -571,13 +571,11 @@ export default function PartnerDashboard() {
                   </div>
                   <div className="flex items-center gap-2">
                     <a
-                      href={`https://wa.me/${tenantBrand.phone.replace(/[^\d]/g, "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold hover:bg-emerald-700 transition-colors"
+                      href={`sms:${tenantBrand.phone.replace(/[^\d]/g, "")}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700 transition-colors"
                     >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      WhatsApp
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      SMS
                     </a>
                     <a
                       href={`tel:${tenantBrand.phone.replace(/[^\d]/g, "")}`}
