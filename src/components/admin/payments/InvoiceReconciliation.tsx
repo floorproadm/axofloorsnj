@@ -212,7 +212,7 @@ export function InvoiceReconciliation({ onOpenInvoice }: { onOpenInvoice?: (invo
                           <p className="text-xs text-muted-foreground">Gap</p>
                           <p className="font-bold text-sm text-amber-600">{fmt(row.gap)}</p>
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => openDialog(row)}>
+                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); openDialog(row); }}>
                           Record
                         </Button>
                       </>
