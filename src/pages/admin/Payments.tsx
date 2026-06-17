@@ -420,7 +420,12 @@ export default function Payments() {
                   </div>
                 )}
 
-                <InvoiceReconciliation />
+                <InvoiceReconciliation
+                  onOpenInvoice={(id) => {
+                    const found = invoices.find((i) => i.id === id);
+                    if (found) setSelectedInvoice(found);
+                  }}
+                />
               </>
             )}
           </>

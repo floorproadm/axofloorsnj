@@ -34,7 +34,7 @@ interface ReconRow {
   gap: number;
 }
 
-export function InvoiceReconciliation() {
+export function InvoiceReconciliation({ onOpenInvoice }: { onOpenInvoice?: (invoiceId: string) => void } = {}) {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [target, setTarget] = useState<ReconRow | null>(null);
@@ -174,7 +174,19 @@ export function InvoiceReconciliation() {
           {data!.map((row) => {
             const reconciled = row.gap === 0;
             return (
-              <Card key={row.invoice_id}>
+              <Card
+                key={row.invoice_id}
+                role={onOpenInvoice ? "button" : undefined}
+                tabIndex={onOpenInvoice ? 0 : undefined}
+                onClick={() => onOpenInvoice?.(row.invoice_id)}
+                onKeyDown={(e) => {
+                  if (onOpenInvoice && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    onOpenInvoice(row.invoice_id);
+                  }
+                }}
+                className={onOpenInvoice ? "cursor-pointer transition-colors hover:bg-muted/40" : undefined}
+              >
                 <CardContent className="p-3 flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${reconciled ? "bg-green-100 dark:bg-green-900/20" : "bg-amber-100 dark:bg-amber-900/20"}`}>
                     {reconciled ? (
@@ -200,7 +212,7 @@ export function InvoiceReconciliation() {
                           <p className="text-xs text-muted-foreground">Gap</p>
                           <p className="font-bold text-sm text-amber-600">{fmt(row.gap)}</p>
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => openDialog(row)}>
+                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); openDialog(row); }}>
                           Record
                         </Button>
                       </>
