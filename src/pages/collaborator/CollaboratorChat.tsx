@@ -191,7 +191,7 @@ export default function CollaboratorChat() {
                 : "bg-card text-foreground border-border hover:bg-accent"
             )}
           >
-            {p.customer_name}
+            {projectDisplayName(p.customer_name, p.address)}
           </button>
         ))}
       </div>
