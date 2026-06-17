@@ -424,13 +424,15 @@ function ClientPortalModal({ proposal, open, onClose }: {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const client = proposal.projects;
+  // Resolve customer id from proposal directly, or fall back to the linked project
+  const customerId =
+    (proposal as any).customer_id || client?.customer_id || null;
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const customerId = client?.customer_id;
       if (!customerId) { setLoading(false); return; }
       const { data } = await supabase
         .from("customers")
@@ -449,9 +451,9 @@ function ClientPortalModal({ proposal, open, onClose }: {
       if (!cancelled) { setToken(t); setLoading(false); }
     })();
     return () => { cancelled = true; };
-  }, [open, client?.customer_id]);
+  }, [open, customerId]);
 
-  const portalUrl = token ? `https://axofloorsnj.lovable.app/portal/${token}` : "";
+  const portalUrl = token ? `${window.location.origin}/portal/${token}` : "";
 
   const handleCopy = () => {
     if (!portalUrl) return;
@@ -493,7 +495,7 @@ function ClientPortalModal({ proposal, open, onClose }: {
         <div className="space-y-3 pt-2">
           {loading ? (
             <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
-          ) : !client?.customer_id ? (
+          ) : !customerId ? (
             <p className="text-sm text-muted-foreground text-center py-4">Proposta sem cliente vinculado.</p>
           ) : !token ? (
             <p className="text-sm text-red-500 text-center py-4">Falha ao gerar token do portal.</p>
