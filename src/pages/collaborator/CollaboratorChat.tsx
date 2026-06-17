@@ -14,6 +14,7 @@ import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
 import { removeRealtimeChannel, subscribeSafely } from "@/lib/safeRealtime";
 import { toast } from "sonner";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 interface ChatMessage {
   id: string;
