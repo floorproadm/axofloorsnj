@@ -276,6 +276,12 @@ export default function PublicPortal() {
   }
 
   if (!customer) {
+    // Token invalid — tenant cannot be determined. Show generic fallback.
+    const hasContact = !!(brand.phone || brand.email);
+    const contactParts: string[] = [];
+    if (brand.phone) contactParts.push(brand.phone);
+    if (brand.email) contactParts.push(brand.email);
+    const contactStr = contactParts.join(" or ");
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
         <div className="text-center max-w-sm">
@@ -284,7 +290,10 @@ export default function PublicPortal() {
           </div>
           <h1 className="text-xl font-bold text-slate-900">Portal Link Invalid</h1>
           <p className="text-sm text-slate-600 mt-2">
-            This link is invalid or has expired. Please contact us and we'll send you a fresh link.
+            This link is invalid or has expired.{" "}
+            {hasContact
+              ? `Please contact ${brand.company_name} at ${contactStr} and we'll send you a fresh link.`
+              : "Please contact the company that sent you this link."}
           </p>
           {brand.phone && (
             <Button asChild className="mt-5 bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
