@@ -52,10 +52,14 @@ export default function PartnerWelcome() {
     }
     const { data: cs } = await supabase
       .from("company_settings")
-      .select("company_name")
+      .select("company_name, logo_url")
       .eq("organization_id", orgId)
       .maybeSingle();
     if (cs?.company_name) setCompanyName(cs.company_name);
+    if ((cs as any)?.logo_url) {
+      const url = await resolveLogoUrl((cs as any).logo_url);
+      if (url) setLogoUrl(url);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
