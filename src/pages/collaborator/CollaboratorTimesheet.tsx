@@ -161,7 +161,7 @@ export default function CollaboratorTimesheet() {
           <h1 className="text-xl font-heading font-bold text-foreground">Minhas Diárias</h1>
           <p className="text-sm text-muted-foreground">Registre diárias ou sqft trabalhado</p>
         </div>
-        <Button size="sm" onClick={() => setShowForm((s) => !s)} className="gap-1">
+        <Button size="sm" onClick={() => setShowForm(true)} className="gap-1">
           <Plus className="h-4 w-4" />
           Novo
         </Button>
