@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Handshake, CheckCircle2 } from "lucide-react";
+import { resolveLogoUrl } from "@/hooks/useCompanySettings";
 
 export default function PartnerWelcome() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function PartnerWelcome() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [companyName, setCompanyName] = useState("FloorPRO");
+  const [logoUrl, setLogoUrl] = useState<string>("");
 
   useEffect(() => {
     // Supabase auto-parses the magic-link hash and establishes a session.
