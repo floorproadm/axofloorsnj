@@ -6,6 +6,7 @@ export interface CollaboratorProject {
   project_id: string;
   role: string;
   customer_name: string;
+  customer_phone: string | null;
   project_status: string;
   project_type: string;
   address: string | null;
@@ -27,6 +28,7 @@ export function useCollaboratorProjects() {
           role,
           projects!inner (
             customer_name,
+            customer_phone,
             project_status,
             project_type,
             address,
@@ -41,6 +43,7 @@ export function useCollaboratorProjects() {
         project_id: row.project_id,
         role: row.role,
         customer_name: row.projects.customer_name,
+        customer_phone: row.projects.customer_phone ?? null,
         project_status: row.projects.project_status,
         project_type: row.projects.project_type,
         address: row.projects.address,
