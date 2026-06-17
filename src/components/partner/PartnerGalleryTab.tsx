@@ -93,7 +93,7 @@ export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
 
   const buildShareMessage = (project: GalleryProject) => {
     const link = buildShareLink(project);
-    return `Check out this floor we did in ${project.location} — ${project.title}.\n\nAXO Floors handles refinishing, installation, and stairs across NJ. Free diagnostic here:\n${link}`;
+    return `Check out this floor we did in ${project.location} — ${project.title}.\n\n${companyName} handles refinishing, installation, and stairs across NJ. Free diagnostic here:\n${link}`;
   };
 
   const handleWhatsApp = (project: GalleryProject) => {
