@@ -284,7 +284,25 @@ export default function PartnerDashboard() {
     <div className="min-h-screen bg-muted/20 pb-24">
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-2">
+        <div className="max-w-2xl mx-auto px-4 pt-2 pb-1">
+          {/* Tenant brand */}
+          <div className="flex items-center gap-1.5 mb-1">
+            {tenantBrand.logo_url ? (
+              <img
+                src={tenantBrand.logo_url}
+                alt={`${tenantBrand.company_name} logo`}
+                className="h-4 w-auto object-contain opacity-80"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            ) : (
+              <Handshake className="w-3.5 h-3.5 text-muted-foreground" />
+            )}
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider leading-none">
+              {tenantBrand.company_name}
+            </span>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
             {partner?.partner_type === "realtor" ? (
               <Home className="w-5 h-5 text-primary" />
