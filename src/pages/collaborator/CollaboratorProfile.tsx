@@ -393,7 +393,7 @@ export default function CollaboratorProfile() {
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
               >
                 <div className="text-left">
-                  <p className="text-sm font-medium text-foreground">{p.customer_name}</p>
+                  <p className="text-sm font-medium text-foreground">{projectDisplayName(p.customer_name, p.address)}</p>
                   <p className="text-xs text-muted-foreground">
                     {statusLabels[p.status] || p.status}
                   </p>
