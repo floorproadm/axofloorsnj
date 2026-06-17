@@ -80,7 +80,7 @@ export default function CollaboratorProjectDetail() {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">{project.customer_name}</CardTitle>
+            <CardTitle className="text-lg">{projectDisplayName(project.customer_name, project.address)}</CardTitle>
             <Badge variant="outline">{project.project_status}</Badge>
           </div>
         </CardHeader>
