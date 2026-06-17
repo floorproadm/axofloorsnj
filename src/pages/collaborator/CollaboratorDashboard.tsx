@@ -25,6 +25,7 @@ import { convertHeicToJpeg } from "@/utils/heicConverter";
 import { useCollaboratorUpload } from "@/hooks/useCollaboratorUpload";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { projectDisplayName } from "@/utils/projectDisplayName";
 
 export default function CollaboratorDashboard() {
   const { user } = useAuth();
