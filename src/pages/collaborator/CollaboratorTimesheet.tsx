@@ -18,8 +18,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Calendar as CalendarComp } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Loader2, Plus, CheckCircle2, Clock, XCircle, Trash2, Calendar, AlertTriangle,
+  Loader2, Plus, CheckCircle2, Clock, XCircle, Trash2, Calendar, AlertTriangle, CalendarIcon,
 } from "lucide-react";
 import { format, parseISO, startOfMonth } from "date-fns";
 import { toast } from "sonner";
@@ -49,9 +52,9 @@ export default function CollaboratorTimesheet() {
 
   const [showForm, setShowForm] = useState(false);
   const [payMode, setPayMode] = useState<PayMode>("daily");
+  const [workDates, setWorkDates] = useState<Date[]>([new Date()]);
   const [form, setForm] = useState({
     project_id: "",
-    work_date: format(new Date(), "yyyy-MM-dd"),
     days_worked: "1",
     sqft_worked: "",
     notes: "",
@@ -75,16 +78,17 @@ export default function CollaboratorTimesheet() {
   const sqftRate = Number(selectedProject?.labor_sqft_rate ?? 0);
   const dailyRate = Number(profile?.daily_rate ?? 0);
 
+  const dayCount = Math.max(1, workDates.length);
   const previewTotal = useMemo(() => {
-    if (payMode === "daily") return dailyRate * (Number(form.days_worked) || 0);
-    return sqftRate * (Number(form.sqft_worked) || 0);
-  }, [payMode, dailyRate, sqftRate, form.days_worked, form.sqft_worked]);
+    if (payMode === "daily") return dailyRate * (Number(form.days_worked) || 0) * dayCount;
+    return sqftRate * (Number(form.sqft_worked) || 0) * dayCount;
+  }, [payMode, dailyRate, sqftRate, form.days_worked, form.sqft_worked, dayCount]);
 
   const resetForm = () => {
     setPayMode("daily");
+    setWorkDates([new Date()]);
     setForm({
       project_id: "",
-      work_date: format(new Date(), "yyyy-MM-dd"),
       days_worked: "1",
       sqft_worked: "",
       notes: "",
@@ -92,50 +96,51 @@ export default function CollaboratorTimesheet() {
     setShowForm(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.project_id) return toast.error("Selecione um projeto");
+    if (workDates.length === 0) return toast.error("Selecione pelo menos uma data");
 
     if (payMode === "daily") {
       const days = Number(form.days_worked);
       if (!days || days <= 0) return toast.error("Quantidade de dias inválida");
-      submit.mutate(
-        {
-          pay_mode: "daily",
-          project_id: form.project_id,
-          work_date: form.work_date,
-          days_worked: days,
-          notes: form.notes,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Lançamento enviado para aprovação");
-            resetForm();
-          },
-          onError: (e: any) => toast.error(e.message || "Falha ao enviar"),
-        }
-      );
     } else {
       const sqft = Number(form.sqft_worked);
       if (!sqft || sqft <= 0) return toast.error("Quantidade de sqft inválida");
       if (!sqftRate || sqftRate <= 0) {
         return toast.error("Projeto sem rate por sqft definida pelo admin");
       }
-      submit.mutate(
-        {
-          pay_mode: "sqft",
-          project_id: form.project_id,
-          work_date: form.work_date,
-          sqft_worked: sqft,
-          notes: form.notes,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Lançamento enviado para aprovação");
-            resetForm();
-          },
-          onError: (e: any) => toast.error(e.message || "Falha ao enviar"),
+    }
+
+    try {
+      const sorted = [...workDates].sort((a, b) => a.getTime() - b.getTime());
+      for (const d of sorted) {
+        const work_date = format(d, "yyyy-MM-dd");
+        if (payMode === "daily") {
+          await submit.mutateAsync({
+            pay_mode: "daily",
+            project_id: form.project_id,
+            work_date,
+            days_worked: Number(form.days_worked),
+            notes: form.notes,
+          });
+        } else {
+          await submit.mutateAsync({
+            pay_mode: "sqft",
+            project_id: form.project_id,
+            work_date,
+            sqft_worked: Number(form.sqft_worked),
+            notes: form.notes,
+          });
         }
+      }
+      toast.success(
+        sorted.length > 1
+          ? `${sorted.length} lançamentos enviados para aprovação`
+          : "Lançamento enviado para aprovação"
       );
+      resetForm();
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao enviar");
     }
   };
 
@@ -156,7 +161,7 @@ export default function CollaboratorTimesheet() {
           <h1 className="text-xl font-heading font-bold text-foreground">Minhas Diárias</h1>
           <p className="text-sm text-muted-foreground">Registre diárias ou sqft trabalhado</p>
         </div>
-        <Button size="sm" onClick={() => setShowForm((s) => !s)} className="gap-1">
+        <Button size="sm" onClick={() => setShowForm(true)} className="gap-1">
           <Plus className="h-4 w-4" />
           Novo
         </Button>
@@ -188,10 +193,14 @@ export default function CollaboratorTimesheet() {
         </Card>
       </div>
 
-      {/* New entry form */}
-      {showForm && (
-        <Card className="border-primary/40">
-          <CardContent className="p-4 space-y-3">
+      {/* New entry modal */}
+      <Dialog open={showForm} onOpenChange={(o) => (o ? setShowForm(true) : resetForm())}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Novo Lançamento</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3">
             {/* Pay mode toggle */}
             <div className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1">
               {(["daily", "sqft"] as PayMode[]).map((mode) => (
@@ -237,19 +246,46 @@ export default function CollaboratorTimesheet() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label className="text-xs">Data</Label>
-                <Input
-                  type="date"
-                  value={form.work_date}
-                  onChange={(e) => setForm((f) => ({ ...f, work_date: e.target.value }))}
-                  className="h-9 text-sm mt-1"
-                />
-              </div>
+            <div>
+              <Label className="text-xs">Datas trabalhadas</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "h-9 w-full justify-start text-left font-normal text-sm mt-1",
+                      workDates.length === 0 && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {workDates.length === 0
+                      ? "Selecione uma ou mais datas"
+                      : workDates.length === 1
+                      ? format(workDates[0], "PPP")
+                      : `${workDates.length} dias selecionados`}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComp
+                    mode="multiple"
+                    selected={workDates}
+                    onSelect={(dates) => setWorkDates(dates ?? [])}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              {workDates.length > 1 && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Será criado 1 lançamento por dia.
+                </p>
+              )}
+            </div>
+
+            <div>
               {payMode === "daily" ? (
-                <div>
-                  <Label className="text-xs">Dias trabalhados</Label>
+                <>
+                  <Label className="text-xs">Dias trabalhados (por data)</Label>
                   <Input
                     type="number"
                     step="0.5"
@@ -259,10 +295,10 @@ export default function CollaboratorTimesheet() {
                     className="h-9 text-sm mt-1"
                     placeholder="Ex: 1 ou 0.5"
                   />
-                </div>
+                </>
               ) : (
-                <div>
-                  <Label className="text-xs">SqFt trabalhado</Label>
+                <>
+                  <Label className="text-xs">SqFt trabalhado (por data)</Label>
                   <Input
                     type="number"
                     step="1"
@@ -272,7 +308,7 @@ export default function CollaboratorTimesheet() {
                     className="h-9 text-sm mt-1"
                     placeholder="Ex: 250"
                   />
-                </div>
+                </>
               )}
             </div>
 
@@ -280,7 +316,8 @@ export default function CollaboratorTimesheet() {
             {payMode === "daily" ? (
               <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2 text-xs">
                 <span className="text-muted-foreground tabular-nums">
-                  ${dailyRate.toFixed(0)}/dia × {Number(form.days_worked) || 0}d
+                  ${dailyRate.toFixed(0)}/dia × {Number(form.days_worked) || 0}d × {dayCount}{" "}
+                  {dayCount > 1 ? "datas" : "data"}
                 </span>
                 <span className="font-bold tabular-nums text-foreground">
                   ${previewTotal.toFixed(2)}
@@ -296,7 +333,8 @@ export default function CollaboratorTimesheet() {
             ) : (
               <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2 text-xs">
                 <span className="text-muted-foreground tabular-nums">
-                  ${sqftRate.toFixed(2)}/sqft × {Number(form.sqft_worked) || 0}
+                  ${sqftRate.toFixed(2)}/sqft × {Number(form.sqft_worked) || 0} × {dayCount}{" "}
+                  {dayCount > 1 ? "datas" : "data"}
                 </span>
                 <span className="font-bold tabular-nums text-foreground">
                   ${previewTotal.toFixed(2)}
@@ -313,28 +351,24 @@ export default function CollaboratorTimesheet() {
                 className="text-sm mt-1 min-h-[60px]"
               />
             </div>
+          </div>
 
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetForm}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSubmit}
-                disabled={submit.isPending}
-                className="flex-1"
-              >
-                {submit.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enviar"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" size="sm" onClick={resetForm} className="flex-1">
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={submit.isPending}
+              className="flex-1"
+            >
+              {submit.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enviar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* History list */}
       <div className="space-y-2">
