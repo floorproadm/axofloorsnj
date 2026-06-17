@@ -83,14 +83,22 @@ export default function CollaboratorProjectDetail() {
             <Badge variant="outline">{project.project_status}</Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-1 text-sm text-muted-foreground">
-          <p>{project.project_type}</p>
-          {(project.address || project.city) && (
-            <div className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              <span>{[project.address, project.city].filter(Boolean).join(", ")}</span>
-            </div>
-          )}
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <div className="space-y-1">
+            <p>{project.project_type}</p>
+            {(project.address || project.city) && (
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                <span>{[project.address, project.city].filter(Boolean).join(", ")}</span>
+              </div>
+            )}
+          </div>
+          <OnMyWayButton
+            phone={project.customer_phone}
+            customerName={project.customer_name}
+            label="On My Way"
+            className="w-full"
+          />
         </CardContent>
       </Card>
 
