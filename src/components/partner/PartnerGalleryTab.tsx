@@ -50,6 +50,7 @@ const PUBLIC_BASE = "https://www.axofloorsnj.com";
 
 export function PartnerGalleryTab({ partnerCode, partnerName }: Props) {
   const { toast } = useToast();
+  const { companyName } = useCompanySettings();
   const [projects, setProjects] = useState<GalleryProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [openFolder, setOpenFolder] = useState<string | null>(null);
