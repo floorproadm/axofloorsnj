@@ -190,9 +190,9 @@ export default function CollaboratorProjectDetail() {
                   )}
                   <Badge
                     variant="secondary"
-                    className="absolute bottom-1 left-1 text-[10px] px-1"
+                    className="absolute bottom-1 left-1 text-[10px] px-1.5 whitespace-nowrap"
                   >
-                    {photo.folder_type === "before_after" ? "B/A" : "Prog"}
+                    {photo.folder_type === "before_after" ? "B/A" : "Progresso"}
                   </Badge>
                 </div>
               ))}
