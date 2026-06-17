@@ -50,7 +50,7 @@ export function InvoiceReconciliation({ onOpenInvoice }: { onOpenInvoice?: (invo
     queryFn: async () => {
       const { data: invoices, error: e1 } = await supabase
         .from("invoices")
-        .select("id, invoice_number, total_amount, project_id, projects(customer_name)")
+        .select("id, invoice_number, total_amount, project_id, projects(customer_name, address)")
         .eq("organization_id", AXO_ORG_ID)
         .eq("status", "paid");
       if (e1) throw e1;
@@ -75,7 +75,7 @@ export function InvoiceReconciliation({ onOpenInvoice }: { onOpenInvoice?: (invo
         return {
           invoice_id: i.id,
           invoice_number: i.invoice_number,
-          customer_name: i.projects?.customer_name || "—",
+          customer_name: projectDisplayName(i.projects?.customer_name, i.projects?.address, "—"),
           project_id: i.project_id,
           total_amount: total,
           paid_amount: paid,
