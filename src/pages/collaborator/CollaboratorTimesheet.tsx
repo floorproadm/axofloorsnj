@@ -407,7 +407,7 @@ export default function CollaboratorTimesheet() {
                       <div className="flex items-center gap-2">
                         <StatusIcon className={cn("h-3.5 w-3.5 shrink-0", statusColor)} />
                         <span className="text-sm font-medium text-foreground truncate">
-                          {e.projects?.customer_name || "Projeto"}
+                          {projectDisplayName(e.projects?.customer_name, e.projects?.address, "Projeto")}
                         </span>
                         <Badge variant="outline" className="text-[9px]">
                           {isSqft ? "SqFt" : "Diária"}
