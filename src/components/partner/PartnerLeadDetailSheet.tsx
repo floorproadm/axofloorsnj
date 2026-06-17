@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,10 +11,7 @@ import {
   CheckCircle2,
   MessageSquare,
   Copy,
-  Bell,
-  Loader2,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -43,8 +39,6 @@ interface Props {
 }
 
 export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPercent, partnerName }: Props) {
-  const [nudging, setNudging] = useState(false);
-
   if (!lead) return null;
 
   const stageIndex = PARTNER_LEAD_STAGES.findIndex((s) => s.key === lead.status);
@@ -66,28 +60,6 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
     toast({ title: "Phone copied" });
   };
 
-  const handleNudge = async () => {
-    setNudging(true);
-    try {
-      const { data, error } = await supabase.rpc("partner_nudge_admin" as any, {
-        p_lead_id: lead.id,
-      });
-      if (error) throw error;
-      const notified = (data as any)?.notified ?? 0;
-      toast({
-        title: "Nudge sent",
-        description: notified > 0 ? `${notified} team member(s) notified.` : "Team notified.",
-      });
-    } catch (e: any) {
-      toast({
-        title: "Could not send nudge",
-        description: e.message || "Try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setNudging(false);
-    }
-  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -259,22 +231,6 @@ export function PartnerLeadDetailSheet({ lead, open, onOpenChange, commissionPer
             authorName={partnerName}
           />
 
-          {/* Nudge AXO — last-resort ping */}
-          {!["completed", "lost"].includes(lead.status) && (
-            <Button
-              onClick={handleNudge}
-              disabled={nudging}
-              variant="outline"
-              className="w-full gap-2"
-            >
-              {nudging ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Bell className="w-4 h-4" />
-              )}
-              Nudge AXO for update
-            </Button>
-          )}
         </div>
       </SheetContent>
     </Sheet>
