@@ -71,6 +71,7 @@ import OnboardingWizard from "./pages/OnboardingWizard";
 import LandingPage from "./pages/LandingPage";
 import SPUPanel from "./pages/SPUPanel";
 import PlatformAdminRoute from "@/components/shared/PlatformAdminRoute";
+import Visualizer from "./pages/Visualizer";
 
 
 
@@ -102,6 +103,7 @@ const App = () => {
 
             {/* Public token-based routes (kept) */}
             <Route path="/review-request" element={<ReviewRequest />} />
+            <Route path="/visualizer" element={<Visualizer />} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/share/before-after/:token" element={<ShareBeforeAfter />} />
             <Route path="/invoice/:token" element={<PublicInvoice />} />
