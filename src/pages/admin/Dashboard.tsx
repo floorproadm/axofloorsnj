@@ -23,7 +23,7 @@ const DAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const DAY_LABELS_EN = ["S", "M", "T", "W", "T", "F", "S"];
 
 export default function Dashboard() {
-  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions } =
+  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, executionMetrics } =
     useDashboardData();
   const { t, language } = useLanguage();
   const { user } = useAuth();
