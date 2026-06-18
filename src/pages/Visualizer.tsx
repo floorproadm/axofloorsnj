@@ -88,14 +88,6 @@ export default function Visualizer() {
       <main className="max-w-3xl mx-auto px-4 py-4 pb-32">
         {!photo ? (
           <div className="space-y-6 pt-6">
-            <div className="text-center space-y-2 px-2">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                See your new floor before you buy
-              </h2>
-              <p className="text-sm text-white/60">
-                Snap a photo of your room. Our AI renders any hardwood style in seconds.
-              </p>
-            </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
               <PhotoUploader onPhoto={setPhoto} />
             </div>
