@@ -49,9 +49,9 @@ export function useSuggestedInvoice(projectId: string | undefined) {
       const [{ data: project }, { data: proposals }, { data: invoices }] = await Promise.all([
         supabase
           .from('projects')
-          .select('id, status, address, project_type, customer_id, property_id')
+          .select('id, address, project_type, customer_id, property_id')
           .eq('id', projectId!)
-          .maybeSingle(),
+          .maybeSingle() as any,
         supabase
           .from('proposals')
           .select('id, status, use_tiers, selected_tier, good_price, better_price, best_price, flat_price, accepted_at')
