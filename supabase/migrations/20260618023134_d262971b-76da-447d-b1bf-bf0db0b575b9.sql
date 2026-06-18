@@ -1,0 +1,2 @@
+ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS phase TEXT CHECK (phase IN ('deposit','progress','final','custom'));
+CREATE INDEX IF NOT EXISTS idx_invoices_project_phase ON public.invoices(project_id, phase);

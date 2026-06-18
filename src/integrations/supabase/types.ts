@@ -1509,6 +1509,7 @@ export type Database = {
           organization_id: string
           paid_at: string | null
           payment_method: string | null
+          phase: string | null
           project_id: string
           property_id: string | null
           share_token: string | null
@@ -1531,6 +1532,7 @@ export type Database = {
           organization_id: string
           paid_at?: string | null
           payment_method?: string | null
+          phase?: string | null
           project_id: string
           property_id?: string | null
           share_token?: string | null
@@ -1553,6 +1555,7 @@ export type Database = {
           organization_id?: string
           paid_at?: string | null
           payment_method?: string | null
+          phase?: string | null
           project_id?: string
           property_id?: string | null
           share_token?: string | null
