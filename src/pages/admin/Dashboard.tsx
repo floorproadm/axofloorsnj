@@ -6,7 +6,7 @@ import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfWeek, endOfWeek, addDays, formatDistance } from "date-fns";
-import { DollarSign, Briefcase, Users, FileText, UserPlus, Send, CreditCard } from "lucide-react";
+import { DollarSign, Hammer, Users, FileText, UserPlus, Send, CreditCard } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
