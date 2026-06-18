@@ -38,7 +38,6 @@ export const FLOOR_STYLES: FloorStyle[] = [
   make("golden-oak", "Golden Oak", "Light", "light golden honey blonde, warm classic oak"),
   make("fruitwood", "Fruitwood", "Light", "light warm tan with soft amber undertone"),
   make("golden-pecan", "Golden Pecan", "Light", "warm light caramel honey tone"),
-  make("honey", "Honey", "Light", "rich honey amber golden tone"),
   make("colonial-maple", "Colonial Maple", "Light", "warm light maple tan, soft golden brown"),
   make("early-american", "Early American", "Light", "warm light-medium brown with slight orange undertone"),
 
@@ -66,9 +65,7 @@ export const FLOOR_STYLES: FloorStyle[] = [
 
   // Red / Mahogany
   make("cherry", "Cherry", "Red", "warm cherry red-brown tone"),
-  make("red-oak", "Red Oak", "Red", "natural red oak with warm pinkish undertone"),
   make("sedona-red", "Sedona Red", "Red", "deep warm red-brown, southwestern tone"),
-  make("mahogany", "Mahogany", "Red", "rich mahogany reddish brown"),
   make("red-mahogany", "Red Mahogany", "Red", "deep red mahogany with strong red pigment"),
   make("royal-mahogany", "Royal Mahogany", "Red", "deep rich mahogany with luxurious red depth"),
   make("rosewood", "Rosewood", "Red", "dark rosewood with reddish-purple undertone"),
