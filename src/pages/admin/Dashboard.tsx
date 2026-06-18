@@ -6,7 +6,7 @@ import { useDashboardData } from "@/hooks/admin/useDashboardData";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfWeek, endOfWeek, addDays, formatDistance } from "date-fns";
-import { DollarSign, Briefcase, Users, FileText, UserPlus, Send, CreditCard } from "lucide-react";
+import { DollarSign, Hammer, Users, FileText, UserPlus, Send, CreditCard } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,7 @@ const DAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const DAY_LABELS_EN = ["S", "M", "T", "W", "T", "F", "S"];
 
 export default function Dashboard() {
-  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions } =
+  const { isLoading, moneyMetrics, funnelMetrics, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, executionMetrics } =
     useDashboardData();
   const { t, language } = useLanguage();
   const { user } = useAuth();
@@ -285,16 +285,17 @@ export default function Dashboard() {
               accent={moneyMetrics.estimatedValueOpen > 0 ? "success" : "default"}
             />
             <MetricCard
-              to="/admin/schedule"
-              icon={<Briefcase className="w-4 h-4" />}
-              label={t("dashboard.semana")}
-              value={String(weekAppointments.length)}
+              to="/admin/projects"
+              icon={<Hammer className="w-4 h-4" />}
+              label="Em Produção"
+              value={String(executionMetrics.jobsInProduction)}
               sub={
-                tomorrowCount > 0
-                  ? `+${tomorrowCount} ${t("dashboard.amanha")}`
+                executionMetrics.jobsInProduction > 0
+                  ? `${executionMetrics.jobsInProduction} ativos`
                   : undefined
               }
               subColor="text-[hsl(var(--state-success))]"
+              accent={executionMetrics.jobsInProduction > 0 ? "success" : "default"}
             />
             <MetricCard
               to="/admin/leads"
