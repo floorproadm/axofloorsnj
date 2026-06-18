@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCreateInvoice, generateInvoiceNumber } from '@/hooks/useInvoices';
 import { toast } from 'sonner';
 import { sendGmailEmail } from '@/hooks/useEmailLogs';
+import { SmartInvoiceCTA } from './SmartInvoiceCTA';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
@@ -162,12 +163,18 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
             setShowForm(false);
             queryClient.invalidateQueries({ queryKey: ['project-invoices', projectId] });
             queryClient.invalidateQueries({ queryKey: ['payment-snapshot', projectId] });
+            queryClient.invalidateQueries({ queryKey: ['suggested-invoice', projectId] });
           }}
         />
       ) : (
-        <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={() => setShowForm(true)}>
-          <Plus className="w-3 h-3" /> New Invoice
-        </Button>
+        <SmartInvoiceCTA
+          projectId={projectId}
+          onCustom={() => setShowForm(true)}
+          onCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ['project-invoices', projectId] });
+            queryClient.invalidateQueries({ queryKey: ['payment-snapshot', projectId] });
+          }}
+        />
       )}
 
       {/* Received payments */}
