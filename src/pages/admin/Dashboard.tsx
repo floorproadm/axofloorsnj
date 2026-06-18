@@ -608,9 +608,38 @@ export default function Dashboard() {
 
           <div className="bg-card rounded-xl border border-border divide-y divide-border">
             {recentActivity.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                {t("dashboard.semAtividade")}
-              </p>
+              criticalAlertEntries.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  {t("dashboard.semAtividade")}
+                </p>
+              ) : (
+                criticalAlertEntries.slice(0, 3).map((alert, i) => {
+                  const Icon =
+                    alert.type === "follow_up"
+                      ? MessageSquare
+                      : alert.type === "new_lead"
+                      ? ClockIcon
+                      : AlertTriangle;
+                  return (
+                    <Link
+                      key={`mc-${i}`}
+                      to="/admin/mission-control"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-[hsl(var(--state-risk-bg))] flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-3.5 h-3.5 text-[hsl(var(--state-risk))]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-foreground truncate">{alert.label}</p>
+                        <p className="text-[10px] text-muted-foreground">Mission Control</p>
+                      </div>
+                      <span className="text-[11px] font-semibold text-[hsl(var(--state-risk))] flex-shrink-0">
+                        Ver
+                      </span>
+                    </Link>
+                  );
+                })
+              )
             ) : (
               recentActivity.map((item, i) => (
                 <Link key={i} to={item.link} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer">
@@ -622,6 +651,11 @@ export default function Dashboard() {
                       {activityLabel(item.type)} — {item.label}
                     </p>
                   </div>
+                  {item.amount != null && item.amount > 0 && (
+                    <span className="text-[11px] font-semibold text-[hsl(var(--state-success))] flex-shrink-0">
+                      {formatCurrency(item.amount)}
+                    </span>
+                  )}
                   <span className="text-[11px] text-muted-foreground flex-shrink-0">
                     {formatDistance(new Date(item.date), today, {
                       addSuffix: true,
