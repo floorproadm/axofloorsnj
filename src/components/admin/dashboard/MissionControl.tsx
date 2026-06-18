@@ -218,15 +218,21 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
         );
       })}
 
-      {/* Unified list: tasks */}
-      <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
-
-
-        {/* Manual Tasks */}
-        {pendingTasks.map((task) => (
-          <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
-        ))}
-      </div>
+      {/* Manual Tasks */}
+      {hasTasks && (
+        <div className="space-y-1.5">
+          <div className="px-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              {t("mission.tarefas")} ({pendingTasks.length})
+            </span>
+          </div>
+          <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+            {pendingTasks.map((task) => (
+              <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Footer: completed toggle */}
       {doneTasks.length > 0 && (
