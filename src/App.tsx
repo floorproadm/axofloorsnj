@@ -37,6 +37,7 @@ import AdminAutomations from './pages/admin/Automations';
 import WeeklyReview from './pages/admin/WeeklyReview';
 import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
+import Team from './pages/admin/Team';
 import Fleet from './pages/admin/Fleet';
 import AdminProposals from './pages/admin/Proposals';
 import ProjectsHub from './pages/admin/ProjectsHub';
@@ -145,6 +146,7 @@ const App = () => {
             <Route path="/admin/weekly-review" element={<ProtectedRoute><WeeklyReview /></ProtectedRoute>} />
             <Route path="/admin/labor-payroll" element={<ProtectedRoute><LaborPayroll /></ProtectedRoute>} />
             <Route path="/admin/crews" element={<ProtectedRoute><CrewsVans /></ProtectedRoute>} />
+            <Route path="/admin/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
             <Route path="/admin/fleet" element={<ProtectedRoute><Fleet /></ProtectedRoute>} />
             <Route path="/admin/proposals" element={<ProtectedRoute><AdminProposals /></ProtectedRoute>} />
             <Route path="/admin/projects" element={<ProtectedRoute><ProjectsHub /></ProtectedRoute>} />

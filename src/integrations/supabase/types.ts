@@ -2917,6 +2917,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           birthdate: string | null
+          color: string | null
           created_at: string
           daily_rate: number | null
           email: string | null
@@ -2934,6 +2935,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birthdate?: string | null
+          color?: string | null
           created_at?: string
           daily_rate?: number | null
           email?: string | null
@@ -2951,6 +2953,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birthdate?: string | null
+          color?: string | null
           created_at?: string
           daily_rate?: number | null
           email?: string | null
