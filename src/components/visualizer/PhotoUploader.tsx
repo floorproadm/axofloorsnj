@@ -104,8 +104,7 @@ export default function PhotoUploader({ onPhoto }: Props) {
         </Button>
         <Button
           size="lg"
-          variant="outline"
-          className="flex-1"
+          className="flex-1 bg-gold text-navy-dark hover:bg-gold-warm font-semibold shadow-gold"
           onClick={() => inputRef.current?.click()}
         >
           <Upload className="h-5 w-5 mr-2" />
