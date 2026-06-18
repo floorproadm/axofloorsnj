@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, Sparkles, Download, RefreshCw, ImagePlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -16,6 +16,8 @@ export default function Visualizer() {
   const [selected, setSelected] = useState<FloorStyle | null>(null);
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Light");
+  const isAdmin = useLocation().pathname.startsWith("/admin");
+  const backTo = isAdmin ? "/admin" : "/";
 
   const reset = () => {
     setPhoto(null);
@@ -59,7 +61,7 @@ export default function Visualizer() {
       <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link
-            to="/"
+            to={backTo}
             className="inline-flex items-center text-sm text-white/60 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4 mr-1.5" />
