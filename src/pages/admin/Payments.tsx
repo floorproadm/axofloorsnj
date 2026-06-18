@@ -38,9 +38,11 @@ import { MonthlyOverview } from "@/components/admin/payments/MonthlyOverview";
 import { FinancialOverviewChart } from "@/components/admin/payments/FinancialOverviewChart";
 import { PLPreviewDialog } from "@/components/admin/payments/PLPreviewDialog";
 import { InvoiceReconciliation } from "@/components/admin/payments/InvoiceReconciliation";
+import { DepositsTab } from "@/components/admin/payments/DepositsTab";
+import { ExpensesTab } from "@/components/admin/payments/ExpensesTab";
 import { format, isWithinInterval, parseISO } from "date-fns";
 
-type ActiveTab = "payments" | "invoices";
+type ActiveTab = "payments" | "invoices" | "deposits" | "expenses";
 
 /* ── Category icons ── */
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -243,20 +245,36 @@ export default function Payments() {
                 <Receipt className="w-4 h-4 mr-1.5" />
                 Invoices
               </TabsTrigger>
+              <TabsTrigger
+                value="deposits"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <Banknote className="w-4 h-4 mr-1.5" />
+                Deposits
+              </TabsTrigger>
+              <TabsTrigger
+                value="expenses"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <Package className="w-4 h-4 mr-1.5" />
+                Expenses
+              </TabsTrigger>
             </TabsList>
 
-            <Button
-              className="w-full sm:w-auto"
-              size="sm"
-              onClick={() =>
-                activeTab === "payments"
-                  ? setActionSheetOpen(true)
-                  : setInvoiceDialogOpen(true)
-              }
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              {activeTab === "payments" ? "New Payment" : "New Invoice"}
-            </Button>
+            {(activeTab === "payments" || activeTab === "invoices") && (
+              <Button
+                className="w-full sm:w-auto"
+                size="sm"
+                onClick={() =>
+                  activeTab === "payments"
+                    ? setActionSheetOpen(true)
+                    : setInvoiceDialogOpen(true)
+                }
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                {activeTab === "payments" ? "New Payment" : "New Invoice"}
+              </Button>
+            )}
           </div>
         </Tabs>
 
