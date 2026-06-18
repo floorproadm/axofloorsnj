@@ -96,18 +96,18 @@ export default function PhotoUploader({ onPhoto }: Props) {
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
         <Button
           size="lg"
-          className="flex-1 h-14 text-base sm:h-11 sm:text-sm"
+          className="flex-1 h-16 text-lg sm:h-11 sm:text-sm"
           onClick={() => cameraRef.current?.click()}
         >
-          <Camera className="h-6 w-6 mr-2 sm:h-5 sm:w-5" />
+          <Camera className="h-7 w-7 mr-2 sm:h-5 sm:w-5" />
           Take photo
         </Button>
         <Button
           size="lg"
-          className="flex-1 h-14 text-base sm:h-11 sm:text-sm bg-gold text-navy-dark hover:bg-gold-warm font-semibold shadow-gold"
+          className="flex-1 h-16 text-lg sm:h-11 sm:text-sm bg-gold text-navy-dark hover:bg-gold-warm font-semibold shadow-gold"
           onClick={() => inputRef.current?.click()}
         >
-          <Upload className="h-6 w-6 mr-2 sm:h-5 sm:w-5" />
+          <Upload className="h-7 w-7 mr-2 sm:h-5 sm:w-5" />
           Upload photo
         </Button>
       </div>
