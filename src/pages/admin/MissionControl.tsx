@@ -128,7 +128,7 @@ export default function MissionControlPage() {
           </div>
         </div>
 
-        <MissionControl systemAlerts={priorityTasks} isLoadingAlerts={isLoading} />
+        <MissionControl systemAlerts={priorityTasks} isLoadingAlerts={isLoading || isLoadingFinancial} />
       </div>
     </AdminLayout>
   );
