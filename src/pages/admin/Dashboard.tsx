@@ -394,12 +394,95 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Row 2 — Saúde Financeira do Mês */}
+        <section className="mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+            Saúde Financeira do Mês
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Receita do Mês */}
+            <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Receita do Mês
+                </span>
+                <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-none">
+                {formatCurrency(financialHealth?.revenue ?? 0)}
+              </p>
+              {financialHealth?.revenueDelta !== null && financialHealth?.revenueDelta !== undefined ? (
+                <p
+                  className={cn(
+                    "text-[11px] font-semibold mt-1.5 flex items-center gap-1",
+                    financialHealth.revenueDelta >= 0
+                      ? "text-[hsl(var(--state-success))]"
+                      : "text-[hsl(var(--state-blocked))]"
+                  )}
+                >
+                  {financialHealth.revenueDelta >= 0 ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3" />
+                  )}
+                  {financialHealth.revenueDelta >= 0 ? "+" : ""}
+                  {financialHealth.revenueDelta.toFixed(1)}% vs mês anterior
+                </p>
+              ) : (
+                <p className="text-[11px] text-muted-foreground mt-1.5">— vs mês anterior</p>
+              )}
+            </div>
+
+            {/* Margem Média */}
+            <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Margem Média
+                </span>
+                <Percent className="w-3.5 h-3.5 text-muted-foreground" />
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-none">
+                {financialHealth?.avgMargin != null ? `${financialHealth.avgMargin.toFixed(1)}%` : "—"}
+              </p>
+              {financialHealth?.avgMargin != null &&
+              financialHealth.avgMargin < financialHealth.minMargin ? (
+                <p className="text-[11px] font-semibold mt-1.5 flex items-center gap-1 text-[hsl(var(--gold-warm))]">
+                  <AlertTriangle className="w-3 h-3" />
+                  Abaixo do mínimo {financialHealth.minMargin}%
+                </p>
+              ) : (
+                <p className="text-[11px] text-muted-foreground mt-1.5">
+                  Mínimo {financialHealth?.minMargin ?? 30}% (projetos concluídos)
+                </p>
+              )}
+            </div>
+
+            {/* Faturas em Aberto */}
+            <Link
+              to="/admin/payments?tab=invoices&filter=unpaid"
+              className="bg-card rounded-xl border border-border shadow-sm p-4 hover:shadow-md hover:border-primary/40 transition-all"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Faturas em Aberto
+                </span>
+                <FileWarning className="w-3.5 h-3.5 text-muted-foreground" />
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-none">
+                {financialHealth?.unpaidCount ?? 0}
+              </p>
+              <p className="text-[11px] font-semibold mt-1.5 text-[hsl(var(--state-risk))]">
+                {formatCurrency(financialHealth?.unpaidTotal ?? 0)} pendente
+              </p>
+            </Link>
+          </div>
+        </section>
 
         {/* Today's Agenda with mini week calendar */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              {t("dashboard.agendaDeHoje")}
+              Próximas 48h
             </h2>
             <Link
               to="/admin/schedule"
@@ -409,39 +492,105 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          {/* Mini week calendar */}
+          {/* Mini week calendar — interactive */}
           <div className="flex gap-1.5 mb-4">
-            {weekDays.map((d) => (
-              <div
-                key={d.dateStr}
-                className={cn(
-                  "flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg transition-colors",
-                  d.isToday
-                    ? "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] ring-1 ring-[hsl(var(--state-risk)/0.3)]"
-                    : "bg-card text-muted-foreground"
-                )}
-              >
-                <span className="text-[10px] font-semibold uppercase">{d.label}</span>
-                <span className={cn(
-                  "text-sm font-bold",
-                  d.isToday ? "text-foreground" : "text-foreground/70"
-                )}>
-                  {d.dayNum}
-                </span>
-                <div
+            {weekDays.map((d) => {
+              const isSelected = d.dateStr === selectedDateStr;
+              return (
+                <button
+                  key={d.dateStr}
+                  type="button"
+                  onClick={() => setSelectedDateStr(d.dateStr)}
                   className={cn(
-                    "w-1.5 h-1.5 rounded-full",
-                    d.hasAppointments
-                      ? "bg-[hsl(var(--state-success))]"
-                      : "bg-transparent"
+                    "flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg transition-colors focus:outline-none",
+                    isSelected
+                      ? "bg-primary text-primary-foreground ring-1 ring-primary"
+                      : d.isToday
+                      ? "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] ring-1 ring-[hsl(var(--state-risk)/0.3)]"
+                      : "bg-card text-muted-foreground hover:bg-secondary/60"
                   )}
-                />
-              </div>
-            ))}
+                >
+                  <span className="text-[10px] font-semibold uppercase">{d.label}</span>
+                  <span className={cn(
+                    "text-sm font-bold",
+                    isSelected ? "text-primary-foreground" : d.isToday ? "text-foreground" : "text-foreground/70"
+                  )}>
+                    {d.dayNum}
+                  </span>
+                  <div
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full",
+                      d.hasAppointments
+                        ? isSelected
+                          ? "bg-primary-foreground"
+                          : "bg-[hsl(var(--state-success))]"
+                        : "bg-transparent"
+                    )}
+                  />
+                </button>
+              );
+            })}
           </div>
 
-          <AgendaSection appointments={appointments} />
+          {selectedDayAppointments.length > 0 ? (
+            <div className="space-y-2">
+              {selectedDayAppointments.slice(0, 5).map((apt: any) => (
+                <Link
+                  key={apt.id}
+                  to="/admin/schedule"
+                  className="block bg-card rounded-xl border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {apt.location || apt.customer_name || "Job"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        {apt.appointment_type ? `${apt.appointment_type} · ` : ""}
+                        {apt.customer_name}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xs font-semibold text-foreground">
+                        {apt.appointment_time ? apt.appointment_time.slice(0, 5) : "Dia inteiro"}
+                      </p>
+                      {apt.assigned_to && Array.isArray(apt.assigned_to) && apt.assigned_to.length > 0 && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {apt.assigned_to.length} técnico{apt.assigned_to.length !== 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+              {selectedDayAppointments.length > 5 && (
+                <Link
+                  to="/admin/schedule"
+                  className="block text-center text-xs font-semibold text-[hsl(var(--gold-warm))] hover:underline py-2"
+                >
+                  +{selectedDayAppointments.length - 5} mais →
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-card/50 px-4 py-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">Dia livre</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Sem jobs agendados para esta data
+                </p>
+              </div>
+              <Link
+                to="/admin/schedule"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline whitespace-nowrap"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Agendar job
+              </Link>
+            </div>
+          )}
         </section>
+
 
         {/* Recent Activity */}
         <section>
