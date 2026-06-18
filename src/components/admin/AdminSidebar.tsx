@@ -26,6 +26,7 @@ import {
   UserCheck,
   MessageSquare,
   Shield,
+  Scan,
 } from "lucide-react";
 import { usePlatformAdmin } from "@/hooks/usePlatformAdmin";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +98,7 @@ export function AdminSidebar() {
     { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
     { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
     { title: "Reputation", url: "/admin/reputation", icon: Star },
+    { title: "Visualizer", url: "/visualizer", icon: Scan },
   ];
 
   const manageItems = [
