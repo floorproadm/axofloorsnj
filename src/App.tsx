@@ -104,6 +104,7 @@ const App = () => {
             {/* Public token-based routes (kept) */}
             <Route path="/review-request" element={<ReviewRequest />} />
             <Route path="/visualizer" element={<Visualizer />} />
+            <Route path="/admin/visualizer" element={<ProtectedRoute><Visualizer /></ProtectedRoute>} />
             <Route path="/shared/:token" element={<SharedPost />} />
             <Route path="/share/before-after/:token" element={<ShareBeforeAfter />} />
             <Route path="/invoice/:token" element={<PublicInvoice />} />
