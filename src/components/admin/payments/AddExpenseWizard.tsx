@@ -37,9 +37,9 @@ export function AddExpenseWizard({ open, onOpenChange }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    supabase
+    (supabase
       .from("projects")
-      .select("id, customer_name, project_type, status")
+      .select("id, customer_name, project_type, status") as any)
       .in("status", ["planning", "in_progress"])
       .order("created_at", { ascending: false })
       .then(({ data }) => setProjects((data as any) || []));
