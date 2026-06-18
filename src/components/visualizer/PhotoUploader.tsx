@@ -8,29 +8,60 @@ type Props = {
 
 const MAX_DIM = 1600;
 
-async function fileToDownscaledDataUrl(file: File): Promise<string> {
-  const url = URL.createObjectURL(file);
+function isHeic(file: File) {
+  const n = file.name.toLowerCase();
+  return /heic|heif/.test(file.type) || n.endsWith(".heic") || n.endsWith(".heif");
+}
+
+async function decodeViaImageBitmap(file: File): Promise<{ width: number; height: number; draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void } | null> {
+  if (typeof createImageBitmap !== "function") return null;
   try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = reject;
-      i.src = url;
-    });
-    let { width, height } = img;
-    const scale = Math.min(1, MAX_DIM / Math.max(width, height));
-    width = Math.round(width * scale);
-    height = Math.round(height * scale);
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("no 2d context");
-    ctx.drawImage(img, 0, 0, width, height);
-    return canvas.toDataURL("image/jpeg", 0.88);
-  } finally {
-    URL.revokeObjectURL(url);
+    const bmp = await createImageBitmap(file);
+    return {
+      width: bmp.width,
+      height: bmp.height,
+      draw: (ctx, w, h) => ctx.drawImage(bmp, 0, 0, w, h),
+    };
+  } catch {
+    return null;
   }
+}
+
+async function decodeViaImgEl(file: File): Promise<{ width: number; height: number; draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void }> {
+  // Use data URL (more reliable on iOS than blob: for some formats)
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error || new Error("read failed"));
+    r.readAsDataURL(file);
+  });
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("image decode failed"));
+    i.src = dataUrl;
+  });
+  return {
+    width: img.naturalWidth || img.width,
+    height: img.naturalHeight || img.height,
+    draw: (ctx, w, h) => ctx.drawImage(img, 0, 0, w, h),
+  };
+}
+
+async function fileToDownscaledDataUrl(file: File): Promise<string> {
+  const decoded = (await decodeViaImageBitmap(file)) || (await decodeViaImgEl(file));
+  let { width, height } = decoded;
+  if (!width || !height) throw new Error("invalid image dimensions");
+  const scale = Math.min(1, MAX_DIM / Math.max(width, height));
+  width = Math.max(1, Math.round(width * scale));
+  height = Math.max(1, Math.round(height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("no 2d context");
+  decoded.draw(ctx, width, height);
+  return canvas.toDataURL("image/jpeg", 0.85);
 }
 
 export default function PhotoUploader({ onPhoto }: Props) {
@@ -39,12 +70,18 @@ export default function PhotoUploader({ onPhoto }: Props) {
 
   const handle = async (file?: File | null) => {
     if (!file) return;
+    if (isHeic(file)) {
+      alert(
+        "iPhone HEIC photos aren't supported yet. On your iPhone open Settings → Camera → Formats and select 'Most Compatible', then retake the photo. Or upload a JPG/PNG."
+      );
+      return;
+    }
     try {
       const dataUrl = await fileToDownscaledDataUrl(file);
       onPhoto(dataUrl);
     } catch (e) {
-      console.error(e);
-      alert("Could not load that image. Please try another photo.");
+      console.error("[Visualizer] photo load failed", e);
+      alert("Could not load that image. Try a JPG or PNG under 20MB.");
     }
   };
 
