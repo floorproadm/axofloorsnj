@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 interface Customer {
   id: string;
@@ -85,6 +86,7 @@ export default function Customers() {
 
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {
@@ -505,9 +507,7 @@ export default function Customers() {
             title={`Clientes${filteredData.length !== customersWithMeta.length ? ` (${filteredData.length}/${customersWithMeta.length})` : ""}`}
             searchable={false}
             onRowClick={(row) => {
-              const { projects: _, latestProjectStatus: __, ...customer } = row;
-              setSelected(customer as Customer);
-              setSheetOpen(true);
+              navigate(`/admin/customers/${row.id}`);
             }}
             pageSize={10}
           />
