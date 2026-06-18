@@ -94,8 +94,19 @@ export default function MissionControlPage() {
       });
     });
 
+    financialAlerts.forEach((f) => {
+      tasks.push({
+        label: f.label,
+        color: f.type === "invoice_overdue" || f.type === "deposit_missing" ? "blocked" : "risk",
+        link: f.link,
+        type: f.type,
+        entityId: f.entityId,
+        group: "financial",
+      } as any);
+    });
+
     return tasks;
-  }, [criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, t]);
+  }, [criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, financialAlerts, t]);
 
   return (
     <AdminLayout
