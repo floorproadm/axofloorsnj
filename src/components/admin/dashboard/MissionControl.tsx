@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
   PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, X, BellOff,
-  User, Calendar, Flag, FileText
+  User, Calendar, Flag, FileText, DollarSign, Receipt, FileWarning, Eye, Pause
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -27,6 +27,7 @@ interface SystemAlert {
   link: string;
   type: string;
   entityId?: string | null;
+  group?: "financial" | "operational";
 }
 
 const dotColor = {
@@ -43,7 +44,23 @@ const typeIcon: Record<string, React.ElementType> = {
   sla_followup: PhoneOff,
   sla_estimate: Timer,
   sla_auto_escalation: Zap,
+  invoice_overdue: FileWarning,
+  deposit_missing: DollarSign,
+  proposal_viewed_no_reply: Eye,
+  project_stale: Pause,
+  expense_no_receipt: Receipt,
 };
+
+const FINANCIAL_TYPES = new Set([
+  "invoice_overdue",
+  "deposit_missing",
+  "proposal_viewed_no_reply",
+  "project_stale",
+  "expense_no_receipt",
+]);
+
+const groupOf = (a: SystemAlert): "financial" | "operational" =>
+  a.group ?? (FINANCIAL_TYPES.has(a.type) ? "financial" : "operational");
 
 // ---------- Priority ----------
 
