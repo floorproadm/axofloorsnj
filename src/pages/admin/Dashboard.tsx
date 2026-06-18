@@ -54,18 +54,26 @@ export default function Dashboard() {
   const tomorrow = addDays(today, 1);
   const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
 
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(todayStr);
+
   const { data: weekAppointments = [] } = useQuery({
-    queryKey: ["dashboard-week-appointments", format(weekStart, "yyyy-MM-dd")],
+    queryKey: ["dashboard-week-appointments-full", format(weekStart, "yyyy-MM-dd")],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("appointment_date")
+        .select("*")
         .gte("appointment_date", format(weekStart, "yyyy-MM-dd"))
-        .lte("appointment_date", format(weekEnd, "yyyy-MM-dd"));
+        .lte("appointment_date", format(weekEnd, "yyyy-MM-dd"))
+        .order("appointment_time", { ascending: true });
       if (error) throw error;
       return data || [];
     },
   });
+
+  const selectedDayAppointments = useMemo(
+    () => weekAppointments.filter((a: any) => a.appointment_date === selectedDateStr),
+    [weekAppointments, selectedDateStr]
+  );
 
   // 4th MetricCard: Proposals count
   const { data: proposalsData } = useQuery({
@@ -82,6 +90,61 @@ export default function Dashboard() {
 
   const openProposals = proposalsData?.length ?? 0;
   const sentProposals = proposalsData?.filter((p) => p.status === "sent").length ?? 0;
+
+  // Row 2 — Financial Health (this month)
+  const { data: financialHealth } = useQuery({
+    queryKey: ["dashboard-financial-health"],
+    queryFn: async () => {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+      const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+      const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
+      const todayStrISO = now.toISOString().slice(0, 10);
+
+      const [thisMonthPay, prevMonthPay, completedJobs, unpaidInv, settings] = await Promise.all([
+        supabase.from("payments").select("amount, description")
+          .eq("category", "received").eq("status", "confirmed")
+          .gte("payment_date", monthStart).lte("payment_date", todayStrISO),
+        supabase.from("payments").select("amount, description")
+          .eq("category", "received").eq("status", "confirmed")
+          .gte("payment_date", prevMonthStart).lte("payment_date", prevMonthEnd),
+        supabase.from("projects").select("id, project_status, completion_date, updated_at")
+          .eq("project_status", "completed")
+          .gte("updated_at", monthStart),
+        supabase.from("invoices").select("id, total_amount, status")
+          .not("status", "in", "(paid,cancelled,void)"),
+        supabase.from("company_settings").select("default_margin_min_percent").maybeSingle(),
+      ]);
+
+      const sum = (rows: any[]) => (rows || []).reduce((s, r) => s + Number(r.amount || 0), 0);
+      const revenue = sum(thisMonthPay.data || []);
+      const prevRevenue = sum(prevMonthPay.data || []);
+      const revenueDelta = prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue) * 100 : null;
+
+      let avgMargin: number | null = null;
+      const completedIds = (completedJobs.data || []).map((p: any) => p.id);
+      if (completedIds.length > 0) {
+        const { data: jc } = await supabase
+          .from("job_costs")
+          .select("margin_percent, project_id")
+          .in("project_id", completedIds);
+        const vals = (jc || []).map((j: any) => Number(j.margin_percent)).filter((n) => !Number.isNaN(n));
+        if (vals.length > 0) avgMargin = vals.reduce((a, b) => a + b, 0) / vals.length;
+      }
+
+      const unpaid = unpaidInv.data || [];
+      const unpaidTotal = unpaid.reduce((s, i: any) => s + Number(i.total_amount || 0), 0);
+
+      return {
+        revenue,
+        revenueDelta,
+        avgMargin,
+        minMargin: Number((settings.data as any)?.default_margin_min_percent ?? 30),
+        unpaidCount: unpaid.length,
+        unpaidTotal,
+      };
+    },
+  });
 
   // Recent Activity feed
   const { data: recentActivity = [] } = useQuery({
