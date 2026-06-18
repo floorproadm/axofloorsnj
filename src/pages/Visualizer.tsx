@@ -8,7 +8,7 @@ import PhotoUploader from "@/components/visualizer/PhotoUploader";
 import BeforeAfterSlider from "@/components/visualizer/BeforeAfterSlider";
 import { FLOOR_STYLES, type FloorStyle } from "@/lib/visualizer/floorStyles";
 
-const CATEGORIES = ["Light", "Medium", "Dark", "Pattern"] as const;
+const CATEGORIES = ["Light", "Medium", "Dark", "Red", "Gray"] as const;
 
 export default function Visualizer() {
   const [photo, setPhoto] = useState<string | null>(null);

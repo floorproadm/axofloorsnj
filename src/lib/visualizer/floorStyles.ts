@@ -1,86 +1,81 @@
-// Curated catalog of wood floor styles for the AI visualizer.
-// Each style has a swatch (used in the picker) and a prompt fed to the image model.
+// Full DuraSeal stain catalog for the AI visualizer.
+// Swatches are the real product photos used in the Stain Gallery.
 
-import naturalWhiteOak from "@/assets/visualizer/natural-white-oak.jpg";
-import classicRedOak from "@/assets/visualizer/classic-red-oak.jpg";
-import gunstockOak from "@/assets/visualizer/gunstock-oak.jpg";
-import darkWalnut from "@/assets/visualizer/dark-walnut.jpg";
-import ebony from "@/assets/visualizer/ebony.jpg";
-import herringboneOak from "@/assets/visualizer/herringbone-oak.jpg";
-import wideEuropean from "@/assets/visualizer/wide-european.jpg";
-import grayWashed from "@/assets/visualizer/gray-washed.jpg";
+const swatch = (slug: string) => new URL(`../../assets/stains/${slug}.jpg`, import.meta.url).href;
+
+export type FloorCategory = "Light" | "Medium" | "Dark" | "Gray" | "Red";
 
 export interface FloorStyle {
   id: string;
   name: string;
-  category: "Light" | "Medium" | "Dark" | "Pattern";
+  category: FloorCategory;
   swatch: string;
   prompt: string;
 }
 
+const basePrompt = (tone: string) =>
+  `White oak hardwood floor stained DuraSeal ${tone}. Wide-plank 5 inch boards, satin finish, realistic visible wood grain and plank seams, photographic quality, true-to-color, no glare.`;
+
+const make = (
+  id: string,
+  name: string,
+  category: FloorCategory,
+  tone: string,
+): FloorStyle => ({
+  id,
+  name,
+  category,
+  swatch: swatch(id),
+  prompt: basePrompt(`${name} — ${tone}`),
+});
+
 export const FLOOR_STYLES: FloorStyle[] = [
-  {
-    id: "natural-white-oak",
-    name: "Natural White Oak",
-    category: "Light",
-    swatch: naturalWhiteOak,
-    prompt:
-      "Wide-plank natural white oak hardwood, matte finish, soft golden-blonde tone, visible straight grain, realistic plank seams roughly 6 inches wide, no stain",
-  },
-  {
-    id: "classic-red-oak",
-    name: "Classic Red Oak",
-    category: "Medium",
-    swatch: classicRedOak,
-    prompt:
-      "Traditional red oak hardwood, warm honey-amber tone, satin finish, prominent open grain, 3.25 inch strip planks, classic American look",
-  },
-  {
-    id: "gunstock-oak",
-    name: "Gunstock Oak",
-    category: "Medium",
-    swatch: gunstockOak,
-    prompt:
-      "Oak hardwood with gunstock stain — rich warm brown with reddish undertones, satin finish, visible grain, 3 to 4 inch planks",
-  },
-  {
-    id: "dark-walnut",
-    name: "Dark Walnut",
-    category: "Dark",
-    swatch: darkWalnut,
-    prompt:
-      "American walnut hardwood, deep chocolate brown with subtle purple-gray undertones, satin finish, smooth flowing grain, wide 5 inch planks",
-  },
-  {
-    id: "ebony",
-    name: "Ebony",
-    category: "Dark",
-    swatch: ebony,
-    prompt:
-      "White oak stained ebony, almost-black very dark brown, low-sheen matte finish, subtle grain showing through, modern 5 inch planks",
-  },
-  {
-    id: "gray-washed",
-    name: "Gray Wash Oak",
-    category: "Light",
-    swatch: grayWashed,
-    prompt:
-      "European white oak with gray driftwood wash, cool weathered gray-beige tone, matte finish, wide 7 inch planks, contemporary Scandinavian look",
-  },
-  {
-    id: "wide-european",
-    name: "Wide European Oak",
-    category: "Medium",
-    swatch: wideEuropean,
-    prompt:
-      "Wide-plank European white oak, soft warm taupe tone, light brushing showing texture, matte oil finish, extra-wide 9 inch planks, high-end residential look",
-  },
-  {
-    id: "herringbone-oak",
-    name: "Herringbone Oak",
-    category: "Pattern",
-    swatch: herringboneOak,
-    prompt:
-      "Natural white oak hardwood installed in a classic herringbone pattern, warm honey tone, satin finish, individual planks roughly 4 by 18 inches, sharp 90 degree pattern",
-  },
+  // Light
+  make("country-white", "Country White", "Light", "soft whitewashed pickled tone, very pale cream"),
+  make("neutral", "Neutral", "Light", "clear matte natural oak look, no added pigment"),
+  make("rustic-beige", "Rustic Beige", "Light", "warm pale beige with subtle taupe undertone"),
+  make("weathered-oak", "Weathered Oak", "Light", "driftwood gray-beige, soft weathered look"),
+  make("golden-oak", "Golden Oak", "Light", "light golden honey blonde, warm classic oak"),
+  make("fruitwood", "Fruitwood", "Light", "light warm tan with soft amber undertone"),
+  make("golden-pecan", "Golden Pecan", "Light", "warm light caramel honey tone"),
+  make("honey", "Honey", "Light", "rich honey amber golden tone"),
+  make("colonial-maple", "Colonial Maple", "Light", "warm light maple tan, soft golden brown"),
+  make("early-american", "Early American", "Light", "warm light-medium brown with slight orange undertone"),
+
+  // Medium
+  make("nutmeg", "Nutmeg", "Medium", "warm medium brown with subtle red undertone"),
+  make("provincial", "Provincial", "Medium", "neutral medium brown, classic traditional tone"),
+  make("special-walnut", "Special Walnut", "Medium", "warm medium walnut brown"),
+  make("golden-brown", "Golden Brown", "Medium", "rich warm medium brown with golden undertone"),
+  make("medium-brown", "Medium Brown", "Medium", "balanced neutral medium brown"),
+  make("spice-brown", "Spice Brown", "Medium", "warm cinnamon medium brown with red hint"),
+  make("english-chestnut", "English Chestnut", "Medium", "warm chestnut brown with reddish undertone"),
+  make("chestnut", "Chestnut", "Medium", "rich medium chestnut brown"),
+  make("gunstock", "Gunstock", "Medium", "warm brown with reddish amber undertone, classic gunstock"),
+  make("antique-brown", "Antique Brown", "Medium", "deep warm antique medium-dark brown"),
+  make("heritage-brown", "Heritage Brown", "Medium", "rich warm medium-dark brown"),
+  make("aged-barrel", "Aged Barrel", "Medium", "rich whiskey-barrel brown with warm depth"),
+
+  // Dark
+  make("coffee-brown", "Coffee Brown", "Dark", "deep coffee brown, rich and warm"),
+  make("dark-walnut", "Dark Walnut", "Dark", "deep dark walnut brown, classic dark floor"),
+  make("espresso", "Espresso", "Dark", "very dark espresso brown, near black"),
+  make("jacobean", "Jacobean", "Dark", "very dark cool brown with slight gray undertone"),
+  make("ebony", "Ebony", "Dark", "near-black very dark brown, grain still visible"),
+  make("true-black", "True Black", "Dark", "true black opaque finish, modern bold look"),
+
+  // Red / Mahogany
+  make("cherry", "Cherry", "Red", "warm cherry red-brown tone"),
+  make("red-oak", "Red Oak", "Red", "natural red oak with warm pinkish undertone"),
+  make("sedona-red", "Sedona Red", "Red", "deep warm red-brown, southwestern tone"),
+  make("mahogany", "Mahogany", "Red", "rich mahogany reddish brown"),
+  make("red-mahogany", "Red Mahogany", "Red", "deep red mahogany with strong red pigment"),
+  make("royal-mahogany", "Royal Mahogany", "Red", "deep rich mahogany with luxurious red depth"),
+  make("rosewood", "Rosewood", "Red", "dark rosewood with reddish-purple undertone"),
+
+  // Gray
+  make("classic-gray", "Classic Gray", "Gray", "cool neutral gray, balanced modern tone"),
+  make("warm-gray", "Warm Gray", "Gray", "warm greige with taupe undertone"),
+  make("silvered-gray", "Silvered Gray", "Gray", "light silvery driftwood gray"),
+  make("dark-gray", "Dark Gray", "Gray", "deep charcoal gray, modern industrial tone"),
 ];
