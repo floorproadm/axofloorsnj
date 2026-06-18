@@ -177,7 +177,7 @@ export default function Dashboard() {
           .limit(5),
       ]);
 
-      const items: { type: "lead" | "proposal" | "payment"; label: string; date: string; link: string }[] = [];
+      const items: { type: "lead" | "proposal" | "payment" | "job"; label: string; date: string; link: string; amount?: number }[] = [];
 
       (leadsRes.data || []).forEach((l) =>
         items.push({ type: "lead", label: l.name, date: l.created_at, link: `/admin/leads` })
@@ -188,9 +188,10 @@ export default function Dashboard() {
       (paymentsRes.data || []).forEach((p) =>
         items.push({
           type: "payment",
-          label: p.description || `$${p.amount}`,
+          label: p.description || "Pagamento",
           date: p.created_at,
           link: `/admin/payments`,
+          amount: Number(p.amount || 0),
         })
       );
 
