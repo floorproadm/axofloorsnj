@@ -278,8 +278,11 @@ export default function Payments() {
           </div>
         </Tabs>
 
-        {/* ── PAYMENTS TAB ── */}
-        {activeTab === "payments" ? (
+        {activeTab === "deposits" ? (
+          <DepositsTab />
+        ) : activeTab === "expenses" ? (
+          <ExpensesTab />
+        ) : activeTab === "payments" ? (
           <>
             {/* Period Selector + Download */}
             <div className="relative flex flex-col items-center gap-2">
