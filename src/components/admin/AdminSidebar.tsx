@@ -105,7 +105,9 @@ export function AdminSidebar() {
     { title: "Chat", url: "/admin/chat", icon: MessageSquare, badge: "chat" as const },
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: "Customers", url: "/admin/customers", icon: UserCheck },
-    { title: "Equipe", url: "/admin/crews", icon: Users },
+    { title: "Equipe", url: "/admin/team", icon: Users },
+    
+    
     
     
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
