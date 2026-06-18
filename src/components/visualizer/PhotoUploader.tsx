@@ -93,21 +93,21 @@ export default function PhotoUploader({ onPhoto }: Props) {
           Take or upload a photo of your room. Then mark the four corners of the floor and pick a style to see how it looks.
         </p>
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
         <Button
           size="lg"
-          className="flex-1"
+          className="flex-1 h-14 text-base sm:h-11 sm:text-sm"
           onClick={() => cameraRef.current?.click()}
         >
-          <Camera className="h-5 w-5 mr-2" />
+          <Camera className="h-6 w-6 mr-2 sm:h-5 sm:w-5" />
           Take photo
         </Button>
         <Button
           size="lg"
-          className="flex-1 bg-gold text-navy-dark hover:bg-gold-warm font-semibold shadow-gold"
+          className="flex-1 h-14 text-base sm:h-11 sm:text-sm bg-gold text-navy-dark hover:bg-gold-warm font-semibold shadow-gold"
           onClick={() => inputRef.current?.click()}
         >
-          <Upload className="h-5 w-5 mr-2" />
+          <Upload className="h-6 w-6 mr-2 sm:h-5 sm:w-5" />
           Upload photo
         </Button>
       </div>
