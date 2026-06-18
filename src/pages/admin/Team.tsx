@@ -1,0 +1,366 @@
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Plus, Download, Clock, Users, DollarSign, Edit2 } from "lucide-react";
+import { format, startOfWeek, endOfWeek, parseISO, isWithinInterval, startOfMonth, endOfMonth, addWeeks, subWeeks } from "date-fns";
+import { MemberDialog, ROLE_LABEL, type TeamMember } from "@/components/admin/team/MemberDialog";
+
+const fmt = (v: number) =>
+  `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const STATUS_BADGE: Record<string, string> = {
+  approved: "bg-green-100 text-green-700 border-green-200",
+  pending: "bg-amber-100 text-amber-700 border-amber-200",
+  rejected: "bg-red-100 text-red-700 border-red-200",
+};
+
+export default function Team() {
+  const [tab, setTab] = useState<"members" | "timesheets">("members");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<TeamMember | null>(null);
+  const [memberFilter, setMemberFilter] = useState<string>("all");
+  const [weekAnchor, setWeekAnchor] = useState(() => new Date());
+
+  const weekStart = startOfWeek(weekAnchor, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(weekAnchor, { weekStartsOn: 1 });
+  const now = new Date();
+  const monthRange = { start: startOfMonth(now), end: endOfMonth(now) };
+  const currentWeekRange = { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["team-members"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, role, daily_rate, employment_type, is_active_crew, color" as any)
+        .order("full_name");
+      if (error) throw error;
+      return (data || []) as unknown as TeamMember[];
+    },
+  });
+
+  const { data: laborEntries = [] } = useQuery({
+    queryKey: ["team-labor-entries"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("labor_entries")
+        .select("id, work_date, crew_member_id, worker_name, project_id, daily_rate, days_worked, status, pay_mode, sqft_worked, sqft_rate, total_cost, projects:projects(customer_name)")
+        .order("work_date", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+
+  // Heuristic: a labor "day" = 8 hours unless pay_mode === 'sqft'
+  const hoursForEntry = (e: any) => (e.pay_mode === "sqft" ? 0 : Number(e.days_worked || 0) * 8);
+
+  const metrics = useMemo(() => {
+    const active = members.filter((m) => m.is_active_crew).length;
+    const weekHours = laborEntries
+      .filter((e) => e.work_date && isWithinInterval(parseISO(e.work_date), currentWeekRange))
+      .reduce((s, e) => s + hoursForEntry(e), 0);
+    const monthLabor = laborEntries
+      .filter((e) => e.work_date && isWithinInterval(parseISO(e.work_date), monthRange))
+      .reduce((s, e) => s + Number(e.total_cost || 0), 0);
+    return { active, weekHours, monthLabor };
+  }, [members, laborEntries]);
+
+  const memberHoursThisWeek = useMemo(() => {
+    const map = new Map<string, number>();
+    laborEntries.forEach((e) => {
+      if (!e.crew_member_id) return;
+      if (!e.work_date || !isWithinInterval(parseISO(e.work_date), currentWeekRange)) return;
+      map.set(e.crew_member_id, (map.get(e.crew_member_id) || 0) + hoursForEntry(e));
+    });
+    return map;
+  }, [laborEntries]);
+
+  // Filtered timesheet rows
+  const tsRows = useMemo(() => {
+    return laborEntries
+      .filter((e) => {
+        if (!e.work_date) return false;
+        if (!isWithinInterval(parseISO(e.work_date), { start: weekStart, end: weekEnd })) return false;
+        if (memberFilter !== "all" && e.crew_member_id !== memberFilter) return false;
+        return true;
+      })
+      .map((e) => ({
+        ...e,
+        memberName:
+          members.find((m) => m.id === e.crew_member_id)?.full_name || e.worker_name || "—",
+        projectName: e.projects?.customer_name || "—",
+        hours: hoursForEntry(e),
+      }))
+      .sort((a, b) => (b.work_date as string).localeCompare(a.work_date));
+  }, [laborEntries, members, weekStart, weekEnd, memberFilter]);
+
+  const tsTotalHours = tsRows.reduce((s, r) => s + r.hours, 0);
+  const tsByMember = useMemo(() => {
+    const map = new Map<string, number>();
+    tsRows.forEach((r) => map.set(r.memberName, (map.get(r.memberName) || 0) + r.hours));
+    return map;
+  }, [tsRows]);
+
+  const exportCsv = () => {
+    const lines: string[] = [];
+    lines.push("Date,Member,Project,Hours,Status,Rate,Total");
+    tsRows.forEach((r) => {
+      lines.push(
+        `${r.work_date},"${r.memberName}","${r.projectName}",${r.hours.toFixed(1)},${r.status || ""},${r.daily_rate || 0},${Number(r.total_cost || 0).toFixed(2)}`
+      );
+    });
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `timesheets-${format(weekStart, "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <AdminLayout title="Equipe">
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Equipe</h1>
+            <p className="text-sm text-muted-foreground">Técnicos, parceiros e registro de horas</p>
+          </div>
+          <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
+            <Plus className="w-4 h-4 mr-1" /> Adicionar membro
+          </Button>
+        </div>
+
+        {/* Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { label: "Membros ativos", value: String(metrics.active), icon: Users, color: "text-primary" },
+            { label: "Horas esta semana", value: `${metrics.weekHours.toFixed(1)}h`, icon: Clock, color: "text-amber-600" },
+            { label: "Custo de mão de obra (mês)", value: fmt(metrics.monthLabor), icon: DollarSign, color: "text-green-600" },
+          ].map((s) => (
+            <Card key={s.label} className="shadow-sm">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`p-2 rounded-lg bg-muted ${s.color}`}>
+                  <s.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase">{s.label}</p>
+                  <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Sub-tabs */}
+        <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+          <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+            <TabsTrigger
+              value="members"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+            >Membros</TabsTrigger>
+            <TabsTrigger
+              value="timesheets"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+            >Timesheets</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* === MEMBERS === */}
+        {tab === "members" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {members.length === 0 ? (
+              <Card className="col-span-full">
+                <CardContent className="py-10 text-center text-muted-foreground">
+                  Nenhum membro cadastrado
+                </CardContent>
+              </Card>
+            ) : (
+              members.map((m) => {
+                const initials = (m.full_name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+                const rateLabel =
+                  m.employment_type === "hourly"
+                    ? `$${Number(m.daily_rate || 0).toFixed(2)}/h`
+                    : `$${Number(m.daily_rate || 0).toFixed(2)}/dia`;
+                const weekHours = memberHoursThisWeek.get(m.id) || 0;
+                const pct = Math.min(100, (weekHours / 40) * 100);
+                return (
+                  <Card key={m.id} className="shadow-sm">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback
+                            style={{ backgroundColor: m.color || "hsl(var(--primary))", color: "white" }}
+                            className="text-xs font-semibold"
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-sm truncate">{m.full_name || "Sem nome"}</p>
+                            <Badge
+                              variant="outline"
+                              className={
+                                m.is_active_crew
+                                  ? "text-[10px] bg-green-50 text-green-700 border-green-200"
+                                  : "text-[10px] bg-slate-100 text-slate-600 border-slate-200"
+                              }
+                            >
+                              {m.is_active_crew ? "Ativo" : "Inativo"}
+                            </Badge>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            {ROLE_LABEL[m.role || ""] || m.role || "—"} · {rateLabel}
+                          </p>
+                          {m.email && (
+                            <p className="text-[11px] text-muted-foreground truncate">{m.email}</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => { setEditing(m); setDialogOpen(true); }}
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+                          <span>Horas esta semana</span>
+                          <span className="font-medium text-foreground">{weekHours.toFixed(1)}h / 40h</span>
+                        </div>
+                        <Progress value={pct} className="h-1.5" />
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-8 text-xs"
+                        onClick={() => { setTab("timesheets"); setMemberFilter(m.id); }}
+                      >
+                        Ver timesheets
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* === TIMESHEETS === */}
+        {tab === "timesheets" && (
+          <div className="space-y-3">
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-2 justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={memberFilter} onValueChange={setMemberFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Todos os membros" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os membros</SelectItem>
+                    {members.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>{m.full_name || m.email}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setWeekAnchor((d) => subWeeks(d, 1))}>
+                    ←
+                  </Button>
+                  <span className="text-xs font-medium px-2">
+                    {format(weekStart, "MMM dd")} – {format(weekEnd, "MMM dd")}
+                  </span>
+                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setWeekAnchor((d) => addWeeks(d, 1))}>
+                    →
+                  </Button>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={exportCsv}>
+                  <Download className="w-4 h-4 mr-1" /> Exportar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => window.location.assign("/admin/crews?tab=daysheet")}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Registrar horas
+                </Button>
+              </div>
+            </div>
+
+            <Card className="shadow-sm">
+              <CardContent className="p-0">
+                {tsRows.length === 0 ? (
+                  <div className="py-10 text-center text-sm text-muted-foreground">
+                    Sem registros nesta semana
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
+                        <tr>
+                          <th className="text-left px-3 py-2 font-medium">Data</th>
+                          <th className="text-left px-3 py-2 font-medium">Membro</th>
+                          <th className="text-left px-3 py-2 font-medium">Projeto</th>
+                          <th className="text-right px-3 py-2 font-medium">Horas</th>
+                          <th className="text-right px-3 py-2 font-medium">Custo</th>
+                          <th className="text-left px-3 py-2 font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tsRows.map((r) => (
+                          <tr key={r.id} className="border-b border-border last:border-0 even:bg-muted/10">
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              {format(parseISO(r.work_date), "MMM dd")}
+                            </td>
+                            <td className="px-3 py-2">{r.memberName}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{r.projectName}</td>
+                            <td className="px-3 py-2 text-right tabular-nums">{r.hours.toFixed(1)}h</td>
+                            <td className="px-3 py-2 text-right tabular-nums">{fmt(Number(r.total_cost || 0))}</td>
+                            <td className="px-3 py-2">
+                              <Badge variant="outline" className={`text-[10px] ${STATUS_BADGE[r.status] || ""}`}>
+                                {r.status === "approved" ? "Aprovado" : r.status === "pending" ? "Pendente" : r.status}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div className="border-t border-border bg-muted/30 px-3 py-2 text-xs">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 items-center">
+                    <span className="font-semibold">Total: {tsTotalHours.toFixed(1)}h</span>
+                    {Array.from(tsByMember.entries()).map(([name, h]) => (
+                      <span key={name} className="text-muted-foreground">
+                        {name}: <strong className="text-foreground">{h.toFixed(1)}h</strong>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      <MemberDialog open={dialogOpen} onOpenChange={setDialogOpen} editing={editing} />
+    </AdminLayout>
+  );
+}
