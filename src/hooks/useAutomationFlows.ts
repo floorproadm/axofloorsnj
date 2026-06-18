@@ -42,6 +42,10 @@ const JOBS_STAGES = [
   { key: "pending", label: "Pre-Production" },
   { key: "in_progress", label: "In Progress" },
   { key: "completed", label: "Completed" },
+  { key: "job_completed", label: "Job Concluído" },
+  { key: "invoice_generated", label: "Fatura Gerada" },
+  { key: "payment_received", label: "Pagamento Recebido" },
+  { key: "deposit_pending", label: "Depósito Pendente" },
 ] as const;
 
 export const PIPELINE_STAGES = {
