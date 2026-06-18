@@ -2,12 +2,14 @@ import { useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { MissionControl } from "@/components/admin/dashboard/MissionControl";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
+import { useFinancialAlerts } from "@/hooks/admin/useFinancialAlerts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Target } from "lucide-react";
 
 export default function MissionControlPage() {
   const { isLoading, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions } =
     useDashboardData();
+  const { data: financialAlerts = [], isLoading: isLoadingFinancial } = useFinancialAlerts();
   const { t } = useLanguage();
 
   const priorityTasks = useMemo(() => {
