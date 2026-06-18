@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
   PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, X, BellOff,
-  User, Calendar, Flag, FileText
+  User, Calendar, Flag, FileText, DollarSign, Receipt, FileWarning, Eye, Pause
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -27,6 +27,7 @@ interface SystemAlert {
   link: string;
   type: string;
   entityId?: string | null;
+  group?: "financial" | "operational";
 }
 
 const dotColor = {
@@ -43,7 +44,23 @@ const typeIcon: Record<string, React.ElementType> = {
   sla_followup: PhoneOff,
   sla_estimate: Timer,
   sla_auto_escalation: Zap,
+  invoice_overdue: FileWarning,
+  deposit_missing: DollarSign,
+  proposal_viewed_no_reply: Eye,
+  project_stale: Pause,
+  expense_no_receipt: Receipt,
 };
+
+const FINANCIAL_TYPES = new Set([
+  "invoice_overdue",
+  "deposit_missing",
+  "proposal_viewed_no_reply",
+  "project_stale",
+  "expense_no_receipt",
+]);
+
+const groupOf = (a: SystemAlert): "financial" | "operational" =>
+  a.group ?? (FINANCIAL_TYPES.has(a.type) ? "financial" : "operational");
 
 // ---------- Priority ----------
 
@@ -144,47 +161,78 @@ export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControl
         </div>
       )}
 
-      {/* Unified list: alerts first, then tasks */}
-      <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
-        {/* System Alerts */}
-        {visibleAlerts.map((alert, idx) => {
-          const Icon = typeIcon[alert.type];
-          return (
-            <div
-              key={`alert-${idx}`}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group"
-            >
-              <Link to={alert.link} className="flex items-center gap-3 flex-1 min-w-0">
-                <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
-                {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
-                <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
-                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-              </Link>
+      {/* Grouped alerts: Financeiro + Operacional */}
+      {(["financial", "operational"] as const).map((grp) => {
+        const items = visibleAlerts.filter((a) => groupOf(a) === grp);
+        if (items.length === 0) return null;
+        const isFin = grp === "financial";
+        const label = isFin ? "🔴 Financeiro" : "🟡 Operacional";
+        const clearGroup = () => {
+          const next = Array.from(new Set([...dismissed, ...items.map(alertKey)]));
+          setDismissed(next);
+          writeDismissed(next);
+        };
+        return (
+          <div key={grp} className="space-y-1.5">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                {label} ({items.length})
+              </span>
               <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); dismissAlert(alert); }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
-                title="Dispensar"
+                onClick={clearGroup}
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                title={`Limpar todos os alertas ${isFin ? "financeiros" : "operacionais"}`}
               >
-                <X className="w-3.5 h-3.5" />
+                Limpar grupo
               </button>
             </div>
-          );
-        })}
+            <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+              {items.map((alert, idx) => {
+                const Icon = typeIcon[alert.type];
+                return (
+                  <div
+                    key={`alert-${grp}-${idx}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors group"
+                  >
+                    <Link to={alert.link} className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className={cn("w-2 h-2 rounded-full flex-shrink-0", dotColor[alert.color])} />
+                      {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
+                      <span className="flex-1 text-sm font-medium text-foreground truncate">{alert.label}</span>
+                      <span className="text-[11px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        Ver
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </Link>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); dismissAlert(alert); }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+                      title="Dispensar"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
 
-        {/* Separator label between alerts and tasks */}
-        {hasAlerts && hasTasks && (
-          <div className="px-4 py-1.5 bg-muted/30">
+      {/* Manual Tasks */}
+      {hasTasks && (
+        <div className="space-y-1.5">
+          <div className="px-1">
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              {t("mission.tarefas")}
+              {t("mission.tarefas")} ({pendingTasks.length})
             </span>
           </div>
-        )}
-
-        {/* Manual Tasks */}
-        {pendingTasks.map((task) => (
-          <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
-        ))}
-      </div>
+          <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+            {pendingTasks.map((task) => (
+              <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Footer: completed toggle */}
       {doneTasks.length > 0 && (

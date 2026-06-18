@@ -2,12 +2,14 @@ import { useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { MissionControl } from "@/components/admin/dashboard/MissionControl";
 import { useDashboardData } from "@/hooks/admin/useDashboardData";
+import { useFinancialAlerts } from "@/hooks/admin/useFinancialAlerts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Target } from "lucide-react";
 
 export default function MissionControlPage() {
   const { isLoading, criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions } =
     useDashboardData();
+  const { data: financialAlerts = [], isLoading: isLoadingFinancial } = useFinancialAlerts();
   const { t } = useLanguage();
 
   const priorityTasks = useMemo(() => {
@@ -92,8 +94,19 @@ export default function MissionControlPage() {
       });
     });
 
+    financialAlerts.forEach((f) => {
+      tasks.push({
+        label: f.label,
+        color: f.type === "invoice_overdue" || f.type === "deposit_missing" ? "blocked" : "risk",
+        link: f.link,
+        type: f.type,
+        entityId: f.entityId,
+        group: "financial",
+      } as any);
+    });
+
     return tasks;
-  }, [criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, t]);
+  }, [criticalAlerts, slaBreaches, recentFieldUploads, recentSystemActions, financialAlerts, t]);
 
   return (
     <AdminLayout
@@ -115,7 +128,7 @@ export default function MissionControlPage() {
           </div>
         </div>
 
-        <MissionControl systemAlerts={priorityTasks} isLoadingAlerts={isLoading} />
+        <MissionControl systemAlerts={priorityTasks} isLoadingAlerts={isLoading || isLoadingFinancial} />
       </div>
     </AdminLayout>
   );
