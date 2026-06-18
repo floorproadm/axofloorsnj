@@ -96,9 +96,9 @@ export function AdminSidebar() {
   const toolsItems = [
     { title: t("sidebar.captacao"), url: "/admin/intake", icon: Inbox },
     { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
+    { title: "Visualizer", url: "/admin/visualizer", icon: Scan },
     { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
     { title: "Reputation", url: "/admin/reputation", icon: Star },
-    { title: "Visualizer", url: "/admin/visualizer", icon: Scan },
   ];
 
   const manageItems = [
