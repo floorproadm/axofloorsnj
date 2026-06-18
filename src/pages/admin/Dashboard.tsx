@@ -271,7 +271,7 @@ export default function Dashboard() {
     });
   }, [weekStart, weekAppointments, todayStr, language]);
 
-  const activityIcon = (type: "lead" | "proposal" | "payment") => {
+  const activityIcon = (type: "lead" | "proposal" | "payment" | "job") => {
     switch (type) {
       case "lead":
         return <UserPlus className="w-3.5 h-3.5 text-[hsl(var(--state-success))]" />;
@@ -279,10 +279,12 @@ export default function Dashboard() {
         return <Send className="w-3.5 h-3.5 text-[hsl(var(--gold-warm))]" />;
       case "payment":
         return <CreditCard className="w-3.5 h-3.5 text-[hsl(var(--state-success))]" />;
+      case "job":
+        return <Hammer className="w-3.5 h-3.5 text-primary" />;
     }
   };
 
-  const activityLabel = (type: "lead" | "proposal" | "payment") => {
+  const activityLabel = (type: "lead" | "proposal" | "payment" | "job") => {
     switch (type) {
       case "lead":
         return t("dashboard.novoLead");
@@ -290,6 +292,8 @@ export default function Dashboard() {
         return t("dashboard.propostaEnviada");
       case "payment":
         return t("dashboard.pagamentoRecebido");
+      case "job":
+        return "Job";
     }
   };
 
