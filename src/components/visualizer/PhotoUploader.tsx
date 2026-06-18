@@ -88,7 +88,7 @@ export default function PhotoUploader({ onPhoto }: Props) {
   return (
     <div className="flex flex-col items-center justify-center gap-6 px-6 py-12 text-center">
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold">Preview your new floor</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold whitespace-nowrap">Preview your new floor</h2>
         <p className="text-sm text-muted-foreground max-w-sm">
           Take or upload a photo of your room. Then mark the four corners of the floor and pick a style to see how it looks.
         </p>
