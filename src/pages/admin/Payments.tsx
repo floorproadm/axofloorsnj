@@ -40,9 +40,10 @@ import { PLPreviewDialog } from "@/components/admin/payments/PLPreviewDialog";
 import { InvoiceReconciliation } from "@/components/admin/payments/InvoiceReconciliation";
 import { DepositsTab } from "@/components/admin/payments/DepositsTab";
 import { ExpensesTab } from "@/components/admin/payments/ExpensesTab";
+import { PLTab } from "@/components/admin/payments/PLTab";
 import { format, isWithinInterval, parseISO } from "date-fns";
 
-type ActiveTab = "payments" | "invoices" | "deposits" | "expenses";
+type ActiveTab = "payments" | "invoices" | "pl" | "deposits" | "expenses";
 
 /* ── Category icons ── */
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -246,6 +247,13 @@ export default function Payments() {
                 Invoices
               </TabsTrigger>
               <TabsTrigger
+                value="pl"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <DollarSign className="w-4 h-4 mr-1.5" />
+                P&L
+              </TabsTrigger>
+              <TabsTrigger
                 value="deposits"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
               >
@@ -278,7 +286,9 @@ export default function Payments() {
           </div>
         </Tabs>
 
-        {activeTab === "deposits" ? (
+        {activeTab === "pl" ? (
+          <PLTab />
+        ) : activeTab === "deposits" ? (
           <DepositsTab />
         ) : activeTab === "expenses" ? (
           <ExpensesTab />
