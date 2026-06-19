@@ -27,6 +27,7 @@ import {
   MessageSquare,
   Shield,
   Scan,
+  MapPin,
 } from "lucide-react";
 import { usePlatformAdmin } from "@/hooks/usePlatformAdmin";
 import { Badge } from "@/components/ui/badge";
@@ -106,6 +107,7 @@ export function AdminSidebar() {
     { title: "Partners", url: "/admin/partners", icon: Handshake },
     { title: "Customers", url: "/admin/customers", icon: UserCheck },
     { title: "Equipe", url: "/admin/team", icon: Users },
+    { title: "GPS", url: "/admin/gps", icon: MapPin },
     
     
     
