@@ -385,6 +385,14 @@ export default function PublicProposal() {
           </Card>
         )}
 
+        {/* Portfolio — previous works */}
+        {Array.isArray(proposal.portfolio_photo_ids) && proposal.portfolio_photo_ids.length > 0 && (
+          <PublicPortfolioGrid
+            photoIds={proposal.portfolio_photo_ids}
+            primaryColor={brand.primary}
+          />
+        )}
+
         {/* Pricing — Tiers or Line Items table */}
         {proposal.use_tiers ? (
           <div className="space-y-3">
