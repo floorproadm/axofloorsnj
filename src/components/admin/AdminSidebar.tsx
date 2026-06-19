@@ -91,6 +91,7 @@ export function AdminSidebar() {
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: "Schedule & Appointments", url: "/admin/schedule", icon: CalendarDays },
+    { title: "Dispatch", url: "/admin/dispatch", icon: Truck },
     { title: "Financeiro", url: "/admin/payments", icon: DollarSign },
   ];
 
