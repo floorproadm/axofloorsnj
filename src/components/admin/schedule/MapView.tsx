@@ -172,7 +172,6 @@ export function MapView({ date }: Props) {
         <div className="flex items-center gap-1.5 rounded-full bg-slate-900/90 backdrop-blur px-2 py-1.5 shadow-xl border border-slate-700 pointer-events-auto">
           <Pill icon={<Calendar className="w-3 h-3" />} label={`${todayCount} today`} />
           <Pill icon={<Briefcase className="w-3 h-3" />} label={`${openCount} open jobs`} />
-          <Pill icon={<Users className="w-3 h-3" />} label={`${techsInField.length} techs`} />
         </div>
       </div>
 
