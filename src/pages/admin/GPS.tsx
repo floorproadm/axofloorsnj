@@ -109,11 +109,11 @@ export default function GPS() {
   const { data: techs = [] } = useQuery({
     queryKey: ["gps-techs"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("profiles")
-        .select("id, full_name, color, is_active_crew" as any)
-        .eq("is_active_crew" as any, true);
-      return (data || []) as unknown as Tech[];
+        .select("id, full_name, color, is_active_crew")
+        .eq("is_active_crew", true);
+      return (data || []) as Tech[];
     },
   });
 
