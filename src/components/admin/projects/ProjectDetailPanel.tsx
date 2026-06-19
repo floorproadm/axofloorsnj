@@ -501,7 +501,7 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
                 <button
                   key={inv.id}
                   onClick={() => {
-                    navigate(`/admin/payments?invoice=${inv.id}`);
+                    navigate(`/admin/invoices?invoice=${inv.id}`);
                     onClose();
                   }}
                   className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition text-left"
