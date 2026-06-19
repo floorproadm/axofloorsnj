@@ -195,7 +195,7 @@ export function InvoicesPaymentsSection({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      <Button variant="ghost" size="sm" className="w-full text-xs gap-1.5 text-muted-foreground" onClick={() => navigate('/admin/payments')}>
+      <Button variant="ghost" size="sm" className="w-full text-xs gap-1.5 text-muted-foreground" onClick={() => navigate('/admin/invoices')}>
         <ExternalLink className="w-3 h-3" /> View All Payments
       </Button>
     </div>
