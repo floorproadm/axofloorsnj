@@ -166,12 +166,28 @@ export function MapView({ date }: Props) {
   const center: [number, number] = points[0] ?? [40.7357, -74.1724];
 
   return (
-    <div className="relative h-[calc(100vh-260px)] min-h-[500px] w-full overflow-hidden rounded-lg border">
+    <div className="relative h-[calc(100dvh-200px)] sm:h-[calc(100vh-260px)] min-h-[420px] w-full overflow-hidden rounded-lg border">
       {/* HUD */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[500] pointer-events-none">
-        <div className="flex items-center gap-1.5 rounded-full bg-slate-900/90 backdrop-blur px-2 py-1.5 shadow-xl border border-slate-700 pointer-events-auto">
-          <Pill icon={<Calendar className="w-3 h-3" />} label={`${todayCount} today`} />
-          <Pill icon={<Briefcase className="w-3 h-3" />} label={`${openCount} open jobs`} />
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[500] pointer-events-none px-2 w-full flex justify-center">
+        <div className="flex items-center gap-1.5 rounded-full bg-slate-900/95 backdrop-blur px-2 py-1.5 shadow-xl border border-slate-700 pointer-events-auto">
+          <Pill icon={<Calendar className="w-3.5 h-3.5" />} label={`${todayCount} today`} />
+          <Pill icon={<Briefcase className="w-3.5 h-3.5" />} label={`${openCount} open`} />
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="absolute bottom-2 left-2 right-2 z-[500] pointer-events-none flex justify-start">
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 rounded-md bg-slate-900/90 backdrop-blur px-1.5 py-1 shadow-lg border border-slate-700 pointer-events-auto">
+          {[
+            ["#3b82f6", "Scheduled"],
+            ["#f59e0b", "In Progress"],
+            ["#16a34a", "Done"],
+            ["#a855f7", "Awaiting $"],
+          ].map(([c, l]) => (
+            <span key={l} className="flex items-center gap-1 text-[10px] text-slate-100 px-1 py-0.5 whitespace-nowrap">
+              <span className="w-2 h-2 rounded-full" style={{ background: c }} />{l}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -210,7 +226,7 @@ export function MapView({ date }: Props) {
 
 function Pill({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/70 text-slate-100 text-[11px] font-medium tabular-nums">
+    <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-slate-800/70 text-slate-100 text-[11px] sm:text-xs font-medium tabular-nums whitespace-nowrap">
       <span className="text-slate-300">{icon}</span>{label}
     </div>
   );
