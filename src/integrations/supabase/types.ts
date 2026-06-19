@@ -1365,7 +1365,10 @@ export type Database = {
           is_featured: boolean | null
           location: string
           organization_id: string
+          paired_before_id: string | null
           parent_folder_id: string | null
+          service_category: string | null
+          tag: string | null
           title: string
           updated_at: string
         }
@@ -1380,7 +1383,10 @@ export type Database = {
           is_featured?: boolean | null
           location: string
           organization_id: string
+          paired_before_id?: string | null
           parent_folder_id?: string | null
+          service_category?: string | null
+          tag?: string | null
           title: string
           updated_at?: string
         }
@@ -1395,7 +1401,10 @@ export type Database = {
           is_featured?: boolean | null
           location?: string
           organization_id?: string
+          paired_before_id?: string | null
           parent_folder_id?: string | null
+          service_category?: string | null
+          tag?: string | null
           title?: string
           updated_at?: string
         }
@@ -1405,6 +1414,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gallery_projects_paired_before_id_fkey"
+            columns: ["paired_before_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_projects"
             referencedColumns: ["id"]
           },
           {
@@ -3668,6 +3684,7 @@ export type Database = {
           owner_id: string | null
           payment_terms: string | null
           pdf_document_id: string | null
+          portfolio_photo_ids: string[]
           project_id: string
           property_id: string | null
           proposal_number: string
@@ -3704,6 +3721,7 @@ export type Database = {
           owner_id?: string | null
           payment_terms?: string | null
           pdf_document_id?: string | null
+          portfolio_photo_ids?: string[]
           project_id: string
           property_id?: string | null
           proposal_number: string
@@ -3740,6 +3758,7 @@ export type Database = {
           owner_id?: string | null
           payment_terms?: string | null
           pdf_document_id?: string | null
+          portfolio_photo_ids?: string[]
           project_id?: string
           property_id?: string | null
           proposal_number?: string
