@@ -166,58 +166,59 @@ export function MapView({ date }: Props) {
   const center: [number, number] = points[0] ?? [40.7357, -74.1724];
 
   return (
-    <div className="relative isolate z-0 h-[calc(100dvh-200px)] sm:h-[calc(100vh-260px)] min-h-[420px] w-full overflow-hidden rounded-lg border">
-      {/* HUD */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[500] pointer-events-none px-2 w-full flex justify-center">
-        <div className="flex items-center gap-1.5 rounded-full bg-slate-900/95 backdrop-blur px-2 py-1.5 shadow-xl border border-slate-700 pointer-events-auto">
+    <div className="flex flex-col h-[calc(100dvh-180px)] sm:h-[calc(100vh-240px)] min-h-[420px] w-full overflow-hidden rounded-lg border border-slate-700">
+      {/* Top bar — HUD */}
+      <div className="flex items-center justify-between px-3 py-2 bg-slate-900/95 border-b border-slate-700 shrink-0">
+        <div className="flex items-center gap-1.5">
           <Pill icon={<Calendar className="w-3.5 h-3.5" />} label={`${todayCount} today`} />
           <Pill icon={<Briefcase className="w-3.5 h-3.5" />} label={`${openCount} open`} />
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="absolute bottom-2 left-2 right-2 z-[500] pointer-events-none flex justify-start">
-        <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 rounded-md bg-slate-900/90 backdrop-blur px-1.5 py-1 shadow-lg border border-slate-700 pointer-events-auto">
-          {[
-            ["#3b82f6", "Scheduled"],
-            ["#f59e0b", "In Progress"],
-            ["#16a34a", "Done"],
-            ["#a855f7", "Awaiting $"],
-          ].map(([c, l]) => (
-            <span key={l} className="flex items-center gap-1 text-[10px] text-slate-100 px-1 py-0.5 whitespace-nowrap">
-              <span className="w-2 h-2 rounded-full" style={{ background: c }} />{l}
-            </span>
-          ))}
-        </div>
+      {/* Map */}
+      <div className="relative flex-1 min-h-0 isolate z-0">
+        <MapContainer center={center} zoom={11} className="h-full w-full" style={{ zIndex: 0 }} scrollWheelZoom>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+          <FitBounds points={points} />
+
+          {jobs.map((j) => {
+            if (!j.address) return null;
+            const full = j.city ? `${j.address}, ${j.city}` : j.address;
+            const p = geo[full]; if (!p) return null;
+            const color = STATUS_META[j.project_status]?.color ?? "#3b82f6";
+            return (
+              <Marker key={`job-${j.id}`} position={[p.lat, p.lng]} icon={briefcasePin(color)}
+                eventHandlers={{ click: () => setSelectedId(j.id) }} />
+            );
+          })}
+
+          {techs.map((t) => {
+            const job = techJobMap.get(t.id); if (!job?.address) return null;
+            const full = job.city ? `${job.address}, ${job.city}` : job.address;
+            const p = geo[full]; if (!p) return null;
+            const initials = (t.full_name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+            return (
+              <Marker key={`tech-${t.id}`} position={[p.lat + 0.0009, p.lng + 0.0009]}
+                icon={techPin(t.color || "#1e3a5f", initials)} />
+            );
+          })}
+        </MapContainer>
       </div>
 
-      <MapContainer center={center} zoom={11} className="h-full w-full" style={{ zIndex: 0 }} scrollWheelZoom>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
-        <FitBounds points={points} />
-
-        {jobs.map((j) => {
-          if (!j.address) return null;
-          const full = j.city ? `${j.address}, ${j.city}` : j.address;
-          const p = geo[full]; if (!p) return null;
-          const color = STATUS_META[j.project_status]?.color ?? "#3b82f6";
-          return (
-            <Marker key={`job-${j.id}`} position={[p.lat, p.lng]} icon={briefcasePin(color)}
-              eventHandlers={{ click: () => setSelectedId(j.id) }} />
-          );
-        })}
-
-        {techs.map((t) => {
-          const job = techJobMap.get(t.id); if (!job?.address) return null;
-          const full = job.city ? `${job.address}, ${job.city}` : job.address;
-          const p = geo[full]; if (!p) return null;
-          const initials = (t.full_name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-          return (
-            <Marker key={`tech-${t.id}`} position={[p.lat + 0.0009, p.lng + 0.0009]}
-              icon={techPin(t.color || "#1e3a5f", initials)} />
-          );
-        })}
-      </MapContainer>
+      {/* Bottom bar — Legend */}
+      <div className="flex items-center gap-x-2 gap-y-1 flex-wrap px-3 py-2 bg-slate-900/95 border-t border-slate-700 shrink-0">
+        {[
+          ["#3b82f6", "Scheduled"],
+          ["#f59e0b", "In Progress"],
+          ["#16a34a", "Done"],
+          ["#a855f7", "Awaiting $"],
+        ].map(([c, l]) => (
+          <span key={l} className="flex items-center gap-1 text-[11px] text-slate-100 whitespace-nowrap">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />{l}
+          </span>
+        ))}
+      </div>
 
       <JobDetailDrawer projectId={selectedId} onClose={() => setSelectedId(null)} techs={techs} />
     </div>
