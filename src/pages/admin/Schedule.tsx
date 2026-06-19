@@ -431,16 +431,16 @@ export default function Schedule() {
             </div>
           </div>
 
-          {/* View mode tabs — centered */}
+          {/* View mode tabs — scrollable on mobile */}
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
-            <div className="flex justify-center">
-              <TabsList className="h-9">
-                <TabsTrigger value="day" className="text-sm px-5">Day</TabsTrigger>
-                <TabsTrigger value="list" className="text-sm px-5">List</TabsTrigger>
-                <TabsTrigger value="week" className="text-sm px-5">Week</TabsTrigger>
-                <TabsTrigger value="month" className="text-sm px-5">Month</TabsTrigger>
-                <TabsTrigger value="dispatch" className="text-sm px-5">Dispatch</TabsTrigger>
-                <TabsTrigger value="map" className="text-sm px-5">Map</TabsTrigger>
+            <div className="flex justify-center -mx-4 sm:mx-0 overflow-x-auto scrollbar-none px-4 sm:px-0">
+              <TabsList className="h-9 w-max min-w-full flex">
+                <TabsTrigger value="day" className="text-sm px-4 sm:px-5 shrink-0">Day</TabsTrigger>
+                <TabsTrigger value="list" className="text-sm px-4 sm:px-5 shrink-0">List</TabsTrigger>
+                <TabsTrigger value="week" className="text-sm px-4 sm:px-5 shrink-0">Week</TabsTrigger>
+                <TabsTrigger value="month" className="text-sm px-4 sm:px-5 shrink-0">Month</TabsTrigger>
+                <TabsTrigger value="dispatch" className="text-sm px-4 sm:px-5 shrink-0">Dispatch</TabsTrigger>
+                <TabsTrigger value="map" className="text-sm px-4 sm:px-5 shrink-0">Map</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>
