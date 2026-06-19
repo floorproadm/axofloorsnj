@@ -969,6 +969,14 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </CardContent>
       </Card>
 
+      {/* Portfolio Photos — pulled from Gallery, shown on the public proposal */}
+      {proposal.proposal_id && (
+        <PortfolioPhotosSection
+          proposalId={proposal.proposal_id}
+          projectType={proposal.project_type}
+        />
+      )}
+
       {/* Printable Professional Document */}
       <div
         ref={printRef}
