@@ -38,6 +38,7 @@ import WeeklyReview from './pages/admin/WeeklyReview';
 import LaborPayroll from './pages/admin/LaborPayroll';
 import CrewsVans from './pages/admin/CrewsVans';
 import Team from './pages/admin/Team';
+import GPS from './pages/admin/GPS';
 import Fleet from './pages/admin/Fleet';
 import AdminProposals from './pages/admin/Proposals';
 import ProjectsHub from './pages/admin/ProjectsHub';
