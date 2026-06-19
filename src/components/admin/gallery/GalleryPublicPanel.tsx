@@ -20,6 +20,9 @@ interface GalleryProject {
   image_url: string;
   is_featured: boolean;
   parent_folder_id: string | null;
+  tag?: string | null;
+  service_category?: string | null;
+  paired_before_id?: string | null;
 }
 
 /**
