@@ -42,7 +42,6 @@ export function MemberDialog({ open, onOpenChange, editing }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("technician");
-  const [rateMode, setRateMode] = useState<"hour" | "day">("day");
   const [rate, setRate] = useState("0");
   const [color, setColor] = useState(COLORS[0]);
 
