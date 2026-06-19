@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { SignatureDialog } from "@/components/proposal/SignatureDialog";
 import { DeclineDialog } from "@/components/proposal/DeclineDialog";
+import { PublicPortfolioGrid } from "@/components/proposal/PublicPortfolioGrid";
 
 const fmt = (v: number) =>
   `$${Number(v || 0).toLocaleString("en-US", {
@@ -382,6 +383,14 @@ export default function PublicProposal() {
               </p>
             </div>
           </Card>
+        )}
+
+        {/* Portfolio — previous works */}
+        {Array.isArray(proposal.portfolio_photo_ids) && proposal.portfolio_photo_ids.length > 0 && (
+          <PublicPortfolioGrid
+            photoIds={proposal.portfolio_photo_ids}
+            primaryColor={brand.primary}
+          />
         )}
 
         {/* Pricing — Tiers or Line Items table */}

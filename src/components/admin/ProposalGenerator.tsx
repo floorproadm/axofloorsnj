@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ServiceCatalogPicker } from '@/components/admin/ServiceCatalogPicker';
+import { PortfolioPhotosSection } from '@/components/admin/proposals/PortfolioPhotosSection';
 import { PUBLIC_SITE_URL } from '@/lib/constants';
 import {
   DndContext,
@@ -967,6 +968,14 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           )}
         </CardContent>
       </Card>
+
+      {/* Portfolio Photos — pulled from Gallery, shown on the public proposal */}
+      {proposal.proposal_id && (
+        <PortfolioPhotosSection
+          proposalId={proposal.proposal_id}
+          projectType={proposal.project_type}
+        />
+      )}
 
       {/* Printable Professional Document */}
       <div

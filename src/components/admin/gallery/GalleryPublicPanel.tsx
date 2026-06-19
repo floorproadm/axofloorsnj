@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, FolderOpen, Star, Eye, ImageIcon } from "lucide-react";
+import { ArrowLeft, FolderOpen, Star, Eye, ImageIcon, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { MediaQuickUpload } from "@/components/admin/gallery/MediaQuickUpload";
 import { FolderHubGrid, type FolderHubItem } from "@/components/admin/gallery/FolderHubGrid";
 import { QuickFolderDialog } from "@/components/admin/gallery/QuickFolderDialog";
+import { GalleryPhotoEditDialog } from "@/components/admin/gallery/GalleryPhotoEditDialog";
 
 interface GalleryProject {
   id: string;
@@ -18,6 +20,9 @@ interface GalleryProject {
   image_url: string;
   is_featured: boolean;
   parent_folder_id: string | null;
+  tag?: string | null;
+  service_category?: string | null;
+  paired_before_id?: string | null;
 }
 
 /**
@@ -29,6 +34,7 @@ export function GalleryPublicPanel() {
   const { toast } = useToast();
   const [activeFolder, setActiveFolder] = useState<FolderHubItem | "unfiled" | null>(null);
   const [uploadFolderId, setUploadFolderId] = useState<string | null>(null);
+  const [editingPhoto, setEditingPhoto] = useState<GalleryProject | null>(null);
 
   // When entering a folder, sync the upload target
   const handleOpenFolder = (folder: FolderHubItem) => {
@@ -61,7 +67,7 @@ export function GalleryPublicPanel() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gallery_projects")
-        .select("id, title, category, location, image_url, is_featured, parent_folder_id")
+        .select("id, title, category, location, image_url, is_featured, parent_folder_id, tag, service_category, paired_before_id")
         .order("display_order", { ascending: true });
       if (error) throw error;
       return (data || []) as GalleryProject[];
@@ -224,9 +230,17 @@ export function GalleryPublicPanel() {
                         <ImageIcon className="w-3 h-3" /> Cover
                       </div>
                     )}
+                    {p.tag && (
+                      <Badge className="absolute bottom-1.5 left-1.5 h-4 text-[9px] bg-white/90 text-black border-0">
+                        {p.tag}
+                      </Badge>
+                    )}
                   </div>
                   <CardContent className="p-2">
                     <p className="text-xs font-semibold truncate">{p.title}</p>
+                    {p.service_category && (
+                      <p className="text-[10px] text-muted-foreground truncate">{p.service_category}</p>
+                    )}
                     <div className="flex items-center justify-between mt-1">
                       <div className="flex items-center gap-2">
                         <button
@@ -245,6 +259,13 @@ export function GalleryPublicPanel() {
                             <ImageIcon className="w-3.5 h-3.5" />
                           </button>
                         )}
+                        <button
+                          onClick={() => setEditingPhoto(p)}
+                          className="text-[11px] text-muted-foreground hover:text-primary"
+                          aria-label="Editar"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                       <button
                         onClick={() => handleDeleteProject(p.id)}
@@ -264,6 +285,13 @@ export function GalleryPublicPanel() {
           open={folderDialogOpen}
           onOpenChange={setFolderDialogOpen}
           onSubmit={handleCreateFolder}
+        />
+
+        <GalleryPhotoEditDialog
+          open={!!editingPhoto}
+          onOpenChange={(v) => !v && setEditingPhoto(null)}
+          photo={editingPhoto}
+          onSaved={() => qc.invalidateQueries({ queryKey: ["gallery-projects"] })}
         />
       </div>
     );
