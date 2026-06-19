@@ -437,6 +437,7 @@ export default function Schedule() {
                 <TabsTrigger value="day" className="text-sm px-5">Day</TabsTrigger>
                 <TabsTrigger value="list" className="text-sm px-5">List</TabsTrigger>
                 <TabsTrigger value="week" className="text-sm px-5">Week</TabsTrigger>
+                <TabsTrigger value="month" className="text-sm px-5">Month</TabsTrigger>
                 <TabsTrigger value="dispatch" className="text-sm px-5">Dispatch</TabsTrigger>
               </TabsList>
             </div>
