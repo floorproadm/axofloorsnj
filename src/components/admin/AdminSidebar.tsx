@@ -27,6 +27,7 @@ import {
   MessageSquare,
   Shield,
   Scan,
+  MapPin,
 } from "lucide-react";
 import { usePlatformAdmin } from "@/hooks/usePlatformAdmin";
 import { Badge } from "@/components/ui/badge";
