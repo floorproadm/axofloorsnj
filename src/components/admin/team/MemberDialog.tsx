@@ -52,7 +52,10 @@ export function MemberDialog({ open, onOpenChange, editing }: Props) {
       setEmail(editing.email || "");
       setPhone(editing.phone || "");
       setRole(editing.role || "technician");
-      setRateMode(editing.employment_type === "hourly" ? "hour" : "day");
+      setRate(String(editing.daily_rate || 0));
+      setColor(editing.color || COLORS[0]);
+      return;
+    }
       setRate(String(editing.daily_rate || 0));
       setColor(editing.color || COLORS[0]);
     } else {
