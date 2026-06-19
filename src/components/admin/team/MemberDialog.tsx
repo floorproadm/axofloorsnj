@@ -68,7 +68,7 @@ export function MemberDialog({ open, onOpenChange, editing }: Props) {
         phone: phone || null,
         role,
         daily_rate: Number(rate) || 0,
-        employment_type: rateMode === "hour" ? "hourly" : "daily",
+        employment_type: "daily",
         is_active_crew: true,
         color,
       };
