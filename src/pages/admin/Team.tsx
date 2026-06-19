@@ -9,8 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
-import { Plus, Download, Clock, Users, DollarSign, Edit2 } from "lucide-react";
+import { Plus, Download, CalendarDays, Users, DollarSign, Edit2 } from "lucide-react";
 import { format, startOfWeek, endOfWeek, parseISO, isWithinInterval, startOfMonth, endOfMonth, addWeeks, subWeeks } from "date-fns";
 import { MemberDialog, ROLE_LABEL, type TeamMember } from "@/components/admin/team/MemberDialog";
 
@@ -23,8 +22,11 @@ const STATUS_BADGE: Record<string, string> = {
   rejected: "bg-red-100 text-red-700 border-red-200",
 };
 
+// Baseline para barra de utilização (diárias por semana). Flooring = 6 dias.
+const WEEK_DAYS_TARGET = 6;
+
 export default function Team() {
-  const [tab, setTab] = useState<"members" | "timesheets">("members");
+  const [tab, setTab] = useState<"members" | "daysheets">("members");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<TeamMember | null>(null);
   const [memberFilter, setMemberFilter] = useState<string>("all");
@@ -61,32 +63,40 @@ export default function Team() {
     },
   });
 
-  // Heuristic: a labor "day" = 8 hours unless pay_mode === 'sqft'
-  const hoursForEntry = (e: any) => (e.pay_mode === "sqft" ? 0 : Number(e.days_worked || 0) * 8);
+  // Flooring: pagamento por diária OU por sqft. Não há horas.
+  const daysForEntry = (e: any) => (e.pay_mode === "sqft" ? 0 : Number(e.days_worked || 0));
+  const sqftForEntry = (e: any) => (e.pay_mode === "sqft" ? Number(e.sqft_worked || 0) : 0);
+  const workLabel = (e: any) =>
+    e.pay_mode === "sqft"
+      ? `${sqftForEntry(e).toLocaleString()} sqft`
+      : `${daysForEntry(e).toFixed(daysForEntry(e) % 1 === 0 ? 0 : 2)} ${daysForEntry(e) === 1 ? "diária" : "diárias"}`;
 
   const metrics = useMemo(() => {
     const active = members.filter((m) => m.is_active_crew).length;
-    const weekHours = laborEntries
+    const weekDays = laborEntries
       .filter((e) => e.work_date && isWithinInterval(parseISO(e.work_date), currentWeekRange))
-      .reduce((s, e) => s + hoursForEntry(e), 0);
+      .reduce((s, e) => s + daysForEntry(e), 0);
+    const weekSqft = laborEntries
+      .filter((e) => e.work_date && isWithinInterval(parseISO(e.work_date), currentWeekRange))
+      .reduce((s, e) => s + sqftForEntry(e), 0);
     const monthLabor = laborEntries
       .filter((e) => e.work_date && isWithinInterval(parseISO(e.work_date), monthRange))
       .reduce((s, e) => s + Number(e.total_cost || 0), 0);
-    return { active, weekHours, monthLabor };
+    return { active, weekDays, weekSqft, monthLabor };
   }, [members, laborEntries]);
 
-  const memberHoursThisWeek = useMemo(() => {
+  const memberDaysThisWeek = useMemo(() => {
     const map = new Map<string, number>();
     laborEntries.forEach((e) => {
       if (!e.crew_member_id) return;
       if (!e.work_date || !isWithinInterval(parseISO(e.work_date), currentWeekRange)) return;
-      map.set(e.crew_member_id, (map.get(e.crew_member_id) || 0) + hoursForEntry(e));
+      map.set(e.crew_member_id, (map.get(e.crew_member_id) || 0) + daysForEntry(e));
     });
     return map;
   }, [laborEntries]);
 
-  // Filtered timesheet rows
-  const tsRows = useMemo(() => {
+  // Filtered daysheet rows
+  const dsRows = useMemo(() => {
     return laborEntries
       .filter((e) => {
         if (!e.work_date) return false;
@@ -99,31 +109,38 @@ export default function Team() {
         memberName:
           members.find((m) => m.id === e.crew_member_id)?.full_name || e.worker_name || "—",
         projectName: e.projects?.customer_name || "—",
-        hours: hoursForEntry(e),
+        days: daysForEntry(e),
+        sqft: sqftForEntry(e),
+        work: workLabel(e),
       }))
       .sort((a, b) => (b.work_date as string).localeCompare(a.work_date));
   }, [laborEntries, members, weekStart, weekEnd, memberFilter]);
 
-  const tsTotalHours = tsRows.reduce((s, r) => s + r.hours, 0);
-  const tsByMember = useMemo(() => {
-    const map = new Map<string, number>();
-    tsRows.forEach((r) => map.set(r.memberName, (map.get(r.memberName) || 0) + r.hours));
+  const dsTotalDays = dsRows.reduce((s, r) => s + r.days, 0);
+  const dsTotalSqft = dsRows.reduce((s, r) => s + r.sqft, 0);
+  const dsByMember = useMemo(() => {
+    const map = new Map<string, { days: number; sqft: number }>();
+    dsRows.forEach((r) => {
+      const cur = map.get(r.memberName) || { days: 0, sqft: 0 };
+      map.set(r.memberName, { days: cur.days + r.days, sqft: cur.sqft + r.sqft });
+    });
     return map;
-  }, [tsRows]);
+  }, [dsRows]);
 
   const exportCsv = () => {
     const lines: string[] = [];
-    lines.push("Date,Member,Project,Hours,Status,Rate,Total");
-    tsRows.forEach((r) => {
+    lines.push("Date,Member,Project,PayMode,Days,Sqft,Rate,Total");
+    dsRows.forEach((r) => {
+      const rate = r.pay_mode === "sqft" ? r.sqft_rate : r.daily_rate;
       lines.push(
-        `${r.work_date},"${r.memberName}","${r.projectName}",${r.hours.toFixed(1)},${r.status || ""},${r.daily_rate || 0},${Number(r.total_cost || 0).toFixed(2)}`
+        `${r.work_date},"${r.memberName}","${r.projectName}",${r.pay_mode || "daily"},${r.days},${r.sqft},${rate || 0},${Number(r.total_cost || 0).toFixed(2)}`
       );
     });
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `timesheets-${format(weekStart, "yyyy-MM-dd")}.csv`;
+    a.download = `daysheets-${format(weekStart, "yyyy-MM-dd")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -135,7 +152,7 @@ export default function Team() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-foreground">Equipe</h1>
-            <p className="text-sm text-muted-foreground">Técnicos, parceiros e registro de horas</p>
+            <p className="text-sm text-muted-foreground">Técnicos, parceiros e registro de diárias / sqft</p>
           </div>
           <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
             <Plus className="w-4 h-4 mr-1" /> Adicionar membro
@@ -146,7 +163,12 @@ export default function Team() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { label: "Membros ativos", value: String(metrics.active), icon: Users, color: "text-primary" },
-            { label: "Horas esta semana", value: `${metrics.weekHours.toFixed(1)}h`, icon: Clock, color: "text-amber-600" },
+            {
+              label: "Trabalho esta semana",
+              value: `${metrics.weekDays.toFixed(metrics.weekDays % 1 === 0 ? 0 : 1)} diárias${metrics.weekSqft > 0 ? ` · ${metrics.weekSqft.toLocaleString()} sqft` : ""}`,
+              icon: CalendarDays,
+              color: "text-amber-600",
+            },
             { label: "Custo de mão de obra (mês)", value: fmt(metrics.monthLabor), icon: DollarSign, color: "text-green-600" },
           ].map((s) => (
             <Card key={s.label} className="shadow-sm">
@@ -171,9 +193,9 @@ export default function Team() {
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
             >Membros</TabsTrigger>
             <TabsTrigger
-              value="timesheets"
+              value="daysheets"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
-            >Timesheets</TabsTrigger>
+            >Daysheets</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -189,12 +211,9 @@ export default function Team() {
             ) : (
               members.map((m) => {
                 const initials = (m.full_name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-                const rateLabel =
-                  m.employment_type === "hourly"
-                    ? `$${Number(m.daily_rate || 0).toFixed(2)}/h`
-                    : `$${Number(m.daily_rate || 0).toFixed(2)}/dia`;
-                const weekHours = memberHoursThisWeek.get(m.id) || 0;
-                const pct = Math.min(100, (weekHours / 40) * 100);
+                const rateLabel = `$${Number(m.daily_rate || 0).toFixed(2)}/diária`;
+                const weekDays = memberDaysThisWeek.get(m.id) || 0;
+                const pct = Math.min(100, (weekDays / WEEK_DAYS_TARGET) * 100);
                 return (
                   <Card key={m.id} className="shadow-sm">
                     <CardContent className="p-4 space-y-3">
@@ -240,8 +259,10 @@ export default function Team() {
 
                       <div>
                         <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-                          <span>Horas esta semana</span>
-                          <span className="font-medium text-foreground">{weekHours.toFixed(1)}h / 40h</span>
+                          <span>Diárias esta semana</span>
+                          <span className="font-medium text-foreground">
+                            {weekDays.toFixed(weekDays % 1 === 0 ? 0 : 1)} / {WEEK_DAYS_TARGET}
+                          </span>
                         </div>
                         <Progress value={pct} className="h-1.5" />
                       </div>
@@ -250,9 +271,9 @@ export default function Team() {
                         variant="outline"
                         size="sm"
                         className="w-full h-8 text-xs"
-                        onClick={() => { setTab("timesheets"); setMemberFilter(m.id); }}
+                        onClick={() => { setTab("daysheets"); setMemberFilter(m.id); }}
                       >
-                        Ver timesheets
+                        Ver daysheets
                       </Button>
                     </CardContent>
                   </Card>
@@ -262,9 +283,12 @@ export default function Team() {
           </div>
         )}
 
-        {/* === TIMESHEETS === */}
-        {tab === "timesheets" && (
+        {/* === DAYSHEETS === */}
+        {tab === "daysheets" && (
           <div className="space-y-3">
+            <p className="text-[11px] text-muted-foreground">
+              Flooring é pago por <strong>diária</strong> ou por <strong>valor fechado por sqft</strong>. Não usamos horas.
+            </p>
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-2 justify-between">
               <div className="flex flex-wrap items-center gap-2">
@@ -299,14 +323,14 @@ export default function Team() {
                   size="sm"
                   onClick={() => window.location.assign("/admin/crews?tab=daysheet")}
                 >
-                  <Plus className="w-4 h-4 mr-1" /> Registrar horas
+                  <Plus className="w-4 h-4 mr-1" /> Registrar daysheet
                 </Button>
               </div>
             </div>
 
             <Card className="shadow-sm">
               <CardContent className="p-0">
-                {tsRows.length === 0 ? (
+                {dsRows.length === 0 ? (
                   <div className="py-10 text-center text-sm text-muted-foreground">
                     Sem registros nesta semana
                   </div>
@@ -318,20 +342,26 @@ export default function Team() {
                           <th className="text-left px-3 py-2 font-medium">Data</th>
                           <th className="text-left px-3 py-2 font-medium">Membro</th>
                           <th className="text-left px-3 py-2 font-medium">Projeto</th>
-                          <th className="text-right px-3 py-2 font-medium">Horas</th>
+                          <th className="text-left px-3 py-2 font-medium">Modo</th>
+                          <th className="text-right px-3 py-2 font-medium">Trabalho</th>
                           <th className="text-right px-3 py-2 font-medium">Custo</th>
                           <th className="text-left px-3 py-2 font-medium">Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {tsRows.map((r) => (
+                        {dsRows.map((r) => (
                           <tr key={r.id} className="border-b border-border last:border-0 even:bg-muted/10">
                             <td className="px-3 py-2 whitespace-nowrap">
                               {format(parseISO(r.work_date), "MMM dd")}
                             </td>
                             <td className="px-3 py-2">{r.memberName}</td>
                             <td className="px-3 py-2 text-muted-foreground">{r.projectName}</td>
-                            <td className="px-3 py-2 text-right tabular-nums">{r.hours.toFixed(1)}h</td>
+                            <td className="px-3 py-2">
+                              <Badge variant="outline" className="text-[10px]">
+                                {r.pay_mode === "sqft" ? "Sqft" : "Diária"}
+                              </Badge>
+                            </td>
+                            <td className="px-3 py-2 text-right tabular-nums">{r.work}</td>
                             <td className="px-3 py-2 text-right tabular-nums">{fmt(Number(r.total_cost || 0))}</td>
                             <td className="px-3 py-2">
                               <Badge variant="outline" className={`text-[10px] ${STATUS_BADGE[r.status] || ""}`}>
@@ -346,10 +376,17 @@ export default function Team() {
                 )}
                 <div className="border-t border-border bg-muted/30 px-3 py-2 text-xs">
                   <div className="flex flex-wrap gap-x-4 gap-y-1 items-center">
-                    <span className="font-semibold">Total: {tsTotalHours.toFixed(1)}h</span>
-                    {Array.from(tsByMember.entries()).map(([name, h]) => (
+                    <span className="font-semibold">
+                      Total: {dsTotalDays.toFixed(dsTotalDays % 1 === 0 ? 0 : 1)} diárias
+                      {dsTotalSqft > 0 && ` · ${dsTotalSqft.toLocaleString()} sqft`}
+                    </span>
+                    {Array.from(dsByMember.entries()).map(([name, v]) => (
                       <span key={name} className="text-muted-foreground">
-                        {name}: <strong className="text-foreground">{h.toFixed(1)}h</strong>
+                        {name}:{" "}
+                        <strong className="text-foreground">
+                          {v.days.toFixed(v.days % 1 === 0 ? 0 : 1)}d
+                          {v.sqft > 0 && ` · ${v.sqft.toLocaleString()} sqft`}
+                        </strong>
                       </span>
                     ))}
                   </div>
