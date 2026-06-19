@@ -1,12 +1,16 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
-import { Send, Star, Mail, MessageSquare, Loader2 } from "lucide-react";
+import { Send, Star, Mail, MessageSquare, Loader2, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -37,6 +41,49 @@ const statusBadge = (s: string) => {
 
 export default function Reputation() {
   const qc = useQueryClient();
+
+  // Auto-send settings
+  const { data: settings } = useQuery({
+    queryKey: ["company-settings-review"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("company_settings")
+        .select("id, review_auto_send_enabled, review_auto_send_delay_days, google_review_url")
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+  });
+
+  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [delayDays, setDelayDays] = useState<number>(3);
+  const [reviewUrl, setReviewUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (settings) {
+      setAutoEnabled(!!settings.review_auto_send_enabled);
+      setDelayDays(settings.review_auto_send_delay_days ?? 3);
+      setReviewUrl(settings.google_review_url ?? "");
+    }
+  }, [settings]);
+
+  const saveSettings = useMutation({
+    mutationFn: async (patch: { review_auto_send_enabled?: boolean; review_auto_send_delay_days?: number; google_review_url?: string }) => {
+      if (!settings?.id) throw new Error("Settings not loaded");
+      const { error } = await supabase
+        .from("company_settings")
+        .update(patch)
+        .eq("id", settings.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Configuração salva");
+      qc.invalidateQueries({ queryKey: ["company-settings-review"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Falha ao salvar"),
+  });
+
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["review-requests"],
@@ -100,6 +147,75 @@ export default function Reputation() {
   return (
     <AdminLayout title="Reputation">
       <div className="space-y-5">
+        {/* Auto-send config */}
+        <Card className="border-primary/20">
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold">Envio Automático de Review</p>
+                  <p className="text-xs text-muted-foreground">Dispara o pedido automaticamente quando o job for concluído.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Switch
+                  checked={autoEnabled}
+                  onCheckedChange={(v) => {
+                    setAutoEnabled(v);
+                    saveSettings.mutate({ review_auto_send_enabled: v });
+                  }}
+                />
+                <Label className="text-xs">{autoEnabled ? "Ativo" : "Inativo"}</Label>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Enviar após X dias do job concluído</Label>
+                <Select
+                  value={String(delayDays)}
+                  onValueChange={(v) => {
+                    const n = Number(v);
+                    setDelayDays(n);
+                    saveSettings.mutate({ review_auto_send_delay_days: n });
+                  }}
+                  disabled={!autoEnabled}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 dia</SelectItem>
+                    <SelectItem value="3">3 dias</SelectItem>
+                    <SelectItem value="7">7 dias</SelectItem>
+                    <SelectItem value="14">14 dias</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Link do Google Review</Label>
+                <div className="flex gap-2">
+                  <Input
+                    className="h-9"
+                    value={reviewUrl}
+                    onChange={(e) => setReviewUrl(e.target.value)}
+                    placeholder="https://g.page/r/.../review"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={saveSettings.isPending || reviewUrl === (settings?.google_review_url ?? "")}
+                    onClick={() => saveSettings.mutate({ google_review_url: reviewUrl })}
+                  >
+                    Salvar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Counters */}
         <div className="grid grid-cols-3 gap-3">
           <Card><CardContent className="p-4">

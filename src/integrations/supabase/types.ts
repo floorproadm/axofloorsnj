@@ -721,6 +721,8 @@ export type Database = {
           proposal_logo_dark_url: string | null
           proposal_logo_light_url: string | null
           referral_commission_percent: number
+          review_auto_send_delay_days: number
+          review_auto_send_enabled: boolean
           secondary_color: string | null
           services_offered: string[] | null
           sidebar_logo_url: string | null
@@ -763,6 +765,8 @@ export type Database = {
           proposal_logo_dark_url?: string | null
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
+          review_auto_send_delay_days?: number
+          review_auto_send_enabled?: boolean
           secondary_color?: string | null
           services_offered?: string[] | null
           sidebar_logo_url?: string | null
@@ -805,6 +809,8 @@ export type Database = {
           proposal_logo_dark_url?: string | null
           proposal_logo_light_url?: string | null
           referral_commission_percent?: number
+          review_auto_send_delay_days?: number
+          review_auto_send_enabled?: boolean
           secondary_color?: string | null
           services_offered?: string[] | null
           sidebar_logo_url?: string | null
@@ -4096,6 +4102,7 @@ export type Database = {
           rating: number | null
           responded_at: string | null
           review_text: string | null
+          scheduled_send_at: string | null
           sent_at: string | null
           status: string
           updated_at: string
@@ -4118,6 +4125,7 @@ export type Database = {
           rating?: number | null
           responded_at?: string | null
           review_text?: string | null
+          scheduled_send_at?: string | null
           sent_at?: string | null
           status?: string
           updated_at?: string
@@ -4140,6 +4148,7 @@ export type Database = {
           rating?: number | null
           responded_at?: string | null
           review_text?: string | null
+          scheduled_send_at?: string | null
           sent_at?: string | null
           status?: string
           updated_at?: string
@@ -4906,6 +4915,7 @@ export type Database = {
         }
         Returns: string
       }
+      dispatch_scheduled_review_requests: { Args: never; Returns: undefined }
       generate_recurring_expenses: { Args: never; Returns: Json }
       get_customer_portal: { Args: { p_token: string }; Returns: Json }
       get_dashboard_metrics: { Args: never; Returns: Json }
