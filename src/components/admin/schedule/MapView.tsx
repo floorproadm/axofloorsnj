@@ -393,7 +393,7 @@ function JobDetailDrawer({
                   </Select>
                 </InfoRow>
                 <InfoRow label="Priority">
-                  <Select value={(project as any).priority || "normal"} onValueChange={(v) => priorityMutation.mutate(v)}>
+                  <Select value={priority} onValueChange={setPriority}>
                     <SelectTrigger className="h-7 text-xs w-[120px]"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="normal" className="text-xs">Normal</SelectItem>
