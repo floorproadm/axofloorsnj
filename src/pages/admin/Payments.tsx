@@ -43,7 +43,7 @@ import { ExpensesTab } from "@/components/admin/payments/ExpensesTab";
 import { PLTab } from "@/components/admin/payments/PLTab";
 import { format, isWithinInterval, parseISO } from "date-fns";
 
-type ActiveTab = "payments" | "invoices" | "pl" | "deposits" | "expenses";
+type ActiveTab = "payments" | "pl" | "deposits" | "expenses";
 
 /* ── Category icons ── */
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -172,10 +172,7 @@ export default function Payments() {
     const invoiceId = searchParams.get("invoice");
     if (invoiceId && invoices.length > 0 && !selectedInvoice) {
       const found = invoices.find((i) => i.id === invoiceId);
-      if (found) {
-        setActiveTab("invoices");
-        setSelectedInvoice(found);
-      }
+      if (found) setSelectedInvoice(found);
     }
     const paymentId = searchParams.get("payment");
     if (paymentId && payments.length > 0 && !selectedPayment) {
@@ -457,101 +454,7 @@ export default function Payments() {
               </>
             )}
           </>
-        ) : (
-          /* ── INVOICES TAB ── */
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Total Billed", value: fmt(invoiceStats.totalBilled), icon: FileText, color: "text-foreground" },
-                { label: "Received", value: fmt(invoiceStats.received), icon: CheckCircle, color: "text-green-600" },
-                { label: "Pending", value: fmt(invoiceStats.pending), icon: Clock, color: "text-amber-600" },
-                { label: "Overdue", value: fmt(invoiceStats.overdue), icon: AlertTriangle, color: "text-destructive" },
-              ].map((s) => (
-                <Card key={s.label}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg bg-muted ${s.color}`}>
-                        <s.icon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">{s.label}</p>
-                        <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <Tabs value={invoiceFilter} onValueChange={setInvoiceFilter}>
-              <TabsList>
-                <TabsTrigger value="all">All ({invoices.length})</TabsTrigger>
-                <TabsTrigger value="draft">Draft</TabsTrigger>
-                <TabsTrigger value="sent">Sent</TabsTrigger>
-                <TabsTrigger value="paid">Paid</TabsTrigger>
-                <TabsTrigger value="overdue">Overdue</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            {invoicesLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
-            ) : filteredInvoices.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <DollarSign className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="text-muted-foreground">No invoices found</p>
-                  <Button variant="outline" className="mt-4" onClick={() => setInvoiceDialogOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" /> Create first invoice
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {filteredInvoices.map((inv) => {
-                  const sc = invoiceStatusConfig[inv.status] || invoiceStatusConfig.draft;
-                  const isViewed = !!inv.viewed_at;
-                  const viewedRecently = isViewed && (Date.now() - new Date(inv.viewed_at!).getTime()) < 5 * 60 * 1000;
-                  return (
-                    <Card
-                      key={inv.id}
-                      className="cursor-pointer hover:border-primary/30 transition-colors"
-                      onClick={() => setSelectedInvoice(inv)}
-                    >
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-foreground">{inv.invoice_number}</p>
-                            {isViewed && (
-                              <span className={cn(
-                                "inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
-                                viewedRecently && "animate-pulse"
-                              )}>
-                                <Eye className="w-3 h-3" />
-                                Viewed
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {inv.projects?.customer_name || "—"} · {inv.projects?.project_type || ""}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4 text-right shrink-0">
-                          <div>
-                            <p className="font-bold text-foreground">{fmt(Number(inv.total_amount || 0))}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Due {format(new Date(inv.due_date), "MMM dd")}
-                            </p>
-                          </div>
-                          <Badge variant={sc.variant}>{sc.label}</Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
+        ) : null}
       </div>
 
       <PaymentActionSheet
