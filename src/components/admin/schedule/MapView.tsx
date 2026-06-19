@@ -166,7 +166,7 @@ export function MapView({ date }: Props) {
   const center: [number, number] = points[0] ?? [40.7357, -74.1724];
 
   return (
-    <div className="relative h-[calc(100dvh-200px)] sm:h-[calc(100vh-260px)] min-h-[420px] w-full overflow-hidden rounded-lg border">
+    <div className="relative isolate z-0 h-[calc(100dvh-200px)] sm:h-[calc(100vh-260px)] min-h-[420px] w-full overflow-hidden rounded-lg border">
       {/* HUD */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[500] pointer-events-none px-2 w-full flex justify-center">
         <div className="flex items-center gap-1.5 rounded-full bg-slate-900/95 backdrop-blur px-2 py-1.5 shadow-xl border border-slate-700 pointer-events-auto">
