@@ -34,6 +34,7 @@ export function GalleryPublicPanel() {
   const { toast } = useToast();
   const [activeFolder, setActiveFolder] = useState<FolderHubItem | "unfiled" | null>(null);
   const [uploadFolderId, setUploadFolderId] = useState<string | null>(null);
+  const [editingPhoto, setEditingPhoto] = useState<GalleryProject | null>(null);
 
   // When entering a folder, sync the upload target
   const handleOpenFolder = (folder: FolderHubItem) => {
