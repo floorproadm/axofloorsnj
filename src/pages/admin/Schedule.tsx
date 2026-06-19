@@ -99,7 +99,7 @@ export default function Schedule() {
     setSearchParams(next, { replace: true });
   };
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"day" | "list" | "week" | "month" | "dispatch" | "map">("day");
+  const [viewMode, setViewMode] = useState<"day" | "list" | "week" | "month">("day");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
