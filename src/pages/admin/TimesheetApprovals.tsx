@@ -71,26 +71,26 @@ export function DaySheetApprovalsContent({ showHeader = true }: { showHeader?: b
 
 
         {/* KPIs */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <Card>
-            <CardContent className="p-4">
-              <p className="text-xs uppercase text-muted-foreground">Pendentes</p>
-              <p className="text-2xl font-bold text-foreground tabular-nums">{entries.length}</p>
+            <CardContent className="p-2.5 sm:p-4">
+              <p className="text-[10px] sm:text-xs uppercase text-muted-foreground leading-tight">Pendentes</p>
+              <p className="text-lg sm:text-2xl font-bold text-foreground tabular-nums mt-0.5">{entries.length}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
-              <p className="text-xs uppercase text-muted-foreground">Mix</p>
-              <p className="text-2xl font-bold text-foreground tabular-nums">
-                {dailyCount}d · {sqftCount}s
+            <CardContent className="p-2.5 sm:p-4">
+              <p className="text-[10px] sm:text-xs uppercase text-muted-foreground leading-tight">Mix</p>
+              <p className="text-lg sm:text-2xl font-bold text-foreground tabular-nums mt-0.5 whitespace-nowrap">
+                {dailyCount}d·{sqftCount}s
               </p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
-              <p className="text-xs uppercase text-muted-foreground">Custo se aprovar</p>
-              <p className="text-2xl font-bold text-foreground tabular-nums">
-                ${totalCost.toFixed(2)}
+            <CardContent className="p-2.5 sm:p-4">
+              <p className="text-[10px] sm:text-xs uppercase text-muted-foreground leading-tight">Custo aprov.</p>
+              <p className="text-lg sm:text-2xl font-bold text-foreground tabular-nums mt-0.5">
+                ${totalCost.toFixed(0)}
               </p>
             </CardContent>
           </Card>
