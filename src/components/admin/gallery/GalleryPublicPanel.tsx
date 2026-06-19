@@ -286,6 +286,13 @@ export function GalleryPublicPanel() {
           onOpenChange={setFolderDialogOpen}
           onSubmit={handleCreateFolder}
         />
+
+        <GalleryPhotoEditDialog
+          open={!!editingPhoto}
+          onOpenChange={(v) => !v && setEditingPhoto(null)}
+          photo={editingPhoto}
+          onSaved={() => qc.invalidateQueries({ queryKey: ["gallery-projects"] })}
+        />
       </div>
     );
   }
