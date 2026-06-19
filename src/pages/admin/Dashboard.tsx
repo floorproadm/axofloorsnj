@@ -459,7 +459,7 @@ export default function Dashboard() {
 
             {/* Faturas em Aberto */}
             <Link
-              to="/admin/payments?tab=invoices&filter=unpaid"
+              to="/admin/invoices?filter=unpaid"
               className="bg-card rounded-xl border border-border shadow-sm p-4 hover:shadow-md hover:border-primary/40 transition-all"
             >
               <div className="flex items-center justify-between mb-1">

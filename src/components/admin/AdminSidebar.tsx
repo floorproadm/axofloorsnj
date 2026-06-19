@@ -28,6 +28,7 @@ import {
   Shield,
   Scan,
   MapPin,
+  Receipt,
 } from "lucide-react";
 import { usePlatformAdmin } from "@/hooks/usePlatformAdmin";
 import { Badge } from "@/components/ui/badge";
@@ -90,7 +91,8 @@ export function AdminSidebar() {
     { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: "Schedule & Appointments", url: "/admin/schedule", icon: CalendarDays },
-    { title: t("sidebar.pagamentos"), url: "/admin/payments", icon: DollarSign },
+    { title: "Financeiro", url: "/admin/payments", icon: DollarSign },
+    { title: "Invoices", url: "/admin/invoices", icon: Receipt },
     { title: "Performance", url: "/admin/performance", icon: BarChart3 },
   ];
 
