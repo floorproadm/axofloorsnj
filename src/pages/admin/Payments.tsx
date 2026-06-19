@@ -24,6 +24,7 @@ import {
   CheckSquare,
   Banknote,
   Repeat,
+  BarChart3,
 } from "lucide-react";
 
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
@@ -41,9 +42,10 @@ import { InvoiceReconciliation } from "@/components/admin/payments/InvoiceReconc
 import { DepositsTab } from "@/components/admin/payments/DepositsTab";
 import { ExpensesTab } from "@/components/admin/payments/ExpensesTab";
 import { PLTab } from "@/components/admin/payments/PLTab";
+import { AnalyticsTab } from "@/components/admin/payments/AnalyticsTab";
 import { format, isWithinInterval, parseISO } from "date-fns";
 
-type ActiveTab = "payments" | "pl" | "deposits" | "expenses";
+type ActiveTab = "payments" | "pl" | "deposits" | "expenses" | "analytics";
 
 /* ── Category icons ── */
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
