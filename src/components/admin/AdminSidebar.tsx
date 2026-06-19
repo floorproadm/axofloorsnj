@@ -28,6 +28,7 @@ import {
   Shield,
   Scan,
   MapPin,
+  Receipt,
 } from "lucide-react";
 import { usePlatformAdmin } from "@/hooks/usePlatformAdmin";
 import { Badge } from "@/components/ui/badge";
