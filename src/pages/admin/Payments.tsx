@@ -203,7 +203,7 @@ export default function Payments() {
   /* ── P&L Download removed – now handled by PLPreviewDialog ── */
 
   return (
-    <AdminLayout title="Payments & Invoices">
+    <AdminLayout title="Financeiro">
       <div className="space-y-4">
         {/* ── Accepted Payment Methods ── */}
         <div className="rounded-lg border border-border bg-card/40 p-3">
@@ -240,13 +240,6 @@ export default function Payments() {
                 Payments
               </TabsTrigger>
               <TabsTrigger
-                value="invoices"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
-              >
-                <Receipt className="w-4 h-4 mr-1.5" />
-                Invoices
-              </TabsTrigger>
-              <TabsTrigger
                 value="pl"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
               >
@@ -269,18 +262,22 @@ export default function Payments() {
               </TabsTrigger>
             </TabsList>
 
-            {(activeTab === "payments" || activeTab === "invoices") && (
+            {(activeTab === "payments" || activeTab === "deposits" || activeTab === "expenses") && (
               <Button
                 className="w-full sm:w-auto"
                 size="sm"
-                onClick={() =>
-                  activeTab === "payments"
-                    ? setActionSheetOpen(true)
-                    : setInvoiceDialogOpen(true)
-                }
+                onClick={() => {
+                  if (activeTab === "payments") setActionSheetOpen(true);
+                  else if (activeTab === "deposits") setPaymentDefaultCategory("received"), setPaymentDialogOpen(true);
+                  else if (activeTab === "expenses") setPaymentDefaultCategory("material"), setPaymentDialogOpen(true);
+                }}
               >
                 <Plus className="w-4 h-4 mr-1" />
-                {activeTab === "payments" ? "New Payment" : "New Invoice"}
+                {activeTab === "payments"
+                  ? "New Payment"
+                  : activeTab === "deposits"
+                  ? "Record Deposit"
+                  : "Add Expense"}
               </Button>
             )}
           </div>
