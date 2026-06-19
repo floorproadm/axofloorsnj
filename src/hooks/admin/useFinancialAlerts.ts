@@ -67,7 +67,7 @@ export function useFinancialAlerts() {
           label: `Fatura ${inv.invoice_number || "#"} vencida +14d — ${
             customerMap.get(inv.customer_id) || "Cliente"
           }`,
-          link: `/admin/payments?invoice=${inv.id}`,
+          link: `/admin/invoices?invoice=${inv.id}`,
           entityId: inv.id,
         });
       });
