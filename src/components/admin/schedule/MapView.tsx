@@ -207,16 +207,16 @@ export function MapView({ date }: Props) {
       </div>
 
       {/* Bottom bar — Legend */}
-      <div className="flex items-center justify-center px-3 py-2 bg-slate-900/95 backdrop-blur border-t border-slate-700 shrink-0 shadow-xl">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-slate-900/80 backdrop-blur px-3 py-1.5 border border-slate-700 shadow-lg">
+      <div className="flex items-center justify-center px-2 sm:px-3 py-1 sm:py-2 bg-slate-900/95 backdrop-blur border-t border-slate-700 shrink-0 shadow-xl">
+        <div className="flex items-center gap-x-1.5 sm:gap-x-2 gap-y-0.5 rounded-md bg-slate-900/80 backdrop-blur px-2 sm:px-3 py-1 sm:py-1.5 border border-slate-700 shadow-lg overflow-x-auto max-w-full">
           {[
             ["#3b82f6", "Scheduled"],
             ["#f59e0b", "In Progress"],
             ["#16a34a", "Done"],
             ["#a855f7", "Awaiting $"],
           ].map(([c, l]) => (
-            <span key={l} className="flex items-center gap-1 text-[11px] text-slate-100 px-1 py-0.5 whitespace-nowrap">
-              <span className="w-2 h-2 rounded-full" style={{ background: c }} />{l}
+            <span key={l} className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-100 px-0.5 sm:px-1 py-0.5 whitespace-nowrap shrink-0">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0" style={{ background: c }} />{l}
             </span>
           ))}
         </div>
