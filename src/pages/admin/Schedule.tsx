@@ -39,6 +39,7 @@ import { DayNoteBar, DayNoteStrip } from "@/components/admin/schedule/DayNoteBar
 import { useDayNotes } from "@/hooks/useDayNotes";
 import { ExecutionPanel, ExecutionBadge } from "@/components/admin/schedule/ExecutionPanel";
 import { DispatchView } from "@/components/admin/schedule/DispatchView";
+import { MonthView } from "@/components/admin/schedule/MonthView";
 
 
 type Appointment = Tables<"appointments">;
@@ -97,7 +98,7 @@ export default function Schedule() {
     setSearchParams(next, { replace: true });
   };
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"day" | "list" | "week" | "dispatch">("day");
+  const [viewMode, setViewMode] = useState<"day" | "list" | "week" | "month" | "dispatch">("day");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
@@ -436,6 +437,7 @@ export default function Schedule() {
                 <TabsTrigger value="day" className="text-sm px-5">Day</TabsTrigger>
                 <TabsTrigger value="list" className="text-sm px-5">List</TabsTrigger>
                 <TabsTrigger value="week" className="text-sm px-5">Week</TabsTrigger>
+                <TabsTrigger value="month" className="text-sm px-5">Month</TabsTrigger>
                 <TabsTrigger value="dispatch" className="text-sm px-5">Dispatch</TabsTrigger>
               </TabsList>
             </div>
@@ -458,6 +460,12 @@ export default function Schedule() {
             </>
           ) : viewMode === "dispatch" ? (
             <DispatchView date={currentDate} />
+          ) : viewMode === "month" ? (
+            <MonthView
+              currentDate={currentDate}
+              onChangeMonth={setCurrentDate}
+              onCreateAt={(d) => { setCurrentDate(d); openNew(); }}
+            />
           ) : (
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} weekStart={weekStart} weekEnd={weekEnd} />
           )}
