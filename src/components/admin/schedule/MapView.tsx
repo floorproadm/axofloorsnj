@@ -145,15 +145,6 @@ export function MapView({ date }: Props) {
 
   const todayCount = jobs.filter((j) => j.start_date === dateStr).length;
   const openCount = jobs.filter((j) => !["completed", "paid", "cancelled"].includes(j.project_status)).length;
-  const techsInField = useMemo(() => {
-    const set = new Set<string>();
-    jobs.forEach((j) => {
-      if (j.project_status !== "in_progress") return;
-      if (j.team_lead) set.add(j.team_lead);
-      (j.team_members || []).forEach((m) => set.add(m));
-    });
-    return Array.from(set);
-  }, [jobs]);
 
   const points: [number, number][] = useMemo(() =>
     jobs.flatMap((j) => {
