@@ -33,6 +33,7 @@ import AdminCatalog from './pages/admin/Catalog';
 import AdminHelp from './pages/admin/Help';
 import AdminPartners from './pages/admin/Partners';
 import AdminPayments from './pages/admin/Payments';
+import AdminInvoices from './pages/admin/Invoices';
 import AdminAutomations from './pages/admin/Automations';
 import WeeklyReview from './pages/admin/WeeklyReview';
 import LaborPayroll from './pages/admin/LaborPayroll';
@@ -145,6 +146,7 @@ const App = () => {
             <Route path="/admin/customers" element={<ProtectedRoute><AdminCustomers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute><AdminCustomerProfile /></ProtectedRoute>} />
             <Route path="/admin/payments" element={<ProtectedRoute><AdminPayments /></ProtectedRoute>} />
+            <Route path="/admin/invoices" element={<ProtectedRoute><AdminInvoices /></ProtectedRoute>} />
             <Route path="/admin/automations" element={<ProtectedRoute><AdminAutomations /></ProtectedRoute>} />
             <Route path="/admin/weekly-review" element={<ProtectedRoute><WeeklyReview /></ProtectedRoute>} />
             <Route path="/admin/labor-payroll" element={<ProtectedRoute><LaborPayroll /></ProtectedRoute>} />
