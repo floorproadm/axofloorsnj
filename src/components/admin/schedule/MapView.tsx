@@ -575,18 +575,18 @@ export function JobDetailDrawer({
             </div>
 
             {/* Footer */}
-            <div className="border-t p-2 flex gap-1.5 bg-card">
-              <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs"
+            <div className="border-t p-2 flex gap-1.5 bg-card pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+              <Button variant="outline" className="flex-1 gap-1.5 text-xs h-10"
                 onClick={() => navigate(`/admin/projects/${project.id}?tab=invoices`)}>
-                <Receipt className="w-3.5 h-3.5" />Invoice
+                <Receipt className="w-4 h-4" />Invoice
               </Button>
-              <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-xs"
+              <Button variant="outline" className="flex-1 gap-1.5 text-xs h-10"
                 onClick={() => statusMutation.mutate("in_progress")}>
-                <PlayCircle className="w-3.5 h-3.5" />Start
+                <PlayCircle className="w-4 h-4" />Start
               </Button>
-              <Button size="sm" className="flex-1 gap-1.5 text-xs"
+              <Button className="flex-1 gap-1.5 text-xs h-10"
                 onClick={() => statusMutation.mutate("completed")}>
-                <CheckCircle className="w-3.5 h-3.5" />Complete
+                <CheckCircle className="w-4 h-4" />Complete
               </Button>
             </div>
           </>
