@@ -259,6 +259,13 @@ export default function Payments() {
                 <Package className="w-4 h-4 mr-1.5" />
                 Expenses
               </TabsTrigger>
+              <TabsTrigger
+                value="analytics"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <BarChart3 className="w-4 h-4 mr-1.5" />
+                Analytics
+              </TabsTrigger>
             </TabsList>
 
             {(activeTab === "payments" || activeTab === "deposits" || activeTab === "expenses") && (
@@ -288,6 +295,8 @@ export default function Payments() {
           <DepositsTab />
         ) : activeTab === "expenses" ? (
           <ExpensesTab />
+        ) : activeTab === "analytics" ? (
+          <AnalyticsTab />
         ) : activeTab === "payments" ? (
           <>
             {/* Period Selector + Download */}
