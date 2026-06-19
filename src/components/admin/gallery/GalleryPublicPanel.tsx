@@ -230,9 +230,17 @@ export function GalleryPublicPanel() {
                         <ImageIcon className="w-3 h-3" /> Cover
                       </div>
                     )}
+                    {p.tag && (
+                      <Badge className="absolute bottom-1.5 left-1.5 h-4 text-[9px] bg-white/90 text-black border-0">
+                        {p.tag}
+                      </Badge>
+                    )}
                   </div>
                   <CardContent className="p-2">
                     <p className="text-xs font-semibold truncate">{p.title}</p>
+                    {p.service_category && (
+                      <p className="text-[10px] text-muted-foreground truncate">{p.service_category}</p>
+                    )}
                     <div className="flex items-center justify-between mt-1">
                       <div className="flex items-center gap-2">
                         <button
@@ -251,6 +259,13 @@ export function GalleryPublicPanel() {
                             <ImageIcon className="w-3.5 h-3.5" />
                           </button>
                         )}
+                        <button
+                          onClick={() => setEditingPhoto(p)}
+                          className="text-[11px] text-muted-foreground hover:text-primary"
+                          aria-label="Editar"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                       <button
                         onClick={() => handleDeleteProject(p.id)}
