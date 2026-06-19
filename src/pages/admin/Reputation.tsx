@@ -42,6 +42,49 @@ const statusBadge = (s: string) => {
 export default function Reputation() {
   const qc = useQueryClient();
 
+  // Auto-send settings
+  const { data: settings } = useQuery({
+    queryKey: ["company-settings-review"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("company_settings")
+        .select("id, review_auto_send_enabled, review_auto_send_delay_days, google_review_url")
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+  });
+
+  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [delayDays, setDelayDays] = useState<number>(3);
+  const [reviewUrl, setReviewUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (settings) {
+      setAutoEnabled(!!settings.review_auto_send_enabled);
+      setDelayDays(settings.review_auto_send_delay_days ?? 3);
+      setReviewUrl(settings.google_review_url ?? "");
+    }
+  }, [settings]);
+
+  const saveSettings = useMutation({
+    mutationFn: async (patch: { review_auto_send_enabled?: boolean; review_auto_send_delay_days?: number; google_review_url?: string }) => {
+      if (!settings?.id) throw new Error("Settings not loaded");
+      const { error } = await supabase
+        .from("company_settings")
+        .update(patch)
+        .eq("id", settings.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Configuração salva");
+      qc.invalidateQueries({ queryKey: ["company-settings-review"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Falha ao salvar"),
+  });
+
+
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["review-requests"],
     queryFn: async () => {
