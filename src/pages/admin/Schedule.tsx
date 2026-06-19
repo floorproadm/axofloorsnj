@@ -439,8 +439,6 @@ export default function Schedule() {
                 <TabsTrigger value="list" className="text-sm px-4 sm:px-5 shrink-0">List</TabsTrigger>
                 <TabsTrigger value="week" className="text-sm px-4 sm:px-5 shrink-0">Week</TabsTrigger>
                 <TabsTrigger value="month" className="text-sm px-4 sm:px-5 shrink-0">Month</TabsTrigger>
-                <TabsTrigger value="dispatch" className="text-sm px-4 sm:px-5 shrink-0">Dispatch</TabsTrigger>
-                <TabsTrigger value="map" className="text-sm px-4 sm:px-5 shrink-0">Map</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>
@@ -460,10 +458,6 @@ export default function Schedule() {
               <DayNoteBar date={currentDate} />
               <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} defaultWindow={defaultArrivalWindow} />
             </>
-          ) : viewMode === "dispatch" ? (
-            <DispatchView date={currentDate} onChangeDate={setCurrentDate} />
-          ) : viewMode === "map" ? (
-            <div className="p-3"><MapView date={currentDate} /></div>
           ) : viewMode === "month" ? (
             <MonthView
               currentDate={currentDate}
