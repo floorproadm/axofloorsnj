@@ -204,27 +204,25 @@ export default function CrewsVans() {
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
-              <TabsTrigger value="fleet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Truck className="w-4 h-4" /> Frota
-              </TabsTrigger>
-              <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Users className="w-4 h-4" /> Equipe
-              </TabsTrigger>
-              <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <CalendarDays className="w-4 h-4" /> Dispatch
-              </TabsTrigger>
-
-              <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Hammer className="w-4 h-4" /> Pagamentos
-              </TabsTrigger>
-              <TabsTrigger value="daysheet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1 gap-1.5 text-sm">
-                <Clock className="w-4 h-4" /> DaySheet
-              </TabsTrigger>
-
-
-
-            </TabsList>
+            <div className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-none">
+              <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-max min-w-full px-4 sm:px-0 flex-nowrap">
+                <TabsTrigger value="fleet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 sm:px-4 pb-2 pt-1 gap-1.5 text-sm whitespace-nowrap">
+                  <Truck className="w-4 h-4" /> Frota
+                </TabsTrigger>
+                <TabsTrigger value="crew" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 sm:px-4 pb-2 pt-1 gap-1.5 text-sm whitespace-nowrap">
+                  <Users className="w-4 h-4" /> Equipe
+                </TabsTrigger>
+                <TabsTrigger value="schedule" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 sm:px-4 pb-2 pt-1 gap-1.5 text-sm whitespace-nowrap">
+                  <CalendarDays className="w-4 h-4" /> Dispatch
+                </TabsTrigger>
+                <TabsTrigger value="payroll" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 sm:px-4 pb-2 pt-1 gap-1.5 text-sm whitespace-nowrap">
+                  <Hammer className="w-4 h-4" /> Pagamentos
+                </TabsTrigger>
+                <TabsTrigger value="daysheet" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 sm:px-4 pb-2 pt-1 gap-1.5 text-sm whitespace-nowrap">
+                  <Clock className="w-4 h-4" /> DaySheet
+                </TabsTrigger>
+              </TabsList>
+            </div>
             {tab === "crew" && (
               <Button size="sm" className="w-full sm:w-auto gap-1.5" onClick={() => setShowNewCrew(true)}>
                 <Plus className="w-4 h-4" /> Adicionar Membro
