@@ -125,7 +125,7 @@ export function MapView({ date }: Props) {
     queryKey: ["map-jobs", dateStr],
     queryFn: async () => {
       const { data } = await supabase.from("projects")
-        .select("id, customer_name, address, city, project_status, start_date, team_lead, team_members, customer_email, customer_phone, priority, project_type")
+        .select("id, customer_name, address, city, project_status, start_date, team_lead, team_members, customer_email, customer_phone, project_type")
         .or(`start_date.eq.${dateStr},project_status.eq.in_progress`);
       return (data || []) as JobRow[];
     },
@@ -316,13 +316,8 @@ function JobDetailDrawer({
     },
   });
 
-  const priorityMutation = useMutation({
-    mutationFn: async (priority: string) => {
-      const { error } = await supabase.from("projects").update({ priority } as any).eq("id", projectId!);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["map-project", projectId] }),
-  });
+  const [priority, setPriority] = useState<string>("normal");
+  useEffect(() => { setPriority((project as any)?.priority || "normal"); }, [project?.id]);
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
