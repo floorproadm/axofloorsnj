@@ -27,7 +27,7 @@ import ShareBeforeAfter from './pages/ShareBeforeAfter';
 import ProjectDocuments from './pages/admin/ProjectDocuments';
 import MeasurementsManager from './pages/admin/MeasurementsManager';
 import AdminSchedule from './pages/admin/Schedule';
-import AdminPerformance from './pages/admin/Performance';
+import AdminAnalytics from './pages/admin/Analytics';
 import AdminReputation from './pages/admin/Reputation';
 import AdminCatalog from './pages/admin/Catalog';
 import AdminHelp from './pages/admin/Help';
@@ -138,7 +138,8 @@ const App = () => {
             <Route path="/admin/jobs/:projectId/documents" element={<ProtectedRoute><ProjectDocuments /></ProtectedRoute>} />
             <Route path="/admin/measurements" element={<ProtectedRoute><MeasurementsManager /></ProtectedRoute>} />
             <Route path="/admin/schedule" element={<ProtectedRoute><AdminSchedule /></ProtectedRoute>} />
-            <Route path="/admin/performance" element={<ProtectedRoute><AdminPerformance /></ProtectedRoute>} />
+            <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
+            <Route path="/admin/performance" element={<Navigate to="/admin/analytics" replace />} />
             <Route path="/admin/reputation" element={<ProtectedRoute><AdminReputation /></ProtectedRoute>} />
             <Route path="/admin/catalog" element={<ProtectedRoute><AdminCatalog /></ProtectedRoute>} />
             <Route path="/admin/help" element={<ProtectedRoute><AdminHelp /></ProtectedRoute>} />
