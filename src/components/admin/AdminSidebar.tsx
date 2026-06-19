@@ -93,7 +93,6 @@ export function AdminSidebar() {
     { title: "Schedule & Appointments", url: "/admin/schedule", icon: CalendarDays },
     { title: "Financeiro", url: "/admin/payments", icon: DollarSign },
     { title: "Invoices", url: "/admin/invoices", icon: Receipt },
-    { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
   ];
 
   const toolsItems = [

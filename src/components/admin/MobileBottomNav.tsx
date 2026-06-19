@@ -85,7 +85,7 @@ export function MobileBottomNav() {
     { label: "Projects", icon: Briefcase, path: "/admin/projects" },
     { label: null, icon: Plus, path: null },
     { label: "Gallery", icon: Camera, path: "/admin/gallery" },
-    { label: "Analytics", icon: BarChart3, path: "/admin/analytics" },
+    { label: "Invoices", icon: Receipt, path: "/admin/invoices" },
   ];
 
   const quickActions = [
