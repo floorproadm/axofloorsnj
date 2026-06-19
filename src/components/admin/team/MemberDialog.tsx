@@ -56,12 +56,8 @@ export function MemberDialog({ open, onOpenChange, editing }: Props) {
       setColor(editing.color || COLORS[0]);
       return;
     }
-      setRate(String(editing.daily_rate || 0));
-      setColor(editing.color || COLORS[0]);
-    } else {
-      setFullName(""); setEmail(""); setPhone("");
-      setRole("technician"); setRateMode("day"); setRate("0"); setColor(COLORS[0]);
-    }
+    setFullName(""); setEmail(""); setPhone("");
+    setRole("technician"); setRate("0"); setColor(COLORS[0]);
   }, [open, editing]);
 
   const save = useMutation({
