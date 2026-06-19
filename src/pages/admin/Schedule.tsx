@@ -460,6 +460,12 @@ export default function Schedule() {
             </>
           ) : viewMode === "dispatch" ? (
             <DispatchView date={currentDate} />
+          ) : viewMode === "month" ? (
+            <MonthView
+              currentDate={currentDate}
+              onChangeMonth={setCurrentDate}
+              onCreateAt={(d) => { setCurrentDate(d); openNew(); }}
+            />
           ) : (
             <WeekView appointments={appointments} weekDays={weekDays} currentDate={currentDate} onEdit={openEdit} onSelectDay={setCurrentDate} weekStart={weekStart} weekEnd={weekEnd} />
           )}
