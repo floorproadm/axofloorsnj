@@ -147,6 +147,75 @@ export default function Reputation() {
   return (
     <AdminLayout title="Reputation">
       <div className="space-y-5">
+        {/* Auto-send config */}
+        <Card className="border-primary/20">
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold">Envio Automático de Review</p>
+                  <p className="text-xs text-muted-foreground">Dispara o pedido automaticamente quando o job for concluído.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Switch
+                  checked={autoEnabled}
+                  onCheckedChange={(v) => {
+                    setAutoEnabled(v);
+                    saveSettings.mutate({ review_auto_send_enabled: v });
+                  }}
+                />
+                <Label className="text-xs">{autoEnabled ? "Ativo" : "Inativo"}</Label>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Enviar após X dias do job concluído</Label>
+                <Select
+                  value={String(delayDays)}
+                  onValueChange={(v) => {
+                    const n = Number(v);
+                    setDelayDays(n);
+                    saveSettings.mutate({ review_auto_send_delay_days: n });
+                  }}
+                  disabled={!autoEnabled}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 dia</SelectItem>
+                    <SelectItem value="3">3 dias</SelectItem>
+                    <SelectItem value="7">7 dias</SelectItem>
+                    <SelectItem value="14">14 dias</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Link do Google Review</Label>
+                <div className="flex gap-2">
+                  <Input
+                    className="h-9"
+                    value={reviewUrl}
+                    onChange={(e) => setReviewUrl(e.target.value)}
+                    placeholder="https://g.page/r/.../review"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={saveSettings.isPending || reviewUrl === (settings?.google_review_url ?? "")}
+                    onClick={() => saveSettings.mutate({ google_review_url: reviewUrl })}
+                  >
+                    Salvar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Counters */}
         <div className="grid grid-cols-3 gap-3">
           <Card><CardContent className="p-4">
