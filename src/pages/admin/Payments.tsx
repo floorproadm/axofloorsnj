@@ -208,7 +208,8 @@ export default function Payments() {
         {/* ── Main Tabs ── */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
+            <div className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-none">
+              <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-max min-w-full px-4 sm:px-0 flex">
               <TabsTrigger
                 value="payments"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
@@ -245,6 +246,7 @@ export default function Payments() {
                 Analytics
               </TabsTrigger>
             </TabsList>
+            </div>
 
             {(activeTab === "payments" || activeTab === "deposits" || activeTab === "expenses") && (
               <Button
