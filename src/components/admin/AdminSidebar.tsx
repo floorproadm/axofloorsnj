@@ -92,13 +92,13 @@ export function AdminSidebar() {
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: "Schedule & Appointments", url: "/admin/schedule", icon: CalendarDays },
     { title: "Financeiro", url: "/admin/payments", icon: DollarSign },
-    { title: "Invoices", url: "/admin/invoices", icon: Receipt },
   ];
 
   const toolsItems = [
     { title: t("sidebar.captacao"), url: "/admin/intake", icon: Inbox },
     { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
     { title: "Visualizer", url: "/admin/visualizer", icon: Scan },
+    { title: "Invoices", url: "/admin/invoices", icon: Receipt },
     { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
     { title: "Reputation", url: "/admin/reputation", icon: Star },
   ];
