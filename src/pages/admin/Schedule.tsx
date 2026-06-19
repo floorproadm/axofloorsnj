@@ -38,9 +38,7 @@ import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { DayNoteBar, DayNoteStrip } from "@/components/admin/schedule/DayNoteBar";
 import { useDayNotes } from "@/hooks/useDayNotes";
 import { ExecutionPanel, ExecutionBadge } from "@/components/admin/schedule/ExecutionPanel";
-import { DispatchView } from "@/components/admin/schedule/DispatchView";
 import { MonthView } from "@/components/admin/schedule/MonthView";
-import { MapView } from "@/components/admin/schedule/MapView";
 
 
 type Appointment = Tables<"appointments">;
