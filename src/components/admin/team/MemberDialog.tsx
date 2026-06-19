@@ -117,28 +117,20 @@ export function MemberDialog({ open, onOpenChange, editing }: Props) {
             </Select>
           </div>
           <div>
-            <Label>Taxa de pagamento *</Label>
-            <div className="flex gap-2 mt-1">
-              <div className="flex bg-muted rounded-md p-0.5">
-                {(["hour", "day"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setRateMode(m)}
-                    className={`px-3 py-1 text-xs rounded ${
-                      rateMode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    ${m === "hour" ? "/hora" : "/dia"}
-                  </button>
-                ))}
-              </div>
+            <Label>Diária ($/dia) *</Label>
+            <div className="flex gap-2 mt-1 items-center">
+              <span className="inline-flex items-center px-3 h-9 text-xs rounded-md bg-primary text-primary-foreground font-medium">
+                $/diária
+              </span>
               <Input
                 type="number" min={0} step="0.01"
                 value={rate} onChange={(e) => setRate(e.target.value)}
                 className="flex-1"
               />
             </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Em flooring o pagamento é por diária. Pagamento por sqft é definido por projeto.
+            </p>
           </div>
           <div>
             <Label>Cor de identificação</Label>
