@@ -246,6 +246,7 @@ export default function Payments() {
                 Analytics
               </TabsTrigger>
             </TabsList>
+            </div>
 
             {(activeTab === "payments" || activeTab === "deposits" || activeTab === "expenses") && (
               <Button
