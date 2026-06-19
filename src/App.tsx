@@ -27,6 +27,7 @@ import ShareBeforeAfter from './pages/ShareBeforeAfter';
 import ProjectDocuments from './pages/admin/ProjectDocuments';
 import MeasurementsManager from './pages/admin/MeasurementsManager';
 import AdminSchedule from './pages/admin/Schedule';
+import AdminDispatch from './pages/admin/Dispatch';
 import AdminAnalytics from './pages/admin/Analytics';
 import AdminReputation from './pages/admin/Reputation';
 import AdminCatalog from './pages/admin/Catalog';
