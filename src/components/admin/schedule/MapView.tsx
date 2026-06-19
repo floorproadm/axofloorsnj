@@ -168,8 +168,8 @@ export function MapView({ date }: Props) {
   return (
     <div className="flex flex-col h-[calc(100dvh-180px)] sm:h-[calc(100vh-240px)] min-h-[420px] w-full overflow-hidden rounded-lg border border-slate-700">
       {/* Top bar — HUD */}
-      <div className="flex items-center justify-between px-3 py-2 bg-slate-900/95 border-b border-slate-700 shrink-0">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-center px-3 py-2 bg-slate-900/95 backdrop-blur border-b border-slate-700 shrink-0 shadow-xl">
+        <div className="flex items-center gap-1.5 rounded-full bg-slate-900/80 backdrop-blur px-3 py-1.5 border border-slate-700 shadow-lg">
           <Pill icon={<Calendar className="w-3.5 h-3.5" />} label={`${todayCount} today`} />
           <Pill icon={<Briefcase className="w-3.5 h-3.5" />} label={`${openCount} open`} />
         </div>
@@ -207,17 +207,19 @@ export function MapView({ date }: Props) {
       </div>
 
       {/* Bottom bar — Legend */}
-      <div className="flex items-center gap-x-2 gap-y-1 flex-wrap px-3 py-2 bg-slate-900/95 border-t border-slate-700 shrink-0">
-        {[
-          ["#3b82f6", "Scheduled"],
-          ["#f59e0b", "In Progress"],
-          ["#16a34a", "Done"],
-          ["#a855f7", "Awaiting $"],
-        ].map(([c, l]) => (
-          <span key={l} className="flex items-center gap-1 text-[11px] text-slate-100 whitespace-nowrap">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />{l}
-          </span>
-        ))}
+      <div className="flex items-center justify-center px-3 py-2 bg-slate-900/95 backdrop-blur border-t border-slate-700 shrink-0 shadow-xl">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-slate-900/80 backdrop-blur px-3 py-1.5 border border-slate-700 shadow-lg">
+          {[
+            ["#3b82f6", "Scheduled"],
+            ["#f59e0b", "In Progress"],
+            ["#16a34a", "Done"],
+            ["#a855f7", "Awaiting $"],
+          ].map(([c, l]) => (
+            <span key={l} className="flex items-center gap-1 text-[11px] text-slate-100 px-1 py-0.5 whitespace-nowrap">
+              <span className="w-2 h-2 rounded-full" style={{ background: c }} />{l}
+            </span>
+          ))}
+        </div>
       </div>
 
       <JobDetailDrawer projectId={selectedId} onClose={() => setSelectedId(null)} techs={techs} />
