@@ -40,6 +40,7 @@ import { useDayNotes } from "@/hooks/useDayNotes";
 import { ExecutionPanel, ExecutionBadge } from "@/components/admin/schedule/ExecutionPanel";
 import { DispatchView } from "@/components/admin/schedule/DispatchView";
 import { MonthView } from "@/components/admin/schedule/MonthView";
+import { MapView } from "@/components/admin/schedule/MapView";
 
 
 type Appointment = Tables<"appointments">;
@@ -98,7 +99,7 @@ export default function Schedule() {
     setSearchParams(next, { replace: true });
   };
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"day" | "list" | "week" | "month" | "dispatch">("day");
+  const [viewMode, setViewMode] = useState<"day" | "list" | "week" | "month" | "dispatch" | "map">("day");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
@@ -439,6 +440,7 @@ export default function Schedule() {
                 <TabsTrigger value="week" className="text-sm px-5">Week</TabsTrigger>
                 <TabsTrigger value="month" className="text-sm px-5">Month</TabsTrigger>
                 <TabsTrigger value="dispatch" className="text-sm px-5">Dispatch</TabsTrigger>
+                <TabsTrigger value="map" className="text-sm px-5">Map</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>
@@ -460,6 +462,8 @@ export default function Schedule() {
             </>
           ) : viewMode === "dispatch" ? (
             <DispatchView date={currentDate} />
+          ) : viewMode === "map" ? (
+            <div className="p-3"><MapView date={currentDate} /></div>
           ) : viewMode === "month" ? (
             <MonthView
               currentDate={currentDate}
