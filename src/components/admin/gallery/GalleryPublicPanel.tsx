@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, FolderOpen, Star, Eye, ImageIcon } from "lucide-react";
+import { ArrowLeft, FolderOpen, Star, Eye, ImageIcon, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { AXO_ORG_ID } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { MediaQuickUpload } from "@/components/admin/gallery/MediaQuickUpload";
 import { FolderHubGrid, type FolderHubItem } from "@/components/admin/gallery/FolderHubGrid";
 import { QuickFolderDialog } from "@/components/admin/gallery/QuickFolderDialog";
+import { GalleryPhotoEditDialog } from "@/components/admin/gallery/GalleryPhotoEditDialog";
 
 interface GalleryProject {
   id: string;
