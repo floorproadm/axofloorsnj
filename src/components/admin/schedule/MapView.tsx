@@ -228,7 +228,7 @@ function Pill({ icon, label }: { icon: React.ReactNode; label: string }) {
 
 /* ============================ Drawer ============================ */
 
-function JobDetailDrawer({
+export function JobDetailDrawer({
   projectId, onClose, techs,
 }: { projectId: string | null; onClose: () => void; techs: Tech[] }) {
   const open = !!projectId;
