@@ -461,7 +461,7 @@ export default function Schedule() {
               <ListView appointments={todayAppointments} onEdit={openEdit} date={currentDate} defaultWindow={defaultArrivalWindow} />
             </>
           ) : viewMode === "dispatch" ? (
-            <DispatchView date={currentDate} />
+            <DispatchView date={currentDate} onChangeDate={setCurrentDate} />
           ) : viewMode === "map" ? (
             <div className="p-3"><MapView date={currentDate} /></div>
           ) : viewMode === "month" ? (
