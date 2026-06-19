@@ -24,6 +24,7 @@ import {
   CheckSquare,
   Banknote,
   Repeat,
+  BarChart3,
 } from "lucide-react";
 
 import { useInvoices, type Invoice } from "@/hooks/useInvoices";
@@ -41,9 +42,10 @@ import { InvoiceReconciliation } from "@/components/admin/payments/InvoiceReconc
 import { DepositsTab } from "@/components/admin/payments/DepositsTab";
 import { ExpensesTab } from "@/components/admin/payments/ExpensesTab";
 import { PLTab } from "@/components/admin/payments/PLTab";
+import { AnalyticsTab } from "@/components/admin/payments/AnalyticsTab";
 import { format, isWithinInterval, parseISO } from "date-fns";
 
-type ActiveTab = "payments" | "pl" | "deposits" | "expenses";
+type ActiveTab = "payments" | "pl" | "deposits" | "expenses" | "analytics";
 
 /* ── Category icons ── */
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -257,6 +259,13 @@ export default function Payments() {
                 <Package className="w-4 h-4 mr-1.5" />
                 Expenses
               </TabsTrigger>
+              <TabsTrigger
+                value="analytics"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >
+                <BarChart3 className="w-4 h-4 mr-1.5" />
+                Analytics
+              </TabsTrigger>
             </TabsList>
 
             {(activeTab === "payments" || activeTab === "deposits" || activeTab === "expenses") && (
@@ -286,6 +295,8 @@ export default function Payments() {
           <DepositsTab />
         ) : activeTab === "expenses" ? (
           <ExpensesTab />
+        ) : activeTab === "analytics" ? (
+          <AnalyticsTab />
         ) : activeTab === "payments" ? (
           <>
             {/* Period Selector + Download */}
