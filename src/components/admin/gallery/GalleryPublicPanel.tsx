@@ -67,7 +67,7 @@ export function GalleryPublicPanel() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gallery_projects")
-        .select("id, title, category, location, image_url, is_featured, parent_folder_id")
+        .select("id, title, category, location, image_url, is_featured, parent_folder_id, tag, service_category, paired_before_id")
         .order("display_order", { ascending: true });
       if (error) throw error;
       return (data || []) as GalleryProject[];
