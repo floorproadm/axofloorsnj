@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -160,6 +161,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
     return () => { cancelled = true; };
   }, [authLoading, userId]);
   const [sheetWidth, setSheetWidth] = useState(640);
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('resumo');
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
@@ -928,14 +930,20 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="p-0 flex flex-col h-full w-full sm:max-w-none" style={{ width: `${sheetWidth}px` }}>
-        {/* Resize handle */}
-        <div
-          onMouseDown={handleMouseDown}
-          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-primary/20 transition-colors"
-        >
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
-        </div>
+      <SheetContent
+        side="right"
+        className="p-0 flex flex-col h-full w-full sm:max-w-none max-w-full overflow-x-hidden"
+        style={isMobile ? undefined : { width: `${sheetWidth}px` }}
+      >
+        {/* Resize handle (desktop only) */}
+        {!isMobile && (
+          <div
+            onMouseDown={handleMouseDown}
+            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-primary/20 transition-colors"
+          >
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
+          </div>
+        )}
         {innerContent}
       </SheetContent>
     </Sheet>
