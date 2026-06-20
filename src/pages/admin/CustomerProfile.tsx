@@ -362,26 +362,7 @@ export default function CustomerProfile() {
               </div>
             </div>
 
-            {/* Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t">
-              <div>
-                <div className="text-xs text-muted-foreground">Total gasto</div>
-                <div className="text-xl font-semibold text-emerald-600">{fmt(totalSpent)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Nº de projetos</div>
-                <div className="text-xl font-semibold">{projects.length}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Última atividade</div>
-                <div className="text-xl font-semibold">
-                  {lastActivity
-                    ? formatDistanceToNow(lastActivity, { addSuffix: true, locale: ptBR })
-                    : "—"}
-                </div>
-              </div>
             </div>
-          </div>
         </Card>
 
         {/* Tabs */}
