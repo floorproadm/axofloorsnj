@@ -130,7 +130,12 @@ function SortableLineRow({ line, onUpdate, onRemove }: SortableLineRowProps) {
 
 
 interface ProposalGeneratorProps {
-  projectId: string;
+  /** Provide when used inside a Project context */
+  projectId?: string;
+  /** Provide when used inside a Lead drawer — proposal is keyed by lead_id, project_id stays NULL */
+  leadId?: string;
+  /** Called right after status flips from draft → sent (lead mode uses it to advance the kanban) */
+  onProposalSent?: () => void;
   onClose?: () => void;
 }
 
@@ -139,8 +144,8 @@ interface ProposalGeneratorProps {
  * Generates Tiers (Good/Better/Best) OR Direct (single-price) proposal
  * Branding (logo, name, colors, contact) is white-label from company_settings
  */
-export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps) {
-  const { fetchProjectData, isLoading, error } = useProposalGeneration();
+export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }: ProposalGeneratorProps) {
+  const { fetchProjectData, fetchLeadData, isLoading, error } = useProposalGeneration();
   const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   // True while the mount-time read-only fetch is running to detect an existing proposal.
@@ -243,32 +248,36 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
   const handleGenerate = async () => {
     // Direct mode only — start with price = 0, user builds total from line items.
-    const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 });
+    const data = leadId
+      ? await fetchLeadData(leadId, { mode: 'direct', flatPrice: 0 })
+      : projectId
+        ? await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 })
+        : null;
     if (data) {
       setProposal(data);
-      if (data._isExisting) toast.info('Opened existing draft for this project');
+      if (data._isExisting) toast.info(leadId ? 'Opened existing draft for this lead' : 'Opened existing draft for this project');
     }
   };
 
-  // Auto-load existing non-terminal proposal for this project on mount,
-  // so returning to the tab never duplicates and the "Generate" CTA only shows
-  // when no proposal exists.
+  // Auto-load existing non-terminal proposal on mount (project or lead context).
   useEffect(() => {
-    if (!projectId) {
+    if (!projectId && !leadId) {
       setIsHydrating(false);
       return;
     }
     let cancelled = false;
     setIsHydrating(true);
     (async () => {
-      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0, readOnly: true });
+      const data = leadId
+        ? await fetchLeadData(leadId, { mode: 'direct', flatPrice: 0, readOnly: true })
+        : await fetchProjectData(projectId!, { mode: 'direct', flatPrice: 0, readOnly: true });
       if (cancelled) return;
       if (data?._isExisting) setProposal(data);
       setIsHydrating(false);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  }, [projectId, leadId]);
 
 
   // When proposal is loaded, fetch the share_token from DB (most recent for project)
@@ -478,6 +487,10 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
           : prev
       );
       setLinesDirty(false);
+      // Lead context: keep the lead's budget KPI in sync with the proposal total.
+      if (leadId) {
+        await supabase.from('leads').update({ budget: editedTotal }).eq('id', leadId);
+      }
       toast.success('Line items saved!');
     } catch (e: any) {
       toast.error(e?.message || 'Failed to update proposal');
@@ -561,8 +574,17 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
       });
       // Update proposal status to sent
       if (proposal.proposal_id) {
-        await supabase.from('proposals').update({ status: 'sent' }).eq('id', proposal.proposal_id);
+        await supabase.from('proposals').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', proposal.proposal_id);
       }
+      // Lead context: advance kanban to "Proposta Enviada" + sync budget KPI.
+      if (leadId) {
+        await supabase.from('leads').update({
+          status: 'proposal_sent',
+          budget: proposal.flat_price ?? editedTotal,
+        }).eq('id', leadId);
+        onProposalSent?.();
+      }
+      setProposal((prev) => prev ? { ...prev, proposal_status: 'sent' } : prev);
       toast.success('Proposal email sent to client!');
     } catch (e: any) {
       toast.error('Failed to send email: ' + e.message);
@@ -718,10 +740,12 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             {' '}<span className="text-emerald-700">Use "Gerar Invoice" para faturar.</span>
           </div>
           <div className="flex gap-2 shrink-0">
-            <Button size="sm" variant="default" className="bg-emerald-600 hover:bg-emerald-700"
-              onClick={() => window.location.assign(`/admin/invoices?project=${projectId}`)}>
-              <FileText className="h-3.5 w-3.5 mr-1.5" /> Gerar Invoice
-            </Button>
+            {projectId && (
+              <Button size="sm" variant="default" className="bg-emerald-600 hover:bg-emerald-700"
+                onClick={() => window.location.assign(`/admin/invoices?project=${projectId}`)}>
+                <FileText className="h-3.5 w-3.5 mr-1.5" /> Gerar Invoice
+              </Button>
+            )}
             <Button size="sm" variant="ghost"
               onClick={() => setUnlocked((u) => !u)}>
               {unlocked ? 'Bloquear novamente' : 'Desbloquear (admin)'}
