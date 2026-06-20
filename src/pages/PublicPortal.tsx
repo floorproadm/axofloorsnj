@@ -326,18 +326,9 @@ export default function PublicPortal() {
       {/* Header navy/gold */}
       <header className="bg-[#0f1b3d] text-white">
         <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {brand.logo_url ? (
-              <img src={brand.logo_url} alt={brand.company_name} className="h-9 max-w-[120px] object-contain bg-white rounded p-1" />
-            ) : (
-              <div className="w-9 h-9 rounded-md bg-amber-400 text-[#0f1b3d] flex items-center justify-center font-black text-[10px] px-1">
-                {brand.company_name.slice(0, 4).toUpperCase()}
-              </div>
-            )}
-            <div>
-              <div className="text-[11px] uppercase tracking-widest text-amber-300/90">{brand.company_name}</div>
-              <div className="text-sm font-semibold">Hi, {firstName}</div>
-            </div>
+          <div>
+            <div className="text-[11px] uppercase tracking-widest text-amber-300/90">{brand.company_name}</div>
+            <div className="text-sm font-semibold">Hi, {firstName}</div>
           </div>
           {brand.phone && (
             <a
