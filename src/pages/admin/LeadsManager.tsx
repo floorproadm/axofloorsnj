@@ -54,16 +54,6 @@ export default function LeadsManager() {
       breadcrumbs={[{ label: "Leads & Vendas" }]}
     >
       <div className="animate-fade-in space-y-3">
-        {isAdmin && (
-          <div className="flex justify-end">
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/admin/leads/trash">
-                <Trash2 className="w-4 h-4 mr-1.5" />
-                Lixeira{trashCount > 0 ? ` (${trashCount})` : ""}
-              </Link>
-            </Button>
-          </div>
-        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
