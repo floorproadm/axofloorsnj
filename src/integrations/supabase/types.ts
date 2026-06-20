@@ -1883,6 +1883,136 @@ export type Database = {
           },
         ]
       }
+      lead_measurement_areas: {
+        Row: {
+          area_sqft: number
+          area_type: string
+          created_at: string
+          dimensions: string | null
+          display_order: number
+          id: string
+          linear_ft: number
+          measurement_id: string
+          notes: string | null
+          room_name: string
+          service_type: string | null
+        }
+        Insert: {
+          area_sqft?: number
+          area_type?: string
+          created_at?: string
+          dimensions?: string | null
+          display_order?: number
+          id?: string
+          linear_ft?: number
+          measurement_id: string
+          notes?: string | null
+          room_name: string
+          service_type?: string | null
+        }
+        Update: {
+          area_sqft?: number
+          area_type?: string
+          created_at?: string
+          dimensions?: string | null
+          display_order?: number
+          id?: string
+          linear_ft?: number
+          measurement_id?: string
+          notes?: string | null
+          room_name?: string
+          service_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_measurement_areas_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "lead_measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_measurements: {
+        Row: {
+          created_at: string
+          finish_type: string | null
+          id: string
+          lead_id: string
+          material: string | null
+          measured_by: string | null
+          measurement_date: string | null
+          notes: string | null
+          organization_id: string
+          service_type: string | null
+          status: string
+          total_linear_ft: number
+          total_sqft: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          finish_type?: string | null
+          id?: string
+          lead_id: string
+          material?: string | null
+          measured_by?: string | null
+          measurement_date?: string | null
+          notes?: string | null
+          organization_id: string
+          service_type?: string | null
+          status?: string
+          total_linear_ft?: number
+          total_sqft?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          finish_type?: string | null
+          id?: string
+          lead_id?: string
+          material?: string | null
+          measured_by?: string | null
+          measurement_date?: string | null
+          notes?: string | null
+          organization_id?: string
+          service_type?: string | null
+          status?: string
+          total_linear_ft?: number
+          total_sqft?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_measurements_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_measurements_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_estimate_scheduled_stale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_measurements_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_followup_overdue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_measurements_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "view_stage_aging"
+            referencedColumns: ["lead_id"]
+          },
+        ]
+      }
       lead_notes: {
         Row: {
           attachment_name: string | null
@@ -3683,6 +3813,7 @@ export type Database = {
           good_price: number
           hidden_sections: string[]
           id: string
+          lead_id: string | null
           margin_best: number
           margin_better: number
           margin_good: number
@@ -3691,7 +3822,7 @@ export type Database = {
           payment_terms: string | null
           pdf_document_id: string | null
           portfolio_photo_ids: string[]
-          project_id: string
+          project_id: string | null
           property_id: string | null
           proposal_number: string
           referring_partner_id: string | null
@@ -3720,6 +3851,7 @@ export type Database = {
           good_price: number
           hidden_sections?: string[]
           id?: string
+          lead_id?: string | null
           margin_best: number
           margin_better: number
           margin_good: number
@@ -3728,7 +3860,7 @@ export type Database = {
           payment_terms?: string | null
           pdf_document_id?: string | null
           portfolio_photo_ids?: string[]
-          project_id: string
+          project_id?: string | null
           property_id?: string | null
           proposal_number: string
           referring_partner_id?: string | null
@@ -3757,6 +3889,7 @@ export type Database = {
           good_price?: number
           hidden_sections?: string[]
           id?: string
+          lead_id?: string | null
           margin_best?: number
           margin_better?: number
           margin_good?: number
@@ -3765,7 +3898,7 @@ export type Database = {
           payment_terms?: string | null
           pdf_document_id?: string | null
           portfolio_photo_ids?: string[]
-          project_id?: string
+          project_id?: string | null
           property_id?: string | null
           proposal_number?: string
           referring_partner_id?: string | null
@@ -3789,6 +3922,34 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "customers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_estimate_scheduled_stale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads_followup_overdue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "view_stage_aging"
+            referencedColumns: ["lead_id"]
           },
           {
             foreignKeyName: "proposals_organization_id_fkey"
@@ -4898,6 +5059,10 @@ export type Database = {
       compute_project_next_action: {
         Args: { p_project_id: string }
         Returns: undefined
+      }
+      convert_lead_to_full_project: {
+        Args: { p_lead_id: string }
+        Returns: string
       }
       convert_lead_to_project: {
         Args: { p_lead_id: string; p_project_type: string }
