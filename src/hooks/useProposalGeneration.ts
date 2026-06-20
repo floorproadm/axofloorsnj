@@ -177,7 +177,7 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
         .from('proposals')
         .select('*')
         .eq('project_id', projectId)
-        .in('status', ['draft', 'sent', 'viewed'])
+        .in('status', ['draft', 'sent', 'viewed', 'accepted'])
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

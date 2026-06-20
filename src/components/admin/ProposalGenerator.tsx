@@ -585,7 +585,7 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
         onProposalSent?.();
       }
       setProposal((prev) => prev ? { ...prev, proposal_status: 'sent' } : prev);
-      toast.success('Proposal email sent to client!');
+      toast.success(leadId ? 'Proposta enviada! Lead avançado para Proposta Enviada.' : 'Proposal email sent to client!');
     } catch (e: any) {
       toast.error('Failed to send email: ' + e.message);
     } finally {
@@ -736,7 +736,7 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
       {isLocked && (
         <div className="flex items-start justify-between gap-3 rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3">
           <div className="text-sm text-emerald-900">
-            <strong>✅ Proposta aceita</strong> — bloqueada para edição.
+            <strong>✅ Proposta aceita</strong> {projectId ? '— criada antes da conversão do lead' : '— bloqueada para edição'}.
             {' '}<span className="text-emerald-700">Use "Gerar Invoice" para faturar.</span>
           </div>
           <div className="flex gap-2 shrink-0">
