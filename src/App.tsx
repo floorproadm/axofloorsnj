@@ -132,7 +132,7 @@ const App = () => {
             <Route path="/admin/leads/:leadId" element={<ProtectedRoute><LeadDetail /></ProtectedRoute>} />
             <Route path="/admin/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
             <Route path="/admin/jobs" element={<Navigate to="/admin/projects" replace />} />
-            <Route path="/admin/intake" element={<Navigate to="/admin/leads?tab=intake" replace />} />
+            <Route path="/admin/intake" element={<Navigate to="/admin/settings?section=intake" replace />} />
             <Route path="/admin/mission-control" element={<ProtectedRoute><AdminMissionControl /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
             <Route path="/admin/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
