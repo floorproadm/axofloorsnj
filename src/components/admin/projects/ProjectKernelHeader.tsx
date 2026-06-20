@@ -10,7 +10,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, MapPin, MoreVertical, Trash2, ArrowRight, CheckCircle2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, MapPin, MoreVertical, Trash2, ArrowRight, CheckCircle2, ExternalLink, Link2 } from 'lucide-react';
 import { ProjectKPIBar } from './ProjectKPIBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
