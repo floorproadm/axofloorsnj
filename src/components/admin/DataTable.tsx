@@ -259,20 +259,35 @@ export function DataTable<TData, TValue>({
                           })}
                         </div>
                         
-                        {/* Card Footer — Delete Action */}
-                        {onRowDelete && (
-                          <div className="px-4 py-2 border-t bg-muted/20">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onRowDelete(row.original);
-                              }}
-                              className="flex items-center gap-2 text-xs text-destructive hover:text-destructive/80 transition-colors w-full"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              Remover cliente
-                            </button>
+                        {/* Card Footer — Actions */}
+                        {(onRowDelete || onRowPortal) && (
+                          <div className="px-4 py-2 border-t bg-muted/20 grid grid-cols-2 gap-2">
+                            {onRowPortal && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRowPortal(row.original);
+                                }}
+                                className="flex items-center justify-center gap-2 text-xs text-primary hover:text-primary/80 transition-colors"
+                              >
+                                <Link2 className="w-3.5 h-3.5" />
+                                Portal
+                              </button>
+                            )}
+                            {onRowDelete && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRowDelete(row.original);
+                                }}
+                                className="flex items-center justify-center gap-2 text-xs text-destructive hover:text-destructive/80 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Remover
+                              </button>
+                            )}
                           </div>
                         )}
                       </>
