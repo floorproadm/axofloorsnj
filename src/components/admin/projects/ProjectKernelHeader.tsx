@@ -134,6 +134,20 @@ export function ProjectKernelHeader({ project, onPortalClick }: Props) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {onPortalClick && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 gap-1.5 text-xs px-2"
+              onClick={onPortalClick}
+              disabled={!project.customer_id}
+              title={project.customer_id ? 'Compartilhar Portal do Cliente' : 'Projeto sem cliente vinculado'}
+            >
+              <Link2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Portal do Cliente</span>
+            </Button>
+          )}
         </div>
       </div>
 
