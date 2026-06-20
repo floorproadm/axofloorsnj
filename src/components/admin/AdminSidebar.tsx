@@ -99,7 +99,7 @@ export function AdminSidebar() {
     { title: "Visualizer", url: "/admin/visualizer", icon: Scan },
     { title: "Invoices", url: "/admin/invoices", icon: Receipt },
     { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
-    { title: "Reputation", url: "/admin/reputation", icon: Star },
+    { title: "Automations", url: "/admin/automations", icon: Zap },
   ];
 
   const manageItems = [
@@ -113,7 +113,7 @@ export function AdminSidebar() {
     
     { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Gallery", url: "/admin/gallery", icon: Images },
-    { title: "Automations", url: "/admin/automations", icon: Zap },
+    { title: "Reputation", url: "/admin/reputation", icon: Star },
   ];
 
   const labeledGroups = [
