@@ -47,6 +47,7 @@ import {
   Briefcase,
   FileText,
   Trash2,
+  Link2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
