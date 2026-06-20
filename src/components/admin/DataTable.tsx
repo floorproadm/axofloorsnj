@@ -255,6 +255,23 @@ export function DataTable<TData, TValue>({
                             );
                           })}
                         </div>
+                        
+                        {/* Card Footer — Delete Action */}
+                        {onRowDelete && (
+                          <div className="px-4 py-2 border-t bg-muted/20">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onRowDelete(row.original);
+                              }}
+                              className="flex items-center gap-2 text-xs text-destructive hover:text-destructive/80 transition-colors w-full"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Remover cliente
+                            </button>
+                          </div>
+                        )}
                       </>
                     );
                   })()}
