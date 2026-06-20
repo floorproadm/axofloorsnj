@@ -161,6 +161,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
     return () => { cancelled = true; };
   }, [authLoading, userId]);
   const [sheetWidth, setSheetWidth] = useState(640);
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('resumo');
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
