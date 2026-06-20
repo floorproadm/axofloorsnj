@@ -240,10 +240,13 @@ export default function PublicProposal() {
     setSignOpen(true);
   };
 
+  const DEFAULT_TERMS =
+    "All work will be performed in a professional and workmanlike manner according to the specifications listed in this proposal. Any changes, additions, or deviations from the scope of work must be approved in writing and may result in additional charges.\n\nAll materials are guaranteed to be as specified. If legal action is required to enforce this agreement, the prevailing party may recover reasonable attorney\u2019s fees and legal costs. The client has the right to cancel within three (3) business days without loss of deposit.";
+
   const termsText: string =
     proposal.terms_text?.trim() ||
     proposal.payment_terms?.trim() ||
-    "";
+    DEFAULT_TERMS;
 
   return (
     <div className="min-h-screen bg-white pb-16">

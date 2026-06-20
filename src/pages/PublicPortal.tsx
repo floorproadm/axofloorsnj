@@ -451,12 +451,12 @@ export default function PublicPortal() {
                           {canAct ? (
                             <Link to={`/proposal/${p.share_token}`}>
                               <ThumbsUp className="w-3.5 h-3.5 mr-1" />
-                              <span className="text-xs">Accept</span>
+                              <span className="text-xs">Accept &amp; Sign</span>
                             </Link>
                           ) : (
                             <span>
                               <ThumbsUp className="w-3.5 h-3.5 mr-1" />
-                              <span className="text-xs">{isAccepted ? "Accepted" : "Accept"}</span>
+                              <span className="text-xs">{isAccepted ? "Signed" : "Accept"}</span>
                             </span>
                           )}
                         </Button>
@@ -478,6 +478,32 @@ export default function PublicPortal() {
                         </Button>
                       </div>
                     )}
+
+                    {/* Terms & Conditions + e-sign notice */}
+                    <div className="pt-3 border-t border-slate-100 space-y-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-slate-500">
+                        Terms &amp; Conditions
+                      </p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        All work will be performed in a professional and workmanlike manner according to the specifications listed in this proposal. Any changes, additions, or deviations from the scope of work must be approved in writing and may result in additional charges.
+                        {"\n\n"}
+                        All materials are guaranteed to be as specified. If legal action is required to enforce this agreement, the prevailing party may recover reasonable attorney&rsquo;s fees and legal costs. The client has the right to cancel within three (3) business days without loss of deposit.
+                      </p>
+                      {isAccepted ? (
+                        <div className="flex items-center gap-2 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-md px-2.5 py-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>
+                            Electronically signed
+                            {p.accepted_at ? ` on ${format(new Date(p.accepted_at), "MMM d, yyyy")}` : ""}
+                          </span>
+                        </div>
+                      ) : canAct ? (
+                        <p className="text-[11px] text-slate-500 italic">
+                          Tap <strong>Accept &amp; Sign</strong> above to e-sign and confirm this proposal.
+                        </p>
+                      ) : null}
+                    </div>
+
                   </div>
                 );
               })
