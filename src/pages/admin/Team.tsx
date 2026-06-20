@@ -148,12 +148,6 @@ export default function Team() {
   return (
     <AdminLayout title="Equipe">
       <div className="space-y-4">
-        {/* Header */}
-        <div className="flex justify-end">
-          <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
-            <Plus className="w-4 h-4 mr-1" /> Adicionar membro
-          </Button>
-        </div>
 
         {/* Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
