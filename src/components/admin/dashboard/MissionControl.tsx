@@ -87,7 +87,7 @@ interface MissionControlProps {
   recentActivity?: RecentActivityItem[];
 }
 
-export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControlProps) {
+export function MissionControl({ systemAlerts, isLoadingAlerts, recentActivity = [] }: MissionControlProps) {
   const { t } = useLanguage();
   const [showCompleted, setShowCompleted] = useState(false);
   const { tasks, isLoading: isLoadingTasks, createTask, updateTask, deleteTask } = useTasks(showCompleted);
