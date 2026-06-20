@@ -149,11 +149,7 @@ export default function Team() {
     <AdminLayout title="Equipe">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Equipe</h1>
-            <p className="text-sm text-muted-foreground">Técnicos, parceiros e registro de diárias / sqft</p>
-          </div>
+        <div className="flex justify-end">
           <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
             <Plus className="w-4 h-4 mr-1" /> Adicionar membro
           </Button>
