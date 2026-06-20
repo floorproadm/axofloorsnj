@@ -64,6 +64,20 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number;
 }
 
+function getHeaderIcon(headerText: string): React.ElementType | null {
+  const text = String(headerText).toLowerCase();
+  if (text.includes("nome") || text.includes("name") || text.includes("cliente") || text.includes("customer")) return User;
+  if (text.includes("email") || text.includes("e-mail")) return Mail;
+  if (text.includes("telefone") || text.includes("phone") || text.includes("tel")) return Phone;
+  if (text.includes("cidade") || text.includes("city") || text.includes("endereço") || text.includes("address")) return MapPin;
+  if (text.includes("data") || text.includes("date") || text.includes("cadastro") || text.includes("criado")) return CalendarDays;
+  if (text.includes("status") || text.includes("estado")) return Tag;
+  if (text.includes("projeto") || text.includes("project")) return Briefcase;
+  if (text.includes("proposta") || text.includes("proposal")) return FileText;
+  if (text.includes("hora") || text.includes("time") || text.includes("tempo")) return Clock;
+  return null;
+}
+
 export function DataTable<TData, TValue>({
   columns,
   data,
