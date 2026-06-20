@@ -199,27 +199,66 @@ export function DataTable<TData, TValue>({
               {table.getRowModel().rows.map((row) => (
                 <Card 
                   key={row.id} 
-                  className={`p-3 ${onRowClick ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}`}
+                  className={`p-0 overflow-hidden ${onRowClick ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}`}
                   onClick={() => onRowClick?.(row.original)}
                 >
-                  <div className="space-y-2">
-                    {row.getVisibleCells().map((cell, index) => {
-                      const header = table.getHeaderGroups()[0]?.headers[index];
-                      const headerText = header ? 
-                        flexRender(header.column.columnDef.header, header.getContext()) : '';
-                      
-                      return (
-                        <div key={cell.id} className="flex justify-between items-center">
-                          <div className="text-xs font-medium text-muted-foreground min-w-0 flex-shrink-0 mr-3">
-                            {headerText}
+                  {(() => {
+                    const cells = row.getVisibleCells();
+                    const firstCell = cells[0];
+                    const restCells = cells.slice(1);
+                    
+                    const firstHeader = table.getHeaderGroups()[0]?.headers[0];
+                    const firstHeaderText = firstHeader ? 
+                      flexRender(firstHeader.column.columnDef.header, firstHeader.getContext()) : '';
+                    
+                    return (
+                      <>
+                        {/* Card Header — Primary Identifier */}
+                        <div className="px-4 py-3 bg-muted/30 border-b flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            {(() => {
+                              const Icon = getHeaderIcon(String(firstHeaderText));
+                              return Icon ? <Icon className="w-4 h-4 text-primary" /> : <User className="w-4 h-4 text-primary" />;
+                            })()}
                           </div>
-                          <div className="text-sm font-medium text-right min-w-0 flex-1">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-muted-foreground truncate">
+                              {firstHeaderText}
+                            </div>
+                            <div className="text-base font-semibold text-foreground truncate">
+                              {flexRender(firstCell.column.columnDef.cell, firstCell.getContext())}
+                            </div>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                        
+                        {/* Card Body — Details Grid */}
+                        <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
+                          {restCells.map((cell, index) => {
+                            const header = table.getHeaderGroups()[0]?.headers[index + 1];
+                            const headerText = header ? 
+                              flexRender(header.column.columnDef.header, header.getContext()) : '';
+                            const Icon = getHeaderIcon(String(headerText));
+                            
+                            return (
+                              <div key={cell.id} className="flex items-start gap-2 min-w-0">
+                                {Icon && (
+                                  <Icon className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                                )}
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground leading-tight">
+                                    {headerText}
+                                  </div>
+                                  <div className="text-sm font-medium text-foreground truncate">
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </Card>
               ))}
             </div>
