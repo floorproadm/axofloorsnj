@@ -585,7 +585,7 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
         onProposalSent?.();
       }
       setProposal((prev) => prev ? { ...prev, proposal_status: 'sent' } : prev);
-      toast.success('Proposal email sent to client!');
+      toast.success(leadId ? 'Proposta enviada! Lead avançado para Proposta Enviada.' : 'Proposal email sent to client!');
     } catch (e: any) {
       toast.error('Failed to send email: ' + e.message);
     } finally {
