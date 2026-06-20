@@ -73,6 +73,7 @@ interface UseProposalGenerationReturn {
   generateTiers: (baseCost: number, minMargin: number) => ProposalTier[];
   validateAllTiers: (tiers: ProposalTier[], minMargin: number) => ProposalValidation;
   fetchProjectData: (projectId: string, options?: FetchOptions) => Promise<ProposalData | null>;
+  fetchLeadData: (leadId: string, options?: FetchOptions) => Promise<ProposalData | null>;
   isLoading: boolean;
   error: string | null;
 }
