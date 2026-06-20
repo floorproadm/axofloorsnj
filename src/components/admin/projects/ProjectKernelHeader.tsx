@@ -32,6 +32,7 @@ const DESTRUCTIVE = new Set(['cancelled', 'paid']);
 
 interface Props {
   project: any;
+  onPortalClick?: () => void;
 }
 
 export function ProjectKernelHeader({ project }: Props) {
