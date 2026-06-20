@@ -933,6 +933,29 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
             </Button>
           )}
         </div>
+
+        {/* Conversion confirmation — single source of truth for Lead → Project */}
+        <AlertDialog open={showConvertConfirm} onOpenChange={setShowConvertConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>🎉 Proposta Aceita!</AlertDialogTitle>
+              <AlertDialogDescription>
+                Deseja criar um projeto para <strong>{lead.name}</strong>?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isConverting}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => { e.preventDefault(); handleConvertToProject(); }}
+                disabled={isConverting}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {isConverting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-1.5" />}
+                Criar Projeto
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </>
   );
 
