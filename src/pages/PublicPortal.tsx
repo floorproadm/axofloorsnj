@@ -322,7 +322,7 @@ export default function PublicPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Header navy/gold */}
       <header className="bg-[#0f1b3d] text-white">
         <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
@@ -340,7 +340,7 @@ export default function PublicPortal() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-3xl mx-auto px-4 py-6 flex-1 w-full">
         <div className="mb-5">
           <h1 className="text-2xl font-bold text-slate-900">
             {(() => {
@@ -684,11 +684,11 @@ export default function PublicPortal() {
             )}
           </div>
         </div>
-
-        <p className="text-center text-[11px] text-slate-400 mt-6">
-          {[brand.company_name, brand.phone, brand.email].filter(Boolean).join(" · ")}
-        </p>
       </main>
+
+      <p className="text-center text-[11px] text-slate-400 py-6">
+        {[brand.company_name, brand.phone, brand.email].filter(Boolean).join(" · ")}
+      </p>
 
       {changeReqProposal && customer && token && (
         <ChangeRequestDialog
