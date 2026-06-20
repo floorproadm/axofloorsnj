@@ -13,6 +13,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -75,6 +85,8 @@ export default function Customers() {
   const [createOpen, setCreateOpen] = useState(false);
   const [portalCustomer, setPortalCustomer] = useState<Customer | null>(null);
   const [portalOpen, setPortalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Applied filters
   const [search, setSearch] = useState("");
@@ -186,14 +198,23 @@ export default function Customers() {
     return Array.from(s).sort();
   }, [projects]);
 
-  const handleDelete = async (customer: CustomerWithMeta) => {
-    const { error } = await supabase.from("customers").delete().eq("id", customer.id);
+  const handleDelete = (customer: CustomerWithMeta) => {
+    setDeleteTarget(customer);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { error } = await supabase.from("customers").delete().eq("id", deleteTarget.id);
     if (error) {
       toast({ title: "Erro ao remover cliente", description: error.message, variant: "destructive" });
+      setDeleteOpen(false);
       return;
     }
-    setCustomers((prev) => prev.filter((c) => c.id !== customer.id));
+    setCustomers((prev) => prev.filter((c) => c.id !== deleteTarget.id));
     toast({ title: "Cliente removido com sucesso" });
+    setDeleteOpen(false);
+    setDeleteTarget(null);
   };
 
   const columns: ColumnDef<CustomerWithMeta>[] = [
@@ -561,6 +582,26 @@ export default function Customers() {
           relatedId={portalCustomer?.id}
           relatedType="customer"
         />
+
+        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remover cliente?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja remover <strong>{deleteTarget?.full_name || "este cliente"}</strong>? Essa ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Sim, remover
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
