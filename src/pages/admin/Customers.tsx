@@ -519,6 +519,7 @@ export default function Customers() {
             onRowClick={(row) => {
               navigate(`/admin/customers/${row.id}`);
             }}
+            onRowDelete={handleDelete}
             pageSize={10}
           />
         )}
