@@ -6,6 +6,7 @@ import { Loader2, Send, MessageCircle, Paperclip, X } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
+import { toast } from "@/hooks/use-toast";
 
 interface PortalMsg {
   id: string;
