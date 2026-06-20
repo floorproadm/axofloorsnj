@@ -106,7 +106,7 @@ const SALES_STAGES: PipelineStage[] = [
 ];
 
 // Stages where Advance/move-forward is disabled (terminal positions inside the sales board)
-const TERMINAL_SALES_STAGES: PipelineStage[] = ['in_production', 'proposal_rejected'];
+const TERMINAL_SALES_STAGES: PipelineStage[] = ['proposal_sent', 'in_production', 'proposal_rejected'];
 
 // Local overrides — display "Fechado/Ganho" in green for in_production within Leads board
 const PIPELINE_LABEL_OVERRIDES: Partial<Record<PipelineStage, string>> = {
