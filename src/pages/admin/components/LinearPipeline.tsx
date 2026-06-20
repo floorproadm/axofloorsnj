@@ -98,11 +98,31 @@ interface LinearPipelineProps {
 
 type ViewMode = 'board' | 'list';
 
-// 7 sales stages (excludes in_production, completed, lost — those are in Jobs)
+// 8 sales stages: in_production is the "Fechado/Ganho" terminal positive state
 const SALES_STAGES: PipelineStage[] = [
-  'cold_lead', 'warm_lead', 'estimate_requested', 
-  'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected'
+  'cold_lead', 'warm_lead', 'estimate_requested',
+  'estimate_scheduled', 'in_draft', 'proposal_sent',
+  'in_production', 'proposal_rejected'
 ];
+
+// Stages where Advance/move-forward is disabled (terminal positions inside the sales board)
+const TERMINAL_SALES_STAGES: PipelineStage[] = ['in_production', 'proposal_rejected'];
+
+// Local overrides — display "Fechado/Ganho" in green for in_production within Leads board
+const PIPELINE_LABEL_OVERRIDES: Partial<Record<PipelineStage, string>> = {
+  in_production: 'Fechado/Ganho',
+};
+const PIPELINE_CONFIG_OVERRIDES: Partial<Record<PipelineStage, typeof STAGE_CONFIG[PipelineStage]>> = {
+  in_production: {
+    color: 'text-emerald-700',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-500',
+    textColor: 'text-emerald-700',
+    stateType: 'success',
+  },
+};
+const getStageLabel = (s: PipelineStage) => PIPELINE_LABEL_OVERRIDES[s] || STAGE_LABELS[s];
+const getStageConfig = (s: PipelineStage) => PIPELINE_CONFIG_OVERRIDES[s] || STAGE_CONFIG[s];
 
 const sourceLabels: Record<string, string> = {
   quiz: "Formulário Web",
