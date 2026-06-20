@@ -1322,7 +1322,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     const idx = SALES_STAGES.indexOf(stage as PipelineStage);
     if (idx < 0) return;
     const next = SALES_STAGES[idx + 1];
-    if (!next || TERMINAL_SALES_STAGES.includes(next)) return;
+    if (!next) return;
     await updateLeadStatus(lead.id, next);
     onRefresh();
   };
