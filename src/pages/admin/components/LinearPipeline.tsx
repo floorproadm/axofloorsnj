@@ -1629,7 +1629,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     )}>
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className={cn("font-semibold text-xs truncate", config.textColor)}>
-                          {STAGE_LABELS[stage]}
+                          {stageLabel}
                         </span>
                         {stageStaleCounts[stage] >= 2 && (
                           <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none animate-pulse" title={`${stageStaleCounts[stage]} leads parados há 5d+`}>
