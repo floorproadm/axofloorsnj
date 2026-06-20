@@ -30,6 +30,14 @@ interface SystemAlert {
   group?: "financial" | "operational";
 }
 
+interface RecentActivityItem {
+  type: "lead" | "proposal" | "payment" | "job";
+  label: string;
+  date: string;
+  link: string;
+  amount?: number;
+}
+
 const dotColor = {
   blocked: "bg-[hsl(var(--state-blocked))]",
   risk: "bg-[hsl(var(--state-risk))]",
