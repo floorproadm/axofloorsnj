@@ -521,11 +521,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
             {/* TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-4">
+              <TabsList className={cn("w-full grid", hasProject ? "grid-cols-5" : "grid-cols-4")}>
                 <TabsTrigger value="resumo" className="text-xs gap-1"><User className="w-3 h-3" /> Resumo</TabsTrigger>
-                <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Histórico</TabsTrigger>
+                <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Timeline</TabsTrigger>
                 <TabsTrigger value="notas" className="text-xs gap-1"><StickyNote className="w-3 h-3" /> Notas</TabsTrigger>
                 <TabsTrigger value="automacoes" className="text-xs gap-1"><Zap className="w-3 h-3" /> Automações</TabsTrigger>
+                {hasProject && (
+                  <TabsTrigger value="job" className="text-xs gap-1"><FileText className="w-3 h-3" /> Job</TabsTrigger>
+                )}
               </TabsList>
 
               {/* ═══ TAB: RESUMO ═══ */}
