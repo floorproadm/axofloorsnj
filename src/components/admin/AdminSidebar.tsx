@@ -95,7 +95,7 @@ export function AdminSidebar() {
   ];
 
   const toolsItems = [
-    { title: "Leads & Vendas", url: "/admin/leads", icon: Users },
+    { title: "Leads", url: "/admin/leads", icon: Users },
     { title: "Visualizer", url: "/admin/visualizer", icon: Scan },
     { title: "Invoices", url: "/admin/invoices", icon: Receipt },
     { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
