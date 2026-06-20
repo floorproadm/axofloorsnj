@@ -1033,7 +1033,24 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const [viewMode, setViewMode] = useState<ViewMode>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [needsActionOnly, setNeedsActionOnly] = useState(false);
-  
+
+  // KPI quick filter
+  type KpiKey = 'hot' | 'stale' | 'no_action' | 'closed_month';
+  const [kpiFilter, setKpiFilter] = useState<KpiKey | null>(null);
+
+  // Advanced filters
+  const [filters, setFilters] = useState({
+    stages: [] as PipelineStage[],
+    sources: [] as string[],
+    services: [] as string[],
+    budgetMin: '',
+    budgetMax: '',
+    assignedTo: '',
+  });
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount =
+    filters.stages.length + filters.sources.length + filters.services.length +
+    (filters.budgetMin ? 1 : 0) + (filters.budgetMax ? 1 : 0) + (filters.assignedTo ? 1 : 0);
 
   // Quick-action modal states
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
@@ -1050,33 +1067,84 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     setShowQuickQuote(true);
   }, []);
 
-  const salesLeads = useMemo(() => {
-    let filtered = leads.filter(l =>
-      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
-    );
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(l => 
-        l.name.toLowerCase().includes(q) || 
-        l.phone.includes(q) ||
-        (l.city && l.city.toLowerCase().includes(q)) ||
-        (l.email && l.email.toLowerCase().includes(q))
-      );
-    }
-    return filtered;
-  }, [leads, searchQuery]);
-
   // Unfiltered sales leads for stats (funnel bar uses all data)
-  // Includes partner referrals — they appear in the main sales pipeline AND in the partner detail view.
   const allSalesLeads = useMemo(() => {
     return leads.filter(l =>
       SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
     );
   }, [leads]);
 
+  // KPI counts derived from all sales leads + closed leads
+  const kpiCounts = useMemo(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const threeDaysAgo = subDays(now, 3);
+    return {
+      hot: allSalesLeads.filter(l => l.priority === 'high' || (l.priority as any) === 'hot').length,
+      stale: allSalesLeads.filter(l => new Date(l.updated_at) < threeDaysAgo).length,
+      pipelineValue: allSalesLeads.reduce((s, l) => s + (l.budget || 0), 0),
+      no_action: allSalesLeads.filter(l => !l.next_action_date && !(l as any).follow_up_date).length,
+      closed_month: leads.filter(l => {
+        const s = normalizeStatus(l.status);
+        return (s === 'in_production' || (l as any).converted_to_project_id) &&
+          new Date(l.updated_at) >= monthStart;
+      }).length,
+    };
+  }, [allSalesLeads, leads]);
 
+  const salesLeads = useMemo(() => {
+    let filtered = leads.filter(l =>
+      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
+    );
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(l =>
+        l.name.toLowerCase().includes(q) ||
+        l.phone.includes(q) ||
+        (l.city && l.city.toLowerCase().includes(q)) ||
+        (l.email && l.email.toLowerCase().includes(q))
+      );
+    }
+    // KPI filter
+    if (kpiFilter) {
+      const now = new Date();
+      const threeDaysAgo = subDays(now, 3);
+      filtered = filtered.filter(l => {
+        if (kpiFilter === 'hot') return l.priority === 'high' || (l.priority as any) === 'hot';
+        if (kpiFilter === 'stale') return new Date(l.updated_at) < threeDaysAgo;
+        if (kpiFilter === 'no_action') return !l.next_action_date && !(l as any).follow_up_date;
+        if (kpiFilter === 'closed_month') return false; // closed leads aren't in salesLeads
+        return true;
+      });
+    }
+    // Advanced filters
+    if (filters.stages.length > 0) {
+      filtered = filtered.filter(l => filters.stages.includes(normalizeStatus(l.status)));
+    }
+    if (filters.sources.length > 0) {
+      filtered = filtered.filter(l => filters.sources.includes(l.lead_source));
+    }
+    if (filters.services.length > 0) {
+      filtered = filtered.filter(l =>
+        Array.isArray(l.services) && l.services.some(s => filters.services.includes(s))
+      );
+    }
+    if (filters.budgetMin) {
+      const min = parseFloat(filters.budgetMin);
+      if (!isNaN(min)) filtered = filtered.filter(l => (l.budget || 0) >= min);
+    }
+    if (filters.budgetMax) {
+      const max = parseFloat(filters.budgetMax);
+      if (!isNaN(max)) filtered = filtered.filter(l => (l.budget || 0) <= max);
+    }
+    if (filters.assignedTo) {
+      const a = filters.assignedTo.toLowerCase();
+      filtered = filtered.filter(l => (l.assigned_to || '').toLowerCase().includes(a));
+    }
+    return filtered;
+  }, [leads, searchQuery, kpiFilter, filters]);
 
-  const activeLeadIds = useMemo(() => 
+  const activeLeadIds = useMemo(() =>
     allSalesLeads
       .filter(l => !['completed', 'lost'].includes(normalizeStatus(l.status)))
       .map(l => l.id),
@@ -1098,6 +1166,20 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     if (!needsActionOnly) return salesLeads;
     return salesLeads.filter(leadNeedsAction);
   }, [salesLeads, needsActionOnly, leadNeedsAction]);
+
+  // Stale leads per stage (5+ days)
+  const stageStaleCounts = useMemo(() => {
+    const out: Record<string, number> = {};
+    const fiveDaysAgo = subDays(new Date(), 5);
+    SALES_STAGES.forEach(stage => {
+      out[stage] = allSalesLeads.filter(l =>
+        normalizeStatus(l.status) === stage && new Date(l.updated_at) < fiveDaysAgo
+      ).length;
+    });
+    return out;
+  }, [allSalesLeads]);
+
+
 
   const leadsByStage = useMemo(() => {
     const grouped: Record<PipelineStage, Lead[]> = {
