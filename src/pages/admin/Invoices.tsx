@@ -87,14 +87,14 @@ export default function Invoices() {
             { label: "Overdue", value: fmt(invoiceStats.overdue), icon: AlertTriangle, color: "text-destructive" },
           ].map((s) => (
             <Card key={s.label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 min-w-0">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <div className={`shrink-0 p-2 rounded-lg bg-muted ${s.color}`}>
-                    <s.icon className="w-5 h-5" />
+                    <s.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-muted-foreground truncate">{s.label}</p>
-                    <p className={`text-lg font-bold ${s.color} truncate`} title={s.value}>{s.value}</p>
+                    <p className={`text-sm sm:text-lg font-bold ${s.color} truncate`} title={s.value}>{s.value}</p>
                   </div>
                 </div>
               </CardContent>
@@ -102,9 +102,9 @@ export default function Invoices() {
           ))}
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          <Tabs value={invoiceFilter} onValueChange={setInvoiceFilter}>
-            <TabsList>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+          <Tabs value={invoiceFilter} onValueChange={setInvoiceFilter} className="min-w-0 w-full sm:w-auto">
+            <TabsList className="w-full sm:w-auto overflow-x-auto no-scrollbar justify-start">
               <TabsTrigger value="all">All ({invoices.length})</TabsTrigger>
               <TabsTrigger value="draft">Draft</TabsTrigger>
               <TabsTrigger value="sent">Sent</TabsTrigger>
@@ -112,7 +112,7 @@ export default function Invoices() {
               <TabsTrigger value="overdue">Overdue</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button size="sm" onClick={() => setInvoiceDialogOpen(true)}>
+          <Button size="sm" onClick={() => setInvoiceDialogOpen(true)} className="w-full sm:w-auto shrink-0">
             <Plus className="w-4 h-4 mr-1" />
             New Invoice
           </Button>
