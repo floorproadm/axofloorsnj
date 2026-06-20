@@ -706,7 +706,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const sqftPerDay = 350;
   const durationDays = Math.max(1, Math.ceil((proposal.square_footage || 500) / sqftPerDay));
   const isLocked = proposal.proposal_status === 'accepted';
-  const [unlocked, setUnlocked] = useState(false);
   const showReadOnly = isLocked && !unlocked;
 
   return (
