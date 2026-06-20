@@ -704,9 +704,32 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
 
   const sqftPerDay = 350;
   const durationDays = Math.max(1, Math.ceil((proposal.square_footage || 500) / sqftPerDay));
+  const isLocked = proposal.proposal_status === 'accepted';
+  const [unlocked, setUnlocked] = useState(false);
+  const showReadOnly = isLocked && !unlocked;
 
   return (
     <div className="space-y-4">
+      {/* Locked banner */}
+      {isLocked && (
+        <div className="flex items-start justify-between gap-3 rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3">
+          <div className="text-sm text-emerald-900">
+            <strong>✅ Proposta aceita</strong> — bloqueada para edição.
+            {' '}<span className="text-emerald-700">Use "Gerar Invoice" para faturar.</span>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button size="sm" variant="default" className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={() => window.location.assign(`/admin/invoices?project=${projectId}`)}>
+              <FileText className="h-3.5 w-3.5 mr-1.5" /> Gerar Invoice
+            </Button>
+            <Button size="sm" variant="ghost"
+              onClick={() => setUnlocked((u) => !u)}>
+              {unlocked ? 'Bloquear novamente' : 'Desbloquear (admin)'}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Controls */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Proposal Preview</h2>
@@ -748,10 +771,12 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
             <Link2 className="h-4 w-4 mr-2" />
             Copy Public Link
           </Button>
-          <Button variant="default" onClick={handleSendEmail} disabled={!shareToken || sendingEmail || !proposal?.customer_email}>
-            {sendingEmail ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-            Send to Client
-          </Button>
+          {!showReadOnly && (
+            <Button variant="default" onClick={handleSendEmail} disabled={!shareToken || sendingEmail || !proposal?.customer_email}>
+              {sendingEmail ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+              Send to Client
+            </Button>
+          )}
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print / Save PDF
