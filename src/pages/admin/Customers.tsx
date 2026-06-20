@@ -183,6 +183,16 @@ export default function Customers() {
     return Array.from(s).sort();
   }, [projects]);
 
+  const handleDelete = async (customer: CustomerWithMeta) => {
+    const { error } = await supabase.from("customers").delete().eq("id", customer.id);
+    if (error) {
+      toast({ title: "Erro ao remover cliente", description: error.message, variant: "destructive" });
+      return;
+    }
+    setCustomers((prev) => prev.filter((c) => c.id !== customer.id));
+    toast({ title: "Cliente removido com sucesso" });
+  };
+
   const columns: ColumnDef<CustomerWithMeta>[] = [
     {
       accessorKey: "full_name",
