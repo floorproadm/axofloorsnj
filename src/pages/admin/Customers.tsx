@@ -296,95 +296,100 @@ export default function Customers() {
   return (
     <AdminLayout title="Clientes">
       <div className="space-y-4">
-        <div className="flex flex-col gap-3">
+        {/* Desktop Toolbar: filters + action inline */}
+        {!isMobile && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[240px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome, email, telefone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 bg-background"
+              />
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="Status do projeto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                {uniqueStatuses.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-9 justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "dd/MM/yyyy")} -{" "}
+                        {format(dateRange.to, "dd/MM/yyyy")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "dd/MM/yyyy")
+                    )
+                  ) : (
+                    <span className="text-muted-foreground">Faixa de data</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 px-2 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("all");
+                  setDateRange(undefined);
+                }}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Limpar
+              </Button>
+            )}
+
+            <div className="ml-auto">
+              <Button onClick={() => setCreateOpen(true)} className="h-9">
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar cliente
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {isMobile && (
           <Button
             onClick={() => setCreateOpen(true)}
-            className="w-full sm:w-auto self-start"
+            className="w-full"
           >
             <Plus className="w-4 h-4 mr-2" />
             Adicionar cliente
           </Button>
-        </div>
-
-        {/* Desktop Filters Bar */}
-        {!isMobile && (
-          <Card className="p-3 sm:p-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1 max-w-full sm:max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, email, telefone..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-10"
-                />
-              </div>
-
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[200px] h-10">
-                  <SelectValue placeholder="Status do projeto" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  {uniqueStatuses.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto h-10 justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "dd/MM/yyyy")} -{" "}
-                          {format(dateRange.to, "dd/MM/yyyy")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "dd/MM/yyyy")
-                      )
-                    ) : (
-                      <span className="text-muted-foreground">Faixa de data</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    numberOfMonths={2}
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-10 px-2 text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    setSearch("");
-                    setStatusFilter("all");
-                    setDateRange(undefined);
-                  }}
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Limpar
-                </Button>
-              )}
-            </div>
-          </Card>
         )}
 
         {/* Mobile Expandable Filter Panel */}
