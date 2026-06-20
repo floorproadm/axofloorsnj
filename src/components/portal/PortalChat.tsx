@@ -6,6 +6,7 @@ import { Loader2, Send, MessageCircle, Paperclip, X } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
 import { useChatAttachmentUpload } from "@/hooks/useChatAttachmentUpload";
+import { toast } from "@/hooks/use-toast";
 
 interface PortalMsg {
   id: string;
@@ -70,7 +71,7 @@ export function PortalChat({ token, customerName }: Props) {
     setInput("");
     const att = pending;
     setPending(null);
-    const { data } = await supabase.rpc("send_portal_message" as any, {
+    const { data, error } = await supabase.rpc("send_portal_message" as any, {
       p_token: token,
       p_content: text,
       p_sender_name: customerName,
@@ -79,9 +80,24 @@ export function PortalChat({ token, customerName }: Props) {
       p_attachment_name: att?.name ?? null,
     });
     setSending(false);
-    if ((data as any)?.ok) {
-      await load();
+    const payload = data as any;
+    if (error || !payload?.ok) {
+      const code = payload?.error || error?.message || "unknown";
+      toast({
+        title: "Couldn't send message",
+        description:
+          code === "no_project"
+            ? "We couldn't find an active project on your account. Our team has been notified."
+            : code === "empty_message"
+              ? "Type a message or attach a file before sending."
+              : `Please try again. (${code})`,
+        variant: "destructive",
+      });
+      setInput(text);
+      if (att) setPending(att);
+      return;
     }
+    await load();
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
