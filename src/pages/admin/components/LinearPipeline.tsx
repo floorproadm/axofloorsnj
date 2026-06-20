@@ -1592,25 +1592,32 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     )}
                   >
                     <div className={cn(
-                      "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
+                      "flex items-center justify-between px-3 py-2 rounded-t-xl border border-b-0",
                       config.bgColor,
                       statusFilter === stage && "ring-2 ring-offset-1 ring-primary"
                     )}>
-                      <span className={cn("font-semibold text-xs truncate", config.textColor)}>
-                        {STAGE_LABELS[stage]}
-                      </span>
-                      {stats.avgDays > 0 && (
-                        <span className="text-[9px] text-muted-foreground font-medium bg-background/60 px-1.5 py-0.5 rounded">
-                          ~{stats.avgDays}d
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className={cn("font-semibold text-xs truncate", config.textColor)}>
+                          {STAGE_LABELS[stage]}
                         </span>
-                      )}
+                        {stageStaleCounts[stage] >= 2 && (
+                          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none animate-pulse" title={`${stageStaleCounts[stage]} leads parados há 5d+`}>
+                            {stageStaleCounts[stage]}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[9px] text-muted-foreground font-medium bg-background/60 px-1.5 py-0.5 rounded">
+                        {stats.count}
+                      </span>
                     </div>
 
                     <div className={cn(
-                      "flex items-center justify-between px-3 py-1.5 border-x text-xs",
+                      "flex items-center justify-between px-3 py-1 border-x text-[10px]",
                       config.bgColor, "border-b"
                     )}>
-                      <span className="text-muted-foreground font-medium">{stats.count}</span>
+                      <span className="text-muted-foreground">
+                        {rate !== undefined ? `${rate}% avançam daqui` : '—'}
+                      </span>
                       <span className="text-muted-foreground font-medium">
                         ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
@@ -1620,8 +1627,17 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                       <div className="max-h-[60vh] overflow-y-auto">
                         <div className="p-1.5 space-y-1.5">
                           {stageLeads.length === 0 ? (
-                            <div className="text-center py-16 text-muted-foreground/60 text-xs">
-                              Nenhum lead
+                            <div className="flex flex-col items-center justify-center gap-2 py-10 px-3 text-center">
+                              <p className="text-xs text-muted-foreground/60">Nenhum lead aqui ainda</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-[11px] gap-1"
+                                onClick={() => setShowNewLeadModal(true)}
+                              >
+                                <PlusCircle className="w-3 h-3" />
+                                Adicionar lead
+                              </Button>
                             </div>
                           ) : (
                             stageLeads.map(lead => (
@@ -1632,6 +1648,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                                 isStale={isStale(lead)}
                                 isBlocked={isBlocked(lead)}
                                 onClick={() => handleCardClick(lead)}
+                                onAdvance={() => advanceLead(lead)}
+                                canAdvance={SALES_STAGES.indexOf(stage) < SALES_STAGES.length - 1}
                                 onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                               />
                             ))
@@ -1640,6 +1658,55 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                       </div>
                     </div>
                   </div>
+
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* List View */}
+      {viewMode === 'list' && (
+        <div className="space-y-2">
+          {/* Table Header — hidden on mobile */}
+          <div className="hidden md:grid grid-cols-[2fr_120px_130px_120px_120px_90px_90px_90px] gap-3 px-5 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+            <span>Lead</span>
+            <span>Estágio</span>
+            <span>Contato</span>
+            <span>Último Contato</span>
+            <span>Responsável</span>
+            <span className="text-right">Valor</span>
+            <span className="text-right">Tempo</span>
+            <span className="text-right">Ações</span>
+          </div>
+          {/* Table Body */}
+          <div className="max-h-[60vh] overflow-y-auto">
+            <div className="space-y-1.5 px-0.5">
+              {sortedLeads.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground/60 text-xs">
+                  Nenhum lead encontrado com esses filtros
+                </div>
+              ) : (
+                sortedLeads.map(lead => (
+                  <PipelineListRow
+                    key={lead.id}
+                    lead={lead}
+                    nra={nraMap[lead.id]}
+                    isStale={isStale(lead)}
+                    isBlocked={isBlocked(lead)}
+                    onClick={() => handleCardClick(lead)}
+                    onAdvance={() => advanceLead(lead)}
+                    canAdvance={SALES_STAGES.indexOf(normalizeStatus(lead.status) as PipelineStage) < SALES_STAGES.length - 1}
+                    onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
 
                 </div>
               );
