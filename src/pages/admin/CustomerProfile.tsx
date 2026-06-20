@@ -382,7 +382,7 @@ export default function CustomerProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="projetos">
-          <TabsList>
+          <TabsList className="w-full overflow-x-auto no-scrollbar justify-start">
             <TabsTrigger value="projetos">Projetos ({projects.length})</TabsTrigger>
             <TabsTrigger value="propostas">Propostas ({proposals.length})</TabsTrigger>
             <TabsTrigger value="pagamentos">Pagamentos ({payments.length})</TabsTrigger>
