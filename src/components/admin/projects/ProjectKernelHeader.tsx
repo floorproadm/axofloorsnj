@@ -122,10 +122,6 @@ export function ProjectKernelHeader({ project, onPortalClick }: Props) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate(`/admin/measurements?project=${project.id}`)}>
-                <ExternalLink className="h-3.5 w-3.5 mr-2" /> Editor completo de medidas
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => setConfirmDelete(true)}
