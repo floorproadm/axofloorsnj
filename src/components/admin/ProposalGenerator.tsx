@@ -810,8 +810,8 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
         </CardContent>
       </Card>
 
-      {/* Inline Line Items Editor — Direct mode only */}
-      {proposal.mode === 'direct' && (
+      {/* Inline Line Items Editor — Direct mode only, hidden when accepted */}
+      {proposal.mode === 'direct' && !showReadOnly && (
         <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <div>
