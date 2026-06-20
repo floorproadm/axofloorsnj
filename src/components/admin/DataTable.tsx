@@ -222,10 +222,7 @@ export function DataTable<TData, TValue>({
                             })()}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm font-medium text-muted-foreground truncate">
-                              {firstHeaderText}
-                            </div>
-                            <div className="text-base font-semibold text-foreground truncate">
+                            <div className="text-base font-semibold text-foreground truncate leading-snug">
                               {flexRender(firstCell.column.columnDef.cell, firstCell.getContext())}
                             </div>
                           </div>
