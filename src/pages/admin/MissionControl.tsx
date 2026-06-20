@@ -177,9 +177,6 @@ export default function MissionControlPage() {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Mission Control
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {t("mission.subtitle")}
-            </p>
           </div>
         </div>
 
