@@ -128,6 +128,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [actionNotes, setActionNotes] = useState('');
   const [showConvertForm, setShowConvertForm] = useState(false);
   const [projectType, setProjectType] = useState('');
+  const [showConvertConfirm, setShowConvertConfirm] = useState(false);
   const [showAcceptForm, setShowAcceptForm] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -334,13 +335,23 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   };
 
   const handleConvertToProject = async () => {
-    if (!projectType) return;
-    const pid = await convertLeadToProject(lead.id, projectType);
+    if (!lead) return;
+    // Single source of truth: only allowed from proposal_sent
+    if (stage !== 'proposal_sent' || hasProject) return;
+    const services = Array.isArray(lead.services) ? lead.services.filter(Boolean) : [];
+    const derivedType = services.length > 0 ? services.join(' + ') : 'Flooring';
+    const pid = await convertLeadToProject(lead.id, derivedType);
     if (pid) {
+      // Move lead to "Fechado/Ganho" (in_production)
+      await updateLeadStatus(lead.id, 'in_production');
+      toast.success('Projeto criado com sucesso!');
+      setShowConvertConfirm(false);
       setShowConvertForm(false);
       setProjectType('');
       onRefresh();
-      setTimeout(() => { refreshNRA(); refetchProposal(); }, 500);
+      setTimeout(() => { refreshNRA(); refetchProposal(); }, 300);
+      onClose();
+      navigate(`/admin/projects/${pid}`);
     }
   };
 
@@ -447,9 +458,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   <ChevronRight className="w-3 h-3" /> Avançar
                 </Button>
               )}
-              {!hasProject && ['estimate_requested','estimate_scheduled','in_draft'].includes(stage) && (
-                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => setShowConvertForm(true)}>
-                  <ArrowRightLeft className="w-3 h-3" /> Converter
+              {!hasProject && stage === 'proposal_sent' && (
+                <Button
+                  size="sm"
+                  className="h-7 text-xs gap-1 shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  onClick={() => setShowConvertConfirm(true)}
+                  disabled={isConverting || isUpdating}
+                >
+                  <CheckCircle2 className="w-3 h-3" /> Converter
                 </Button>
               )}
             </>
@@ -917,6 +933,29 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
             </Button>
           )}
         </div>
+
+        {/* Conversion confirmation — single source of truth for Lead → Project */}
+        <AlertDialog open={showConvertConfirm} onOpenChange={setShowConvertConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>🎉 Proposta Aceita!</AlertDialogTitle>
+              <AlertDialogDescription>
+                Deseja criar um projeto para <strong>{lead.name}</strong>?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isConverting}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => { e.preventDefault(); handleConvertToProject(); }}
+                disabled={isConverting}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {isConverting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-1.5" />}
+                Criar Projeto
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </>
   );
 
@@ -1081,55 +1120,13 @@ function NRAActionButton({
       );
 
     case 'convert_to_project':
-      return showConvertForm ? (
-        <div className="space-y-3 p-3 bg-white rounded-lg border">
-          <p className="text-xs text-muted-foreground font-medium">Selecione os serviços:</p>
-          <div className="space-y-1.5">
-            {PROJECT_TYPES.map(type => {
-              const selected = projectType.split(' + ').filter(Boolean);
-              const isChecked = selected.includes(type);
-              return (
-                <label key={type} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-2 rounded hover:bg-muted/50">
-                  <Checkbox
-                    checked={isChecked}
-                    onCheckedChange={() => {
-                      const next = isChecked
-                        ? selected.filter(s => s !== type)
-                        : [...selected, type];
-                      onProjectTypeChange(next.join(' + '));
-                    }}
-                  />
-                  {type}
-                </label>
-              );
-            })}
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={onConvertToProject}
-              disabled={!projectType || isConverting}
-              size="sm"
-            >
-              {isConverting ? (
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-4 h-4 mr-1.5" />
-              )}
-              Converter
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => onShowConvertForm(false)}>
-              Cancelar
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Button 
-          onClick={() => onShowConvertForm(true)}
-          className="bg-amber-600 hover:bg-amber-700 text-white"
-        >
-          <ArrowRightLeft className="w-4 h-4 mr-1.5" />
-          Criar Projeto
-        </Button>
+      // Conversion is now gated to stage === 'proposal_sent' via the toolbar "Converter" button.
+      // Show informational hint instead of a parallel creation path.
+      return (
+        <p className="text-sm text-muted-foreground">
+          A conversão para Projeto está disponível apenas quando o lead está em{' '}
+          <strong>Proposta Enviada</strong>. Use o botão <strong>Converter</strong> no topo do drawer.
+        </p>
       );
 
     // Cost/margin/proposal actions → redirect to /admin/jobs

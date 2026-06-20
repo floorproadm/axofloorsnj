@@ -98,11 +98,31 @@ interface LinearPipelineProps {
 
 type ViewMode = 'board' | 'list';
 
-// 7 sales stages (excludes in_production, completed, lost — those are in Jobs)
+// 8 sales stages: in_production is the "Fechado/Ganho" terminal positive state
 const SALES_STAGES: PipelineStage[] = [
-  'cold_lead', 'warm_lead', 'estimate_requested', 
-  'estimate_scheduled', 'in_draft', 'proposal_sent', 'proposal_rejected'
+  'cold_lead', 'warm_lead', 'estimate_requested',
+  'estimate_scheduled', 'in_draft', 'proposal_sent',
+  'in_production', 'proposal_rejected'
 ];
+
+// Stages where Advance/move-forward is disabled (terminal positions inside the sales board)
+const TERMINAL_SALES_STAGES: PipelineStage[] = ['proposal_sent', 'in_production', 'proposal_rejected'];
+
+// Local overrides — display "Fechado/Ganho" in green for in_production within Leads board
+const PIPELINE_LABEL_OVERRIDES: Partial<Record<PipelineStage, string>> = {
+  in_production: 'Fechado/Ganho',
+};
+const PIPELINE_CONFIG_OVERRIDES: Partial<Record<PipelineStage, typeof STAGE_CONFIG[PipelineStage]>> = {
+  in_production: {
+    color: 'text-emerald-700',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-500',
+    textColor: 'text-emerald-700',
+    stateType: 'success',
+  },
+};
+const getStageLabel = (s: PipelineStage) => PIPELINE_LABEL_OVERRIDES[s] || STAGE_LABELS[s];
+const getStageConfig = (s: PipelineStage) => PIPELINE_CONFIG_OVERRIDES[s] || STAGE_CONFIG[s];
 
 const sourceLabels: Record<string, string> = {
   quiz: "Formulário Web",
@@ -1298,9 +1318,11 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const { updateLeadStatus } = useLeadPipeline();
   const advanceLead = async (lead: Lead) => {
     const stage = normalizeStatus(lead.status);
+    if (TERMINAL_SALES_STAGES.includes(stage)) return;
     const idx = SALES_STAGES.indexOf(stage as PipelineStage);
-    if (idx < 0 || idx >= SALES_STAGES.length - 1) return;
+    if (idx < 0) return;
     const next = SALES_STAGES[idx + 1];
+    if (!next || TERMINAL_SALES_STAGES.includes(next)) return;
     await updateLeadStatus(lead.id, next);
     onRefresh();
   };
@@ -1588,10 +1610,11 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
         <div className="overflow-x-auto pb-2 -mx-1 px-1">
           <div className="flex gap-1 min-w-max items-start">
             {SALES_STAGES.map((stage, idx) => {
-              const config = STAGE_CONFIG[stage];
+              const config = getStageConfig(stage);
               const stageLeads = leadsByStage[stage];
               const stats = stageStats[stage];
               const rate = conversionRates[stage];
+              const stageLabel = getStageLabel(stage);
 
               return (
                 <div key={stage} className="flex items-start">
@@ -1608,7 +1631,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     )}>
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className={cn("font-semibold text-xs truncate", config.textColor)}>
-                          {STAGE_LABELS[stage]}
+                          {stageLabel}
                         </span>
                         {stageStaleCounts[stage] >= 2 && (
                           <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none animate-pulse" title={`${stageStaleCounts[stage]} leads parados há 5d+`}>
@@ -1659,7 +1682,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                                 isBlocked={isBlocked(lead)}
                                 onClick={() => handleCardClick(lead)}
                                 onAdvance={() => advanceLead(lead)}
-                                canAdvance={SALES_STAGES.indexOf(stage) < SALES_STAGES.length - 1}
+                                canAdvance={!TERMINAL_SALES_STAGES.includes(stage)}
                                 onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                               />
                             ))
@@ -1707,7 +1730,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     isBlocked={isBlocked(lead)}
                     onClick={() => handleCardClick(lead)}
                     onAdvance={() => advanceLead(lead)}
-                    canAdvance={SALES_STAGES.indexOf(normalizeStatus(lead.status) as PipelineStage) < SALES_STAGES.length - 1}
+                    canAdvance={!TERMINAL_SALES_STAGES.includes(normalizeStatus(lead.status) as PipelineStage)}
                     onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                   />
                 ))
@@ -1762,6 +1785,8 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, on
   const alert = getOperationalAlert(lead, nra);
   const services: string[] = Array.isArray(lead.services) ? lead.services : [];
   const primaryService = services[0] ? (serviceLabels[services[0]] || services[0]) : null;
+  const leadStage = normalizeStatus(lead.status);
+  const isConverted = leadStage === 'in_production' || !!lead.converted_to_project_id;
 
   return (
     <div
@@ -1782,6 +1807,22 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, on
           {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
         </span>
       </div>
+
+      {/* Converted badge */}
+      {isConverted && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (lead.converted_to_project_id) {
+              window.location.href = `/admin/projects/${lead.converted_to_project_id}`;
+            }
+          }}
+          className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100"
+        >
+          ✅ Convertido {lead.converted_to_project_id && <span className="opacity-70">· Ver projeto</span>}
+        </button>
+      )}
 
       {/* L2: City + service */}
       <div className="mt-1 text-[11px] text-muted-foreground truncate">
