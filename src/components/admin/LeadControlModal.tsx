@@ -655,6 +655,22 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                 </div>
               </TabsContent>
 
+              {/* ═══ TAB: MEDIDAS ═══ */}
+              <TabsContent value="medidas" className="space-y-4 mt-4">
+                <LeadMeasurementsTab leadId={lead.id} organizationId={(lead as any).organization_id} />
+              </TabsContent>
+
+              {/* ═══ TAB: PROPOSTA ═══ */}
+              <TabsContent value="proposta" className="space-y-4 mt-4">
+                <LeadProposalTab
+                  leadId={lead.id}
+                  organizationId={(lead as any).organization_id}
+                  customerName={lead.name}
+                  budget={lead.budget}
+                  onProposalSent={() => { onRefresh(); refreshNRA(); }}
+                />
+              </TabsContent>
+
               {/* ═══ TAB: HISTÓRICO ═══ */}
               <TabsContent value="historico" className="space-y-4 mt-4">
                 {/* Follow-up form */}
