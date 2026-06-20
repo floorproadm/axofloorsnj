@@ -36,7 +36,16 @@ import {
   Download,
   Filter,
   SortAsc,
-  SortDesc
+  SortDesc,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  CalendarDays,
+  Clock,
+  Tag,
+  Briefcase,
+  FileText,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
