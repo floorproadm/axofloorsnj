@@ -350,32 +350,43 @@ export default function PublicPortal() {
         </div>
 
         <Tabs defaultValue="proposals" className="w-full">
-          <TabsList className="grid grid-cols-5 w-full bg-white border h-auto p-1">
-            <TabsTrigger value="proposals" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
-              <FileText className="w-3.5 h-3.5 sm:mr-1.5" />
-              <span className="text-[11px] sm:text-sm hidden sm:inline">Proposals</span>
+          <TabsList className="grid grid-cols-5 w-full bg-white border h-auto p-1 sm:p-1.5">
+            <TabsTrigger
+              value="proposals"
+              className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
+            >
+              <FileText className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              <span className="text-[10px] sm:text-sm leading-none">Proposals</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
-              <Receipt className="w-3.5 h-3.5 sm:mr-1.5" />
-              <span className="text-[11px] sm:text-sm hidden sm:inline">Invoices</span>
+            <TabsTrigger
+              value="invoices"
+              className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
+            >
+              <Receipt className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              <span className="text-[10px] sm:text-sm leading-none">Invoices</span>
             </TabsTrigger>
-            <TabsTrigger value="timeline" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
-              <Camera className="w-3.5 h-3.5 sm:mr-1.5" />
-              <span className="text-[11px] sm:text-sm hidden sm:inline">Timeline</span>
+            <TabsTrigger
+              value="timeline"
+              className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
+            >
+              <Camera className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              <span className="text-[10px] sm:text-sm leading-none">Timeline</span>
             </TabsTrigger>
-            <TabsTrigger value="status" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
-              <Activity className="w-3.5 h-3.5 sm:mr-1.5" />
-              <span className="text-[11px] sm:text-sm hidden sm:inline">Status</span>
+            <TabsTrigger
+              value="status"
+              className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
+            >
+              <Activity className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              <span className="text-[10px] sm:text-sm leading-none">Status</span>
             </TabsTrigger>
-            <TabsTrigger value="messages" className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1.5">
-              <MessageSquare className="w-3.5 h-3.5 sm:mr-1.5" />
-              <span className="text-[11px] sm:text-sm hidden sm:inline">Messages</span>
+            <TabsTrigger
+              value="messages"
+              className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
+            >
+              <MessageSquare className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              <span className="text-[10px] sm:text-sm leading-none">Messages</span>
             </TabsTrigger>
           </TabsList>
-          {/* Mobile labels under tabs */}
-          <div className="grid grid-cols-5 gap-1 mt-1 sm:hidden text-center text-[10px] text-slate-500">
-            <span>Proposals</span><span>Invoices</span><span>Timeline</span><span>Status</span><span>Messages</span>
-          </div>
 
 
           {/* PROPOSALS */}
