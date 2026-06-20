@@ -35,7 +35,7 @@ interface Props {
   onPortalClick?: () => void;
 }
 
-export function ProjectKernelHeader({ project }: Props) {
+export function ProjectKernelHeader({ project, onPortalClick }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
