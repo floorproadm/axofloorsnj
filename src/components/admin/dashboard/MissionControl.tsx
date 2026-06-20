@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import {
   ChevronRight, AlertTriangle, Clock, MessageSquare, Camera,
   PhoneOff, Timer, Zap, CheckCircle2, Circle, PlayCircle, Trash2, X, BellOff,
-  User, Calendar, Flag, FileText, DollarSign, Receipt, FileWarning, Eye, Pause
+  User, Calendar, Flag, FileText, DollarSign, Receipt, FileWarning, Eye, Pause,
+  UserPlus, Send
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
