@@ -773,6 +773,13 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
               <TabsContent value="proposta" className="space-y-4 mt-4">
                 <LeadProposalTab
                   leadId={lead.id}
+                  onProposalSent={async () => {
+                    if (lead.status !== 'proposal_sent') {
+                      await updateLeadStatus(lead.id, 'proposal_sent');
+                    }
+                    onRefresh();
+                    refreshNRA();
+                  }}
                   organizationId={(lead as any).organization_id}
                   customerName={lead.name}
                   budget={lead.budget}
