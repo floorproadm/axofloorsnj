@@ -551,6 +551,7 @@ export default function Customers() {
                 setPortalOpen(true);
               }
             }}
+            mobileHidden={["city"]}
             pageSize={10}
           />
         )}

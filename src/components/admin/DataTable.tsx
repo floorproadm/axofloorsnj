@@ -65,6 +65,7 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   onRowDelete?: (row: TData) => void;
   onRowPortal?: (row: TData) => void;
+  mobileHidden?: string[];
   pageSize?: number;
 }
 
@@ -96,6 +97,7 @@ export function DataTable<TData, TValue>({
   onRowClick,
   onRowDelete,
   onRowPortal,
+  mobileHidden,
   pageSize = 10,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -236,28 +238,33 @@ export function DataTable<TData, TValue>({
                         
                         {/* Card Body — Details Grid */}
                         <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
-                          {restCells.map((cell, index) => {
-                            const header = table.getHeaderGroups()[0]?.headers[index + 1];
-                            const headerText = header ? 
-                              flexRender(header.column.columnDef.header, header.getContext()) : '';
-                            const Icon = getHeaderIcon(String(headerText));
-                            
-                            return (
-                              <div key={cell.id} className="flex items-start gap-2 min-w-0">
-                                {Icon && (
-                                  <Icon className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                                )}
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground leading-tight">
-                                    {headerText}
-                                  </div>
-                                  <div className="text-sm font-medium text-foreground truncate">
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {restCells
+                            .filter((cell) => !mobileHidden?.includes(cell.column.id))
+                            .map((cell) => {
+                              const header = table
+                                .getHeaderGroups()[0]
+                                ?.headers.find((h) => h.column.id === cell.column.id);
+                              const headerText = header
+                                ? flexRender(header.column.columnDef.header, header.getContext())
+                                : '';
+                              const Icon = getHeaderIcon(String(headerText));
+                              
+                              return (
+                                <div key={cell.id} className="flex items-start gap-2 min-w-0">
+                                  {Icon && (
+                                    <Icon className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground leading-tight">
+                                      {headerText}
+                                    </div>
+                                    <div className="text-sm font-medium text-foreground truncate">
+                                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
                         </div>
                         
                         {/* Card Footer — Actions */}
