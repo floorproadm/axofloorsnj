@@ -816,9 +816,9 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
             Copy Public Link
           </Button>
           {!showReadOnly && (
-            <Button variant="default" onClick={handleSendEmail} disabled={!shareToken || sendingEmail || !proposal?.customer_email}>
+            <Button variant="default" onClick={handleSendEmail} disabled={!shareToken || sendingEmail}>
               {sendingEmail ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-              Send to Client
+              {proposal?.customer_email ? 'Send to Client' : 'Mark as Sent'}
             </Button>
           )}
           <Button onClick={handlePrint}>
