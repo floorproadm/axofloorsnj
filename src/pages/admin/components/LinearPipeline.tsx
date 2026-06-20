@@ -105,13 +105,22 @@ const SALES_STAGES: PipelineStage[] = [
 ];
 
 const sourceLabels: Record<string, string> = {
-  quiz: "Quiz",
-  contact_form: "Formulário",
-  contact_page: "Contato",
-  builders_page: "Builders",
-  realtors_page: "Realtors",
-  lead_magnet: "E-book",
-  website: "Site"
+  quiz: "Formulário Web",
+  contact_form: "Formulário Web",
+  contact_page: "Formulário Web",
+  builders_page: "Formulário Web",
+  realtors_page: "Formulário Web",
+  lead_magnet: "Formulário Web",
+  website: "Formulário Web",
+  partner_referral: "Via Parceiro",
+  referral: "Via Parceiro",
+  manual: "Manual",
+  phone: "Manual",
+  walk_in: "Manual",
+  google: "Google Ads",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  door_knock: "Porta a porta",
 };
 
 const serviceLabels: Record<string, string> = {
@@ -126,6 +135,13 @@ const serviceLabels: Record<string, string> = {
 };
 
 const SERVICE_OPTIONS = Object.entries(serviceLabels);
+
+function getStageTimeBadge(updatedAt: string) {
+  const days = differenceInDays(new Date(), new Date(updatedAt));
+  if (days <= 2) return { text: `${days}d`, className: 'bg-muted text-muted-foreground' };
+  if (days <= 5) return { text: `${days}d`, className: 'bg-amber-100 text-amber-700' };
+  return { text: `${days}d`, className: 'bg-red-100 text-red-700 font-semibold animate-pulse' };
+}
 
 function getTimeBadge(updatedAt: string) {
   const hours = differenceInHours(new Date(), new Date(updatedAt));
