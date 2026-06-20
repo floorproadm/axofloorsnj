@@ -88,22 +88,10 @@ export default function ProjectDetail() {
   return (
     <AdminLayout title={project.customer_name || 'Projeto'}>
       <div className="space-y-4">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex-1 min-w-0">
-            <ProjectKernelHeader project={project} />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 shrink-0"
-            onClick={() => setPortalOpen(true)}
-            disabled={!project.customer_id}
-            title={project.customer_id ? 'Compartilhar Portal do Cliente' : 'Projeto sem cliente vinculado'}
-          >
-            <Link2 className="w-4 h-4" />
-            Portal do Cliente
-          </Button>
-        </div>
+        <ProjectKernelHeader
+          project={project}
+          onPortalClick={() => setPortalOpen(true)}
+        />
 
         <CustomerPortalShareDialog
           open={portalOpen}
