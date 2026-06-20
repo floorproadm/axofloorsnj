@@ -265,8 +265,7 @@ export function MissionControl({ systemAlerts, isLoadingAlerts, recentActivity =
           {doneTasks.map((task) => (
             <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
           ))}
-        </div>
-      )}
+      {recentActivity.length > 0 && <RecentActivitySection items={recentActivity} />}
 
       <TaskDetailSheet
         task={selectedTask}
@@ -275,6 +274,92 @@ export function MissionControl({ systemAlerts, isLoadingAlerts, recentActivity =
         onToggle={toggleStatus}
         onDelete={(id) => { deleteTask.mutate(id); setSelectedTask(null); }}
       />
+    </div>
+  );
+}
+
+// ---------- Quick Actions ----------
+
+function QuickActions() {
+  const actions = [
+    { label: "Leads & Vendas", to: "/admin/leads", icon: UserPlus },
+    { label: "Propostas", to: "/admin/proposals", icon: Send },
+    { label: "Projetos", to: "/admin/projects", icon: PlayCircle },
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {actions.map((a) => (
+        <Link
+          key={a.to}
+          to={a.to}
+          className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-border bg-card hover:bg-secondary/60 transition-colors text-center"
+        >
+          <a.icon className="w-4 h-4 text-muted-foreground" />
+          <span className="text-[10px] font-medium text-foreground">{a.label}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Recent Activity ----------
+
+function RecentActivitySection({ items }: { items: RecentActivityItem[] }) {
+  const activityIcon = (type: RecentActivityItem["type"]) => {
+    switch (type) {
+      case "lead":
+        return <UserPlus className="w-3.5 h-3.5 text-[hsl(var(--state-success))]" />;
+      case "proposal":
+        return <Send className="w-3.5 h-3.5 text-[hsl(var(--gold-warm))]" />;
+      case "payment":
+        return <DollarSign className="w-3.5 h-3.5 text-[hsl(var(--state-success))]" />;
+      case "job":
+        return <PlayCircle className="w-3.5 h-3.5 text-primary" />;
+    }
+  };
+
+  const activityLabel = (type: RecentActivityItem["type"]) => {
+    switch (type) {
+      case "lead": return "Novo lead";
+      case "proposal": return "Proposta enviada";
+      case "payment": return "Pagamento recebido";
+      case "job": return "Job atualizado";
+    }
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <div className="px-1">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          Últimas atividades (48h)
+        </span>
+      </div>
+      <div className="divide-y divide-border rounded-xl border border-border overflow-hidden bg-card">
+        {items.slice(0, 8).map((item, i) => (
+          <Link
+            key={i}
+            to={item.link}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors"
+          >
+            <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+              {activityIcon(item.type)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground truncate">
+                {activityLabel(item.type)} — {item.label}
+              </p>
+            </div>
+            {item.amount !== undefined && item.amount > 0 && (
+              <span className="text-sm font-semibold text-[hsl(var(--state-success))] flex-shrink-0">
+                {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(item.amount)}
+              </span>
+            )}
+            <span className="text-[11px] text-muted-foreground flex-shrink-0">
+              {format(new Date(item.date), "dd/MM HH:mm")}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
