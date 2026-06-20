@@ -65,6 +65,7 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   onRowDelete?: (row: TData) => void;
   onRowPortal?: (row: TData) => void;
+  mobileHidden?: string[];
   pageSize?: number;
 }
 
