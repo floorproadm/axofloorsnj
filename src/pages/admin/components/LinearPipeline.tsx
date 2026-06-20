@@ -1318,9 +1318,11 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const { updateLeadStatus } = useLeadPipeline();
   const advanceLead = async (lead: Lead) => {
     const stage = normalizeStatus(lead.status);
+    if (TERMINAL_SALES_STAGES.includes(stage)) return;
     const idx = SALES_STAGES.indexOf(stage as PipelineStage);
-    if (idx < 0 || idx >= SALES_STAGES.length - 1) return;
+    if (idx < 0) return;
     const next = SALES_STAGES[idx + 1];
+    if (!next || TERMINAL_SALES_STAGES.includes(next)) return;
     await updateLeadStatus(lead.id, next);
     onRefresh();
   };
