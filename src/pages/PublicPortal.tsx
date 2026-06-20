@@ -332,9 +332,9 @@ export default function PublicPortal() {
           {brand.phone && (
             <a
               href={`tel:${brand.phone.replace(/[^\d+]/g, "")}`}
-              className="flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200"
+              className="flex items-center gap-1.5 text-sm text-amber-300 hover:text-amber-200 whitespace-nowrap"
             >
-              <Phone className="w-3.5 h-3.5" /> {brand.phone}
+              <Phone className="w-4 h-4" /> {brand.phone}
             </a>
           )}
         </div>
