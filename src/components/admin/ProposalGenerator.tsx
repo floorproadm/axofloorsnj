@@ -740,10 +740,12 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
             {' '}<span className="text-emerald-700">Use "Gerar Invoice" para faturar.</span>
           </div>
           <div className="flex gap-2 shrink-0">
-            <Button size="sm" variant="default" className="bg-emerald-600 hover:bg-emerald-700"
-              onClick={() => window.location.assign(`/admin/invoices?project=${projectId}`)}>
-              <FileText className="h-3.5 w-3.5 mr-1.5" /> Gerar Invoice
-            </Button>
+            {projectId && (
+              <Button size="sm" variant="default" className="bg-emerald-600 hover:bg-emerald-700"
+                onClick={() => window.location.assign(`/admin/invoices?project=${projectId}`)}>
+                <FileText className="h-3.5 w-3.5 mr-1.5" /> Gerar Invoice
+              </Button>
+            )}
             <Button size="sm" variant="ghost"
               onClick={() => setUnlocked((u) => !u)}>
               {unlocked ? 'Bloquear novamente' : 'Desbloquear (admin)'}
