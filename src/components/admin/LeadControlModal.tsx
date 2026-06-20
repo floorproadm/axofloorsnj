@@ -647,12 +647,6 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   </div>
                 )}
 
-                {/* Timestamps */}
-                <div className="flex justify-between text-xs text-muted-foreground pt-2">
-                  <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {format(new Date(lead.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
-                  <span>Atualizado: {format(new Date(lead.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
-                </div>
-
                 <Separator />
 
                 {/* Notes */}
@@ -762,6 +756,12 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">Nenhuma nota adicionada ainda</p>
                 )}
+
+                {/* Timestamps */}
+                <div className="flex justify-between text-[11px] text-muted-foreground/50 pt-4 border-t border-dashed">
+                  <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {format(new Date(lead.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
+                  <span>Atualizado: {format(new Date(lead.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
+                </div>
               </TabsContent>
 
               {/* ═══ TAB: MEDIDAS ═══ */}
