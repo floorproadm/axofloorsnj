@@ -1,12 +1,14 @@
-import { useState, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, ListChecks, MonitorPlay } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, ListChecks, MonitorPlay, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { IntakeTabContent } from "@/components/admin/IntakeTabContent";
 
 const GeneralSettings = lazy(() => import("@/components/admin/settings/GeneralSettings"));
 const BrandingSettings = lazy(() => import("@/components/admin/settings/BrandingSettings"));
@@ -16,7 +18,7 @@ const EmailTemplateEditor = lazy(() => import("@/components/admin/settings/Email
 const B2BPricingSettings = lazy(() => import("@/components/admin/settings/B2BPricingSettings"));
 const DemoPortalsSettings = lazy(() => import("@/components/admin/settings/DemoPortalsSettings"));
 
-type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "demo_portals";
+type Section = "general" | "branding" | "team" | "language" | "email_logs" | "email_templates" | "b2b_pricing" | "demo_portals" | "intake";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center py-20">
@@ -53,15 +55,27 @@ function LanguageSettings() {
   );
 }
 
+const VALID_SECTIONS: Section[] = ["general", "branding", "team", "language", "email_logs", "email_templates", "b2b_pricing", "demo_portals", "intake"];
+
 export default function Settings() {
-  const [active, setActive] = useState<Section>("general");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlSection = searchParams.get("section") as Section | null;
+  const active: Section = urlSection && VALID_SECTIONS.includes(urlSection) ? urlSection : "general";
   const { t } = useLanguage();
+
+  const setActive = (id: Section) => {
+    const next = new URLSearchParams(searchParams);
+    if (id === "general") next.delete("section");
+    else next.set("section", id);
+    setSearchParams(next, { replace: true });
+  };
 
   const sections: { id: Section; label: string; description: string; icon: React.ElementType }[] = [
     { id: "general", label: t("settings.geral"), description: t("settings.geralDesc"), icon: SettingsIcon },
     { id: "branding", label: "Branding", description: t("settings.brandingDesc"), icon: Palette },
     { id: "team", label: t("settings.equipe"), description: t("settings.equipeDesc"), icon: Users },
     { id: "language", label: t("settings.idioma"), description: t("settings.idiomaDesc"), icon: Globe },
+    { id: "intake", label: "Captação", description: "Fontes de leads e entrada manual", icon: BarChart3 },
     { id: "email_logs", label: "Email Logs", description: "Gmail email audit trail", icon: Mail },
     { id: "email_templates", label: "Email Templates", description: "Edit email copy & CTAs", icon: FileEdit },
     { id: "b2b_pricing", label: "Catálogo B2B", description: "Serviços disponíveis para cotações de parceiros", icon: ListChecks },
@@ -125,6 +139,7 @@ export default function Settings() {
               {active === "branding" && <BrandingSettings />}
               {active === "team" && <TeamSettings />}
               {active === "language" && <LanguageSettings />}
+              {active === "intake" && <IntakeTabContent />}
               {active === "email_logs" && <EmailLogsSettings />}
               {active === "email_templates" && <EmailTemplateEditor />}
               {active === "b2b_pricing" && <B2BPricingSettings />}
