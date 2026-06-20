@@ -141,13 +141,17 @@ export function MissionControl({ systemAlerts, isLoadingAlerts, recentActivity =
 
   if (isEmpty) {
     return (
-      <Link to="/admin/leads" className="block text-center py-8 rounded-xl border border-dashed border-border bg-card/50 hover:bg-secondary/40 transition-colors cursor-pointer">
-        <div className="w-10 h-10 rounded-full bg-[hsl(var(--state-success-bg))] flex items-center justify-center mx-auto mb-2">
-          <span className="text-[hsl(var(--state-success))] text-lg">✓</span>
+      <div className="space-y-5">
+        <div className="text-center py-8 rounded-xl border border-dashed border-border bg-card/50">
+          <div className="w-10 h-10 rounded-full bg-[hsl(var(--state-success-bg))] flex items-center justify-center mx-auto mb-2">
+            <CheckCircle2 className="w-5 h-5 text-[hsl(var(--state-success))]" />
+          </div>
+          <p className="text-sm font-medium text-foreground">{t("mission.tudoSobControle")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("mission.semPendencias")}</p>
         </div>
-        <p className="text-sm font-medium text-foreground">{t("mission.tudoSobControle")}</p>
-        <p className="text-xs text-muted-foreground mt-1">{t("mission.semPendencias")}</p>
-      </Link>
+        <QuickActions />
+        {recentActivity.length > 0 && <RecentActivitySection items={recentActivity} />}
+      </div>
     );
   }
 
