@@ -10,7 +10,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, MapPin, MoreVertical, Trash2, ArrowRight, CheckCircle2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, MapPin, MoreVertical, Trash2, ArrowRight, CheckCircle2, ExternalLink, Link2 } from 'lucide-react';
 import { ProjectKPIBar } from './ProjectKPIBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -32,9 +32,10 @@ const DESTRUCTIVE = new Set(['cancelled', 'paid']);
 
 interface Props {
   project: any;
+  onPortalClick?: () => void;
 }
 
-export function ProjectKernelHeader({ project }: Props) {
+export function ProjectKernelHeader({ project, onPortalClick }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
@@ -133,6 +134,20 @@ export function ProjectKernelHeader({ project }: Props) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {onPortalClick && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 gap-1.5 text-xs px-2"
+              onClick={onPortalClick}
+              disabled={!project.customer_id}
+              title={project.customer_id ? 'Compartilhar Portal do Cliente' : 'Projeto sem cliente vinculado'}
+            >
+              <Link2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Portal do Cliente</span>
+            </Button>
+          )}
         </div>
       </div>
 
