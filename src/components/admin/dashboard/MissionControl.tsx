@@ -265,6 +265,9 @@ export function MissionControl({ systemAlerts, isLoadingAlerts, recentActivity =
           {doneTasks.map((task) => (
             <TaskRow key={task.id} task={task} onToggle={toggleStatus} onDelete={(id) => deleteTask.mutate(id)} onOpen={setSelectedTask} />
           ))}
+        </div>
+      )}
+
       {recentActivity.length > 0 && <RecentActivitySection items={recentActivity} />}
 
       <TaskDetailSheet
