@@ -783,7 +783,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   organizationId={(lead as any).organization_id}
                   customerName={lead.name}
                   budget={lead.budget}
-                  onProposalSent={() => { onRefresh(); refreshNRA(); }}
+                  
                 />
               </TabsContent>
 
