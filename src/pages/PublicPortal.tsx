@@ -210,13 +210,27 @@ export default function PublicPortal() {
           ]);
           const isPro = planRes === "pro" || planRes === "enterprise";
           if (cs && !cancelled) {
-            setBrand({
-              company_name: isPro ? ((cs as any).company_name || "FloorPRO") : "FloorPRO",
-              phone: isPro ? ((cs as any).phone || "") : "",
-              email: isPro ? ((cs as any).email || "") : "",
-              website: isPro ? ((cs as any).website || "") : "",
-              logo_url: isPro ? ((cs as any).logo_url || null) : null,
-            });
+            const rawLogo = isPro ? ((cs as any).logo_url || null) : null;
+            let resolvedLogo: string | null = null;
+            if (rawLogo) {
+              if (/^https?:\/\//i.test(rawLogo)) {
+                resolvedLogo = rawLogo;
+              } else {
+                const { data: signed } = await supabase.storage
+                  .from("media")
+                  .createSignedUrl(rawLogo, 3600);
+                resolvedLogo = signed?.signedUrl || null;
+              }
+            }
+            if (!cancelled) {
+              setBrand({
+                company_name: isPro ? ((cs as any).company_name || "FloorPRO") : "FloorPRO",
+                phone: isPro ? ((cs as any).phone || "") : "",
+                email: isPro ? ((cs as any).email || "") : "",
+                website: isPro ? ((cs as any).website || "") : "",
+                logo_url: resolvedLogo,
+              });
+            }
           }
         }
       }
