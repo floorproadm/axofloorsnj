@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { AXO_ORG_ID } from "@/lib/constants";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -123,7 +122,7 @@ function getPeriodDate(period: Period): Date | null {
   return null;
 }
 
-export default function Intake() {
+export function IntakeTabContent() {
   const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -308,11 +307,7 @@ export default function Intake() {
   const conversionRate = totalLeads > 0 ? Math.round((totalConverted / totalLeads) * 100) : 0;
 
   return (
-    <AdminLayout
-      title="Captação"
-      breadcrumbs={[{ label: "Captação" }]}
-    >
-      <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -829,6 +824,6 @@ export default function Intake() {
           onRefresh={fetchLeads}
         />
       </div>
-    </AdminLayout>
+    </div>
   );
 }
