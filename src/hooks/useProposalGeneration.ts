@@ -355,10 +355,110 @@ export function useProposalGeneration(): UseProposalGenerationReturn {
     }
   }, [generateTiers, validateAllTiers]);
 
+  /**
+   * Lead-mode fetcher — proposal is keyed by lead_id (project_id stays NULL until conversion).
+   * Reuses any existing non-terminal proposal for the lead; otherwise inserts a fresh draft.
+   */
+  const fetchLeadData = useCallback(async (
+    leadId: string,
+    options: FetchOptions = {}
+  ): Promise<ProposalData | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data: lead, error: leadError } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('id', leadId)
+        .single();
+      if (leadError || !lead) throw new Error('Lead not found: ' + (leadError?.message || ''));
+
+      const { data: settings } = await supabase
+        .from('company_settings')
+        .select('default_margin_min_percent')
+        .limit(1)
+        .single();
+      const minMargin = settings?.default_margin_min_percent ?? 30;
+
+      const validUntil = new Date();
+      validUntil.setDate(validUntil.getDate() + 30);
+
+      const { data: existing } = await supabase
+        .from('proposals')
+        .select('*')
+        .eq('lead_id', leadId)
+        .in('status', ['draft', 'sent', 'viewed'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const buildPayload = (row: any): ProposalData => {
+        const flatPrice = Number(row.flat_price ?? 0);
+        return {
+          project_id: '',
+          proposal_id: row.id,
+          proposal_number: row.proposal_number,
+          proposal_status: row.status,
+          customer_name: lead.name || '',
+          customer_email: lead.email || '',
+          customer_phone: lead.phone || '',
+          address: [lead.address, lead.city, lead.zip_code].filter(Boolean).join(', '),
+          project_type: Array.isArray(lead.services) && lead.services.length > 0 ? String(lead.services[0]) : 'flooring',
+          square_footage: 0,
+          mode: 'direct',
+          tiers: [],
+          flat_price: flatPrice,
+          flat_margin_percent: 0,
+          line_items: [],
+          created_at: row.created_at,
+          valid_until: row.valid_until,
+          base_cost: 0,
+          _isExisting: true,
+        };
+      };
+
+      if (existing) return buildPayload(existing);
+      if (options.readOnly) return null;
+
+      const shareToken = crypto.getRandomValues(new Uint8Array(20))
+        .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+
+      const { data: savedProposal, error: saveError } = await supabase
+        .from('proposals')
+        .insert({
+          project_id: null,
+          lead_id: leadId,
+          customer_id: lead.customer_id ?? null,
+          use_tiers: false,
+          flat_price: options.flatPrice ?? 0,
+          good_price: 0, better_price: 0, best_price: 0,
+          margin_good: 0, margin_better: 0, margin_best: 0,
+          valid_until: validUntil.toISOString().slice(0, 10),
+          status: 'draft',
+          proposal_number: `LP-${Date.now().toString(36).toUpperCase()}`,
+          organization_id: (lead as any).organization_id ?? AXO_ORG_ID,
+          share_token: shareToken,
+          client_note: options.clientNote || null,
+        } as any)
+        .select()
+        .single();
+      if (saveError) throw new Error('Failed to save proposal: ' + saveError.message);
+
+      return { ...buildPayload(savedProposal), _isExisting: false };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     generateTiers,
     validateAllTiers,
     fetchProjectData,
+    fetchLeadData,
     isLoading,
     error,
   };
