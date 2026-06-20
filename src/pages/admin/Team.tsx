@@ -177,8 +177,8 @@ export default function Team() {
 
         {/* Sub-tabs */}
         <div className="space-y-2">
-          <div className="sm:hidden flex justify-end">
-            <Button size="sm" onClick={() => { setEditing(null); setDialogOpen(true); }}>
+          <div className="sm:hidden">
+            <Button className="w-full min-h-[44px]" onClick={() => { setEditing(null); setDialogOpen(true); }}>
               <Plus className="w-4 h-4 mr-1" /> Adicionar membro
             </Button>
           </div>
