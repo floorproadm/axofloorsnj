@@ -326,9 +326,8 @@ export default function PublicPortal() {
       {/* Header navy/gold */}
       <header className="bg-[#0f1b3d] text-white">
         <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] uppercase tracking-widest text-amber-300/90">{brand.company_name}</div>
-            <div className="text-sm font-semibold">Hi, {firstName}</div>
+          <div className="text-sm font-semibold uppercase tracking-widest text-amber-300/90">
+            {brand.company_name}
           </div>
           {brand.phone && (
             <a
@@ -343,11 +342,18 @@ export default function PublicPortal() {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="mb-5">
-          <h1 className="text-2xl font-bold text-slate-900">Your {brand.company_name} Portal</h1>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {(() => {
+              const h = new Date().getHours();
+              const greeting = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+              return `${greeting}, ${firstName}`;
+            })()}
+          </h1>
           <p className="text-sm text-slate-600 mt-1">
             Proposals, invoices and project updates — all in one place.
           </p>
         </div>
+
 
         <Tabs defaultValue="proposals" className="w-full">
           <TabsList className="grid grid-cols-5 w-full bg-white border h-auto p-1 sm:p-1.5">
