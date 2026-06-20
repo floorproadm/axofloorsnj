@@ -599,7 +599,7 @@ export default function Dashboard() {
               {t("dashboard.atividadeRecente")}
             </h2>
             <Link
-              to="/admin/leads"
+              to="/admin/mission-control"
               className="text-xs font-semibold text-[hsl(var(--state-risk))] hover:underline"
             >
               {t("dashboard.verTudo")}
