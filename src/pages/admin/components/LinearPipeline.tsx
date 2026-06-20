@@ -1708,49 +1708,6 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       )}
 
 
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* List View */}
-      {viewMode === 'list' && (
-        <div className="space-y-2">
-          {/* Table Header — hidden on mobile */}
-          <div className="hidden md:grid grid-cols-[2fr_130px_140px_160px_100px_90px] gap-3 px-5 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">
-            <span>Lead</span>
-            <span>Estágio</span>
-            <span>Contato</span>
-            <span>Serviços</span>
-            <span className="text-right">Valor</span>
-            <span className="text-right">Tempo</span>
-          </div>
-          {/* Table Body */}
-          <div className="max-h-[60vh] overflow-y-auto">
-            <div className="space-y-1.5 px-0.5">
-              {sortedLeads.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground/60 text-xs">
-                  Nenhum lead encontrado com esses filtros
-                </div>
-              ) : (
-                sortedLeads.map(lead => (
-                  <PipelineListRow
-                    key={lead.id}
-                    lead={lead}
-                    nra={nraMap[lead.id]}
-                    isStale={isStale(lead)}
-                    isBlocked={isBlocked(lead)}
-                    onClick={() => handleCardClick(lead)}
-                    onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Lead Detail Modal */}
       <LeadControlModal
