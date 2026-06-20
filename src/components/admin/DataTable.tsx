@@ -63,6 +63,7 @@ interface DataTableProps<TData, TValue> {
   onExport?: () => void;
   onRowClick?: (row: TData) => void;
   onRowDelete?: (row: TData) => void;
+  onRowPortal?: (row: TData) => void;
   pageSize?: number;
 }
 
