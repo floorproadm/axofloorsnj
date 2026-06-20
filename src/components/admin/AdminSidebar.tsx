@@ -4,25 +4,18 @@ import {
   LayoutDashboard,
   Users,
   Images,
-  Building,
   Settings,
   LogOut,
   Home,
-  Inbox,
-  Ruler,
-  BarChart3,
   Star,
   FileText,
   BookOpen,
   HelpCircle,
   Handshake,
-  DollarSign,
   Zap,
   Truck,
   FolderKanban,
-  
   CalendarDays,
-  Clock,
   UserCheck,
   MessageSquare,
   Shield,
@@ -87,38 +80,37 @@ export function AdminSidebar() {
   const brandLogoAlt = isPro && tenantLogoUrl ? "Logo" : "FloorPro";
 
   const topItems = [
-    { title: "Home", url: "/admin/dashboard", icon: LayoutDashboard },
+    { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: "Schedule", url: "/admin/schedule", icon: CalendarDays },
     { title: "Dispatch", url: "/admin/dispatch", icon: Truck },
-    { title: "Financeiro", url: "/admin/payments", icon: DollarSign },
   ];
 
-  const toolsItems = [
+  const salesItems = [
     { title: "Leads", url: "/admin/leads", icon: Users },
-    { title: "Visualizer", url: "/admin/visualizer", icon: Scan },
-    { title: "Invoices", url: "/admin/invoices", icon: Receipt },
     { title: t("sidebar.propostas"), url: "/admin/proposals", icon: FileText },
+    { title: "Invoices", url: "/admin/invoices", icon: Receipt },
+    { title: "Customers", url: "/admin/customers", icon: UserCheck },
+  ];
+
+  const opsItems = [
+    { title: "Chat", url: "/admin/chat", icon: MessageSquare, badge: "chat" as const },
+    { title: "Partners", url: "/admin/partners", icon: Handshake },
+    { title: "Team", url: "/admin/team", icon: Users },
     { title: "Automations", url: "/admin/automations", icon: Zap },
   ];
 
-  const manageItems = [
-    { title: "Chat", url: "/admin/chat", icon: MessageSquare, badge: "chat" as const },
-    { title: "Partners", url: "/admin/partners", icon: Handshake },
-    { title: "Customers", url: "/admin/customers", icon: UserCheck },
-    { title: "Equipe", url: "/admin/team", icon: Users },
-    
-    
-    
-    
-    { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
+  const marketingItems = [
     { title: "Gallery", url: "/admin/gallery", icon: Images },
+    { title: "Visualizer", url: "/admin/visualizer", icon: Scan },
+    { title: t("sidebar.catalogo"), url: "/admin/catalog", icon: BookOpen },
     { title: "Reputation", url: "/admin/reputation", icon: Star },
   ];
 
   const labeledGroups = [
-    { label: t("sidebar.tools"), items: toolsItems },
-    { label: t("sidebar.manage"), items: manageItems },
+    { label: "Sales", items: salesItems },
+    { label: "Operations", items: opsItems },
+    { label: "Marketing", items: marketingItems },
   ];
 
   const footerNavItems = [
