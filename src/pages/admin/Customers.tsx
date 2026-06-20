@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2, CalendarIcon, X, Search, SlidersHorizontal, Plus } from "lucide-react";
 import { CustomerDetailSheet } from "@/components/admin/CustomerDetailSheet";
 import { CreateCustomerSheet } from "@/components/admin/CreateCustomerSheet";
+import { CustomerPortalShareDialog } from "@/components/admin/CustomerPortalShareDialog";
 import { DataTable } from "@/components/admin/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,8 @@ export default function Customers() {
   const [selected, setSelected] = useState<Customer | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [portalCustomer, setPortalCustomer] = useState<Customer | null>(null);
+  const [portalOpen, setPortalOpen] = useState(false);
 
   // Applied filters
   const [search, setSearch] = useState("");
@@ -520,6 +523,13 @@ export default function Customers() {
               navigate(`/admin/customers/${row.id}`);
             }}
             onRowDelete={handleDelete}
+            onRowPortal={(row) => {
+              const customer = customers.find((c) => c.id === row.id);
+              if (customer) {
+                setPortalCustomer(customer);
+                setPortalOpen(true);
+              }
+            }}
             pageSize={10}
           />
         )}
@@ -540,6 +550,16 @@ export default function Customers() {
           onCreated={(customer) => {
             setCustomers((prev) => [customer, ...prev]);
           }}
+        />
+        <CustomerPortalShareDialog
+          open={portalOpen}
+          onOpenChange={setPortalOpen}
+          customerId={portalCustomer?.id}
+          customerName={portalCustomer?.full_name}
+          customerEmail={portalCustomer?.email}
+          customerPhone={portalCustomer?.phone}
+          relatedId={portalCustomer?.id}
+          relatedType="customer"
         />
       </div>
     </AdminLayout>

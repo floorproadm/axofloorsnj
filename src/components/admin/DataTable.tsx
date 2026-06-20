@@ -47,6 +47,7 @@ import {
   Briefcase,
   FileText,
   Trash2,
+  Link2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -63,6 +64,7 @@ interface DataTableProps<TData, TValue> {
   onExport?: () => void;
   onRowClick?: (row: TData) => void;
   onRowDelete?: (row: TData) => void;
+  onRowPortal?: (row: TData) => void;
   pageSize?: number;
 }
 
@@ -93,6 +95,7 @@ export function DataTable<TData, TValue>({
   onExport,
   onRowClick,
   onRowDelete,
+  onRowPortal,
   pageSize = 10,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -257,20 +260,35 @@ export function DataTable<TData, TValue>({
                           })}
                         </div>
                         
-                        {/* Card Footer — Delete Action */}
-                        {onRowDelete && (
-                          <div className="px-4 py-2 border-t bg-muted/20">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onRowDelete(row.original);
-                              }}
-                              className="flex items-center gap-2 text-xs text-destructive hover:text-destructive/80 transition-colors w-full"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              Remover cliente
-                            </button>
+                        {/* Card Footer — Actions */}
+                        {(onRowDelete || onRowPortal) && (
+                          <div className="px-4 py-2 border-t bg-muted/20 grid grid-cols-2 gap-2">
+                            {onRowPortal && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRowPortal(row.original);
+                                }}
+                                className="flex items-center justify-center gap-2 text-xs text-primary hover:text-primary/80 transition-colors"
+                              >
+                                <Link2 className="w-3.5 h-3.5" />
+                                Portal
+                              </button>
+                            )}
+                            {onRowDelete && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRowDelete(row.original);
+                                }}
+                                className="flex items-center justify-center gap-2 text-xs text-destructive hover:text-destructive/80 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Remover
+                              </button>
+                            )}
                           </div>
                         )}
                       </>
