@@ -1294,182 +1294,256 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   };
 
 
+  // Advance to next stage (inline button in list view)
+  const { updateLeadStatus } = useLeadPipeline();
+  const advanceLead = async (lead: Lead) => {
+    const stage = normalizeStatus(lead.status);
+    const idx = SALES_STAGES.indexOf(stage as PipelineStage);
+    if (idx < 0 || idx >= SALES_STAGES.length - 1) return;
+    const next = SALES_STAGES[idx + 1];
+    await updateLeadStatus(lead.id, next);
+    onRefresh();
+  };
+
+  const clearAllFilters = () => {
+    setKpiFilter(null);
+    setNeedsActionOnly(false);
+    setSearchQuery('');
+    setFilters({ stages: [], sources: [], services: [], budgetMin: '', budgetMax: '', assignedTo: '' });
+    onClearFilter?.();
+  };
+
+  const KPI_DEFS: { key: KpiKey; label: string; emoji: string; value: number | string; color: string }[] = [
+    { key: 'hot', label: 'Quentes', emoji: '🔥', value: kpiCounts.hot, color: 'border-red-200 hover:bg-red-50 data-[active=true]:bg-red-100 data-[active=true]:border-red-400' },
+    { key: 'stale', label: 'Parados +3d', emoji: '⏰', value: kpiCounts.stale, color: 'border-amber-200 hover:bg-amber-50 data-[active=true]:bg-amber-100 data-[active=true]:border-amber-400' },
+    { key: 'no_action' as KpiKey, label: 'Sem próx. ação', emoji: '📋', value: kpiCounts.no_action, color: 'border-slate-200 hover:bg-slate-50 data-[active=true]:bg-slate-100 data-[active=true]:border-slate-400' },
+    { key: 'closed_month', label: 'Fechados este mês', emoji: '✅', value: kpiCounts.closed_month, color: 'border-emerald-200 hover:bg-emerald-50 data-[active=true]:bg-emerald-100 data-[active=true]:border-emerald-400' },
+  ];
+
   return (
     <div className="space-y-3">
-      {/* Top Summary Bar */}
-      <div className="bg-card border rounded-xl px-3 sm:px-4 py-3 space-y-3">
-        {/* Row 1: Stats + View Toggle */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground block">Total Leads</span>
-              <span className="text-lg sm:text-xl font-bold text-foreground">{pipelineHealth.active}</span>
-            </div>
-            <div className="h-6 sm:h-8 w-px bg-border" />
-            <div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground block">Valor Total</span>
-              <span className="text-lg sm:text-xl font-bold text-primary">
-                ${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-              </span>
-            </div>
-            {pipelineHealth.needsAction > 0 && (
-              <>
-                <div className="h-6 sm:h-8 w-px bg-border" />
-                <div>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground block">Atenção</span>
-                  <span className="text-lg sm:text-xl font-bold text-destructive">{pipelineHealth.needsAction}</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center border rounded-lg overflow-hidden flex-shrink-0">
-            <button
-              onClick={() => setViewMode('board')}
-              className={cn(
-                "flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors",
-                viewMode === 'board'
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Board</span>
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={cn(
-                "flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors border-l",
-                viewMode === 'list'
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <List className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">List</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Funnel Health Bar */}
-        {pipelineHealth.active > 0 && (
-          <div className="space-y-1">
-            <div className="flex h-2.5 rounded-full overflow-hidden bg-muted/40">
-              {SALES_STAGES.map(stage => {
-                const count = stageStats[stage]?.count || 0;
-                if (count === 0) return null;
-                const pct = (count / pipelineHealth.active) * 100;
-                const config = STAGE_CONFIG[stage];
-                return (
-                  <div
-                    key={stage}
-                    className={cn("h-full transition-all", config.bgColor, "opacity-80")}
-                    style={{ width: `${pct}%`, minWidth: count > 0 ? '4px' : '0' }}
-                    title={`${STAGE_LABELS[stage]}: ${count} leads (${Math.round(pct)}%)`}
-                  />
-                );
-              })}
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {SALES_STAGES.filter(s => (stageStats[s]?.count || 0) > 0).map(stage => {
-                const config = STAGE_CONFIG[stage];
-                return (
-                  <span key={stage} className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                    <span className={cn("w-2 h-2 rounded-full inline-block", config.bgColor)} />
-                    {STAGE_LABELS[stage]} ({stageStats[stage]?.count})
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Row 2: Search + Needs Action Toggle + Partner Toggle */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar lead..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 text-xs"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-          <Button
-            size="sm"
-            variant={needsActionOnly ? "default" : "outline"}
+      {/* KPI Pills Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        {KPI_DEFS.slice(0, 2).map(k => (
+          <button
+            key={k.key as string}
+            data-active={kpiFilter === k.key}
+            onClick={() => setKpiFilter(kpiFilter === k.key ? null : k.key)}
             className={cn(
-              "text-xs h-8 flex-shrink-0 gap-1.5",
-              needsActionOnly && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              "flex items-center justify-between gap-2 px-3 py-2 rounded-xl border bg-card transition-all text-left",
+              k.color
             )}
-            onClick={() => setNeedsActionOnly(!needsActionOnly)}
           >
-            <Filter className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Atenção</span>
-            {pipelineHealth.needsAction > 0 && (
-              <span className={cn(
-                "text-[10px] px-1.5 py-0 rounded-full font-bold",
-                needsActionOnly 
-                  ? "bg-destructive-foreground/20 text-destructive-foreground" 
-                  : "bg-destructive/10 text-destructive"
-              )}>
-                {pipelineHealth.needsAction}
-              </span>
+            <span className="text-xs font-medium text-muted-foreground">{k.emoji} {k.label}</span>
+            <span className="text-lg font-bold text-foreground tabular-nums">{k.value}</span>
+          </button>
+        ))}
+        {/* Pipeline $ pill — display only, no filter */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border bg-card">
+          <span className="text-xs font-medium text-muted-foreground">💰 Pipeline</span>
+          <span className="text-lg font-bold text-primary tabular-nums">
+            ${kpiCounts.pipelineValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+          </span>
+        </div>
+        {KPI_DEFS.slice(2).map(k => (
+          <button
+            key={k.key as string}
+            data-active={kpiFilter === k.key}
+            onClick={() => setKpiFilter(kpiFilter === k.key ? null : k.key)}
+            className={cn(
+              "flex items-center justify-between gap-2 px-3 py-2 rounded-xl border bg-card transition-all text-left",
+              k.color
             )}
-          </Button>
+          >
+            <span className="text-xs font-medium text-muted-foreground">{k.emoji} {k.label}</span>
+            <span className="text-lg font-bold text-foreground tabular-nums">{k.value}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Simplified Toolbar */}
+      <div className="bg-card border rounded-xl px-3 py-2 flex items-center gap-2 flex-wrap">
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowNewLeadModal(true)}>
+          <UserPlus className="w-3.5 h-3.5" /> Novo Lead
+        </Button>
+
+        <div className="relative flex-1 min-w-[180px] max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="h-8 pl-8 text-xs"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
 
-        {/* Row 3: Action Buttons — differentiated */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 -mx-1 px-1">
-          <Button
-            size="sm"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowNewLeadModal(true)}
+        <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <PopoverTrigger asChild>
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5">
+              <Zap className="w-3.5 h-3.5" />
+              Filtros
+              {activeFilterCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-4 space-y-3" align="end">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold">Filtros</h4>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={() => setFilters({ stages: [], sources: [], services: [], budgetMin: '', budgetMax: '', assignedTo: '' })}
+                  className="text-[11px] text-primary hover:underline"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Estágio</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {SALES_STAGES.map(s => {
+                  const active = filters.stages.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setFilters(f => ({
+                        ...f,
+                        stages: active ? f.stages.filter(x => x !== s) : [...f.stages, s]
+                      }))}
+                      className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors",
+                        active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      {STAGE_LABELS[s]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Fonte</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {Array.from(new Set(allSalesLeads.map(l => l.lead_source))).filter(Boolean).map(src => {
+                  const active = filters.sources.includes(src);
+                  return (
+                    <button
+                      key={src}
+                      onClick={() => setFilters(f => ({
+                        ...f,
+                        sources: active ? f.sources.filter(x => x !== src) : [...f.sources, src]
+                      }))}
+                      className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors",
+                        active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      {sourceLabels[src] || src}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Serviço</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {SERVICE_OPTIONS.map(([k, label]) => {
+                  const active = filters.services.includes(k);
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => setFilters(f => ({
+                        ...f,
+                        services: active ? f.services.filter(x => x !== k) : [...f.services, k]
+                      }))}
+                      className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors",
+                        active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor min</Label>
+                <Input
+                  type="number"
+                  placeholder="$0"
+                  value={filters.budgetMin}
+                  onChange={e => setFilters(f => ({ ...f, budgetMin: e.target.value }))}
+                  className="h-8 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor max</Label>
+                <Input
+                  type="number"
+                  placeholder="$∞"
+                  value={filters.budgetMax}
+                  onChange={e => setFilters(f => ({ ...f, budgetMax: e.target.value }))}
+                  className="h-8 text-xs mt-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Responsável</Label>
+              <Input
+                placeholder="Nome ou ID..."
+                value={filters.assignedTo}
+                onChange={e => setFilters(f => ({ ...f, assignedTo: e.target.value }))}
+                className="h-8 text-xs mt-1"
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className="flex items-center border rounded-lg overflow-hidden flex-shrink-0 ml-auto">
+          <button
+            onClick={() => setViewMode('board')}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium transition-colors",
+              viewMode === 'board' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+            )}
           >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">New</span> Lead
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowApptModal(true)}
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Board</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium transition-colors border-l",
+              viewMode === 'list' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+            )}
           >
-            <CalendarPlus className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">New</span> Appt.
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowProposalModal(true)}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            Proposal
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowRequestModal(true)}
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            Request
-          </Button>
+            <List className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">List</span>
+          </button>
         </div>
       </div>
 
-      {/* Active Filter Chip */}
-      {(statusFilter || searchQuery || needsActionOnly) && (
+      {/* Active Filter Chips */}
+      {(statusFilter || searchQuery || needsActionOnly || kpiFilter || activeFilterCount > 0) && (
         <div className="flex items-center gap-2 flex-wrap">
           {statusFilter && (
             <Badge variant="secondary" className={cn(
@@ -1477,14 +1551,14 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
               STAGE_CONFIG[statusFilter]?.bgColor,
               STAGE_CONFIG[statusFilter]?.textColor
             )}>
-              Filtro: {STAGE_LABELS[statusFilter]}
-              <button
-                onClick={onClearFilter}
-                className="ml-1 rounded-full hover:bg-foreground/10 p-0.5 transition-colors"
-                aria-label="Limpar filtro"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              Estágio: {STAGE_LABELS[statusFilter]}
+              <button onClick={onClearFilter} className="ml-1 rounded-full hover:bg-foreground/10 p-0.5"><X className="w-3 h-3" /></button>
+            </Badge>
+          )}
+          {kpiFilter && (
+            <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
+              KPI: {KPI_DEFS.find(k => k.key === kpiFilter)?.label}
+              <button onClick={() => setKpiFilter(null)} className="ml-1 rounded-full hover:bg-foreground/10 p-0.5"><X className="w-3 h-3" /></button>
             </Badge>
           )}
           {searchQuery && (
@@ -1492,14 +1566,12 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
               Busca: "{searchQuery}" ({filteredSalesLeads.length})
             </Badge>
           )}
-          {needsActionOnly && (
-            <Badge variant="destructive" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
-              <AlertTriangle className="w-3 h-3" />
-              Modo Atenção
-            </Badge>
-          )}
+          <button onClick={clearAllFilters} className="text-[11px] text-muted-foreground hover:text-foreground hover:underline">
+            Limpar tudo
+          </button>
         </div>
       )}
+
 
       {/* Board View */}
       {viewMode === 'board' && (
