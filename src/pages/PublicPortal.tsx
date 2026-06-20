@@ -494,7 +494,7 @@ export default function PublicPortal() {
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>
                             Electronically signed
-                            {p.accepted_at ? ` on ${format(new Date(p.accepted_at), "MMM d, yyyy")}` : ""}
+                            {p.accepted_at ? ` on ${format(new Date(p.accepted_at), "MMM d, yyyy 'at' h:mm a")}` : ""}
                           </span>
                         </div>
                       ) : canAct ? (

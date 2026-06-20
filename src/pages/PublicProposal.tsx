@@ -474,13 +474,21 @@ export default function PublicProposal() {
         {isAccepted && (
           <Card className="p-4 bg-green-50 border-green-200 flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-            <div>
+            <div className="flex-1">
               <p className="font-semibold text-green-900 text-sm">
                 Project confirmed.
               </p>
               <p className="text-xs text-green-800 mt-0.5">
                 We'll reach out within 24h to schedule kickoff.
               </p>
+              {proposal?.accepted_at && (
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-white border border-green-200 rounded-md px-2.5 py-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                  <span className="text-[11px] font-medium text-green-800">
+                    E-signed on {format(new Date(proposal.accepted_at), "MMM d, yyyy 'at' h:mm a")}
+                  </span>
+                </div>
+              )}
             </div>
           </Card>
         )}
