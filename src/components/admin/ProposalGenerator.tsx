@@ -574,8 +574,17 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
       });
       // Update proposal status to sent
       if (proposal.proposal_id) {
-        await supabase.from('proposals').update({ status: 'sent' }).eq('id', proposal.proposal_id);
+        await supabase.from('proposals').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', proposal.proposal_id);
       }
+      // Lead context: advance kanban to "Proposta Enviada" + sync budget KPI.
+      if (leadId) {
+        await supabase.from('leads').update({
+          status: 'proposal_sent',
+          budget: proposal.flat_price ?? editedTotal,
+        }).eq('id', leadId);
+        onProposalSent?.();
+      }
+      setProposal((prev) => prev ? { ...prev, proposal_status: 'sent' } : prev);
       toast.success('Proposal email sent to client!');
     } catch (e: any) {
       toast.error('Failed to send email: ' + e.message);
