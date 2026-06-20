@@ -558,16 +558,24 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
   };
 
   const handleSendEmail = async () => {
-    if (!proposal || !shareToken) return;
+    if (sendingEmail) return;
     setSendingEmail(true);
-    const hasEmail = !!proposal.customer_email;
-    let emailSent = false;
-    let emailError: string | null = null;
     try {
-      const proposalLink = `${PUBLIC_SITE_URL}/proposal/${shareToken}`;
+      // Atualiza lead e notifica PRIMEIRO (independente de email)
+      if (leadId && proposal) {
+        const { error } = await supabase
+          .from('leads')
+          .update({
+            status: 'proposal_sent',
+            budget: proposal.flat_price ?? editedTotal,
+          })
+          .eq('id', leadId);
+        if (!error) onProposalSent?.();
+      }
 
-      // Try to send email only when we have a recipient — failures must NOT block lead advancement.
-      if (hasEmail) {
+      // Tenta enviar email apenas se tiver endereço
+      if (proposal?.customer_email && shareToken) {
+        const proposalLink = `${PUBLIC_SITE_URL}/proposal/${shareToken}`;
         try {
           await sendGmailEmail('proposal_sent', {
             recipient_email: proposal.customer_email || '',
@@ -579,35 +587,21 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
             related_id: proposal.proposal_id,
             related_type: 'proposal',
           });
-          emailSent = true;
         } catch (e: any) {
-          emailError = e?.message || 'unknown error';
+          toast.warning('Lead avançado, mas envio de email falhou: ' + (e?.message || 'unknown error'));
         }
       }
 
       // Always update proposal status to sent
-      if (proposal.proposal_id) {
+      if (proposal?.proposal_id) {
         await supabase.from('proposals').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', proposal.proposal_id);
       }
-      // Always advance lead kanban to "Proposta Enviada" + sync budget KPI, regardless of email outcome.
-      if (leadId) {
-        await supabase.from('leads').update({
-          status: 'proposal_sent',
-          budget: proposal.flat_price ?? editedTotal,
-        }).eq('id', leadId);
-        onProposalSent?.();
-      }
+
       setProposal((prev) => prev ? { ...prev, proposal_status: 'sent' } : prev);
 
-      if (emailSent) {
-        toast.success(leadId ? 'Proposta enviada! Lead avançado para Proposta Enviada.' : 'Proposal email sent to client!');
-      } else if (!hasEmail) {
-        toast.success(leadId ? 'Proposta marcada como enviada. Lead avançado (sem email do cliente).' : 'Proposal marked as sent (no customer email).');
-      } else {
-        toast.warning(`Lead avançado, mas envio de email falhou: ${emailError}`);
-      }
+      toast.success(leadId ? 'Proposta enviada! Lead avançado para Proposta Enviada.' : 'Proposal sent!');
     } catch (e: any) {
-      toast.error('Failed to update proposal/lead: ' + e.message);
+      toast.error('Failed to send: ' + e.message);
     } finally {
       setSendingEmail(false);
     }
