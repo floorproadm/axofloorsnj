@@ -84,6 +84,7 @@ const priorityDot: Record<string, string> = {
 interface MissionControlProps {
   systemAlerts: SystemAlert[];
   isLoadingAlerts?: boolean;
+  recentActivity?: RecentActivityItem[];
 }
 
 export function MissionControl({ systemAlerts, isLoadingAlerts }: MissionControlProps) {
