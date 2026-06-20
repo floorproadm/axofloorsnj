@@ -91,6 +91,7 @@ export function DataTable<TData, TValue>({
   isLoading = false,
   onExport,
   onRowClick,
+  onRowDelete,
   pageSize = 10,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
