@@ -119,7 +119,9 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
   const { convertLeadToFullProject, isConverting } = useLeadConversion();
-  const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id, lead?.status);
+  const [optimisticStatus, setOptimisticStatus] = useState<PipelineStage | null>(null);
+  const effectiveLeadStatus = optimisticStatus ?? lead?.status;
+  const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id, effectiveLeadStatus);
   const { useProposalByProject, updateProposalStatus } = useProposals();
   
   const projectId = lead?.converted_to_project_id || undefined;
@@ -163,6 +165,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
     checkAdminRole();
     return () => { cancelled = true; };
   }, [authLoading, userId]);
+
+  useEffect(() => {
+    setOptimisticStatus(null);
+  }, [lead?.id, lead?.status]);
+
   const [sheetWidth, setSheetWidth] = useState(640);
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('resumo');
@@ -286,7 +293,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
   if (!lead) return null;
 
-  const stage = normalizeStatus(lead.status);
+  const stage = normalizeStatus(effectiveLeadStatus ?? lead.status);
   const config = STAGE_CONFIG[stage];
   const followUpStatus = getFollowUpStatus(lead);
   
@@ -774,6 +781,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                 <LeadProposalTab
                   leadId={lead.id}
                   onProposalSent={() => {
+                    setOptimisticStatus('proposal_sent');
                     toast.success('Proposta enviada! Lead avançado para Proposta Enviada.');
                     onRefresh();
                     refreshNRA();
