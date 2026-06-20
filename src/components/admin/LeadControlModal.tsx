@@ -535,12 +535,11 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
             {/* TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className={cn("w-full grid", hasProject ? "grid-cols-7" : "grid-cols-6")}>
+              <TabsList className={cn("w-full grid", hasProject ? "grid-cols-6" : "grid-cols-5")}>
                 <TabsTrigger value="resumo" className="text-xs gap-1"><User className="w-3 h-3" /> Resumo</TabsTrigger>
                 <TabsTrigger value="medidas" className="text-xs gap-1"><FileText className="w-3 h-3" /> Medidas</TabsTrigger>
                 <TabsTrigger value="proposta" className="text-xs gap-1"><FileText className="w-3 h-3" /> Proposta</TabsTrigger>
                 <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Timeline</TabsTrigger>
-                <TabsTrigger value="notas" className="text-xs gap-1"><StickyNote className="w-3 h-3" /> Notas</TabsTrigger>
                 <TabsTrigger value="automacoes" className="text-xs gap-1"><Zap className="w-3 h-3" /> Automações</TabsTrigger>
                 {hasProject && (
                   <TabsTrigger value="job" className="text-xs gap-1"><FileText className="w-3 h-3" /> Job</TabsTrigger>
@@ -653,74 +652,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {format(new Date(lead.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
                   <span>Atualizado: {format(new Date(lead.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
                 </div>
-              </TabsContent>
 
-              {/* ═══ TAB: MEDIDAS ═══ */}
-              <TabsContent value="medidas" className="space-y-4 mt-4">
-                <LeadMeasurementsTab leadId={lead.id} organizationId={(lead as any).organization_id} />
-              </TabsContent>
+                <Separator />
 
-              {/* ═══ TAB: PROPOSTA ═══ */}
-              <TabsContent value="proposta" className="space-y-4 mt-4">
-                <LeadProposalTab
-                  leadId={lead.id}
-                  organizationId={(lead as any).organization_id}
-                  customerName={lead.name}
-                  budget={lead.budget}
-                  onProposalSent={() => { onRefresh(); refreshNRA(); }}
-                />
-              </TabsContent>
-
-              {/* ═══ TAB: HISTÓRICO ═══ */}
-              <TabsContent value="historico" className="space-y-4 mt-4">
-                {/* Follow-up form */}
-                {showFollowUpForm && (
-                  <FollowUpForm
-                    actionType={actionType}
-                    actionNotes={actionNotes}
-                    onActionTypeChange={setActionType}
-                    onActionNotesChange={setActionNotes}
-                    onSubmit={handleAddFollowUp}
-                    onCancel={() => setShowFollowUpForm(false)}
-                    isUpdating={isFollowUpUpdating}
-                  />
-                )}
-
-                {!showFollowUpForm && (
-                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowFollowUpForm(true)}>
-                    <Plus className="w-3.5 h-3.5 mr-1.5" /> Registrar Novo Contato
-                  </Button>
-                )}
-
-                {/* Timeline */}
-                {followUpStatus.hasActions && lead.follow_up_actions ? (
-                  <div className="space-y-2">
-                    {lead.follow_up_actions.slice().reverse().map((action, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-sm p-3 bg-muted/30 rounded-lg border">
-                        <div className="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium">{action.action}</span>
-                            <span className="text-xs text-muted-foreground flex-shrink-0">
-                              {formatDistanceToNow(new Date(action.date), { addSuffix: true, locale: ptBR })}
-                            </span>
-                          </div>
-                          {action.notes && (
-                            <p className="text-xs text-muted-foreground mt-1">{action.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum contato registrado ainda</p>
-                )}
-              </TabsContent>
-
-              {/* ═══ TAB: NOTAS ═══ */}
-              <TabsContent value="notas" className="space-y-4 mt-4">
-                {/* New note input */}
+                {/* Notes */}
                 <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <StickyNote className="w-3 h-3" /> Notas
+                  </h3>
                   <Textarea
                     placeholder="Escreva uma nota sobre este lead..."
                     value={newNote}
@@ -821,9 +760,72 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center py-8">Nenhuma nota adicionada ainda</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">Nenhuma nota adicionada ainda</p>
                 )}
               </TabsContent>
+
+              {/* ═══ TAB: MEDIDAS ═══ */}
+              <TabsContent value="medidas" className="space-y-4 mt-4">
+                <LeadMeasurementsTab leadId={lead.id} organizationId={(lead as any).organization_id} />
+              </TabsContent>
+
+              {/* ═══ TAB: PROPOSTA ═══ */}
+              <TabsContent value="proposta" className="space-y-4 mt-4">
+                <LeadProposalTab
+                  leadId={lead.id}
+                  organizationId={(lead as any).organization_id}
+                  customerName={lead.name}
+                  budget={lead.budget}
+                  onProposalSent={() => { onRefresh(); refreshNRA(); }}
+                />
+              </TabsContent>
+
+              {/* ═══ TAB: HISTÓRICO ═══ */}
+              <TabsContent value="historico" className="space-y-4 mt-4">
+                {/* Follow-up form */}
+                {showFollowUpForm && (
+                  <FollowUpForm
+                    actionType={actionType}
+                    actionNotes={actionNotes}
+                    onActionTypeChange={setActionType}
+                    onActionNotesChange={setActionNotes}
+                    onSubmit={handleAddFollowUp}
+                    onCancel={() => setShowFollowUpForm(false)}
+                    isUpdating={isFollowUpUpdating}
+                  />
+                )}
+
+                {!showFollowUpForm && (
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowFollowUpForm(true)}>
+                    <Plus className="w-3.5 h-3.5 mr-1.5" /> Registrar Novo Contato
+                  </Button>
+                )}
+
+                {/* Timeline */}
+                {followUpStatus.hasActions && lead.follow_up_actions ? (
+                  <div className="space-y-2">
+                    {lead.follow_up_actions.slice().reverse().map((action, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm p-3 bg-muted/30 rounded-lg border">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium">{action.action}</span>
+                            <span className="text-xs text-muted-foreground flex-shrink-0">
+                              {formatDistanceToNow(new Date(action.date), { addSuffix: true, locale: ptBR })}
+                            </span>
+                          </div>
+                          {action.notes && (
+                            <p className="text-xs text-muted-foreground mt-1">{action.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum contato registrado ainda</p>
+                )}
+              </TabsContent>
+
 
               {/* ═══ TAB: AUTOMAÇÕES ═══ */}
               <TabsContent value="automacoes" className="space-y-4 mt-4">
