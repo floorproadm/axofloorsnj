@@ -130,7 +130,12 @@ function SortableLineRow({ line, onUpdate, onRemove }: SortableLineRowProps) {
 
 
 interface ProposalGeneratorProps {
-  projectId: string;
+  /** Provide when used inside a Project context */
+  projectId?: string;
+  /** Provide when used inside a Lead drawer — proposal is keyed by lead_id, project_id stays NULL */
+  leadId?: string;
+  /** Called right after status flips from draft → sent (lead mode uses it to advance the kanban) */
+  onProposalSent?: () => void;
   onClose?: () => void;
 }
 
@@ -139,8 +144,8 @@ interface ProposalGeneratorProps {
  * Generates Tiers (Good/Better/Best) OR Direct (single-price) proposal
  * Branding (logo, name, colors, contact) is white-label from company_settings
  */
-export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps) {
-  const { fetchProjectData, isLoading, error } = useProposalGeneration();
+export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }: ProposalGeneratorProps) {
+  const { fetchProjectData, fetchLeadData, isLoading, error } = useProposalGeneration();
   const { settings } = useCompanySettings();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   // True while the mount-time read-only fetch is running to detect an existing proposal.
