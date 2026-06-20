@@ -248,32 +248,36 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
 
   const handleGenerate = async () => {
     // Direct mode only — start with price = 0, user builds total from line items.
-    const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 });
+    const data = leadId
+      ? await fetchLeadData(leadId, { mode: 'direct', flatPrice: 0 })
+      : projectId
+        ? await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0 })
+        : null;
     if (data) {
       setProposal(data);
-      if (data._isExisting) toast.info('Opened existing draft for this project');
+      if (data._isExisting) toast.info(leadId ? 'Opened existing draft for this lead' : 'Opened existing draft for this project');
     }
   };
 
-  // Auto-load existing non-terminal proposal for this project on mount,
-  // so returning to the tab never duplicates and the "Generate" CTA only shows
-  // when no proposal exists.
+  // Auto-load existing non-terminal proposal on mount (project or lead context).
   useEffect(() => {
-    if (!projectId) {
+    if (!projectId && !leadId) {
       setIsHydrating(false);
       return;
     }
     let cancelled = false;
     setIsHydrating(true);
     (async () => {
-      const data = await fetchProjectData(projectId, { mode: 'direct', flatPrice: 0, readOnly: true });
+      const data = leadId
+        ? await fetchLeadData(leadId, { mode: 'direct', flatPrice: 0, readOnly: true })
+        : await fetchProjectData(projectId!, { mode: 'direct', flatPrice: 0, readOnly: true });
       if (cancelled) return;
       if (data?._isExisting) setProposal(data);
       setIsHydrating(false);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  }, [projectId, leadId]);
 
 
   // When proposal is loaded, fetch the share_token from DB (most recent for project)
