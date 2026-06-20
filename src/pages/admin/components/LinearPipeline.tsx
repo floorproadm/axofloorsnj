@@ -58,9 +58,11 @@ import {
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
   Loader2, X, Zap, Search, Filter,
-  ArrowLeft, ArrowRight, Check, CalendarIcon, User, Briefcase
+  ArrowLeft, ArrowRight, Check, CalendarIcon, User, Briefcase,
+  Flame, DollarSign, ClipboardList, CheckCircle2, ChevronDown,
+  ChevronRight as ChevronRightIcon
 } from "lucide-react";
-import { differenceInHours, differenceInDays, format } from "date-fns";
+import { differenceInHours, differenceInDays, format, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type Lead = {
@@ -83,6 +85,8 @@ type Lead = {
   follow_up_actions?: { date: string; action: string; notes?: string }[];
   converted_to_project_id?: string;
   referred_by_partner_id?: string;
+  assigned_to?: string;
+  last_contacted_at?: string;
 };
 
 interface LinearPipelineProps {
