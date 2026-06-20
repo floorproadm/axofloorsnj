@@ -487,6 +487,10 @@ export function ProposalGenerator({ projectId, leadId, onProposalSent, onClose }
           : prev
       );
       setLinesDirty(false);
+      // Lead context: keep the lead's budget KPI in sync with the proposal total.
+      if (leadId) {
+        await supabase.from('leads').update({ budget: editedTotal }).eq('id', leadId);
+      }
       toast.success('Line items saved!');
     } catch (e: any) {
       toast.error(e?.message || 'Failed to update proposal');
