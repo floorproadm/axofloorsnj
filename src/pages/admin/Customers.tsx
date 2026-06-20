@@ -551,6 +551,16 @@ export default function Customers() {
             setCustomers((prev) => [customer, ...prev]);
           }}
         />
+        <CustomerPortalShareDialog
+          open={portalOpen}
+          onOpenChange={setPortalOpen}
+          customerId={portalCustomer?.id}
+          customerName={portalCustomer?.full_name}
+          customerEmail={portalCustomer?.email}
+          customerPhone={portalCustomer?.phone}
+          relatedId={portalCustomer?.id}
+          relatedType="customer"
+        />
       </div>
     </AdminLayout>
   );
