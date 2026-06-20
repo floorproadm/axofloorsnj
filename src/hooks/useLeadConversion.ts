@@ -1,62 +1,44 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface UseLeadConversionReturn {
-  convertLeadToProject: (leadId: string, projectType: string) => Promise<string | null>;
+  /** Legacy signature kept for backwards compat. Calls the new full-conversion RPC. */
+  convertLeadToProject: (leadId: string, _projectType?: string) => Promise<string | null>;
+  convertLeadToFullProject: (leadId: string) => Promise<string | null>;
   isConverting: boolean;
 }
 
 export function useLeadConversion(): UseLeadConversionReturn {
-  const { toast } = useToast();
   const [isConverting, setIsConverting] = useState(false);
 
-  const convertLeadToProject = useCallback(async (
-    leadId: string,
-    projectType: string
-  ): Promise<string | null> => {
+  const convertLeadToFullProject = useCallback(async (leadId: string): Promise<string | null> => {
     setIsConverting(true);
-
     try {
-      const { data, error } = await supabase.rpc('convert_lead_to_project', {
+      const { data, error } = await supabase.rpc('convert_lead_to_full_project' as any, {
         p_lead_id: leadId,
-        p_project_type: projectType
       });
-
       if (error) {
         const msg = error.message?.replace(/^.*?ERROR:\s*/, '') || error.message;
-        toast({
-          title: "Erro na Conversão",
-          description: msg,
-          variant: "destructive"
-        });
+        toast.error(`Erro na conversão: ${msg}`);
         return null;
       }
-
-      const createdProjectId = data as string;
-      console.log('[LeadToJob]', { leadId, createdJobId: createdProjectId });
-
-      toast({
-        title: "✓ Projeto Criado",
-        description: "Lead convertido para projeto com sucesso. Customer + Project + Job Costs criados.",
-      });
-
-      return createdProjectId;
+      const projectId = data as string;
+      toast.success('Cliente e projeto criados com sucesso!');
+      return projectId;
     } catch (err) {
       console.error('Conversion RPC exception:', err);
-      toast({
-        title: "Erro",
-        description: "Falha ao converter lead para projeto",
-        variant: "destructive"
-      });
+      toast.error('Falha ao converter lead');
       return null;
     } finally {
       setIsConverting(false);
     }
-  }, [toast]);
+  }, []);
 
-  return {
-    convertLeadToProject,
-    isConverting
-  };
+  const convertLeadToProject = useCallback(
+    (leadId: string) => convertLeadToFullProject(leadId),
+    [convertLeadToFullProject]
+  );
+
+  return { convertLeadToProject, convertLeadToFullProject, isConverting };
 }

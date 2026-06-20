@@ -23,6 +23,8 @@ import {
 } from '@/hooks/useLeadPipeline';
 import { useLeadFollowUp, type FollowUpAction } from '@/hooks/useLeadFollowUp';
 import { useLeadConversion } from '@/hooks/useLeadConversion';
+import { LeadMeasurementsTab } from '@/components/admin/leads/LeadMeasurementsTab';
+import { LeadProposalTab } from '@/components/admin/leads/LeadProposalTab';
 import { useLeadNRA, type LeadNRA } from '@/hooks/useLeadNRA';
 import { useProposals, type ProposalStatus } from '@/hooks/useProposals';
 import { 
@@ -116,7 +118,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const { user, loading: authLoading } = useAuth();
   const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
-  const { convertLeadToProject, isConverting } = useLeadConversion();
+  const { convertLeadToFullProject, isConverting } = useLeadConversion();
   const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id, lead?.status);
   const { useProposalByProject, updateProposalStatus } = useProposals();
   
@@ -336,15 +338,9 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
   const handleConvertToProject = async () => {
     if (!lead) return;
-    // Single source of truth: only allowed from proposal_sent
     if (stage !== 'proposal_sent' || hasProject) return;
-    const services = Array.isArray(lead.services) ? lead.services.filter(Boolean) : [];
-    const derivedType = services.length > 0 ? services.join(' + ') : 'Flooring';
-    const pid = await convertLeadToProject(lead.id, derivedType);
+    const pid = await convertLeadToFullProject(lead.id);
     if (pid) {
-      // Move lead to "Fechado/Ganho" (in_production)
-      await updateLeadStatus(lead.id, 'in_production');
-      toast.success('Projeto criado com sucesso!');
       setShowConvertConfirm(false);
       setShowConvertForm(false);
       setProjectType('');
@@ -539,8 +535,10 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
             {/* TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className={cn("w-full grid", hasProject ? "grid-cols-5" : "grid-cols-4")}>
+              <TabsList className={cn("w-full grid", hasProject ? "grid-cols-7" : "grid-cols-6")}>
                 <TabsTrigger value="resumo" className="text-xs gap-1"><User className="w-3 h-3" /> Resumo</TabsTrigger>
+                <TabsTrigger value="medidas" className="text-xs gap-1"><FileText className="w-3 h-3" /> Medidas</TabsTrigger>
+                <TabsTrigger value="proposta" className="text-xs gap-1"><FileText className="w-3 h-3" /> Proposta</TabsTrigger>
                 <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Timeline</TabsTrigger>
                 <TabsTrigger value="notas" className="text-xs gap-1"><StickyNote className="w-3 h-3" /> Notas</TabsTrigger>
                 <TabsTrigger value="automacoes" className="text-xs gap-1"><Zap className="w-3 h-3" /> Automações</TabsTrigger>
@@ -655,6 +653,22 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {format(new Date(lead.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
                   <span>Atualizado: {format(new Date(lead.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
                 </div>
+              </TabsContent>
+
+              {/* ═══ TAB: MEDIDAS ═══ */}
+              <TabsContent value="medidas" className="space-y-4 mt-4">
+                <LeadMeasurementsTab leadId={lead.id} organizationId={(lead as any).organization_id} />
+              </TabsContent>
+
+              {/* ═══ TAB: PROPOSTA ═══ */}
+              <TabsContent value="proposta" className="space-y-4 mt-4">
+                <LeadProposalTab
+                  leadId={lead.id}
+                  organizationId={(lead as any).organization_id}
+                  customerName={lead.name}
+                  budget={lead.budget}
+                  onProposalSent={() => { onRefresh(); refreshNRA(); }}
+                />
               </TabsContent>
 
               {/* ═══ TAB: HISTÓRICO ═══ */}
