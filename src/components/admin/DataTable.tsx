@@ -283,7 +283,7 @@ export function DataTable<TData, TValue>({
                                   e.stopPropagation();
                                   onRowDelete(row.original);
                                 }}
-                                className="flex items-center justify-center gap-2 text-xs text-destructive hover:text-destructive/80 transition-colors"
+                                className="flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-destructive transition-colors"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 Remover
