@@ -14,7 +14,7 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 
 import { AXO_ORG_ID } from "@/lib/constants";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -57,7 +57,7 @@ import {
   Clock, AlertTriangle,
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
-  Loader2, X, Zap, Search, Filter,
+  Loader2, X, Zap, Search, Filter, Trash2,
   ArrowLeft, ArrowRight, Check, CalendarIcon, User, Briefcase,
   Flame, DollarSign, ClipboardList, CheckCircle2, ChevronDown,
   ChevronRight as ChevronRightIcon
@@ -1514,6 +1514,16 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                 onChange={e => setFilters(f => ({ ...f, assignedTo: e.target.value }))}
                 className="h-8 text-xs mt-1"
               />
+            </div>
+
+            <div className="pt-2 border-t border-border">
+              <Link
+                to="/admin/leads/trash"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Ver lixeira
+              </Link>
             </div>
           </PopoverContent>
         </Popover>
