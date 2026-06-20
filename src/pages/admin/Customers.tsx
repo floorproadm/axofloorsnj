@@ -297,15 +297,6 @@ export default function Customers() {
     <AdminLayout title="Clientes">
       <div className="space-y-4">
         <div className="flex flex-col gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Users className="w-6 h-6 text-[hsl(var(--gold-warm))]" />
-              Clientes
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Base de clientes ativos e histórico
-            </p>
-          </div>
           <Button
             onClick={() => setCreateOpen(true)}
             className="w-full sm:w-auto self-start"
