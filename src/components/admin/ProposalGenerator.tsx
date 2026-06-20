@@ -163,6 +163,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [termsText, setTermsText] = useState<string>('');
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
     return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
