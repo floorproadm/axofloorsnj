@@ -335,13 +335,23 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   };
 
   const handleConvertToProject = async () => {
-    if (!projectType) return;
-    const pid = await convertLeadToProject(lead.id, projectType);
+    if (!lead) return;
+    // Single source of truth: only allowed from proposal_sent
+    if (stage !== 'proposal_sent' || hasProject) return;
+    const services = Array.isArray(lead.services) ? lead.services.filter(Boolean) : [];
+    const derivedType = services.length > 0 ? services.join(' + ') : 'Flooring';
+    const pid = await convertLeadToProject(lead.id, derivedType);
     if (pid) {
+      // Move lead to "Fechado/Ganho" (in_production)
+      await updateLeadStatus(lead.id, 'in_production');
+      toast.success('Projeto criado com sucesso!');
+      setShowConvertConfirm(false);
       setShowConvertForm(false);
       setProjectType('');
       onRefresh();
-      setTimeout(() => { refreshNRA(); refetchProposal(); }, 500);
+      setTimeout(() => { refreshNRA(); refetchProposal(); }, 300);
+      onClose();
+      navigate(`/admin/projects/${pid}`);
     }
   };
 
