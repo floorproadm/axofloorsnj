@@ -1097,55 +1097,13 @@ function NRAActionButton({
       );
 
     case 'convert_to_project':
-      return showConvertForm ? (
-        <div className="space-y-3 p-3 bg-white rounded-lg border">
-          <p className="text-xs text-muted-foreground font-medium">Selecione os serviços:</p>
-          <div className="space-y-1.5">
-            {PROJECT_TYPES.map(type => {
-              const selected = projectType.split(' + ').filter(Boolean);
-              const isChecked = selected.includes(type);
-              return (
-                <label key={type} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-2 rounded hover:bg-muted/50">
-                  <Checkbox
-                    checked={isChecked}
-                    onCheckedChange={() => {
-                      const next = isChecked
-                        ? selected.filter(s => s !== type)
-                        : [...selected, type];
-                      onProjectTypeChange(next.join(' + '));
-                    }}
-                  />
-                  {type}
-                </label>
-              );
-            })}
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={onConvertToProject}
-              disabled={!projectType || isConverting}
-              size="sm"
-            >
-              {isConverting ? (
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-4 h-4 mr-1.5" />
-              )}
-              Converter
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => onShowConvertForm(false)}>
-              Cancelar
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Button 
-          onClick={() => onShowConvertForm(true)}
-          className="bg-amber-600 hover:bg-amber-700 text-white"
-        >
-          <ArrowRightLeft className="w-4 h-4 mr-1.5" />
-          Criar Projeto
-        </Button>
+      // Conversion is now gated to stage === 'proposal_sent' via the toolbar "Converter" button.
+      // Show informational hint instead of a parallel creation path.
+      return (
+        <p className="text-sm text-muted-foreground">
+          A conversão para Projeto está disponível apenas quando o lead está em{' '}
+          <strong>Proposta Enviada</strong>. Use o botão <strong>Converter</strong> no topo do drawer.
+        </p>
       );
 
     // Cost/margin/proposal actions → redirect to /admin/jobs
