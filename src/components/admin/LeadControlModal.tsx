@@ -128,6 +128,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const [actionNotes, setActionNotes] = useState('');
   const [showConvertForm, setShowConvertForm] = useState(false);
   const [projectType, setProjectType] = useState('');
+  const [showConvertConfirm, setShowConvertConfirm] = useState(false);
   const [showAcceptForm, setShowAcceptForm] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
