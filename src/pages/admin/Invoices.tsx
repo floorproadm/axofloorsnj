@@ -77,13 +77,7 @@ export default function Invoices() {
   return (
     <AdminLayout title="Invoices">
       <div className="space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold">Invoices</h1>
-          <Button size="sm" onClick={() => setInvoiceDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-1" />
-            New Invoice
-          </Button>
-        </div>
+        <h1 className="text-xl font-semibold">Invoices</h1>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -108,15 +102,21 @@ export default function Invoices() {
           ))}
         </div>
 
-        <Tabs value={invoiceFilter} onValueChange={setInvoiceFilter}>
-          <TabsList>
-            <TabsTrigger value="all">All ({invoices.length})</TabsTrigger>
-            <TabsTrigger value="draft">Draft</TabsTrigger>
-            <TabsTrigger value="sent">Sent</TabsTrigger>
-            <TabsTrigger value="paid">Paid</TabsTrigger>
-            <TabsTrigger value="overdue">Overdue</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center justify-between gap-3">
+          <Tabs value={invoiceFilter} onValueChange={setInvoiceFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All ({invoices.length})</TabsTrigger>
+              <TabsTrigger value="draft">Draft</TabsTrigger>
+              <TabsTrigger value="sent">Sent</TabsTrigger>
+              <TabsTrigger value="paid">Paid</TabsTrigger>
+              <TabsTrigger value="overdue">Overdue</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button size="sm" onClick={() => setInvoiceDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-1" />
+            New Invoice
+          </Button>
+        </div>
 
         {isLoading ? (
           <div className="text-center py-12 text-muted-foreground">Loading...</div>
