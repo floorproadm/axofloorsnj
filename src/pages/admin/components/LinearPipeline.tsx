@@ -1785,6 +1785,8 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, on
   const alert = getOperationalAlert(lead, nra);
   const services: string[] = Array.isArray(lead.services) ? lead.services : [];
   const primaryService = services[0] ? (serviceLabels[services[0]] || services[0]) : null;
+  const leadStage = normalizeStatus(lead.status);
+  const isConverted = leadStage === 'in_production' || !!lead.converted_to_project_id;
 
   return (
     <div
