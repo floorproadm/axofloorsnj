@@ -523,6 +523,13 @@ export default function Customers() {
               navigate(`/admin/customers/${row.id}`);
             }}
             onRowDelete={handleDelete}
+            onRowPortal={(row) => {
+              const customer = customers.find((c) => c.id === row.id);
+              if (customer) {
+                setPortalCustomer(customer);
+                setPortalOpen(true);
+              }
+            }}
             pageSize={10}
           />
         )}
