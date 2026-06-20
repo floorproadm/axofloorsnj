@@ -73,6 +73,8 @@ export default function Customers() {
   const [selected, setSelected] = useState<Customer | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [portalCustomer, setPortalCustomer] = useState<Customer | null>(null);
+  const [portalOpen, setPortalOpen] = useState(false);
 
   // Applied filters
   const [search, setSearch] = useState("");
