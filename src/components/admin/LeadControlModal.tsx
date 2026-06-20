@@ -521,11 +521,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
             {/* TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-4">
+              <TabsList className={cn("w-full grid", hasProject ? "grid-cols-5" : "grid-cols-4")}>
                 <TabsTrigger value="resumo" className="text-xs gap-1"><User className="w-3 h-3" /> Resumo</TabsTrigger>
-                <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Histórico</TabsTrigger>
+                <TabsTrigger value="historico" className="text-xs gap-1"><History className="w-3 h-3" /> Timeline</TabsTrigger>
                 <TabsTrigger value="notas" className="text-xs gap-1"><StickyNote className="w-3 h-3" /> Notas</TabsTrigger>
                 <TabsTrigger value="automacoes" className="text-xs gap-1"><Zap className="w-3 h-3" /> Automações</TabsTrigger>
+                {hasProject && (
+                  <TabsTrigger value="job" className="text-xs gap-1"><FileText className="w-3 h-3" /> Job</TabsTrigger>
+                )}
               </TabsList>
 
               {/* ═══ TAB: RESUMO ═══ */}
@@ -794,6 +797,47 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
               <TabsContent value="automacoes" className="space-y-4 mt-4">
                 <LeadAutomationsPanel leadId={lead.id} />
               </TabsContent>
+
+              {/* ═══ TAB: JOB (visível só após conversão) ═══ */}
+              {hasProject && (
+                <TabsContent value="job" className="space-y-3 mt-4">
+                  <div className="p-3 rounded-lg border bg-card flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Projeto vinculado</p>
+                      <p className="text-sm font-semibold text-foreground truncate">#{lead.converted_to_project_id?.slice(0, 8)}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => { onClose(); navigate(`/admin/jobs/${lead.converted_to_project_id}`); }}
+                      className="gap-1.5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> Abrir Job
+                    </Button>
+                  </div>
+
+                  <div className="p-3 rounded-lg border bg-card">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Proposta</p>
+                    {proposal ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <ProposalStatusBadge status={proposal.status as ProposalStatus} />
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5"
+                          onClick={() => { onClose(); navigate(`/admin/jobs/${lead.converted_to_project_id}`); }}>
+                          Ver proposta <ExternalLink className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Nenhuma proposta gerada ainda.</p>
+                    )}
+                  </div>
+
+                  <div className="p-3 rounded-lg border bg-card">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Status de Pagamento</p>
+                    <p className="text-xs text-muted-foreground">
+                      Veja invoices, pagamentos e status financeiro completos no Job.
+                    </p>
+                  </div>
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </ScrollArea>

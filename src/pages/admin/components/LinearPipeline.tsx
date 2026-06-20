@@ -58,9 +58,11 @@ import {
   LayoutGrid, List,
   UserPlus, CalendarPlus, FileText, PlusCircle,
   Loader2, X, Zap, Search, Filter,
-  ArrowLeft, ArrowRight, Check, CalendarIcon, User, Briefcase
+  ArrowLeft, ArrowRight, Check, CalendarIcon, User, Briefcase,
+  Flame, DollarSign, ClipboardList, CheckCircle2, ChevronDown,
+  ChevronRight as ChevronRightIcon
 } from "lucide-react";
-import { differenceInHours, differenceInDays, format } from "date-fns";
+import { differenceInHours, differenceInDays, format, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type Lead = {
@@ -83,6 +85,8 @@ type Lead = {
   follow_up_actions?: { date: string; action: string; notes?: string }[];
   converted_to_project_id?: string;
   referred_by_partner_id?: string;
+  assigned_to?: string;
+  last_contacted_at?: string;
 };
 
 interface LinearPipelineProps {
@@ -101,13 +105,22 @@ const SALES_STAGES: PipelineStage[] = [
 ];
 
 const sourceLabels: Record<string, string> = {
-  quiz: "Quiz",
-  contact_form: "Formulário",
-  contact_page: "Contato",
-  builders_page: "Builders",
-  realtors_page: "Realtors",
-  lead_magnet: "E-book",
-  website: "Site"
+  quiz: "Formulário Web",
+  contact_form: "Formulário Web",
+  contact_page: "Formulário Web",
+  builders_page: "Formulário Web",
+  realtors_page: "Formulário Web",
+  lead_magnet: "Formulário Web",
+  website: "Formulário Web",
+  partner_referral: "Via Parceiro",
+  referral: "Via Parceiro",
+  manual: "Manual",
+  phone: "Manual",
+  walk_in: "Manual",
+  google: "Google Ads",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  door_knock: "Porta a porta",
 };
 
 const serviceLabels: Record<string, string> = {
@@ -122,6 +135,13 @@ const serviceLabels: Record<string, string> = {
 };
 
 const SERVICE_OPTIONS = Object.entries(serviceLabels);
+
+function getStageTimeBadge(updatedAt: string) {
+  const days = differenceInDays(new Date(), new Date(updatedAt));
+  if (days <= 2) return { text: `${days}d`, className: 'bg-muted text-muted-foreground' };
+  if (days <= 5) return { text: `${days}d`, className: 'bg-amber-100 text-amber-700' };
+  return { text: `${days}d`, className: 'bg-red-100 text-red-700 font-semibold animate-pulse' };
+}
 
 function getTimeBadge(updatedAt: string) {
   const hours = differenceInHours(new Date(), new Date(updatedAt));
@@ -1013,7 +1033,24 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   const [viewMode, setViewMode] = useState<ViewMode>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [needsActionOnly, setNeedsActionOnly] = useState(false);
-  
+
+  // KPI quick filter
+  type KpiKey = 'hot' | 'stale' | 'no_action' | 'closed_month';
+  const [kpiFilter, setKpiFilter] = useState<KpiKey | null>(null);
+
+  // Advanced filters
+  const [filters, setFilters] = useState({
+    stages: [] as PipelineStage[],
+    sources: [] as string[],
+    services: [] as string[],
+    budgetMin: '',
+    budgetMax: '',
+    assignedTo: '',
+  });
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount =
+    filters.stages.length + filters.sources.length + filters.services.length +
+    (filters.budgetMin ? 1 : 0) + (filters.budgetMax ? 1 : 0) + (filters.assignedTo ? 1 : 0);
 
   // Quick-action modal states
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
@@ -1030,33 +1067,84 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     setShowQuickQuote(true);
   }, []);
 
-  const salesLeads = useMemo(() => {
-    let filtered = leads.filter(l =>
-      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
-    );
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(l => 
-        l.name.toLowerCase().includes(q) || 
-        l.phone.includes(q) ||
-        (l.city && l.city.toLowerCase().includes(q)) ||
-        (l.email && l.email.toLowerCase().includes(q))
-      );
-    }
-    return filtered;
-  }, [leads, searchQuery]);
-
   // Unfiltered sales leads for stats (funnel bar uses all data)
-  // Includes partner referrals — they appear in the main sales pipeline AND in the partner detail view.
   const allSalesLeads = useMemo(() => {
     return leads.filter(l =>
       SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
     );
   }, [leads]);
 
+  // KPI counts derived from all sales leads + closed leads
+  const kpiCounts = useMemo(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const threeDaysAgo = subDays(now, 3);
+    return {
+      hot: allSalesLeads.filter(l => l.priority === 'high' || (l.priority as any) === 'hot').length,
+      stale: allSalesLeads.filter(l => new Date(l.updated_at) < threeDaysAgo).length,
+      pipelineValue: allSalesLeads.reduce((s, l) => s + (l.budget || 0), 0),
+      no_action: allSalesLeads.filter(l => !l.next_action_date && !(l as any).follow_up_date).length,
+      closed_month: leads.filter(l => {
+        const s = normalizeStatus(l.status);
+        return (s === 'in_production' || (l as any).converted_to_project_id) &&
+          new Date(l.updated_at) >= monthStart;
+      }).length,
+    };
+  }, [allSalesLeads, leads]);
 
+  const salesLeads = useMemo(() => {
+    let filtered = leads.filter(l =>
+      SALES_STAGES.includes(normalizeStatus(l.status) as PipelineStage)
+    );
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(l =>
+        l.name.toLowerCase().includes(q) ||
+        l.phone.includes(q) ||
+        (l.city && l.city.toLowerCase().includes(q)) ||
+        (l.email && l.email.toLowerCase().includes(q))
+      );
+    }
+    // KPI filter
+    if (kpiFilter) {
+      const now = new Date();
+      const threeDaysAgo = subDays(now, 3);
+      filtered = filtered.filter(l => {
+        if (kpiFilter === 'hot') return l.priority === 'high' || (l.priority as any) === 'hot';
+        if (kpiFilter === 'stale') return new Date(l.updated_at) < threeDaysAgo;
+        if (kpiFilter === 'no_action') return !l.next_action_date && !(l as any).follow_up_date;
+        if (kpiFilter === 'closed_month') return false; // closed leads aren't in salesLeads
+        return true;
+      });
+    }
+    // Advanced filters
+    if (filters.stages.length > 0) {
+      filtered = filtered.filter(l => filters.stages.includes(normalizeStatus(l.status)));
+    }
+    if (filters.sources.length > 0) {
+      filtered = filtered.filter(l => filters.sources.includes(l.lead_source));
+    }
+    if (filters.services.length > 0) {
+      filtered = filtered.filter(l =>
+        Array.isArray(l.services) && l.services.some(s => filters.services.includes(s))
+      );
+    }
+    if (filters.budgetMin) {
+      const min = parseFloat(filters.budgetMin);
+      if (!isNaN(min)) filtered = filtered.filter(l => (l.budget || 0) >= min);
+    }
+    if (filters.budgetMax) {
+      const max = parseFloat(filters.budgetMax);
+      if (!isNaN(max)) filtered = filtered.filter(l => (l.budget || 0) <= max);
+    }
+    if (filters.assignedTo) {
+      const a = filters.assignedTo.toLowerCase();
+      filtered = filtered.filter(l => (l.assigned_to || '').toLowerCase().includes(a));
+    }
+    return filtered;
+  }, [leads, searchQuery, kpiFilter, filters]);
 
-  const activeLeadIds = useMemo(() => 
+  const activeLeadIds = useMemo(() =>
     allSalesLeads
       .filter(l => !['completed', 'lost'].includes(normalizeStatus(l.status)))
       .map(l => l.id),
@@ -1078,6 +1166,20 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
     if (!needsActionOnly) return salesLeads;
     return salesLeads.filter(leadNeedsAction);
   }, [salesLeads, needsActionOnly, leadNeedsAction]);
+
+  // Stale leads per stage (5+ days)
+  const stageStaleCounts = useMemo(() => {
+    const out: Record<string, number> = {};
+    const fiveDaysAgo = subDays(new Date(), 5);
+    SALES_STAGES.forEach(stage => {
+      out[stage] = allSalesLeads.filter(l =>
+        normalizeStatus(l.status) === stage && new Date(l.updated_at) < fiveDaysAgo
+      ).length;
+    });
+    return out;
+  }, [allSalesLeads]);
+
+
 
   const leadsByStage = useMemo(() => {
     const grouped: Record<PipelineStage, Lead[]> = {
@@ -1192,182 +1294,256 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
   };
 
 
+  // Advance to next stage (inline button in list view)
+  const { updateLeadStatus } = useLeadPipeline();
+  const advanceLead = async (lead: Lead) => {
+    const stage = normalizeStatus(lead.status);
+    const idx = SALES_STAGES.indexOf(stage as PipelineStage);
+    if (idx < 0 || idx >= SALES_STAGES.length - 1) return;
+    const next = SALES_STAGES[idx + 1];
+    await updateLeadStatus(lead.id, next);
+    onRefresh();
+  };
+
+  const clearAllFilters = () => {
+    setKpiFilter(null);
+    setNeedsActionOnly(false);
+    setSearchQuery('');
+    setFilters({ stages: [], sources: [], services: [], budgetMin: '', budgetMax: '', assignedTo: '' });
+    onClearFilter?.();
+  };
+
+  const KPI_DEFS: { key: KpiKey; label: string; emoji: string; value: number | string; color: string }[] = [
+    { key: 'hot', label: 'Quentes', emoji: '🔥', value: kpiCounts.hot, color: 'border-red-200 hover:bg-red-50 data-[active=true]:bg-red-100 data-[active=true]:border-red-400' },
+    { key: 'stale', label: 'Parados +3d', emoji: '⏰', value: kpiCounts.stale, color: 'border-amber-200 hover:bg-amber-50 data-[active=true]:bg-amber-100 data-[active=true]:border-amber-400' },
+    { key: 'no_action' as KpiKey, label: 'Sem próx. ação', emoji: '📋', value: kpiCounts.no_action, color: 'border-slate-200 hover:bg-slate-50 data-[active=true]:bg-slate-100 data-[active=true]:border-slate-400' },
+    { key: 'closed_month', label: 'Fechados este mês', emoji: '✅', value: kpiCounts.closed_month, color: 'border-emerald-200 hover:bg-emerald-50 data-[active=true]:bg-emerald-100 data-[active=true]:border-emerald-400' },
+  ];
+
   return (
     <div className="space-y-3">
-      {/* Top Summary Bar */}
-      <div className="bg-card border rounded-xl px-3 sm:px-4 py-3 space-y-3">
-        {/* Row 1: Stats + View Toggle */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground block">Total Leads</span>
-              <span className="text-lg sm:text-xl font-bold text-foreground">{pipelineHealth.active}</span>
-            </div>
-            <div className="h-6 sm:h-8 w-px bg-border" />
-            <div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground block">Valor Total</span>
-              <span className="text-lg sm:text-xl font-bold text-primary">
-                ${pipelineHealth.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-              </span>
-            </div>
-            {pipelineHealth.needsAction > 0 && (
-              <>
-                <div className="h-6 sm:h-8 w-px bg-border" />
-                <div>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground block">Atenção</span>
-                  <span className="text-lg sm:text-xl font-bold text-destructive">{pipelineHealth.needsAction}</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center border rounded-lg overflow-hidden flex-shrink-0">
-            <button
-              onClick={() => setViewMode('board')}
-              className={cn(
-                "flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors",
-                viewMode === 'board'
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Board</span>
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={cn(
-                "flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors border-l",
-                viewMode === 'list'
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <List className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">List</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Funnel Health Bar */}
-        {pipelineHealth.active > 0 && (
-          <div className="space-y-1">
-            <div className="flex h-2.5 rounded-full overflow-hidden bg-muted/40">
-              {SALES_STAGES.map(stage => {
-                const count = stageStats[stage]?.count || 0;
-                if (count === 0) return null;
-                const pct = (count / pipelineHealth.active) * 100;
-                const config = STAGE_CONFIG[stage];
-                return (
-                  <div
-                    key={stage}
-                    className={cn("h-full transition-all", config.bgColor, "opacity-80")}
-                    style={{ width: `${pct}%`, minWidth: count > 0 ? '4px' : '0' }}
-                    title={`${STAGE_LABELS[stage]}: ${count} leads (${Math.round(pct)}%)`}
-                  />
-                );
-              })}
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {SALES_STAGES.filter(s => (stageStats[s]?.count || 0) > 0).map(stage => {
-                const config = STAGE_CONFIG[stage];
-                return (
-                  <span key={stage} className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                    <span className={cn("w-2 h-2 rounded-full inline-block", config.bgColor)} />
-                    {STAGE_LABELS[stage]} ({stageStats[stage]?.count})
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Row 2: Search + Needs Action Toggle + Partner Toggle */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar lead..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 text-xs"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-          <Button
-            size="sm"
-            variant={needsActionOnly ? "default" : "outline"}
+      {/* KPI Pills Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        {KPI_DEFS.slice(0, 2).map(k => (
+          <button
+            key={k.key as string}
+            data-active={kpiFilter === k.key}
+            onClick={() => setKpiFilter(kpiFilter === k.key ? null : k.key)}
             className={cn(
-              "text-xs h-8 flex-shrink-0 gap-1.5",
-              needsActionOnly && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              "flex items-center justify-between gap-2 px-3 py-2 rounded-xl border bg-card transition-all text-left",
+              k.color
             )}
-            onClick={() => setNeedsActionOnly(!needsActionOnly)}
           >
-            <Filter className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Atenção</span>
-            {pipelineHealth.needsAction > 0 && (
-              <span className={cn(
-                "text-[10px] px-1.5 py-0 rounded-full font-bold",
-                needsActionOnly 
-                  ? "bg-destructive-foreground/20 text-destructive-foreground" 
-                  : "bg-destructive/10 text-destructive"
-              )}>
-                {pipelineHealth.needsAction}
-              </span>
+            <span className="text-xs font-medium text-muted-foreground">{k.emoji} {k.label}</span>
+            <span className="text-lg font-bold text-foreground tabular-nums">{k.value}</span>
+          </button>
+        ))}
+        {/* Pipeline $ pill — display only, no filter */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border bg-card">
+          <span className="text-xs font-medium text-muted-foreground">💰 Pipeline</span>
+          <span className="text-lg font-bold text-primary tabular-nums">
+            ${kpiCounts.pipelineValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+          </span>
+        </div>
+        {KPI_DEFS.slice(2).map(k => (
+          <button
+            key={k.key as string}
+            data-active={kpiFilter === k.key}
+            onClick={() => setKpiFilter(kpiFilter === k.key ? null : k.key)}
+            className={cn(
+              "flex items-center justify-between gap-2 px-3 py-2 rounded-xl border bg-card transition-all text-left",
+              k.color
             )}
-          </Button>
+          >
+            <span className="text-xs font-medium text-muted-foreground">{k.emoji} {k.label}</span>
+            <span className="text-lg font-bold text-foreground tabular-nums">{k.value}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Simplified Toolbar */}
+      <div className="bg-card border rounded-xl px-3 py-2 flex items-center gap-2 flex-wrap">
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowNewLeadModal(true)}>
+          <UserPlus className="w-3.5 h-3.5" /> Novo Lead
+        </Button>
+
+        <div className="relative flex-1 min-w-[180px] max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="h-8 pl-8 text-xs"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
 
-        {/* Row 3: Action Buttons — differentiated */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 -mx-1 px-1">
-          <Button
-            size="sm"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowNewLeadModal(true)}
+        <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <PopoverTrigger asChild>
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5">
+              <Zap className="w-3.5 h-3.5" />
+              Filtros
+              {activeFilterCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-4 space-y-3" align="end">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold">Filtros</h4>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={() => setFilters({ stages: [], sources: [], services: [], budgetMin: '', budgetMax: '', assignedTo: '' })}
+                  className="text-[11px] text-primary hover:underline"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Estágio</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {SALES_STAGES.map(s => {
+                  const active = filters.stages.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setFilters(f => ({
+                        ...f,
+                        stages: active ? f.stages.filter(x => x !== s) : [...f.stages, s]
+                      }))}
+                      className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors",
+                        active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      {STAGE_LABELS[s]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Fonte</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {Array.from(new Set(allSalesLeads.map(l => l.lead_source))).filter(Boolean).map(src => {
+                  const active = filters.sources.includes(src);
+                  return (
+                    <button
+                      key={src}
+                      onClick={() => setFilters(f => ({
+                        ...f,
+                        sources: active ? f.sources.filter(x => x !== src) : [...f.sources, src]
+                      }))}
+                      className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors",
+                        active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      {sourceLabels[src] || src}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Serviço</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {SERVICE_OPTIONS.map(([k, label]) => {
+                  const active = filters.services.includes(k);
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => setFilters(f => ({
+                        ...f,
+                        services: active ? f.services.filter(x => x !== k) : [...f.services, k]
+                      }))}
+                      className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors",
+                        active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor min</Label>
+                <Input
+                  type="number"
+                  placeholder="$0"
+                  value={filters.budgetMin}
+                  onChange={e => setFilters(f => ({ ...f, budgetMin: e.target.value }))}
+                  className="h-8 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor max</Label>
+                <Input
+                  type="number"
+                  placeholder="$∞"
+                  value={filters.budgetMax}
+                  onChange={e => setFilters(f => ({ ...f, budgetMax: e.target.value }))}
+                  className="h-8 text-xs mt-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Responsável</Label>
+              <Input
+                placeholder="Nome ou ID..."
+                value={filters.assignedTo}
+                onChange={e => setFilters(f => ({ ...f, assignedTo: e.target.value }))}
+                className="h-8 text-xs mt-1"
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className="flex items-center border rounded-lg overflow-hidden flex-shrink-0 ml-auto">
+          <button
+            onClick={() => setViewMode('board')}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium transition-colors",
+              viewMode === 'board' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+            )}
           >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">New</span> Lead
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowApptModal(true)}
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Board</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium transition-colors border-l",
+              viewMode === 'list' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+            )}
           >
-            <CalendarPlus className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">New</span> Appt.
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowProposalModal(true)}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            Proposal
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="text-xs h-7 sm:h-8 flex-shrink-0"
-            onClick={() => setShowRequestModal(true)}
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            Request
-          </Button>
+            <List className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">List</span>
+          </button>
         </div>
       </div>
 
-      {/* Active Filter Chip */}
-      {(statusFilter || searchQuery || needsActionOnly) && (
+      {/* Active Filter Chips */}
+      {(statusFilter || searchQuery || needsActionOnly || kpiFilter || activeFilterCount > 0) && (
         <div className="flex items-center gap-2 flex-wrap">
           {statusFilter && (
             <Badge variant="secondary" className={cn(
@@ -1375,14 +1551,14 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
               STAGE_CONFIG[statusFilter]?.bgColor,
               STAGE_CONFIG[statusFilter]?.textColor
             )}>
-              Filtro: {STAGE_LABELS[statusFilter]}
-              <button
-                onClick={onClearFilter}
-                className="ml-1 rounded-full hover:bg-foreground/10 p-0.5 transition-colors"
-                aria-label="Limpar filtro"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              Estágio: {STAGE_LABELS[statusFilter]}
+              <button onClick={onClearFilter} className="ml-1 rounded-full hover:bg-foreground/10 p-0.5"><X className="w-3 h-3" /></button>
+            </Badge>
+          )}
+          {kpiFilter && (
+            <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
+              KPI: {KPI_DEFS.find(k => k.key === kpiFilter)?.label}
+              <button onClick={() => setKpiFilter(null)} className="ml-1 rounded-full hover:bg-foreground/10 p-0.5"><X className="w-3 h-3" /></button>
             </Badge>
           )}
           {searchQuery && (
@@ -1390,14 +1566,12 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
               Busca: "{searchQuery}" ({filteredSalesLeads.length})
             </Badge>
           )}
-          {needsActionOnly && (
-            <Badge variant="destructive" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium">
-              <AlertTriangle className="w-3 h-3" />
-              Modo Atenção
-            </Badge>
-          )}
+          <button onClick={clearAllFilters} className="text-[11px] text-muted-foreground hover:text-foreground hover:underline">
+            Limpar tudo
+          </button>
         </div>
       )}
+
 
       {/* Board View */}
       {viewMode === 'board' && (
@@ -1418,25 +1592,32 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     )}
                   >
                     <div className={cn(
-                      "flex items-center justify-between px-3 py-2.5 rounded-t-xl border border-b-0",
+                      "flex items-center justify-between px-3 py-2 rounded-t-xl border border-b-0",
                       config.bgColor,
                       statusFilter === stage && "ring-2 ring-offset-1 ring-primary"
                     )}>
-                      <span className={cn("font-semibold text-xs truncate", config.textColor)}>
-                        {STAGE_LABELS[stage]}
-                      </span>
-                      {stats.avgDays > 0 && (
-                        <span className="text-[9px] text-muted-foreground font-medium bg-background/60 px-1.5 py-0.5 rounded">
-                          ~{stats.avgDays}d
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className={cn("font-semibold text-xs truncate", config.textColor)}>
+                          {STAGE_LABELS[stage]}
                         </span>
-                      )}
+                        {stageStaleCounts[stage] >= 2 && (
+                          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none animate-pulse" title={`${stageStaleCounts[stage]} leads parados há 5d+`}>
+                            {stageStaleCounts[stage]}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[9px] text-muted-foreground font-medium bg-background/60 px-1.5 py-0.5 rounded">
+                        {stats.count}
+                      </span>
                     </div>
 
                     <div className={cn(
-                      "flex items-center justify-between px-3 py-1.5 border-x text-xs",
+                      "flex items-center justify-between px-3 py-1 border-x text-[10px]",
                       config.bgColor, "border-b"
                     )}>
-                      <span className="text-muted-foreground font-medium">{stats.count}</span>
+                      <span className="text-muted-foreground">
+                        {rate !== undefined ? `${rate}% avançam daqui` : '—'}
+                      </span>
                       <span className="text-muted-foreground font-medium">
                         ${stats.value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
@@ -1446,8 +1627,17 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                       <div className="max-h-[60vh] overflow-y-auto">
                         <div className="p-1.5 space-y-1.5">
                           {stageLeads.length === 0 ? (
-                            <div className="text-center py-16 text-muted-foreground/60 text-xs">
-                              Nenhum lead
+                            <div className="flex flex-col items-center justify-center gap-2 py-10 px-3 text-center">
+                              <p className="text-xs text-muted-foreground/60">Nenhum lead aqui ainda</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-[11px] gap-1"
+                                onClick={() => setShowNewLeadModal(true)}
+                              >
+                                <PlusCircle className="w-3 h-3" />
+                                Adicionar lead
+                              </Button>
                             </div>
                           ) : (
                             stageLeads.map(lead => (
@@ -1458,6 +1648,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                                 isStale={isStale(lead)}
                                 isBlocked={isBlocked(lead)}
                                 onClick={() => handleCardClick(lead)}
+                                onAdvance={() => advanceLead(lead)}
+                                canAdvance={SALES_STAGES.indexOf(stage) < SALES_STAGES.length - 1}
                                 onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                               />
                             ))
@@ -1478,13 +1670,15 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
       {viewMode === 'list' && (
         <div className="space-y-2">
           {/* Table Header — hidden on mobile */}
-          <div className="hidden md:grid grid-cols-[2fr_130px_140px_160px_100px_90px] gap-3 px-5 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+          <div className="hidden md:grid grid-cols-[2fr_120px_130px_120px_120px_90px_90px_90px] gap-3 px-5 py-3 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">
             <span>Lead</span>
             <span>Estágio</span>
             <span>Contato</span>
-            <span>Serviços</span>
+            <span>Último Contato</span>
+            <span>Responsável</span>
             <span className="text-right">Valor</span>
             <span className="text-right">Tempo</span>
+            <span className="text-right">Ações</span>
           </div>
           {/* Table Body */}
           <div className="max-h-[60vh] overflow-y-auto">
@@ -1502,6 +1696,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     isStale={isStale(lead)}
                     isBlocked={isBlocked(lead)}
                     onClick={() => handleCardClick(lead)}
+                    onAdvance={() => advanceLead(lead)}
+                    canAdvance={SALES_STAGES.indexOf(normalizeStatus(lead.status) as PipelineStage) < SALES_STAGES.length - 1}
                     onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                   />
                 ))
@@ -1510,6 +1706,8 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
           </div>
         </div>
       )}
+
+
 
       {/* Lead Detail Modal */}
       <LeadControlModal
@@ -1540,120 +1738,131 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
 }
 
 /* ─── Board Card ─── */
-function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: {
+function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, onAdvance, canAdvance }: {
   lead: Lead;
   nra: any;
   isStale: boolean;
   isBlocked: boolean;
   onClick: () => void;
   onQuickQuote?: () => void;
+  onAdvance?: () => void;
+  canAdvance?: boolean;
 }) {
-  const timeBadge = getTimeBadge(lead.updated_at);
+  const stageBadge = getStageTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
   const services: string[] = Array.isArray(lead.services) ? lead.services : [];
+  const primaryService = services[0] ? (serviceLabels[services[0]] || services[0]) : null;
 
   return (
     <div
       onClick={onClick}
       className={cn(
-        "p-4 rounded-xl border bg-card cursor-pointer transition-all group",
+        "relative p-3 rounded-xl border bg-card cursor-pointer transition-all group",
         "hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5",
         isBlocked && "ring-2 ring-destructive/40 bg-destructive/5",
         isStale && !isBlocked && "ring-2 ring-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
       )}
     >
-      {/* Row 1: Name + Value */}
+      {/* L1: Name + Value */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="font-bold text-sm text-foreground truncate leading-tight">
-            {lead.name.toUpperCase()}
-          </span>
-        </div>
-        <span className="font-bold text-sm text-foreground whitespace-nowrap flex-shrink-0">
+        <span className="font-bold text-sm text-foreground truncate leading-tight flex-1">
+          {lead.name}
+        </span>
+        <span className="font-bold text-sm text-emerald-600 whitespace-nowrap flex-shrink-0 tabular-nums">
           {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
         </span>
       </div>
 
-      {/* Row 2: Contact info */}
-      <div className="flex items-center gap-3 mt-2.5 text-[11px] text-muted-foreground">
-        <a
-          href={`tel:${lead.phone}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 hover:text-primary transition-colors"
-        >
-          <Phone className="w-3 h-3 flex-shrink-0" />
-          <span>{lead.phone}</span>
-        </a>
-        {lead.city && (
-          <span className="flex items-center gap-1">
-            <MapPin className="w-3 h-3 flex-shrink-0" />
-            {lead.city}
-          </span>
-        )}
+      {/* L2: City + service */}
+      <div className="mt-1 text-[11px] text-muted-foreground truncate">
+        {[lead.city, primaryService].filter(Boolean).join(' · ') || '—'}
       </div>
 
-      {/* Divider: Serviços */}
-      {services.length > 0 && (
-        <div className="mt-3 pt-2.5 border-t border-border/40">
-          <span className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Serviços</span>
-          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {services.map(s => (
-              <Badge key={s} variant="secondary" className="text-[9px] px-2 py-0.5 h-auto bg-primary/10 text-primary border-primary/20">
-                {serviceLabels[s] || s}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* L3: Phone clickable */}
+      <a
+        href={`tel:${lead.phone}`}
+        onClick={(e) => e.stopPropagation()}
+        className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+      >
+        <Phone className="w-3 h-3 flex-shrink-0" />
+        <span>{lead.phone}</span>
+      </a>
 
-      {/* Source badge */}
-      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-        <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-auto">
+      {/* L4 + L5: Time badge + Source badge */}
+      <div className="flex items-center justify-between gap-1.5 mt-2">
+        <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-semibold", stageBadge.className)}>
+          {stageBadge.text} no estágio
+        </span>
+        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">
           {sourceLabels[lead.lead_source] || lead.lead_source}
         </Badge>
       </div>
 
-      {/* Quick Quote button */}
-      {onQuickQuote && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-          className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 w-full text-[11px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
-        >
-          <Zap className="w-3.5 h-3.5 flex-shrink-0" />
-          Quick Quote
-        </button>
-      )}
-
-      {/* Operational Alert */}
+      {/* Operational Alert (compact) */}
       {alert && (
         <div className={cn(
-          "flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 text-[11px] font-medium",
+          "flex items-center gap-1 mt-1.5 text-[10px] font-medium",
           alert.type === 'critical' && "text-destructive",
           alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
           alert.type === 'info' && "text-primary"
         )}>
-          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
           <span className="truncate">{alert.text}</span>
         </div>
       )}
+
+      {/* Hover quick-action row */}
+      <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <a
+          href={`tel:${lead.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-muted/50 hover:bg-muted text-[10px] font-medium text-foreground"
+          title="Ligar"
+        >
+          <Phone className="w-3 h-3" /> Ligar
+        </a>
+        {onQuickQuote && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+            className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-amber-100 hover:bg-amber-200 text-[10px] font-medium text-amber-700"
+            title="Proposta"
+          >
+            <FileText className="w-3 h-3" /> Proposta
+          </button>
+        )}
+        {onAdvance && canAdvance && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAdvance(); }}
+            className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-primary/10 hover:bg-primary/20 text-[10px] font-medium text-primary"
+            title="Avançar"
+          >
+            <ChevronRightIcon className="w-3 h-3" /> Avançar
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
 /* ─── List Row ─── */
-function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: {
+function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, onAdvance, canAdvance }: {
   lead: Lead;
   nra: any;
   isStale: boolean;
   isBlocked: boolean;
   onClick: () => void;
   onQuickQuote?: () => void;
+  onAdvance?: () => void;
+  canAdvance?: boolean;
 }) {
   const timeBadge = getTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
-  const services = Array.isArray(lead.services) ? lead.services : [];
   const stage = normalizeStatus(lead.status);
   const config = STAGE_CONFIG[stage];
+  const lastContact = lead.last_contacted_at
+    ? format(new Date(lead.last_contacted_at), 'dd/MM')
+    : '—';
+  const assignedTo = lead.assigned_to || '—';
 
   return (
     <>
@@ -1661,14 +1870,13 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
       <div
         onClick={onClick}
         className={cn(
-          "hidden md:grid grid-cols-[2fr_130px_140px_160px_100px_90px] gap-3 px-5 py-3.5 rounded-xl border bg-card cursor-pointer transition-all duration-200",
-          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-[1px]",
-          isBlocked && "border-destructive/40 bg-destructive/5 shadow-destructive/10",
+          "hidden md:grid grid-cols-[2fr_120px_130px_120px_120px_90px_90px_90px] gap-3 px-5 py-3 rounded-xl border bg-card cursor-pointer transition-all duration-200",
+          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30",
+          isBlocked && "border-destructive/40 bg-destructive/5",
           isStale && !isBlocked && "border-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
         )}
       >
         <div className="flex items-center gap-3 min-w-0">
-          {/* Avatar circle */}
           <div className={cn(
             "w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0",
             config.bgColor, config.textColor
@@ -1678,62 +1886,49 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-sm text-foreground truncate leading-tight">{lead.name}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-3.5 border-muted-foreground/20">
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-3.5">
                 {sourceLabels[lead.lead_source] || lead.lead_source}
               </Badge>
-              {alert && (
-                <AlertTriangle className={cn(
-                  "w-3 h-3 flex-shrink-0",
-                  alert.type === 'critical' && "text-destructive",
-                  alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
-                  alert.type === 'info' && "text-primary"
-                )} />
-              )}
+              {alert && <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0" />}
             </div>
-            {onQuickQuote && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-                className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors w-fit"
-              >
-                <Zap className="w-3 h-3" />
-                Quick Quote
-              </button>
-            )}
           </div>
         </div>
         <div className="flex items-center">
-          <Badge className={cn("text-[10px] px-2 py-0.5 h-5 font-semibold rounded-md", config.bgColor, config.textColor, "border-0")}>
+          <Badge className={cn("text-[10px] px-2 py-0.5 h-5 font-semibold rounded-md border-0", config.bgColor, config.textColor)}>
             {STAGE_LABELS[stage]}
           </Badge>
         </div>
         <div className="flex items-center">
-          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors group">
-            <div className="w-6 h-6 rounded-md bg-muted/60 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-              <Phone className="w-3 h-3" />
-            </div>
+          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary">
+            <Phone className="w-3 h-3" />
             <span className="truncate">{lead.phone}</span>
           </a>
         </div>
-        <div className="flex items-center gap-1 min-w-0 flex-wrap">
-          {services.slice(0, 2).map(s => (
-            <Badge key={s} variant="secondary" className="text-[9px] px-2 py-0.5 h-5 bg-muted/80 text-muted-foreground font-medium">
-              {serviceLabels[s] || s}
-            </Badge>
-          ))}
-          {services.length > 2 && <span className="text-[9px] text-muted-foreground font-medium">+{services.length - 2}</span>}
-          {services.length === 0 && <span className="text-[10px] text-muted-foreground/40">—</span>}
+        <div className="flex items-center text-[11px] text-muted-foreground tabular-nums">
+          {lastContact}
+        </div>
+        <div className="flex items-center text-[11px] text-muted-foreground truncate">
+          {assignedTo}
         </div>
         <div className="flex items-center justify-end">
-          <span className={cn(
-            "font-bold text-sm",
-            lead.budget ? "text-foreground" : "text-muted-foreground/40"
-          )}>
+          <span className={cn("font-bold text-sm tabular-nums", lead.budget ? "text-emerald-600" : "text-muted-foreground/40")}>
             {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
           </span>
         </div>
         <div className="flex items-center justify-end">
           <span className={cn("text-[10px] px-2 py-1 rounded-md font-semibold", timeBadge.className)}>{timeBadge.text}</span>
+        </div>
+        <div className="flex items-center justify-end">
+          {onAdvance && canAdvance && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[10px] gap-1 px-2"
+              onClick={(e) => { e.stopPropagation(); onAdvance(); }}
+            >
+              <ChevronRightIcon className="w-3 h-3" /> Avançar
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1741,13 +1936,11 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
       <div
         onClick={onClick}
         className={cn(
-          "md:hidden rounded-xl border bg-card p-3.5 cursor-pointer transition-all duration-200",
-          "hover:shadow-md active:scale-[0.99]",
+          "md:hidden rounded-xl border bg-card p-3.5 cursor-pointer transition-all",
           isBlocked && "border-destructive/40 bg-destructive/5",
           isStale && !isBlocked && "border-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
         )}
       >
-        {/* Row 1: Avatar + Name + Value */}
         <div className="flex items-center gap-3">
           <div className={cn(
             "w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0",
@@ -1758,15 +1951,12 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <span className="font-semibold text-sm text-foreground truncate">{lead.name}</span>
-              <span className={cn(
-                "font-bold text-sm whitespace-nowrap",
-                lead.budget ? "text-foreground" : "text-muted-foreground/40"
-              )}>
+              <span className={cn("font-bold text-sm tabular-nums", lead.budget ? "text-emerald-600" : "text-muted-foreground/40")}>
                 {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
               </span>
             </div>
             <div className="flex items-center gap-2 mt-1">
-              <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-semibold rounded", config.bgColor, config.textColor, "border-0")}>
+              <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-semibold rounded border-0", config.bgColor, config.textColor)}>
                 {STAGE_LABELS[stage]}
               </Badge>
               <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", timeBadge.className)}>
@@ -1775,9 +1965,8 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
             </div>
           </div>
         </div>
-        {/* Row 2: Contact info */}
         <div className="flex items-center gap-3 mt-2.5 pl-12 text-[11px] text-muted-foreground">
-          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 hover:text-primary transition-colors">
+          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 hover:text-primary">
             <Phone className="w-3 h-3" />
             <span>{lead.phone}</span>
           </a>
@@ -1787,33 +1976,20 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
               {lead.city}
             </span>
           )}
-          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-muted-foreground/20">
-            {sourceLabels[lead.lead_source] || lead.lead_source}
-          </Badge>
         </div>
-        {onQuickQuote && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-            className="flex items-center gap-1.5 mt-2.5 pl-12 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
-          >
-            <Zap className="w-3 h-3" />
-            Quick Quote
-          </button>
-        )}
-        {/* Row 3: Alert */}
-        {alert && (
-          <div className={cn(
-            "flex items-center gap-1.5 mt-2 pl-12 text-[10px] font-medium",
-            alert.type === 'critical' && "text-destructive",
-            alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
-            alert.type === 'info' && "text-primary"
-          )}>
-            <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-            <span className="truncate">{alert.text}</span>
-          </div>
-        )}
+        <div className="flex items-center justify-between mt-2 pl-12 text-[10px] text-muted-foreground">
+          <span>Últ. contato: {lastContact}</span>
+          {onAdvance && canAdvance && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onAdvance(); }}
+              className="inline-flex items-center gap-1 text-primary font-semibold"
+            >
+              <ChevronRightIcon className="w-3 h-3" /> Avançar
+            </button>
+          )}
+        </div>
       </div>
     </>
   );
 }
+
