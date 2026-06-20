@@ -355,15 +355,8 @@ export default function PublicPortal() {
         </div>
 
 
-        <Tabs defaultValue="messages" className="w-full">
+        <Tabs defaultValue="proposals" className="w-full">
           <TabsList className="grid grid-cols-5 w-full bg-white border h-auto p-1 sm:p-1.5">
-            <TabsTrigger
-              value="messages"
-              className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
-            >
-              <MessageSquare className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-              <span className="text-[10px] sm:text-sm leading-none">Messages</span>
-            </TabsTrigger>
             <TabsTrigger
               value="proposals"
               className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
@@ -386,6 +379,13 @@ export default function PublicPortal() {
               <span className="text-[10px] sm:text-sm leading-none">Timeline</span>
             </TabsTrigger>
             <TabsTrigger
+              value="messages"
+              className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
+            >
+              <MessageSquare className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              <span className="text-[10px] sm:text-sm leading-none">Messages</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="status"
               className="data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white px-1 py-1.5 sm:px-2 sm:py-2 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1"
             >
@@ -394,12 +394,6 @@ export default function PublicPortal() {
             </TabsTrigger>
           </TabsList>
 
-          {/* MESSAGES */}
-          <TabsContent value="messages" className="mt-4">
-            {token && customer ? (
-              <PortalChat token={token} customerName={customer.full_name} />
-            ) : null}
-          </TabsContent>
 
           {/* PROPOSALS */}
           <TabsContent value="proposals" className="space-y-3 mt-4">
@@ -539,10 +533,16 @@ export default function PublicPortal() {
             )}
           </TabsContent>
 
-          {/* STATUS */}
           {/* TIMELINE */}
           <TabsContent value="timeline" className="space-y-6 mt-4">
             <TimelineTab loading={timelineLoading} projects={timeline} />
+          </TabsContent>
+
+          {/* MESSAGES */}
+          <TabsContent value="messages" className="mt-4">
+            {token && customer ? (
+              <PortalChat token={token} customerName={customer.full_name} />
+            ) : null}
           </TabsContent>
 
           {/* STATUS */}
