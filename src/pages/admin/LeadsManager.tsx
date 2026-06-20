@@ -14,25 +14,6 @@ const VALID_SALES_STAGES: PipelineStage[] = [
 export default function LeadsManager() {
   const { leads, isLoading, refreshData } = useAdminData();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [trashCount, setTrashCount] = useState(0);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const uid = data.user?.id;
-      if (!uid) return;
-      supabase.rpc("has_role", { _user_id: uid, _role: "admin" }).then(({ data: ok }) => {
-        if (ok) {
-          setIsAdmin(true);
-          supabase
-            .from("leads")
-            .select("id", { count: "exact", head: true })
-            .not("deleted_at", "is", null)
-            .then(({ count }) => setTrashCount(count ?? 0));
-        }
-      });
-    });
-  }, []);
 
   const rawStatus = searchParams.get('status');
   const normalized = rawStatus ? normalizeStatus(rawStatus) : undefined;
