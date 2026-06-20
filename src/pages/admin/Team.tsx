@@ -148,12 +148,6 @@ export default function Team() {
   return (
     <AdminLayout title="Equipe">
       <div className="space-y-4">
-        {/* Header */}
-        <div className="flex justify-end">
-          <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
-            <Plus className="w-4 h-4 mr-1" /> Adicionar membro
-          </Button>
-        </div>
 
         {/* Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -182,18 +176,23 @@ export default function Team() {
         </div>
 
         {/* Sub-tabs */}
-        <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-          <TabsList className="bg-transparent border-b border-border rounded-none p-0 h-auto w-auto">
-            <TabsTrigger
-              value="members"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
-            >Membros</TabsTrigger>
-            <TabsTrigger
-              value="daysheets"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
-            >Daysheets</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center justify-between border-b border-border">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+            <TabsList className="bg-transparent rounded-none p-0 h-auto w-auto">
+              <TabsTrigger
+                value="members"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >Membros</TabsTrigger>
+              <TabsTrigger
+                value="daysheets"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 pt-1"
+              >Daysheets</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button size="sm" onClick={() => { setEditing(null); setDialogOpen(true); }}>
+            <Plus className="w-4 h-4 mr-1" /> Adicionar membro
+          </Button>
+        </div>
 
         {/* === MEMBERS === */}
         {tab === "members" && (
