@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAdminData } from "@/hooks/admin/useAdminData";
 import { LinearPipeline } from "./components/LinearPipeline";
 import { normalizeStatus, type PipelineStage } from "@/hooks/useLeadPipeline";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 // Must match SALES_STAGES in LinearPipeline
 const VALID_SALES_STAGES: PipelineStage[] = [
