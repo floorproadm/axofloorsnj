@@ -345,15 +345,19 @@ export default function CustomerProfile() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 shrink-0">
-                <Button size="sm" onClick={() => navigate(`/admin/proposals?customerId=${customer.id}`)}>
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 shrink-0">
+                <Button size="sm" className="col-span-2 sm:col-span-1" onClick={() => navigate(`/admin/proposals?customerId=${customer.id}`)}>
                   <FileText className="w-4 h-4 mr-1" /> Nova Proposta
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => navigate(`/admin/schedule?customerId=${customer.id}`)}>
-                  <Calendar className="w-4 h-4 mr-1" /> Agendar Visita
+                <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => navigate(`/admin/schedule?customerId=${customer.id}`)}>
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span className="sm:hidden">Visita</span>
+                  <span className="hidden sm:inline">Agendar Visita</span>
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => navigate(`/admin/chat?customerId=${customer.id}`)}>
-                  <MessageSquare className="w-4 h-4 mr-1" /> Enviar mensagem
+                <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => navigate(`/admin/chat?customerId=${customer.id}`)}>
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  <span className="sm:hidden">Mensagem</span>
+                  <span className="hidden sm:inline">Enviar mensagem</span>
                 </Button>
               </div>
             </div>
