@@ -46,6 +46,7 @@ import {
   Tag,
   Briefcase,
   FileText,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -61,6 +62,7 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean;
   onExport?: () => void;
   onRowClick?: (row: TData) => void;
+  onRowDelete?: (row: TData) => void;
   pageSize?: number;
 }
 
@@ -90,6 +92,7 @@ export function DataTable<TData, TValue>({
   isLoading = false,
   onExport,
   onRowClick,
+  onRowDelete,
   pageSize = 10,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -253,6 +256,23 @@ export function DataTable<TData, TValue>({
                             );
                           })}
                         </div>
+                        
+                        {/* Card Footer — Delete Action */}
+                        {onRowDelete && (
+                          <div className="px-4 py-2 border-t bg-muted/20">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onRowDelete(row.original);
+                              }}
+                              className="flex items-center gap-2 text-xs text-destructive hover:text-destructive/80 transition-colors w-full"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Remover cliente
+                            </button>
+                          </div>
+                        )}
                       </>
                     );
                   })()}
