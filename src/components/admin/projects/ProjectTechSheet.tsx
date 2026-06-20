@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { FileText, Download, Loader2, Save } from "lucide-react";
+import { FileText, Download, Loader2, Save, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useProjectNotes, useUpsertProjectNotes, type ProjectNotes } from "@/hooks/useProjectNotes";
 import { useProjectPhotos } from "@/hooks/useProjectPhotos";
 import { useToast } from "@/hooks/use-toast";
@@ -165,10 +166,18 @@ export function ProjectTechSheet({ projectId, project }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <FileText className="h-5 w-5 shrink-0" />
-          Ficha Técnica
-        </CardTitle>
+        <div className="flex flex-col gap-1">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FileText className="h-5 w-5 shrink-0" />
+            Ficha Técnica
+          </CardTitle>
+          {project?.customer_id && (
+            <Link to={`/admin/customers/${project.customer_id}`}
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+              Ver perfil do cliente <ExternalLink className="h-3 w-3" />
+            </Link>
+          )}
+        </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button size="sm" variant="outline" onClick={save} disabled={upsert.isPending} className="flex-1 sm:flex-none">
             {upsert.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
