@@ -163,6 +163,7 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const [termsText, setTermsText] = useState<string>('');
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
     return (localStorage.getItem('proposal-preview-theme') as 'light' | 'dark') || 'light';
@@ -705,7 +706,6 @@ export function ProposalGenerator({ projectId, onClose }: ProposalGeneratorProps
   const sqftPerDay = 350;
   const durationDays = Math.max(1, Math.ceil((proposal.square_footage || 500) / sqftPerDay));
   const isLocked = proposal.proposal_status === 'accepted';
-  const [unlocked, setUnlocked] = useState(false);
   const showReadOnly = isLocked && !unlocked;
 
   return (
