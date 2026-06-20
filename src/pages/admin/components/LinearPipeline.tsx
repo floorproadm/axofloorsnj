@@ -1738,120 +1738,131 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
 }
 
 /* ─── Board Card ─── */
-function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: {
+function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, onAdvance, canAdvance }: {
   lead: Lead;
   nra: any;
   isStale: boolean;
   isBlocked: boolean;
   onClick: () => void;
   onQuickQuote?: () => void;
+  onAdvance?: () => void;
+  canAdvance?: boolean;
 }) {
-  const timeBadge = getTimeBadge(lead.updated_at);
+  const stageBadge = getStageTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
   const services: string[] = Array.isArray(lead.services) ? lead.services : [];
+  const primaryService = services[0] ? (serviceLabels[services[0]] || services[0]) : null;
 
   return (
     <div
       onClick={onClick}
       className={cn(
-        "p-4 rounded-xl border bg-card cursor-pointer transition-all group",
+        "relative p-3 rounded-xl border bg-card cursor-pointer transition-all group",
         "hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5",
         isBlocked && "ring-2 ring-destructive/40 bg-destructive/5",
         isStale && !isBlocked && "ring-2 ring-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
       )}
     >
-      {/* Row 1: Name + Value */}
+      {/* L1: Name + Value */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="font-bold text-sm text-foreground truncate leading-tight">
-            {lead.name.toUpperCase()}
-          </span>
-        </div>
-        <span className="font-bold text-sm text-foreground whitespace-nowrap flex-shrink-0">
+        <span className="font-bold text-sm text-foreground truncate leading-tight flex-1">
+          {lead.name}
+        </span>
+        <span className="font-bold text-sm text-emerald-600 whitespace-nowrap flex-shrink-0 tabular-nums">
           {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
         </span>
       </div>
 
-      {/* Row 2: Contact info */}
-      <div className="flex items-center gap-3 mt-2.5 text-[11px] text-muted-foreground">
-        <a
-          href={`tel:${lead.phone}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 hover:text-primary transition-colors"
-        >
-          <Phone className="w-3 h-3 flex-shrink-0" />
-          <span>{lead.phone}</span>
-        </a>
-        {lead.city && (
-          <span className="flex items-center gap-1">
-            <MapPin className="w-3 h-3 flex-shrink-0" />
-            {lead.city}
-          </span>
-        )}
+      {/* L2: City + service */}
+      <div className="mt-1 text-[11px] text-muted-foreground truncate">
+        {[lead.city, primaryService].filter(Boolean).join(' · ') || '—'}
       </div>
 
-      {/* Divider: Serviços */}
-      {services.length > 0 && (
-        <div className="mt-3 pt-2.5 border-t border-border/40">
-          <span className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Serviços</span>
-          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {services.map(s => (
-              <Badge key={s} variant="secondary" className="text-[9px] px-2 py-0.5 h-auto bg-primary/10 text-primary border-primary/20">
-                {serviceLabels[s] || s}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* L3: Phone clickable */}
+      <a
+        href={`tel:${lead.phone}`}
+        onClick={(e) => e.stopPropagation()}
+        className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+      >
+        <Phone className="w-3 h-3 flex-shrink-0" />
+        <span>{lead.phone}</span>
+      </a>
 
-      {/* Source badge */}
-      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-        <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-auto">
+      {/* L4 + L5: Time badge + Source badge */}
+      <div className="flex items-center justify-between gap-1.5 mt-2">
+        <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-semibold", stageBadge.className)}>
+          {stageBadge.text} no estágio
+        </span>
+        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">
           {sourceLabels[lead.lead_source] || lead.lead_source}
         </Badge>
       </div>
 
-      {/* Quick Quote button */}
-      {onQuickQuote && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-          className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 w-full text-[11px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
-        >
-          <Zap className="w-3.5 h-3.5 flex-shrink-0" />
-          Quick Quote
-        </button>
-      )}
-
-      {/* Operational Alert */}
+      {/* Operational Alert (compact) */}
       {alert && (
         <div className={cn(
-          "flex items-center gap-1.5 mt-3 pt-3 border-t border-border/60 text-[11px] font-medium",
+          "flex items-center gap-1 mt-1.5 text-[10px] font-medium",
           alert.type === 'critical' && "text-destructive",
           alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
           alert.type === 'info' && "text-primary"
         )}>
-          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
           <span className="truncate">{alert.text}</span>
         </div>
       )}
+
+      {/* Hover quick-action row */}
+      <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <a
+          href={`tel:${lead.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-muted/50 hover:bg-muted text-[10px] font-medium text-foreground"
+          title="Ligar"
+        >
+          <Phone className="w-3 h-3" /> Ligar
+        </a>
+        {onQuickQuote && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
+            className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-amber-100 hover:bg-amber-200 text-[10px] font-medium text-amber-700"
+            title="Proposta"
+          >
+            <FileText className="w-3 h-3" /> Proposta
+          </button>
+        )}
+        {onAdvance && canAdvance && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAdvance(); }}
+            className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-primary/10 hover:bg-primary/20 text-[10px] font-medium text-primary"
+            title="Avançar"
+          >
+            <ChevronRightIcon className="w-3 h-3" /> Avançar
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
 /* ─── List Row ─── */
-function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote }: {
+function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, onAdvance, canAdvance }: {
   lead: Lead;
   nra: any;
   isStale: boolean;
   isBlocked: boolean;
   onClick: () => void;
   onQuickQuote?: () => void;
+  onAdvance?: () => void;
+  canAdvance?: boolean;
 }) {
   const timeBadge = getTimeBadge(lead.updated_at);
   const alert = getOperationalAlert(lead, nra);
-  const services = Array.isArray(lead.services) ? lead.services : [];
   const stage = normalizeStatus(lead.status);
   const config = STAGE_CONFIG[stage];
+  const lastContact = lead.last_contacted_at
+    ? format(new Date(lead.last_contacted_at), 'dd/MM')
+    : '—';
+  const assignedTo = lead.assigned_to || '—';
 
   return (
     <>
@@ -1859,14 +1870,13 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
       <div
         onClick={onClick}
         className={cn(
-          "hidden md:grid grid-cols-[2fr_130px_140px_160px_100px_90px] gap-3 px-5 py-3.5 rounded-xl border bg-card cursor-pointer transition-all duration-200",
-          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-[1px]",
-          isBlocked && "border-destructive/40 bg-destructive/5 shadow-destructive/10",
+          "hidden md:grid grid-cols-[2fr_120px_130px_120px_120px_90px_90px_90px] gap-3 px-5 py-3 rounded-xl border bg-card cursor-pointer transition-all duration-200",
+          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30",
+          isBlocked && "border-destructive/40 bg-destructive/5",
           isStale && !isBlocked && "border-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
         )}
       >
         <div className="flex items-center gap-3 min-w-0">
-          {/* Avatar circle */}
           <div className={cn(
             "w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0",
             config.bgColor, config.textColor
@@ -1876,62 +1886,49 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-sm text-foreground truncate leading-tight">{lead.name}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-3.5 border-muted-foreground/20">
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-3.5">
                 {sourceLabels[lead.lead_source] || lead.lead_source}
               </Badge>
-              {alert && (
-                <AlertTriangle className={cn(
-                  "w-3 h-3 flex-shrink-0",
-                  alert.type === 'critical' && "text-destructive",
-                  alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
-                  alert.type === 'info' && "text-primary"
-                )} />
-              )}
+              {alert && <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0" />}
             </div>
-            {onQuickQuote && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-                className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors w-fit"
-              >
-                <Zap className="w-3 h-3" />
-                Quick Quote
-              </button>
-            )}
           </div>
         </div>
         <div className="flex items-center">
-          <Badge className={cn("text-[10px] px-2 py-0.5 h-5 font-semibold rounded-md", config.bgColor, config.textColor, "border-0")}>
+          <Badge className={cn("text-[10px] px-2 py-0.5 h-5 font-semibold rounded-md border-0", config.bgColor, config.textColor)}>
             {STAGE_LABELS[stage]}
           </Badge>
         </div>
         <div className="flex items-center">
-          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors group">
-            <div className="w-6 h-6 rounded-md bg-muted/60 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-              <Phone className="w-3 h-3" />
-            </div>
+          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary">
+            <Phone className="w-3 h-3" />
             <span className="truncate">{lead.phone}</span>
           </a>
         </div>
-        <div className="flex items-center gap-1 min-w-0 flex-wrap">
-          {services.slice(0, 2).map(s => (
-            <Badge key={s} variant="secondary" className="text-[9px] px-2 py-0.5 h-5 bg-muted/80 text-muted-foreground font-medium">
-              {serviceLabels[s] || s}
-            </Badge>
-          ))}
-          {services.length > 2 && <span className="text-[9px] text-muted-foreground font-medium">+{services.length - 2}</span>}
-          {services.length === 0 && <span className="text-[10px] text-muted-foreground/40">—</span>}
+        <div className="flex items-center text-[11px] text-muted-foreground tabular-nums">
+          {lastContact}
+        </div>
+        <div className="flex items-center text-[11px] text-muted-foreground truncate">
+          {assignedTo}
         </div>
         <div className="flex items-center justify-end">
-          <span className={cn(
-            "font-bold text-sm",
-            lead.budget ? "text-foreground" : "text-muted-foreground/40"
-          )}>
+          <span className={cn("font-bold text-sm tabular-nums", lead.budget ? "text-emerald-600" : "text-muted-foreground/40")}>
             {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
           </span>
         </div>
         <div className="flex items-center justify-end">
           <span className={cn("text-[10px] px-2 py-1 rounded-md font-semibold", timeBadge.className)}>{timeBadge.text}</span>
+        </div>
+        <div className="flex items-center justify-end">
+          {onAdvance && canAdvance && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[10px] gap-1 px-2"
+              onClick={(e) => { e.stopPropagation(); onAdvance(); }}
+            >
+              <ChevronRightIcon className="w-3 h-3" /> Avançar
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1939,13 +1936,11 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
       <div
         onClick={onClick}
         className={cn(
-          "md:hidden rounded-xl border bg-card p-3.5 cursor-pointer transition-all duration-200",
-          "hover:shadow-md active:scale-[0.99]",
+          "md:hidden rounded-xl border bg-card p-3.5 cursor-pointer transition-all",
           isBlocked && "border-destructive/40 bg-destructive/5",
           isStale && !isBlocked && "border-[hsl(var(--state-risk))]/40 bg-[hsl(var(--state-risk))]/5"
         )}
       >
-        {/* Row 1: Avatar + Name + Value */}
         <div className="flex items-center gap-3">
           <div className={cn(
             "w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0",
@@ -1956,15 +1951,12 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <span className="font-semibold text-sm text-foreground truncate">{lead.name}</span>
-              <span className={cn(
-                "font-bold text-sm whitespace-nowrap",
-                lead.budget ? "text-foreground" : "text-muted-foreground/40"
-              )}>
+              <span className={cn("font-bold text-sm tabular-nums", lead.budget ? "text-emerald-600" : "text-muted-foreground/40")}>
                 {lead.budget ? `$${lead.budget.toLocaleString()}` : '—'}
               </span>
             </div>
             <div className="flex items-center gap-2 mt-1">
-              <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-semibold rounded", config.bgColor, config.textColor, "border-0")}>
+              <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-semibold rounded border-0", config.bgColor, config.textColor)}>
                 {STAGE_LABELS[stage]}
               </Badge>
               <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", timeBadge.className)}>
@@ -1973,9 +1965,8 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
             </div>
           </div>
         </div>
-        {/* Row 2: Contact info */}
         <div className="flex items-center gap-3 mt-2.5 pl-12 text-[11px] text-muted-foreground">
-          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 hover:text-primary transition-colors">
+          <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 hover:text-primary">
             <Phone className="w-3 h-3" />
             <span>{lead.phone}</span>
           </a>
@@ -1985,33 +1976,20 @@ function PipelineListRow({ lead, nra, isStale, isBlocked, onClick, onQuickQuote 
               {lead.city}
             </span>
           )}
-          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-muted-foreground/20">
-            {sourceLabels[lead.lead_source] || lead.lead_source}
-          </Badge>
         </div>
-        {onQuickQuote && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onQuickQuote(); }}
-            className="flex items-center gap-1.5 mt-2.5 pl-12 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
-          >
-            <Zap className="w-3 h-3" />
-            Quick Quote
-          </button>
-        )}
-        {/* Row 3: Alert */}
-        {alert && (
-          <div className={cn(
-            "flex items-center gap-1.5 mt-2 pl-12 text-[10px] font-medium",
-            alert.type === 'critical' && "text-destructive",
-            alert.type === 'warning' && "text-[hsl(var(--state-risk))]",
-            alert.type === 'info' && "text-primary"
-          )}>
-            <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-            <span className="truncate">{alert.text}</span>
-          </div>
-        )}
+        <div className="flex items-center justify-between mt-2 pl-12 text-[10px] text-muted-foreground">
+          <span>Últ. contato: {lastContact}</span>
+          {onAdvance && canAdvance && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onAdvance(); }}
+              className="inline-flex items-center gap-1 text-primary font-semibold"
+            >
+              <ChevronRightIcon className="w-3 h-3" /> Avançar
+            </button>
+          )}
+        </div>
       </div>
     </>
   );
 }
+
