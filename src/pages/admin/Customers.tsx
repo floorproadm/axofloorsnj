@@ -85,6 +85,8 @@ export default function Customers() {
   const [createOpen, setCreateOpen] = useState(false);
   const [portalCustomer, setPortalCustomer] = useState<Customer | null>(null);
   const [portalOpen, setPortalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Applied filters
   const [search, setSearch] = useState("");
