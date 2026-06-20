@@ -88,13 +88,13 @@ export default function Invoices() {
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg bg-muted ${s.color}`}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`shrink-0 p-2 rounded-lg bg-muted ${s.color}`}>
                     <s.icon className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                    <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground truncate">{s.label}</p>
+                    <p className={`text-lg font-bold ${s.color} truncate`} title={s.value}>{s.value}</p>
                   </div>
                 </div>
               </CardContent>
