@@ -1608,10 +1608,11 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
         <div className="overflow-x-auto pb-2 -mx-1 px-1">
           <div className="flex gap-1 min-w-max items-start">
             {SALES_STAGES.map((stage, idx) => {
-              const config = STAGE_CONFIG[stage];
+              const config = getStageConfig(stage);
               const stageLeads = leadsByStage[stage];
               const stats = stageStats[stage];
               const rate = conversionRates[stage];
+              const stageLabel = getStageLabel(stage);
 
               return (
                 <div key={stage} className="flex items-start">
