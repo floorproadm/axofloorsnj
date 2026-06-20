@@ -458,9 +458,14 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
                   <ChevronRight className="w-3 h-3" /> Avançar
                 </Button>
               )}
-              {!hasProject && ['estimate_requested','estimate_scheduled','in_draft'].includes(stage) && (
-                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => setShowConvertForm(true)}>
-                  <ArrowRightLeft className="w-3 h-3" /> Converter
+              {!hasProject && stage === 'proposal_sent' && (
+                <Button
+                  size="sm"
+                  className="h-7 text-xs gap-1 shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  onClick={() => setShowConvertConfirm(true)}
+                  disabled={isConverting || isUpdating}
+                >
+                  <CheckCircle2 className="w-3 h-3" /> Converter
                 </Button>
               )}
             </>
