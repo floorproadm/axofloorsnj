@@ -117,6 +117,7 @@ export function LeadProposalTab({ leadId, organizationId, customerName, budget, 
         const rows = lines.map((l, idx) => ({
           proposal_id: proposal.id,
           description: l.description || '—',
+          category: 'service',
           quantity: Number(l.quantity) || 1,
           unit_price: Number(l.unit_price) || 0,
           amount: (Number(l.quantity) || 1) * (Number(l.unit_price) || 0),
