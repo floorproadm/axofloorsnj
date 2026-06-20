@@ -14,6 +14,59 @@ export default function MissionControlPage() {
   const { data: financialAlerts = [], isLoading: isLoadingFinancial } = useFinancialAlerts();
   const { t } = useLanguage();
 
+  // Recent Activity feed (same as Dashboard)
+  const { data: recentActivity = [] } = useQuery({
+    queryKey: ["dashboard-recent-activity"],
+    queryFn: async () => {
+      const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+      const [leadsRes, proposalsRes, paymentsRes] = await Promise.all([
+        supabase
+          .from("leads")
+          .select("id, name, created_at")
+          .is('deleted_at', null)
+          .gte("created_at", cutoff)
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("proposals")
+          .select("id, proposal_number, sent_at")
+          .not("sent_at", "is", null)
+          .gte("sent_at", cutoff)
+          .order("sent_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("payments")
+          .select("id, description, amount, created_at")
+          .eq("category", "received")
+          .eq("status", "confirmed")
+          .gte("created_at", cutoff)
+          .order("created_at", { ascending: false })
+          .limit(5),
+      ]);
+
+      const items: { type: "lead" | "proposal" | "payment" | "job"; label: string; date: string; link: string; amount?: number }[] = [];
+
+      (leadsRes.data || []).forEach((l) =>
+        items.push({ type: "lead", label: l.name, date: l.created_at, link: `/admin/leads` })
+      );
+      (proposalsRes.data || []).forEach((p) =>
+        items.push({ type: "proposal", label: `#${p.proposal_number}`, date: p.sent_at!, link: `/admin/proposals` })
+      );
+      (paymentsRes.data || []).forEach((p) =>
+        items.push({
+          type: "payment",
+          label: p.description || "Pagamento",
+          date: p.created_at,
+          link: `/admin/payments`,
+          amount: Number(p.amount || 0),
+        })
+      );
+
+      return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 8);
+    },
+  });
+
   const priorityTasks = useMemo(() => {
     const tasks: {
       label: string;
