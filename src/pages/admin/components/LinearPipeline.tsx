@@ -1730,7 +1730,7 @@ export function LinearPipeline({ leads, onRefresh, statusFilter, onClearFilter }
                     isBlocked={isBlocked(lead)}
                     onClick={() => handleCardClick(lead)}
                     onAdvance={() => advanceLead(lead)}
-                    canAdvance={SALES_STAGES.indexOf(normalizeStatus(lead.status) as PipelineStage) < SALES_STAGES.length - 1}
+                    canAdvance={!TERMINAL_SALES_STAGES.includes(normalizeStatus(lead.status) as PipelineStage)}
                     onQuickQuote={['estimate_scheduled', 'in_draft'].includes(normalizeStatus(lead.status)) ? () => handleQuickQuote(lead) : undefined}
                   />
                 ))
