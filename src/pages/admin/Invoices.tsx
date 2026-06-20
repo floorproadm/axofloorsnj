@@ -77,7 +77,7 @@ export default function Invoices() {
   return (
     <AdminLayout title="Invoices">
       <div className="space-y-4">
-        <h1 className="text-xl font-semibold">Invoices</h1>
+        
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
