@@ -1808,6 +1808,22 @@ function PipelineCard({ lead, nra, isStale, isBlocked, onClick, onQuickQuote, on
         </span>
       </div>
 
+      {/* Converted badge */}
+      {isConverted && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (lead.converted_to_project_id) {
+              window.location.href = `/admin/projects/${lead.converted_to_project_id}`;
+            }
+          }}
+          className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100"
+        >
+          ✅ Convertido {lead.converted_to_project_id && <span className="opacity-70">· Ver projeto</span>}
+        </button>
+      )}
+
       {/* L2: City + service */}
       <div className="mt-1 text-[11px] text-muted-foreground truncate">
         {[lead.city, primaryService].filter(Boolean).join(' · ') || '—'}
