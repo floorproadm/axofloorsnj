@@ -23,6 +23,8 @@ import {
 } from '@/hooks/useLeadPipeline';
 import { useLeadFollowUp, type FollowUpAction } from '@/hooks/useLeadFollowUp';
 import { useLeadConversion } from '@/hooks/useLeadConversion';
+import { LeadMeasurementsTab } from '@/components/admin/leads/LeadMeasurementsTab';
+import { LeadProposalTab } from '@/components/admin/leads/LeadProposalTab';
 import { useLeadNRA, type LeadNRA } from '@/hooks/useLeadNRA';
 import { useProposals, type ProposalStatus } from '@/hooks/useProposals';
 import { 
@@ -116,7 +118,7 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
   const { user, loading: authLoading } = useAuth();
   const { updateLeadStatus, isUpdating } = useLeadPipeline();
   const { addFollowUpAction, getFollowUpStatus, isUpdating: isFollowUpUpdating } = useLeadFollowUp();
-  const { convertLeadToProject, isConverting } = useLeadConversion();
+  const { convertLeadToFullProject, isConverting } = useLeadConversion();
   const { nra, loading: nraLoading, refresh: refreshNRA } = useLeadNRA(lead?.id, lead?.status);
   const { useProposalByProject, updateProposalStatus } = useProposals();
   
@@ -336,15 +338,9 @@ export function LeadControlModal({ lead, isOpen, onClose, onRefresh, embedded = 
 
   const handleConvertToProject = async () => {
     if (!lead) return;
-    // Single source of truth: only allowed from proposal_sent
     if (stage !== 'proposal_sent' || hasProject) return;
-    const services = Array.isArray(lead.services) ? lead.services.filter(Boolean) : [];
-    const derivedType = services.length > 0 ? services.join(' + ') : 'Flooring';
-    const pid = await convertLeadToProject(lead.id, derivedType);
+    const pid = await convertLeadToFullProject(lead.id);
     if (pid) {
-      // Move lead to "Fechado/Ganho" (in_production)
-      await updateLeadStatus(lead.id, 'in_production');
-      toast.success('Projeto criado com sucesso!');
       setShowConvertConfirm(false);
       setShowConvertForm(false);
       setProjectType('');
