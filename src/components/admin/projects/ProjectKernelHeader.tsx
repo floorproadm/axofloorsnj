@@ -8,9 +8,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, MapPin, MoreVertical, Trash2, ArrowRight, CheckCircle2, ExternalLink, Link2 } from 'lucide-react';
+import { ArrowLeft, MapPin, MoreVertical, Trash2, ArrowRight, CheckCircle2, Link2 } from 'lucide-react';
 import { ProjectKPIBar } from './ProjectKPIBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -122,10 +122,6 @@ export function ProjectKernelHeader({ project, onPortalClick }: Props) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate(`/admin/measurements?project=${project.id}`)}>
-                <ExternalLink className="h-3.5 w-3.5 mr-2" /> Editor completo de medidas
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => setConfirmDelete(true)}
