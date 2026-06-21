@@ -31,19 +31,8 @@ export default function Automations() {
   return (
     <AdminLayout title="Automations">
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center shadow-sm">
-              <Zap className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground tracking-tight">Automations</h1>
-              <p className="text-xs text-muted-foreground">
-                Automated communication flows by pipeline
-              </p>
-            </div>
-          </div>
+        {/* Test Automation — mobile-friendly positioning */}
+        <div className="flex justify-end">
           <TestAutomationDialog />
         </div>
 
