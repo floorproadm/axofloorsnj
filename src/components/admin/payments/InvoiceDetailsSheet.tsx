@@ -382,7 +382,7 @@ export function InvoiceDetailsSheet({ invoice, open, onOpenChange }: Props) {
                   className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-auto"
                   onClick={() => {
                     onOpenChange(false);
-                    navigate(`/admin/jobs/${invoice.project_id}`);
+                    navigate(`/admin/projects/${invoice.project_id}`);
                   }}
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> Open Job
