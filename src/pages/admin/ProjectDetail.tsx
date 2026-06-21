@@ -5,9 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler, ClipboardList, FolderOpen, Calculator, Package, Users } from 'lucide-react';
+import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler, ClipboardList, FolderOpen, Calculator, Package, Users, Receipt, Plus } from 'lucide-react';
 import { CustomerPortalShareDialog } from '@/components/admin/CustomerPortalShareDialog';
+import { format } from 'date-fns';
+import { NewInvoiceDialog } from '@/components/admin/payments/NewInvoiceDialog';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
@@ -27,6 +30,26 @@ export default function ProjectDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'kernel';
   const [portalOpen, setPortalOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+
+  const { data: invoices } = useQuery({
+    queryKey: ['project-invoices', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, status, amount, total_amount, due_date')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!projectId,
+  });
+
+  function fmt(n: number) {
+    return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
+  }
 
   // Backward-compat: map old tab names to new structure
   useEffect(() => {
@@ -106,7 +129,7 @@ export default function ProjectDetail() {
 
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-5 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/40 p-1 rounded-xl">
+          <TabsList className="w-full grid grid-cols-6 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/40 p-1 rounded-xl">
             <TabsTrigger value="kernel" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
               <LayoutDashboard className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Overview
             </TabsTrigger>
@@ -118,6 +141,9 @@ export default function ProjectDetail() {
             </TabsTrigger>
             <TabsTrigger value="proposal" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
               <FileText className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Proposta
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
+              <Receipt className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Faturas
             </TabsTrigger>
             <TabsTrigger value="finance" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
               <DollarSign className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Financeiro
@@ -169,6 +195,63 @@ export default function ProjectDetail() {
           <TabsContent value="proposal" className="mt-4 space-y-3">
             <ProjectMeasurementsReference projectId={project.id} />
             <ProposalGenerator projectId={project.id} />
+          </TabsContent>
+
+          {/* FATURAS */}
+          <TabsContent value="invoices" className="mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Faturas</CardTitle>
+                  <Button size="sm" className="gap-1 text-xs" onClick={() => setInvoiceOpen(true)}>
+                    <Plus className="h-3.5 w-3.5" /> Nova Fatura
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {(invoices ?? []).length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-2 py-8 border rounded-lg border-dashed">
+                    <Receipt className="h-6 w-6 text-muted-foreground/60" />
+                    <p className="text-xs text-muted-foreground">Nenhuma fatura criada para este projeto</p>
+                    <Button variant="outline" size="sm" className="h-7 px-3 text-[11px] gap-1 mt-1" onClick={() => setInvoiceOpen(true)}>
+                      <Plus className="h-3 w-3" /> Nova Fatura
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(invoices ?? []).map((inv) => {
+                      const isOverdue = inv.status !== 'paid' && inv.due_date && new Date(inv.due_date) < new Date();
+                      const effectiveStatus = isOverdue ? 'overdue' : inv.status;
+                      const statusMap: Record<string, { label: string; cls: string }> = {
+                        paid: { label: 'Paga', cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' },
+                        overdue: { label: 'Em atraso', cls: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' },
+                        pending: { label: 'Pendente', cls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30' },
+                        draft: { label: 'Rascunho', cls: 'bg-muted text-muted-foreground border-border' },
+                      };
+                      const s = statusMap[effectiveStatus] ?? statusMap.pending;
+                      return (
+                        <button
+                          key={inv.id}
+                          onClick={() => navigate(`/admin/invoices?invoice=${inv.id}`)}
+                          className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition text-left"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{inv.invoice_number}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {inv.due_date ? `Vence ${format(new Date(inv.due_date), "MMM d, yyyy")}` : 'Sem data de vencimento'}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0 ml-2">
+                            <p className="text-sm font-bold">{fmt(inv.total_amount ?? inv.amount ?? 0)}</p>
+                            <Badge variant="outline" className={`text-[10px] ${s.cls}`}>{s.label}</Badge>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* OPERAÇÃO */}
@@ -263,6 +346,11 @@ export default function ProjectDetail() {
             </Tabs>
           </TabsContent>
         </Tabs>
+        <NewInvoiceDialog
+          open={invoiceOpen}
+          onOpenChange={setInvoiceOpen}
+          defaultProjectId={project.id}
+        />
       </div>
     </AdminLayout>
   );
