@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   Gift, Users, TrendingUp, DollarSign, Share2, Copy, MessageCircle,
-  Mail, QrCode, Plus, Trophy, Search, Eye, Check, X,
+  Mail, QrCode, Plus, Trophy, Search, Eye, Check, X, Phone, MapPin,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
