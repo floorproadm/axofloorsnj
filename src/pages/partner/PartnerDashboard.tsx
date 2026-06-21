@@ -620,33 +620,6 @@ export default function PartnerDashboard() {
         {/* REWARDS VIEW */}
         {view === "rewards" && (
           <>
-            <Card className="p-5 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Current Tier</p>
-                  <p className="text-3xl font-bold">{tier.name}</p>
-                </div>
-                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Trophy className="w-7 h-7 text-primary" />
-                </div>
-              </div>
-              {tier.next !== null ? (
-                <>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${Math.min(100, tier.progress)}%` }}
-                    />
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-2">
-                    {tier.next - totalRefs} more referrals to reach next tier
-                  </p>
-                </>
-              ) : (
-                <p className="text-[11px] text-muted-foreground">Top tier reached. Keep going!</p>
-              )}
-            </Card>
-
             <div className="grid grid-cols-2 gap-2">
               <Card className="p-4">
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Total Referrals</p>
@@ -657,40 +630,6 @@ export default function PartnerDashboard() {
                 <p className="text-3xl font-bold tabular-nums mt-1">{conversionRate}%</p>
               </Card>
             </div>
-
-            <Card className="p-4">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-                Tier Ladder
-              </p>
-              <div className="space-y-1.5 text-sm">
-                {[
-                  { name: "Bronze", at: 0 },
-                  { name: "Silver", at: 5 },
-                  { name: "Gold", at: 15 },
-                  { name: "Platinum", at: 30 },
-                  { name: "Diamond", at: 50 },
-                ].map((t) => {
-                  const reached = totalRefs >= t.at;
-                  const current = t.name === tier.name;
-                  return (
-                    <div
-                      key={t.name}
-                      className={cn(
-                        "flex items-center justify-between py-1.5 px-2 rounded",
-                        current && "bg-primary/10"
-                      )}
-                    >
-                      <span className={cn("font-medium", reached ? "text-foreground" : "text-muted-foreground")}>
-                        {t.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {t.at}+ refs
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
           </>
         )}
 
