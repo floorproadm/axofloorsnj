@@ -36,28 +36,8 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
 };
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  scheduled: {
-    label: "scheduled",
-    className: "bg-[hsl(var(--state-neutral-bg))] text-[hsl(var(--state-neutral))] border-[hsl(var(--state-neutral)/0.3)]",
-  },
-  confirmed: {
-    label: "confirmed",
-    className: "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
-  },
-  completed: {
-    label: "completed",
-    className: "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
-  },
-  cancelled: {
-    label: "cancelled",
-    className: "bg-destructive/10 text-destructive border-destructive/30",
-  },
-  pending: {
-    label: "pending",
-    className: "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
-  },
-};
+
+
 
 export default function CollaboratorSchedule() {
   const [weekOffset, setWeekOffset] = useState(0);
