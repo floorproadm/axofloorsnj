@@ -5,9 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler, ClipboardList, FolderOpen, Calculator, Package, Users } from 'lucide-react';
+import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User as UserIcon, MessageCircle, Image, ListChecks, Ruler, ClipboardList, FolderOpen, Calculator, Package, Users, Receipt, Plus } from 'lucide-react';
 import { CustomerPortalShareDialog } from '@/components/admin/CustomerPortalShareDialog';
+import { format } from 'date-fns';
+import { NewInvoiceDialog } from '@/components/admin/payments/NewInvoiceDialog';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
