@@ -354,6 +354,11 @@ export default function ProjectDetail() {
           onOpenChange={setInvoiceOpen}
           defaultProjectId={project.id}
         />
+        <InvoiceDetailsSheet
+          invoice={selectedInvoice}
+          open={!!selectedInvoice}
+          onOpenChange={(o) => !o && setSelectedInvoice(null)}
+        />
       </div>
     </AdminLayout>
   );
