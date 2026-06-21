@@ -30,6 +30,26 @@ export default function ProjectDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'kernel';
   const [portalOpen, setPortalOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+
+  const { data: invoices } = useQuery({
+    queryKey: ['project-invoices', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, status, amount, total_amount, due_date')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!projectId,
+  });
+
+  function fmt(n: number) {
+    return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
+  }
 
   // Backward-compat: map old tab names to new structure
   useEffect(() => {
