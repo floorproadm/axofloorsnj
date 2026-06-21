@@ -928,28 +928,6 @@ function TimelineTab({ loading, projects }: { loading: boolean; projects: Timeli
             )}
 
 
-            {/* Before & After */}
-            {proj.before_after.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-[#0f1b3d]" />
-                  <div className="text-sm font-semibold text-slate-900">Before &amp; After</div>
-                </div>
-                {proj.before_after.map((ba) => (
-                  <div key={ba.id} className="bg-white border rounded-lg p-3 space-y-2">
-                    <BeforeAfterSlider beforeUrl={ba.before_url} afterUrl={ba.after_url} />
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-slate-700">{ba.title}</span>
-                      {ba.completed_date && (
-                        <span className="text-slate-500">
-                          {format(new Date(ba.completed_date), "MMM d, yyyy")}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {/* Photo feed */}
             {proj.photos.length > 0 && (
