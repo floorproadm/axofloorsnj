@@ -50,6 +50,10 @@ export default function DemoPortalsSettings() {
   const partnerUrl = `${origin}/partner/dashboard`;
   const collabUrl = `${origin}/collaborator`;
   const referralUrl = `${origin}/referral-program`;
+  const samplePartnerUrl = `${origin}/sample/partner`;
+  const sampleCollabUrl = `${origin}/sample/collaborator`;
+  const sampleReferralUrl = `${origin}/sample/referral`;
+  const sampleClientUrl = `${origin}/portal/demo`;
 
   const copy = (url: string, label: string) => {
     if (!url) return;
