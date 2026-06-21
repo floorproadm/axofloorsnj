@@ -173,6 +173,145 @@ export default function PublicPortal() {
   }, [brand.company_name]);
 
   useEffect(() => {
+    if (token === "demo") {
+      // Demo mode — populate with realistic sample data
+      setCustomer({
+        id: "demo-customer",
+        full_name: "Sarah Johnson",
+        email: "sarah.j@example.com",
+        phone: "+1 (201) 555-0147",
+        portal_token: "demo",
+        organization_id: "demo-org",
+      });
+      setProposals([
+        {
+          id: "demo-proposal-1",
+          share_token: "demo-proposal-token-1",
+          status: "accepted",
+          good_price: 4200,
+          better_price: 5800,
+          best_price: 7400,
+          flat_price: null,
+          use_tiers: true,
+          selected_tier: "better",
+          valid_until: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          accepted_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          organization_id: "demo-org",
+        },
+        {
+          id: "demo-proposal-2",
+          share_token: "demo-proposal-token-2",
+          status: "sent",
+          good_price: 3500,
+          better_price: 4800,
+          best_price: 6200,
+          flat_price: null,
+          use_tiers: true,
+          selected_tier: "best",
+          valid_until: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+          created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          accepted_at: null,
+          organization_id: "demo-org",
+        },
+      ]);
+      setProjects([
+        {
+          id: "demo-project-1",
+          customer_name: "Sarah Johnson",
+          project_type: "hardwood_refinishing",
+          project_status: "in_progress",
+          address: "142 Maple Ave, Montclair, NJ 07042",
+          start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          completion_date: null,
+          next_action: "Apply final coat of polyurethane",
+          next_action_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+      ]);
+      setInvoices([
+        {
+          id: "demo-inv-1",
+          invoice_number: "INV-2026-0042",
+          share_token: "demo-inv-token-1",
+          status: "paid",
+          amount: 1740,
+          total_amount: 1740,
+          due_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          paid_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          project_id: "demo-project-1",
+        },
+        {
+          id: "demo-inv-2",
+          invoice_number: "INV-2026-0043",
+          share_token: "demo-inv-token-2",
+          status: "sent",
+          amount: 2320,
+          total_amount: 2320,
+          due_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+          paid_at: null,
+          project_id: "demo-project-1",
+        },
+      ]);
+      setTimeline([
+        {
+          id: "demo-project-1",
+          project_type: "hardwood_refinishing",
+          address: "142 Maple Ave, Montclair, NJ 07042",
+          photos: [
+            {
+              id: "demo-ph-1",
+              photo_url: "https://placehold.co/800x600/e2e8f0/1e293b?text=Day+1%3A+Sanding",
+              annotated_url: null,
+              taken_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+              location_label: "Living room — sanding complete",
+            },
+            {
+              id: "demo-ph-2",
+              photo_url: "https://placehold.co/800x600/e2e8f0/1e293b?text=Day+2%3A+Staining",
+              annotated_url: null,
+              taken_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+              location_label: "Stain applied — Dark Walnut",
+            },
+            {
+              id: "demo-ph-3",
+              photo_url: "https://placehold.co/800x600/e2e8f0/1e293b?text=Day+3%3A+Coat+1",
+              annotated_url: null,
+              taken_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+              location_label: "First polyurethane coat",
+            },
+          ],
+          checklist: [
+            { id: "c1", title: "Move furniture & mask", completed: true, sort_order: 1 },
+            { id: "c2", title: "Sand floors (80/100/120 grit)", completed: true, sort_order: 2 },
+            { id: "c3", title: "Apply stain — Dark Walnut", completed: true, sort_order: 3 },
+            { id: "c4", title: "Seal coat", completed: true, sort_order: 4 },
+            { id: "c5", title: "First poly coat", completed: true, sort_order: 5 },
+            { id: "c6", title: "Second poly coat", completed: false, sort_order: 6 },
+            { id: "c7", title: "Final inspection", completed: false, sort_order: 7 },
+            { id: "c8", title: "Move furniture back", completed: false, sort_order: 8 },
+          ],
+          before_after: [
+            {
+              id: "ba-1",
+              title: "Living room hardwood",
+              before_url: "https://placehold.co/800x600/e2e8f0/1e293b?text=Before%3A+Worn+Finish",
+              after_url: "https://placehold.co/800x600/e2e8f0/1e293b?text=After%3A+Dark+Walnut",
+              completed_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+          ],
+        },
+      ]);
+      setBrand({
+        company_name: "FloorPRO",
+        phone: "(201) 555-0199",
+        email: "hello@floorpro.com",
+        website: "https://floorpro.com",
+        logo_url: null,
+      });
+      setLoading(false);
+      setTimelineLoading(false);
+      return;
+    }
     if (!token) return;
     let cancelled = false;
     (async () => {
