@@ -523,6 +523,75 @@ export default function CollaboratorDashboard() {
         className="hidden"
         onChange={handleFileChange}
       />
+
+      {/* Job Detail Drawer */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          {selectedJob && (
+            <>
+              <SheetHeader>
+                <SheetTitle>
+                  {projectDisplayName(selectedJob.customer_name, selectedJob.location)}
+                </SheetTitle>
+                <SheetDescription>
+                  {selectedJob.appointment_type}
+                </SheetDescription>
+              </SheetHeader>
+              <div className="space-y-4 py-6">
+                {selectedJob.customer_phone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <a
+                      href={`tel:${selectedJob.customer_phone}`}
+                      className="text-foreground hover:underline"
+                    >
+                      {selectedJob.customer_phone}
+                    </a>
+                  </div>
+                )}
+
+                {selectedJob.location && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span>{selectedJob.location}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    {selectedJob.appointment_time?.slice(0, 5)}
+                    {selectedJob.duration_hours && ` · ${selectedJob.duration_hours}h`}
+                  </span>
+                </div>
+
+                <Badge variant="outline" className="text-xs capitalize">
+                  {selectedJob.status}
+                </Badge>
+
+                {selectedJob.notes && (
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {selectedJob.notes}
+                  </p>
+                )}
+
+                {selectedJob.project_id && (
+                  <Button
+                    className="w-full gap-2"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      navigate(`/collaborator/project/${selectedJob.project_id}`);
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Ver Detalhes do Projeto
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
