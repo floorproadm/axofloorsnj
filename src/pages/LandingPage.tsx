@@ -76,7 +76,7 @@ const COPY = {
     heroTitle1: "O Sistema Operacional para ",
     heroTitle2: "Empresas de Piso",
     heroSub:
-      "Pare de tocar sua empresa usando apenas mensagens e planilhas. O FloorPRO te dá leads, projetos, propostas, folha de pagamento e sua equipe — em um só lugar.",
+      "Pare de tocar sua empresa usando apenas mensagens e planilhas. O FloorPRO te dá clareza com seus leads, projetos, propostas, folha de pagamento e muito mais — em um só lugar.",
     ctaPrimary: "Quero Acesso Antecipado",
     ctaSecondary: "Veja como funciona",
     socialProof: "Desenvolvido por quem vive o dia a dia do Flooring.",
