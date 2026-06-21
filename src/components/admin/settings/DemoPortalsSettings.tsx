@@ -210,6 +210,9 @@ export default function DemoPortalsSettings() {
           <Button onClick={() => open(collabUrl)} className="gap-2">
             <ExternalLink className="w-4 h-4" /> Open Collaborator Portal
           </Button>
+          <Button variant="outline" onClick={() => open(sampleCollabUrl)} className="gap-2">
+            <MonitorPlay className="w-4 h-4" /> View Sample
+          </Button>
           <Button variant="ghost" onClick={() => copy(collabUrl, "Collaborator portal")} className="gap-2">
             <Copy className="w-4 h-4" /> Copy link
           </Button>
