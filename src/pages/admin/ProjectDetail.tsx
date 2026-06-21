@@ -33,6 +33,7 @@ export default function ProjectDetail() {
   const initialTab = searchParams.get('tab') || 'kernel';
   const [portalOpen, setPortalOpen] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   const { data: invoices } = useQuery({
     queryKey: ['project-invoices', projectId],
@@ -40,11 +41,11 @@ export default function ProjectDetail() {
       if (!projectId) return [];
       const { data, error } = await supabase
         .from('invoices')
-        .select('id, invoice_number, status, amount, total_amount, due_date')
+        .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as unknown as Invoice[];
     },
     enabled: !!projectId,
   });
