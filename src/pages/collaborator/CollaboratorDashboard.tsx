@@ -47,6 +47,8 @@ export default function CollaboratorDashboard() {
     unit: "unit",
     notes: "",
   });
+  const [selectedJob, setSelectedJob] = useState<CollaboratorAppointment | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Week strip data
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
