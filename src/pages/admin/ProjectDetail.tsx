@@ -129,7 +129,7 @@ export default function ProjectDetail() {
 
 
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-5 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/40 p-1 rounded-xl">
+          <TabsList className="w-full grid grid-cols-6 sm:flex sm:justify-start sm:flex-wrap h-auto gap-1 bg-muted/40 p-1 rounded-xl">
             <TabsTrigger value="kernel" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
               <LayoutDashboard className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Overview
             </TabsTrigger>
@@ -141,6 +141,9 @@ export default function ProjectDetail() {
             </TabsTrigger>
             <TabsTrigger value="proposal" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
               <FileText className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Proposta
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
+              <Receipt className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Faturas
             </TabsTrigger>
             <TabsTrigger value="finance" className="flex-col sm:flex-row gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 text-[10px] sm:text-sm data-[state=active]:shadow-sm">
               <DollarSign className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Financeiro
