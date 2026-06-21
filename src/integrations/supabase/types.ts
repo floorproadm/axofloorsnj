@@ -3066,10 +3066,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          annual_revenue: string | null
           avatar_url: string | null
           bio: string | null
           birthdate: string | null
+          business_types: string[] | null
+          city: string | null
           color: string | null
+          company_name: string | null
           created_at: string
           daily_rate: number | null
           email: string | null
@@ -3077,19 +3081,28 @@ export type Database = {
           full_name: string | null
           id: string
           is_active_crew: boolean | null
+          onboarding_checklist: Json
           onboarding_completed: boolean
           onboarding_completed_at: string | null
+          onboarding_skipped: boolean
           phone: string | null
           region: string | null
           role: string | null
+          team_size: string | null
           updated_at: string
           user_id: string | null
+          website: string | null
+          years_experience: string | null
         }
         Insert: {
+          annual_revenue?: string | null
           avatar_url?: string | null
           bio?: string | null
           birthdate?: string | null
+          business_types?: string[] | null
+          city?: string | null
           color?: string | null
+          company_name?: string | null
           created_at?: string
           daily_rate?: number | null
           email?: string | null
@@ -3097,19 +3110,28 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active_crew?: boolean | null
+          onboarding_checklist?: Json
           onboarding_completed?: boolean
           onboarding_completed_at?: string | null
+          onboarding_skipped?: boolean
           phone?: string | null
           region?: string | null
           role?: string | null
+          team_size?: string | null
           updated_at?: string
           user_id?: string | null
+          website?: string | null
+          years_experience?: string | null
         }
         Update: {
+          annual_revenue?: string | null
           avatar_url?: string | null
           bio?: string | null
           birthdate?: string | null
+          business_types?: string[] | null
+          city?: string | null
           color?: string | null
+          company_name?: string | null
           created_at?: string
           daily_rate?: number | null
           email?: string | null
@@ -3117,13 +3139,18 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active_crew?: boolean | null
+          onboarding_checklist?: Json
           onboarding_completed?: boolean
           onboarding_completed_at?: string | null
+          onboarding_skipped?: boolean
           phone?: string | null
           region?: string | null
           role?: string | null
+          team_size?: string | null
           updated_at?: string
           user_id?: string | null
+          website?: string | null
+          years_experience?: string | null
         }
         Relationships: []
       }
