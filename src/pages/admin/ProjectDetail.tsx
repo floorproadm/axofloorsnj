@@ -11,6 +11,8 @@ import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User
 import { CustomerPortalShareDialog } from '@/components/admin/CustomerPortalShareDialog';
 import { format } from 'date-fns';
 import { NewInvoiceDialog } from '@/components/admin/payments/NewInvoiceDialog';
+import { InvoiceDetailsSheet } from '@/components/admin/payments/InvoiceDetailsSheet';
+import type { Invoice } from '@/hooks/useInvoices';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
@@ -31,6 +33,7 @@ export default function ProjectDetail() {
   const initialTab = searchParams.get('tab') || 'kernel';
   const [portalOpen, setPortalOpen] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   const { data: invoices } = useQuery({
     queryKey: ['project-invoices', projectId],
@@ -38,11 +41,11 @@ export default function ProjectDetail() {
       if (!projectId) return [];
       const { data, error } = await supabase
         .from('invoices')
-        .select('id, invoice_number, status, amount, total_amount, due_date')
+        .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as unknown as Invoice[];
     },
     enabled: !!projectId,
   });
@@ -232,7 +235,7 @@ export default function ProjectDetail() {
                       return (
                         <button
                           key={inv.id}
-                          onClick={() => navigate(`/admin/invoices?invoice=${inv.id}`)}
+                          onClick={() => setSelectedInvoice(inv)}
                           className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition text-left"
                         >
                           <div className="min-w-0">
@@ -350,6 +353,11 @@ export default function ProjectDetail() {
           open={invoiceOpen}
           onOpenChange={setInvoiceOpen}
           defaultProjectId={project.id}
+        />
+        <InvoiceDetailsSheet
+          invoice={selectedInvoice}
+          open={!!selectedInvoice}
+          onOpenChange={(o) => !o && setSelectedInvoice(null)}
         />
       </div>
     </AdminLayout>
