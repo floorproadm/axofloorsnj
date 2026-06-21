@@ -247,30 +247,28 @@ export default function PublicInvoice() {
           )}
 
           {/* Contact */}
-          {(brand.phone || brand.email) && (
-            <div className="bg-white border rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold text-slate-900">Need help?</div>
-                <div className="text-xs text-slate-500 mt-0.5">We typically reply within an hour.</div>
-              </div>
-              <div className="flex gap-2">
-                {brand.phone && (
-                  <Button asChild size="sm" variant="outline">
-                    <a href={`tel:${brand.phone.replace(/[^\d+]/g, "")}`}>
-                      <Phone className="w-3.5 h-3.5 mr-1.5" /> Call
-                    </a>
-                  </Button>
-                )}
-                {brand.phone && (
-                  <Button asChild size="sm" className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
-                    <a href={`sms:${brand.phone.replace(/[^\d+]/g, "")}`}>
-                      <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Text
-                    </a>
-                  </Button>
-                )}
-              </div>
+          <div className="bg-white border rounded-lg p-4 flex items-center justify-between">
+            <div>
+              <div className="text-sm font-semibold text-slate-900">Need help?</div>
+              <div className="text-xs text-slate-500 mt-0.5">We typically reply within an hour.</div>
             </div>
-          )}
+            <div className="flex gap-2">
+              {brand.phone && (
+                <Button asChild size="sm" variant="outline">
+                  <a href={`tel:${brand.phone.replace(/[^\d+]/g, "")}`}>
+                    <Phone className="w-3.5 h-3.5 mr-1.5" /> Call
+                  </a>
+                </Button>
+              )}
+              {brand.phone && (
+                <Button asChild size="sm" className="bg-[#0f1b3d] hover:bg-[#0f1b3d]/90">
+                  <a href={`sms:${brand.phone.replace(/[^\d+]/g, "")}`}>
+                    <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Text
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
