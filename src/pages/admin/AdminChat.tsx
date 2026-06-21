@@ -292,6 +292,22 @@ export default function AdminChat() {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+  /* ---------------- Delete conversation ---------------- */
+  const handleDelete = async () => {
+    if (!deleteTarget || !user) return;
+    if (deleteTarget.type === 'client') {
+      await supabase.from('chat_messages').delete().eq('project_id', deleteTarget.id);
+      if (activeProjectId === deleteTarget.id) setActiveProjectId(null);
+    } else {
+      await supabase.from('direct_messages').delete().or(
+        `and(sender_id.eq.${user.id},receiver_id.eq.${deleteTarget.id}),and(sender_id.eq.${deleteTarget.id},receiver_id.eq.${user.id})`
+      );
+      if (activeTeamId === deleteTarget.id) setActiveTeamId(null);
+    }
+    setDeleteTarget(null);
+    qc.invalidateQueries({ queryKey: ['admin-chat-client-convos'] });
+    qc.invalidateQueries({ queryKey: ['admin-chat-team-last'] });
+  };
 
   /* ---------------- Send ---------------- */
   const handleSend = async () => {
