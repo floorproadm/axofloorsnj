@@ -350,6 +350,25 @@ export function InvoiceDetailsSheet({ invoice, open, onOpenChange }: Props) {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [editing, setEditing] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  const handlePreview = async () => {
+    if (!invoice) return;
+    setPreviewLoading(true);
+    try {
+      let token = (invoice as any).share_token as string | null;
+      if (!token) {
+        token = crypto.randomUUID();
+        const { error } = await supabase.from("invoices").update({ share_token: token } as any).eq("id", invoice.id);
+        if (error) throw error;
+      }
+      window.open(`${window.location.origin}/invoice/${token}`, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
 
   if (!invoice) return null;
 
