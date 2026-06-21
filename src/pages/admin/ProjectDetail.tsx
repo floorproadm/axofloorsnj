@@ -11,6 +11,8 @@ import { Loader2, ArrowLeft, LayoutDashboard, DollarSign, FileText, Wrench, User
 import { CustomerPortalShareDialog } from '@/components/admin/CustomerPortalShareDialog';
 import { format } from 'date-fns';
 import { NewInvoiceDialog } from '@/components/admin/payments/NewInvoiceDialog';
+import { InvoiceDetailsSheet } from '@/components/admin/payments/InvoiceDetailsSheet';
+import type { Invoice } from '@/hooks/useInvoices';
 
 import { ProjectKernelHeader } from '@/components/admin/projects/ProjectKernelHeader';
 import { ProjectKernelOverview } from '@/components/admin/projects/ProjectKernelOverview';
