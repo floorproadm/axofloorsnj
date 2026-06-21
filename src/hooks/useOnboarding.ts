@@ -77,8 +77,9 @@ export function useOnboarding() {
   }, [user, authLoading, refetch]);
 
   const completed = !!profile?.onboarding_completed;
+  const skipped = !!profile?.onboarding_skipped;
   const shouldShowModal =
-    !loading && !!user && !completed && !skippedThisSession;
+    !loading && !!user && !completed && !skipped && !skippedThisSession;
 
   const saveOnboarding = useCallback(
     async (data: OnboardingData) => {
