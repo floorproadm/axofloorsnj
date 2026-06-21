@@ -115,17 +115,17 @@ export default function PublicInvoice() {
   const StatusIcon = sc.icon;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-6 px-4">
+    <div className="min-h-screen bg-slate-50 py-4 px-3 sm:py-6 sm:px-4">
       <div className="max-w-[760px] mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="bg-[#0f172a] text-white px-8 py-7 flex justify-between items-center">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="bg-[#0f172a] text-white px-4 py-4 sm:px-8 sm:py-7 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+          <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
             <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight truncate">
               {brand.company_name}
             </h1>
           </div>
-          <div className="text-right">
-            <p className="text-base font-bold">{invoice.invoice_number}</p>
+          <div className="text-left sm:text-right w-full sm:w-auto">
+            <p className="text-sm sm:text-base font-bold">{invoice.invoice_number}</p>
             <div className={`inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${sc.bg} ${sc.text}`}>
               <StatusIcon className="w-3 h-3" />
               {sc.label}
@@ -134,7 +134,7 @@ export default function PublicInvoice() {
         </div>
 
         {/* Bill-to strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-8 py-5 bg-slate-50 border-b border-slate-200">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-4 py-4 sm:px-8 sm:py-5 bg-slate-50 border-b border-slate-200">
           <div>
             <p className="text-[9px] uppercase tracking-[1.5px] text-slate-400 mb-0.5">Bill To</p>
             <p className="text-sm font-semibold text-slate-800">{invoice.projects?.customer_name || "—"}</p>
@@ -168,43 +168,45 @@ export default function PublicInvoice() {
         </div>
 
         {/* Content */}
-        <div className="px-8 py-6 space-y-6">
+        <div className="px-4 py-4 sm:px-8 sm:py-6 space-y-4 sm:space-y-6">
           {/* Items table */}
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b-2 border-slate-200">
-                <th className="text-left text-[9px] uppercase tracking-[1px] text-slate-500 pb-2">Description</th>
-                {hasDetail && <th className="text-left text-[9px] uppercase tracking-[1px] text-slate-500 pb-2">Detail</th>}
-                <th className="text-right text-[9px] uppercase tracking-[1px] text-slate-500 pb-2 w-12">Qty</th>
-                <th className="text-right text-[9px] uppercase tracking-[1px] text-slate-500 pb-2 w-20">Unit Price</th>
-                <th className="text-right text-[9px] uppercase tracking-[1px] text-slate-500 pb-2 w-24">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item: any) => (
-                <tr key={item.id} className="border-b border-slate-100">
-                  <td className="py-2.5">{item.description}</td>
-                  {hasDetail && <td className="py-2.5 text-xs text-slate-500 italic">{item.detail || ""}</td>}
-                  <td className="py-2.5 text-right">{item.quantity}</td>
-                  <td className="py-2.5 text-right">{fmt(Number(item.unit_price))}</td>
-                  <td className="py-2.5 text-right font-semibold">{fmt(Number(item.quantity) * Number(item.unit_price))}</td>
+          <div className="overflow-x-auto -mx-4 px-4 sm:-mx-0 sm:px-0">
+            <table className="w-full text-xs sm:text-sm min-w-[500px]">
+              <thead>
+                <tr className="border-b-2 border-slate-200">
+                  <th className="text-left text-[9px] uppercase tracking-[1px] text-slate-500 pb-2">Description</th>
+                  {hasDetail && <th className="text-left text-[9px] uppercase tracking-[1px] text-slate-500 pb-2">Detail</th>}
+                  <th className="text-right text-[9px] uppercase tracking-[1px] text-slate-500 pb-2 w-12">Qty</th>
+                  <th className="text-right text-[9px] uppercase tracking-[1px] text-slate-500 pb-2 w-20">Unit Price</th>
+                  <th className="text-right text-[9px] uppercase tracking-[1px] text-slate-500 pb-2 w-24">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {items.map((item: any) => (
+                  <tr key={item.id} className="border-b border-slate-100">
+                    <td className="py-2.5 pr-2">{item.description}</td>
+                    {hasDetail && <td className="py-2.5 text-[10px] sm:text-xs text-slate-500 italic pr-2">{item.detail || ""}</td>}
+                    <td className="py-2.5 text-right">{item.quantity}</td>
+                    <td className="py-2.5 text-right">{fmt(Number(item.unit_price))}</td>
+                    <td className="py-2.5 text-right font-semibold">{fmt(Number(item.quantity) * Number(item.unit_price))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Totals */}
-          <div className="ml-auto w-64 bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-1">
-            <div className="flex justify-between text-sm text-slate-600"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
-            {taxAmount > 0 && <div className="flex justify-between text-sm text-slate-600"><span>Tax</span><span>{fmt(taxAmount)}</span></div>}
-            {discountAmount > 0 && <div className="flex justify-between text-sm text-slate-600"><span>Discount</span><span>-{fmt(discountAmount)}</span></div>}
-            <div className="flex justify-between text-lg font-extrabold text-slate-900 pt-2 border-t border-slate-300">
+          <div className="w-full sm:w-64 sm:ml-auto bg-slate-50 rounded-lg p-3 sm:p-4 border border-slate-200 space-y-1">
+            <div className="flex justify-between text-xs sm:text-sm text-slate-600"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
+            {taxAmount > 0 && <div className="flex justify-between text-xs sm:text-sm text-slate-600"><span>Tax</span><span>{fmt(taxAmount)}</span></div>}
+            {discountAmount > 0 && <div className="flex justify-between text-xs sm:text-sm text-slate-600"><span>Discount</span><span>-{fmt(discountAmount)}</span></div>}
+            <div className="flex justify-between text-base sm:text-lg font-extrabold text-slate-900 pt-2 border-t border-slate-300">
               <span>Total</span><span>{fmt(total)}</span>
             </div>
             {depositAmount > 0 && (
               <>
-                <div className="flex justify-between text-sm text-green-600"><span>Deposit Paid</span><span>-{fmt(depositAmount)}</span></div>
-                <div className="flex justify-between text-base font-extrabold text-slate-900"><span>Balance Due</span><span>{fmt(balanceDue)}</span></div>
+                <div className="flex justify-between text-xs sm:text-sm text-green-600"><span>Deposit Paid</span><span>-{fmt(depositAmount)}</span></div>
+                <div className="flex justify-between text-sm sm:text-base font-extrabold text-slate-900"><span>Balance Due</span><span>{fmt(balanceDue)}</span></div>
               </>
             )}
           </div>
@@ -213,7 +215,7 @@ export default function PublicInvoice() {
           {phases.length > 0 && (
             <div>
               <h4 className="text-[10px] uppercase tracking-[1px] text-slate-500 mb-2 font-semibold">Payment Schedule</h4>
-              <div className={`grid gap-3`} style={{ gridTemplateColumns: `repeat(${phases.length}, 1fr)` }}>
+              <div className="grid grid-cols-1 sm:grid gap-3" style={{ gridTemplateColumns: undefined }}>
                 {phases.map((p: any) => (
                   <div key={p.id} className="border border-slate-200 rounded-lg p-3 text-center">
                     <p className="text-[10px] uppercase tracking-[1px] text-slate-500">{p.phase_label}</p>
@@ -238,15 +240,15 @@ export default function PublicInvoice() {
 
           {/* Notes */}
           {invoice.notes && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3.5 text-sm text-amber-800">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-3.5 text-xs sm:text-sm text-amber-800">
               <strong>Notes:</strong> {invoice.notes}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="text-center py-5 border-t border-slate-200 text-[10px] text-slate-400 space-y-0.5">
-          <p>{[brand.company_name, brand.phone, brand.website].filter(Boolean).join(" · ")}</p>
+        <div className="text-center py-4 sm:py-5 border-t border-slate-200 text-[10px] text-slate-400 space-y-0.5 px-4">
+          <p className="break-words">{[brand.company_name, brand.phone, brand.website].filter(Boolean).join(" · ")}</p>
         </div>
       </div>
     </div>
