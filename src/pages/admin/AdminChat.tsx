@@ -527,40 +527,69 @@ export default function AdminChat() {
               <EmptyList label="No team members" />
             ) : (
               filteredTeam.map((m: any) => (
-                <button
+                <div
                   key={m.user_id}
-                  onClick={() => setActiveTeamId(m.user_id)}
                   className={cn(
-                    "w-full text-left px-3 py-2.5 border-b border-border/50 hover:bg-muted/50 transition-colors flex gap-2.5",
+                    "relative group/item w-full px-3 py-2.5 border-b border-border/50 hover:bg-muted/50 transition-colors flex gap-2.5",
                     activeTeamId === m.user_id && "bg-muted/70"
                   )}
                 >
-                  <Avatar className="w-9 h-9 shrink-0">
-                    <AvatarFallback className="text-xs bg-amber-500/10 text-amber-600">
-                      {initials(m.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium truncate">{m.full_name}</span>
-                      {m.last && (
-                        <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
-                          {format(new Date(m.last.created_at), "HH:mm")}
+                  <div
+                    className="flex-1 flex gap-2.5 min-w-0 cursor-pointer"
+                    onClick={() => setActiveTeamId(m.user_id)}
+                  >
+                    <Avatar className="w-9 h-9 shrink-0">
+                      <AvatarFallback className="text-xs bg-amber-500/10 text-amber-600">
+                        {initials(m.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium truncate">{m.full_name}</span>
+                        {m.last && (
+                          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                            {format(new Date(m.last.created_at), "HH:mm")}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <span className="text-xs text-muted-foreground truncate">
+                          {m.last?.content || (m.role ?? "Team member")}
                         </span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground truncate">
-                        {m.last?.content || (m.role ?? "Team member")}
-                      </span>
-                      {m.unread > 0 && (
-                        <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground shrink-0">
-                          {m.unread}
-                        </Badge>
-                      )}
+                        {m.unread > 0 && (
+                          <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground shrink-0">
+                            {m.unread}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </button>
+                  <div className="shrink-0 self-center opacity-0 group-hover/item:opacity-100 transition-opacity">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() =>
+                            setDeleteTarget({ type: 'team', id: m.user_id, name: m.full_name })
+                          }
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
               ))
             )}
           </ScrollArea>
