@@ -37,23 +37,23 @@ export default function Automations() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-4 gap-3">
-          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
-            <p className="text-2xl font-bold text-foreground">{activeStages}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          <div className="rounded-xl border border-border/50 bg-card p-2.5 sm:p-3 text-center">
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{activeStages}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Active Stages</p>
           </div>
-          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
-            <p className="text-2xl font-bold text-foreground">{totalSequences}</p>
+          <div className="rounded-xl border border-border/50 bg-card p-2.5 sm:p-3 text-center">
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{totalSequences}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Sequences</p>
           </div>
-          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
-            <p className="text-2xl font-bold text-primary">{totalDrips}</p>
+          <div className="rounded-xl border border-border/50 bg-card p-2.5 sm:p-3 text-center">
+            <p className="text-xl sm:text-2xl font-bold text-primary">{totalDrips}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Total Drips</p>
           </div>
-          <div className="rounded-xl border border-border/50 bg-card p-3 text-center">
+          <div className="rounded-xl border border-border/50 bg-card p-2.5 sm:p-3 text-center">
             <div className="flex items-center justify-center gap-1">
               <Mail className="w-3.5 h-3.5 text-emerald-500" />
-              <p className="text-2xl font-bold text-emerald-500">{stats?.totalSentWeek || 0}</p>
+              <p className="text-xl sm:text-2xl font-bold text-emerald-500">{stats?.totalSentWeek || 0}</p>
             </div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Sent This Week</p>
           </div>
