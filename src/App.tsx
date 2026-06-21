@@ -77,6 +77,9 @@ import LandingPage from "./pages/LandingPage";
 import SPUPanel from "./pages/SPUPanel";
 import PlatformAdminRoute from "@/components/shared/PlatformAdminRoute";
 import Visualizer from "./pages/Visualizer";
+import SamplePartnerPortal from "./pages/sample/SamplePartnerPortal";
+import SampleCollaboratorPortal from "./pages/sample/SampleCollaboratorPortal";
+import SampleReferralPortal from "./pages/sample/SampleReferralPortal";
 
 
 
@@ -183,6 +186,11 @@ const App = () => {
             <Route path="/partner/welcome" element={<PartnerWelcome />} />
             <Route path="/partner/dashboard" element={<PartnerDashboard />} />
             <Route path="/partner" element={<Navigate to="/partner/dashboard" replace />} />
+
+            {/* Sample/demo previews (no auth, static mock data) */}
+            <Route path="/sample/partner" element={<SamplePartnerPortal />} />
+            <Route path="/sample/collaborator" element={<SampleCollaboratorPortal />} />
+            <Route path="/sample/referral" element={<SampleReferralPortal />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

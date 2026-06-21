@@ -50,6 +50,10 @@ export default function DemoPortalsSettings() {
   const partnerUrl = `${origin}/partner/dashboard`;
   const collabUrl = `${origin}/collaborator`;
   const referralUrl = `${origin}/referral-program`;
+  const samplePartnerUrl = `${origin}/sample/partner`;
+  const sampleCollabUrl = `${origin}/sample/collaborator`;
+  const sampleReferralUrl = `${origin}/sample/referral`;
+  const sampleClientUrl = `${origin}/portal/demo`;
 
   const copy = (url: string, label: string) => {
     if (!url) return;
@@ -123,6 +127,9 @@ export default function DemoPortalsSettings() {
               <Button onClick={() => open(clientUrl)} className="gap-2">
                 <ExternalLink className="w-4 h-4" /> Open Client Portal
               </Button>
+              <Button variant="outline" onClick={() => open(sampleClientUrl)} className="gap-2">
+                <MonitorPlay className="w-4 h-4" /> View Sample
+              </Button>
               <Button variant="ghost" onClick={() => copy(clientUrl, "Client portal")} className="gap-2">
                 <Copy className="w-4 h-4" /> Copy link
               </Button>
@@ -149,6 +156,9 @@ export default function DemoPortalsSettings() {
           <Button onClick={() => open(partnerUrl)} className="gap-2">
             <ExternalLink className="w-4 h-4" /> Open Partner Portal
           </Button>
+          <Button variant="outline" onClick={() => open(samplePartnerUrl)} className="gap-2">
+            <MonitorPlay className="w-4 h-4" /> View Sample
+          </Button>
           <Button variant="ghost" onClick={() => copy(partnerUrl, "Partner portal")} className="gap-2">
             <Copy className="w-4 h-4" /> Copy link
           </Button>
@@ -173,6 +183,9 @@ export default function DemoPortalsSettings() {
           <Button onClick={() => open(referralUrl)} className="gap-2">
             <ExternalLink className="w-4 h-4" /> Open Referral Portal
           </Button>
+          <Button variant="outline" onClick={() => open(sampleReferralUrl)} className="gap-2">
+            <MonitorPlay className="w-4 h-4" /> View Sample
+          </Button>
           <Button variant="ghost" onClick={() => copy(referralUrl, "Referral portal")} className="gap-2">
             <Copy className="w-4 h-4" /> Copy link
           </Button>
@@ -196,6 +209,9 @@ export default function DemoPortalsSettings() {
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => open(collabUrl)} className="gap-2">
             <ExternalLink className="w-4 h-4" /> Open Collaborator Portal
+          </Button>
+          <Button variant="outline" onClick={() => open(sampleCollabUrl)} className="gap-2">
+            <MonitorPlay className="w-4 h-4" /> View Sample
           </Button>
           <Button variant="ghost" onClick={() => copy(collabUrl, "Collaborator portal")} className="gap-2">
             <Copy className="w-4 h-4" /> Copy link
