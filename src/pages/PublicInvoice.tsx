@@ -240,7 +240,7 @@ export default function PublicInvoice() {
 
           {/* Notes */}
           {invoice.notes && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-3.5 text-xs sm:text-sm text-amber-800">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-3.5 text-sm sm:text-base text-amber-800">
               <strong>Notes:</strong> {invoice.notes}
             </div>
           )}
