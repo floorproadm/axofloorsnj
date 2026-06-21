@@ -122,7 +122,7 @@ function PipelineCard({ proposal, onClick }: { proposal: ProposalWithRelations; 
     >
       <div className="flex items-start justify-between gap-1">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground truncate">{c?.customer_name || "—"}</p>
+          <p className={`text-sm font-semibold truncate ${c?.customer_name ? "text-foreground" : "text-muted-foreground italic font-normal"}`}>{c?.customer_name || "Cliente não atribuído"}</p>
           <p className="text-[11px] text-muted-foreground truncate">{c?.project_type}</p>
         </div>
         <span className="text-sm font-bold tabular-nums flex-shrink-0">{fmt(displayPrice)}</span>
