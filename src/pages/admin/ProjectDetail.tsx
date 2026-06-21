@@ -346,6 +346,11 @@ export default function ProjectDetail() {
             </Tabs>
           </TabsContent>
         </Tabs>
+        <NewInvoiceDialog
+          open={invoiceOpen}
+          onOpenChange={setInvoiceOpen}
+          defaultProjectId={project.id}
+        />
       </div>
     </AdminLayout>
   );
