@@ -485,7 +485,7 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
             <SqftRateEditor projectId={project?.id} />
 
             {/* Invoices Section */}
-            <div className="pt-3 border-t">
+            <div className="pt-4 mt-1 border-t">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                   <Receipt className="h-3 w-3" /> Faturas ({(invoices ?? []).length})
@@ -496,36 +496,56 @@ export function ProjectDetailPanel({ project, open, onClose }: Props) {
                   className="h-7 px-2 text-[11px] gap-1"
                   onClick={() => setInvoiceOpen(true)}
                 >
-                  <Plus className="h-3 w-3" /> Nova
+                  <Plus className="h-3 w-3" /> Nova Fatura
                 </Button>
               </div>
               {(invoices ?? []).length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">
-                  Sem faturas ainda
-                </p>
+                <div className="flex flex-col items-center justify-center gap-2 py-6 border rounded-lg border-dashed">
+                  <Receipt className="h-6 w-6 text-muted-foreground/60" />
+                  <p className="text-xs text-muted-foreground">Nenhuma fatura criada para este projeto</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-3 text-[11px] gap-1 mt-1"
+                    onClick={() => setInvoiceOpen(true)}
+                  >
+                    <Plus className="h-3 w-3" /> Nova Fatura
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-1.5">
-                  {(invoices ?? []).map((inv) => (
-                    <button
-                      key={inv.id}
-                      onClick={() => {
-                        navigate(`/admin/invoices?invoice=${inv.id}`);
-                        onClose();
-                      }}
-                      className="w-full flex items-center justify-between rounded-lg border p-2.5 hover:bg-muted/50 transition text-left"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{inv.invoice_number}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          Vence {format(new Date(inv.due_date), "MMM d, yyyy")}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0 ml-2">
-                        <p className="text-sm font-bold">{fmt(inv.total_amount ?? inv.amount)}</p>
-                        <Badge variant="outline" className="text-[10px]">{inv.status}</Badge>
-                      </div>
-                    </button>
-                  ))}
+                  {(invoices ?? []).map((inv) => {
+                    const isOverdue = inv.status !== 'paid' && inv.due_date && new Date(inv.due_date) < new Date();
+                    const effectiveStatus = isOverdue ? 'overdue' : inv.status;
+                    const statusMap: Record<string, { label: string; cls: string }> = {
+                      paid: { label: 'Paga', cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' },
+                      overdue: { label: 'Em atraso', cls: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' },
+                      pending: { label: 'Pendente', cls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30' },
+                      draft: { label: 'Rascunho', cls: 'bg-muted text-muted-foreground border-border' },
+                    };
+                    const s = statusMap[effectiveStatus] ?? statusMap.pending;
+                    return (
+                      <button
+                        key={inv.id}
+                        onClick={() => {
+                          navigate(`/admin/invoices?invoice=${inv.id}`);
+                          onClose();
+                        }}
+                        className="w-full flex items-center justify-between rounded-lg border p-2.5 hover:bg-muted/50 transition text-left"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{inv.invoice_number}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Vence {format(new Date(inv.due_date), "MMM d, yyyy")}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0 ml-2">
+                          <p className="text-sm font-bold">{fmt(inv.total_amount ?? inv.amount)}</p>
+                          <Badge variant="outline" className={`text-[10px] ${s.cls}`}>{s.label}</Badge>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
