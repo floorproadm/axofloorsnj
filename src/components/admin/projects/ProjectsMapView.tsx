@@ -61,12 +61,28 @@ function makePin(color: string) {
 }
 
 async function geocodeAddress(addr: string): Promise<{ lat: number; lng: number } | null> {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(addr)}`;
-  const res = await fetch(url, { headers: { "Accept-Language": "en" } });
-  if (!res.ok) return null;
-  const data = await res.json();
-  if (!data?.length) return null;
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  // Normalize address: replace en/em dashes & pipes with commas, collapse spaces, ensure country.
+  const clean = addr
+    .replace(/[–—|]/g, ",")
+    .replace(/\s+/g, " ")
+    .replace(/,\s*,/g, ",")
+    .trim();
+  const withCountry = /usa|united states/i.test(clean) ? clean : `${clean}, USA`;
+
+  const candidates = [withCountry, clean];
+  // Also try without the unit/number prefix as a last resort (e.g., "Apt 2, ...")
+  for (const q of candidates) {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data?.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    } catch {
+      // try next candidate
+    }
+  }
+  return null;
 }
 
 function FitBounds({ points }: { points: [number, number][] }) {
