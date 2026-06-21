@@ -128,6 +128,7 @@ export default function Settings() {
               {active === "b2b_pricing" && <B2BPricingSettings />}
               {active === "demo_portals" && <DemoPortalsSettings />}
             </Suspense>
+            <ResumeOnboardingCard />
           </div>
         </div>
       </div>
