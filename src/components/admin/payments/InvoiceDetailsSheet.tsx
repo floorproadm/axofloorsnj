@@ -413,11 +413,14 @@ export function InvoiceDetailsSheet({ invoice, open, onOpenChange }: Props) {
           <div className="space-y-5 mt-5">
             {/* Action buttons row */}
             <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="gap-1.5 flex-1 text-xs" onClick={handlePreview} disabled={previewLoading}>
+                {previewLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />} Preview
+              </Button>
               <Button size="sm" variant="outline" className="gap-1.5 flex-1 text-xs" onClick={() => printInvoice(invoice, items, phases)}>
                 <Printer className="w-3.5 h-3.5" /> Print / PDF
               </Button>
               <Button size="sm" variant="default" className="gap-1.5 flex-1 text-xs" onClick={() => setShowShareModal(true)}>
-                <Send className="w-3.5 h-3.5" /> Send to Client
+                <Send className="w-3.5 h-3.5" /> Send
               </Button>
               {invoice.status !== "paid" && invoice.status !== "cancelled" && (
                 <Button size="sm" variant="outline" className="gap-1.5 text-xs px-3" onClick={() => setEditing(e => !e)}>
