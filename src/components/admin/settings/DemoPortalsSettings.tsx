@@ -96,9 +96,14 @@ export default function DemoPortalsSettings() {
             <Loader2 className="w-4 h-4 animate-spin" /> Loading demo clients...
           </div>
         ) : clients.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No clients with portal tokens yet. Create a client + project to generate one.
-          </p>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              No clients with portal tokens yet. Create a client + project to generate one.
+            </p>
+            <Button variant="outline" onClick={() => open(`${origin}/portal/demo`)} className="gap-2">
+              <ExternalLink className="w-4 h-4" /> View Sample Portal
+            </Button>
+          </div>
         ) : (
           <>
             <div className="space-y-2 max-w-md">
