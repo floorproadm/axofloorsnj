@@ -1,5 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { subscribeSafely, removeRealtimeChannel } from '@/lib/safeRealtime';
 
 // ---------- Types from RPC ----------
 
@@ -122,6 +124,24 @@ interface FunnelMetrics {
  * Public interface is identical to the previous version.
  */
 export function useDashboardData() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-leads'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-recent-activity'] });
+    };
+    const channel = subscribeSafely(
+      supabase
+        .channel('dashboard-leads-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, invalidate)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, invalidate),
+      'dashboard-leads'
+    );
+    return () => removeRealtimeChannel(channel);
+  }, [queryClient]);
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: async (): Promise<DashboardRPCResponse> => {
