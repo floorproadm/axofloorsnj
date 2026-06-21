@@ -239,6 +239,10 @@ export default function CollaboratorProfile() {
     in_progress: "Em andamento",
     completed: "Concluído",
     on_hold: "Pausado",
+    paid: "Pago",
+    awaiting_payment: "Aguarda Pagamento",
+    cancelled: "Cancelado",
+    in_production: "Em Produção",
   };
 
   const calculateAge = (birthdate: string) => {

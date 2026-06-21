@@ -21,6 +21,7 @@ import {
   Package, Plus, X
 } from "lucide-react";
 import { format, startOfWeek, addDays, isToday, isSameDay, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { convertHeicToJpeg } from "@/utils/heicConverter";
