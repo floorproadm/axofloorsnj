@@ -177,7 +177,7 @@ export default function Team() {
 
         {/* Sub-tabs */}
         <div className="space-y-2">
-          <div className="sm:hidden">
+          <div className="sm:hidden mb-2">
             <Button className="w-full min-h-[44px]" onClick={() => { setEditing(null); setDialogOpen(true); }}>
               <Plus className="w-4 h-4 mr-1" /> Adicionar membro
             </Button>
