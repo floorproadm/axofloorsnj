@@ -8,7 +8,35 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, MessageCircle, ArrowLeft, Search, Users, UserCircle2, Paperclip, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Loader2,
+  Send,
+  MessageCircle,
+  ArrowLeft,
+  Search,
+  Users,
+  UserCircle2,
+  Paperclip,
+  X,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
