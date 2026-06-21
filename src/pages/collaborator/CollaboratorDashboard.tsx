@@ -186,8 +186,8 @@ export default function CollaboratorDashboard() {
             return "Boa noite 🌙";
           })()}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {format(new Date(), "EEEE, MMMM d")}
+        <p className="text-sm text-muted-foreground capitalize">
+          {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
         </p>
       </div>
 
