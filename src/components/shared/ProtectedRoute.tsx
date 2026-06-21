@@ -62,5 +62,10 @@ export default function ProtectedRoute({ children, requireAdmin = true }: Protec
     return <Navigate to="/admin/auth" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {requireAdmin && <OnboardingModal />}
+      {children}
+    </>
+  );
 }
