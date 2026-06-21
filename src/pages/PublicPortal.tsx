@@ -4,14 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp, CalendarPlus, Camera, MapPin, Pencil, ImageIcon } from "lucide-react";
+import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp, CalendarPlus, Camera, MapPin, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
 import { RequestAppointmentDialog } from "@/components/portal/RequestAppointmentDialog";
 import { PortalChat } from "@/components/portal/PortalChat";
-import { BeforeAfterSlider } from "@/components/admin/projects/BeforeAfterSlider";
 
 interface TimelinePhoto {
   id: string;
