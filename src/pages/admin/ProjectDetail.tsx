@@ -235,7 +235,7 @@ export default function ProjectDetail() {
                       return (
                         <button
                           key={inv.id}
-                          onClick={() => navigate(`/admin/invoices?invoice=${inv.id}`)}
+                          onClick={() => setSelectedInvoice(inv)}
                           className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition text-left"
                         >
                           <div className="min-w-0">
