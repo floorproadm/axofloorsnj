@@ -13,13 +13,22 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
-interface Ref { id: string; name: string; status: string; credit: number; date: string }
+interface Ref {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  status: string;
+  credit: number;
+  date: string;
+}
 const INITIAL_REFS: Ref[] = [
-  { id: "1", name: "Jennifer Lee", status: "converted", credit: 200, date: "Jun 12, 2026" },
-  { id: "2", name: "Robert Allen", status: "contacted", credit: 0, date: "Jun 8, 2026" },
-  { id: "3", name: "Maria Santos", status: "converted", credit: 200, date: "May 30, 2026" },
-  { id: "4", name: "Tom Bradley", status: "pending", credit: 0, date: "May 22, 2026" },
-  { id: "5", name: "Anna Wilson", status: "converted", credit: 200, date: "May 15, 2026" },
+  { id: "1", name: "Jennifer Lee", phone: "+1 (201) 555-0142", email: "jennifer.lee@email.com", address: "142 Maple Ave, Montclair, NJ 07042", status: "converted", credit: 200, date: "Jun 12, 2026" },
+  { id: "2", name: "Robert Allen", phone: "+1 (201) 555-0198", email: "robert.allen@email.com", address: "38 Oak St, Bloomfield, NJ 07003", status: "contacted", credit: 0, date: "Jun 8, 2026" },
+  { id: "3", name: "Maria Santos", phone: "+1 (201) 555-0175", email: "maria.santos@email.com", address: "55 Pine Rd, Clifton, NJ 07013", status: "converted", credit: 200, date: "May 30, 2026" },
+  { id: "4", name: "Tom Bradley", phone: "+1 (201) 555-0133", email: "tom.bradley@email.com", address: "91 Cedar Ln, Wayne, NJ 07470", status: "pending", credit: 0, date: "May 22, 2026" },
+  { id: "5", name: "Anna Wilson", phone: "+1 (201) 555-0167", email: "anna.wilson@email.com", address: "27 Birch Blvd, Hoboken, NJ 07030", status: "converted", credit: 200, date: "May 15, 2026" },
 ];
 
 const STAGE: Record<string, { label: string; dot: string; chip: string }> = {
