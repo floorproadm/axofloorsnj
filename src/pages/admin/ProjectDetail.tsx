@@ -197,6 +197,63 @@ export default function ProjectDetail() {
             <ProposalGenerator projectId={project.id} />
           </TabsContent>
 
+          {/* FATURAS */}
+          <TabsContent value="invoices" className="mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Faturas</CardTitle>
+                  <Button size="sm" className="gap-1 text-xs" onClick={() => setInvoiceOpen(true)}>
+                    <Plus className="h-3.5 w-3.5" /> Nova Fatura
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {(invoices ?? []).length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-2 py-8 border rounded-lg border-dashed">
+                    <Receipt className="h-6 w-6 text-muted-foreground/60" />
+                    <p className="text-xs text-muted-foreground">Nenhuma fatura criada para este projeto</p>
+                    <Button variant="outline" size="sm" className="h-7 px-3 text-[11px] gap-1 mt-1" onClick={() => setInvoiceOpen(true)}>
+                      <Plus className="h-3 w-3" /> Nova Fatura
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(invoices ?? []).map((inv) => {
+                      const isOverdue = inv.status !== 'paid' && inv.due_date && new Date(inv.due_date) < new Date();
+                      const effectiveStatus = isOverdue ? 'overdue' : inv.status;
+                      const statusMap: Record<string, { label: string; cls: string }> = {
+                        paid: { label: 'Paga', cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' },
+                        overdue: { label: 'Em atraso', cls: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' },
+                        pending: { label: 'Pendente', cls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30' },
+                        draft: { label: 'Rascunho', cls: 'bg-muted text-muted-foreground border-border' },
+                      };
+                      const s = statusMap[effectiveStatus] ?? statusMap.pending;
+                      return (
+                        <button
+                          key={inv.id}
+                          onClick={() => navigate(`/admin/invoices?invoice=${inv.id}`)}
+                          className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition text-left"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{inv.invoice_number}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {inv.due_date ? `Vence ${format(new Date(inv.due_date), "MMM d, yyyy")}` : 'Sem data de vencimento'}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0 ml-2">
+                            <p className="text-sm font-bold">{fmt(inv.total_amount ?? inv.amount ?? 0)}</p>
+                            <Badge variant="outline" className={`text-[10px] ${s.cls}`}>{s.label}</Badge>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* OPERAÇÃO */}
           <TabsContent value="operations" className="mt-4">
             <Tabs defaultValue="checklist">
