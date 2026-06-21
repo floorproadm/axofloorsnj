@@ -21,6 +21,7 @@ import {
   Package, Plus, X
 } from "lucide-react";
 import { format, startOfWeek, addDays, isToday, isSameDay, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { convertHeicToJpeg } from "@/utils/heicConverter";
@@ -186,8 +187,8 @@ export default function CollaboratorDashboard() {
             return "Boa noite 🌙";
           })()}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {format(new Date(), "EEEE, MMMM d")}
+        <p className="text-sm text-muted-foreground capitalize">
+          {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
         </p>
       </div>
 

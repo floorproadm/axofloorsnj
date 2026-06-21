@@ -122,6 +122,7 @@ const App = () => {
 
             {/* Platform Super Admin */}
             <Route path="/platform" element={<PlatformAdminRoute><SPUPanel /></PlatformAdminRoute>} />
+            <Route path="/admin/platform" element={<PlatformAdminRoute><SPUPanel /></PlatformAdminRoute>} />
 
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

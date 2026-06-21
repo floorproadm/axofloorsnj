@@ -116,7 +116,7 @@ export function AdminSidebar() {
   const footerNavItems = [
     { title: t("sidebar.ajuda"), url: "/admin/help", icon: HelpCircle },
     { title: "Settings", url: "/admin/settings", icon: Settings },
-    ...(isPlatformAdmin ? [{ title: "Platform Admin", url: "/platform", icon: Shield }] : []),
+    ...(isPlatformAdmin ? [{ title: "Platform Admin", url: "/admin/platform", icon: Shield }] : []),
   ];
 
   const handleLogout = async () => {

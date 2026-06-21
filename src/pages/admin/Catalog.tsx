@@ -803,11 +803,18 @@ function ItemGrid({
                 <img src={imgUrl} alt={item.name} className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="w-full h-20 bg-muted/30 flex items-center justify-center">
+              <div className="relative w-full h-28 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
+                <div
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 22px), repeating-linear-gradient(0deg, rgba(0,0,0,0.25) 0 1px, transparent 1px 28px)",
+                  }}
+                />
                 {item.item_type === "service" ? (
-                  <Wrench className="w-8 h-8 text-muted-foreground/30" />
+                  <Wrench className="relative w-10 h-10 text-white/90 drop-shadow" strokeWidth={1.5} />
                 ) : (
-                  <Package className="w-8 h-8 text-muted-foreground/30" />
+                  <Package className="relative w-10 h-10 text-white/90 drop-shadow" strokeWidth={1.5} />
                 )}
               </div>
             )}

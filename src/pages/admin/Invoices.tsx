@@ -33,7 +33,7 @@ const invoiceStatusConfig: Record<
 };
 
 const fmt = (v: number) =>
-  `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  `$${v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
 export default function Invoices() {
   const { data: invoices = [], isLoading } = useInvoices();
@@ -94,7 +94,13 @@ export default function Invoices() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-muted-foreground truncate">{s.label}</p>
-                    <p className={`text-sm sm:text-lg font-bold ${s.color} truncate`} title={s.value}>{s.value}</p>
+                    <p
+                      className={`font-bold ${s.color} tabular-nums leading-tight whitespace-nowrap`}
+                      style={{ fontSize: `clamp(0.75rem, ${Math.max(0.6, 1.05 - s.value.length * 0.045)}rem, 1.125rem)` }}
+                      title={s.value}
+                    >
+                      {s.value}
+                    </p>
                   </div>
                 </div>
               </CardContent>

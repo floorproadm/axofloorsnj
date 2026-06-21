@@ -289,21 +289,21 @@ export function AnalyticsTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="border-border/50">
           <CardContent className="p-4">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Avg Job Value</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Valor Médio por Projeto</p>
             <p className="text-2xl font-bold text-blue-500">{fmt(avgJobValue)}</p>
-            <p className="text-[11px] text-muted-foreground">{totalJobs} job{totalJobs !== 1 ? "s" : ""} billed</p>
+            <p className="text-[11px] text-muted-foreground">{totalJobs} {totalJobs === 1 ? "projeto faturado" : "projetos faturados"}</p>
           </CardContent>
         </Card>
         <Card className="border-border/50">
           <CardContent className="p-4">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Total Jobs Completed</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Total de Projetos Concluídos</p>
             <p className="text-2xl font-bold">{totalJobs}</p>
-            <p className="text-[11px] text-muted-foreground">in this period</p>
+            <p className="text-[11px] text-muted-foreground">neste período</p>
           </CardContent>
         </Card>
         <Card className="border-border/50">
           <CardContent className="p-4">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Best Performing Service</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Serviço com Mais Receita</p>
             <p className="text-lg font-bold truncate">{bestService}</p>
             <p className="text-[11px] text-muted-foreground">
               {byServiceList[0] ? `${fmt(byServiceList[0].revenue)} · ${byServiceList[0].pct.toFixed(0)}%` : "—"}
@@ -316,7 +316,7 @@ export function AnalyticsTab() {
       <Card className="border-border/50">
         <CardContent className="p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Avg Job Value — Last 6 Months
+            Valor Médio — Últimos 6 Meses
           </p>
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={trendData}>
@@ -333,9 +333,9 @@ export function AnalyticsTab() {
       {/* Section 2: Revenue by Service Type (horizontal bars) */}
       <Card className="border-border/50">
         <CardContent className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Revenue by Service Type</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Receita por Tipo de Serviço</p>
           {byServiceList.length === 0 ? (
-            <div className="h-24 flex items-center justify-center text-sm text-muted-foreground">No data for this period</div>
+            <div className="h-24 flex items-center justify-center text-sm text-muted-foreground">Sem dados para este período</div>
           ) : (
             <div className="space-y-2.5">
               {byServiceList.map(s => (
@@ -361,9 +361,9 @@ export function AnalyticsTab() {
       {/* Section 3: Revenue by Lead Source (donut) */}
       <Card className="border-border/50">
         <CardContent className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Revenue by Lead Source</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Receita por Origem do Lead</p>
           {sourceChartData.length === 0 ? (
-            <div className="h-24 flex items-center justify-center text-sm text-muted-foreground">No source data for this period</div>
+            <div className="h-24 flex items-center justify-center text-sm text-muted-foreground">Sem dados de origem para este período</div>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
@@ -393,20 +393,20 @@ export function AnalyticsTab() {
       <Card className="border-border/50">
         <CardContent className="p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Job Performance ({jobRows.length})
+            Performance dos Projetos ({jobRows.length})
           </p>
           {jobRows.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">No jobs in this period</div>
+            <div className="text-center py-8 text-sm text-muted-foreground">Nenhum projeto neste período</div>
           ) : (
             <div className="overflow-x-auto -mx-4">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="text-left text-muted-foreground border-b border-border/50">
-                    <th className="px-4 py-2 font-medium">Customer</th>
-                    <th className="px-2 py-2 font-medium">Service</th>
-                    <th className="px-2 py-2 font-medium text-right">Revenue</th>
-                    <th className="px-2 py-2 font-medium text-right">Cost</th>
-                    <th className="px-4 py-2 font-medium text-right">Margin</th>
+                    <th className="px-4 py-2 font-medium">Cliente</th>
+                    <th className="px-2 py-2 font-medium">Serviço</th>
+                    <th className="px-2 py-2 font-medium text-right">Receita</th>
+                    <th className="px-2 py-2 font-medium text-right">Custo</th>
+                    <th className="px-4 py-2 font-medium text-right">Margem</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -433,10 +433,10 @@ export function AnalyticsTab() {
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <Trophy className="w-4 h-4 text-amber-500" />
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Top 5 Clients by Revenue</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Top 5 Clientes por Receita</p>
           </div>
           {topClients.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">No client data for this period</div>
+            <div className="text-center py-8 text-sm text-muted-foreground">Sem dados de clientes para este período</div>
           ) : (
             <div className="space-y-2">
               {topClients.map((c, i) => (
@@ -456,7 +456,7 @@ export function AnalyticsTab() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{c.name}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      <Briefcase className="w-3 h-3 inline mr-0.5" /> {c.jobs} job{c.jobs !== 1 ? "s" : ""}
+                      <Briefcase className="w-3 h-3 inline mr-0.5" /> {c.jobs} {c.jobs === 1 ? "projeto" : "projetos"}
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">

@@ -804,7 +804,7 @@ function ProposalDetailSheet({ proposal, open, onClose }: {
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2.5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-sm">{c?.customer_name || "—"}</p>
+                  <p className="font-semibold text-sm">{c?.customer_name || "Cliente não atribuído"}</p>
                   <p className="text-xs text-muted-foreground">{c?.project_type}</p>
                 </div>
                 <Badge variant="outline" className="text-[10px]">{c?.project_type}</Badge>
@@ -1370,7 +1370,7 @@ export default function Proposals() {
                             <span className={cn("w-2 h-2 rounded-full flex-shrink-0", displayStatus.dot)} />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <p className="text-sm font-semibold truncate">{c?.customer_name || "—"}</p>
+                                <p className={cn("text-sm font-semibold truncate", !c?.customer_name && "italic text-muted-foreground font-normal")}>{c?.customer_name || "Cliente não atribuído"}</p>
                                 {p.status === "accepted" && p.selected_tier && p.selected_tier !== "flat" && (
                                   <Badge
                                     variant="outline"

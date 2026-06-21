@@ -9,8 +9,8 @@ import { format } from "date-fns";
 import { useState, useRef, useEffect } from "react";
 
 const NAV_ITEMS = [
-  { path: "/collaborator", icon: Home, label: "Home", exact: true },
-  { path: "/collaborator/schedule", icon: CalendarDays, label: "Schedule" },
+  { path: "/collaborator", icon: Home, label: "Início", exact: true },
+  { path: "/collaborator/schedule", icon: CalendarDays, label: "Agenda" },
   { path: "/collaborator/daysheet", icon: Clock, label: "Diárias" },
   { path: "/collaborator/chat", icon: MessageCircle, label: "Chat" },
   { path: "/collaborator/profile", icon: User, label: "Perfil" },

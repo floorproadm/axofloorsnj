@@ -168,7 +168,7 @@ export default function GeneralSettings() {
               <Input id="company_email" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="axofloorsnj@gmail.com" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="check_mailing_address">Check Mailing Address</Label>
+              <Label htmlFor="check_mailing_address">Endereço para Correspondência</Label>
               <Textarea
                 id="check_mailing_address"
                 value={formCheckAddress}
@@ -203,7 +203,7 @@ export default function GeneralSettings() {
               <Label htmlFor="margin">{t("general.margemMinima")}</Label>
               <Input id="margin" type="number" min={0} max={100} step={1} value={formMargin} onChange={(e) => setFormMargin(e.target.value)} />
               <p className="text-xs text-muted-foreground">{t("general.margemDesc")}</p>
-              <p className="text-xs text-muted-foreground">Jobs below this margin will be flagged with an alert.</p>
+              <p className="text-xs text-muted-foreground">Projetos abaixo desta margem serão sinalizados com um alerta.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="pricing_model">{t("general.modeloPrecificacao")}</Label>
