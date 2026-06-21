@@ -927,18 +927,6 @@ function TimelineTab({ loading, projects }: { loading: boolean; projects: Timeli
               </div>
             )}
 
-            {/* Checklist progress */}
-            {total > 0 && (
-              <div className="bg-white border rounded-lg p-4">
-                <div className="flex items-baseline justify-between mb-2">
-                  <div className="text-sm font-semibold text-slate-900">Job progress</div>
-                  <div className="text-xs text-slate-500 tabular-nums">
-                    {done} of {total} · <span className="text-[#0f1b3d] font-semibold">{pct}%</span>
-                  </div>
-                </div>
-                <Progress value={pct} className="h-2 bg-slate-100" />
-              </div>
-            )}
 
             {/* Before & After */}
             {proj.before_after.length > 0 && (
