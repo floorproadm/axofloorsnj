@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Palette, Users, Globe, Mail, FileEdit, ListChecks, MonitorPlay, BarChart3 } from "lucide-react";
+import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, ListChecks, MonitorPlay, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
