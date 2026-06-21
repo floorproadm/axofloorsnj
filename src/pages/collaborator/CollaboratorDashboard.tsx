@@ -219,46 +219,46 @@ export default function CollaboratorDashboard() {
         ))}
       </div>
 
-      {/* Today's Job Card */}
-      {todayProject ? (
-        <Card className="border-primary/30 bg-card">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-heading font-semibold text-foreground">
-                {projectDisplayName(todayProject.customer_name, todayProject.location)}
-              </h2>
-              <Badge variant="default" className="text-xs">
-                {todayProject.appointment_type}
-              </Badge>
-            </div>
-
-            {todayProject.location && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
-                <span>{todayProject.location}</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              <span>
-                {todayProject.appointment_time?.slice(0, 5)}
-                {todayProject.duration_hours && ` · ${todayProject.duration_hours}h`}
-              </span>
-            </div>
-
-            {/* Progress */}
-            {tasks.length > 0 && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Progresso</span>
-                  <span>{completedTasks}/{tasks.length} tarefas</span>
+      {/* Today's Jobs */}
+      {todayAppointments.length > 0 ? (
+        <div className="space-y-3">
+          {todayAppointments.map((appt) => (
+            <Card
+              key={appt.id}
+              className="border-primary/30 bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => {
+                setSelectedJob(appt);
+                setDrawerOpen(true);
+              }}
+            >
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-heading font-semibold text-foreground">
+                    {projectDisplayName(appt.customer_name, appt.location)}
+                  </h2>
+                  <Badge variant="default" className="text-xs">
+                    {appt.appointment_type}
+                  </Badge>
                 </div>
-                <Progress value={progressPercent} className="h-2" />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+
+                {appt.location && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span>{appt.location}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>
+                    {appt.appointment_time?.slice(0, 5)}
+                    {appt.duration_hours && ` · ${appt.duration_hours}h`}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
