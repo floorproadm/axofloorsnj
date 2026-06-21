@@ -242,6 +242,63 @@ export default function SampleReferralPortal() {
         )}
       </main>
 
+      {/* Referral Detail Sheet */}
+      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="text-left mb-4">
+            <SheetTitle>Referral Details</SheetTitle>
+            <SheetDescription>Information about the referred lead.</SheetDescription>
+          </SheetHeader>
+          {selectedRef && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className={`w-2.5 h-2.5 rounded-full ${STAGE[selectedRef.status]?.dot}`} />
+                <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${STAGE[selectedRef.status]?.chip}`}>
+                  {STAGE[selectedRef.status]?.label}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Name</p>
+                  <p className="text-sm font-semibold">{selectedRef.name}</p>
+                </div>
+                {selectedRef.phone && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> Phone
+                    </p>
+                    <p className="text-sm">{selectedRef.phone}</p>
+                  </div>
+                )}
+                {selectedRef.email && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1">
+                      <Mail className="w-3 h-3" /> Email
+                    </p>
+                    <p className="text-sm">{selectedRef.email}</p>
+                  </div>
+                )}
+                {selectedRef.address && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> Address
+                    </p>
+                    <p className="text-sm">{selectedRef.address}</p>
+                  </div>
+                )}
+                {selectedRef.credit > 0 && (
+                  <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-md px-3 py-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Credit earned: +${selectedRef.credit}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
       <Sheet open={addOpen} onOpenChange={setAddOpen}>
         <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
           <SheetHeader className="text-left mb-4">
