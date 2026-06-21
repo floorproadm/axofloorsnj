@@ -911,9 +911,6 @@ function TimelineTab({ loading, projects }: { loading: boolean; projects: Timeli
         const isEmpty =
           proj.photos.length === 0 && proj.checklist.length === 0 && proj.before_after.length === 0;
         if (isEmpty) return null;
-        const done = proj.checklist.filter((c) => c.completed).length;
-        const total = proj.checklist.length;
-        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         return (
           <section key={proj.id} className="space-y-4">
             {multi && (
