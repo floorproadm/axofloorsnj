@@ -102,6 +102,7 @@ export default function AdminChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useReactRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<{ url: string; type: string; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'client' | 'team'; id: string; name: string } | null>(null);
   const { upload, uploading } = useChatAttachmentUpload("admin");
 
   /* ---------------- Clients list ---------------- */
