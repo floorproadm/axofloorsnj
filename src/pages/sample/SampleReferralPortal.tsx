@@ -47,6 +47,9 @@ export default function SampleReferralPortal() {
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [copied, setCopied] = useState(false);
 
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedRef, setSelectedRef] = useState<Ref | null>(null);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return refs.filter((r) => {
