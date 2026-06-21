@@ -4,14 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp, CalendarPlus, Camera, MapPin, Pencil, ImageIcon } from "lucide-react";
+import { FileText, Receipt, Activity, Phone, MessageSquare, ExternalLink, CheckCircle2, Circle, Clock, AlertCircle, Inbox, Download, MessageSquareText, ThumbsUp, CalendarPlus, Camera, MapPin, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 import { ChangeRequestDialog } from "@/components/portal/ChangeRequestDialog";
 import { RequestAppointmentDialog } from "@/components/portal/RequestAppointmentDialog";
 import { PortalChat } from "@/components/portal/PortalChat";
-import { BeforeAfterSlider } from "@/components/admin/projects/BeforeAfterSlider";
 
 interface TimelinePhoto {
   id: string;
@@ -913,9 +911,6 @@ function TimelineTab({ loading, projects }: { loading: boolean; projects: Timeli
         const isEmpty =
           proj.photos.length === 0 && proj.checklist.length === 0 && proj.before_after.length === 0;
         if (isEmpty) return null;
-        const done = proj.checklist.filter((c) => c.completed).length;
-        const total = proj.checklist.length;
-        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         return (
           <section key={proj.id} className="space-y-4">
             {multi && (
@@ -927,41 +922,7 @@ function TimelineTab({ loading, projects }: { loading: boolean; projects: Timeli
               </div>
             )}
 
-            {/* Checklist progress */}
-            {total > 0 && (
-              <div className="bg-white border rounded-lg p-4">
-                <div className="flex items-baseline justify-between mb-2">
-                  <div className="text-sm font-semibold text-slate-900">Job progress</div>
-                  <div className="text-xs text-slate-500 tabular-nums">
-                    {done} of {total} · <span className="text-[#0f1b3d] font-semibold">{pct}%</span>
-                  </div>
-                </div>
-                <Progress value={pct} className="h-2 bg-slate-100" />
-              </div>
-            )}
 
-            {/* Before & After */}
-            {proj.before_after.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-[#0f1b3d]" />
-                  <div className="text-sm font-semibold text-slate-900">Before &amp; After</div>
-                </div>
-                {proj.before_after.map((ba) => (
-                  <div key={ba.id} className="bg-white border rounded-lg p-3 space-y-2">
-                    <BeforeAfterSlider beforeUrl={ba.before_url} afterUrl={ba.after_url} />
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-slate-700">{ba.title}</span>
-                      {ba.completed_date && (
-                        <span className="text-slate-500">
-                          {format(new Date(ba.completed_date), "MMM d, yyyy")}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {/* Photo feed */}
             {proj.photos.length > 0 && (
