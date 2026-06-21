@@ -705,7 +705,9 @@ export default function PublicPortal() {
 
           {/* MESSAGES */}
           <TabsContent value="messages" className="mt-4">
-            {token && customer ? (
+            {token === "demo" ? (
+              <EmptyState icon={MessageSquare} title="Demo mode" description="Messaging is not available in the sample view." />
+            ) : token && customer ? (
               <PortalChat token={token} customerName={customer.full_name} />
             ) : null}
           </TabsContent>
