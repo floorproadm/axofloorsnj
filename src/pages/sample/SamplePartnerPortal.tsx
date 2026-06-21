@@ -138,16 +138,6 @@ export default function SamplePartnerPortal() {
           <StatCard icon={DollarSign} label="Earned" value={`$${earned.toFixed(0)}`} />
         </div>
 
-        <Card className="p-3">
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Tier Progress</p>
-            <p className="text-[11px] tabular-nums font-semibold">18/30 converted</p>
-          </div>
-          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-500" style={{ width: "60%" }} />
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5">12 more to unlock Platinum</p>
-        </Card>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
