@@ -2,12 +2,9 @@ import { Hammer, Check } from "lucide-react";
 import type { OnboardingData } from "@/hooks/useOnboarding";
 
 const OPTIONS = [
-  { id: "install_wood", label: "Instalação de Piso de Madeira", emoji: "🪵" },
-  { id: "sanding", label: "Lixagem e Acabamento", emoji: "🔨" },
-  { id: "painting", label: "Pintura de Piso", emoji: "🎨" },
-  { id: "vinyl_lvp", label: "Vinílico / LVP", emoji: "📐" },
-  { id: "tile", label: "Ladrilho / Cerâmica", emoji: "🧱" },
-  { id: "repair", label: "Reparações e Manutenção", emoji: "🔧" },
+  { id: "installation", label: "Installation", emoji: "🪵" },
+  { id: "refinishing_wood", label: "Refinishing Wood Flooring", emoji: "🔨" },
+  { id: "tile", label: "Tile", emoji: "🧱" },
 ];
 
 type Props = {

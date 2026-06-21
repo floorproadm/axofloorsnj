@@ -2,11 +2,11 @@ import { DollarSign, Check } from "lucide-react";
 import type { OnboardingData } from "@/hooks/useOnboarding";
 
 const OPTIONS = [
-  { id: "<50k", label: "Menos de €50k" },
-  { id: "50k-150k", label: "€50k - €150k" },
-  { id: "150k-500k", label: "€150k - €500k" },
-  { id: ">500k", label: "Mais de €500k" },
-  { id: "skip", label: "Prefiro não dizer" },
+  { id: "<50k", label: "Less than $50k" },
+  { id: "50k-150k", label: "$50k - $150k" },
+  { id: "150k-500k", label: "$150k - $500k" },
+  { id: ">500k", label: "More than $500k" },
+  { id: "skip", label: "Prefer not to say" },
 ];
 
 type Props = {
