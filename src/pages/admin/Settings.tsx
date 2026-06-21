@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Loader2, Settings as SettingsIcon, Palette, Users, Globe, Mail, FileEdit, ListChecks, MonitorPlay, BarChart3 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -85,22 +84,6 @@ export default function Settings() {
   return (
     <AdminLayout title={t("settings.titulo")}>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <SettingsIcon className="w-6 h-6 text-[hsl(var(--gold-warm))]" />
-              {t("settings.centroGovernanca")}
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              {t("settings.parametrosGlobais")}
-            </p>
-          </div>
-          <Badge variant="outline" className="gap-1.5 text-xs border-[hsl(var(--state-success))]/30 text-[hsl(var(--state-success))]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--state-success))] animate-pulse" />
-            Online
-          </Badge>
-        </div>
 
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
