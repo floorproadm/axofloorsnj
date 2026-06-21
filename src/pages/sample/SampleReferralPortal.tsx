@@ -77,7 +77,7 @@ export default function SampleReferralPortal() {
       return;
     }
     const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    setRefs((prev) => [{ id: String(Date.now()), name: form.name.trim(), status: "pending", credit: 0, date: today }, ...prev]);
+    setRefs((prev) => [{ id: String(Date.now()), name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim(), address: "", status: "pending", credit: 0, date: today }, ...prev]);
     setForm({ name: "", phone: "", email: "" });
     setAddOpen(false);
     toast.success("Referral added!");
