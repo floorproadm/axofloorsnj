@@ -3077,6 +3077,8 @@ export type Database = {
           full_name: string | null
           id: string
           is_active_crew: boolean | null
+          onboarding_completed: boolean
+          onboarding_completed_at: string | null
           phone: string | null
           region: string | null
           role: string | null
@@ -3095,6 +3097,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active_crew?: boolean | null
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
           phone?: string | null
           region?: string | null
           role?: string | null
@@ -3113,6 +3117,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active_crew?: boolean | null
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
           phone?: string | null
           region?: string | null
           role?: string | null
