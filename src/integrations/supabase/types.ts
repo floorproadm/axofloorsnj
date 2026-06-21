@@ -3768,7 +3768,15 @@ export type Database = {
           unit_cost_snapshot?: number | null
           unit_price?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "proposal_line_items_service_catalog_id_fkey"
+            columns: ["service_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "service_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       proposal_signatures: {
         Row: {
