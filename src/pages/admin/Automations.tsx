@@ -6,7 +6,7 @@ import { TestAutomationDialog } from "@/components/admin/automations/TestAutomat
 import { DripLogsViewer } from "@/components/admin/automations/DripLogsViewer";
 import { useAutomationFlows } from "@/hooks/useAutomationFlows";
 import { useAutomationStats } from "@/hooks/useAutomationStats";
-import { Zap, Loader2, TrendingUp, Briefcase, Mail, ScrollText } from "lucide-react";
+import { Loader2, TrendingUp, Briefcase, Mail, ScrollText } from "lucide-react";
 
 export default function Automations() {
   const [pipeline, setPipeline] = useState<"sales" | "jobs">("sales");
