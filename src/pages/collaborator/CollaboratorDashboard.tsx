@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2,
+  Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2, Phone,
   Package, Plus, X
 } from "lucide-react";
 import { format, startOfWeek, addDays, isToday, isSameDay, parseISO } from "date-fns";
