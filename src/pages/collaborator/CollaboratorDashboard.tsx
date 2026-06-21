@@ -1,4 +1,4 @@
-import { useCollaboratorSchedule } from "@/hooks/useCollaboratorSchedule";
+import { useCollaboratorSchedule, type CollaboratorAppointment } from "@/hooks/useCollaboratorSchedule";
 import { useCollaboratorProjects } from "@/hooks/useCollaboratorProjects";
 import { useMaterialRequests } from "@/hooks/useMaterialRequests";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,10 +12,12 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2,
+  Loader2, MapPin, Clock, Camera, MessageSquare, CheckCircle2, Phone,
   Package, Plus, X
 } from "lucide-react";
 import { format, startOfWeek, addDays, isToday, isSameDay, parseISO } from "date-fns";
@@ -45,6 +47,8 @@ export default function CollaboratorDashboard() {
     unit: "unit",
     notes: "",
   });
+  const [selectedJob, setSelectedJob] = useState<CollaboratorAppointment | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Week strip data
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -215,46 +219,46 @@ export default function CollaboratorDashboard() {
         ))}
       </div>
 
-      {/* Today's Job Card */}
-      {todayProject ? (
-        <Card className="border-primary/30 bg-card">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-heading font-semibold text-foreground">
-                {projectDisplayName(todayProject.customer_name, todayProject.location)}
-              </h2>
-              <Badge variant="default" className="text-xs">
-                {todayProject.appointment_type}
-              </Badge>
-            </div>
-
-            {todayProject.location && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
-                <span>{todayProject.location}</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              <span>
-                {todayProject.appointment_time?.slice(0, 5)}
-                {todayProject.duration_hours && ` · ${todayProject.duration_hours}h`}
-              </span>
-            </div>
-
-            {/* Progress */}
-            {tasks.length > 0 && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Progresso</span>
-                  <span>{completedTasks}/{tasks.length} tarefas</span>
+      {/* Today's Jobs */}
+      {todayAppointments.length > 0 ? (
+        <div className="space-y-3">
+          {todayAppointments.map((appt) => (
+            <Card
+              key={appt.id}
+              className="border-primary/30 bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => {
+                setSelectedJob(appt);
+                setDrawerOpen(true);
+              }}
+            >
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-heading font-semibold text-foreground">
+                    {projectDisplayName(appt.customer_name, appt.location)}
+                  </h2>
+                  <Badge variant="default" className="text-xs">
+                    {appt.appointment_type}
+                  </Badge>
                 </div>
-                <Progress value={progressPercent} className="h-2" />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+
+                {appt.location && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span>{appt.location}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>
+                    {appt.appointment_time?.slice(0, 5)}
+                    {appt.duration_hours && ` · ${appt.duration_hours}h`}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
@@ -519,6 +523,75 @@ export default function CollaboratorDashboard() {
         className="hidden"
         onChange={handleFileChange}
       />
+
+      {/* Job Detail Drawer */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          {selectedJob && (
+            <>
+              <SheetHeader>
+                <SheetTitle>
+                  {projectDisplayName(selectedJob.customer_name, selectedJob.location)}
+                </SheetTitle>
+                <SheetDescription>
+                  {selectedJob.appointment_type}
+                </SheetDescription>
+              </SheetHeader>
+              <div className="space-y-4 py-6">
+                {selectedJob.customer_phone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <a
+                      href={`tel:${selectedJob.customer_phone}`}
+                      className="text-foreground hover:underline"
+                    >
+                      {selectedJob.customer_phone}
+                    </a>
+                  </div>
+                )}
+
+                {selectedJob.location && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span>{selectedJob.location}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    {selectedJob.appointment_time?.slice(0, 5)}
+                    {selectedJob.duration_hours && ` · ${selectedJob.duration_hours}h`}
+                  </span>
+                </div>
+
+                <Badge variant="outline" className="text-xs capitalize">
+                  {selectedJob.status}
+                </Badge>
+
+                {selectedJob.notes && (
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {selectedJob.notes}
+                  </p>
+                )}
+
+                {selectedJob.project_id && (
+                  <Button
+                    className="w-full gap-2"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      navigate(`/collaborator/project/${selectedJob.project_id}`);
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Ver Detalhes do Projeto
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
