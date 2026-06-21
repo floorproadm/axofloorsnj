@@ -8,7 +8,35 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, MessageCircle, ArrowLeft, Search, Users, UserCircle2, Paperclip, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Loader2,
+  Send,
+  MessageCircle,
+  ArrowLeft,
+  Search,
+  Users,
+  UserCircle2,
+  Paperclip,
+  X,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MessageAttachment } from "@/components/chat/MessageAttachment";
@@ -74,6 +102,7 @@ export default function AdminChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useReactRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<{ url: string; type: string; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'client' | 'team'; id: string; name: string } | null>(null);
   const { upload, uploading } = useChatAttachmentUpload("admin");
 
   /* ---------------- Clients list ---------------- */
@@ -263,6 +292,22 @@ export default function AdminChat() {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+  /* ---------------- Delete conversation ---------------- */
+  const handleDelete = async () => {
+    if (!deleteTarget || !user) return;
+    if (deleteTarget.type === 'client') {
+      await supabase.from('chat_messages').delete().eq('project_id', deleteTarget.id);
+      if (activeProjectId === deleteTarget.id) setActiveProjectId(null);
+    } else {
+      await supabase.from('direct_messages').delete().or(
+        `and(sender_id.eq.${user.id},receiver_id.eq.${deleteTarget.id}),and(sender_id.eq.${deleteTarget.id},receiver_id.eq.${user.id})`
+      );
+      if (activeTeamId === deleteTarget.id) setActiveTeamId(null);
+    }
+    setDeleteTarget(null);
+    qc.invalidateQueries({ queryKey: ['admin-chat-client-convos'] });
+    qc.invalidateQueries({ queryKey: ['admin-chat-team-last'] });
+  };
 
   /* ---------------- Send ---------------- */
   const handleSend = async () => {
@@ -417,76 +462,134 @@ export default function AdminChat() {
                 <EmptyList label="No client conversations yet" />
               ) : (
                 filteredClients.map((c) => (
-                  <button
+                  <div
                     key={c.project_id}
-                    onClick={() => setActiveProjectId(c.project_id)}
                     className={cn(
-                      "w-full text-left px-3 py-2.5 border-b border-border/50 hover:bg-muted/50 transition-colors flex gap-2.5",
+                      "relative group/item w-full px-3 py-2.5 border-b border-border/50 hover:bg-muted/50 transition-colors flex gap-2.5",
                       activeProjectId === c.project_id && "bg-muted/70"
                     )}
                   >
-                    <Avatar className="w-9 h-9 shrink-0">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {initials(c.customer_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium truncate">{c.customer_name}</span>
-                        <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
-                          {format(new Date(c.last_at), "HH:mm")}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground truncate">{c.last_content}</span>
-                        {c.unread > 0 && (
-                          <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground shrink-0">
-                            {c.unread}
-                          </Badge>
-                        )}
+                    <div
+                      className="flex-1 flex gap-2.5 min-w-0 cursor-pointer"
+                      onClick={() => setActiveProjectId(c.project_id)}
+                    >
+                      <Avatar className="w-9 h-9 shrink-0">
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {initials(c.customer_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium truncate">{c.customer_name}</span>
+                          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                            {format(new Date(c.last_at), "HH:mm")}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground truncate">{c.last_content}</span>
+                          {c.unread > 0 && (
+                            <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground shrink-0">
+                              {c.unread}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </button>
+                    <div className="shrink-0 self-center opacity-0 group-hover/item:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() =>
+                              setDeleteTarget({ type: 'client', id: c.project_id, name: c.customer_name })
+                            }
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
                 ))
               )
             ) : filteredTeam.length === 0 ? (
               <EmptyList label="No team members" />
             ) : (
               filteredTeam.map((m: any) => (
-                <button
+                <div
                   key={m.user_id}
-                  onClick={() => setActiveTeamId(m.user_id)}
                   className={cn(
-                    "w-full text-left px-3 py-2.5 border-b border-border/50 hover:bg-muted/50 transition-colors flex gap-2.5",
+                    "relative group/item w-full px-3 py-2.5 border-b border-border/50 hover:bg-muted/50 transition-colors flex gap-2.5",
                     activeTeamId === m.user_id && "bg-muted/70"
                   )}
                 >
-                  <Avatar className="w-9 h-9 shrink-0">
-                    <AvatarFallback className="text-xs bg-amber-500/10 text-amber-600">
-                      {initials(m.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium truncate">{m.full_name}</span>
-                      {m.last && (
-                        <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
-                          {format(new Date(m.last.created_at), "HH:mm")}
+                  <div
+                    className="flex-1 flex gap-2.5 min-w-0 cursor-pointer"
+                    onClick={() => setActiveTeamId(m.user_id)}
+                  >
+                    <Avatar className="w-9 h-9 shrink-0">
+                      <AvatarFallback className="text-xs bg-amber-500/10 text-amber-600">
+                        {initials(m.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium truncate">{m.full_name}</span>
+                        {m.last && (
+                          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                            {format(new Date(m.last.created_at), "HH:mm")}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <span className="text-xs text-muted-foreground truncate">
+                          {m.last?.content || (m.role ?? "Team member")}
                         </span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground truncate">
-                        {m.last?.content || (m.role ?? "Team member")}
-                      </span>
-                      {m.unread > 0 && (
-                        <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground shrink-0">
-                          {m.unread}
-                        </Badge>
-                      )}
+                        {m.unread > 0 && (
+                          <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground shrink-0">
+                            {m.unread}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </button>
+                  <div className="shrink-0 self-center opacity-0 group-hover/item:opacity-100 transition-opacity">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() =>
+                            setDeleteTarget({ type: 'team', id: m.user_id, name: m.full_name })
+                          }
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
               ))
             )}
           </ScrollArea>
@@ -645,6 +748,25 @@ export default function AdminChat() {
           )}
         </section>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar conversa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tens a certeza que queres eliminar a conversa com <strong>{deleteTarget?.name}</strong>?
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Sim, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
