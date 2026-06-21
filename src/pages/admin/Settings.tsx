@@ -8,6 +8,28 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { IntakeTabContent } from "@/components/admin/IntakeTabContent";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { Button } from "@/components/ui/button";
+import { Rocket } from "lucide-react";
+
+function ResumeOnboardingCard() {
+  const { completed, resumeOnboarding, loading } = useOnboarding();
+  if (loading || !completed) return null;
+  return (
+    <Card className="mt-6 p-4 flex items-center gap-3">
+      <div className="h-9 w-9 rounded-xl bg-[#0066FF]/15 flex items-center justify-center">
+        <Rocket className="h-4 w-4 text-[#0066FF]" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-foreground">Onboarding</div>
+        <div className="text-xs text-muted-foreground">Volta a percorrer os passos iniciais.</div>
+      </div>
+      <Button variant="outline" size="sm" onClick={() => resumeOnboarding()}>
+        Retomar onboarding
+      </Button>
+    </Card>
+  );
+}
 
 const GeneralSettings = lazy(() => import("@/components/admin/settings/GeneralSettings"));
 const BrandingSettings = lazy(() => import("@/components/admin/settings/BrandingSettings"));
