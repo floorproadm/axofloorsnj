@@ -219,7 +219,11 @@ export default function SampleReferralPortal() {
             {filtered.map((r) => {
               const meta = STAGE[r.status];
               return (
-                <div key={r.id} className="p-3 flex items-center gap-3">
+                <div
+                  key={r.id}
+                  className="p-3 flex items-center gap-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => { setSelectedRef(r); setDetailOpen(true); }}
+                >
                   <span className={`w-2 h-2 rounded-full shrink-0 ${meta.dot}`} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold leading-tight truncate">{r.name}</p>
