@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 import { MetricCard } from "@/components/admin/dashboard/MetricCard";
 import { AgendaSection } from "@/components/admin/dashboard/AgendaSection";
+import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
 import {
   mcAlertKey,
   readMcDismissed,
@@ -329,6 +330,9 @@ export default function Dashboard() {
             )}
           </p>
         </div>
+
+        {/* Onboarding checklist (auto-hides when complete) */}
+        <GetStartedChecklist />
 
         {/* Metric Cards — 4 cards */}
         {isLoading ? (
