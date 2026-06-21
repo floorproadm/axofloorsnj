@@ -248,13 +248,6 @@ export default function PublicInvoice() {
             </div>
           </div>
 
-          {/* Notes */}
-          {invoice.notes && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-3.5 text-sm sm:text-base text-amber-800">
-              <strong>Notes:</strong> {invoice.notes}
-            </div>
-          )}
-
           {/* Contact */}
           <div className="bg-white border rounded-lg p-4 flex items-center justify-between">
             <div>
