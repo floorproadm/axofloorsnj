@@ -8,18 +8,27 @@ import {
 } from "@/components/ui/sheet";
 import {
   Gift, Users, TrendingUp, DollarSign, Share2, Copy, MessageCircle,
-  Mail, QrCode, Plus, Trophy, Search, Eye, Check, X,
+  Mail, QrCode, Plus, Trophy, Search, Eye, Check, X, Phone, MapPin,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
-interface Ref { id: string; name: string; status: string; credit: number; date: string }
+interface Ref {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  status: string;
+  credit: number;
+  date: string;
+}
 const INITIAL_REFS: Ref[] = [
-  { id: "1", name: "Jennifer Lee", status: "converted", credit: 200, date: "Jun 12, 2026" },
-  { id: "2", name: "Robert Allen", status: "contacted", credit: 0, date: "Jun 8, 2026" },
-  { id: "3", name: "Maria Santos", status: "converted", credit: 200, date: "May 30, 2026" },
-  { id: "4", name: "Tom Bradley", status: "pending", credit: 0, date: "May 22, 2026" },
-  { id: "5", name: "Anna Wilson", status: "converted", credit: 200, date: "May 15, 2026" },
+  { id: "1", name: "Jennifer Lee", phone: "+1 (201) 555-0142", email: "jennifer.lee@email.com", address: "142 Maple Ave, Montclair, NJ 07042", status: "converted", credit: 200, date: "Jun 12, 2026" },
+  { id: "2", name: "Robert Allen", phone: "+1 (201) 555-0198", email: "robert.allen@email.com", address: "38 Oak St, Bloomfield, NJ 07003", status: "contacted", credit: 0, date: "Jun 8, 2026" },
+  { id: "3", name: "Maria Santos", phone: "+1 (201) 555-0175", email: "maria.santos@email.com", address: "55 Pine Rd, Clifton, NJ 07013", status: "converted", credit: 200, date: "May 30, 2026" },
+  { id: "4", name: "Tom Bradley", phone: "+1 (201) 555-0133", email: "tom.bradley@email.com", address: "91 Cedar Ln, Wayne, NJ 07470", status: "pending", credit: 0, date: "May 22, 2026" },
+  { id: "5", name: "Anna Wilson", phone: "+1 (201) 555-0167", email: "anna.wilson@email.com", address: "27 Birch Blvd, Hoboken, NJ 07030", status: "converted", credit: 200, date: "May 15, 2026" },
 ];
 
 const STAGE: Record<string, { label: string; dot: string; chip: string }> = {
@@ -37,6 +46,9 @@ export default function SampleReferralPortal() {
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [copied, setCopied] = useState(false);
+
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedRef, setSelectedRef] = useState<Ref | null>(null);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -68,7 +80,7 @@ export default function SampleReferralPortal() {
       return;
     }
     const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    setRefs((prev) => [{ id: String(Date.now()), name: form.name.trim(), status: "pending", credit: 0, date: today }, ...prev]);
+    setRefs((prev) => [{ id: String(Date.now()), name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim(), address: "", status: "pending", credit: 0, date: today }, ...prev]);
     setForm({ name: "", phone: "", email: "" });
     setAddOpen(false);
     toast.success("Referral added!");
@@ -207,7 +219,11 @@ export default function SampleReferralPortal() {
             {filtered.map((r) => {
               const meta = STAGE[r.status];
               return (
-                <div key={r.id} className="p-3 flex items-center gap-3">
+                <div
+                  key={r.id}
+                  className="p-3 flex items-center gap-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => { setSelectedRef(r); setDetailOpen(true); }}
+                >
                   <span className={`w-2 h-2 rounded-full shrink-0 ${meta.dot}`} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold leading-tight truncate">{r.name}</p>
@@ -225,6 +241,63 @@ export default function SampleReferralPortal() {
           </Card>
         )}
       </main>
+
+      {/* Referral Detail Sheet */}
+      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="text-left mb-4">
+            <SheetTitle>Referral Details</SheetTitle>
+            <SheetDescription>Information about the referred lead.</SheetDescription>
+          </SheetHeader>
+          {selectedRef && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className={`w-2.5 h-2.5 rounded-full ${STAGE[selectedRef.status]?.dot}`} />
+                <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${STAGE[selectedRef.status]?.chip}`}>
+                  {STAGE[selectedRef.status]?.label}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Name</p>
+                  <p className="text-sm font-semibold">{selectedRef.name}</p>
+                </div>
+                {selectedRef.phone && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> Phone
+                    </p>
+                    <p className="text-sm">{selectedRef.phone}</p>
+                  </div>
+                )}
+                {selectedRef.email && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1">
+                      <Mail className="w-3 h-3" /> Email
+                    </p>
+                    <p className="text-sm">{selectedRef.email}</p>
+                  </div>
+                )}
+                {selectedRef.address && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> Address
+                    </p>
+                    <p className="text-sm">{selectedRef.address}</p>
+                  </div>
+                )}
+                {selectedRef.credit > 0 && (
+                  <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-md px-3 py-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Credit earned: +${selectedRef.credit}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       <Sheet open={addOpen} onOpenChange={setAddOpen}>
         <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
