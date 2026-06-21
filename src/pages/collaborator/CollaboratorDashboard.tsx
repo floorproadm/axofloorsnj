@@ -1,4 +1,4 @@
-import { useCollaboratorSchedule } from "@/hooks/useCollaboratorSchedule";
+import { useCollaboratorSchedule, type CollaboratorAppointment } from "@/hooks/useCollaboratorSchedule";
 import { useCollaboratorProjects } from "@/hooks/useCollaboratorProjects";
 import { useMaterialRequests } from "@/hooks/useMaterialRequests";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
