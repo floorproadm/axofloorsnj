@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import OnboardingModal from '@/components/onboarding/OnboardingModal';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -61,5 +62,10 @@ export default function ProtectedRoute({ children, requireAdmin = true }: Protec
     return <Navigate to="/admin/auth" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {requireAdmin && <OnboardingModal />}
+      {children}
+    </>
+  );
 }
