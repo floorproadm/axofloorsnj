@@ -215,7 +215,10 @@ export default function PublicInvoice() {
           {phases.length > 0 && (
             <div>
               <h4 className="text-[10px] uppercase tracking-[1px] text-slate-500 mb-2 font-semibold">Payment Schedule</h4>
-              <div className="grid grid-cols-1 sm:grid gap-3" style={{ gridTemplateColumns: undefined }}>
+              <div
+                className="grid grid-cols-1 gap-3"
+                style={{ ['--desktop-cols' as any]: `repeat(${phases.length}, 1fr)` }}
+              >
                 {phases.map((p: any) => (
                   <div key={p.id} className="border border-slate-200 rounded-lg p-3 text-center">
                     <p className="text-[10px] uppercase tracking-[1px] text-slate-500">{p.phase_label}</p>
