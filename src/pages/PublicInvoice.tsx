@@ -168,6 +168,15 @@ export default function PublicInvoice() {
           </div>
         </div>
 
+        {/* Notes */}
+        {invoice.notes && (
+          <div className="px-4 py-3 sm:px-8 sm:py-4 bg-slate-50 border-b border-slate-200">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-3.5 text-sm sm:text-base text-amber-800">
+              <strong>Notes:</strong> {invoice.notes}
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <div className="px-4 py-4 sm:px-8 sm:py-6 space-y-4 sm:space-y-6">
           {/* Items table */}
