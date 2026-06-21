@@ -99,41 +99,47 @@ export default function DemoPortalsSettings() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" /> Loading demo clients...
           </div>
-        ) : clients.length === 0 ? (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              No clients with portal tokens yet. Create a client + project to generate one.
-            </p>
-            <Button variant="outline" onClick={() => open(`${origin}/portal/demo`)} className="gap-2">
-              <ExternalLink className="w-4 h-4" /> View Sample Portal
-            </Button>
-          </div>
         ) : (
           <>
-            <div className="space-y-2 max-w-md">
-              <Label className="text-xs">Select a demo client</Label>
-              <Select value={selectedToken} onValueChange={setSelectedToken}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.portal_token}>
-                      {c.full_name || "(no name)"}{c.address ? ` — ${c.address}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {clients.length > 0 && (
+              <div className="space-y-2 max-w-md">
+                <Label className="text-xs">Select a demo client</Label>
+                <Select value={selectedToken} onValueChange={setSelectedToken}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {clients.map((c) => (
+                      <SelectItem key={c.id} value={c.portal_token}>
+                        {c.full_name || "(no name)"}{c.address ? ` — ${c.address}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => open(clientUrl)} className="gap-2">
+              <Button
+                onClick={() => open(clientUrl || `${origin}/admin/customers`)}
+                className="gap-2"
+              >
                 <ExternalLink className="w-4 h-4" /> Open Client Portal
               </Button>
               <Button variant="outline" onClick={() => open(sampleClientUrl)} className="gap-2">
                 <MonitorPlay className="w-4 h-4" /> View Sample
               </Button>
-              <Button variant="ghost" onClick={() => copy(clientUrl, "Client portal")} className="gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => copy(clientUrl, "Client portal")}
+                disabled={!clientUrl}
+                className="gap-2"
+              >
                 <Copy className="w-4 h-4" /> Copy link
               </Button>
             </div>
+            {clients.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                No clients with portal tokens yet. Create a client + project to generate a real link, or use <strong>View Sample</strong> to preview.
+              </p>
+            )}
           </>
         )}
       </Card>
