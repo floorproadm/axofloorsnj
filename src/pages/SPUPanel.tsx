@@ -38,6 +38,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import VisualizerMetricsTab from "@/components/admin/VisualizerMetricsTab";
 
 const BG = "#0B1120";
 const BLUE = "#0066FF";
@@ -122,6 +123,7 @@ export default function SPUPanel() {
             <TabsTrigger value="orgs">Organizations</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
+            <TabsTrigger value="visualizer">Visualizer</TabsTrigger>
             <TabsTrigger value="diag">Diagnostics</TabsTrigger>
           </TabsList>
 
@@ -129,6 +131,7 @@ export default function SPUPanel() {
           <TabsContent value="orgs"><OrgsTab /></TabsContent>
           <TabsContent value="users"><UsersTab /></TabsContent>
           <TabsContent value="waitlist"><WaitlistTab /></TabsContent>
+          <TabsContent value="visualizer"><VisualizerMetricsTab /></TabsContent>
           <TabsContent value="diag"><DiagnosticsTab /></TabsContent>
         </Tabs>
       </main>

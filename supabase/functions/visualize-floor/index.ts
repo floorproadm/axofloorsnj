@@ -1,5 +1,7 @@
 // Photorealistic floor visualizer — re-stains existing floor via Lovable AI (Gemini image edit).
-// Cached in Storage by SHA-256(photo + styleName) so repeat requests skip the AI call.
+// - Cache: Storage bucket keyed by SHA-256(photo + stain) → repeat requests skip the AI call.
+// - Rate limit: per IP, only counts "miss" events (model calls).
+// - Telemetry: every request logs an event to public.visualizer_usage for the Platform Admin panel.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -9,6 +11,8 @@ const CACHE_BUCKET = "visualizer-cache";
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365; // 1 year
 const RATE_LIMIT_HOUR = 10;
 const RATE_LIMIT_DAY = 30;
+
+type Event = "hit" | "miss" | "blocked" | "error";
 
 interface Body {
   imageDataUrl: string;
@@ -33,9 +37,35 @@ function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; contentType: stri
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const startedAt = Date.now();
+  const ip =
+    (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
+    req.headers.get("cf-connecting-ip") ||
+    "unknown";
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const supa = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
+
+  let styleNameForLog: string | undefined;
+
+  const log = async (event: Event, reason?: string) => {
+    const latency_ms = Date.now() - startedAt;
+    const payload = { ip, event, latency_ms, style_name: styleNameForLog ?? null, reason: reason ?? null };
+    console.log("visualize-floor", JSON.stringify(payload));
+    if (supa) {
+      try {
+        await supa.from("visualizer_usage").insert(payload);
+      } catch (e) {
+        console.error("telemetry insert failed", (e as Error).message);
+      }
+    }
+  };
+
   try {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
+      await log("error", "missing_api_key");
       return new Response(JSON.stringify({ error: "LOVABLE_API_KEY missing" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -43,19 +73,17 @@ Deno.serve(async (req) => {
     }
 
     const { imageDataUrl, stylePrompt, styleName } = (await req.json()) as Body;
+    styleNameForLog = styleName;
 
     if (!imageDataUrl || !imageDataUrl.startsWith("data:image/") || !stylePrompt) {
+      await log("error", "invalid_input");
       return new Response(JSON.stringify({ error: "Invalid input" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // ---- Cache lookup (hash of photo bytes + stain identity) ----
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const supa = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
-
+    // ---- Cache lookup ----
     const cacheKeyInput = `v1|${styleName ?? ""}|${stylePrompt}|${imageDataUrl}`;
     const hash = await sha256Hex(cacheKeyInput);
     const cachePath = `${hash.slice(0, 2)}/${hash}.png`;
@@ -65,6 +93,7 @@ Deno.serve(async (req) => {
         .from(CACHE_BUCKET)
         .createSignedUrl(cachePath, SIGNED_URL_TTL);
       if (signed?.signedUrl) {
+        await log("hit");
         return new Response(
           JSON.stringify({ imageDataUrl: signed.signedUrl, cached: true }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -72,12 +101,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ---- Rate limit (per IP, only when we will actually call the model) ----
-    const ip =
-      (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
-      req.headers.get("cf-connecting-ip") ||
-      "unknown";
-
+    // ---- Rate limit (only on cache miss, counts prior 'miss' events) ----
     if (supa) {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -85,28 +109,28 @@ Deno.serve(async (req) => {
         .from("visualizer_usage")
         .select("created_at")
         .eq("ip", ip)
+        .eq("event", "miss")
         .gte("created_at", dayAgo);
       if (rlErr) console.error("rate-limit lookup error", rlErr.message);
       const recent = rows ?? [];
       const dayCount = recent.length;
       const hourCount = recent.filter((r: any) => r.created_at >= hourAgo).length;
       if (hourCount >= RATE_LIMIT_HOUR || dayCount >= RATE_LIMIT_DAY) {
+        const reason = hourCount >= RATE_LIMIT_HOUR ? "hour" : "day";
+        await log("blocked", reason);
         return new Response(
           JSON.stringify({
             error:
-              hourCount >= RATE_LIMIT_HOUR
+              reason === "hour"
                 ? `Limit reached: ${RATE_LIMIT_HOUR} renders per hour. Try again later.`
                 : `Daily limit reached: ${RATE_LIMIT_DAY} renders. Try again tomorrow.`,
           }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      // log this attempt up front so concurrent calls also count
-      await supa.from("visualizer_usage").insert({ ip });
     }
 
-    // ---- Cache miss: call the model ----
-
+    // ---- Model call ----
     const prompt = `You are a professional stain visualization tool for a hardwood flooring company.
 
 TASK: Re-stain the EXISTING hardwood floor in this photo to a new tone. This is a color/stain change only — NOT a floor replacement.
@@ -152,12 +176,19 @@ Stain name: ${styleName ?? "custom stain"}.`;
       const text = await upstream.text();
       console.error("Gateway error", upstream.status, text);
       const status = upstream.status === 429 || upstream.status === 402 ? upstream.status : 502;
+      const reason =
+        upstream.status === 429
+          ? "gateway_429"
+          : upstream.status === 402
+            ? "gateway_402"
+            : `gateway_${upstream.status}`;
       const msg =
         upstream.status === 429
           ? "Too many requests. Please wait a moment and try again."
           : upstream.status === 402
             ? "AI credits exhausted. Please add credits to continue."
             : "AI generation failed. Please try a different photo.";
+      await log("error", reason);
       return new Response(JSON.stringify({ error: msg }), {
         status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -171,6 +202,7 @@ Stain name: ${styleName ?? "custom stain"}.`;
 
     if (!url) {
       console.error("No image returned", JSON.stringify(data).slice(0, 500));
+      await log("error", "no_image_returned");
       return new Response(JSON.stringify({ error: "AI did not return an image. Try again." }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -198,11 +230,13 @@ Stain name: ${styleName ?? "custom stain"}.`;
       }
     }
 
+    await log("miss");
     return new Response(JSON.stringify({ imageDataUrl: returnUrl, cached: false }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error(e);
+    await log("error", "exception");
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

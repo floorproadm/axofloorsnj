@@ -4829,18 +4829,30 @@ export type Database = {
       visualizer_usage: {
         Row: {
           created_at: string
+          event: string
           id: number
           ip: string
+          latency_ms: number | null
+          reason: string | null
+          style_name: string | null
         }
         Insert: {
           created_at?: string
+          event?: string
           id?: number
           ip: string
+          latency_ms?: number | null
+          reason?: string | null
+          style_name?: string | null
         }
         Update: {
           created_at?: string
+          event?: string
           id?: number
           ip?: string
+          latency_ms?: number | null
+          reason?: string | null
+          style_name?: string | null
         }
         Relationships: []
       }
