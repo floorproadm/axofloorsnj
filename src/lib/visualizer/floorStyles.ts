@@ -14,7 +14,7 @@ export interface FloorStyle {
 }
 
 const basePrompt = (tone: string) =>
-  `White oak hardwood floor stained DuraSeal ${tone}. Wide-plank 5 inch boards, satin finish, realistic visible wood grain and plank seams, photographic quality, true-to-color, no glare.`;
+  `Re-stain ONLY the existing hardwood floor to DuraSeal ${tone}. This is a stain color change, not a floor replacement. Preserve the exact same wood species, plank width, plank length, board layout, seam positions, grain pattern, grain direction, knots and natural character of the original floor. Do not redraw, re-plank, re-orient or replace any boards. Apply the new stain tone uniformly while keeping the original sheen and the room's existing lighting, shadows and reflections. Photographic, true-to-color, no glare.`;
 
 const make = (
   id: string,

@@ -31,19 +31,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    const prompt = `You are a professional interior visualization tool for a flooring company.
+    const prompt = `You are a professional stain visualization tool for a hardwood flooring company.
 
-TASK: Replace ONLY the floor in this room photo with: ${stylePrompt}.
+TASK: Re-stain the EXISTING hardwood floor in this photo to a new tone. This is a color/stain change only — NOT a floor replacement.
 
-STRICT RULES:
-- Keep EVERYTHING else identical: walls, cabinets, appliances, windows, lighting, shadows, perspective, camera angle, framing, resolution.
-- Detect the floor area automatically (including under furniture edges where visible) and replace its surface only.
-- Match the room's existing lighting direction, color temperature, and shadows on the new floor.
-- Preserve realistic plank/tile perspective foreshortening relative to the camera.
-- Photorealistic result. No watermarks, no text, no UI, no borders.
-- Do not alter people, pets, or objects.
+TARGET STAIN: ${stylePrompt}
 
-Style: ${styleName ?? "custom wood floor"}.`;
+WHAT TO KEEP IDENTICAL (do not change):
+- Wood species of the existing floor (do not switch oak to walnut, maple, pine, etc.).
+- Plank width, plank length, and board layout exactly as in the photo.
+- Seam positions and joint pattern between boards.
+- Grain pattern, grain direction, knots, and natural wood character of each board.
+- Floor orientation relative to the camera and perspective foreshortening.
+- Everything else in the room: walls, trim, cabinets, appliances, furniture, windows, rugs, people, pets, objects, framing, resolution.
+- Existing lighting direction, color temperature, shadows and reflections on the floor.
+- Original finish sheen (matte / satin / semi-gloss) — do not add glare.
+
+WHAT TO CHANGE:
+- Only the stain color/tone of the existing wood, as if the same floor was sanded and re-stained in place.
+
+OUTPUT: Photorealistic, true-to-color. No watermarks, no text, no UI, no borders, no added furniture or decor.
+
+Stain name: ${styleName ?? "custom stain"}.`;
 
     const upstream = await fetch(GATEWAY_URL, {
       method: "POST",
