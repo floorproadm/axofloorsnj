@@ -1,13 +1,31 @@
-// Photorealistic floor visualizer — replaces the floor in a room photo using Lovable AI (Gemini image edit).
+// Photorealistic floor visualizer — re-stains existing floor via Lovable AI (Gemini image edit).
+// Cached in Storage by SHA-256(photo + styleName) so repeat requests skip the AI call.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3.1-flash-image-preview";
+const CACHE_BUCKET = "visualizer-cache";
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365; // 1 year
 
 interface Body {
   imageDataUrl: string;
   stylePrompt: string;
   styleName?: string;
+}
+
+async function sha256Hex(input: string) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; contentType: string } {
+  const [meta, b64] = dataUrl.split(",");
+  const contentType = meta.match(/data:([^;]+)/)?.[1] ?? "image/png";
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return { bytes, contentType };
 }
 
 Deno.serve(async (req) => {
@@ -31,6 +49,28 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ---- Cache lookup (hash of photo bytes + stain identity) ----
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supa = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
+
+    const cacheKeyInput = `v1|${styleName ?? ""}|${stylePrompt}|${imageDataUrl}`;
+    const hash = await sha256Hex(cacheKeyInput);
+    const cachePath = `${hash.slice(0, 2)}/${hash}.png`;
+
+    if (supa) {
+      const { data: signed } = await supa.storage
+        .from(CACHE_BUCKET)
+        .createSignedUrl(cachePath, SIGNED_URL_TTL);
+      if (signed?.signedUrl) {
+        return new Response(
+          JSON.stringify({ imageDataUrl: signed.signedUrl, cached: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+    // ---- Cache miss: call the model ----
     const prompt = `You are a professional stain visualization tool for a hardwood flooring company.
 
 TASK: Re-stain the EXISTING hardwood floor in this photo to a new tone. This is a color/stain change only — NOT a floor replacement.
@@ -56,10 +96,7 @@ Stain name: ${styleName ?? "custom stain"}.`;
 
     const upstream = await fetch(GATEWAY_URL, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: MODEL,
         modalities: ["image", "text"],
@@ -92,7 +129,6 @@ Stain name: ${styleName ?? "custom stain"}.`;
     }
 
     const data = await upstream.json();
-    // Gemini image edits arrive as an image url in message.images[0].image_url.url
     const url: string | undefined =
       data?.choices?.[0]?.message?.images?.[0]?.image_url?.url ??
       data?.choices?.[0]?.message?.content?.find?.((p: any) => p?.image_url?.url)?.image_url?.url;
@@ -105,7 +141,28 @@ Stain name: ${styleName ?? "custom stain"}.`;
       });
     }
 
-    return new Response(JSON.stringify({ imageDataUrl: url }), {
+    // ---- Cache write (best-effort) ----
+    let returnUrl = url;
+    if (supa && url.startsWith("data:image/")) {
+      try {
+        const { bytes, contentType } = dataUrlToBytes(url);
+        const { error: upErr } = await supa.storage
+          .from(CACHE_BUCKET)
+          .upload(cachePath, bytes, { contentType, upsert: true });
+        if (upErr) {
+          console.error("cache upload error", upErr.message);
+        } else {
+          const { data: signed } = await supa.storage
+            .from(CACHE_BUCKET)
+            .createSignedUrl(cachePath, SIGNED_URL_TTL);
+          if (signed?.signedUrl) returnUrl = signed.signedUrl;
+        }
+      } catch (e) {
+        console.error("cache write failed", (e as Error).message);
+      }
+    }
+
+    return new Response(JSON.stringify({ imageDataUrl: returnUrl, cached: false }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
