@@ -7,6 +7,8 @@ const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3.1-flash-image-preview";
 const CACHE_BUCKET = "visualizer-cache";
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365; // 1 year
+const RATE_LIMIT_HOUR = 10;
+const RATE_LIMIT_DAY = 30;
 
 interface Body {
   imageDataUrl: string;
@@ -70,7 +72,41 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ---- Rate limit (per IP, only when we will actually call the model) ----
+    const ip =
+      (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown";
+
+    if (supa) {
+      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: rows, error: rlErr } = await supa
+        .from("visualizer_usage")
+        .select("created_at")
+        .eq("ip", ip)
+        .gte("created_at", dayAgo);
+      if (rlErr) console.error("rate-limit lookup error", rlErr.message);
+      const recent = rows ?? [];
+      const dayCount = recent.length;
+      const hourCount = recent.filter((r: any) => r.created_at >= hourAgo).length;
+      if (hourCount >= RATE_LIMIT_HOUR || dayCount >= RATE_LIMIT_DAY) {
+        return new Response(
+          JSON.stringify({
+            error:
+              hourCount >= RATE_LIMIT_HOUR
+                ? `Limit reached: ${RATE_LIMIT_HOUR} renders per hour. Try again later.`
+                : `Daily limit reached: ${RATE_LIMIT_DAY} renders. Try again tomorrow.`,
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      // log this attempt up front so concurrent calls also count
+      await supa.from("visualizer_usage").insert({ ip });
+    }
+
     // ---- Cache miss: call the model ----
+
     const prompt = `You are a professional stain visualization tool for a hardwood flooring company.
 
 TASK: Re-stain the EXISTING hardwood floor in this photo to a new tone. This is a color/stain change only — NOT a floor replacement.
