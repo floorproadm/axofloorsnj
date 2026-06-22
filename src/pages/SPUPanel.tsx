@@ -1382,7 +1382,7 @@ function UserDetailModal({
               {showDanger && (
                 <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/[0.03] p-4 flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" disabled={busy} onClick={() => dangerAction("reset_password")}
-                    className="border-white/15 text-white/80 hover:bg-white/5">Send password reset</Button>
+                    className="border-white/15 bg-white/[0.06] text-white hover:bg-white/10">Send password reset</Button>
                   {disabled ? (
                     <Button size="sm" variant="outline" disabled={busy} onClick={() => dangerAction("enable")}
                       className="border-green-500/30 text-green-300 hover:bg-green-500/10">Enable user</Button>
