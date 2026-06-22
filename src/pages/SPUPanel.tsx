@@ -756,7 +756,7 @@ function RpcTests() {
 
   const run = async () => {
     setRunning(true);
-    const rpcs = ["spu_platform_overview", "spu_organizations_list", "spu_waitlist_list"];
+    const rpcs = ["spu_platform_overview", "spu_organizations_list", "spu_users_list", "spu_waitlist_list"];
     const out: typeof results = [];
     for (const name of rpcs) {
       const t0 = performance.now();
@@ -834,10 +834,15 @@ function DbHealth() {
 function EdgeList() {
   // Static list (we can't enumerate deployed functions client-side without service role).
   const fns = [
+    "spu-organization-create",
+    "spu-owner-invite-resend",
+    "spu-user-action",
+    "invite-team-member",
+    "invite-partner-portal",
     "notify-new-lead",
     "notify-partner-lead-progress",
     "reputation-request",
-    "send-team-invite",
+    "visualize-floor",
   ];
   return (
     <div className="rounded-xl border border-white/10 divide-y divide-white/5">
