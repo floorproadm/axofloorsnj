@@ -7,6 +7,8 @@ const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3.1-flash-image-preview";
 const CACHE_BUCKET = "visualizer-cache";
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365; // 1 year
+const RATE_LIMIT_HOUR = 10;
+const RATE_LIMIT_DAY = 30;
 
 interface Body {
   imageDataUrl: string;
