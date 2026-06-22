@@ -4826,6 +4826,24 @@ export type Database = {
         }
         Relationships: []
       }
+      visualizer_usage: {
+        Row: {
+          created_at: string
+          id: number
+          ip: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          ip: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          ip?: string
+        }
+        Relationships: []
+      }
       weekly_review_projects: {
         Row: {
           created_at: string | null
