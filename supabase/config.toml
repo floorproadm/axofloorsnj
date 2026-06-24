@@ -19,3 +19,7 @@ verify_jwt = false
 verify_jwt = false
 [functions.invite-partner-portal]
 verify_jwt = false
+
+[functions.notify-proposal-signed]
+verify_jwt = false
+

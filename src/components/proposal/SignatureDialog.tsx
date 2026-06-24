@@ -94,46 +94,17 @@ export function SignatureDialog({
       });
       if (acceptErr) throw acceptErr;
 
-      // Notify admin via Gmail (best-effort)
+      // Notify admin via Gmail (best-effort, server-side).
+      // Uses a dedicated edge function because gmail-send requires admin/webhook auth
+      // and the signer here is anonymous.
       try {
-        const { data: settings } = await supabase
-          .from("company_settings")
-          .select("email")
-          .limit(1)
-          .maybeSingle();
-        const adminEmail = (settings as any)?.email;
-        if (adminEmail) {
-          const tierLabel = selectedTier === "flat" || !selectedTier ? "Single Price" : selectedTier.toUpperCase();
-          const propNum = proposalNumber || proposalId.slice(0, 8);
-          const custName = customerName || name.trim();
-          const adminLink = `${window.location.origin}/admin/proposals`;
-          const html = `
-            <div style="font-family:Arial,sans-serif;max-width:600px">
-              <h2 style="color:#0f1b3d">Proposal Signed ✓</h2>
-              <p>A client just approved and signed a proposal.</p>
-              <table cellpadding="8" style="border-collapse:collapse;width:100%;margin:16px 0;border:1px solid #e2e8f0">
-                <tr><td style="background:#f8fafc;font-weight:bold">Customer</td><td>${custName}</td></tr>
-                <tr><td style="background:#f8fafc;font-weight:bold">Proposal #</td><td>${propNum}</td></tr>
-                <tr><td style="background:#f8fafc;font-weight:bold">Selected Tier</td><td>${tierLabel}</td></tr>
-                <tr><td style="background:#f8fafc;font-weight:bold">Payment Method</td><td>${paymentMethod}</td></tr>
-              </table>
-              <p><a href="${adminLink}" style="background:#d97706;color:#fff;padding:12px 20px;text-decoration:none;border-radius:6px;display:inline-block">Open Proposals</a></p>
-            </div>
-          `;
-          await supabase.functions.invoke("gmail-send", {
-            body: {
-              to: adminEmail,
-              subject: `Proposal Signed — ${propNum} (${custName})`,
-              html,
-              related_id: proposalId,
-              related_type: "proposal",
-              type: "proposal_signed_admin_notice",
-            },
-          });
-        }
+        await supabase.functions.invoke("notify-proposal-signed", {
+          body: { proposal_token: proposalToken },
+        });
       } catch (notifyErr) {
         console.error("Admin notification failed:", notifyErr);
       }
+
 
       // Transition dialog into the confirmation ("done") state.
       // No auto-redirect — user clicks Close to proceed to the deposit invoice.
