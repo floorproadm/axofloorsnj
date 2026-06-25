@@ -51,6 +51,24 @@ function createRawEmail(
   const messageId = `<${crypto.randomUUID()}@${domainFromEmail(brand.email)}>`;
   const date = new Date().toUTCString().replace(/GMT$/, '+0000');
 
+  // Build plain-text alternative from HTML — improves deliverability (spam filters
+  // strongly penalize HTML-only emails). Strip tags, decode common entities, collapse whitespace.
+  const textBody = htmlBody
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<\/(p|div|h\d|li|tr)>/gi, '\n')
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const boundary = `bnd_${crypto.randomUUID().replace(/-/g, '')}`;
+  // List-Unsubscribe headers reduce spam scoring on Gmail/iCloud/Outlook.
+  const unsubMail = `mailto:${brand.email}?subject=Unsubscribe`;
   const lines = [
     `From: ${fromEncoded}`,
     `To: ${to}`,
@@ -58,11 +76,25 @@ function createRawEmail(
     `Subject: ${encodeHeader(subject)}`,
     `Date: ${date}`,
     `Message-ID: ${messageId}`,
+    `List-Unsubscribe: <${unsubMail}>`,
+    'List-Unsubscribe-Post: List-Unsubscribe=One-Click',
     'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    textBody,
+    '',
+    `--${boundary}`,
     'Content-Type: text/html; charset="UTF-8"',
     'Content-Transfer-Encoding: 8bit',
     '',
     htmlBody,
+    '',
+    `--${boundary}--`,
+    '',
   ];
   const raw = lines.join('\r\n');
   return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -114,8 +146,9 @@ const FALLBACK_TEMPLATES: Record<string, { subject: string; body: string }> = {
     body: '<h2>Hi {{customer_name}},</h2><p>Your project is <strong style="color:#16a34a">complete</strong>! ✨</p><p style="text-align:center"><a class="btn" href="{{review_link}}">Leave a Review</a></p><p>Thank you!<br><strong>The {{company_name}} Team</strong></p>',
   },
   invoice_sent: {
-    subject: "Invoice #{{invoice_number}} from {{company_name}} – ${{amount}} due",
-    body: '<h2>Hi {{customer_name}},</h2><p>Invoice #{{invoice_number}} — Amount Due: <strong>${{amount}}</strong></p><p style="text-align:center"><a class="btn" href="{{invoice_link}}">View & Pay Invoice</a></p><p>Thank you,<br><strong>{{company_name}} Team</strong></p>',
+    // Less spam-prone subject: no "$", no "due", no exclamation. iCloud/Gmail filters are sensitive to these.
+    subject: "Your invoice {{invoice_number}} from {{company_name}}",
+    body: '<h2>Hi {{customer_name}},</h2><p>Thanks for choosing {{company_name}}. Your invoice <strong>{{invoice_number}}</strong> is ready to review.</p><p>Amount: <strong>${{amount}}</strong></p><p style="text-align:center"><a class="btn" href="{{invoice_link}}">View invoice</a></p><p>Reply to this email if you have any questions.</p><p>Best,<br><strong>{{company_name}} Team</strong></p>',
   },
 };
 
