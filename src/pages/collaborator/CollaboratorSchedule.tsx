@@ -32,26 +32,30 @@ import { projectDisplayName } from "@/utils/projectDisplayName";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   scheduled: {
-    label: "agendado",
+    label: "Agendado",
     className:
       "bg-[hsl(var(--state-neutral-bg))] text-[hsl(var(--state-neutral))] border-[hsl(var(--state-neutral)/0.3)]",
   },
   confirmed: {
-    label: "confirmado",
+    label: "Confirmado",
+    className: "bg-primary/10 text-primary border-primary/30",
+  },
+  in_progress: {
+    label: "Em execução",
     className:
-      "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
+      "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
   },
   completed: {
-    label: "concluído",
+    label: "Concluído",
     className:
       "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
   },
   cancelled: {
-    label: "cancelado",
+    label: "Cancelado",
     className: "bg-destructive/10 text-destructive border-destructive/30",
   },
   pending: {
-    label: "pendente",
+    label: "Pendente",
     className:
       "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
   },
