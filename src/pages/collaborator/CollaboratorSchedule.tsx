@@ -3,6 +3,7 @@ import { useCollaboratorSchedule } from "@/hooks/useCollaboratorSchedule";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Loader2,
   ChevronLeft,
@@ -11,6 +12,7 @@ import {
   Clock,
   ArrowRight,
   CalendarOff,
+  AlertTriangle,
 } from "lucide-react";
 import {
   format,
@@ -30,26 +32,30 @@ import { projectDisplayName } from "@/utils/projectDisplayName";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   scheduled: {
-    label: "agendado",
+    label: "Agendado",
     className:
       "bg-[hsl(var(--state-neutral-bg))] text-[hsl(var(--state-neutral))] border-[hsl(var(--state-neutral)/0.3)]",
   },
   confirmed: {
-    label: "confirmado",
+    label: "Confirmado",
+    className: "bg-primary/10 text-primary border-primary/30",
+  },
+  in_progress: {
+    label: "Em execução",
     className:
-      "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
+      "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
   },
   completed: {
-    label: "concluído",
+    label: "Concluído",
     className:
       "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
   },
   cancelled: {
-    label: "cancelado",
+    label: "Cancelado",
     className: "bg-destructive/10 text-destructive border-destructive/30",
   },
   pending: {
-    label: "pendente",
+    label: "Pendente",
     className:
       "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
   },
@@ -108,6 +114,14 @@ export default function CollaboratorSchedule() {
 
   const selectedDayAppts = dayAppointments(selectedDate);
 
+  const visibleAppts = view === "day" ? selectedDayAppts : appointments;
+  const pendingAppts = visibleAppts.filter((a) => a.status === "scheduled");
+  const scrollToFirstPending = () => {
+    if (!pendingAppts[0]) return;
+    const el = document.getElementById(`appt-${pendingAppts[0].id}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <div className="space-y-3">
       {/* Control header */}
@@ -153,6 +167,27 @@ export default function CollaboratorSchedule() {
           </Button>
         </div>
       </div>
+
+      {pendingAppts.length > 0 && (
+        <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+          <AlertTriangle className="h-4 w-4 !text-amber-600 dark:!text-amber-400" />
+          <AlertDescription className="flex items-center justify-between gap-2 text-xs font-medium">
+            <span>
+              {pendingAppts.length} job{pendingAppts.length > 1 ? "s" : ""} aguardando sua confirmação
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20"
+              onClick={scrollToFirstPending}
+            >
+              Ver
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
@@ -208,32 +243,51 @@ export default function CollaboratorSchedule() {
                       Sem jobs
                     </p>
                   ) : (
-                    appts.map((appt) => (
-                      <button
-                        key={appt.id}
-                        onClick={() =>
-                          appt.project_id &&
-                          navigate(`/collaborator/project/${appt.project_id}`)
-                        }
-                        className="w-full text-left rounded bg-card border border-border/60 p-1 hover:border-primary/50 transition-colors"
-                      >
-                        <p className="text-[9px] font-bold text-foreground leading-tight truncate">
-                          {projectDisplayName(appt.customer_name, appt.location)}
-                        </p>
-                        {appt.location && (
-                          <p className="text-[8px] text-muted-foreground truncate leading-tight">
-                            {appt.location.split(",")[0]}
-                          </p>
-                        )}
-                        <p className="text-[8px] text-primary font-semibold mt-0.5 leading-tight">
-                          {formatAppointmentTime(
-                            appt.appointment_time,
-                            appt.arrival_window_minutes,
-                            defaultArrivalWindow,
+                    appts.map((appt) => {
+                      const status =
+                        STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
+                      return (
+                        <button
+                          key={appt.id}
+                          id={`appt-${appt.id}`}
+                          onClick={() =>
+                            appt.project_id &&
+                            navigate(`/collaborator/project/${appt.project_id}`)
+                          }
+                          className={cn(
+                            "w-full text-left rounded bg-card border p-1 hover:border-primary/50 transition-colors",
+                            appt.status === "scheduled"
+                              ? "border-amber-500/50"
+                              : "border-border/60",
                           )}
-                        </p>
-                      </button>
-                    ))
+                        >
+                          <p className="text-[9px] font-bold text-foreground leading-tight truncate">
+                            {projectDisplayName(appt.customer_name, appt.location)}
+                          </p>
+                          {appt.location && (
+                            <p className="text-[8px] text-muted-foreground truncate leading-tight">
+                              {appt.location.split(",")[0]}
+                            </p>
+                          )}
+                          <p className="text-[8px] text-primary font-semibold mt-0.5 leading-tight">
+                            {formatAppointmentTime(
+                              appt.appointment_time,
+                              appt.arrival_window_minutes,
+                              defaultArrivalWindow,
+                            )}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "mt-1 text-[8px] px-1 py-0 rounded font-semibold border w-full justify-center",
+                              status.className,
+                            )}
+                          >
+                            {status.label}
+                          </Badge>
+                        </button>
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -253,7 +307,14 @@ export default function CollaboratorSchedule() {
               const status =
                 STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
               return (
-                <Card key={appt.id} className="border-border shadow-sm">
+                <Card
+                  key={appt.id}
+                  id={`appt-${appt.id}`}
+                  className={cn(
+                    "border-border shadow-sm",
+                    appt.status === "scheduled" && "border-amber-500/50",
+                  )}
+                >
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
