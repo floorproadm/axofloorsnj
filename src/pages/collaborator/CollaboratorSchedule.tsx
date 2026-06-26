@@ -3,6 +3,7 @@ import { useCollaboratorSchedule } from "@/hooks/useCollaboratorSchedule";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Loader2,
   ChevronLeft,
@@ -11,6 +12,7 @@ import {
   Clock,
   ArrowRight,
   CalendarOff,
+  AlertTriangle,
 } from "lucide-react";
 import {
   format,
