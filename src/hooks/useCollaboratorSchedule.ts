@@ -22,8 +22,8 @@ export function useCollaboratorSchedule(weekOffset: number = 0) {
   const { user } = useAuth();
 
   const referenceDate = addWeeks(new Date(), weekOffset);
-  const weekStart = startOfWeek(referenceDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 1 });
+  const weekStart = startOfWeek(referenceDate, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 0 });
 
   return useQuery({
     queryKey: ["collaborator-schedule", user?.id, weekOffset],
