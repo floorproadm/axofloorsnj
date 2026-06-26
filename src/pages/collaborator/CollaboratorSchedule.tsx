@@ -307,7 +307,14 @@ export default function CollaboratorSchedule() {
               const status =
                 STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
               return (
-                <Card key={appt.id} className="border-border shadow-sm">
+                <Card
+                  key={appt.id}
+                  id={`appt-${appt.id}`}
+                  className={cn(
+                    "border-border shadow-sm",
+                    appt.status === "scheduled" && "border-amber-500/50",
+                  )}
+                >
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
