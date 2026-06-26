@@ -168,6 +168,27 @@ export default function CollaboratorSchedule() {
         </div>
       </div>
 
+      {pendingAppts.length > 0 && (
+        <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+          <AlertTriangle className="h-4 w-4 !text-amber-600 dark:!text-amber-400" />
+          <AlertDescription className="flex items-center justify-between gap-2 text-xs font-medium">
+            <span>
+              {pendingAppts.length} job{pendingAppts.length > 1 ? "s" : ""} aguardando sua confirmação
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20"
+              onClick={scrollToFirstPending}
+            >
+              Ver
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+
+
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
