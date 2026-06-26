@@ -114,6 +114,14 @@ export default function CollaboratorSchedule() {
 
   const selectedDayAppts = dayAppointments(selectedDate);
 
+  const visibleAppts = view === "day" ? selectedDayAppts : appointments;
+  const pendingAppts = visibleAppts.filter((a) => a.status === "scheduled");
+  const scrollToFirstPending = () => {
+    if (!pendingAppts[0]) return;
+    const el = document.getElementById(`appt-${pendingAppts[0].id}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <div className="space-y-3">
       {/* Control header */}
