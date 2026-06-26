@@ -243,32 +243,51 @@ export default function CollaboratorSchedule() {
                       Sem jobs
                     </p>
                   ) : (
-                    appts.map((appt) => (
-                      <button
-                        key={appt.id}
-                        onClick={() =>
-                          appt.project_id &&
-                          navigate(`/collaborator/project/${appt.project_id}`)
-                        }
-                        className="w-full text-left rounded bg-card border border-border/60 p-1 hover:border-primary/50 transition-colors"
-                      >
-                        <p className="text-[9px] font-bold text-foreground leading-tight truncate">
-                          {projectDisplayName(appt.customer_name, appt.location)}
-                        </p>
-                        {appt.location && (
-                          <p className="text-[8px] text-muted-foreground truncate leading-tight">
-                            {appt.location.split(",")[0]}
-                          </p>
-                        )}
-                        <p className="text-[8px] text-primary font-semibold mt-0.5 leading-tight">
-                          {formatAppointmentTime(
-                            appt.appointment_time,
-                            appt.arrival_window_minutes,
-                            defaultArrivalWindow,
+                    appts.map((appt) => {
+                      const status =
+                        STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
+                      return (
+                        <button
+                          key={appt.id}
+                          id={`appt-${appt.id}`}
+                          onClick={() =>
+                            appt.project_id &&
+                            navigate(`/collaborator/project/${appt.project_id}`)
+                          }
+                          className={cn(
+                            "w-full text-left rounded bg-card border p-1 hover:border-primary/50 transition-colors",
+                            appt.status === "scheduled"
+                              ? "border-amber-500/50"
+                              : "border-border/60",
                           )}
-                        </p>
-                      </button>
-                    ))
+                        >
+                          <p className="text-[9px] font-bold text-foreground leading-tight truncate">
+                            {projectDisplayName(appt.customer_name, appt.location)}
+                          </p>
+                          {appt.location && (
+                            <p className="text-[8px] text-muted-foreground truncate leading-tight">
+                              {appt.location.split(",")[0]}
+                            </p>
+                          )}
+                          <p className="text-[8px] text-primary font-semibold mt-0.5 leading-tight">
+                            {formatAppointmentTime(
+                              appt.appointment_time,
+                              appt.arrival_window_minutes,
+                              defaultArrivalWindow,
+                            )}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "mt-1 text-[8px] px-1 py-0 rounded font-semibold border w-full justify-center",
+                              status.className,
+                            )}
+                          >
+                            {status.label}
+                          </Badge>
+                        </button>
+                      );
+                    })
                   )}
                 </div>
               </div>
