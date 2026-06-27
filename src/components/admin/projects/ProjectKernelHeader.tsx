@@ -87,7 +87,7 @@ export function ProjectKernelHeader({ project, onPortalClick }: Props) {
     navigate('/admin/projects');
   }
 
-  const statusCfg = STATUSES.find((s) => s.value === project.project_status);
+  
 
   return (
     <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2.5 pb-3 sm:py-3 bg-background/95 backdrop-blur border-b border-border space-y-2.5 sm:space-y-3">

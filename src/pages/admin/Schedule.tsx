@@ -821,7 +821,7 @@ function AppointmentModal({
               <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full", typeCfg.bg, typeCfg.text)}>
                 {typeCfg.label}
               </span>
-              <span className="text-xs text-muted-foreground capitalize">{appointment.status}</span>
+              <JobStatusBadge status={appointment.status} />
             </div>
 
             <div className="space-y-3">
