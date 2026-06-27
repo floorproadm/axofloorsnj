@@ -104,9 +104,7 @@ export function ProjectKernelHeader({ project, onPortalClick }: Props) {
           <Select value={project.project_status} onValueChange={onStatusChange}>
             <SelectTrigger className="h-7 text-xs w-auto min-w-[96px] px-2 gap-1">
               <SelectValue>
-                <Badge variant="outline" className={`${statusCfg?.color || ''} text-[10px] py-0 px-1.5`}>
-                  {statusCfg?.label || project.project_status}
-                </Badge>
+                <JobStatusBadge status={project.project_status} className="text-[10px] py-0 px-1.5" />
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
