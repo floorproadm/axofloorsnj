@@ -104,6 +104,9 @@ export default function CollaboratorProjectDetail() {
         </CardContent>
       </Card>
 
+      {/* Checklist */}
+      <CollaboratorJobChecklist projectId={project.project_id} />
+
       {/* Upload Section */}
       <Card>
         <CardHeader className="pb-2">
