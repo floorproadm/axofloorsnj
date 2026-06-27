@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { cn } from "@/lib/utils";
+import { JobStatusBadge } from "@/components/shared/JobStatusBadge";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
@@ -820,7 +821,7 @@ function AppointmentModal({
               <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full", typeCfg.bg, typeCfg.text)}>
                 {typeCfg.label}
               </span>
-              <span className="text-xs text-muted-foreground capitalize">{appointment.status}</span>
+              <JobStatusBadge status={appointment.status} />
             </div>
 
             <div className="space-y-3">

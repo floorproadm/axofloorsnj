@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useCollaboratorSchedule } from "@/hooks/useCollaboratorSchedule";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { JobStatusBadge } from "@/components/shared/JobStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -30,36 +30,6 @@ import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { OnMyWayButton } from "@/components/shared/OnMyWayButton";
 import { projectDisplayName } from "@/utils/projectDisplayName";
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  scheduled: {
-    label: "Agendado",
-    className:
-      "bg-[hsl(var(--state-neutral-bg))] text-[hsl(var(--state-neutral))] border-[hsl(var(--state-neutral)/0.3)]",
-  },
-  confirmed: {
-    label: "Confirmado",
-    className: "bg-primary/10 text-primary border-primary/30",
-  },
-  in_progress: {
-    label: "Em execução",
-    className:
-      "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
-  },
-  completed: {
-    label: "Concluído",
-    className:
-      "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
-  },
-  cancelled: {
-    label: "Cancelado",
-    className: "bg-destructive/10 text-destructive border-destructive/30",
-  },
-  pending: {
-    label: "Pendente",
-    className:
-      "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
-  },
-};
 
 const SHORT_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
@@ -243,10 +213,7 @@ export default function CollaboratorSchedule() {
                       Sem jobs
                     </p>
                   ) : (
-                    appts.map((appt) => {
-                      const status =
-                        STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
-                      return (
+                    appts.map((appt) => (
                         <button
                           key={appt.id}
                           id={`appt-${appt.id}`}
@@ -276,18 +243,12 @@ export default function CollaboratorSchedule() {
                               defaultArrivalWindow,
                             )}
                           </p>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "mt-1 text-[8px] px-1 py-0 rounded font-semibold border w-full justify-center",
-                              status.className,
-                            )}
-                          >
-                            {status.label}
-                          </Badge>
+                          <JobStatusBadge
+                            status={appt.status}
+                            className="mt-1 text-[8px] px-1 py-0 rounded w-full justify-center font-semibold"
+                          />
                         </button>
-                      );
-                    })
+                    ))
                   )}
                 </div>
               </div>
@@ -303,10 +264,7 @@ export default function CollaboratorSchedule() {
               <p className="text-sm">Nenhum job agendado</p>
             </div>
           ) : (
-            selectedDayAppts.map((appt) => {
-              const status =
-                STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
-              return (
+            selectedDayAppts.map((appt) => (
                 <Card
                   key={appt.id}
                   id={`appt-${appt.id}`}
@@ -325,15 +283,10 @@ export default function CollaboratorSchedule() {
                           {projectDisplayName(appt.customer_name, appt.location)}
                         </p>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-[10px] px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap shrink-0",
-                          status.className,
-                        )}
-                      >
-                        {status.label}
-                      </Badge>
+                      <JobStatusBadge
+                        status={appt.status}
+                        className="text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 font-semibold"
+                      />
                     </div>
 
                     {appt.location && (
@@ -384,8 +337,7 @@ export default function CollaboratorSchedule() {
                     </div>
                   </CardContent>
                 </Card>
-              );
-            })
+            ))
           )}
         </div>
       )}

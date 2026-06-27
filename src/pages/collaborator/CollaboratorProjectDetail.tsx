@@ -3,6 +3,7 @@ import { useCollaboratorProjects } from "@/hooks/useCollaboratorProjects";
 import { useMediaFiles, getMediaSignedUrls, type MediaFile } from "@/hooks/useMediaFiles";
 import { useCollaboratorUpload } from "@/hooks/useCollaboratorUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { JobStatusBadge } from "@/components/shared/JobStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Camera, MapPin, ArrowLeft, ImageIcon } from "lucide-react";
@@ -82,7 +83,7 @@ export default function CollaboratorProjectDetail() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">{projectDisplayName(project.customer_name, project.address)}</CardTitle>
-            <Badge variant="outline">{project.project_status}</Badge>
+            <JobStatusBadge status={project.project_status} />
           </div>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
