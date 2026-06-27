@@ -11,6 +11,7 @@ import { useRef, useState, useEffect } from "react";
 import { convertHeicToJpeg } from "@/utils/heicConverter";
 import { OnMyWayButton } from "@/components/shared/OnMyWayButton";
 import { projectDisplayName } from "@/utils/projectDisplayName";
+import { CollaboratorJobChecklist } from "@/components/collaborator/CollaboratorJobChecklist";
 
 export default function CollaboratorProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -102,6 +103,9 @@ export default function CollaboratorProjectDetail() {
           />
         </CardContent>
       </Card>
+
+      {/* Checklist */}
+      <CollaboratorJobChecklist projectId={project.project_id} />
 
       {/* Upload Section */}
       <Card>
