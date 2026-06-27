@@ -213,7 +213,7 @@ export default function CollaboratorSchedule() {
                       Sem jobs
                     </p>
                   ) : (
-                    appts.map((appt) => {
+                    appts.map((appt) => (
                         <button
                           key={appt.id}
                           id={`appt-${appt.id}`}
@@ -248,8 +248,7 @@ export default function CollaboratorSchedule() {
                             className="mt-1 text-[8px] px-1 py-0 rounded w-full justify-center font-semibold"
                           />
                         </button>
-                      );
-                    })
+                    ))
                   )}
                 </div>
               </div>
@@ -265,7 +264,7 @@ export default function CollaboratorSchedule() {
               <p className="text-sm">Nenhum job agendado</p>
             </div>
           ) : (
-            selectedDayAppts.map((appt) => {
+            selectedDayAppts.map((appt) => (
                 <Card
                   key={appt.id}
                   id={`appt-${appt.id}`}
@@ -338,8 +337,7 @@ export default function CollaboratorSchedule() {
                     </div>
                   </CardContent>
                 </Card>
-              );
-            })
+            ))
           )}
         </div>
       )}
