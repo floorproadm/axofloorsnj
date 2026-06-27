@@ -214,9 +214,6 @@ export default function CollaboratorSchedule() {
                     </p>
                   ) : (
                     appts.map((appt) => {
-                      const status =
-                        STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
-                      return (
                         <button
                           key={appt.id}
                           id={`appt-${appt.id}`}
@@ -246,15 +243,10 @@ export default function CollaboratorSchedule() {
                               defaultArrivalWindow,
                             )}
                           </p>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "mt-1 text-[8px] px-1 py-0 rounded font-semibold border w-full justify-center",
-                              status.className,
-                            )}
-                          >
-                            {status.label}
-                          </Badge>
+                          <JobStatusBadge
+                            status={appt.status}
+                            className="mt-1 text-[8px] px-1 py-0 rounded w-full justify-center font-semibold"
+                          />
                         </button>
                       );
                     })
@@ -274,9 +266,6 @@ export default function CollaboratorSchedule() {
             </div>
           ) : (
             selectedDayAppts.map((appt) => {
-              const status =
-                STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
-              return (
                 <Card
                   key={appt.id}
                   id={`appt-${appt.id}`}
@@ -295,15 +284,10 @@ export default function CollaboratorSchedule() {
                           {projectDisplayName(appt.customer_name, appt.location)}
                         </p>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-[10px] px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap shrink-0",
-                          status.className,
-                        )}
-                      >
-                        {status.label}
-                      </Badge>
+                      <JobStatusBadge
+                        status={appt.status}
+                        className="text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 font-semibold"
+                      />
                     </div>
 
                     {appt.location && (
