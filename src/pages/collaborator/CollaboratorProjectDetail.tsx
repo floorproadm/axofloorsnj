@@ -3,6 +3,7 @@ import { useCollaboratorProjects } from "@/hooks/useCollaboratorProjects";
 import { useMediaFiles, getMediaSignedUrls, type MediaFile } from "@/hooks/useMediaFiles";
 import { useCollaboratorUpload } from "@/hooks/useCollaboratorUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { JobStatusBadge } from "@/components/shared/JobStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Camera, MapPin, ArrowLeft, ImageIcon } from "lucide-react";
