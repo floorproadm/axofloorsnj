@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useCollaboratorSchedule } from "@/hooks/useCollaboratorSchedule";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { JobStatusBadge } from "@/components/shared/JobStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -30,36 +30,6 @@ import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { OnMyWayButton } from "@/components/shared/OnMyWayButton";
 import { projectDisplayName } from "@/utils/projectDisplayName";
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  scheduled: {
-    label: "Agendado",
-    className:
-      "bg-[hsl(var(--state-neutral-bg))] text-[hsl(var(--state-neutral))] border-[hsl(var(--state-neutral)/0.3)]",
-  },
-  confirmed: {
-    label: "Confirmado",
-    className: "bg-primary/10 text-primary border-primary/30",
-  },
-  in_progress: {
-    label: "Em execução",
-    className:
-      "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
-  },
-  completed: {
-    label: "Concluído",
-    className:
-      "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success))] border-[hsl(var(--state-success)/0.3)]",
-  },
-  cancelled: {
-    label: "Cancelado",
-    className: "bg-destructive/10 text-destructive border-destructive/30",
-  },
-  pending: {
-    label: "Pendente",
-    className:
-      "bg-[hsl(var(--state-risk-bg))] text-[hsl(var(--state-risk))] border-[hsl(var(--state-risk)/0.3)]",
-  },
-};
 
 const SHORT_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
